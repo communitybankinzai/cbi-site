@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-19",
+      "type": "fix",
+      "target": "公開サイト / アセット",
+      "title": "CBIロゴPNGの白背景を透過化（背景色との段差を解消）",
+      "detail": "site/assets/cbi-logo.png を RGB→RGBA に変換し、四隅から Floodfill 方式で連結している白背景のみを透過化。ロゴ内部の白要素は保護。オリジナルは site/assets/cbi-logo-original.png にバックアップ。ヒーロー／ヘッダー／フッターのロゴ表示で四角い縁が消え、サイト背景になじむ。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-19",
       "type": "content",
       "target": "公開サイト",
       "title": "事業概要セクション内のKVテーブルを削除（団体情報と重複していたため）",

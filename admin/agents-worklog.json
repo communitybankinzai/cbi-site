@@ -7,6 +7,15 @@
       "actuals": [
         {
           "date": "2026-06-19",
+          "title": "CBIロゴPNGの白背景を透過化",
+          "category": "実装",
+          "outputs": ["site/assets/cbi-logo.png", "site/assets/cbi-logo-original.png"],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "1254×1254 RGB→RGBA変換、四隅Floodfill方式（thresh=25）で白背景のみ透過。ロゴ内部の白要素は保護。オリジナルは別名でバックアップ保存。"
+        },
+        {
+          "date": "2026-06-19",
           "title": "事業概要内KVテーブル削除（団体情報と重複していたため）",
           "category": "実装",
           "outputs": ["site/index.html"],
