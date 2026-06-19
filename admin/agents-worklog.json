@@ -7,6 +7,19 @@
       "actuals": [
         {
           "date": "2026-06-19",
+          "title": "管理画面：AIエージェント（A1〜A10）が新規アイデアを提案できる機能を実装",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs",
+            "site/admin/admin.js",
+            "site/admin/index.html"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "投稿者プルダウンにAIエージェント10名を agents.json から動的追加。投稿フォームに『✨ AIに提案させる』ボタン追加（AIエージェント選択時のみ有効）。GAS aiSuggest action で agents.json の役割と agents-worklog.json の実績/予定を Gemini 2.5 Flash に渡し、タイトル/カテゴリ/本文を JSON 形式で生成 → フォーム自動流し込み → 人間が編集して投稿。responseMimeType: application/json で構造化出力を担保。clasp v6 デプロイ済み。"
+        },
+        {
+          "date": "2026-06-19",
           "title": "管理画面：コメント内容をAIで本文に反映する機能を実装（Gemini無料枠）",
           "category": "実装",
           "outputs": [

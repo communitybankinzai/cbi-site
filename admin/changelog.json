@@ -6,6 +6,14 @@
       "date": "2026-06-19",
       "type": "feature",
       "target": "管理画面 / GAS",
+      "title": "AIエージェント（A1〜A10）が新規アイデアを提案できる機能を追加",
+      "detail": "投稿者プルダウンに人間4名＋AIエージェント10名（🤖 A1 Core 〜 🤖 A10 Scout）を表示。投稿フォームに『✨ AIに提案させる』ボタンを設置し、AIエージェント選択時のみ有効化。押下すると GAS 経由で Gemini 2.5 Flash が当該エージェントの役割（agents.json）と実績・予定（agents-worklog.json）を踏まえ『今後実施すべきアイデア』を JSON 形式で生成 → タイトル/カテゴリ/本文をフォームに自動流し込み → 人間が確認・編集して投稿。GAS Code.gs に aiSuggest action 追加（responseMimeType: application/json で構造化出力）。clasp v6 デプロイ完了。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-19",
+      "type": "feature",
+      "target": "管理画面 / GAS",
       "title": "アイデアにコメント内容をAIで反映する機能を追加（Gemini無料枠）",
       "detail": "管理画面のアイデアカードに『🤖 AIで反映』ボタンを追加。寄せられたコメントの趣旨を取り入れた本文修正案を Gemini 2.5 Flash で生成し、元本文と修正案を左右に並べた diff モーダル（緑＝追加／赤＝削除のハイライト）で確認 → 承認時のみ既存 update アクションで本文上書き。GAS側 Code.gs に aiRevise action を追加し、API キーは PropertiesService の GEMINI_API_KEY から取得（フロント非公開）。Google AI Studio 経由の無料枠で動作するため Cloud Billing 設定なしなら課金リスクなし。コメントが付いていないカードでは AIボタンは disabled。clasp push & deploy 完了（v3）。利用前に GAS の『プロジェクトの設定 → スクリプトプロパティ』で GEMINI_API_KEY を設定する必要あり。",
       "author": "A1 Core"
