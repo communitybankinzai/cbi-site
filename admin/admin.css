@@ -382,7 +382,29 @@ button { font-family: inherit; cursor: pointer; }
   white-space: pre-wrap;
   word-break: break-word;
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
+.idea-card.is-body-expanded .idea-body {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+.idea-body-toggle {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--c-link, #2e6cb6);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+  margin-top: -4px;
+}
+.idea-body-toggle:hover { text-decoration: underline; }
+.idea-body-toggle.is-hidden { display: none; }
 .idea-card-actions {
   display: flex;
   justify-content: flex-end;
@@ -1461,6 +1483,106 @@ button { font-family: inherit; cursor: pointer; }
   .wl-item { grid-template-columns: 90px 1fr; }
   .wl-tags { grid-column: 1 / -1; flex-direction: row; align-items: center; }
   .print-paper { padding: 24px; }
+}
+
+/* =========================================================
+   A8 Ledger: AI利用量ダッシュボード
+   ========================================================= */
+.a8-usage h4 {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(139, 92, 246, 0.06));
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.a8-alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.a8-alert-normal   { background: #dcfce7; color: #166534; border-left: 4px solid #22c55e; }
+.a8-alert-caution  { background: #fef9c3; color: #854d0e; border-left: 4px solid #facc15; }
+.a8-alert-warning  { background: #fed7aa; color: #9a3412; border-left: 4px solid #f97316; }
+.a8-alert-critical { background: #fecaca; color: #991b1b; border-left: 4px solid #ef4444; }
+
+.a8-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.a8-card {
+  background: #fff;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.a8-card-label {
+  font-size: 11px;
+  color: var(--c-ink-sub);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.a8-card-big {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--c-navy);
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}
+.a8-card-unit {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--c-ink-sub);
+}
+.a8-card-sub {
+  font-size: 12px;
+  color: var(--c-ink-sub);
+  margin-top: 4px;
+}
+
+.a8-tables {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.a8-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.a8-table th, .a8-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--c-line);
+  text-align: left;
+}
+.a8-table th { color: var(--c-ink-sub); font-weight: 700; }
+.a8-table .num { text-align: right; font-family: ui-monospace, Consolas, monospace; }
+.a8-tables h5 { margin: 0 0 6px; font-size: 12px; color: var(--c-navy); font-weight: 700; }
+
+.a8-recent { margin-top: 12px; }
+.a8-recent summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--c-navy);
+  font-weight: 700;
+  padding: 6px 0;
+}
+
+.a8-note {
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: var(--c-ink-sub);
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+@media (max-width: 720px) {
+  .a8-card-grid { grid-template-columns: 1fr; }
+  .a8-tables { grid-template-columns: 1fr; }
 }
 
 /* =========================================================

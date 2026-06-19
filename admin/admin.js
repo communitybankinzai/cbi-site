@@ -345,6 +345,9 @@ const UNREAD_POLL_MS = 30000;
         : '<p class="wl-empty">予定はまだ登録されていません</p>') +
       '</div>';
 
+    const isA8 = (a.id === 'A8');
+    const a8SlotHtml = isA8 ? '<div id="a8-ai-usage-slot" class="ad-section a8-usage"><h4>📊 AI利用量モニタリング</h4><p class="wl-empty">読み込み中…</p></div>' : '';
+
     $('agent-detail').innerHTML =
       '<div class="ad-actions-row">' +
         '<button type="button" class="btn btn-ghost btn-sm" id="btn-print-this">📄 このエージェントを提出用PDF</button>' +
@@ -364,6 +367,7 @@ const UNREAD_POLL_MS = 30000;
       '</dl>' +
       (dutiesHtml ? '<div class="ad-section"><h4>主要業務</h4><ul class="ad-duties">' + dutiesHtml + '</ul></div>' : '') +
       metricsHtml +
+      a8SlotHtml +
       actualsHtml +
       plansHtml +
       relHtml;
@@ -372,6 +376,78 @@ const UNREAD_POLL_MS = 30000;
     const pAll  = $('btn-print-all');
     if (pThis) pThis.addEventListener('click', () => openPrintView([a.id]));
     if (pAll)  pAll.addEventListener('click', () => openPrintView(state.agents.map(x => x.id)));
+
+    if (isA8) loadA8Usage();
+  }
+
+  async function loadA8Usage() {
+    const slot = document.getElementById('a8-ai-usage-slot');
+    if (!slot || !GAS_WEBAPP_URL) return;
+    try {
+      const r = await gasCall({ action: 'getAiUsage', password: state.password });
+      if (!r || !r.ok) {
+        slot.innerHTML = '<h4>📊 AI利用量モニタリング</h4><p class="wl-empty">取得失敗: ' + escape((r && r.error) || 'unknown') + '</p>';
+        return;
+      }
+      slot.innerHTML = renderA8UsageHtml(r);
+    } catch (err) {
+      slot.innerHTML = '<h4>📊 AI利用量モニタリング</h4><p class="wl-empty">通信エラー: ' + escape(err.message) + '</p>';
+    }
+  }
+
+  function renderA8UsageHtml(d) {
+    const fmt = n => Number(n || 0).toLocaleString('ja-JP');
+    const yen = n => '¥' + (Math.round(Number(n || 0) * 100) / 100).toLocaleString('ja-JP');
+    const alertClass = 'a8-alert a8-alert-' + (d.alert && d.alert.level || 'normal');
+    const alertMsg = ({
+      normal:   '✅ 予算枠の80%未満で安全圏内',
+      caution:  '⚠ 予算枠の80%超過。今月の支出を注視',
+      warning:  '⚠ 予算枠の100%に到達。次月以降の調整検討',
+      critical: '🚨 予算枠120%超過。即座に対応が必要',
+    })[(d.alert && d.alert.level) || 'normal'];
+
+    const tm = d.thisMonth || {};
+    const lm = d.lastMonth || {};
+    const at = d.allTime || {};
+
+    const byActionRows = Object.keys(tm.byAction || {}).map(k =>
+      '<tr><td>' + escape(k) + '</td><td class="num">' + fmt(tm.byAction[k]) + '</td></tr>'
+    ).join('');
+    const byAgentRows = Object.keys(tm.byAgent || {}).sort().map(k =>
+      '<tr><td>' + escape(k) + '</td><td class="num">' + fmt(tm.byAgent[k]) + '</td></tr>'
+    ).join('');
+
+    const recentRows = (d.recent || []).map(r =>
+      '<tr><td>' + escape(String(r.createdAt || '').slice(0, 16).replace('T', ' ')) + '</td>' +
+      '<td>' + escape(r.action || '') + '</td>' +
+      '<td>' + escape(r.agentId || '—') + '</td>' +
+      '<td class="num">' + fmt(r.totalTokens) + '</td>' +
+      '<td class="num">' + yen(r.estimatedCostJPY) + '</td></tr>'
+    ).join('');
+
+    return '<h4>📊 AI利用量モニタリング</h4>' +
+      '<div class="' + alertClass + '"><strong>' + escape(alertMsg) + '</strong><br>' +
+        '今月利用率: <strong>' + (d.alert && d.alert.usageRate || 0) + '%</strong>' +
+        '（月予算 ' + yen(d.budgetJPY) + ' に対する概算）</div>' +
+      '<div class="a8-card-grid">' +
+        '<div class="a8-card"><div class="a8-card-label">今月（' + escape(tm.label || '') + '）</div>' +
+          '<div class="a8-card-big">' + fmt(tm.totalTokens) + ' <span class="a8-card-unit">tokens</span></div>' +
+          '<div class="a8-card-sub">' + fmt(tm.count) + ' 回 / 概算 ' + yen(tm.costJPY) + '</div></div>' +
+        '<div class="a8-card"><div class="a8-card-label">前月（' + escape(lm.label || '') + '）</div>' +
+          '<div class="a8-card-big">' + fmt(lm.totalTokens) + ' <span class="a8-card-unit">tokens</span></div>' +
+          '<div class="a8-card-sub">' + fmt(lm.count) + ' 回 / 概算 ' + yen(lm.costJPY) + '</div></div>' +
+        '<div class="a8-card"><div class="a8-card-label">累計</div>' +
+          '<div class="a8-card-big">' + fmt(at.totalTokens) + ' <span class="a8-card-unit">tokens</span></div>' +
+          '<div class="a8-card-sub">' + fmt(at.count) + ' 回 / 概算 ' + yen(at.costJPY) + '</div></div>' +
+      '</div>' +
+      (byActionRows ? '<div class="a8-tables">' +
+        '<div><h5>今月：機能別トークン数</h5><table class="a8-table"><thead><tr><th>機能</th><th class="num">トークン</th></tr></thead><tbody>' + byActionRows + '</tbody></table></div>' +
+        (byAgentRows ? '<div><h5>今月：エージェント別トークン数</h5><table class="a8-table"><thead><tr><th>エージェント</th><th class="num">トークン</th></tr></thead><tbody>' + byAgentRows + '</tbody></table></div>' : '') +
+        '</div>' : '') +
+      (recentRows ? '<details class="a8-recent"><summary>直近の利用ログ（最新7件）</summary>' +
+        '<table class="a8-table"><thead><tr><th>時刻</th><th>機能</th><th>エージェント</th><th class="num">トークン</th><th class="num">概算</th></tr></thead><tbody>' + recentRows + '</tbody></table>' +
+        '</details>' : '') +
+      '<p class="a8-note">' + escape(d.pricingNote || '') + '</p>';
   }
 
   // ---------- Worklog helpers ----------
@@ -669,6 +745,20 @@ const UNREAD_POLL_MS = 30000;
       return;
     }
     filtered.forEach(i => list.appendChild(renderCard(i)));
+
+    // 全カード追加後に本文クランプ判定（DOM追加 → CSS適用 → レイアウト確定後でないとscrollHeight等が誤値）
+    // setTimeout でフォント・CSS適用完了を確実に待つ
+    setTimeout(() => {
+      list.querySelectorAll('.idea-card').forEach(card => {
+        const body = card.querySelector('.idea-body');
+        const bt = card.querySelector('.idea-body-toggle');
+        if (!body || !bt) return;
+        void body.offsetHeight; // 強制reflow
+        if (body.scrollHeight - body.clientHeight > 2) {
+          bt.classList.remove('is-hidden');
+        }
+      });
+    }, 50);
   }
 
   function renderCard(idea) {
@@ -713,6 +803,18 @@ const UNREAD_POLL_MS = 30000;
     body.textContent = idea.body || '';
     card.appendChild(body);
 
+    // 本文展開トグル（3行を超える場合のみ表示）
+    const bodyToggle = document.createElement('button');
+    bodyToggle.type = 'button';
+    bodyToggle.className = 'idea-body-toggle is-hidden';
+    bodyToggle.textContent = '本文を全文表示';
+    bodyToggle.addEventListener('click', () => {
+      const expanded = card.classList.toggle('is-body-expanded');
+      bodyToggle.textContent = expanded ? '本文を折りたたむ' : '本文を全文表示';
+    });
+    card.appendChild(bodyToggle);
+    // 省略判定はrenderListの末尾で一括実行（DOM追加後でないとscrollHeight等が0になるため）
+
     // アクション行
     const actions = document.createElement('div');
     actions.className = 'idea-card-actions';
@@ -727,8 +829,8 @@ const UNREAD_POLL_MS = 30000;
 
     const aiBtn = document.createElement('button');
     aiBtn.className = 'btn btn-ai btn-sm';
-    aiBtn.title = 'コメントの内容を本文に反映した修正案をAIで生成します';
-    aiBtn.innerHTML = '🤖 AIで反映';
+    aiBtn.title = 'コメント全員の主張を踏まえてAIが最終とりまとめ本文を生成します';
+    aiBtn.innerHTML = '🤝 AIで最終とりまとめ';
     aiBtn.disabled = commentCount === 0;
     if (commentCount === 0) aiBtn.title = 'コメントが付くと使えます';
     aiBtn.addEventListener('click', () => onAiRevise(idea, aiBtn));
