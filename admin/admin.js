@@ -449,12 +449,60 @@ const UNREAD_POLL_MS = 30000;
   function bindA8BudgetEditor(usageData) {
     const editBtn = document.getElementById('a8-budget-edit');
     const resetBtn = document.getElementById('a8-budget-reset');
+    const notifyBtn = document.getElementById('a8-notify-test');
     if (editBtn) editBtn.addEventListener('click', () => openA8BudgetInput(usageData.budgetJPY));
     if (resetBtn) resetBtn.addEventListener('click', () => {
       localStorage.removeItem('cbi_a8_budget_override');
       toast('予算枠の上書きを解除しました', 'ok');
       loadA8Usage();
     });
+    if (notifyBtn) notifyBtn.addEventListener('click', () => onA8NotifyTest(notifyBtn));
+    // 通知先情報を取得して表示
+    loadA8NotifyConfig();
+  }
+
+  async function loadA8NotifyConfig() {
+    const slot = document.getElementById('a8-notify-status');
+    if (!slot) return;
+    try {
+      const r = await gasCall({ action: 'getNotifyConfig', password: state.password });
+      if (!r || !r.ok) return;
+      const recipients = r.recipients || [];
+      if (!recipients.length) {
+        slot.innerHTML = '<span class="a8-notify-warn">⚠ 通知先未設定（GASのスクリプトプロパティ <code>NOTIFY_EMAIL</code> を設定）</span>';
+      } else {
+        slot.innerHTML = '通知先: <strong>' + escape(recipients.join(', ')) + '</strong>' +
+          (r.quotaRemaining >= 0 ? ' <span class="a8-notify-quota">本日の送信可能数: ' + r.quotaRemaining + '通</span>' : '');
+      }
+    } catch (_) {}
+  }
+
+  async function onA8NotifyTest(btn) {
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ 送信中…';
+    try {
+      const budgetOverride = Number(localStorage.getItem('cbi_a8_budget_override')) || 0;
+      const r = await gasCall({
+        action: 'notifyTest',
+        password: state.password,
+        budgetOverride: budgetOverride > 0 ? budgetOverride : undefined,
+      });
+      if (!r || !r.ok) {
+        const msg = r && (r.hint || r.error) || '不明なエラー';
+        toast('通知エラー: ' + msg, 'err');
+        if (r && r.error === 'no_recipients') {
+          alert('通知先メールが未設定です。\n\nGASエディタで\n「プロジェクトの設定 → スクリプトプロパティ」\nに NOTIFY_EMAIL = メールアドレス を追加してください。\n（複数指定はカンマ区切り：a@x.com,b@x.com）');
+        }
+        return;
+      }
+      toast('テスト通知を送信しました（' + (r.sentTo || []).join(', ') + '）', 'ok');
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
   }
 
   function openA8BudgetInput(currentJPY) {
@@ -517,6 +565,8 @@ const UNREAD_POLL_MS = 30000;
       (isOverride ? '<span class="a8-budget-override-tag">テスト上書き中</span>' : '') +
       ' <button type="button" id="a8-budget-edit" class="a8-budget-btn" title="月予算を変更">✎ 編集</button>' +
       (isOverride ? ' <button type="button" id="a8-budget-reset" class="a8-budget-btn a8-budget-reset" title="本来の予算枠に戻す">↺ 解除</button>' : '') +
+      ' <button type="button" id="a8-notify-test" class="a8-budget-btn" title="現在の状態でアラート通知メールを送信">📧 テスト通知</button>' +
+      ' <span id="a8-notify-status" class="a8-notify-status"></span>' +
       '</div>';
 
     return '<h4>📊 AI利用量モニタリング</h4>' +
