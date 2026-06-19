@@ -249,12 +249,39 @@ const UNREAD_POLL_MS = 30000;
     group.innerHTML = '';
     state.agents.forEach(a => {
       const opt = document.createElement('option');
-      const value = '🤖 ' + a.id + ' ' + (a.codename || '');
-      opt.value = value.trim();
-      opt.textContent = value.trim() + '（' + (a.role || '').slice(0, 24) + '）';
+      const value = agentAuthorLabel(a);
+      opt.value = value;
+      opt.textContent = value + '（' + (a.role || '').slice(0, 24) + '）';
       opt.dataset.agentId = a.id;
       group.appendChild(opt);
     });
+    populateMeAgents();
+  }
+
+  function agentAuthorLabel(a) {
+    return ('🤖 ' + a.id + ' ' + (a.codename || '')).trim();
+  }
+
+  function populateMeAgents() {
+    const wrap = document.getElementById('me-agent-options');
+    if (!wrap || !state.agents || !state.agents.length) return;
+    wrap.innerHTML = '';
+    state.agents.forEach(a => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'me-option me-option-agent';
+      const label = agentAuthorLabel(a);
+      b.dataset.me = label;
+      b.dataset.agentId = a.id;
+      b.innerHTML = '<strong>' + escape(label) + '</strong><span class="me-option-sub">' + escape((a.role || '').slice(0, 32)) + '</span>';
+      b.addEventListener('click', () => setMe(label));
+      wrap.appendChild(b);
+    });
+  }
+
+  function findAgentByMeName(name) {
+    if (!name || !state.agents) return null;
+    return state.agents.find(a => agentAuthorLabel(a) === name) || null;
   }
 
   function renderAgentTabs() {
@@ -806,11 +833,72 @@ const UNREAD_POLL_MS = 30000;
       }
     }
     btn.addEventListener('click', send);
+
+    // AIエージェントが「私」になっている時のみ、AI意見生成ボタンを出す
+    const meAgent = findAgentByMeName(state.me);
+    if (meAgent) {
+      const aiBtn = document.createElement('button');
+      aiBtn.type = 'button';
+      aiBtn.className = 'comment-ai-btn';
+      aiBtn.innerHTML = '✨ AIで意見';
+      aiBtn.title = meAgent.id + ' ' + (meAgent.codename || '') + ' の立場から意見をAIで生成します';
+      aiBtn.addEventListener('click', () => onAiComment(ideaId, ta, aiBtn, meAgent));
+      row.appendChild(aiBtn);
+    }
+
     row.appendChild(ta);
     row.appendChild(btn);
     wrap.appendChild(row);
 
     return wrap;
+  }
+
+  async function onAiComment(ideaId, ta, btn, agent) {
+    if (!GAS_WEBAPP_URL) { toast('GAS未接続のためAI機能を利用できません', 'err'); return; }
+    const wl = state.worklog && state.worklog.agents && state.worklog.agents[agent.id];
+    const agentInfo = {
+      id: agent.id,
+      codename: agent.codename || '',
+      role: agent.role || '',
+      partner: agent.partner || '',
+      summary: agent.summary || '',
+      duties: agent.duties || [],
+      actuals: (wl && wl.actuals) || [],
+    };
+
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳';
+    ta.disabled = true;
+    try {
+      const r = await gasCall({
+        action: 'aiComment',
+        password: state.password,
+        actor: state.me,
+        ideaId,
+        agentInfo,
+      });
+      if (!r || !r.ok) {
+        const errMsg = r && (r.hint || r.error) || '不明なエラー';
+        toast('AIエラー: ' + errMsg, 'err');
+        console.error('[aiComment] error response:', r);
+        if (r && r.detail) {
+          alert('AIエラー詳細：\n\nerror: ' + r.error + '\nstatus: ' + (r.status || 'n/a') + '\n\ndetail:\n' + r.detail);
+        }
+        return;
+      }
+      ta.value = (r.comment || '').trim();
+      ta.style.height = 'auto';
+      ta.style.height = Math.min(ta.scrollHeight, 240) + 'px';
+      ta.focus();
+      toast('AI意見を生成しました。確認して送信してください', 'ok');
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+      ta.disabled = false;
+    }
   }
 
   function renderBubble(c) {

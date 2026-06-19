@@ -230,11 +230,16 @@
     <div class="modal-card">
       <h2 class="modal-title">あなたは誰ですか？</h2>
       <p class="modal-desc">あなたの発言は右側に表示されます。他のメンバーの操作だけが「未読」としてカウントされます。</p>
+      <p class="me-section-label">👥 メンバー</p>
       <div class="me-options">
         <button type="button" class="me-option" data-me="新井 則夫">新井 則夫</button>
         <button type="button" class="me-option" data-me="小林 康子">小林 康子</button>
         <button type="button" class="me-option" data-me="中司 祐樹">中司 祐樹</button>
         <button type="button" class="me-option" data-me="須田 翔">須田 翔</button>
+      </div>
+      <p class="me-section-label">🤖 AIエージェント（AIに意見を生成させられます）</p>
+      <div class="me-options me-options-agents" id="me-agent-options">
+        <!-- admin.js が agents.json から動的に追加 -->
       </div>
       <div class="me-custom-row">
         <input type="text" id="me-custom" placeholder="その他（氏名を入力）">
