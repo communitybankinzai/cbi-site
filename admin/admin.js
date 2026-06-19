@@ -122,6 +122,8 @@ const UNREAD_POLL_MS = 30000;
     } else {
       $('me-name').textContent = state.me;
     }
+    // カテゴリ動的生成のため agents.json を先行ロード
+    if (!state.agentsLoaded) loadAgents();
     loadAll();
     startUnreadPolling();
   }
@@ -227,7 +229,8 @@ const UNREAD_POLL_MS = 30000;
       const data = await resAg.json();
       state.agents = data.agents || [];
       state.agentPhaseLabels = data.phaseLabels || {};
-      $('agent-source').textContent = data.updatedAt ? ('更新: ' + data.updatedAt) : '';
+      const ageSrc = $('agent-source');
+      if (ageSrc) ageSrc.textContent = data.updatedAt ? ('更新: ' + data.updatedAt) : '';
       try {
         state.worklog = await resWl.json();
         state.worklogLoaded = true;
@@ -235,11 +238,53 @@ const UNREAD_POLL_MS = 30000;
         state.worklog = { agents: {} };
       }
       state.agentsLoaded = true;
-      renderAgentTabs();
-      if (state.agents.length) selectAgent(state.agents[0].id);
+      // カテゴリプルダウンを agents.json から動的生成（ログイン直後に必要）
+      populateCategorySelects();
+      // 以下はエージェントタブ用UI（DOM存在時のみ）
+      if ($('agent-tabs')) {
+        renderAgentTabs();
+        if (state.agents.length) selectAgent(state.agents[0].id);
+      }
       populateAuthorAgents();
     } catch (err) {
-      $('agent-detail').innerHTML = '<p class="empty">エージェント定義を読み込めませんでした（' + escape(err.message) + '）</p>';
+      const detailEl = $('agent-detail');
+      if (detailEl) detailEl.innerHTML = '<p class="empty">エージェント定義を読み込めませんでした（' + escape(err.message) + '）</p>';
+    }
+  }
+
+  // カテゴリ表記 = AIエージェント区分（B案：role の括弧前まで）
+  function buildCategoryLabel(agent) {
+    const roleShort = String(agent.role || '').split('（')[0].trim();
+    return (agent.id + ' ' + roleShort).trim();
+  }
+
+  function populateCategorySelects() {
+    if (!state.agents || !state.agents.length) return;
+    const cats = state.agents.map(buildCategoryLabel);
+    // 投稿フォーム側
+    const formSel = $('idea-category');
+    if (formSel) {
+      const current = formSel.value;
+      // 先頭の placeholder option（value=""）は維持、それ以降を入れ替え
+      [...formSel.querySelectorAll('option:not([value=""])')].forEach(o => o.remove());
+      cats.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c; o.textContent = c;
+        formSel.appendChild(o);
+      });
+      if (cats.includes(current)) formSel.value = current;
+    }
+    // フィルタ側
+    const filterSel = $('filter-category');
+    if (filterSel) {
+      const current = filterSel.value;
+      [...filterSel.querySelectorAll('option:not([value=""])')].forEach(o => o.remove());
+      cats.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c; o.textContent = c;
+        filterSel.appendChild(o);
+      });
+      if (cats.includes(current)) filterSel.value = current;
     }
   }
 
@@ -384,15 +429,56 @@ const UNREAD_POLL_MS = 30000;
     const slot = document.getElementById('a8-ai-usage-slot');
     if (!slot || !GAS_WEBAPP_URL) return;
     try {
-      const r = await gasCall({ action: 'getAiUsage', password: state.password });
+      const budgetOverride = Number(localStorage.getItem('cbi_a8_budget_override')) || 0;
+      const r = await gasCall({
+        action: 'getAiUsage',
+        password: state.password,
+        budgetOverride: budgetOverride > 0 ? budgetOverride : undefined,
+      });
       if (!r || !r.ok) {
         slot.innerHTML = '<h4>📊 AI利用量モニタリング</h4><p class="wl-empty">取得失敗: ' + escape((r && r.error) || 'unknown') + '</p>';
         return;
       }
       slot.innerHTML = renderA8UsageHtml(r);
+      bindA8BudgetEditor(r);
     } catch (err) {
       slot.innerHTML = '<h4>📊 AI利用量モニタリング</h4><p class="wl-empty">通信エラー: ' + escape(err.message) + '</p>';
     }
+  }
+
+  function bindA8BudgetEditor(usageData) {
+    const editBtn = document.getElementById('a8-budget-edit');
+    const resetBtn = document.getElementById('a8-budget-reset');
+    if (editBtn) editBtn.addEventListener('click', () => openA8BudgetInput(usageData.budgetJPY));
+    if (resetBtn) resetBtn.addEventListener('click', () => {
+      localStorage.removeItem('cbi_a8_budget_override');
+      toast('予算枠の上書きを解除しました', 'ok');
+      loadA8Usage();
+    });
+  }
+
+  function openA8BudgetInput(currentJPY) {
+    const row = document.getElementById('a8-budget-row');
+    if (!row) return;
+    row.innerHTML =
+      '<form id="a8-budget-form" class="a8-budget-form">' +
+        '<label>月予算 ¥</label>' +
+        '<input type="number" id="a8-budget-input" min="0.01" step="0.01" value="' + Number(currentJPY) + '" autofocus>' +
+        '<button type="submit" class="btn btn-primary btn-sm">保存</button>' +
+        '<button type="button" id="a8-budget-cancel" class="btn btn-ghost btn-sm">キャンセル</button>' +
+        '<span class="a8-budget-hint">テスト用に小数も可（例: 0.5 で約128% → 赤アラート）</span>' +
+      '</form>';
+    document.getElementById('a8-budget-input').focus();
+    document.getElementById('a8-budget-input').select();
+    document.getElementById('a8-budget-cancel').addEventListener('click', () => loadA8Usage());
+    document.getElementById('a8-budget-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const v = Number(document.getElementById('a8-budget-input').value);
+      if (!v || v <= 0) { toast('0より大きい数値を入力してください', 'err'); return; }
+      localStorage.setItem('cbi_a8_budget_override', String(v));
+      toast('月予算を ¥' + v.toLocaleString('ja-JP') + ' に上書きしました', 'ok');
+      loadA8Usage();
+    });
   }
 
   function renderA8UsageHtml(d) {
@@ -425,7 +511,16 @@ const UNREAD_POLL_MS = 30000;
       '<td class="num">' + yen(r.estimatedCostJPY) + '</td></tr>'
     ).join('');
 
+    const isOverride = (d.budget && d.budget.source === 'inline_override');
+    const budgetRowHtml = '<div id="a8-budget-row" class="a8-budget-row">' +
+      '月予算 <strong>' + yen(d.budgetJPY) + '</strong>' +
+      (isOverride ? '<span class="a8-budget-override-tag">テスト上書き中</span>' : '') +
+      ' <button type="button" id="a8-budget-edit" class="a8-budget-btn" title="月予算を変更">✎ 編集</button>' +
+      (isOverride ? ' <button type="button" id="a8-budget-reset" class="a8-budget-btn a8-budget-reset" title="本来の予算枠に戻す">↺ 解除</button>' : '') +
+      '</div>';
+
     return '<h4>📊 AI利用量モニタリング</h4>' +
+      budgetRowHtml +
       '<div class="' + alertClass + '"><strong>' + escape(alertMsg) + '</strong><br>' +
         '今月利用率: <strong>' + (d.alert && d.alert.usageRate || 0) + '%</strong>' +
         '（月予算 ' + yen(d.budgetJPY) + ' に対する概算）</div>' +
