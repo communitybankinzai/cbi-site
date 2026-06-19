@@ -967,8 +967,11 @@ const UNREAD_POLL_MS = 30000;
       if (!r || !r.ok) {
         const errMsg = r && (r.hint || r.error) || '不明なエラー';
         toast('AIエラー: ' + errMsg, 'err');
+        console.error('[aiRevise] error response:', r);
         if (r && r.error === 'no_api_key') {
           alert('Gemini APIキーが未設定です。\n\nGoogle AI Studio (https://aistudio.google.com/) でAPIキーを取得し、\nGASの「プロジェクトの設定」→「スクリプトプロパティ」で\nGEMINI_API_KEY として保存してください。');
+        } else if (r && r.detail) {
+          alert('AIエラー詳細：\n\nerror: ' + r.error + '\nstatus: ' + (r.status || 'n/a') + '\n\ndetail:\n' + r.detail);
         }
         return;
       }
