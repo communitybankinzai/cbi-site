@@ -7,6 +7,15 @@
       "actuals": [
         {
           "date": "2026-06-19",
+          "title": "ヒーローセクションに動画背景を実装",
+          "category": "実装",
+          "outputs": ["site/assets/hero/hero.mp4", "site/assets/hero/hero-poster.jpg", "site/index.html", "site/style.css"],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "vidu動画(HEVC 1920×1080 8秒 3.3MB)をffmpegでH.264(3.2MB)に変換、1秒地点のJPEGポスター抽出。autoplay/loop/muted/playsinline、prefers-reduced-motion対応、ロゴdrop-shadow、ガラス調btn-ghost、テキストshadowで動画背景上の可読性確保。"
+        },
+        {
+          "date": "2026-06-19",
           "title": "CBIロゴPNGの白背景を透過化",
           "category": "実装",
           "outputs": ["site/assets/cbi-logo.png", "site/assets/cbi-logo-original.png"],

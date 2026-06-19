@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-19",
+      "type": "feature",
+      "target": "公開サイト",
+      "title": "ヒーローセクションに動画背景を実装",
+      "detail": "ユーザー提供のvidu動画(HEVC 1920×1080 8秒)をH.264に変換、ポスター画像も抽出してsite/assets/hero/に配置。index.htmlのヒーロー冒頭に<video autoplay loop muted playsinline>を追加し、半透明オーバーレイ＋ガラス調CTAボタン＋テキストshadowで可読性確保。prefers-reduced-motion対応で動画停止可。サイト全体の印象が大きく向上。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-19",
       "type": "fix",
       "target": "公開サイト / アセット",
       "title": "CBIロゴPNGの白背景を透過化（背景色との段差を解消）",
