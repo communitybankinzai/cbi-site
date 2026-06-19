@@ -7,6 +7,15 @@
       "actuals": [
         {
           "date": "2026-06-19",
+          "title": "事業概要内KVテーブル削除（団体情報と重複していたため）",
+          "category": "実装",
+          "outputs": ["site/index.html"],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "代表者・登録番号が団体情報セクションと重複、事業期間・総事業費が空欄になっていたためKVブロックを丸ごと削除。事業概要はリード文＋3カードのみのすっきりした構成に。"
+        },
+        {
+          "date": "2026-06-19",
           "title": "公開TOPに管理画面リンクを追加（パスワード認証は既存）",
           "category": "実装",
           "outputs": ["site/index.html", "site/style.css"],
