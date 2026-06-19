@@ -7,6 +7,15 @@
       "actuals": [
         {
           "date": "2026-06-19",
+          "title": "ヒーロー動画の右下ウォーターマークをCSSで隠蔽",
+          "category": "実装",
+          "outputs": ["site/style.css"],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": ".hero::after で右下280×100pxにnavyラジアルグラデを重ねvidu透かしを覆う。hero-inner z-index 2→3。動画再エンコード不要。"
+        },
+        {
+          "date": "2026-06-19",
           "title": "ヒーローセクションに動画背景を実装",
           "category": "実装",
           "outputs": ["site/assets/hero/hero.mp4", "site/assets/hero/hero-poster.jpg", "site/index.html", "site/style.css"],

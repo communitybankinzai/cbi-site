@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-19",
+      "type": "fix",
+      "target": "公開サイト",
+      "title": "ヒーロー動画の右下ウォーターマークをCSSで隠蔽",
+      "detail": "style.css の .hero::after を追加し、右下隅 280×100px に navy のラジアルグラデを重ねて vidu のウォーターマークを自然に覆う。動画再エンコード不要。hero-inner の z-index を 3 に上げてテキスト・CTAは前面表示を維持。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-19",
       "type": "feature",
       "target": "公開サイト",
       "title": "ヒーローセクションに動画背景を実装",
