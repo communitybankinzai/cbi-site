@@ -802,8 +802,9 @@ const UNREAD_POLL_MS = 30000;
     async function send() {
       const body = ta.value.trim();
       if (!body) return;
-      if (!state.me) {
-        toast('まず「私」を選択してください', 'err');
+      const author = currentAgent ? agentAuthorLabel(currentAgent) : state.me;
+      if (!author) {
+        toast('まず「私」を選択するか、エージェントに聞いてください', 'err');
         openMeModal();
         return;
       }
@@ -813,12 +814,12 @@ const UNREAD_POLL_MS = 30000;
         const r = await gasCall({
           action: 'addComment',
           password: state.password,
-          actor: state.me,
-          comment: { ideaId, author: state.me, body },
+          actor: state.me || author, // 操作ログ用（誰が押したか）
+          comment: { ideaId, author, body },
         });
         if (r && r.ok) {
           ta.value = '';
-          toast('コメントを送信しました', 'ok');
+          toast(currentAgent ? (currentAgent.id + ' として投稿しました') : 'コメントを送信しました', 'ok');
           await loadAll();
           state.openIdeas.add(ideaId);
           renderList();
@@ -834,23 +835,96 @@ const UNREAD_POLL_MS = 30000;
     }
     btn.addEventListener('click', send);
 
-    // AIエージェントが「私」になっている時のみ、AI意見生成ボタンを出す
-    const meAgent = findAgentByMeName(state.me);
-    if (meAgent) {
-      const aiBtn = document.createElement('button');
-      aiBtn.type = 'button';
-      aiBtn.className = 'comment-ai-btn';
-      aiBtn.innerHTML = '✨ AIで意見';
-      aiBtn.title = meAgent.id + ' ' + (meAgent.codename || '') + ' の立場から意見をAIで生成します';
-      aiBtn.addEventListener('click', () => onAiComment(ideaId, ta, aiBtn, meAgent));
-      row.appendChild(aiBtn);
+    // クロージャで「このコメントを誰として送るか」を保持
+    // null なら state.me（人間）、agentオブジェクトならその名義で送信
+    let currentAgent = findAgentByMeName(state.me); // 「私」がAIならそれを初期値に
+
+    function updateUiForAgent() {
+      if (currentAgent) {
+        ta.placeholder = '🤖 ' + currentAgent.id + ' ' + (currentAgent.codename || '') + ' として送信…';
+        btn.textContent = '🤖 ' + currentAgent.id + ' として送信';
+        btn.classList.add('comment-send-agent');
+        cancelBtn.hidden = false;
+      } else {
+        ta.placeholder = state.me ? (state.me + ' としてコメントを送る…') : 'コメント…';
+        btn.textContent = '送信';
+        btn.classList.remove('comment-send-agent');
+        cancelBtn.hidden = true;
+      }
     }
 
+    // エージェント選択ボタン＋ドロップダウン
+    const askWrap = document.createElement('div');
+    askWrap.className = 'comment-ask-wrap';
+    const askBtn = document.createElement('button');
+    askBtn.type = 'button';
+    askBtn.className = 'comment-ai-btn';
+    askBtn.innerHTML = '✨ エージェントに聞く <span class="ask-caret">▾</span>';
+    askBtn.title = 'エージェントを選ぶと、その立場の意見をAIが生成→そのエージェント名義で投稿できます';
+    const menu = document.createElement('div');
+    menu.className = 'comment-ask-menu';
+    menu.hidden = true;
+
+    function buildMenu() {
+      menu.innerHTML = '';
+      const agents = (state.agents || []);
+      if (!agents.length) {
+        const empty = document.createElement('div');
+        empty.className = 'comment-ask-empty';
+        empty.textContent = 'エージェント定義を読み込み中…';
+        menu.appendChild(empty);
+        return;
+      }
+      agents.forEach(a => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'comment-ask-item';
+        item.innerHTML =
+          '<strong>🤖 ' + escape(a.id) + ' ' + escape(a.codename || '') + '</strong>' +
+          '<span class="comment-ask-item-sub">' + escape((a.role || '').slice(0, 36)) + '</span>';
+        item.addEventListener('click', async () => {
+          menu.hidden = true;
+          currentAgent = a;
+          updateUiForAgent();
+          await onAiComment(ideaId, ta, askBtn, a);
+        });
+        menu.appendChild(item);
+      });
+    }
+
+    askBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (menu.hidden) buildMenu();
+      menu.hidden = !menu.hidden;
+    });
+    document.addEventListener('click', () => { menu.hidden = true; });
+
+    askWrap.appendChild(askBtn);
+    askWrap.appendChild(menu);
+
+    // 解除ボタン（エージェントモード時のみ表示）
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'comment-agent-cancel';
+    cancelBtn.title = 'エージェント名義を解除';
+    cancelBtn.textContent = '✕';
+    cancelBtn.hidden = true;
+    cancelBtn.addEventListener('click', () => {
+      currentAgent = findAgentByMeName(state.me); // state.me がAIなら戻す、それ以外はクリア
+      updateUiForAgent();
+    });
+
+    row.appendChild(askWrap);
     row.appendChild(ta);
+    row.appendChild(cancelBtn);
     row.appendChild(btn);
     wrap.appendChild(row);
 
+    updateUiForAgent();
     return wrap;
+
+    // send関数内で参照するため、ここに上書き定義
+    function _ignored() {} // dummy to keep linter happy with hoisting note
   }
 
   async function onAiComment(ideaId, ta, btn, agent) {
@@ -863,6 +937,7 @@ const UNREAD_POLL_MS = 30000;
       partner: agent.partner || '',
       summary: agent.summary || '',
       duties: agent.duties || [],
+      knowledge_summary: agent.knowledge_summary || '',
       actuals: (wl && wl.actuals) || [],
     };
 
@@ -1096,6 +1171,7 @@ const UNREAD_POLL_MS = 30000;
       partner: agent.partner || '',
       summary: agent.summary || '',
       duties: agent.duties || [],
+      knowledge_summary: agent.knowledge_summary || '',
       actuals: (wl && wl.actuals) || [],
       plans: (wl && wl.plans) || [],
     };
