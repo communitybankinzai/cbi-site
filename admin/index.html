@@ -87,10 +87,15 @@
             <span>投稿者</span>
             <select id="idea-author" required>
               <option value="">選択</option>
-              <option value="新井 則夫">新井 則夫</option>
-              <option value="小林 康子">小林 康子</option>
-              <option value="中司 祐樹">中司 祐樹</option>
-              <option value="須田 翔">須田 翔</option>
+              <optgroup label="👥 メンバー">
+                <option value="新井 則夫">新井 則夫</option>
+                <option value="小林 康子">小林 康子</option>
+                <option value="中司 祐樹">中司 祐樹</option>
+                <option value="須田 翔">須田 翔</option>
+              </optgroup>
+              <optgroup label="🤖 AIエージェント（提案生成可）" id="agent-optgroup">
+                <!-- admin.js が agents.json から動的に追加 -->
+              </optgroup>
               <option value="__custom__">その他（自由入力）</option>
             </select>
             <input type="text" id="idea-author-custom" placeholder="氏名を入力" hidden>
@@ -128,6 +133,7 @@
           <textarea id="idea-body" rows="6" required placeholder="背景・目的・必要なリソース・関係者などを自由に記述"></textarea>
         </label>
         <div class="form-actions">
+          <button type="button" class="btn btn-ai" id="form-ai-suggest" disabled title="AIエージェントを投稿者に選ぶと有効になります">✨ AIに提案させる</button>
           <button type="submit" class="btn btn-primary" id="form-submit">投稿する</button>
         </div>
       </form>

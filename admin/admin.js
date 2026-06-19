@@ -154,7 +154,10 @@ const UNREAD_POLL_MS = 30000;
       const custom = $('idea-author-custom');
       custom.hidden = e.target.value !== '__custom__';
       if (e.target.value === '__custom__') custom.focus();
+      updateAiSuggestButton();
     });
+
+    $('form-ai-suggest').addEventListener('click', onAiSuggest);
 
     $('search-keyword').addEventListener('input', renderList);
     $('filter-category').addEventListener('change', renderList);
@@ -234,9 +237,24 @@ const UNREAD_POLL_MS = 30000;
       state.agentsLoaded = true;
       renderAgentTabs();
       if (state.agents.length) selectAgent(state.agents[0].id);
+      populateAuthorAgents();
     } catch (err) {
       $('agent-detail').innerHTML = '<p class="empty">エージェント定義を読み込めませんでした（' + escape(err.message) + '）</p>';
     }
+  }
+
+  function populateAuthorAgents() {
+    const group = document.getElementById('agent-optgroup');
+    if (!group || !state.agents || !state.agents.length) return;
+    group.innerHTML = '';
+    state.agents.forEach(a => {
+      const opt = document.createElement('option');
+      const value = '🤖 ' + a.id + ' ' + (a.codename || '');
+      opt.value = value.trim();
+      opt.textContent = value.trim() + '（' + (a.role || '').slice(0, 24) + '）';
+      opt.dataset.agentId = a.id;
+      group.appendChild(opt);
+    });
   }
 
   function renderAgentTabs() {
@@ -587,6 +605,8 @@ const UNREAD_POLL_MS = 30000;
       renderList();
       setStatus('接続OK（' + state.ideas.length + '件）', 'ok');
       refreshUnread();
+      // エージェント定義をバックグラウンドで読み込み（投稿者プルダウン用）
+      if (!state.agentsLoaded) loadAgents();
     } catch (err) {
       setStatus('通信エラー: ' + err.message, 'err');
     }
@@ -942,6 +962,84 @@ const UNREAD_POLL_MS = 30000;
       }
     } catch (err) {
       toast('通信エラー: ' + err.message, 'err');
+    }
+  }
+
+  // =========================================================
+  // AI でエージェントから新規アイデアを提案させる（Gemini）
+  // =========================================================
+  function getSelectedAgent() {
+    const sel = $('idea-author');
+    if (!sel || !state.agents) return null;
+    const opt = sel.selectedOptions && sel.selectedOptions[0];
+    const id = opt && opt.dataset && opt.dataset.agentId;
+    if (!id) return null;
+    return state.agents.find(a => a.id === id) || null;
+  }
+
+  function updateAiSuggestButton() {
+    const btn = document.getElementById('form-ai-suggest');
+    if (!btn) return;
+    const agent = getSelectedAgent();
+    btn.disabled = !agent;
+    btn.title = agent
+      ? agent.id + ' ' + (agent.codename || '') + ' として今後実施すべきアイデアを生成します'
+      : 'AIエージェントを投稿者に選ぶと有効になります';
+  }
+
+  async function onAiSuggest() {
+    const btn = document.getElementById('form-ai-suggest');
+    const agent = getSelectedAgent();
+    if (!agent) { toast('AIエージェントを投稿者に選んでください', 'err'); return; }
+    if (!GAS_WEBAPP_URL) { toast('GAS未接続のためAI機能を利用できません', 'err'); return; }
+
+    // 該当エージェントのワーキングログから実績・予定を抽出
+    const wl = state.worklog && state.worklog.agents && state.worklog.agents[agent.id];
+    const agentInfo = {
+      id: agent.id,
+      codename: agent.codename || '',
+      role: agent.role || '',
+      partner: agent.partner || '',
+      summary: agent.summary || '',
+      duties: agent.duties || [],
+      actuals: (wl && wl.actuals) || [],
+      plans: (wl && wl.plans) || [],
+    };
+
+    const originalLabel = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ AI生成中…';
+    try {
+      const r = await gasCall({
+        action: 'aiSuggest',
+        password: state.password,
+        actor: state.me,
+        agentInfo,
+      });
+      if (!r || !r.ok) {
+        const errMsg = r && (r.hint || r.error) || '不明なエラー';
+        toast('AIエラー: ' + errMsg, 'err');
+        console.error('[aiSuggest] error response:', r);
+        if (r && r.detail) {
+          alert('AIエラー詳細：\n\nerror: ' + r.error + '\nstatus: ' + (r.status || 'n/a') + '\n\ndetail:\n' + r.detail);
+        }
+        return;
+      }
+      const s = r.suggestion || {};
+      $('idea-title').value = s.title || '';
+      $('idea-body').value = s.body || '';
+      const catSel = $('idea-category');
+      const catValues = Array.from(catSel.options).map(o => o.value);
+      catSel.value = catValues.includes(s.category) ? s.category : 'その他';
+      $('idea-status').value = s.status || '検討中';
+      $('idea-title').focus();
+      toast('AI提案を生成しました。内容を確認して投稿してください', 'ok');
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalLabel;
+      updateAiSuggestButton();
     }
   }
 
