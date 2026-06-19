@@ -254,6 +254,32 @@
     </div>
   </div>
 
+  <!-- AI diff モーダル -->
+  <div id="ai-diff-modal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-card modal-card-xwide">
+      <div class="modal-head">
+        <h2 class="modal-title">🤖 AI修正案の確認：<span id="ai-diff-title"></span></h2>
+        <button type="button" class="modal-close" id="ai-diff-close">×</button>
+      </div>
+      <p class="ai-diff-help">コメントの内容を反映した修正案です。左：元の本文／右：修正後。緑＝追加、赤＝削除。</p>
+      <div class="ai-diff-grid">
+        <div class="ai-diff-col">
+          <div class="ai-diff-col-head">元の本文</div>
+          <div id="ai-diff-original" class="ai-diff-body"></div>
+        </div>
+        <div class="ai-diff-col">
+          <div class="ai-diff-col-head">AI修正案</div>
+          <div id="ai-diff-revised" class="ai-diff-body"></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="ai-diff-cancel">却下</button>
+        <button type="button" class="btn btn-primary" id="ai-diff-apply">✓ この修正案で更新</button>
+      </div>
+    </div>
+  </div>
+
   <!-- トースト -->
   <div id="toast" class="toast" hidden></div>
 </section>

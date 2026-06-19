@@ -678,6 +678,15 @@ const UNREAD_POLL_MS = 30000;
     toggleBtn.addEventListener('click', () => toggleIdeaOpen(idea.id));
     actions.appendChild(toggleBtn);
 
+    const aiBtn = document.createElement('button');
+    aiBtn.className = 'btn btn-ai btn-sm';
+    aiBtn.title = 'コメントの内容を本文に反映した修正案をAIで生成します';
+    aiBtn.innerHTML = '🤖 AIで反映';
+    aiBtn.disabled = commentCount === 0;
+    if (commentCount === 0) aiBtn.title = 'コメントが付くと使えます';
+    aiBtn.addEventListener('click', () => onAiRevise(idea, aiBtn));
+    actions.appendChild(aiBtn);
+
     const editBtn = document.createElement('button');
     editBtn.className = 'btn btn-ghost btn-sm';
     editBtn.textContent = '編集';
@@ -934,6 +943,118 @@ const UNREAD_POLL_MS = 30000;
     } catch (err) {
       toast('通信エラー: ' + err.message, 'err');
     }
+  }
+
+  // =========================================================
+  // AI でコメントを本文に反映（Gemini）
+  // =========================================================
+  async function onAiRevise(idea, btn) {
+    if (!GAS_WEBAPP_URL) { toast('GAS未接続のためAI機能を利用できません', 'err'); return; }
+    if (!state.me) { toast('まず「私」を選択してください', 'err'); openMeModal(); return; }
+    const commentCount = (state.commentsByIdea[idea.id] || []).length;
+    if (!commentCount) { toast('コメントがありません', 'err'); return; }
+
+    const originalLabel = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '⏳ AI生成中…'; }
+
+    try {
+      const r = await gasCall({
+        action: 'aiRevise',
+        password: state.password,
+        actor: state.me,
+        ideaId: idea.id,
+      });
+      if (!r || !r.ok) {
+        const errMsg = r && (r.hint || r.error) || '不明なエラー';
+        toast('AIエラー: ' + errMsg, 'err');
+        if (r && r.error === 'no_api_key') {
+          alert('Gemini APIキーが未設定です。\n\nGoogle AI Studio (https://aistudio.google.com/) でAPIキーを取得し、\nGASの「プロジェクトの設定」→「スクリプトプロパティ」で\nGEMINI_API_KEY として保存してください。');
+        }
+        return;
+      }
+      openAiDiffModal(idea, r.originalBody || '', r.revisedBody || '');
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    } finally {
+      if (btn) { btn.disabled = commentCount === 0; btn.innerHTML = originalLabel; }
+    }
+  }
+
+  function openAiDiffModal(idea, original, revised) {
+    const modal = $('ai-diff-modal');
+    if (!modal) { console.error('ai-diff-modal not found'); return; }
+    $('ai-diff-title').textContent = idea.title || '(無題)';
+    $('ai-diff-original').textContent = original;
+    $('ai-diff-revised').textContent = revised;
+    renderAiDiff(original, revised);
+    modal.hidden = false;
+
+    const okBtn = $('ai-diff-apply');
+    const cancelBtn = $('ai-diff-cancel');
+    const closeBtn = $('ai-diff-close');
+
+    const close = () => {
+      modal.hidden = true;
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      closeBtn.onclick = null;
+    };
+    cancelBtn.onclick = close;
+    closeBtn.onclick = close;
+
+    okBtn.onclick = async () => {
+      okBtn.disabled = true;
+      okBtn.textContent = '保存中…';
+      try {
+        const r = await gasCall({
+          action: 'update',
+          password: state.password,
+          actor: state.me,
+          idea: { id: idea.id, body: revised },
+        });
+        if (r && r.ok) {
+          toast('本文を更新しました', 'ok');
+          close();
+          await loadAll();
+        } else {
+          toast('保存エラー: ' + (r && r.error), 'err');
+        }
+      } catch (err) {
+        toast('通信エラー: ' + err.message, 'err');
+      } finally {
+        okBtn.disabled = false;
+        okBtn.textContent = '✓ この修正案で更新';
+      }
+    };
+  }
+
+  // 行単位の簡易diff（LCSベース）
+  function renderAiDiff(original, revised) {
+    const a = (original || '').split(/\r?\n/);
+    const b = (revised || '').split(/\r?\n/);
+    const n = a.length, m = b.length;
+    const dp = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+    for (let i = 1; i <= n; i++) {
+      for (let j = 1; j <= m; j++) {
+        dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+    const left = [], right = [];
+    let i = n, j = m;
+    while (i > 0 && j > 0) {
+      if (a[i - 1] === b[j - 1]) { left.unshift({ t: 'eq', s: a[i - 1] }); right.unshift({ t: 'eq', s: b[j - 1] }); i--; j--; }
+      else if (dp[i - 1][j] >= dp[i][j - 1]) { left.unshift({ t: 'del', s: a[i - 1] }); right.unshift({ t: 'gap', s: '' }); i--; }
+      else { left.unshift({ t: 'gap', s: '' }); right.unshift({ t: 'add', s: b[j - 1] }); j--; }
+    }
+    while (i > 0) { left.unshift({ t: 'del', s: a[i - 1] }); right.unshift({ t: 'gap', s: '' }); i--; }
+    while (j > 0) { left.unshift({ t: 'gap', s: '' }); right.unshift({ t: 'add', s: b[j - 1] }); j--; }
+
+    const toHtml = arr => arr.map(x =>
+      '<div class="diff-line diff-' + x.t + '">' + (x.s ? escape(x.s) : '&nbsp;') + '</div>'
+    ).join('');
+
+    $('ai-diff-original').innerHTML = toHtml(left);
+    $('ai-diff-revised').innerHTML = toHtml(right);
   }
 
   // =========================================================

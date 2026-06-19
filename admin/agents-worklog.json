@@ -7,6 +7,20 @@
       "actuals": [
         {
           "date": "2026-06-19",
+          "title": "管理画面：コメント内容をAIで本文に反映する機能を実装（Gemini無料枠）",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs",
+            "site/admin/admin.js",
+            "site/admin/index.html",
+            "site/admin/admin.css"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "GASに aiRevise action 追加（Gemini 2.5 Flash 呼び出し、APIキーは PropertiesService の GEMINI_API_KEY）。管理画面アイデアカードに『🤖 AIで反映』ボタン、左右並列diffモーダル（LCSベース行diff、緑追加/赤削除）、承認時のみ既存updateで本文上書き。コメント0件のカードは disabled。Google AI Studio 経由の無料枠で動作（Cloud Billing 未設定なら課金リスクなし）。clasp push & deploy 完了（v3, deploymentId AKfycbz0UJbV1ZqGEThNqj_LSTHe82ws6lni5EjYXZSDYuN43NTwo1ugrdjmrKWZ-XBf9yV3）。プレビューでログイン→ボタン表示・diffモーダル描画確認済み。利用前に GAS スクリプトプロパティで GEMINI_API_KEY 設定が必要。"
+        },
+        {
+          "date": "2026-06-19",
           "title": "ヒーロー動画の右下ウォーターマークをCSSで隠蔽",
           "category": "実装",
           "outputs": ["site/style.css"],

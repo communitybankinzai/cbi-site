@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-19",
+      "type": "feature",
+      "target": "管理画面 / GAS",
+      "title": "アイデアにコメント内容をAIで反映する機能を追加（Gemini無料枠）",
+      "detail": "管理画面のアイデアカードに『🤖 AIで反映』ボタンを追加。寄せられたコメントの趣旨を取り入れた本文修正案を Gemini 2.5 Flash で生成し、元本文と修正案を左右に並べた diff モーダル（緑＝追加／赤＝削除のハイライト）で確認 → 承認時のみ既存 update アクションで本文上書き。GAS側 Code.gs に aiRevise action を追加し、API キーは PropertiesService の GEMINI_API_KEY から取得（フロント非公開）。Google AI Studio 経由の無料枠で動作するため Cloud Billing 設定なしなら課金リスクなし。コメントが付いていないカードでは AIボタンは disabled。clasp push & deploy 完了（v3）。利用前に GAS の『プロジェクトの設定 → スクリプトプロパティ』で GEMINI_API_KEY を設定する必要あり。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-19",
       "type": "fix",
       "target": "公開サイト",
       "title": "ヒーロー動画の右下ウォーターマークをCSSで隠蔽",
