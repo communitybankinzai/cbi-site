@@ -908,7 +908,13 @@ const UNREAD_POLL_MS = 30000;
 
     const av = document.createElement('div');
     av.className = 'comment-avatar';
-    av.textContent = (c.author || '?').slice(0, 1);
+    const isAgent = /\bA\d+\b/.test(String(c.author || ''));
+    if (isAgent) {
+      av.textContent = String(c.author).match(/\bA\d+\b/)[0];
+      av.classList.add('comment-avatar-agent');
+    } else {
+      av.textContent = (c.author || '?').slice(0, 1);
+    }
     row.appendChild(av);
 
     const bub = document.createElement('div');

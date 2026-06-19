@@ -564,6 +564,13 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--c-gold);
   color: var(--c-navy-dark);
 }
+.comment-avatar-agent {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+  color: #fff !important;
+  font-family: var(--font-sans) !important;
+  font-size: 11px !important;
+  letter-spacing: 0;
+}
 .comment-bubble {
   position: relative;
   max-width: 70%;
