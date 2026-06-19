@@ -1,0 +1,27 @@
+{
+  "updatedAt": "2026-06-20",
+  "source": "agents/a8-ledger/knowledge/budget.md（事業計画書 v12 ベース）",
+  "note": "A8 Ledger の AI関連費 予算枠。GAS getAiUsage が起動時にこのJSONを fetch して動的に上書きします。",
+  "fiscalYear": "令和9年度（2027年4月〜2028年3月）",
+  "totalProjectJPY": 2564000,
+  "cityCommissionJPY": 2060000,
+  "selfFundJPY": 504000,
+  "ai": {
+    "monthlyBudgetJPY": 30000,
+    "annualBudgetJPY": 360000,
+    "services": [
+      { "key": "gemini",  "label": "Gemini API",  "annualJPY": 120000, "monthlyJPY": 10000, "agents": ["A1", "A3", "A7", "A10"], "note": "広範リサーチ、無料枠中心" },
+      { "key": "claude",  "label": "Claude API",  "annualJPY": 240000, "monthlyJPY": 20000, "agents": ["A1", "A2", "A5"],         "note": "ヘビーユーザー枠、システム維持・分析" },
+      { "key": "chatgpt", "label": "ChatGPT API", "annualJPY": 0,      "monthlyJPY": 0,     "agents": ["A4", "A6", "A8", "A9"],   "note": "当面ChatGPT Plusで運用、必要時に追加" }
+    ],
+    "thresholds": {
+      "caution":  0.80,
+      "warning":  1.00,
+      "critical": 1.20
+    }
+  },
+  "fxRate": {
+    "usdToJpy": 155,
+    "asOf": "2026-06-20"
+  }
+}
