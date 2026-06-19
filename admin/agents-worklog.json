@@ -7,6 +7,20 @@
       "actuals": [
         {
           "date": "2026-06-19",
+          "title": "管理画面：AIエージェントが各アイデアにコメント意見を生成する機能を実装",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs",
+            "site/admin/admin.js",
+            "site/admin/admin.css",
+            "site/admin/index.html"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "「私」モーダルにAIエージェント10名のボタンを追加（人間4名と同列に発言主体として選択可能）。コメント送信欄に『✨ AIで意見』ボタン追加（AIエージェント選択時のみ表示）。GAS aiComment action：アイデア本文＋既存コメント＋エージェントの役割／職務／最近の実績を Gemini 2.5 Flash に渡し200〜400字の意見テキスト生成 → textarea 流し込み → 人間が確認して送信。clasp v7 デプロイ済み。"
+        },
+        {
+          "date": "2026-06-19",
           "title": "管理画面：AIエージェント（A1〜A10）が新規アイデアを提案できる機能を実装",
           "category": "実装",
           "outputs": [

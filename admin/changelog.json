@@ -6,6 +6,14 @@
       "date": "2026-06-19",
       "type": "feature",
       "target": "管理画面 / GAS",
+      "title": "AIエージェントが各アイデアにコメント意見を生成できる機能を追加",
+      "detail": "「私」モーダルにAIエージェント10名（A1〜A10）のボタンを追加し、誰として発言するかを人間4名と同列に選べるように。AIエージェントを選んだ状態でコメント送信欄を開くと『✨ AIで意見』ボタンが出現し、押下すると GAS aiComment action 経由で Gemini 2.5 Flash が当該アイデアの本文・既存コメント・エージェントの役割／職務／最近の実績を踏まえて 200〜400字の意見テキストを生成 → textarea に流し込み → 人間が確認してから送信。役割の専門性を踏まえた論点・懸念・改善案を出すよう指示。clasp v7 デプロイ完了。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-19",
+      "type": "feature",
+      "target": "管理画面 / GAS",
       "title": "AIエージェント（A1〜A10）が新規アイデアを提案できる機能を追加",
       "detail": "投稿者プルダウンに人間4名＋AIエージェント10名（🤖 A1 Core 〜 🤖 A10 Scout）を表示。投稿フォームに『✨ AIに提案させる』ボタンを設置し、AIエージェント選択時のみ有効化。押下すると GAS 経由で Gemini 2.5 Flash が当該エージェントの役割（agents.json）と実績・予定（agents-worklog.json）を踏まえ『今後実施すべきアイデア』を JSON 形式で生成 → タイトル/カテゴリ/本文をフォームに自動流し込み → 人間が確認・編集して投稿。GAS Code.gs に aiSuggest action 追加（responseMimeType: application/json で構造化出力）。clasp v6 デプロイ完了。",
       "author": "A1 Core"
