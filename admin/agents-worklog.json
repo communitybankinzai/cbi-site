@@ -1,0 +1,124 @@
+{
+  "updatedAt": "2026-06-19",
+  "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
+  "categories": ["実装", "保守", "レポート", "分析", "会議", "広報", "事務", "調査", "その他"],
+  "agents": {
+    "A1": {
+      "actuals": [
+        {
+          "date": "2026-06-19",
+          "title": "管理画面のエージェントタブ・更新履歴タブを実装",
+          "category": "実装",
+          "outputs": ["site/admin/index.html", "site/admin/admin.js", "site/admin/admin.css", "site/admin/agents.json", "site/admin/changelog.json"],
+          "hours": 1.5,
+          "partnerApproved": false,
+          "note": "3タブ構成(アイデア/エージェント/更新履歴)に再編。エージェント役割の自動表示と更新履歴の自動反映機構を構築。"
+        },
+        {
+          "date": "2026-06-19",
+          "title": "CBI公式LP・管理画面の初版公開",
+          "category": "実装",
+          "outputs": ["site/index.html", "site/admin/index.html"],
+          "hours": 4,
+          "partnerApproved": false,
+          "note": "公開LP(事業概要・参加方法・活動報告・資料・団体情報)と、GAS連携のアイデア管理画面を初版公開。"
+        }
+      ],
+      "plans": [
+        {
+          "due": "2026-07-31",
+          "title": "GitHub Actions スケジュール実行の安定化監視",
+          "category": "保守",
+          "priority": "高",
+          "note": "data.json 自動更新パイプラインの稼働率レポート開始。"
+        },
+        {
+          "due": "2026-08-31",
+          "title": "週次稼働レポートの自動生成スクリプト整備",
+          "category": "レポート",
+          "priority": "中"
+        }
+      ]
+    },
+    "A2": {
+      "actuals": [],
+      "plans": [
+        {
+          "due": "2026-09-30",
+          "title": "提案・投票データの集計テンプレート設計",
+          "category": "分析",
+          "priority": "高",
+          "note": "CiDAO本格稼働前の事前準備。集計軸(カテゴリ/属性/時系列)を固める。"
+        },
+        {
+          "due": "2026-12-31",
+          "title": "第1回 四半期パブリックコメント補完レポート",
+          "category": "レポート",
+          "priority": "高"
+        }
+      ]
+    },
+    "A3": { "actuals": [], "plans": [] },
+    "A4": {
+      "actuals": [],
+      "plans": [
+        {
+          "due": "2026-10-31",
+          "title": "CBI公式SNSアカウントの開設・運用計画策定",
+          "category": "広報",
+          "priority": "中"
+        }
+      ]
+    },
+    "A5": { "actuals": [], "plans": [] },
+    "A6": { "actuals": [], "plans": [] },
+    "A7": { "actuals": [], "plans": [] },
+    "A8": {
+      "actuals": [],
+      "plans": [
+        {
+          "due": "2026-07-31",
+          "title": "AI関連費の月次モニタリング体制構築",
+          "category": "事務",
+          "priority": "高",
+          "note": "想定120%超でアラート発信のフロー整備。"
+        },
+        {
+          "due": "2026-12-31",
+          "title": "上半期収支レポート(令和9年度上期)",
+          "category": "レポート",
+          "priority": "中"
+        }
+      ]
+    },
+    "A9": {
+      "actuals": [],
+      "plans": [
+        {
+          "due": "2026-09-30",
+          "title": "朝カフェ定例の運営テンプレート整備",
+          "category": "会議",
+          "priority": "中",
+          "note": "告知文・参加リマインド・議事録テンプレート一式。"
+        },
+        {
+          "due": "2027-05-31",
+          "title": "第1四半期キックオフ交流会の企画案作成",
+          "category": "会議",
+          "priority": "高"
+        }
+      ]
+    },
+    "A10": {
+      "actuals": [],
+      "plans": [
+        {
+          "due": "2026-11-30",
+          "title": "他自治体のDAO型市民参加事例 比較調査レポート",
+          "category": "調査",
+          "priority": "中"
+        }
+      ]
+    }
+  }
+}

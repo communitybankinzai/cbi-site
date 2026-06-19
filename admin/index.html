@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>CBI 管理画面｜Community Bank INZAI</title>
+<link rel="icon" type="image/png" href="../assets/cbi-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- ============== Login Screen ============== -->
+<section id="screen-login" class="screen screen-login active">
+  <div class="login-card">
+    <img src="../assets/cbi-logo.png" alt="CBI" class="login-logo">
+    <h1 class="login-title">CBI 管理画面</h1>
+    <p class="login-sub">アイデア・メモを記録します</p>
+
+    <form id="login-form" class="login-form">
+      <label class="field">
+        <span>パスワード</span>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+      </label>
+      <label class="field-check">
+        <input type="checkbox" id="remember-me" checked>
+        <span>この端末で記憶する</span>
+      </label>
+      <button type="submit" class="btn btn-primary" id="login-btn">ログイン</button>
+      <p class="login-error" id="login-error" hidden></p>
+    </form>
+    <p class="login-foot"><a href="../">← 公開サイトへ戻る</a></p>
+  </div>
+</section>
+
+<!-- ============== Admin Dashboard ============== -->
+<section id="screen-admin" class="screen screen-admin">
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <a href="../" class="admin-brand">
+        <img src="../assets/cbi-logo.png" alt="">
+        <span>CBI 管理画面</span>
+      </a>
+      <div class="admin-actions">
+        <button class="badge-btn" id="btn-unread" title="未読">
+          <span class="badge-icon">🔔</span>
+          <span class="badge-count" id="badge-count" hidden>0</span>
+        </button>
+        <span class="me-chip" id="me-chip">
+          <span class="me-label">私:</span>
+          <span class="me-name" id="me-name">—</span>
+          <button class="me-change" id="btn-change-me" title="変更">変更</button>
+        </span>
+        <span class="admin-status" id="admin-status">—</span>
+        <button class="btn btn-ghost btn-sm" id="btn-refresh">更新</button>
+        <button class="btn btn-ghost btn-sm" id="btn-export">エクスポート</button>
+        <button class="btn btn-ghost btn-sm" id="btn-logout">ログアウト</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-main">
+
+    <!-- タブナビ -->
+    <nav class="tab-nav" role="tablist" aria-label="管理画面セクション">
+      <button type="button" class="tab-btn active" data-tab="ideas" role="tab" aria-selected="true">💡 アイデア</button>
+      <button type="button" class="tab-btn" data-tab="agents" role="tab" aria-selected="false">🤖 エージェント</button>
+      <button type="button" class="tab-btn" data-tab="changelog" role="tab" aria-selected="false">📝 更新履歴</button>
+    </nav>
+
+    <!-- ===== タブ: アイデア ===== -->
+    <div class="tab-panel" id="tab-ideas" role="tabpanel">
+
+    <!-- 投稿フォーム -->
+    <section class="panel panel-form">
+      <h2 class="panel-title">
+        <span id="form-title-label">新規アイデア投稿</span>
+        <button type="button" class="btn-link" id="form-cancel" hidden>キャンセル</button>
+      </h2>
+      <form id="idea-form" class="idea-form">
+        <input type="hidden" id="idea-id">
+        <div class="grid-3">
+          <label class="field">
+            <span>投稿者</span>
+            <select id="idea-author" required>
+              <option value="">選択</option>
+              <option value="新井 則夫">新井 則夫</option>
+              <option value="小林 康子">小林 康子</option>
+              <option value="中司 祐樹">中司 祐樹</option>
+              <option value="須田 翔">須田 翔</option>
+              <option value="__custom__">その他（自由入力）</option>
+            </select>
+            <input type="text" id="idea-author-custom" placeholder="氏名を入力" hidden>
+          </label>
+          <label class="field">
+            <span>カテゴリ</span>
+            <select id="idea-category" required>
+              <option value="">選択</option>
+              <option value="CiDAO実証">CiDAO実証</option>
+              <option value="2つの流れ">2つの流れ</option>
+              <option value="団体ネットワーク">団体ネットワーク</option>
+              <option value="人財発掘">人財発掘</option>
+              <option value="交流会">交流会</option>
+              <option value="中長期構想">中長期構想</option>
+              <option value="その他">その他</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>状態</span>
+            <select id="idea-status" required>
+              <option value="検討中">検討中</option>
+              <option value="採用">採用</option>
+              <option value="保留">保留</option>
+              <option value="不採用">不採用</option>
+              <option value="アーカイブ">アーカイブ</option>
+            </select>
+          </label>
+        </div>
+        <label class="field">
+          <span>タイトル</span>
+          <input type="text" id="idea-title" required maxlength="120" placeholder="短く要点を">
+        </label>
+        <label class="field">
+          <span>本文</span>
+          <textarea id="idea-body" rows="6" required placeholder="背景・目的・必要なリソース・関係者などを自由に記述"></textarea>
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="form-submit">投稿する</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- フィルタ -->
+    <section class="panel panel-filter">
+      <div class="filter-row">
+        <input type="search" id="search-keyword" placeholder="キーワード検索（タイトル・本文・投稿者）" class="search-input">
+        <select id="filter-category">
+          <option value="">カテゴリ：すべて</option>
+          <option value="CiDAO実証">CiDAO実証</option>
+          <option value="2つの流れ">2つの流れ</option>
+          <option value="団体ネットワーク">団体ネットワーク</option>
+          <option value="人財発掘">人財発掘</option>
+          <option value="交流会">交流会</option>
+          <option value="中長期構想">中長期構想</option>
+          <option value="その他">その他</option>
+        </select>
+        <select id="filter-status">
+          <option value="">状態：すべて</option>
+          <option value="検討中">検討中</option>
+          <option value="採用">採用</option>
+          <option value="保留">保留</option>
+          <option value="不採用">不採用</option>
+          <option value="アーカイブ">アーカイブ</option>
+        </select>
+        <span class="filter-count" id="filter-count">0件</span>
+      </div>
+    </section>
+
+    <!-- 一覧 -->
+    <section class="panel panel-list">
+      <h2 class="panel-title">アイデア一覧</h2>
+      <div id="idea-list" class="idea-list">
+        <p class="empty" id="idea-empty">読み込み中…</p>
+      </div>
+    </section>
+
+    </div><!-- /tab-ideas -->
+
+    <!-- ===== タブ: エージェント ===== -->
+    <div class="tab-panel" id="tab-agents" role="tabpanel" hidden>
+      <section class="panel">
+        <div class="panel-head-row">
+          <h2 class="panel-title">AIエージェント体制</h2>
+          <span class="meta-note" id="agent-source"></span>
+        </div>
+        <p class="panel-desc">人間メンバー5名＋AIエージェント10名の協働運営体制。下のコードネームを選ぶと役割・実績・予定の詳細が表示されます。</p>
+        <div class="agent-layout">
+          <nav class="agent-tabs" id="agent-tabs" aria-label="エージェント一覧"></nav>
+          <div class="agent-detail" id="agent-detail">
+            <p class="empty">読み込み中…</p>
+          </div>
+        </div>
+      </section>
+    </div><!-- /tab-agents -->
+
+    <!-- ===== 印刷ビュー（提出用PDF）===== -->
+    <div id="print-view" class="print-view" hidden>
+      <div class="print-toolbar">
+        <strong>📄 提出用 作業実績報告書（プレビュー）</strong>
+        <span class="print-toolbar-spacer"></span>
+        <label class="print-period">
+          期間：
+          <input type="date" id="print-from"> 〜 <input type="date" id="print-to">
+        </label>
+        <button type="button" class="btn btn-ghost btn-sm" id="print-refresh">期間反映</button>
+        <button type="button" class="btn btn-primary btn-sm" id="print-do">印刷 / PDF保存</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="print-close">閉じる</button>
+      </div>
+      <div class="print-paper" id="print-paper"></div>
+    </div><!-- /print-view -->
+
+    <!-- ===== タブ: 更新履歴 ===== -->
+    <div class="tab-panel" id="tab-changelog" role="tabpanel" hidden>
+      <section class="panel">
+        <div class="panel-head-row">
+          <h2 class="panel-title">サイト更新履歴</h2>
+          <span class="meta-note" id="changelog-updated"></span>
+        </div>
+        <p class="panel-desc">サイト・管理画面への変更をエージェントが記録します（新しい順）。</p>
+        <div class="changelog-list" id="changelog-list">
+          <p class="empty">読み込み中…</p>
+        </div>
+      </section>
+    </div><!-- /tab-changelog -->
+
+  </main>
+
+  <!-- ユーザー選択モーダル -->
+  <div id="me-modal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <h2 class="modal-title">あなたは誰ですか？</h2>
+      <p class="modal-desc">あなたの発言は右側に表示されます。他のメンバーの操作だけが「未読」としてカウントされます。</p>
+      <div class="me-options">
+        <button type="button" class="me-option" data-me="新井 則夫">新井 則夫</button>
+        <button type="button" class="me-option" data-me="小林 康子">小林 康子</button>
+        <button type="button" class="me-option" data-me="中司 祐樹">中司 祐樹</button>
+        <button type="button" class="me-option" data-me="須田 翔">須田 翔</button>
+      </div>
+      <div class="me-custom-row">
+        <input type="text" id="me-custom" placeholder="その他（氏名を入力）">
+        <button type="button" class="btn btn-primary btn-sm" id="me-custom-ok">決定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 未読パネル -->
+  <div id="unread-panel" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-card modal-card-wide">
+      <div class="modal-head">
+        <h2 class="modal-title">未読の更新</h2>
+        <button type="button" class="modal-close" id="unread-close">×</button>
+      </div>
+      <div id="unread-list" class="unread-list">
+        <p class="empty">未読はありません</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="btn-mark-read">すべて既読にする</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トースト -->
+  <div id="toast" class="toast" hidden></div>
+</section>
+
+<script src="admin.js"></script>
+</body>
+</html>
