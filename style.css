@@ -85,7 +85,7 @@ h1, h2, h3 {
   font-weight: 700;
   color: var(--c-navy);
 }
-.brand-logo { width: 38px; height: 38px; }
+.brand-logo { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
 .brand-text { font-size: 16px; letter-spacing: 0.06em; }
 
 .site-nav {
@@ -143,7 +143,7 @@ h1, h2, h3 {
   height: 100%;
   object-fit: cover;
   z-index: 0;
-  filter: saturate(0.92) brightness(0.78);
+  filter: saturate(0.98) brightness(0.95);
   pointer-events: none;
 }
 .hero-video-overlay {
@@ -151,8 +151,8 @@ h1, h2, h3 {
   inset: 0;
   z-index: 1;
   background:
-    radial-gradient(ellipse at top, rgba(201, 165, 92, 0.20), transparent 60%),
-    linear-gradient(180deg, rgba(20, 40, 63, 0.55) 0%, rgba(20, 40, 63, 0.78) 100%);
+    radial-gradient(ellipse at top, rgba(201, 165, 92, 0.15), transparent 60%),
+    linear-gradient(180deg, rgba(20, 40, 63, 0.40) 0%, rgba(20, 40, 63, 0.62) 100%);
   pointer-events: none;
 }
 .hero::after {
@@ -179,8 +179,12 @@ h1, h2, h3 {
 }
 .hero-logo {
   width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 50%;
   margin: 0 auto 24px;
-  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.35));
+  background: #faf8f3;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(201, 165, 92, 0.35);
 }
 .hero-eyebrow {
   font-size: 13px;
@@ -550,9 +554,10 @@ h1, h2, h3 {
 }
 .footer-logo {
   width: 56px;
+  height: 56px;
   background: #fff;
-  padding: 4px;
-  border-radius: 8px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 .footer-name {
   font-family: var(--font-serif);
