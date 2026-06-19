@@ -35,6 +35,7 @@ const UNREAD_POLL_MS = 30000;
     changelogLoaded: false,
     worklog: null,
     worklogLoaded: false,
+    actualsDynamic: [],
   };
 
   const $ = id => document.getElementById(id);
@@ -238,6 +239,8 @@ const UNREAD_POLL_MS = 30000;
         state.worklog = { agents: {} };
       }
       state.agentsLoaded = true;
+      // 動的実績（GAS スプレッドシート）を先にロードしてから描画
+      await loadActualsDynamic();
       // カテゴリプルダウンを agents.json から動的生成（ログイン直後に必要）
       populateCategorySelects();
       // 以下はエージェントタブ用UI（DOM存在時のみ）
@@ -369,7 +372,15 @@ const UNREAD_POLL_MS = 30000;
       : '';
 
     const wl = getWorklogFor(a.id);
-    const actuals = wl.actuals || [];
+    const wlActuals = (wl.actuals || []).map(x => Object.assign({ _source: 'json' }, x));
+    const dynActuals = (state.actualsDynamic || [])
+      .filter(x => x.agentId === a.id)
+      .map(x => Object.assign({}, x, {
+        _source: 'dynamic',
+        outputs: typeof x.outputs === 'string' && x.outputs ? x.outputs.split(' / ') : (x.outputs || []),
+      }));
+    const actuals = [].concat(dynActuals, wlActuals)
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
     const plans = wl.plans || [];
     const totalHours = actuals.reduce((s, x) => s + (Number(x.hours) || 0), 0);
     const summaryHtml =
@@ -379,10 +390,12 @@ const UNREAD_POLL_MS = 30000;
         '<span class="ws-chip">累計工数 <strong>' + totalHours.toFixed(1) + '</strong> h</span>' +
       '</div>';
 
-    const actualsHtml = '<div class="ad-section"><h4>実績（過去）</h4>' +
-      (actuals.length
-        ? '<div class="wl-list">' + actuals.map(renderWorklogActual).join('') + '</div>'
-        : '<p class="wl-empty">まだ実績の記録はありません</p>') +
+    const actualsHtml = '<div class="ad-section">' +
+        '<h4>実績（過去）<button type="button" class="ad-add-actual-btn" id="ad-add-actual" title="リアルタイムで実績を追加">＋ 実績を追加</button></h4>' +
+        '<div id="ad-add-actual-slot"></div>' +
+        (actuals.length
+          ? '<div class="wl-list">' + actuals.map(renderWorklogActual).join('') + '</div>'
+          : '<p class="wl-empty">まだ実績の記録はありません</p>') +
       '</div>';
     const plansHtml = '<div class="ad-section"><h4>予定（今後）</h4>' +
       (plans.length
@@ -422,7 +435,95 @@ const UNREAD_POLL_MS = 30000;
     if (pThis) pThis.addEventListener('click', () => openPrintView([a.id]));
     if (pAll)  pAll.addEventListener('click', () => openPrintView(state.agents.map(x => x.id)));
 
+    // 実績追加ボタンと削除ボタンのバインド
+    const addBtn = document.getElementById('ad-add-actual');
+    if (addBtn) addBtn.addEventListener('click', () => openActualForm(a.id));
+    document.querySelectorAll('.wl-del-dyn').forEach(b => {
+      b.addEventListener('click', () => onDeleteActual(b.dataset.actualId));
+    });
+
     if (isA8) loadA8Usage();
+  }
+
+  function openActualForm(agentId) {
+    const slot = document.getElementById('ad-add-actual-slot');
+    if (!slot) return;
+    const today = new Date().toISOString().slice(0, 10);
+    slot.innerHTML =
+      '<form id="ad-actual-form" class="ad-actual-form">' +
+        '<div class="ad-actual-grid">' +
+          '<label><span>日付</span><input type="date" id="ad-actual-date" value="' + today + '" required></label>' +
+          '<label><span>工数 (h)</span><input type="number" id="ad-actual-hours" step="0.1" min="0" value="0.5" required></label>' +
+          '<label><span>カテゴリ</span><select id="ad-actual-category" required>' +
+            ['実装','保守','レポート','分析','会議','広報','事務','調査','その他']
+              .map(c => '<option value="' + c + '">' + c + '</option>').join('') +
+          '</select></label>' +
+        '</div>' +
+        '<label class="ad-actual-full"><span>タイトル</span><input type="text" id="ad-actual-title" required placeholder="例: 月次収支レポート作成" maxlength="120"></label>' +
+        '<label class="ad-actual-full"><span>成果物（カンマ区切り、任意）</span><input type="text" id="ad-actual-outputs" placeholder="例: site/admin/budgets/a8.json, cbi-admin-gas/Code.gs"></label>' +
+        '<label class="ad-actual-full"><span>メモ（任意）</span><textarea id="ad-actual-note" rows="2" placeholder="補足説明"></textarea></label>' +
+        '<div class="ad-actual-actions">' +
+          '<button type="button" class="btn btn-ghost btn-sm" id="ad-actual-cancel">キャンセル</button>' +
+          '<button type="submit" class="btn btn-primary btn-sm">保存</button>' +
+        '</div>' +
+      '</form>';
+    document.getElementById('ad-actual-title').focus();
+    document.getElementById('ad-actual-cancel').addEventListener('click', () => { slot.innerHTML = ''; });
+    document.getElementById('ad-actual-form').addEventListener('submit', e => {
+      e.preventDefault();
+      submitActual(agentId);
+    });
+  }
+
+  async function submitActual(agentId) {
+    if (!state.me) { toast('まず「私」を選択してください', 'err'); openMeModal(); return; }
+    const actual = {
+      agentId,
+      date: document.getElementById('ad-actual-date').value,
+      hours: Number(document.getElementById('ad-actual-hours').value) || 0,
+      category: document.getElementById('ad-actual-category').value,
+      title: document.getElementById('ad-actual-title').value.trim(),
+      outputs: document.getElementById('ad-actual-outputs').value.split(',').map(s => s.trim()).filter(Boolean),
+      note: document.getElementById('ad-actual-note').value.trim(),
+    };
+    if (!actual.title) { toast('タイトルを入力してください', 'err'); return; }
+    try {
+      const r = await gasCall({ action: 'addActual', password: state.password, actor: state.me, actual });
+      if (r && r.ok) {
+        toast('実績を追加しました', 'ok');
+        await loadActualsDynamic();
+        selectAgent(agentId);
+      } else {
+        toast('保存エラー: ' + (r && r.error), 'err');
+      }
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    }
+  }
+
+  async function onDeleteActual(id) {
+    if (!id) return;
+    if (!confirm('この実績を削除しますか？')) return;
+    try {
+      const r = await gasCall({ action: 'deleteActual', password: state.password, actor: state.me, id });
+      if (r && r.ok) {
+        toast('削除しました', 'ok');
+        await loadActualsDynamic();
+        if (state.currentAgentId) selectAgent(state.currentAgentId);
+      } else {
+        toast('エラー: ' + (r && r.error), 'err');
+      }
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    }
+  }
+
+  async function loadActualsDynamic() {
+    if (!GAS_WEBAPP_URL) return;
+    try {
+      const r = await gasCall({ action: 'listActuals', password: state.password });
+      if (r && r.ok) state.actualsDynamic = r.actuals || [];
+    } catch (_) {}
   }
 
   async function loadA8Usage() {
@@ -602,17 +703,24 @@ const UNREAD_POLL_MS = 30000;
   }
 
   function renderWorklogActual(x) {
-    const outputsHtml = (x.outputs && x.outputs.length)
-      ? '<div class="wl-outputs">成果物: ' + x.outputs.map(o => '<code>' + escape(o) + '</code>').join(' ') + '</div>'
+    const outputsList = Array.isArray(x.outputs) ? x.outputs : (x.outputs ? [x.outputs] : []);
+    const outputsHtml = outputsList.length
+      ? '<div class="wl-outputs">成果物: ' + outputsList.map(o => '<code>' + escape(o) + '</code>').join(' ') + '</div>'
       : '';
-    const approveHtml = x.partnerApproved
-      ? '<span class="wl-approve">承認済</span>'
-      : '<span class="wl-approve is-pending">承認待</span>';
     const hoursHtml = x.hours ? '<span class="wl-tag">' + Number(x.hours).toFixed(1) + 'h</span>' : '';
-    return '<div class="wl-item is-actual">' +
+    const isDynamic = (x._source === 'dynamic');
+    const sourceBadge = isDynamic
+      ? '<span class="wl-source-tag wl-source-dyn" title="リアルタイム記録">📝 動的</span>'
+      : '<span class="wl-source-tag wl-source-json" title="worklog.json で手動管理">📄 静的</span>';
+    const approveHtml = isDynamic
+      ? '<button type="button" class="wl-del-dyn" data-actual-id="' + escape(x.id || '') + '" title="この実績を削除">✕</button>'
+      : (x.partnerApproved
+          ? '<span class="wl-approve">承認済</span>'
+          : '<span class="wl-approve is-pending">承認待</span>');
+    return '<div class="wl-item is-actual' + (isDynamic ? ' is-dynamic' : '') + '">' +
       '<span class="wl-date">' + escape(x.date || '') + '</span>' +
       '<div class="wl-main">' +
-        '<div class="wl-title">' + escape(x.title || '') + '</div>' +
+        '<div class="wl-title">' + escape(x.title || '') + ' ' + sourceBadge + '</div>' +
         (x.note ? '<div class="wl-note">' + escape(x.note) + '</div>' : '') +
         outputsHtml +
       '</div>' +
