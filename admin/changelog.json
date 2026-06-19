@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-19",
+      "type": "content",
+      "target": "公開サイト",
+      "title": "TOPフッターに管理画面リンクを追加（パスワード認証は既存）",
+      "detail": "site/index.html のフッター（コピーライト横）に控えめな『運営者ログイン →』リンクを追加。リンク先 admin/ は既にGAS WebApp経由のパスワード認証で保護されており、未認証ではログイン画面でブロックされる。site/style.css にフッター用の控えめスタイル(.footer-sep / .footer-admin-link)を追加。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-19",
       "type": "feature",
       "target": "管理画面",
       "title": "エージェント作業実績・予定の管理と提出用PDF出力を実装",

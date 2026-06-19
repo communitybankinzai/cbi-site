@@ -526,6 +526,20 @@ h1, h2, h3 {
   margin: 0;
   color: rgba(255, 255, 255, 0.6);
 }
+.footer-sep {
+  margin: 0 6px;
+  color: rgba(255, 255, 255, 0.25);
+}
+.footer-admin-link {
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  transition: color .2s;
+}
+.footer-admin-link:hover {
+  color: var(--c-gold-soft);
+}
 
 /* ---------- Responsive ---------- */
 @media (max-width: 860px) {

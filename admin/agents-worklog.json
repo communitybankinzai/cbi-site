@@ -7,6 +7,24 @@
       "actuals": [
         {
           "date": "2026-06-19",
+          "title": "公開TOPに管理画面リンクを追加（パスワード認証は既存）",
+          "category": "実装",
+          "outputs": ["site/index.html", "site/style.css"],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "フッターのコピーライト横に控えめな『運営者ログイン →』リンクを追加。admin/ は既にGAS WebApp経由のパスワード認証で保護されており、未認証アクセスはログイン画面でブロックされる。meta robots noindex も既設定。"
+        },
+        {
+          "date": "2026-06-19",
+          "title": "エージェント作業実績・予定の管理と提出用PDF出力を実装",
+          "category": "実装",
+          "outputs": ["site/admin/agents-worklog.json", "site/admin/index.html", "site/admin/admin.js", "site/admin/admin.css"],
+          "hours": 2.0,
+          "partnerApproved": false,
+          "note": "A1〜A10の実績/予定を構造化保存し、エージェント詳細に表示。A4縦・代表者署名欄つきの印刷専用ビューで市・企業提出用PDFを生成可能に。"
+        },
+        {
+          "date": "2026-06-19",
           "title": "管理画面のエージェントタブ・更新履歴タブを実装",
           "category": "実装",
           "outputs": ["site/admin/index.html", "site/admin/admin.js", "site/admin/admin.css", "site/admin/agents.json", "site/admin/changelog.json"],
