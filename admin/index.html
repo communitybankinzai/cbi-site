@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="admin.css?v=20260620mail">
 </head>
 <body>
 
@@ -67,6 +67,7 @@
     <!-- タブナビ -->
     <nav class="tab-nav" role="tablist" aria-label="管理画面セクション">
       <button type="button" class="tab-btn active" data-tab="ideas" role="tab" aria-selected="true">💡 アイデア</button>
+      <button type="button" class="tab-btn" data-tab="mail" role="tab" aria-selected="false">📧 メール</button>
       <button type="button" class="tab-btn" data-tab="agents" role="tab" aria-selected="false">🤖 エージェント</button>
       <button type="button" class="tab-btn" data-tab="changelog" role="tab" aria-selected="false">📝 更新履歴</button>
     </nav>
@@ -104,13 +105,7 @@
             <span>カテゴリ</span>
             <select id="idea-category" required>
               <option value="">選択</option>
-              <option value="CiDAO実証">CiDAO実証</option>
-              <option value="2つの流れ">2つの流れ</option>
-              <option value="団体ネットワーク">団体ネットワーク</option>
-              <option value="人財発掘">人財発掘</option>
-              <option value="交流会">交流会</option>
-              <option value="中長期構想">中長期構想</option>
-              <option value="その他">その他</option>
+              <!-- admin.js が agents.json から動的に追加 -->
             </select>
           </label>
           <label class="field">
@@ -145,13 +140,7 @@
         <input type="search" id="search-keyword" placeholder="キーワード検索（タイトル・本文・投稿者）" class="search-input">
         <select id="filter-category">
           <option value="">カテゴリ：すべて</option>
-          <option value="CiDAO実証">CiDAO実証</option>
-          <option value="2つの流れ">2つの流れ</option>
-          <option value="団体ネットワーク">団体ネットワーク</option>
-          <option value="人財発掘">人財発掘</option>
-          <option value="交流会">交流会</option>
-          <option value="中長期構想">中長期構想</option>
-          <option value="その他">その他</option>
+          <!-- admin.js が agents.json から動的に追加 -->
         </select>
         <select id="filter-status">
           <option value="">状態：すべて</option>
@@ -174,6 +163,53 @@
     </section>
 
     </div><!-- /tab-ideas -->
+
+    <!-- ===== タブ: メール ===== -->
+    <div class="tab-panel" id="tab-mail" role="tabpanel" hidden>
+      <section class="panel panel-mail">
+        <div class="mail-toolbar">
+          <div class="mail-toolbar-left">
+            <h2 class="panel-title mail-title">📧 共有メール <span class="mail-account">communitybankinzai@gmail.com</span></h2>
+          </div>
+          <div class="mail-toolbar-right">
+            <input type="search" id="mail-search" placeholder="検索（差出人・件名・本文）" class="search-input mail-search">
+            <span class="meta-note" id="mail-updated">—</span>
+            <button type="button" class="btn btn-ghost btn-sm" id="mail-refresh">更新</button>
+          </div>
+        </div>
+
+        <div class="mail-layout">
+          <!-- 左サイドバー：ラベル -->
+          <aside class="mail-sidebar">
+            <ul class="mail-labels" id="mail-labels">
+              <li><button type="button" class="mail-label-btn active" data-label="inbox">📥 受信トレイ</button></li>
+              <li><button type="button" class="mail-label-btn" data-label="unread">🔵 未読</button></li>
+              <li><button type="button" class="mail-label-btn" data-label="starred">⭐ スター付き</button></li>
+              <li><button type="button" class="mail-label-btn" data-label="sent">📤 送信済み</button></li>
+              <li><button type="button" class="mail-label-btn" data-label="all">📚 すべて</button></li>
+            </ul>
+            <p class="mail-labels-sub">ラベル</p>
+            <ul class="mail-labels mail-labels-custom" id="mail-labels-custom">
+              <li class="empty">読み込み中…</li>
+            </ul>
+          </aside>
+
+          <!-- 中央：一覧 -->
+          <div class="mail-list-pane">
+            <div class="mail-list" id="mail-list">
+              <p class="empty" id="mail-empty">読み込み中…</p>
+            </div>
+          </div>
+
+          <!-- 右：本文 -->
+          <div class="mail-detail-pane">
+            <div class="mail-detail" id="mail-detail">
+              <p class="empty mail-detail-empty">← 左の一覧からメールを選択してください</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div><!-- /tab-mail -->
 
     <!-- ===== タブ: エージェント ===== -->
     <div class="tab-panel" id="tab-agents" role="tabpanel" hidden>
@@ -295,6 +331,6 @@
   <div id="toast" class="toast" hidden></div>
 </section>
 
-<script src="admin.js"></script>
+<script src="admin.js?v=20260620mail2"></script>
 </body>
 </html>

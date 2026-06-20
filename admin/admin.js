@@ -7,6 +7,10 @@
 // GAS WebApp URL（2026-06-19 v1: 初回デプロイ）
 const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbz0UJbV1ZqGEThNqj_LSTHe82ws6lni5EjYXZSDYuN43NTwo1ugrdjmrKWZ-XBf9yV3/exec';
 
+// CBI Gmail共有 WebApp URL（communitybankinzai@gmail.com でデプロイしたGASの /exec URL）
+// 2026-06-20 v1: 初回デプロイ
+const GAS_MAIL_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbz-54I_6bxh04SMKbNM3pKekp0fhW6CCsl44_a4qSUpenLiaL7ubwcXLEuUE8jSvRFvKg/exec';
+
 const STORAGE_KEYS = {
   PW:        'cbi_admin_pw',
   ME:        'cbi_admin_me',
@@ -36,6 +40,14 @@ const UNREAD_POLL_MS = 30000;
     worklog: null,
     worklogLoaded: false,
     actualsDynamic: [],
+    mail: {
+      label: 'inbox',
+      query: '',
+      threads: [],
+      selectedId: '',
+      labelsLoaded: false,
+      loading: false,
+    },
   };
 
   const $ = id => document.getElementById(id);
@@ -211,11 +223,12 @@ const UNREAD_POLL_MS = 30000;
       b.classList.toggle('active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    ['ideas', 'agents', 'changelog'].forEach(t => {
+    ['ideas', 'mail', 'agents', 'changelog'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
     if (name === 'agents' && !state.agentsLoaded) loadAgents();
     if (name === 'changelog' && !state.changelogLoaded) loadChangelog();
+    if (name === 'mail') openMailTab();
   }
 
   // =========================================================
@@ -1848,5 +1861,234 @@ const UNREAD_POLL_MS = 30000;
     const pad = n => String(n).padStart(2, '0');
     return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
            ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  // =========================================================
+  // メールタブ（communitybankinzai@gmail.com 共有）
+  // =========================================================
+  let mailBound = false;
+  function openMailTab() {
+    bindMailUI();
+    loadMailList();              // 開くたびに最新化
+    if (!state.mail.labelsLoaded) loadMailLabels();
+  }
+
+  function bindMailUI() {
+    if (mailBound) return;
+    mailBound = true;
+
+    document.querySelectorAll('.mail-label-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const lbl = btn.dataset.label;
+        state.mail.label = lbl;
+        state.mail.selectedId = '';
+        highlightMailLabel(lbl);
+        renderMailDetail(null);
+        loadMailList();
+      });
+    });
+
+    const refresh = $('mail-refresh');
+    if (refresh) refresh.addEventListener('click', loadMailList);
+
+    const search = $('mail-search');
+    if (search) {
+      let t = null;
+      search.addEventListener('input', () => {
+        state.mail.query = search.value.trim();
+        clearTimeout(t);
+        t = setTimeout(loadMailList, 300);
+      });
+    }
+  }
+
+  function highlightMailLabel(label) {
+    document.querySelectorAll('.mail-label-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.label === label);
+    });
+  }
+
+  async function mailCall(payload) {
+    if (!GAS_MAIL_WEBAPP_URL) {
+      throw new Error('GAS_MAIL_WEBAPP_URL が未設定です。gas-mail-share/README.md の手順でデプロイしてURLを設定してください。');
+    }
+    const body = Object.assign({ password: state.password }, payload || {});
+    const res = await fetch(GAS_MAIL_WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }
+
+  async function loadMailList() {
+    const listEl = $('mail-list');
+    const emptyEl = $('mail-empty');
+    const updatedEl = $('mail-updated');
+    if (!listEl) return;
+
+    state.mail.loading = true;
+    listEl.innerHTML = '<p class="empty">読み込み中…</p>';
+
+    try {
+      const r = await mailCall({
+        action: 'list',
+        label: state.mail.label,
+        q: state.mail.query,
+      });
+      if (!r.ok) throw new Error(r.error || 'unknown');
+      state.mail.threads = r.threads || [];
+      renderMailList();
+      if (updatedEl) updatedEl.textContent = '更新: ' + formatDate(r.fetchedAt);
+    } catch (err) {
+      listEl.innerHTML = '<p class="empty mail-error">読み込みに失敗しました：' + escapeHtml(err.message) + '</p>';
+    } finally {
+      state.mail.loading = false;
+    }
+  }
+
+  async function loadMailLabels() {
+    const ul = $('mail-labels-custom');
+    if (!ul) return;
+    try {
+      const r = await mailCall({ action: 'labels' });
+      if (!r.ok) throw new Error(r.error || 'unknown');
+      const labels = r.labels || [];
+      if (!labels.length) {
+        ul.innerHTML = '<li class="empty">（ラベルなし）</li>';
+      } else {
+        ul.innerHTML = labels.map(name =>
+          '<li><button type="button" class="mail-label-btn" data-label="' + escapeAttr(name) + '">🏷 ' + escapeHtml(name) + '</button></li>'
+        ).join('');
+        ul.querySelectorAll('.mail-label-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            state.mail.label = btn.dataset.label;
+            state.mail.selectedId = '';
+            highlightMailLabel(btn.dataset.label);
+            renderMailDetail(null);
+            loadMailList();
+          });
+        });
+      }
+      state.mail.labelsLoaded = true;
+    } catch (err) {
+      ul.innerHTML = '<li class="empty">ラベル取得失敗</li>';
+    }
+  }
+
+  function renderMailList() {
+    const listEl = $('mail-list');
+    if (!listEl) return;
+    const threads = state.mail.threads;
+    if (!threads.length) {
+      listEl.innerHTML = '<p class="empty">メールはありません</p>';
+      return;
+    }
+    listEl.innerHTML = threads.map(t => {
+      const cls = ['mail-row'];
+      if (t.unread) cls.push('unread');
+      if (t.id === state.mail.selectedId) cls.push('selected');
+      return '<div class="' + cls.join(' ') + '" data-id="' + escapeAttr(t.id) + '">' +
+        '<div class="mail-row-from">' +
+          (t.starred ? '<span class="mail-star">★</span>' : '') +
+          escapeHtml(t.from) +
+          (t.msgCount > 1 ? ' <span class="mail-count">(' + t.msgCount + ')</span>' : '') +
+        '</div>' +
+        '<div class="mail-row-main">' +
+          '<div class="mail-row-subject">' + escapeHtml(t.subject) + (t.hasAttach ? ' 📎' : '') + '</div>' +
+          '<div class="mail-row-snippet">' + escapeHtml(t.snippet) + '</div>' +
+        '</div>' +
+        '<div class="mail-row-meta">' +
+          '<div class="mail-row-date">' + escapeHtml(formatMailDate(t.date)) + '</div>' +
+          (t.labels && t.labels.length ? '<div class="mail-row-labels">' + t.labels.slice(0, 2).map(l => '<span class="mail-tag">' + escapeHtml(l) + '</span>').join('') + '</div>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    listEl.querySelectorAll('.mail-row').forEach(row => {
+      row.addEventListener('click', () => openMailDetail(row.dataset.id));
+    });
+  }
+
+  async function openMailDetail(id) {
+    state.mail.selectedId = id;
+    document.querySelectorAll('.mail-row').forEach(r => r.classList.toggle('selected', r.dataset.id === id));
+    const det = $('mail-detail');
+    if (det) det.innerHTML = '<p class="empty">読み込み中…</p>';
+    try {
+      const r = await mailCall({ action: 'detail', id });
+      if (!r.ok) throw new Error(r.error || 'unknown');
+      renderMailDetail(r);
+    } catch (err) {
+      if (det) det.innerHTML = '<p class="empty mail-error">本文取得失敗：' + escapeHtml(err.message) + '</p>';
+    }
+  }
+
+  function renderMailDetail(data) {
+    const det = $('mail-detail');
+    if (!det) return;
+    if (!data) {
+      det.innerHTML = '<p class="empty mail-detail-empty">← 左の一覧からメールを選択してください</p>';
+      return;
+    }
+    const msgs = data.messages || [];
+    det.innerHTML =
+      '<div class="mail-detail-head">' +
+        '<h3 class="mail-detail-subject">' + escapeHtml(data.subject || '(件名なし)') + '</h3>' +
+        '<div class="mail-detail-count">' + msgs.length + ' 通</div>' +
+      '</div>' +
+      '<div class="mail-detail-msgs">' +
+        msgs.map(m =>
+          '<article class="mail-msg">' +
+            '<header class="mail-msg-head">' +
+              '<div class="mail-msg-from"><strong>' + escapeHtml(m.from) + '</strong></div>' +
+              '<div class="mail-msg-date">' + escapeHtml(formatDate(m.date)) + '</div>' +
+              '<div class="mail-msg-to">宛先: ' + escapeHtml(m.to || '') + '</div>' +
+              (m.cc ? '<div class="mail-msg-to">CC: ' + escapeHtml(m.cc) + '</div>' : '') +
+            '</header>' +
+            '<div class="mail-msg-body">' + linkify(escapeHtml(m.body || '')) + '</div>' +
+            (m.attachments && m.attachments.length
+              ? '<div class="mail-msg-attach">📎 ' + m.attachments.map(a =>
+                  '<span class="mail-attach-item">' + escapeHtml(a.name) + ' <small>(' + formatSize(a.size) + ')</small></span>'
+                ).join('') + '</div>'
+              : '') +
+          '</article>'
+        ).join('') +
+      '</div>';
+  }
+
+  function formatMailDate(s) {
+    if (!s) return '';
+    const d = new Date(s);
+    if (isNaN(d)) return s;
+    const now = new Date();
+    const sameDay = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+    const pad = n => String(n).padStart(2, '0');
+    if (sameDay) return pad(d.getHours()) + ':' + pad(d.getMinutes());
+    if (d.getFullYear() === now.getFullYear()) return (d.getMonth() + 1) + '/' + d.getDate();
+    return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
+  }
+
+  function formatSize(n) {
+    if (!n && n !== 0) return '';
+    if (n < 1024) return n + 'B';
+    if (n < 1024 * 1024) return Math.round(n / 1024) + 'KB';
+    return (n / 1024 / 1024).toFixed(1) + 'MB';
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function escapeAttr(s) {
+    return escapeHtml(s);
+  }
+
+  function linkify(html) {
+    return html.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
+               .replace(/\n/g, '<br>');
   }
 })();

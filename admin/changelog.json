@@ -1,7 +1,55 @@
 {
-  "updatedAt": "2026-06-19",
+  "updatedAt": "2026-06-20",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-06-20",
+      "type": "feature",
+      "target": "管理画面 / GAS（gas-mail-share）",
+      "title": "管理画面に『📧 メール』タブを追加（communitybankinzai@gmail.com 共有）",
+      "detail": "communitybankinzai@gmail.com 宛の受信メールを管理画面上でGmail風UIに共有する機能を追加。(1) gas-mail-share/コード.gs と appsscript.json を新規作成：GmailApp.search で受信トレイ/未読/スター付き/送信済み/任意ラベル/任意検索クエリに対応、list/detail/labels/ping の4アクションをJSONで返すWeb API。OAuth scope は gmail.readonly のみ（閲覧専用）。(2) site/admin/index.html のタブナビに『📧 メール』を追加、左ラベル/中央一覧/右本文の3ペインHTMLを実装。(3) site/admin/admin.js に GAS_MAIL_WEBAPP_URL 定数、state.mail、openMailTab/loadMailList/loadMailLabels/openMailDetail/renderMailList/renderMailDetail を追加。タブを開くたびにfetchを行うため『開くたびに最新』を実現。ラベル絞り込み・キーワード検索（300msデバウンス）対応。(4) site/admin/admin.css に Gmail風2ペインスタイル（一覧hover/selected/unread強調、本文カード、添付バッジ、モバイル時1カラム）を追加。(5) gas-mail-share/README.md にデプロイ手順を記載。次手順：communitybankinzai@gmail.com で GAS新規プロジェクト作成→コード貼り付け→Webアプリとしてデプロイ→取得したURLを admin.js の GAS_MAIL_WEBAPP_URL に設定。",
+      "author": "統括エージェント"
+    },
+    {
+      "date": "2026-06-20",
+      "type": "feature",
+      "target": "管理画面 / GAS / 既存アイデア",
+      "title": "カテゴリをAIエージェント区分（A1〜A10、10種）に変更",
+      "detail": "旧7カテゴリ（CiDAO実証/2つの流れ/団体ネットワーク/人財発掘/交流会/中長期構想/その他）をAIエージェント区分10種（A1 CiDAO運用・システム維持管理 〜 A10 リサーチ・先進事例調査）に統一。表記は『Aコード + 役割（agents.json の role の括弧前）』。Code.gs の categories 配列を10種にハードコード、migrateCategories アクションを追加。index.html のカテゴリ select はプレースホルダのみに削減、admin.js の populateCategorySelects() が agents.json から動的生成（loadAgents をログイン直後に先行ロード）。既存アイデア4件はpreview経由でmigrateCategories呼び出し全件移行完了：『今後の進め方について』中長期構想→A1、『行政と団体の連携イメージ』2つの流れ→A2、『マッチングの窓口』人財発掘→A7、『ボランティア活動実績の自動記録・集計システム導入』CiDAO実証→A1。clasp v12 デプロイ完了。preview で投稿フォーム・フィルタともに10カテゴリ表示、既存4件のカテゴリチップが新表記で表示されることを確認。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-20",
+      "type": "feature",
+      "target": "管理画面 / GAS",
+      "title": "アイデアカード見やすさ改善＋『AIで反映』を『AIで最終とりまとめ』に改名・プロンプト強化",
+      "detail": "(1)UI改修：アイデア一覧の本文を3行で省略表示（CSS line-clamp）し、3行超のカードのみ『本文を全文表示』トグルを表示。展開後は『本文を折りたたむ』に変化。長文アイデアでも一覧性が大幅に向上。判定はrenderList末尾でsetTimeout(50)+offsetHeight強制reflowによりCSS適用後の正確なscrollHeightで実施。(2)ボタン名変更：『🤖 AIで反映』→『🤝 AIで最終とりまとめ』に改名し、tooltipも『コメント全員の主張を踏まえてAIが最終とりまとめ本文を生成します』に更新。(3)Code.gs handleAiRevise_ プロンプト強化：『議事とりまとめアシスタント』として『コメント者一人ひとりの主張を取りこぼさず統合』『合意点・対立点・保留点を明確に分けて整理』『多数派意見だけで決めず少数派の懸念も必ず反映』『重要主張は（〇〇の指摘）で出典明示』を明示。コメント件数もプロンプトに含めて全件処理を担保。(4)index.html のadmin.css/admin.jsにバージョンクエリ ?v=20260620c を付与しブラウザキャッシュ回避。clasp v10 デプロイ完了。preview にて4カード全てでトグル表示・展開・折りたたみ動作確認済み。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-20",
+      "type": "feature",
+      "target": "管理画面 / GAS / agents.json",
+      "title": "AIエージェントが自身のknowledge_summaryを踏まえて提案・コメントできるよう拡張",
+      "detail": "agents.json の各エージェント定義に knowledge_summary フィールドを追加（500〜1000字、agents/<id>/knowledge/ 配下のMarkdown群を要約）。admin.js の onAiComment/onAiSuggest で agentInfo に knowledge_summary を含めて GAS に POST。GAS Code.gs の handleAiSuggest_ と handleAiComment_ のプロンプト構築箇所に『あなたが保有する知識ベース』セクションを追加し、Gemini 2.5 Flash がエージェントの保有知識を踏まえた発言をできるように。これにより A1 Core はGASデプロイ手順を、A8 Ledger は会計ルールを、A4 Voice-Out はSNSテンプレを、各エージェントが自身の専門知識ベースで議論に参加できる。GitHub Pages 経由で agents/ 配下を公開していないため、当面は要約のみ利用（詳細知識は agents/<id>/knowledge/ 直接参照のままローカル運用）。clasp v9 デプロイ完了（deploymentId AKfycbz0UJbV1ZqGEThNqj_LSTHe82ws6lni5EjYXZSDYuN43NTwo1ugrdjmrKWZ-XBf9yV3）。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-19",
+      "type": "docs",
+      "target": "agents/*/knowledge/",
+      "title": "全10エージェントに初期知識を投入（runbook/テンプレ/分類体系/助成金カレンダー等15ファイル）",
+      "detail": "稼働中4体（A1/A2/A8/A9）に厚めに、投入予定6体（A3/A4/A5/A6/A7/A10）に最低1ファイルずつ初期知識を植え付け。A1：GASデプロイrunbook・システムアーキテクチャ図(mermaid)・Gemini API仕様メモ。A2：カテゴリ別集計の分析手法・CiDAOカテゴリ辞書。A8：月次収支レポートテンプレ・会計処理基本ルール。A9：議事録テンプレ・四半期交流会企画書テンプレ。A3：印西市団体リスト取得方法。A4：SNS媒体別投稿テンプレ。A5：行政宛要望書テンプレ。A6：自走系イベント企画手順。A7：スキル分類体系初版（7大分類×中分類）。A10：助成金カレンダー2026年度版。これにより各エージェントが起動直後から実用可能な知識基盤を保有。Code.gs の AI機能が agents/<id>/knowledge/ を読み取りに行く拡張は別途タスク化予定。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-19",
+      "type": "docs",
+      "target": "agents/",
+      "title": "未作成エージェント6体（A3/A4/A5/A6/A7/A10）のフォルダ初期化と全エージェントへの knowledge/ 基盤導入",
+      "detail": "agents.json で定義済みだが実フォルダが無かった6体（A3 Network／A4 Voice-Out／A5 Bridge／A6 Boost／A7 Match／A10 Scout）に README.md と worklog.md を作成。各エージェントの役割・主要業務・評価指標・運営ルール・関連エージェントを CBI_AIエージェント役割設計.docx に準拠して整備。さらに全10エージェント（既存4＋新規6）に knowledge/ サブフォルダを新設し、WEBリサーチ結果・調査資料・テンプレート等の知識蓄積場所を統一規格で整備。各 knowledge/ 配下に README.md で構成・蓄積ルール・個人情報取扱を明記。これにより『経験＝worklog／知識＝knowledge』の二系統が全エージェントで一貫した形となった。作成ファイル数：新規6体×3ファイル + 既存4体×1ファイル = 計22ファイル。",
+      "author": "A1 Core"
+    },
     {
       "date": "2026-06-19",
       "type": "feature",
