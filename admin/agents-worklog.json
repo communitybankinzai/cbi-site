@@ -484,13 +484,29 @@
       ]
     },
     "A10": {
-      "actuals": [],
+      "actuals": [
+        {
+          "date": "2026-06-20",
+          "title": "国内外の市民参加プラットフォーム比較調査＋『日本で唯一』訴求ページ作成 1.2時間",
+          "category": "調査",
+          "outputs": [
+            "site/uniqueness/index.html（新規）",
+            "site/index.html（ナビに『日本で唯一』追加）",
+            "国内8事例・海外8プラットフォームの比較表",
+            "三者視点（市/企業/市民）メリットセクション"
+          ],
+          "hours": 1.2,
+          "partnerApproved": false,
+          "note": "WEB調査エージェント2体を並列起動して国内（神戸/西粟倉/加古川Decidim/鎌倉/会津若松/総務省/大阪府/サービスグラント）と海外（Decidim/Better Reykjavik/vTaiwan/Nextdoor/TimeBanks/SkillsFuture/mVoting/Go Vocal）の事例を収集。『市民スキル登録×実需要×AIエージェント仲介』の三位一体が他に存在しないことを確認し、5つの根拠として整理。CBIブランドCSSを継承し1枚のHTMLにまとめた。確信度：中（一次情報を全件は確認しきれていないため非公開類似事業の存在は否定できない）。"
+        }
+      ],
       "plans": [
         {
           "due": "2026-11-30",
           "title": "他自治体のDAO型市民参加事例 比較調査レポート",
           "category": "調査",
-          "priority": "中"
+          "priority": "中",
+          "note": "2026-06-20に概略の比較調査は完了（site/uniqueness/）。年末までに一次情報追跡＋DAO観点での深掘りに着手予定。"
         }
       ]
     }

@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日本で唯一の取り組み｜Community Bank INZAI（CBI）</title>
+<meta name="description" content="国内外の市民参加プラットフォーム事例と比較し、CBI『あなたの出番』プロジェクトが日本で唯一・世界でも稀有な取り組みである根拠を、市・企業・市民それぞれの視点で示します。">
+<meta property="og:title" content="日本で唯一の取り組み｜Community Bank INZAI（CBI）">
+<meta property="og:description" content="人材バンク × AIエージェント運営 × 地域通貨連動 — CBIが他に類を見ない理由。">
+<meta property="og:image" content="../assets/cbi-logo.png">
+<meta property="og:type" content="article">
+<link rel="icon" type="image/png" href="../assets/cbi-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+  /* ===== Uniqueness page only ===== */
+  .uq-hero {
+    background:
+      radial-gradient(ellipse at top, rgba(201,165,92,0.18), transparent 60%),
+      linear-gradient(180deg, var(--c-navy-dark) 0%, var(--c-navy) 100%);
+    color: #fff;
+    padding: 110px 0 88px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .uq-hero::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><circle cx='1' cy='1' r='1' fill='%23c9a55c' opacity='0.10'/></svg>");
+    pointer-events: none;
+  }
+  .uq-hero-inner { position: relative; z-index: 1; }
+  .uq-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border: 1px solid var(--c-gold);
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    color: var(--c-gold-soft);
+    margin-bottom: 24px;
+    background: rgba(201,165,92,0.08);
+  }
+  .uq-hero h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    color: #fff;
+    margin: 0 0 20px;
+    line-height: 1.35;
+  }
+  .uq-hero h1 .accent { color: var(--c-gold); }
+  .uq-hero p.lead {
+    font-size: clamp(14px, 1.6vw, 17px);
+    color: rgba(255,255,255,0.88);
+    max-width: 760px;
+    margin: 0 auto 32px;
+    font-family: var(--font-serif);
+  }
+  .uq-hero .breadcrumb {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 28px;
+    letter-spacing: 0.08em;
+  }
+  .uq-hero .breadcrumb a { color: var(--c-gold-soft); }
+
+  /* Three pillars */
+  .pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 40px;
+  }
+  .pillar {
+    background: var(--c-paper);
+    border: 1px solid var(--c-line);
+    border-top: 4px solid var(--c-gold);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    position: relative;
+  }
+  .pillar .num {
+    font-family: var(--font-serif);
+    font-size: 13px;
+    color: var(--c-gold);
+    letter-spacing: 0.2em;
+    margin: 0 0 8px;
+  }
+  .pillar h3 {
+    font-size: 19px;
+    margin: 0 0 14px;
+    color: var(--c-navy);
+  }
+  .pillar p {
+    font-size: 14px;
+    color: var(--c-ink-sub);
+    margin: 0;
+    line-height: 1.85;
+  }
+
+  /* Comparison table */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--c-line);
+    background: var(--c-paper);
+    box-shadow: var(--shadow-sm);
+  }
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 760px;
+  }
+  table.compare th,
+  table.compare td {
+    padding: 14px 16px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--c-line);
+  }
+  table.compare thead th {
+    background: var(--c-navy);
+    color: #fff;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    border-bottom: none;
+    white-space: nowrap;
+  }
+  table.compare tbody tr:nth-child(even) { background: var(--c-bg); }
+  table.compare tbody tr:hover { background: #f7f1df; }
+  table.compare td .check { color: var(--c-green); font-weight: 700; }
+  table.compare td .x     { color: #b56060; font-weight: 700; }
+  table.compare td .partial { color: var(--c-gold); font-weight: 700; }
+  table.compare .case-name { font-weight: 700; color: var(--c-navy); }
+  table.compare .case-sub { font-size: 11px; color: var(--c-ink-sub); font-weight: 400; display: block; margin-top: 2px; }
+  table.compare tr.cbi-row {
+    background: linear-gradient(90deg, rgba(201,165,92,0.12), rgba(201,165,92,0.04));
+    border-left: 4px solid var(--c-gold);
+  }
+  table.compare tr.cbi-row td { font-weight: 600; }
+  table.compare tr.cbi-row:hover { background: linear-gradient(90deg, rgba(201,165,92,0.18), rgba(201,165,92,0.06)); }
+
+  /* Three audience tabs */
+  .audience-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 32px;
+  }
+  .audience-card {
+    background: var(--c-paper);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    border: 1px solid var(--c-line);
+    position: relative;
+    transition: transform .25s, box-shadow .25s;
+  }
+  .audience-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+  .audience-card .icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 18px;
+  }
+  .audience-city    .icon { background: linear-gradient(135deg, var(--c-navy), var(--c-navy-soft)); }
+  .audience-biz     .icon { background: linear-gradient(135deg, var(--c-green), var(--c-green-soft)); }
+  .audience-citizen .icon { background: linear-gradient(135deg, var(--c-gold), var(--c-gold-soft)); color: var(--c-navy-dark); }
+  .audience-card h3 {
+    font-size: 20px;
+    margin: 0 0 6px;
+    color: var(--c-navy);
+  }
+  .audience-card .tagline {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--c-gold);
+    margin: 0 0 18px;
+    font-weight: 700;
+  }
+  .audience-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .audience-card li {
+    font-size: 13px;
+    color: var(--c-ink);
+    padding: 10px 0 10px 26px;
+    position: relative;
+    border-bottom: 1px dashed var(--c-line);
+    line-height: 1.7;
+  }
+  .audience-card li:last-child { border-bottom: none; }
+  .audience-card li::before {
+    content: "◆";
+    position: absolute;
+    left: 4px; top: 11px;
+    color: var(--c-gold);
+    font-size: 10px;
+  }
+
+  /* Reasons (5 numbered) */
+  .reason-list {
+    display: grid;
+    gap: 18px;
+    margin-top: 32px;
+  }
+  .reason-item {
+    background: var(--c-paper);
+    border-left: 4px solid var(--c-gold);
+    padding: 24px 28px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .reason-num {
+    font-family: var(--font-serif);
+    font-size: 40px;
+    color: var(--c-gold);
+    line-height: 1;
+    font-weight: 700;
+  }
+  .reason-item h4 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    color: var(--c-navy);
+    line-height: 1.5;
+  }
+  .reason-item p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--c-ink-sub);
+    line-height: 1.8;
+  }
+
+  /* Source list */
+  .sources {
+    background: var(--c-bg-alt);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-top: 32px;
+  }
+  .sources h4 {
+    font-size: 14px;
+    margin: 0 0 14px;
+    color: var(--c-navy);
+    letter-spacing: 0.08em;
+  }
+  .sources ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    columns: 2;
+    column-gap: 28px;
+  }
+  .sources li {
+    font-size: 12px;
+    padding: 4px 0;
+    break-inside: avoid;
+    color: var(--c-ink-sub);
+  }
+  .sources a { color: var(--c-navy); }
+  .sources a:hover { color: var(--c-gold); }
+
+  /* CTA */
+  .uq-cta {
+    background: linear-gradient(135deg, var(--c-navy-dark), var(--c-navy));
+    color: #fff;
+    padding: 64px 32px;
+    border-radius: var(--radius);
+    text-align: center;
+    margin-top: 56px;
+  }
+  .uq-cta h3 {
+    color: #fff;
+    font-size: clamp(22px, 3vw, 28px);
+    margin: 0 0 14px;
+  }
+  .uq-cta p {
+    color: rgba(255,255,255,0.85);
+    max-width: 600px;
+    margin: 0 auto 28px;
+    font-size: 15px;
+  }
+  .uq-cta .btn-primary {
+    background: var(--c-gold);
+    color: var(--c-navy-dark);
+    border-color: var(--c-gold);
+  }
+  .uq-cta .btn-primary:hover {
+    background: #fff;
+    color: var(--c-navy-dark);
+    border-color: #fff;
+  }
+  .uq-cta .btn-ghost {
+    border-color: rgba(255,255,255,0.6);
+    color: #fff;
+  }
+  .uq-cta .btn-ghost:hover {
+    background: #fff;
+    color: var(--c-navy);
+  }
+
+  .confidence-note {
+    margin-top: 24px;
+    font-size: 12px;
+    color: var(--c-ink-sub);
+    padding: 12px 16px;
+    background: var(--c-bg);
+    border-radius: 8px;
+    border-left: 3px solid var(--c-line);
+  }
+
+  @media (max-width: 860px) {
+    .pillar-grid,
+    .audience-grid { grid-template-columns: 1fr; }
+    .reason-item { grid-template-columns: 1fr; gap: 8px; }
+    .reason-num { font-size: 28px; }
+    .sources ul { columns: 1; }
+    .uq-hero { padding: 72px 0 56px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="site-header">
+  <div class="container header-inner">
+    <a href="../index.html" class="brand">
+      <img src="../assets/cbi-logo.png" alt="CBI ロゴ" class="brand-logo">
+      <span class="brand-text">Community Bank INZAI</span>
+    </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開く" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="site-nav">
+      <a href="../index.html#about">事業概要</a>
+      <a href="../index.html#join">参加方法</a>
+      <a href="../index.html#report">活動報告</a>
+      <a href="./index.html">日本で唯一</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== HERO ===== -->
+  <section class="uq-hero">
+    <div class="container uq-hero-inner">
+      <p class="breadcrumb"><a href="../index.html">トップ</a> ／ 日本で唯一の取り組み</p>
+      <span class="uq-badge">UNIQUENESS REPORT</span>
+      <h1>これは、<span class="accent">日本で唯一</span>の取り組みです。</h1>
+      <p class="lead">
+        国内８自治体・海外８プラットフォームを比較した結果、<br>
+        「市民スキル登録 × 行政・事業者からの実需要 × AIエージェントによる運営」を<br>
+        三位一体で備える事例は、CBI（Community Bank INZAI）以外に確認できませんでした。
+      </p>
+      <p style="color: rgba(255,255,255,0.6); font-size: 12px; letter-spacing: 0.08em;">
+        調査時点：2026年6月／印西市市民活動団体 登録番号 ０８－００１
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== 3 PILLARS ===== -->
+  <section class="section" style="background: var(--c-bg);">
+    <div class="container">
+      <p class="section-eyebrow">THREE PILLARS</p>
+      <h2 class="section-title">CBIを唯一たらしめる「三本柱」</h2>
+      <p class="section-lead">
+        市民の特技を眠らせない仕組み、AIによる運営の透明化、そして地域経済への還流。
+        この３つを同時に実装した自治体協働事業は、国内外を見渡しても他に類を見ません。
+      </p>
+
+      <div class="pillar-grid">
+        <div class="pillar">
+          <p class="num">PILLAR Ⅰ</p>
+          <h3>市民スキルの「人材バンク化」</h3>
+          <p>履歴書・職歴・特技・想いをデータベース化し、「やってみたい」と「お願いしたい」を双方向につなぐ。総務省の「地域人材ネット」のような専門家招へい型ではなく、地元市民の出番を生む汎用バンク。</p>
+        </div>
+        <div class="pillar">
+          <p class="num">PILLAR Ⅱ</p>
+          <h3>AIエージェント１０体による運営</h3>
+          <p>窓口チャットボットではなく、事業運営エンジン自体をAIに担わせる。依頼受付→候補抽出→提案文書生成までを複数のAIエージェントが分担し、少人数で持続的に運営。</p>
+        </div>
+        <div class="pillar">
+          <p class="num">PILLAR Ⅲ</p>
+          <h3>地域通貨「インザイ」との連動</h3>
+          <p>市民の「出番」への対価を、地域内で循環するデジタル通貨で支払う構想。会津コインの決済中心モデルと差別化し、「労働＝地域経済循環」を直接結ぶ仕組みを設計中。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DOMESTIC COMPARISON ===== -->
+  <section class="section" style="background: var(--c-paper);">
+    <div class="container">
+      <p class="section-eyebrow">DOMESTIC COMPARISON</p>
+      <h2 class="section-title">国内自治体との比較</h2>
+      <p class="section-lead">
+        全国の代表的な「市民人材バンク／市民参加プラットフォーム」と機能を比較しました。
+        ５つの中核機能をすべて備えるのは、現時点でCBIのみです。
+      </p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th>事例</th>
+              <th>運営主体</th>
+              <th>市民スキルDB</th>
+              <th>AIエージェント運営</th>
+              <th>地域通貨連動</th>
+              <th>双方向マッチング</th>
+              <th>市民活動団体登録</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="cbi-row">
+              <td><span class="case-name">CBI（印西市）</span><span class="case-sub">あなたの出番プロジェクト</span></td>
+              <td>市民活動団体</td>
+              <td><span class="check">◯</span></td>
+              <td><span class="check">◯ 10体</span></td>
+              <td><span class="check">◯ インザイ</span></td>
+              <td><span class="check">◯</span></td>
+              <td><span class="check">◯ 08-001</span></td>
+            </tr>
+            <tr>
+              <td><span class="case-name">神戸市</span><span class="case-sub">デジタル人材育成エコシステム</span></td>
+              <td>市直営＋採択事業者</td>
+              <td><span class="partial">△ 研修対象者DB</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="partial">△</span></td>
+              <td>—（市直営）</td>
+            </tr>
+            <tr>
+              <td><span class="case-name">西粟倉村（岡山）</span><span class="case-sub">ローカルベンチャースクール</span></td>
+              <td>村＋森の学校HD</td>
+              <td><span class="x">× 起業家のみ</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="x">×</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><span class="case-name">加古川市</span><span class="case-sub">加古川版Decidim</span></td>
+              <td>市直営</td>
+              <td><span class="x">× 意見集約のみ</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="x">×</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><span class="case-name">鎌倉市</span><span class="case-sub">鎌倉スクールコラボファンド</span></td>
+              <td>市教委</td>
+              <td><span class="partial">△ 学校特化</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="partial">△</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><span class="case-name">会津若松市</span><span class="case-sub">スーパーシティ＋会津コイン</span></td>
+              <td>市＋コンソーシアム</td>
+              <td><span class="x">× データ連携が中心</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="check">◯ 会津コイン</span></td>
+              <td><span class="x">×</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><span class="case-name">総務省</span><span class="case-sub">地域人材ネット</span></td>
+              <td>国＋自治体</td>
+              <td><span class="partial">△ 専門家のみ</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="x">×</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><span class="case-name">サービスグラント</span><span class="case-sub">民間プロボノ</span></td>
+              <td>NPO</td>
+              <td><span class="check">◯ 8,000人超</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="x">×</span></td>
+              <td><span class="check">◯</span></td>
+              <td>—（自治体外）</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="confidence-note">
+        ※ 確信度：中。自治体公式サイトの一次情報を中心に確認した範囲では、上記５機能を全て備える事例はCBI以外に確認されていません。
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== INTERNATIONAL COMPARISON ===== -->
+  <section class="section" style="background: var(--c-bg-alt);">
+    <div class="container">
+      <p class="section-eyebrow">GLOBAL COMPARISON</p>
+      <h2 class="section-title">海外プラットフォームとの比較</h2>
+      <p class="section-lead">
+        欧州・北米・アジアの代表的な市民参加プラットフォームと比較しても、
+        CBIが交差領域に立っていることが分かります。
+      </p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th>事例</th>
+              <th>国／運営</th>
+              <th>主目的</th>
+              <th>AI活用</th>
+              <th>報酬／通貨</th>
+              <th>人材マッチング</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="cbi-row">
+              <td><span class="case-name">CBI（日本・印西市）</span></td>
+              <td>市民活動団体</td>
+              <td>人材マッチング＋協働事業</td>
+              <td><span class="check">◯ 運営エンジン</span></td>
+              <td><span class="check">◯ 委託費＋地域通貨</span></td>
+              <td><span class="check">◯ AIが調整</span></td>
+            </tr>
+            <tr>
+              <td><span class="case-name">Decidim</span><span class="case-sub">スペイン・バルセロナ</span></td>
+              <td>市＋OSS財団</td>
+              <td>参加型民主主義（提案・投票）</td>
+              <td><span class="partial">△ 分析補助</span></td>
+              <td><span class="x">なし</span></td>
+              <td><span class="x">×</span></td>
+            </tr>
+            <tr>
+              <td><span class="case-name">Better Reykjavik</span><span class="case-sub">アイスランド</span></td>
+              <td>NPO</td>
+              <td>政策アイデア収集</td>
+              <td><span class="x">×</span></td>
+              <td><span class="x">なし</span></td>
+              <td><span class="x">×</span></td>
+            </tr>
+            <tr>
+              <td><span class="case-name">vTaiwan / Pol.is</span><span class="case-sub">台湾</span></td>
+              <td>g0v＋政府</td>
+              <td>合意形成</td>
+              <td><span class="check">◯ クラスタリング</span></td>
+              <td><span class="x">なし</span></td>
+              <td><span class="x">×</span></td>
+            </tr>
+            <tr>
+              <td><span class="case-name">Nextdoor</span><span class="case-sub">米国</span></td>
+              <td>営利企業</td>
+              <td>近隣SNS</td>
+              <td><span class="check">◯ LLM搭載</span></td>
+              <td><span class="x">広告モデル</span></td>
+              <td><span class="partial">△ SNS推薦</span></td>
+            </tr>
+            <tr>
+              <td><span class="case-name">TimeBanks USA</span><span class="case-sub">米国</span></td>
+              <td>NPO</td>
+              <td>時間通貨で相互扶助</td>
+              <td><span class="x">×</span></td>
+              <td><span class="check">◯ 時間通貨</span></td>
+              <td><span class="partial">△ P2P</span></td>
+            </tr>
+            <tr>
+              <td><span class="case-name">SkillsFuture</span><span class="case-sub">シンガポール</span></td>
+              <td>国</td>
+              <td>国家規模スキル投資</td>
+              <td><span class="check">◯ 職業マッチング</span></td>
+              <td><span class="check">◯ 研修クレジット</span></td>
+              <td><span class="partial">△ 学習投資</span></td>
+            </tr>
+            <tr>
+              <td><span class="case-name">mVoting</span><span class="case-sub">韓国・ソウル市</span></td>
+              <td>市</td>
+              <td>市民提案・参加型予算</td>
+              <td><span class="partial">△</span></td>
+              <td><span class="x">なし</span></td>
+              <td><span class="x">×</span></td>
+            </tr>
+            <tr>
+              <td><span class="case-name">Go Vocal</span><span class="case-sub">ベルギー</span></td>
+              <td>民間SaaS</td>
+              <td>自治体DX</td>
+              <td><span class="check">◯ 意見解析</span></td>
+              <td><span class="x">なし</span></td>
+              <td><span class="x">×</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AUDIENCE BENEFITS ===== -->
+  <section class="section" style="background: var(--c-paper);">
+    <div class="container">
+      <p class="section-eyebrow">VALUE FOR EACH</p>
+      <h2 class="section-title">三者にとっての価値</h2>
+      <p class="section-lead">
+        この唯一性は、印西市・協賛企業・市民のそれぞれに、異なる具体的なメリットをもたらします。
+      </p>
+
+      <div class="audience-grid">
+
+        <!-- 市 -->
+        <article class="audience-card audience-city">
+          <div class="icon">市</div>
+          <h3>印西市にとって</h3>
+          <p class="tagline">FOR THE CITY</p>
+          <ul>
+            <li>「日本で唯一」のAIエージェント協働事業の発信地として、シティプロモーション効果が大きい</li>
+            <li>窓口チャットボット止まりの自治体AIから一歩抜け、業務委託のコスト効率が高い</li>
+            <li>登録市民が増えるほど、市の事業ごとに「適任の地元人材」を即座に抽出できる</li>
+            <li>Decidim型の意見集約と異なり、政策が「実行担当者」までセットで提示される</li>
+            <li>Audrey Tang氏の「Digital Democracy 2030」構想と親和的な先進モデル都市となれる</li>
+          </ul>
+        </article>
+
+        <!-- 企業 -->
+        <article class="audience-card audience-biz">
+          <div class="icon">企</div>
+          <h3>協賛企業・事業者にとって</h3>
+          <p class="tagline">FOR BUSINESS</p>
+          <ul>
+            <li>地域に眠る「現役・OBの専門人材」へAI経由で直接アクセスできる新チャネル</li>
+            <li>プロボノ無償依存ではなく、適正対価で発注できる持続可能なスキーム</li>
+            <li>ESG・地域共創文脈での協賛価値が高い（日本唯一の事例への参画）</li>
+            <li>採用前の「お試し業務委託」として地元人材のスキル評価が可能</li>
+            <li>SkillsFuture（国家規模）と違い、印西という地域単位での密な接続点を得られる</li>
+          </ul>
+        </article>
+
+        <!-- 市民 -->
+        <article class="audience-card audience-citizen">
+          <div class="icon">民</div>
+          <h3>市民にとって</h3>
+          <p class="tagline">FOR CITIZENS</p>
+          <ul>
+            <li>履歴書1枚で、市・企業・NPOから「あなたに合った出番」が届くようになる</li>
+            <li>無償ボランティアではなく、地域通貨「インザイ」で対価が得られる</li>
+            <li>AIが間に立つので、人間関係の上下や派閥に左右されずに参加できる</li>
+            <li>退職後のセカンドキャリア、子育て期のスキマ時間、副業など、どんな立場でも参加可</li>
+            <li>「印西で生きていく」という選択の経済的・社会的価値が高まる</li>
+          </ul>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5 REASONS ===== -->
+  <section class="section" style="background: var(--c-bg);">
+    <div class="container">
+      <p class="section-eyebrow">EVIDENCE</p>
+      <h2 class="section-title">「日本で唯一」と言える ５つの根拠</h2>
+      <p class="section-lead">
+        国内外１６事例の比較から導かれた、CBIの独自性のエッセンスです。
+      </p>
+
+      <div class="reason-list">
+        <div class="reason-item">
+          <div class="reason-num">01</div>
+          <div>
+            <h4>「市民スキル登録 × 実需要 × AIエージェント仲介」の三位一体は世界に類例がない</h4>
+            <p>Decidim・mVotingは「提案・投票」止まり、TimeBanksは「P2P相互扶助」止まり、SkillsFutureは「学習投資」止まり。CBIは行政・企業の実需要と市民スキルをAIで能動的にマッチングする、三領域の交差点に立つ唯一の事例です。</p>
+          </div>
+        </div>
+        <div class="reason-item">
+          <div class="reason-num">02</div>
+          <div>
+            <h4>生成AIエージェントによる「事業運営の自動化」は自治体協働で前例がない</h4>
+            <p>Pol.isやGo Vocalはあくまで意見の「分析」にAIを使う段階。CBIは依頼受付→候補抽出→提案文書生成までの業務フロー全体に１０体のAIエージェントを組み込みます。2026年時点で同等の運用は海外でも確認できません。</p>
+          </div>
+        </div>
+        <div class="reason-item">
+          <div class="reason-num">03</div>
+          <div>
+            <h4>人口約１０万の基礎自治体で、企画提案型協働として制度化されている</h4>
+            <p>Decidimは大都市・国レベル、TimeBanksは草の根NPO。中規模市の公式委託事業（年予算２５６万円規模）として人材バンクを運営するのは珍しく、他自治体へのスケール可能なモデルケースとなります。</p>
+          </div>
+        </div>
+        <div class="reason-item">
+          <div class="reason-num">04</div>
+          <div>
+            <h4>「時間通貨」でも「広告営利」でもないハイブリッド型の経済モデル</h4>
+            <p>TimeBanks型は時間交換、Nextdoor型は広告営利。CBIは市委託費＋提案者負担で実報酬を支払い、将来的に地域通貨「インザイ」で還流させる設計。持続可能性と地域経済循環を両立します。</p>
+          </div>
+        </div>
+        <div class="reason-item">
+          <div class="reason-num">05</div>
+          <div>
+            <h4>市民活動団体（登録番号０８－００１）として行政公式チャネルに接続済み</h4>
+            <p>多くの海外プラットフォームは「市民→行政」の一方向。CBIは双方向（市民提案 ⇄ 行政依頼）かつ法的登録団体として運営されており、印西市の協働事業フレームに正式接続している点で実装フェーズが一段上にあります。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sources">
+        <h4>SOURCES（主な参照元）</h4>
+        <ul>
+          <li><a href="https://www.city.kobe.lg.jp/a14333/digital_ecosystem2025.html" target="_blank" rel="noopener">神戸市デジタル人材育成エコシステム</a></li>
+          <li><a href="https://jichitai.works/article/details/422" target="_blank" rel="noopener">西粟倉村ローカルベンチャー</a></li>
+          <li><a href="https://prtimes.jp/main/html/rd/p/000000176.000084250.html" target="_blank" rel="noopener">加古川市版Decidim</a></li>
+          <li><a href="https://www.city.kamakura.kanagawa.jp/kyoplan/kamakura-scf.html" target="_blank" rel="noopener">鎌倉スクールコラボファンド</a></li>
+          <li><a href="https://paymentnavi.com/paymentnews/104200.html" target="_blank" rel="noopener">スマートシティ会津若松／会津コイン</a></li>
+          <li><a href="https://www.soumu.go.jp/ganbaru/jinzai/" target="_blank" rel="noopener">総務省 地域人材ネット</a></li>
+          <li><a href="https://www.servicegrant.or.jp/" target="_blank" rel="noopener">サービスグラント（プロボノ）</a></li>
+          <li><a href="https://decidim.org/" target="_blank" rel="noopener">Decidim official</a></li>
+          <li><a href="https://www.citizens.is/portfolio_page/better_reykjavik/" target="_blank" rel="noopener">Better Reykjavik</a></li>
+          <li><a href="https://compdemocracy.org/case-studies/2014-vtaiwan/" target="_blank" rel="noopener">vTaiwan – CompDemocracy</a></li>
+          <li><a href="https://www.axios.com/2025/07/15/nextdoor-app-ai-reboot" target="_blank" rel="noopener">Nextdoor AI redesign 2025</a></li>
+          <li><a href="https://hourworld.org/" target="_blank" rel="noopener">hOurworld TimeBanks Directory</a></li>
+          <li><a href="https://theqdacademy.com/2026/04/21/skillsfuture-credit-2026-guide/" target="_blank" rel="noopener">SkillsFuture Credit 2026 Guide</a></li>
+          <li><a href="https://seoulsolution.kr/en/content/%E2%80%98mobile-voting-app%E2%80%99-m-voting" target="_blank" rel="noopener">mVoting / Democracy Seoul</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== CTA ===== -->
+  <section class="section" style="background: var(--c-paper);">
+    <div class="container">
+      <div class="uq-cta">
+        <h3>「日本で唯一」を、印西から世界へ。</h3>
+        <p>
+          市民・企業・行政の協働で、AI時代の新しい「市民活躍」を実装しませんか。<br>
+          まずは話を聞きに来てください。登録だけでも、見学だけでも歓迎です。
+        </p>
+        <div class="hero-cta" style="margin-bottom: 0;">
+          <a href="../index.html#join" class="btn btn-primary">参加する</a>
+          <a href="../index.html#contact" class="btn btn-ghost">お問い合わせ</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/cbi-logo.png" alt="CBI" class="footer-logo">
+      <div>
+        <p class="footer-name">Community Bank INZAI</p>
+        <p class="footer-tagline">印西「あなたの出番」プロジェクト</p>
+      </div>
+    </div>
+    <div>
+      <p class="footer-copy">
+        © 2026 Community Bank INZAI ｜ 印西市市民活動団体 ０８－００１
+        <span class="footer-sep">／</span>
+        <a href="../admin/" class="footer-admin-link">admin</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script src="../script.js"></script>
+</body>
+</html>

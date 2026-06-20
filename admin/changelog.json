@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-20",
+      "type": "feature",
+      "target": "site/uniqueness/index.html ／ site/index.html（ナビ追加）",
+      "title": "「日本で唯一の取り組み」ページを新設、国内8事例・海外8プラットフォームと比較してCBIの独自性を訴求できるようになった",
+      "detail": "site/uniqueness/index.html を新規作成。国内（神戸/西粟倉/加古川Decidim/鎌倉/会津若松/総務省地域人材ネット/大阪府人材バンク/サービスグラント）と海外（Decidim/Better Reykjavik/vTaiwan/Nextdoor/TimeBanks USA/SkillsFuture/mVoting/Go Vocal）の事例をWEB調査し、機能比較表として可視化。三本柱（人材バンク／AIエージェント10体／地域通貨インザイ連動）、市・企業・市民の三者視点でのメリット、5つの根拠、参照元14リンクを掲載。ヒーローには「これは、日本で唯一の取り組みです。」を主訴求として配置。site/index.html のグローバルナビにも『日本で唯一』リンクを追加し導線を確保。CBIブランドCSS（Navy/Gold/Green）を継承しつつ、ページ独自スタイルは <style> ブロック内に閉じ込めた。",
+      "author": "A10 / 国際広報AI"
+    },
+    {
+      "date": "2026-06-20",
       "type": "fix",
       "target": "cbi-admin-gas/Code.gs / cbi/docs/* / cbi/agents/README.md（Claude Code実行担当の表記訂正）",
       "title": "plans通知メール本文＋手順書のClaude Code実行担当表記を『会長 新井』→『中司 祐樹（会計）』に訂正",
