@@ -1871,12 +1871,98 @@ const UNREAD_POLL_MS = 30000;
   // =========================================================
   // メールタブ（communitybankinzai@gmail.com 共有）
   // =========================================================
+  const MAIL_LISTW_KEY = 'cbi_admin_mail_listw';
+
   let mailBound = false;
   function openMailTab() {
     bindMailUI();
     setMobileView('list');       // タブを開いたら一覧画面
+    applyMailListWidth();        // 保存幅を復元
     loadMailList();              // 開くたびに最新化
     if (!state.mail.labelsLoaded) loadMailLabels();
+  }
+
+  function applyMailListWidth() {
+    const layout = document.querySelector('.mail-layout');
+    if (!layout) return;
+    const saved = parseInt(localStorage.getItem(MAIL_LISTW_KEY) || '0', 10);
+    if (saved > 200 && saved < 1200) {
+      layout.style.gridTemplateColumns = `220px ${saved}px 6px minmax(360px, 1fr)`;
+    }
+  }
+
+  function bindMailSplitter() {
+    const splitter = $('mail-splitter');
+    const layout = document.querySelector('.mail-layout');
+    if (!splitter || !layout) return;
+
+    const startDrag = (clientX) => {
+      const listPane = layout.querySelector('.mail-list-pane');
+      if (!listPane) return null;
+      return {
+        startX: clientX,
+        startW: listPane.getBoundingClientRect().width,
+        layoutLeft: layout.getBoundingClientRect().left,
+      };
+    };
+
+    let ctx = null;
+
+    const onMove = (clientX) => {
+      if (!ctx) return;
+      const dx = clientX - ctx.startX;
+      // 左サイドバー(220px) 分は差し引いて、リスト幅の最小/最大を制限
+      const minW = 240;
+      const maxW = Math.max(minW + 1, layout.getBoundingClientRect().width - 220 - 6 - 280);
+      let w = Math.round(ctx.startW + dx);
+      if (w < minW) w = minW;
+      if (w > maxW) w = maxW;
+      layout.style.gridTemplateColumns = `220px ${w}px 6px minmax(360px, 1fr)`;
+    };
+
+    const onMouseMove = (e) => onMove(e.clientX);
+    const onTouchMove = (e) => { if (e.touches[0]) onMove(e.touches[0].clientX); };
+
+    const endDrag = () => {
+      if (!ctx) return;
+      const listPane = layout.querySelector('.mail-list-pane');
+      if (listPane) {
+        const w = Math.round(listPane.getBoundingClientRect().width);
+        localStorage.setItem(MAIL_LISTW_KEY, String(w));
+      }
+      ctx = null;
+      splitter.classList.remove('dragging');
+      document.body.classList.remove('mail-splitting');
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', endDrag);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', endDrag);
+    };
+
+    splitter.addEventListener('mousedown', (e) => {
+      ctx = startDrag(e.clientX);
+      if (!ctx) return;
+      splitter.classList.add('dragging');
+      document.body.classList.add('mail-splitting');
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', endDrag);
+      e.preventDefault();
+    });
+    splitter.addEventListener('touchstart', (e) => {
+      if (!e.touches[0]) return;
+      ctx = startDrag(e.touches[0].clientX);
+      if (!ctx) return;
+      splitter.classList.add('dragging');
+      document.body.classList.add('mail-splitting');
+      window.addEventListener('touchmove', onTouchMove, { passive: false });
+      window.addEventListener('touchend', endDrag);
+    }, { passive: true });
+
+    // ダブルクリックでリセット
+    splitter.addEventListener('dblclick', () => {
+      layout.style.gridTemplateColumns = '';
+      localStorage.removeItem(MAIL_LISTW_KEY);
+    });
   }
 
   function setMobileView(view) {
@@ -1890,6 +1976,7 @@ const UNREAD_POLL_MS = 30000;
   function bindMailUI() {
     if (mailBound) return;
     mailBound = true;
+    bindMailSplitter();
 
     document.querySelectorAll('.mail-label-btn').forEach(btn => {
       btn.addEventListener('click', () => {
