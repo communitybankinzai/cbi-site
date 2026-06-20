@@ -325,6 +325,116 @@
     border-left: 3px solid var(--c-line);
   }
 
+  /* Term tooltip */
+  .term {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border-bottom: 1px dashed var(--c-gold);
+    cursor: help;
+    font-weight: 700;
+    color: var(--c-navy);
+  }
+  .term::after {
+    content: "ⓘ";
+    font-size: 0.85em;
+    color: var(--c-gold);
+  }
+  .term .tip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--c-navy-dark);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 10px 14px;
+    border-radius: 8px;
+    width: 240px;
+    box-shadow: var(--shadow-md);
+    transition: opacity .2s, visibility .2s;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .term .tip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--c-navy-dark);
+  }
+  .term:hover .tip,
+  .term:focus .tip {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* DAO footnote section */
+  .dao-note {
+    background: var(--c-paper);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 28px;
+    align-items: center;
+  }
+  .dao-note .figure {
+    aspect-ratio: 1 / 1;
+    background: var(--c-bg);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px dashed var(--c-line);
+  }
+  .dao-note .figure img { width: 100%; height: 100%; object-fit: cover; }
+  .dao-note .figure .placeholder {
+    font-size: 11px;
+    color: var(--c-ink-sub);
+    text-align: center;
+    padding: 8px;
+    line-height: 1.6;
+  }
+  .dao-note h4 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: var(--c-navy);
+  }
+  .dao-note p {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--c-ink-sub);
+    line-height: 1.85;
+  }
+  .dao-note .quote {
+    font-family: var(--font-serif);
+    font-size: 13px;
+    color: var(--c-navy);
+    padding: 6px 0 6px 12px;
+    border-left: 3px solid var(--c-gold);
+    margin: 4px 0 8px;
+  }
+  .dao-note .read-more {
+    font-size: 12px;
+    color: var(--c-gold);
+    font-weight: 700;
+  }
+  @media (max-width: 640px) {
+    .dao-note { grid-template-columns: 1fr; }
+    .dao-note .figure { max-width: 200px; margin: 0 auto; }
+  }
+
   @media (max-width: 860px) {
     .pillar-grid,
     .audience-grid { grid-template-columns: 1fr; }
@@ -393,8 +503,8 @@
         </div>
         <div class="pillar">
           <p class="num">PILLAR Ⅱ</p>
-          <h3>AIエージェント１０体による属人化しない運営</h3>
-          <p>CBIでは、事業運営の中核業務（依頼の受付・候補の抽出・提案文書の作成など）をAIエージェント A1〜A10 が分担しています。特定の役員や事務局長に運営知識が集中しないため、担当者の交代や離任があっても運営ノウハウが組織内に残り、活動が止まりません。市民活動団体で起きやすい『代表者一人に依存して続かない』状態を、運用設計の段階から避ける仕組みです。</p>
+          <h3>AI × <span class="term" tabindex="0">CiDAO<span class="tip">Citizen DAO（市民DAO）。提案・投票で運営方針を決める仕組み。詳細はページ下の脚注へ。</span></span> による属人化しない運営</h3>
+          <p>CBIでは、事業運営の中核業務（依頼の受付・候補の抽出・提案文書の作成など）をAIエージェント A1〜A10 が分担し、運営方針はメンバーの提案・投票（CiDAO）で決めます。「中心に自動化、周縁に人間」——担当者の交代や離任があっても、ルールと記録は組織内に残り続けます。市民活動団体で起きやすい『代表者一人に依存して続かない』状態を、運用設計の段階から避ける仕組みです。</p>
         </div>
         <div class="pillar">
           <p class="num">PILLAR Ⅲ</p>
@@ -719,6 +829,21 @@
       <p class="confidence-note">
         ※ 確信度：中。公開情報・自治体公式サイト・各プラットフォーム公式ドキュメントを中心に調査しましたが、非公開の類似事業や未公開のAI活用事例が存在する可能性は否定できません。新事例が見つかった場合は本ページを更新します。
       </p>
+
+      <!-- ====== CiDAOとは？ コンパクト脚注 ====== -->
+      <aside class="dao-note" aria-labelledby="dao-note-title">
+        <div class="figure">
+          <!-- ChatGPT等で生成した画像をここへ。aspect 1:1 推奨。/assets/uniqueness/dao-concept.png -->
+          <img src="../assets/uniqueness/dao-concept.png" alt="DAOの思想：中心に自動化、周縁に人間" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+          <div class="placeholder" style="display:none;">DAO思想図<br>（後日差替）</div>
+        </div>
+        <div>
+          <h4 id="dao-note-title">CiDAOとは？</h4>
+          <p>CiDAO（Citizen DAO）は、CBIの上位コミュニティ COCoLa が運営する「提案・投票による意思決定の仕組み」です。ブロックチェーンは使わず、表計算とプログラムで実装した実証段階の枠組みで、CBI もこの仕組みを使って運営方針を合意します。</p>
+          <p class="quote">「中心に自動化、周縁に人間」 — Vitalik Buterin（Ethereum 共同創設者、2014）</p>
+          <p><a class="read-more" href="https://you0810jmsdf.github.io/cocola-site/dao/" target="_blank" rel="noopener">COCoLa DAO の提案・投票ページを見る →</a></p>
+        </div>
+      </aside>
 
       <div class="sources">
         <h4>SOURCES（主な参照元）</h4>

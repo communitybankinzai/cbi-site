@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-20",
+      "type": "feature",
+      "target": "site/uniqueness/index.html ／ site/assets/uniqueness/（新規ディレクトリ）",
+      "title": "Pillar Ⅱ にCiDAO（提案・投票）を統合、末尾に『CiDAOとは？』コンパクト脚注を追加",
+      "detail": "ユーザー指摘：CiDAOへの言及がないと日本唯一性の主張が成立しない。ただし専門用語の注釈・ボリューム抑制が前提。対応：(1)Pillar Ⅱ 見出し『AIエージェント10体による属人化しない運営』→『AI × CiDAO による属人化しない運営』。CiDAOには tooltip 注釈（『Citizen DAO（市民DAO）。提案・投票で運営方針を決める仕組み』）を実装、ホバー/フォーカスで吹き出し表示。(2)本文に Vitalik Buterin の『中心に自動化、周縁に人間』引用を組み込み。(3)ページ末尾の確信度注釈の下に『CiDAOとは？』脚注セクション（aside.dao-note）を追加。左に DAO 思想図、右に4行の説明＋Vitalik引用＋『COCoLa DAO の提案・投票ページを見る →』リンク（https://you0810jmsdf.github.io/cocola-site/dao/）。(4)assets/uniqueness/ ディレクトリを新設し、README.md に画像生成プロンプトを保存。dao-concept.png 未配置時はonerrorで『DAO思想図（後日差替）』プレースホルダを表示。",
+      "author": "A10 / 国際広報AI"
+    },
+    {
+      "date": "2026-06-20",
       "type": "content",
       "target": "site/uniqueness/index.html（三本柱Ⅱ／市メリット／差異02）",
       "title": "AIエージェント運営の訴求軸を『少人数でも持続』から『属人化しない運営』へ変更",

@@ -487,6 +487,18 @@
       "actuals": [
         {
           "date": "2026-06-20",
+          "title": "Pillar Ⅱ にCiDAO統合＋『CiDAOとは？』脚注追加＋画像プロンプト整備 0.4時間",
+          "category": "広報",
+          "outputs": [
+            "site/uniqueness/index.html（Pillar Ⅱ拡張・tooltip・DAO脚注aside）",
+            "site/assets/uniqueness/README.md（画像生成プロンプト保存）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "ユーザー指摘『CiDAOへの言及がないと日本唯一性の主張が成立しない／ただし専門用語注釈・ボリューム抑制・画像はChatGPTで生成』に対応。Pillar Ⅱ 見出しを『AI × CiDAO による属人化しない運営』に変更し、CiDAO初出にtooltip注釈（ホバーで吹き出し表示）を実装。本文にVitalikの『中心に自動化、周縁に人間』を引用。ページ末尾に2カラムの『CiDAOとは？』aside（左：DAO思想図／右：4行説明＋引用＋COCoLa DAO ページへのリンク）を配置。assets/uniqueness/ ディレクトリと README.md を新設し、ChatGPT/DALL·E向け画像生成プロンプト（DAO思想図／和モダンNavy/Gold）を保存。dao-concept.png 未配置時のonerrorプレースホルダも実装。三本柱のバランスを維持しつつ専門用語と思想的根拠（Vitalik引用）の両方を担保。"
+        },
+        {
+          "date": "2026-06-20",
           "title": "AIエージェント運営の訴求軸を『属人化しない運営』に変更 0.2時間",
           "category": "広報",
           "outputs": [
