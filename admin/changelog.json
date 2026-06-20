@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-20",
+      "type": "fix",
+      "target": "site/uniqueness/index.html（ecosystem.png 中央のCBIロゴ差し替え）",
+      "title": "エコシステム全体図の中央をChatGPT生成の鳥居マークから本物のCBIロゴに差し替え、和紙背景に溶け込ませた",
+      "detail": "ユーザー指摘：中央の鳥居マーク（コミュニティバンク印西/INZAI）部分がChatGPT生成の架空ロゴで、本物のCBIロゴ（assets/cbi-logo.png）に置き換えたい。また、ロゴ単体の白背景(#ffffff)と画像本体の和紙風背景(#f5efde)の境界が褪せて見える。対応：画像ファイル自体は加工せず、HTMLレイヤーで重ねる方式を採用。.ecosystem-wrap で図版を position:relative、.ecosystem-logo を position:absolute で中央配置（width: 19%、aspect 1:1）し、radial-gradient (#ffffff 0-55% → #f5efde 78% → 透明 100%) で外周を和紙背景にフェードさせ境界を消した。pointer-events:none でキャプションへの干渉も防止。元のChatGPT画像は差替不要で済むため、再生成時のメンテも軽い。",
+      "author": "A10 / 国際広報AI"
+    },
+    {
+      "date": "2026-06-20",
       "type": "feature",
       "target": "site/assets/uniqueness/（画像3点）／site/uniqueness/index.html（3箇所に挿入）",
       "title": "uniqueness ページに図解3点（エコシステム全体図／DAO思想図／属人化対比図）を組み込んだ",

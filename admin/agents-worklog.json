@@ -487,6 +487,17 @@
       "actuals": [
         {
           "date": "2026-06-20",
+          "title": "ecosystem図の中央を本物のCBIロゴに差替、和紙背景に溶け込ませ 0.2時間",
+          "category": "広報",
+          "outputs": [
+            "site/uniqueness/index.html（.ecosystem-wrap/.ecosystem-logo CSS追加、HTMLでロゴ重ね）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "ユーザー指摘：エコシステム全体図の中央にあるChatGPT生成の鳥居マークではなく本物のCBIロゴ（assets/cbi-logo.png）を使いたい、かつロゴの白背景と画像の和紙背景の境界が褪せて見える。画像加工せずHTMLレイヤーで重ねる方式を選択（再生成時のメンテ軽減のため）。.ecosystem-wrap を相対配置、.ecosystem-logo を絶対配置で中央に19%サイズで重ね、radial-gradient で外周を和紙色#f5efdeにフェードさせて境界を消した。次の画像再生成時もHTML変更不要で済む。"
+        },
+        {
+          "date": "2026-06-20",
           "title": "ChatGPT生成の画像3点を整理＋uniqueness ページ3箇所に組み込み 0.3時間",
           "category": "広報",
           "outputs": [
