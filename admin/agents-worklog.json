@@ -7,6 +7,21 @@
       "actuals": [
         {
           "date": "2026-06-20",
+          "title": "changelog/worklog の整合性点検（直近3日）＋ 書き分けルール整備 ＋ Stop hook 導入",
+          "category": "事務",
+          "outputs": [
+            "site/admin/agents-worklog.json（A1.actuals に [補完追記]×6件、changelog にあって worklog 漏れの作業を A1 へ反映）",
+            "site/admin/changelog.json（A8 worklog にあって changelog 漏れ 6件を1エントリで補完）",
+            "cbi/CLAUDE.md（『changelog.json と agents-worklog.json の位置づけ』セクション新設：観点／対象／読者／粒度の比較表、書き分け例、重複しない場面の表。ルール5/7にも観点の明示を追加）",
+            "cbi/.claude/settings.local.json（Stop hook 追加：site/admin/ 編集ありかつ agents-worklog.json 未更新で警告）",
+            "cbi/.claude/check-worklog.sh（Stop hook 実行スクリプト 新規）"
+          ],
+          "hours": 1.2,
+          "partnerApproved": false,
+          "note": "ユーザー指摘『他セッションで worklog 反映漏れが怖い』『changelog と worklog が同じ内容になると目的は同じになる』を受けて、(1)直近3日の双方向漏れを点検→補完、(2)位置づけ（What vs Who/How much）を明示して書き分けルール化、(3)Stop hookで site/admin/ 編集時に worklog 未更新なら警告。点検範囲は 2026-06-18〜06-20 のみ、それ以前は未着手。"
+        },
+        {
+          "date": "2026-06-20",
           "title": "plans通知メール本文＋関連ドキュメントの管理画面URLを修正（cocola-site→cbi-site）",
           "category": "保守",
           "outputs": [
