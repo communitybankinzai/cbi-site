@@ -7,6 +7,21 @@
       "actuals": [
         {
           "date": "2026-06-20",
+          "title": "plans通知メール本文＋関連ドキュメントの管理画面URLを修正（cocola-site→cbi-site）",
+          "category": "保守",
+          "outputs": [
+            "cbi-admin-gas/Code.gs（notifyPlanAdded_ メール本文URL修正、clasp v20 再deploy）",
+            "cbi/docs/agents-plans-setup.md（3箇所修正）",
+            "cbi/docs/agents-plans-design.md（1箇所修正：メール仕様サンプル）",
+            "cbi/agents/README.md（2箇所修正：メンバー向け作業依頼フロー）",
+            "site/admin/changelog.json 追記"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "ユーザー指摘で発覚した誤記の修正。親COCoLaのCLAUDE.md ルール7に書かれていたCOCoLa公開URL（you0810jmsdf.github.io/cocola-site/）を、CBIサイト（communitybankinzai.github.io/cbi-site/）の手順書とGASメール本文に誤って流用していた。市長説明資料の cocola-site/dao/ 参照はCOCoLa CiDAOページの正当な参照のため対象外。今後送信されるメールは正しいURLで届く。"
+        },
+        {
+          "date": "2026-06-20",
           "title": "[補完追記] カテゴリをAIエージェント区分（A1〜A10、10種）に変更",
           "category": "実装",
           "outputs": [

@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-20",
+      "type": "fix",
+      "target": "cbi-admin-gas/Code.gs / cbi/docs/* / cbi/agents/README.md（URL誤記修正）",
+      "title": "plans通知メール本文＋関連ドキュメントの管理画面URLを修正（cocola-site→cbi-site）",
+      "detail": "ユーザー指摘で発覚：plans通知メール本文に書かれた管理画面URLが誤って親COCoLaサイトの URL『https://you0810jmsdf.github.io/cocola-site/admin/』になっていた。正しくはCBIサイトの『https://communitybankinzai.github.io/cbi-site/admin/』。原因：親COCoLaのCLAUDE.md ルール7に書かれていたCOCoLa公開URLを、CBI側の手順書・GASメール本文にも誤って流用した。修正対象4ファイル：(1)cbi-admin-gas/Code.gs notifyPlanAdded_() のメール本文URL→clasp v20として再deploy済（deploymentId AKfycbz0UJbV1ZqGEThNqj_LSTHe82ws6lni5EjYXZSDYuN43NTwo1ugrdjmrKWZ-XBf9yV3）。(2)cbi/docs/agents-plans-setup.md 3箇所（動作確認手順・周知文）。(3)cbi/docs/agents-plans-design.md 1箇所（メール仕様サンプル）。(4)cbi/agents/README.md 2箇所（メンバー向け作業依頼フロー）。市長説明資料 cbi/調整経緯/印西市/20260612_市長説明/* の cocola-site/dao/ 参照はCOCoLa CiDAOページの正当な参照のため除外。今後送信されるメールは正しいURLで届く（既送信済の1通は手動で読み替え必要）。",
+      "author": "統括エージェント / A1 Core"
+    },
+    {
+      "date": "2026-06-20",
       "type": "docs",
       "target": "site/admin/changelog.json / agents-worklog.json（整合性点検）",
       "title": "直近3日分の changelog⇔agents-worklog 整合性点検：A8 関連6件の changelog 漏れを補完追記",
