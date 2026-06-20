@@ -396,39 +396,6 @@
     letter-spacing: 0.04em;
   }
 
-  /* Ecosystem central logo overlay */
-  .ecosystem-wrap {
-    position: relative;
-    background: #f5efde; /* 元画像の和紙背景に近い色（フェード基準色）*/
-  }
-  .ecosystem-wrap > .bg { width: 100%; height: auto; display: block; }
-  .ecosystem-logo {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 19%;
-    aspect-ratio: 1 / 1;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background: radial-gradient(
-      circle at center,
-      #ffffff 0%,
-      #ffffff 55%,
-      #f5efde 78%,
-      rgba(245, 239, 222, 0) 100%
-    );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-  }
-  .ecosystem-logo img {
-    width: 78%;
-    height: 78%;
-    object-fit: contain;
-    display: block;
-  }
-
   /* DAO footnote section */
   .dao-note {
     background: var(--c-paper);
@@ -542,12 +509,7 @@
   <section style="background: var(--c-bg); padding: 56px 0 0;">
     <div class="container">
       <figure class="inline-figure">
-        <div class="ecosystem-wrap">
-          <img class="bg" src="../assets/uniqueness/ecosystem.png" alt="CBIエコシステム全体図：市民・AIエージェントA1-A10・CiDAO投票・地域通貨（構想段階）が中央のCommunity Bank INZAIを取り囲む構成">
-          <div class="ecosystem-logo" aria-hidden="true">
-            <img src="../assets/cbi-logo.png" alt="">
-          </div>
-        </div>
+        <img src="../assets/uniqueness/ecosystem.png" alt="CBIエコシステム全体図：市民・AIエージェントA1-A10・CiDAO投票・地域通貨（構想段階）が中央のCBIロゴを取り囲む構成">
         <figcaption>CBIエコシステム全体図｜市民 × AIエージェント × CiDAO × 地域通貨（構想段階）</figcaption>
       </figure>
     </div>

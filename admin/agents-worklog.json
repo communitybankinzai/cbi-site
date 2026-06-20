@@ -487,6 +487,18 @@
       "actuals": [
         {
           "date": "2026-06-20",
+          "title": "ecosystem ロゴ重ね処理を撤去、再生成用プロンプトを改良 0.2時間",
+          "category": "広報",
+          "outputs": [
+            "site/uniqueness/index.html（.ecosystem-wrap/.ecosystem-logo 撤去、シンプル figure に戻す）",
+            "site/assets/uniqueness/README.md（プロンプト改良：ロゴ添付方式＋『印西』文字禁止指示）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "ユーザー指摘『前回のロゴ重ねが雑』『地域通貨に 印西 と書いてあるのは生々しい』に対応。HTMLからロゴ重ね用ラッパーとCSSを撤去しシンプルなfigureに戻した。README.mdのプロンプトを刷新：(1)cbi-logo.pngを参考画像として添付する旨を明記、(2)生成AIに中央ロゴを描かせず添付画像を忠実に再現させる指示、(3)地域通貨コインに 印西 漢字を書かない指示を追加。ユーザーが新プロンプトでChatGPT再生成→同名で上書きすればHTML変更不要で反映される。"
+        },
+        {
+          "date": "2026-06-20",
           "title": "ecosystem図の中央を本物のCBIロゴに差替、和紙背景に溶け込ませ 0.2時間",
           "category": "広報",
           "outputs": [
