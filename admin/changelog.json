@@ -5,6 +5,14 @@
     {
       "date": "2026-06-20",
       "type": "feature",
+      "target": "site/assets/uniqueness/（画像3点）／site/uniqueness/index.html（3箇所に挿入）",
+      "title": "uniqueness ページに図解3点（エコシステム全体図／DAO思想図／属人化対比図）を組み込んだ",
+      "detail": "ユーザーがChatGPTで3画像を生成。cbi直下にあった以下のファイルを site/assets/uniqueness/ に英数字リネームで整理：(a)CBIエコシステム全体図.png → ecosystem.png、(b)DAOの思想図….png → dao-concept.png、(c)『属人化しない』対比図….png → no-personalization.png。HTML への組み込み3箇所：(1)ヒーロー直下に <figure class=inline-figure> で ecosystem.png（全体像をまず見せる）、(2)差異02 セクションの本文末尾に no-personalization.png（代表者依存型 vs CBIモデルの視覚補強、max-width 640px）、(3)既存のCiDAO脚注セクション（aside.dao-note）の dao-concept.png は配置済みだったが、CSSのaspect-ratioを1:1→16:9に修正、グリッドカラムを200px→300pxに調整。inline-figure クラスを新規追加し max-width 820px・shadow・caption付きで統一感を持たせた。assets/uniqueness/README.md も全画像分の説明＋プロンプトに更新。",
+      "author": "A10 / 国際広報AI"
+    },
+    {
+      "date": "2026-06-20",
+      "type": "feature",
       "target": "site/uniqueness/index.html ／ site/assets/uniqueness/（新規ディレクトリ）",
       "title": "Pillar Ⅱ にCiDAO（提案・投票）を統合、末尾に『CiDAOとは？』コンパクト脚注を追加",
       "detail": "ユーザー指摘：CiDAOへの言及がないと日本唯一性の主張が成立しない。ただし専門用語の注釈・ボリューム抑制が前提。対応：(1)Pillar Ⅱ 見出し『AIエージェント10体による属人化しない運営』→『AI × CiDAO による属人化しない運営』。CiDAOには tooltip 注釈（『Citizen DAO（市民DAO）。提案・投票で運営方針を決める仕組み』）を実装、ホバー/フォーカスで吹き出し表示。(2)本文に Vitalik Buterin の『中心に自動化、周縁に人間』引用を組み込み。(3)ページ末尾の確信度注釈の下に『CiDAOとは？』脚注セクション（aside.dao-note）を追加。左に DAO 思想図、右に4行の説明＋Vitalik引用＋『COCoLa DAO の提案・投票ページを見る →』リンク（https://you0810jmsdf.github.io/cocola-site/dao/）。(4)assets/uniqueness/ ディレクトリを新設し、README.md に画像生成プロンプトを保存。dao-concept.png 未配置時はonerrorで『DAO思想図（後日差替）』プレースホルダを表示。",

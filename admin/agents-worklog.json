@@ -487,6 +487,21 @@
       "actuals": [
         {
           "date": "2026-06-20",
+          "title": "ChatGPT生成の画像3点を整理＋uniqueness ページ3箇所に組み込み 0.3時間",
+          "category": "広報",
+          "outputs": [
+            "site/assets/uniqueness/ecosystem.png（新規・リネーム配置）",
+            "site/assets/uniqueness/dao-concept.png（新規・リネーム配置）",
+            "site/assets/uniqueness/no-personalization.png（新規・リネーム配置）",
+            "site/assets/uniqueness/README.md（3画像の説明＋プロンプト記載）",
+            "site/uniqueness/index.html（ヒーロー下／差異02／CiDAO脚注の3箇所に図版を挿入、CSS調整）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "ユーザーがChatGPTで3画像を生成しcbi直下に保存していたため、site/assets/uniqueness/ に英数字リネーム（ecosystem/dao-concept/no-personalization）で整理。HTMLに inline-figure クラスを新規追加し、ヒーロー直下にエコシステム全体図、差異02 直後に属人化対比図、既存CiDAO脚注のDAO思想図はaspect-ratio 1:1→16:9に修正して配置。3画像とも16:9で和モダントーン統一済み。図版にcaption付きで補強した結果、文章だけだった訴求が視覚的にも一目で理解できる構成になった。"
+        },
+        {
+          "date": "2026-06-20",
           "title": "Pillar Ⅱ にCiDAO統合＋『CiDAOとは？』脚注追加＋画像プロンプト整備 0.4時間",
           "category": "広報",
           "outputs": [
