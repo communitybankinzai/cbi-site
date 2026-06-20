@@ -4,6 +4,22 @@
   "entries": [
     {
       "date": "2026-06-20",
+      "type": "docs",
+      "target": "CLAUDE.md / agents/README.md / docs/agents-plans-design.md",
+      "title": "git push 義務化＋メンバー向けエージェント依頼フロー文書化＋plans入力UI設計書作成",
+      "detail": "Code を使えないメンバーが管理画面から各エージェントへ作業依頼できるようにする全体設計。(1)C:\\COCoLa\\CLAUDE.md ルール6 を強化：『changelog/index.html および該当サイトの changelog.json・agents-worklog.json に追記し git add → commit → push まで自動完了させる（ユーザー確認禁止）』を明記。(2)C:\\COCoLa\\cbi\\CLAUDE.md ルール5/6/7/8 に『追記後は git push まで自動実行する』を追加、ルール9『作業開始前に必ず plans を確認』と ルール10『push 義務化の例外規定』を新規追加。(3)agents/README.md に『エージェントへの作業依頼フロー（メンバー向け）』を追加：A.Code使用可能メンバー（全自動）／B.Code使えないメンバー（管理画面から plans 入力 → Gmail通知 → Code持ちが拾って実行 → 完了で actuals 移動）／サイト反映の3要件 を明文化。(4)cbi/docs/agents-plans-design.md 新規作成：スプレッドシート『CBI_エージェント計画』構造（plans/actualsシート）、GAS API（listPlans/addPlan/updatePlan/deletePlan/completePlan/listActuals/generateWorklogJson）、UI仕様（新規予定モーダル・完了モーダル）、MailApp.sendEmail通知仕様、JSON自動生成バッチ3方式比較、7フェーズ実装プラン（合計5〜6時間）、リスク対策表 を網羅。B本体実装は未着手、本ファイル完成までで本セッションは終了。",
+      "author": "統括エージェント"
+    },
+    {
+      "date": "2026-06-20",
+      "type": "docs",
+      "target": "agents/ 配下（A1/A2/A4/A5/A10）",
+      "title": "印西市民アカデミー卒業論文を各エージェントのknowledgeへ振り分け保存",
+      "detail": "卒業論文『CivicDAO行政連携モデルの提案』（原本：C:\\Users\\nsfactory\\OneDrive\\COCoLa\\印西市民アカデミー卒業論文\\）の関連章・図表・調整経緯を、担当エージェントの知識ベースとして分散保存。(1)A10 Scout/knowledge/thesis/：第3章 CivicDAO理論と実証、第5章 2つの流れモデルと政策提言、参考文献、表集、卒論作成要領p1/p2（海外事例・他自治体比較・助成金応募の理論的フレーム）。(2)A4 Voice-Out/knowledge/figures/：fig01_構造的課題、fig02_CiDAO3ステップ、fig04_COCoLa_CBI関係、fig05_CBI3つの基盤、fig06_2つの流れモデル、fig07_連携3つの仕組み、extra_image_a/b（カバー候補2点）、図表生成プロンプト集.md（SNS投稿時の広報素材として即時引用可能）。(3)A1 Core/knowledge/thesis/：論文最終版docx（7MB）、CHANGELOG、第1章 序論、第6章 結論と今後の展望、build_docx.py（全体統括）。(4)A2 Voice/knowledge/thesis/：第2章 印西市の市民活動の現状と課題（市民アンケート設計の現状認識ベースライン）。(5)A5 Bridge/knowledge/thesis/＋knowledge/行政調整経緯/生涯学習課_20260527/：第4章 CBI設立と市民投票の実証、印西市生涯学習課髙橋氏との2026-05-27メール往復記録3通（送→受→返）。各保存先にREADME.mdを配置し、章別マッピング表と相互参照リンクを整備。各エージェントのworklog.mdに2026-06-20の作業記録も追記済み。",
+      "author": "統括エージェント"
+    },
+    {
+      "date": "2026-06-20",
       "type": "feature",
       "target": "管理画面 / GAS（gas-mail-share）",
       "title": "管理画面に『📧 メール』タブを追加（communitybankinzai@gmail.com 共有）",

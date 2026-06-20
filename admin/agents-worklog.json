@@ -1,10 +1,44 @@
 {
-  "updatedAt": "2026-06-19",
+  "updatedAt": "2026-06-20",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": ["実装", "保守", "レポート", "分析", "会議", "広報", "事務", "調査", "その他"],
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-20",
+          "title": "git push義務化＋メンバー向け作業依頼フロー文書化＋plans入力UI設計書作成",
+          "category": "事務",
+          "outputs": [
+            "C:\\COCoLa\\CLAUDE.md（ルール6強化）",
+            "C:\\COCoLa\\cbi\\CLAUDE.md（ルール5〜10強化・追加）",
+            "agents/README.md（依頼フロー追記）",
+            "cbi/docs/agents-plans-design.md（B実装設計書 新規）",
+            "site/admin/changelog.json 追記",
+            "site/admin/agents-worklog.json 追記"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "メンバーからの『管理画面から各エージェントへ作業依頼できるようにしたい』要望に対する全体設計。今回はA（CLAUDE.mdルール強化）+C（運用フロー文書化）+B設計書 までを完成。B本体実装（GAS拡張・admin.js UI追加・MailApp通知・JSON自動生成）は次回以降。設計書cbi/docs/agents-plans-design.md に7フェーズ実装プラン明記。当面はメンバーは会長へ Slack/LINE/メールで直接依頼する運用。"
+        },
+        {
+          "date": "2026-06-20",
+          "title": "印西市民アカデミー卒業論文を5エージェントのknowledgeへ振り分け保存（統括）",
+          "category": "事務",
+          "outputs": [
+            "agents/a1-core/knowledge/thesis/（論文最終版docx・第1章・第6章・CHANGELOG・build_docx.py）",
+            "agents/a2-voice/knowledge/thesis/第2章_印西市の市民活動の現状と課題.md",
+            "agents/a4-voice-out/knowledge/figures/（fig01〜fig07＋extra2点＋プロンプト集）",
+            "agents/a5-bridge/knowledge/thesis/第4章_CBI設立と市民投票.md",
+            "agents/a5-bridge/knowledge/行政調整経緯/生涯学習課_20260527/（メール3通）",
+            "agents/a10-scout/knowledge/thesis/（第3章・第5章・参考文献・表集・作成要領JPG）",
+            "各エージェントの README.md / worklog.md 追記",
+            "site/admin/changelog.json 追記"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "卒業論文『CivicDAO行政連携モデルの提案』(原本：OneDrive\\印西市民アカデミー卒業論文\\) を担当エージェント別に分散保存。A10はvTaiwan等海外事例・他自治体比較の理論的フレーム、A4はSNS投稿時の広報素材として即時引用可能。各保存先にREADME.mdで章別マッピング表・相互参照リンクを整備。"
+        },
         {
           "date": "2026-06-19",
           "title": "管理画面：AIエージェントが各アイデアにコメント意見を生成する機能を実装",
