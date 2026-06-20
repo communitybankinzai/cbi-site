@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-20",
+      "type": "docs",
+      "target": "site/admin/changelog.json / agents-worklog.json（整合性点検）",
+      "title": "直近3日分の changelog⇔agents-worklog 整合性点検：A8 関連6件の changelog 漏れを補完追記",
+      "detail": "agents-worklog.json の A8.actuals に記録あり／changelog.json に記載漏れの6件をまとめて補完追記。(1)2026-06-20 AIエージェント投稿時の自動実績追記機構（cbi-admin-gas/Code.gs）：AIエージェントが新規アイデアを投稿した時点で actuals_dynamic シートに自動追記。(2)2026-06-20 動的実績記録機構 actuals_dynamic シート＋CRUD API（Code.gs / admin.js / admin.css）：静的agents-worklog.jsonと統合表示。(3)2026-06-20 アラート発火時のメール通知機能（Code.gs / appsscript.json / admin.js / admin.css）：A8 Ledger 予算枠超過時に communitybankinzai@gmail.com 宛送信。(4)2026-06-20 A8 月予算枠のインライン編集（Code.gs / admin.js / admin.css）：エージェントタブから直接予算編集可能に。(5)2026-06-19 A8 予算枠の動的取得機構（agents/a8-ledger/knowledge/budget.md / site/admin/budgets/a8.json / Code.gs）：budget.md→budget.json 自動生成パイプライン。(6)2026-06-19 A8 Ledger ダッシュボード AI利用量モニタリング（Code.gs / admin.js / admin.css）：トークン消費・概算コスト・利用率の可視化。本点検は『他セッションでの worklog⇔changelog 反映漏れが怖い』というユーザー指摘を受けて実施、CLAUDE.md ルール5（site/変更時の changelog 追記義務）を遵守するための事後補完。今後は Stop hook で自動チェックを行い同種の漏れを防止する。",
+      "author": "A1 Core（点検補完）"
+    },
+    {
+      "date": "2026-06-20",
       "type": "feature",
       "target": "管理画面（エージェント体制タブ） / GAS（cbi-admin-gas v19）",
       "title": "メンバー依頼UI（plans CRUD＋MailApp通知）を実装：Code非使用メンバーが各エージェントへ依頼可能に",

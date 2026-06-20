@@ -7,6 +7,92 @@
       "actuals": [
         {
           "date": "2026-06-20",
+          "title": "[補完追記] カテゴリをAIエージェント区分（A1〜A10、10種）に変更",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs（categories 配列を10種ハードコード、migrateCategories アクション追加、clasp v12 デプロイ）",
+            "site/admin/index.html（カテゴリ select プレースホルダのみに削減）",
+            "site/admin/admin.js（populateCategorySelects() で agents.json から動的生成、loadAgents をログイン直後に先行ロード）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "旧7カテゴリ（CiDAO実証/2つの流れ/団体ネットワーク/人財発掘/交流会/中長期構想/その他）をAIエージェント区分10種（A1〜A10）に統一。表記は『Aコード + 役割（agents.json の role の括弧前）』。既存アイデア4件は preview経由でmigrateCategories呼び出し全件移行完了。事後補完追記（2026-06-20点検時に worklog 反映漏れと判明）。"
+        },
+        {
+          "date": "2026-06-20",
+          "title": "[補完追記] アイデアカード見やすさ改善＋『AIで反映』→『AIで最終とりまとめ』改名・プロンプト強化",
+          "category": "実装",
+          "outputs": [
+            "site/admin/admin.css（line-clamp 3行表示）",
+            "site/admin/admin.js（renderList末尾で setTimeout(50)+offsetHeight 強制reflow＋トグル本文表示）",
+            "site/admin/index.html（ボタン名変更：AIで反映→AIで最終とりまとめ、tooltip更新、?v=20260620c キャッシュバスタ）",
+            "cbi-admin-gas/Code.gs（handleAiRevise_ プロンプト強化、clasp v10 デプロイ）"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "(1)UI改修：本文を3行省略表示、3行超のカードのみ『本文を全文表示』トグル。(2)ボタン名：『🤖 AIで反映』→『🤝 AIで最終とりまとめ』。(3)プロンプト：『議事とりまとめアシスタント』として合意点・対立点・保留点を明確に分け、少数派の懸念も必ず反映、重要主張は出典明示。事後補完追記。"
+        },
+        {
+          "date": "2026-06-20",
+          "title": "[補完追記] AIエージェントが自身の knowledge_summary を踏まえて提案・コメントできるよう拡張",
+          "category": "実装",
+          "outputs": [
+            "site/admin/agents.json（各エージェント定義に knowledge_summary フィールドを追加、500〜1000字）",
+            "site/admin/admin.js（onAiComment/onAiSuggest で agentInfo に knowledge_summary を含めて GAS に POST）",
+            "cbi-admin-gas/Code.gs（handleAiSuggest_/handleAiComment_ のプロンプトに『あなたが保有する知識ベース』セクション追加、clasp v9 デプロイ）"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "Gemini 2.5 Flash がエージェントの保有知識を踏まえた発言可能に。A1 Core はGASデプロイ手順、A8 Ledger は会計ルール、A4 Voice-Out はSNSテンプレを、各エージェントが自身の専門知識ベースで議論参加。事後補完追記。"
+        },
+        {
+          "date": "2026-06-19",
+          "title": "[補完追記] 全10エージェントに初期知識を投入（runbook/テンプレ/分類体系/助成金カレンダー等15ファイル）",
+          "category": "事務",
+          "outputs": [
+            "agents/a1-core/knowledge/（GASデプロイrunbook・システムアーキ図(mermaid)・Gemini API仕様メモ）",
+            "agents/a2-voice/knowledge/（カテゴリ別集計の分析手法・CiDAOカテゴリ辞書）",
+            "agents/a8-ledger/knowledge/（月次収支レポートテンプレ・会計処理基本ルール）",
+            "agents/a9-stage/knowledge/（議事録テンプレ・四半期交流会企画書テンプレ）",
+            "agents/a3-network/knowledge/（印西市団体リスト取得方法）",
+            "agents/a4-voice-out/knowledge/（SNS媒体別投稿テンプレ）",
+            "agents/a5-bridge/knowledge/（行政宛要望書テンプレ）",
+            "agents/a6-boost/knowledge/（自走系イベント企画手順）",
+            "agents/a7-match/knowledge/（スキル分類体系初版 7大分類×中分類）",
+            "agents/a10-scout/knowledge/（助成金カレンダー2026年度版）"
+          ],
+          "hours": 1.5,
+          "partnerApproved": false,
+          "note": "稼働中4体（A1/A2/A8/A9）に厚めに、投入予定6体（A3/A4/A5/A6/A7/A10）に最低1ファイルずつ初期知識を植え付け。各エージェントが起動直後から実用可能な知識基盤を保有。事後補完追記。"
+        },
+        {
+          "date": "2026-06-19",
+          "title": "[補完追記] 未作成エージェント6体（A3/A4/A5/A6/A7/A10）のフォルダ初期化と全エージェントへの knowledge/ 基盤導入",
+          "category": "事務",
+          "outputs": [
+            "agents/a3-network/（README.md / worklog.md / knowledge/README.md）",
+            "agents/a4-voice-out/（同上）",
+            "agents/a5-bridge/（同上）",
+            "agents/a6-boost/（同上）",
+            "agents/a7-match/（同上）",
+            "agents/a10-scout/（同上）",
+            "agents/a1-core/knowledge/README.md, agents/a2-voice/knowledge/README.md, agents/a8-ledger/knowledge/README.md, agents/a9-stage/knowledge/README.md"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "agents.json で定義済みだが実フォルダが無かった6体に README.md と worklog.md を作成。全10エージェントに knowledge/ サブフォルダを新設し『経験＝worklog／知識＝knowledge』の二系統を全エージェントで一貫した形に統一。作成ファイル数：新規6体×3 + 既存4体×1 = 計22ファイル。事後補完追記。"
+        },
+        {
+          "date": "2026-06-19",
+          "title": "[補完追記] 公開サイト：団体情報の事業期間・総事業費を空白化",
+          "category": "実装",
+          "outputs": ["site/index.html"],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "団体情報セクションの『事業期間』『総事業費』の値を空欄に。事後補完追記。"
+        },
+        {
+          "date": "2026-06-20",
           "title": "メンバー依頼UI（plans CRUD＋MailApp通知）を実装：Code非使用メンバーが各エージェントへ依頼可能に",
           "category": "実装",
           "outputs": [
