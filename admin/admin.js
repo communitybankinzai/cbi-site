@@ -47,6 +47,7 @@ const UNREAD_POLL_MS = 30000;
       selectedId: '',
       labelsLoaded: false,
       loading: false,
+      mobileView: 'list', // 'labels' | 'list' | 'detail'
     },
   };
 
@@ -226,6 +227,10 @@ const UNREAD_POLL_MS = 30000;
     ['ideas', 'mail', 'agents', 'changelog'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
+    document.body.classList.toggle('mail-fullwidth', name === 'mail');
+    if (name !== 'mail') {
+      document.body.classList.remove('mail-view-labels', 'mail-view-list', 'mail-view-detail');
+    }
     if (name === 'agents' && !state.agentsLoaded) loadAgents();
     if (name === 'changelog' && !state.changelogLoaded) loadChangelog();
     if (name === 'mail') openMailTab();
@@ -1869,8 +1874,17 @@ const UNREAD_POLL_MS = 30000;
   let mailBound = false;
   function openMailTab() {
     bindMailUI();
+    setMobileView('list');       // タブを開いたら一覧画面
     loadMailList();              // 開くたびに最新化
     if (!state.mail.labelsLoaded) loadMailLabels();
+  }
+
+  function setMobileView(view) {
+    state.mail.mobileView = view;
+    document.body.classList.remove('mail-view-labels', 'mail-view-list', 'mail-view-detail');
+    document.body.classList.add('mail-view-' + view);
+    const back = $('mail-mobile-back');
+    if (back) back.hidden = (view === 'list');
   }
 
   function bindMailUI() {
@@ -1884,12 +1898,20 @@ const UNREAD_POLL_MS = 30000;
         state.mail.selectedId = '';
         highlightMailLabel(lbl);
         renderMailDetail(null);
+        setMobileView('list');     // ラベル選択後は一覧へ
         loadMailList();
       });
     });
 
     const refresh = $('mail-refresh');
     if (refresh) refresh.addEventListener('click', loadMailList);
+
+    const menuBtn = $('mail-mobile-menu');
+    if (menuBtn) menuBtn.addEventListener('click', () => {
+      setMobileView(state.mail.mobileView === 'labels' ? 'list' : 'labels');
+    });
+    const backBtn = $('mail-mobile-back');
+    if (backBtn) backBtn.addEventListener('click', () => setMobileView('list'));
 
     const search = $('mail-search');
     if (search) {
@@ -1967,6 +1989,7 @@ const UNREAD_POLL_MS = 30000;
             state.mail.selectedId = '';
             highlightMailLabel(btn.dataset.label);
             renderMailDetail(null);
+            setMobileView('list');
             loadMailList();
           });
         });
@@ -2014,6 +2037,7 @@ const UNREAD_POLL_MS = 30000;
   async function openMailDetail(id) {
     state.mail.selectedId = id;
     document.querySelectorAll('.mail-row').forEach(r => r.classList.toggle('selected', r.dataset.id === id));
+    setMobileView('detail');
     const det = $('mail-detail');
     if (det) det.innerHTML = '<p class="empty">読み込み中…</p>';
     try {

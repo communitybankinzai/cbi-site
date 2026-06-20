@@ -1874,6 +1874,14 @@ button { font-family: inherit; cursor: pointer; }
 /* =========================================================
    メールタブ（Gmail風2ペイン）
    ========================================================= */
+/* メールタブ表示時のみ admin-main の幅制約を解除 */
+body.mail-fullwidth .admin-main {
+  max-width: none;
+  padding: 16px 16px 0;
+  gap: 12px;
+}
+body.mail-fullwidth .tab-nav { padding: 0 8px; }
+
 .panel-mail { padding: 0; overflow: hidden; }
 
 .mail-toolbar {
@@ -1892,11 +1900,14 @@ button { font-family: inherit; cursor: pointer; }
 .mail-account { font-size: 0.75rem; color: #64748b; font-weight: 400; margin-left: 6px; }
 .mail-search { min-width: 220px; }
 
+/* スマホ用ハンバーガー＆戻る（PCでは非表示） */
+.mail-mobile-only { display: none; }
+
 .mail-layout {
   display: grid;
-  grid-template-columns: 200px 380px 1fr;
-  height: calc(100vh - 240px);
-  min-height: 480px;
+  grid-template-columns: 220px minmax(360px, 1.1fr) 2fr;
+  height: calc(100vh - 200px);
+  min-height: 520px;
   background: #f8fafc;
 }
 
@@ -1942,9 +1953,9 @@ button { font-family: inherit; cursor: pointer; }
 .mail-list { display: flex; flex-direction: column; }
 .mail-row {
   display: grid;
-  grid-template-columns: 160px 1fr 90px;
-  gap: 10px;
-  padding: 10px 14px;
+  grid-template-columns: 180px 1fr 90px;
+  gap: 12px;
+  padding: 12px 14px;
   border-bottom: 1px solid #f1f5f9;
   cursor: pointer;
   align-items: start;
@@ -1962,17 +1973,24 @@ button { font-family: inherit; cursor: pointer; }
 }
 .mail-row-main { min-width: 0; }
 .mail-row-subject {
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
   color: #1e293b;
+  line-height: 1.35;
+  word-break: break-word;
 }
 .mail-row-snippet {
   font-size: 0.8rem;
   color: #64748b;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.35;
+  margin-top: 2px;
+  word-break: break-word;
 }
 .mail-row-meta { text-align: right; font-size: 0.75rem; color: #64748b; }
 .mail-row-date { white-space: nowrap; }
@@ -2059,21 +2077,65 @@ button { font-family: inherit; cursor: pointer; }
 
 .mail-error { color: #b91c1c; }
 
-@media (max-width: 980px) {
+/* タブレット（中間幅）：2ペイン化 */
+@media (max-width: 1100px) {
   .mail-layout {
-    grid-template-columns: 160px 1fr;
+    grid-template-columns: 200px minmax(320px, 1fr) 1.4fr;
+  }
+}
+@media (max-width: 900px) {
+  .mail-layout {
+    grid-template-columns: 180px minmax(280px, 1fr);
     grid-template-rows: auto auto;
     height: auto;
+    min-height: 0;
   }
-  .mail-detail-pane { grid-column: 1 / -1; border-top: 1px solid #e5e7eb; min-height: 320px; }
-  .mail-row { grid-template-columns: 120px 1fr 70px; }
+  .mail-detail-pane {
+    grid-column: 1 / -1;
+    border-top: 1px solid #e5e7eb;
+    min-height: 360px;
+  }
 }
-@media (max-width: 600px) {
-  .mail-layout { grid-template-columns: 1fr; }
-  .mail-sidebar { border-right: 0; border-bottom: 1px solid #e5e7eb; }
-  .mail-list-pane { border-right: 0; border-bottom: 1px solid #e5e7eb; }
-  .mail-row { grid-template-columns: 1fr 70px; }
-  .mail-row-from { grid-column: 1; }
-  .mail-row-main { grid-column: 1; }
-  .mail-row-meta { grid-column: 2; grid-row: 1 / span 2; }
+
+/* スマホ：Gmailアプリ風の画面切替 */
+@media (max-width: 720px) {
+  body.mail-fullwidth .admin-main { padding: 8px 0 0; gap: 8px; }
+  body.mail-fullwidth .tab-nav { padding: 0 4px; }
+
+  .mail-toolbar { padding: 8px 10px; }
+  .mail-title { font-size: 1rem; }
+  .mail-search { min-width: 0; flex: 1 1 100%; }
+
+  .mail-mobile-only { display: inline-flex; }
+
+  .mail-layout {
+    display: block;
+    height: auto;
+    min-height: 0;
+  }
+  .mail-sidebar,
+  .mail-list-pane,
+  .mail-detail-pane { display: none; }
+
+  /* 各ビューモードで1画面だけ表示 */
+  body.mail-view-labels  .mail-sidebar    { display: block; height: calc(100vh - 180px); border: 0; }
+  body.mail-view-list    .mail-list-pane  { display: block; height: calc(100vh - 180px); border: 0; }
+  body.mail-view-detail  .mail-detail-pane{ display: block; height: calc(100vh - 180px); border: 0; }
+
+  /* スマホ時の行レイアウト：1段（差出人＋日付）＋ 件名2行 ＋ スニペット2行 */
+  .mail-row {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+    gap: 4px 8px;
+    padding: 10px 12px;
+  }
+  .mail-row-from   { grid-column: 1; grid-row: 1; font-size: 0.8rem; }
+  .mail-row-meta   { grid-column: 2; grid-row: 1; text-align: right; }
+  .mail-row-date   { font-size: 0.7rem; }
+  .mail-row-main   { grid-column: 1 / -1; grid-row: 2 / span 2; }
+  .mail-row-labels { display: none; }
+
+  .mail-detail { padding: 14px; }
+  .mail-detail-head { flex-wrap: wrap; }
+  .mail-detail-subject { font-size: 1.05rem; line-height: 1.4; }
 }
