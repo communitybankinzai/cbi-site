@@ -169,7 +169,85 @@
     "A6": { "actuals": [], "plans": [] },
     "A7": { "actuals": [], "plans": [] },
     "A8": {
-      "actuals": [],
+      "actuals": [
+        {
+          "date": "2026-06-20",
+          "title": "AIエージェント投稿時の自動実績追記機構を実装",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "GAS handleAddIdea_ / handleAddComment_ で author がAIエージェント形式（🤖 A2 Voice 等）の時、agentId を抽出して actuals_dynamic に自動追記。エージェント別カテゴリ判定（A1=実装/A2=分析/A8=事務など）。createdBy: system_auto で識別。これにより各エージェントの活動が A1 のように自動的に実績蓄積される。"
+        },
+        {
+          "date": "2026-06-20",
+          "title": "動的実績記録機構（actuals_dynamic シート＋CRUD API）を実装",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs",
+            "site/admin/admin.js",
+            "site/admin/admin.css"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "GAS に actuals_dynamic シート追加、addActual/listActuals/deleteActual の3 action。管理画面の各エージェント詳細「実績（過去）」セクションに『＋ 実績を追加』ボタンとインラインフォーム（日付/工数/カテゴリ/タイトル/成果物/メモ）を設置。worklog.json（静的）と統合表示、ソースを📝動的/📄静的タグで識別。業務委託時の工数計上根拠としてリアルタイム記録可能に。"
+        },
+        {
+          "date": "2026-06-20",
+          "title": "アラート発火時のメール通知機能を実装",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs",
+            "cbi-admin-gas/appsscript.json",
+            "site/admin/admin.js",
+            "site/admin/admin.css"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "GAS: AI利用記録のたびに checkBudgetAlert_ で当月コストをチェック、閾値（caution/warning/critical）を初回超過時のみメール送信。同月同レベルの重複通知はフラグで防止。通知先はスクリプトプロパティ NOTIFY_EMAIL（CSV複数可）。notifyTest/getNotifyConfig action 追加。MailApp スコープを appsscript.json に明示。管理画面に『📧 テスト通知』ボタン＋通知先表示＋本日送信可能数表示。疎通確認済み（communitybankinzai@gmail.com 着信）。"
+        },
+        {
+          "date": "2026-06-20",
+          "title": "A8 月予算枠のインライン編集機能を実装",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs",
+            "site/admin/admin.js",
+            "site/admin/admin.css"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "GAS getAiUsage で data.budgetOverride を受け取って monthlyBudgetJPY を動的上書き対応。管理画面ダッシュボードに『月予算 ¥XX,XXX ✎ 編集』のインライン編集UI。小数（0.01単位）対応で ¥0.5 設定すれば即 critical 発火を確認可能。localStorage 保存で個人ブラウザのみ反映、本番予算には影響なし。『テスト上書き中』タグと『↺ 解除』ボタンで状態明示。"
+        },
+        {
+          "date": "2026-06-19",
+          "title": "A8 予算枠の動的取得機構（budget.md／budget.json）を実装",
+          "category": "実装",
+          "outputs": [
+            "agents/a8-ledger/knowledge/budget.md",
+            "site/admin/budgets/a8.json",
+            "cbi-admin-gas/Code.gs"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "一次資料 agents/a8-ledger/knowledge/budget.md（人間用Markdown、事業計画書 v12 ベースの予算根拠）と機械可読 site/admin/budgets/a8.json（年額360,000円/月額30,000円、Gemini/Claude/ChatGPT別内訳、アラート閾値）を整備。GAS fetchA8Budget_() で GitHub Pages 経由で取得、fetch失敗時は CONFIG.AI_BUDGET_JPY_PER_MONTH（30000円）にフォールバック。"
+        },
+        {
+          "date": "2026-06-19",
+          "title": "A8 Ledger ダッシュボード（AI利用量モニタリング）を実装",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs",
+            "site/admin/admin.js",
+            "site/admin/admin.css"
+          ],
+          "hours": 1.5,
+          "partnerApproved": false,
+          "note": "GAS に ai_usage シート追加、AI関数3つ（aiRevise/aiSuggest/aiComment）で Gemini API usageMetadata から prompt/candidates/thoughts/total トークンを自動記録。getAiUsage action で今月/前月/累計の集計＋4段階アラート（normal/caution80%/warning100%/critical120%）。料金概算は Gemini 2.5 Flash 単価（input $0.30 / output $2.50 per 1M、1USD=¥155）。管理画面のエージェントタブで A8 選択時、AI利用量カード（3枚）＋機能別/エージェント別トークン内訳＋直近7件ログを表示。無料枠運用中は実コスト¥0表示。"
+        }
+      ],
       "plans": [
         {
           "due": "2026-07-31",
