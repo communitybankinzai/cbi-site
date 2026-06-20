@@ -7,6 +7,24 @@
       "actuals": [
         {
           "date": "2026-06-20",
+          "title": "plans通知メール＋手順書のClaude Code実行担当を『会長 新井』→『中司 祐樹（会計）』に訂正",
+          "category": "保守",
+          "outputs": [
+            "cbi-admin-gas/Code.gs（notifyPlanAdded_ メール本文の実行者表記、clasp v21 再deploy）",
+            "cbi/agents/README.md（依頼フロー：Code持ち=中司に修正）",
+            "cbi/docs/agents-plans-setup.md（3箇所修正）",
+            "cbi/docs/agents-plans-design.md（3箇所修正：実装担当／全体フロー／メール仕様）",
+            "memory/cbi-roles.md（新規：CBI主要メンバーの役割と Claude Code 実行担当）",
+            "memory/cbi-site-url.md（新規：CBI公式URLとCOCoLaとの混同防止）",
+            "memory/MEMORY.md（新規）",
+            "site/admin/changelog.json 追記"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "ユーザー指摘『会長は Claude Code を持っていない、中司が実行します』を受けて修正。エージェント『パートナー』設定（A1.partner=会長新井 等）は役割の代表者を示すもので Claude Code 実行者ではないため変更せず、実行者を示す文章のみ訂正。今後の plans 通知メールは『Claude Code 実行担当（中司 祐樹／会計）』と明示される。Claude memory にも project type で役割と CBI 公開URL を保存して同種の誤りを再発防止。"
+        },
+        {
+          "date": "2026-06-20",
           "title": "changelog/worklog の整合性点検（直近3日）＋ 書き分けルール整備 ＋ Stop hook 導入",
           "category": "事務",
           "outputs": [

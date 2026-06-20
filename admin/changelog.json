@@ -5,6 +5,14 @@
     {
       "date": "2026-06-20",
       "type": "fix",
+      "target": "cbi-admin-gas/Code.gs / cbi/docs/* / cbi/agents/README.md（Claude Code実行担当の表記訂正）",
+      "title": "plans通知メール本文＋手順書のClaude Code実行担当表記を『会長 新井』→『中司 祐樹（会計）』に訂正",
+      "detail": "ユーザー指摘で発覚：『会長は Claude Code を持っていない、中司が実行します』。手順書・GASメール本文に複数箇所『会長（新井）が Claude Code で作業実行』と書いていたが誤り。修正対象4ファイル：(1)cbi-admin-gas/Code.gs notifyPlanAdded_() メール本文の実行者表記→clasp v21 再deploy（deploymentId AKfycbz0UJbV1ZqGEThNqj_LSTHe82ws6lni5EjYXZSDYuN43NTwo1ugrdjmrKWZ-XBf9yV3）。本文の『※ Code 使用可能メンバーは Claude Code で作業実行し...』を『※ Claude Code 実行担当（中司 祐樹／会計）が作業を実行し...』に変更。(2)cbi/agents/README.md：『Code 使用可能メンバー（会長 新井）がメールを確認し』を『Claude Code 実行担当の 中司 祐樹（会計）がメールを確認し』に。(3)cbi/docs/agents-plans-setup.md：3箇所（Phase 6 月次手動運用／Phase 7.2 動作確認／メンバー周知文）。(4)cbi/docs/agents-plans-design.md：3箇所（次回実装担当／全体フロー説明／メール仕様サンプル）。エージェント「パートナー」設定（A1.partner=会長新井 等）は役割の代表者を示すもので Claude Code 実行者ではないため変更しない。Claude memory に project type で『cbi-roles.md』『cbi-site-url.md』を新規保存して今後同じ誤りを防止。",
+      "author": "統括エージェント / A1 Core"
+    },
+    {
+      "date": "2026-06-20",
+      "type": "fix",
       "target": "cbi-admin-gas/Code.gs / cbi/docs/* / cbi/agents/README.md（URL誤記修正）",
       "title": "plans通知メール本文＋関連ドキュメントの管理画面URLを修正（cocola-site→cbi-site）",
       "detail": "ユーザー指摘で発覚：plans通知メール本文に書かれた管理画面URLが誤って親COCoLaサイトの URL『https://you0810jmsdf.github.io/cocola-site/admin/』になっていた。正しくはCBIサイトの『https://communitybankinzai.github.io/cbi-site/admin/』。原因：親COCoLaのCLAUDE.md ルール7に書かれていたCOCoLa公開URLを、CBI側の手順書・GASメール本文にも誤って流用した。修正対象4ファイル：(1)cbi-admin-gas/Code.gs notifyPlanAdded_() のメール本文URL→clasp v20として再deploy済（deploymentId AKfycbz0UJbV1ZqGEThNqj_LSTHe82ws6lni5EjYXZSDYuN43NTwo1ugrdjmrKWZ-XBf9yV3）。(2)cbi/docs/agents-plans-setup.md 3箇所（動作確認手順・周知文）。(3)cbi/docs/agents-plans-design.md 1箇所（メール仕様サンプル）。(4)cbi/agents/README.md 2箇所（メンバー向け作業依頼フロー）。市長説明資料 cbi/調整経緯/印西市/20260612_市長説明/* の cocola-site/dao/ 参照はCOCoLa CiDAOページの正当な参照のため除外。今後送信されるメールは正しいURLで届く（既送信済の1通は手動で読み替え必要）。",
