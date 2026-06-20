@@ -7,6 +7,23 @@
       "actuals": [
         {
           "date": "2026-06-20",
+          "title": "管理画面に『📧 メール』タブを実装（communitybankinzai@gmail.com 共有、Gmail風UI、PC幅活用、スマホ画面切替、ドラッグ可変スプリッター）",
+          "category": "実装",
+          "outputs": [
+            "gas-mail-share/コード.gs（新規 GAS WebAPI：list/detail/labels/ping、gmail.readonly）",
+            "gas-mail-share/appsscript.json（新規）",
+            "gas-mail-share/README.md（デプロイ手順書 新規）",
+            "site/admin/index.html（タブナビ＋3ペインHTML＋スプリッター要素）",
+            "site/admin/admin.js（GAS_MAIL_WEBAPP_URL、state.mail、openMailTab/loadMailList/loadMailLabels/openMailDetail/renderMailList/renderMailDetail、setMobileView、bindMailSplitter、localStorage幅保存）",
+            "site/admin/admin.css（Gmail風2ペイン＋PC全幅活用＋スマホ画面切替＋ドラッグスプリッター＋件名3行表示）",
+            "site/admin/changelog.json 追記"
+          ],
+          "hours": 1.5,
+          "partnerApproved": false,
+          "note": "communitybankinzai@gmail.com 宛メールをサイト管理者で共有する機能を新規実装。GAS WebAPI（communitybankinzai@gmail.com アカウントでデプロイ済 deploymentId AKfycbz-54I_6bxh04SMKbNM3pKekp0fhW6CCsl44_a4qSUpenLiaL7ubwcXLEuUE8jSvRFvKg）→ admin画面 fetch でページを開くたびに最新化。受信トレイ/未読/スター付き/送信済み/任意ラベルの絞り込みと全文検索フィルタ対応。3コミット：a5ba625（初版）、af38002（PC全幅＋スマホ画面切替）、f9256aa（ドラッグスプリッター＋件名3行）。"
+        },
+        {
+          "date": "2026-06-20",
           "title": "git push義務化＋メンバー向け作業依頼フロー文書化＋plans入力UI設計書作成",
           "category": "事務",
           "outputs": [
