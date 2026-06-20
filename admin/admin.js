@@ -40,6 +40,7 @@ const UNREAD_POLL_MS = 30000;
     worklog: null,
     worklogLoaded: false,
     actualsDynamic: [],
+    plansDynamic: [],
     mail: {
       label: 'inbox',
       query: '',
@@ -257,8 +258,8 @@ const UNREAD_POLL_MS = 30000;
         state.worklog = { agents: {} };
       }
       state.agentsLoaded = true;
-      // 動的実績（GAS スプレッドシート）を先にロードしてから描画
-      await loadActualsDynamic();
+      // 動的実績・動的予定（GAS スプレッドシート）を先にロードしてから描画
+      await Promise.all([loadActualsDynamic(), loadPlansDynamic()]);
       // カテゴリプルダウンを agents.json から動的生成（ログイン直後に必要）
       populateCategorySelects();
       // 以下はエージェントタブ用UI（DOM存在時のみ）
@@ -399,7 +400,12 @@ const UNREAD_POLL_MS = 30000;
       }));
     const actuals = [].concat(dynActuals, wlActuals)
       .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
-    const plans = wl.plans || [];
+    const wlPlans = (wl.plans || []).map(x => Object.assign({ _source: 'json' }, x));
+    const dynPlans = (state.plansDynamic || [])
+      .filter(x => x.agentId === a.id)
+      .map(x => Object.assign({}, x, { _source: 'dynamic' }));
+    const plans = [].concat(dynPlans, wlPlans)
+      .sort((a, b) => String(a.due || '9999').localeCompare(String(b.due || '9999')));
     const totalHours = actuals.reduce((s, x) => s + (Number(x.hours) || 0), 0);
     const summaryHtml =
       '<div class="worklog-summary">' +
@@ -415,10 +421,13 @@ const UNREAD_POLL_MS = 30000;
           ? '<div class="wl-list">' + actuals.map(renderWorklogActual).join('') + '</div>'
           : '<p class="wl-empty">まだ実績の記録はありません</p>') +
       '</div>';
-    const plansHtml = '<div class="ad-section"><h4>予定（今後）</h4>' +
-      (plans.length
-        ? '<div class="wl-list">' + plans.map(renderWorklogPlan).join('') + '</div>'
-        : '<p class="wl-empty">予定はまだ登録されていません</p>') +
+    const plansHtml = '<div class="ad-section">' +
+        '<h4>予定（今後）<button type="button" class="ad-add-actual-btn" id="ad-add-plan" title="メンバーからの作業依頼を追加">＋ 予定を追加</button></h4>' +
+        '<div id="ad-add-plan-slot"></div>' +
+        '<div id="ad-complete-plan-slot"></div>' +
+        (plans.length
+          ? '<div class="wl-list">' + plans.map(renderWorklogPlan).join('') + '</div>'
+          : '<p class="wl-empty">予定はまだ登録されていません</p>') +
       '</div>';
 
     const isA8 = (a.id === 'A8');
@@ -458,6 +467,16 @@ const UNREAD_POLL_MS = 30000;
     if (addBtn) addBtn.addEventListener('click', () => openActualForm(a.id));
     document.querySelectorAll('.wl-del-dyn').forEach(b => {
       b.addEventListener('click', () => onDeleteActual(b.dataset.actualId));
+    });
+
+    // 予定追加ボタンと予定の各操作ボタンのバインド
+    const addPlanBtn = document.getElementById('ad-add-plan');
+    if (addPlanBtn) addPlanBtn.addEventListener('click', () => openPlanForm(a.id));
+    document.querySelectorAll('.wl-del-plan').forEach(b => {
+      b.addEventListener('click', () => onDeletePlan(b.dataset.planId));
+    });
+    document.querySelectorAll('.wl-complete-plan').forEach(b => {
+      b.addEventListener('click', () => openCompletePlanForm(b.dataset.planId, a.id));
     });
 
     if (isA8) loadA8Usage();
@@ -542,6 +561,150 @@ const UNREAD_POLL_MS = 30000;
       const r = await gasCall({ action: 'listActuals', password: state.password });
       if (r && r.ok) state.actualsDynamic = r.actuals || [];
     } catch (_) {}
+  }
+
+  async function loadPlansDynamic() {
+    if (!GAS_WEBAPP_URL) return;
+    try {
+      const r = await gasCall({ action: 'listPlans', password: state.password });
+      if (r && r.ok) state.plansDynamic = r.plans || [];
+    } catch (_) {}
+  }
+
+  function openPlanForm(agentId) {
+    const slot = document.getElementById('ad-add-plan-slot');
+    if (!slot) return;
+    const dueDefault = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+    slot.innerHTML =
+      '<form id="ad-plan-form" class="ad-actual-form">' +
+        '<div class="ad-actual-grid">' +
+          '<label><span>期限</span><input type="date" id="ad-plan-due" value="' + dueDefault + '" required></label>' +
+          '<label><span>優先度</span><select id="ad-plan-priority" required>' +
+            ['中','高','低'].map(p => '<option value="' + p + '">' + p + '</option>').join('') +
+          '</select></label>' +
+          '<label><span>カテゴリ</span><select id="ad-plan-category" required>' +
+            ['実装','保守','レポート','分析','会議','広報','事務','調査','その他']
+              .map(c => '<option value="' + c + '">' + c + '</option>').join('') +
+          '</select></label>' +
+        '</div>' +
+        '<label class="ad-actual-full"><span>タイトル（やってほしいこと）</span><input type="text" id="ad-plan-title" required placeholder="例: 7月の活動を Threads 用に告知文化" maxlength="120"></label>' +
+        '<label class="ad-actual-full"><span>詳細メモ（具体的な要件・参考情報）</span><textarea id="ad-plan-note" rows="3" placeholder="背景・希望する成果・参考リンク等"></textarea></label>' +
+        '<div class="ad-actual-actions">' +
+          '<button type="button" class="btn btn-ghost btn-sm" id="ad-plan-cancel">キャンセル</button>' +
+          '<button type="submit" class="btn btn-primary btn-sm">＋ 依頼を送信（メール通知）</button>' +
+        '</div>' +
+      '</form>';
+    document.getElementById('ad-plan-title').focus();
+    document.getElementById('ad-plan-cancel').addEventListener('click', () => { slot.innerHTML = ''; });
+    document.getElementById('ad-plan-form').addEventListener('submit', e => {
+      e.preventDefault();
+      submitPlan(agentId);
+    });
+  }
+
+  async function submitPlan(agentId) {
+    if (!state.me) { toast('まず「私」を選択してください', 'err'); openMeModal(); return; }
+    const plan = {
+      agentId,
+      createdBy: state.me,
+      due: document.getElementById('ad-plan-due').value,
+      title: document.getElementById('ad-plan-title').value.trim(),
+      category: document.getElementById('ad-plan-category').value,
+      priority: document.getElementById('ad-plan-priority').value,
+      note: document.getElementById('ad-plan-note').value.trim(),
+      status: 'pending',
+    };
+    if (!plan.title) { toast('タイトルを入力してください', 'err'); return; }
+    try {
+      const r = await gasCall({ action: 'addPlan', password: state.password, actor: state.me, plan });
+      if (r && r.ok) {
+        const mailMsg = r.mail && r.mail.sent
+          ? '依頼を追加しました（メール通知済）'
+          : '依頼を追加しました（メール通知は失敗：NOTIFY_EMAIL 未設定の可能性）';
+        toast(mailMsg, 'ok');
+        await loadPlansDynamic();
+        selectAgent(agentId);
+      } else {
+        toast('保存エラー: ' + (r && r.error), 'err');
+      }
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    }
+  }
+
+  async function onDeletePlan(id) {
+    if (!id) return;
+    if (!confirm('この予定を削除しますか？（依頼を取り下げる場合）')) return;
+    try {
+      const r = await gasCall({ action: 'deletePlan', password: state.password, actor: state.me, id });
+      if (r && r.ok) {
+        toast('削除しました', 'ok');
+        await loadPlansDynamic();
+        if (state.currentAgentId) selectAgent(state.currentAgentId);
+      } else {
+        toast('エラー: ' + (r && r.error), 'err');
+      }
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    }
+  }
+
+  function openCompletePlanForm(planId, agentId) {
+    const slot = document.getElementById('ad-complete-plan-slot');
+    if (!slot) return;
+    const plan = (state.plansDynamic || []).find(p => p.id === planId);
+    if (!plan) { toast('予定が見つかりません', 'err'); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    slot.innerHTML =
+      '<form id="ad-complete-plan-form" class="ad-actual-form is-complete">' +
+        '<div class="ad-complete-banner">完了として記録: <strong>' + escape(plan.title || '') + '</strong></div>' +
+        '<div class="ad-actual-grid">' +
+          '<label><span>実施日</span><input type="date" id="ad-cp-date" value="' + today + '" required></label>' +
+          '<label><span>工数 (h)</span><input type="number" id="ad-cp-hours" step="0.1" min="0" value="0.5" required></label>' +
+          '<label><span>カテゴリ</span><select id="ad-cp-category" required>' +
+            ['実装','保守','レポート','分析','会議','広報','事務','調査','その他']
+              .map(c => '<option value="' + c + '"' + (c === plan.category ? ' selected' : '') + '>' + c + '</option>').join('') +
+          '</select></label>' +
+        '</div>' +
+        '<label class="ad-actual-full"><span>タイトル（実績として）</span><input type="text" id="ad-cp-title" required value="' + escape(plan.title || '') + '" maxlength="120"></label>' +
+        '<label class="ad-actual-full"><span>成果物（カンマ区切り）</span><input type="text" id="ad-cp-outputs" placeholder="例: site/admin/admin.js, cbi-admin-gas/Code.gs"></label>' +
+        '<label class="ad-actual-full"><span>補足メモ</span><textarea id="ad-cp-note" rows="2" placeholder="完了時の所感・残課題">' + escape(plan.note || '') + '</textarea></label>' +
+        '<div class="ad-actual-actions">' +
+          '<button type="button" class="btn btn-ghost btn-sm" id="ad-cp-cancel">キャンセル</button>' +
+          '<button type="submit" class="btn btn-primary btn-sm">✅ 完了として記録（実績に移動）</button>' +
+        '</div>' +
+      '</form>';
+    document.getElementById('ad-cp-title').focus();
+    document.getElementById('ad-cp-cancel').addEventListener('click', () => { slot.innerHTML = ''; });
+    document.getElementById('ad-complete-plan-form').addEventListener('submit', e => {
+      e.preventDefault();
+      submitCompletePlan(planId, agentId);
+    });
+  }
+
+  async function submitCompletePlan(planId, agentId) {
+    if (!state.me) { toast('まず「私」を選択してください', 'err'); openMeModal(); return; }
+    const actual = {
+      date: document.getElementById('ad-cp-date').value,
+      hours: Number(document.getElementById('ad-cp-hours').value) || 0,
+      category: document.getElementById('ad-cp-category').value,
+      title: document.getElementById('ad-cp-title').value.trim(),
+      outputs: document.getElementById('ad-cp-outputs').value.split(',').map(s => s.trim()).filter(Boolean),
+      note: document.getElementById('ad-cp-note').value.trim(),
+    };
+    if (!actual.title) { toast('タイトルを入力してください', 'err'); return; }
+    try {
+      const r = await gasCall({ action: 'completePlan', password: state.password, actor: state.me, id: planId, actual });
+      if (r && r.ok) {
+        toast('完了として記録し、実績に移動しました', 'ok');
+        await Promise.all([loadPlansDynamic(), loadActualsDynamic()]);
+        selectAgent(agentId);
+      } else {
+        toast('エラー: ' + (r && r.error), 'err');
+      }
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    }
   }
 
   async function loadA8Usage() {
@@ -751,15 +914,28 @@ const UNREAD_POLL_MS = 30000;
   }
 
   function renderWorklogPlan(x) {
-    return '<div class="wl-item is-plan">' +
+    const isDynamic = (x._source === 'dynamic');
+    const sourceBadge = isDynamic
+      ? '<span class="wl-source-tag wl-source-dyn" title="管理画面から追加された依頼">📝 依頼</span>'
+      : '<span class="wl-source-tag wl-source-json" title="worklog.json で手動管理">📄 静的</span>';
+    const createdByHtml = isDynamic && x.createdBy
+      ? '<div class="wl-by">依頼者: ' + escape(x.createdBy) + '</div>'
+      : '';
+    const actionsHtml = isDynamic
+      ? '<button type="button" class="wl-complete-plan" data-plan-id="' + escape(x.id || '') + '" title="完了として記録（実績に移動）">✅</button>' +
+        '<button type="button" class="wl-del-plan" data-plan-id="' + escape(x.id || '') + '" title="この予定を削除">✕</button>'
+      : '';
+    return '<div class="wl-item is-plan' + (isDynamic ? ' is-dynamic' : '') + '">' +
       '<span class="wl-date">〜' + escape(x.due || '') + '</span>' +
       '<div class="wl-main">' +
-        '<div class="wl-title">' + escape(x.title || '') + '</div>' +
+        '<div class="wl-title">' + escape(x.title || '') + ' ' + sourceBadge + '</div>' +
         (x.note ? '<div class="wl-note">' + escape(x.note) + '</div>' : '') +
+        createdByHtml +
       '</div>' +
       '<div class="wl-tags">' +
         '<span class="wl-tag c-' + escape(x.category || 'その他') + '">' + escape(x.category || 'その他') + '</span>' +
         (x.priority ? '<span class="wl-prio p-' + escape(x.priority) + '">優先度 ' + escape(x.priority) + '</span>' : '') +
+        actionsHtml +
       '</div>' +
     '</div>';
   }

@@ -1697,6 +1697,50 @@ button { font-family: inherit; cursor: pointer; }
   color: var(--c-danger);
 }
 
+.wl-del-plan, .wl-complete-plan {
+  background: transparent;
+  border: 1px solid var(--c-line);
+  color: var(--c-ink-sub);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+.wl-del-plan:hover {
+  background: #fee2e2;
+  border-color: var(--c-danger);
+  color: var(--c-danger);
+}
+.wl-complete-plan:hover {
+  background: #dcfce7;
+  border-color: #22c55e;
+  color: #166534;
+}
+.wl-by {
+  font-size: 11px;
+  color: var(--c-ink-sub);
+  margin-top: 2px;
+}
+.wl-item.is-plan.is-dynamic {
+  border-left: 3px solid #6366f1;
+  padding-left: 9px;
+}
+.ad-complete-banner {
+  background: #ecfeff;
+  border: 1px solid #67e8f9;
+  color: #155e75;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.ad-actual-form.is-complete {
+  border-color: #67e8f9;
+  background: #f0fdff;
+}
+
 @media (max-width: 720px) {
   .ad-actual-grid { grid-template-columns: 1fr 1fr; }
 }

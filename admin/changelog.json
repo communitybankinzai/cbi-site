@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-20",
+      "type": "feature",
+      "target": "管理画面（エージェント体制タブ） / GAS（cbi-admin-gas v19）",
+      "title": "メンバー依頼UI（plans CRUD＋MailApp通知）を実装：Code非使用メンバーが各エージェントへ依頼可能に",
+      "detail": "設計書 cbi/docs/agents-plans-design.md の Phase 2〜5 を一気実装。(1)GAS Code.gs：CONFIG.SHEETS に PLANS シート定義（id/createdAt/createdBy/agentId/due/title/category/priority/note/status/assignedTo）追加、handleAddPlan_/handleUpdatePlan_/handleDeletePlan_/handleCompletePlan_/notifyPlanAdded_ を実装。doPost switchに listPlans/addPlan/updatePlan/deletePlan/completePlan の5アクション追加。PLANSシートはGAS初回API呼出時にgetSheets_が自動生成。(2)addPlan時にMailApp.sendEmail()でcommunitybankinzai@gmail.com宛通知（getNotifyRecipients_流用）、件名は『[CBI] AX に新規予定が追加されました: ...』、本文に担当エージェント・期限・カテゴリ・優先度・依頼者・詳細メモ・管理画面リンク・Plan IDを含む。(3)管理画面admin.js：state.plansDynamic追加、loadPlansDynamic新規、selectAgentでplansを動的（GAS）+静的（JSON）マージ表示。renderWorklogPlan拡張：動的plan は『📝 依頼』バッジ＋依頼者表示＋✅完了/✕削除ボタン。openPlanForm（依頼追加フォーム：期限/優先度/カテゴリ/タイトル/詳細メモ）、submitPlan、onDeletePlan、openCompletePlanForm（完了モーダル：実施日/工数/カテゴリ/タイトル/成果物/補足メモ）、submitCompletePlan（plans→actuals自動移動）を実装。(4)admin.css：.wl-del-plan/.wl-complete-plan/.wl-by/.is-plan.is-dynamic（紫左ボーダー）/.ad-complete-banner/.ad-actual-form.is-complete を追加。(5)clasp push & deploy 完了（v19, deploymentId AKfycbz0UJbV1ZqGEThNqj_LSTHe82ws6lni5EjYXZSDYuN43NTwo1ugrdjmrKWZ-XBf9yV3）。(6)Phase 1/6/7 手順書 cbi/docs/agents-plans-setup.md を新規作成：Phase 1は既存SSに同居でSetup不要、Phase 5の NOTIFY_EMAIL 設定方法、Phase 6（JSON自動生成）の3方式比較と当面の手動運用コマンド、Phase 7（動作確認）の3シナリオとメンバー周知用Slack文面 を網羅。",
+      "author": "統括エージェント / A1 Core"
+    },
+    {
+      "date": "2026-06-20",
       "type": "docs",
       "target": "CLAUDE.md / agents/README.md / docs/agents-plans-design.md",
       "title": "git push 義務化＋メンバー向けエージェント依頼フロー文書化＋plans入力UI設計書作成",

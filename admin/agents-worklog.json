@@ -7,6 +7,22 @@
       "actuals": [
         {
           "date": "2026-06-20",
+          "title": "メンバー依頼UI（plans CRUD＋MailApp通知）を実装：Code非使用メンバーが各エージェントへ依頼可能に",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs（PLANSシート定義＋handleAddPlan_/handleUpdatePlan_/handleDeletePlan_/handleCompletePlan_/notifyPlanAdded_ 全5ハンドラ＋メール通知）",
+            "cbi-admin-gas/Code.gs（doPost switch に listPlans/addPlan/updatePlan/deletePlan/completePlan 5アクション追加）",
+            "site/admin/admin.js（state.plansDynamic / loadPlansDynamic / renderWorklogPlan拡張 / openPlanForm / submitPlan / onDeletePlan / openCompletePlanForm / submitCompletePlan）",
+            "site/admin/admin.css（.wl-del-plan/.wl-complete-plan/.wl-by/.is-plan.is-dynamic/.ad-complete-banner/.ad-actual-form.is-complete）",
+            "cbi/docs/agents-plans-setup.md（Phase 1/5/6/7 セットアップ手順書 新規）",
+            "site/admin/changelog.json 追記"
+          ],
+          "hours": 2.0,
+          "partnerApproved": false,
+          "note": "設計書 cbi/docs/agents-plans-design.md の Phase 2〜5 を一気に実装。clasp v19 デプロイ完了（deploymentId AKfycbz0UJbV1ZqGEThNqj_LSTHe82ws6lni5EjYXZSDYuN43NTwo1ugrdjmrKWZ-XBf9yV3）。PLANSシートはGAS初回API呼出時にgetSheets_が自動生成するためPhase 1（手動SS作成）不要。MailApp通知はA8 Ledger と同じ NOTIFY_EMAIL 基盤を流用。動的plan は管理画面で『📝 依頼』バッジ＋紫左ボーダー＋依頼者名＋✅完了/✕削除ボタンで表示、静的JSON plan は従来通り表示。完了時は plans→actuals_dynamic に自動移動。Phase 6（JSON自動生成）は当面手動運用、Phase 7（動作確認）はメンバー周知用文面付き手順書 cbi/docs/agents-plans-setup.md で会長に引き渡し。"
+        },
+        {
+          "date": "2026-06-20",
           "title": "管理画面に『📧 メール』タブを実装（communitybankinzai@gmail.com 共有、Gmail風UI、PC幅活用、スマホ画面切替、ドラッグ可変スプリッター）",
           "category": "実装",
           "outputs": [
