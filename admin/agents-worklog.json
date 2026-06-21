@@ -500,6 +500,17 @@
     "A10": {
       "actuals": [
         {
+          "date": "2026-06-21",
+          "title": "ecosystem.png を再生成版に差し替え 0.1時間",
+          "category": "広報",
+          "outputs": [
+            "site/assets/uniqueness/ecosystem.png（UUIDファイル名→ecosystem.png にリネーム上書き）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "ユーザーが改良プロンプトでChatGPT再生成。本物のCBIロゴが中央に忠実に組み込まれ、地域通貨アイコンも「印西」漢字なし。前回のHTMLレイヤー重ね（radial-gradient）が完全に不要になった。同名ファイルでの上書きのためHTMLは無変更。"
+        },
+        {
           "date": "2026-06-20",
           "title": "ecosystem ロゴ重ね処理を撤去、再生成用プロンプトを改良 0.2時間",
           "category": "広報",

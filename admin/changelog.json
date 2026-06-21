@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-06-21",
+      "type": "content",
+      "target": "site/assets/uniqueness/ecosystem.png（差し替え）",
+      "title": "エコシステム全体図を再生成版に差し替え（中央CBIロゴ忠実再現＋地域通貨『印西』漢字なし）",
+      "detail": "ユーザーが改良プロンプトでChatGPT再生成。中央に本物のCBI ロゴ（緑/紺の三日月＋金のBi＋水引＋COMMUNITY BANK INZAI）が忠実に組み込まれ、地域通貨アイコンは水引模様のみで「印西」漢字なし、和紙背景に違和感なく溶け込んでいる。前回の手作業ロゴ重ね（radial-gradient）が不要になり、画像差し替えのみで完結。同名ファイルでHTMLパス変更なし。",
+      "author": "A10 / 国際広報AI"
+    },
+    {
       "date": "2026-06-20",
       "type": "fix",
       "target": "site/uniqueness/index.html ／ site/assets/uniqueness/README.md",
