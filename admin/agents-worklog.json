@@ -501,6 +501,17 @@
       "actuals": [
         {
           "date": "2026-06-21",
+          "title": "登録メリット強化：Pillar Ⅰ刷新＋HOW IT WORKS 3ステップ新設 0.4時間",
+          "category": "広報",
+          "outputs": [
+            "site/uniqueness/index.html（Pillar Ⅰリライト／HOW IT WORKSセクション追加／市民メリット改善／step-flow用CSS追加）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "ユーザー指摘『COCoLaでは登録に結びつかなかった。特技登録のメリットは？』に対応。原因仮説『登録しても何が起きるか見えない』をテコ入れ。Pillar Ⅰ を体験記述（3分登録→AI抽出→断れる→対価）にリライトし、見出しも『登録すると、出番が届く』に変更。Three Pillarsと国内比較の間に『HOW IT WORKS — 登録すると、どうなる？』3ステップを新設（STEP1〜3）。各STEPに所要時間/受け身でOK/無理なしのミニタグ、末尾に『登録後の安心ポイント』一行注釈で不安を解消。市民メリット欄も『連絡攻めなし』『個人情報最小限』『脱退自由』など実感ベース表現に。step-flow用CSSも追加、モバイルは縦並びに自動切替。"
+        },
+        {
+          "date": "2026-06-21",
           "title": "ecosystem.png を再生成版に差し替え 0.1時間",
           "category": "広報",
           "outputs": [

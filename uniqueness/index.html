@@ -100,6 +100,88 @@
     line-height: 1.85;
   }
 
+  /* "登録するとどうなる？" 3ステップ */
+  .step-flow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 32px;
+    position: relative;
+  }
+  .step-card {
+    background: var(--c-paper);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    padding: 24px 22px 22px;
+    position: relative;
+  }
+  .step-card .step-num {
+    position: absolute;
+    top: -16px;
+    left: 22px;
+    background: var(--c-gold);
+    color: var(--c-navy-dark);
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    padding: 4px 14px;
+    border-radius: 999px;
+    box-shadow: var(--shadow-sm);
+  }
+  .step-card h4 {
+    font-size: 16px;
+    margin: 8px 0 8px;
+    color: var(--c-navy);
+    line-height: 1.5;
+  }
+  .step-card p {
+    font-size: 13px;
+    color: var(--c-ink-sub);
+    line-height: 1.8;
+    margin: 0;
+  }
+  .step-card .meta {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--c-green);
+    background: rgba(45, 90, 61, 0.08);
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+  .step-card + .step-card::before {
+    content: "›";
+    position: absolute;
+    top: 50%;
+    left: -14px;
+    transform: translateY(-50%);
+    color: var(--c-gold);
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .step-reassure {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--c-bg-alt);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--c-ink-sub);
+    line-height: 1.8;
+    text-align: center;
+  }
+  .step-reassure strong { color: var(--c-navy); }
+  @media (max-width: 720px) {
+    .step-flow { grid-template-columns: 1fr; gap: 28px; }
+    .step-card + .step-card::before {
+      content: "↓";
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
   /* Comparison table */
   .table-wrap {
     overflow-x: auto;
@@ -528,8 +610,8 @@
       <div class="pillar-grid">
         <div class="pillar">
           <p class="num">PILLAR Ⅰ</p>
-          <h3>かんたんな登録フォーム</h3>
-          <p>「やってみたいこと」「できそうなこと」を数項目から選んで登録するだけ。職歴や肩書きは不要で、年齢・経験を問わず誰でも参加できます。総務省「地域人材ネット」のような専門家招へい型ではなく、地元の誰もが対象です。</p>
+          <h3>登録すると、出番が届く</h3>
+          <p>登録は「やってみたいこと」「できそうなこと」を数項目選ぶだけ（3分）。あとは、市や事業者からの依頼の中からあなたに合いそうなものを AIエージェントが抽出して通知します。合わなければ断れば終わり、合えば業務委託として対価が支払われます。登録解除もいつでも可能です。</p>
         </div>
         <div class="pillar">
           <p class="num">PILLAR Ⅱ</p>
@@ -542,6 +624,44 @@
           <p>市民の「出番」への対価を、将来的に地域内で循環するデジタル通貨で支払う方向性も視野に入れています。会津若松市の「会津コイン」（決済中心）とは異なり、市民の活動への対価として地域通貨を回す可能性を検討する想定です。※現時点では未着手の構想段階です。</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ===== "登録するとどうなる？" 3ステップ ===== -->
+  <section class="section" style="background: var(--c-bg-alt);">
+    <div class="container">
+      <p class="section-eyebrow">HOW IT WORKS</p>
+      <h2 class="section-title">登録すると、どうなる？</h2>
+      <p class="section-lead">
+        登録は3分で完了。その後の流れは下の3ステップだけです。
+        「登録したけれど何も起きない」を起こさないために、AIエージェントが受け身でも依頼を届けます。
+      </p>
+
+      <div class="step-flow">
+        <article class="step-card">
+          <span class="step-num">STEP 1</span>
+          <span class="meta">所要 約3分</span>
+          <h4>登録フォームに記入</h4>
+          <p>「やってみたいこと」「できそうなこと」を数項目から選ぶだけ。職歴・履歴書・自己PRの作成は一切不要です。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-num">STEP 2</span>
+          <span class="meta">受け身でOK</span>
+          <h4>合いそうな依頼が届く</h4>
+          <p>市や事業者から入った依頼の中から、登録内容に合いそうなものをAIエージェントが抽出して通知します。自分から探しに行く必要はありません。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-num">STEP 3</span>
+          <span class="meta">無理なし</span>
+          <h4>受ける／断るを選ぶ</h4>
+          <p>合えば業務委託として対価が支払われます。合わなければ断れば終わり。強制も連絡攻めもありません。</p>
+        </article>
+      </div>
+
+      <p class="step-reassure">
+        <strong>登録後の安心ポイント：</strong>
+        登録解除はいつでも可能／個人情報の公開範囲は最小限／市民活動団体（登録番号０８－００１）として法的責任を負って運営／断った依頼の理由は記録に残しません
+      </p>
     </div>
   </section>
 
@@ -797,11 +917,13 @@
           <h3>市民にとって</h3>
           <p class="tagline">FOR CITIZENS</p>
           <ul>
-            <li>登録フォームから数項目を選ぶだけで参加できる（履歴書も職歴も不要）</li>
-            <li>登録後は、市・事業者からの依頼の中から自分に合う案件が届く仕組み</li>
+            <li>登録は3分。職歴・履歴書・自己PRも要らない</li>
+            <li>登録したあとは「合いそうな依頼」が向こうから届く（自分で探さなくていい）</li>
             <li>無償ボランティアではなく、業務委託として対価が支払われる</li>
-            <li>退職後のセカンドキャリア、子育て期のスキマ時間、副業など、ライフステージを問わず参加可</li>
-            <li>将来的には地域通貨での受け取りも構想にあるが、現時点では円建て</li>
+            <li>合わない依頼は断れる。強制も連絡攻めもない</li>
+            <li>退職後・子育て期・副業など、ライフステージを問わず参加できる</li>
+            <li>登録解除はいつでもOK。個人情報の公開範囲も最小限</li>
+            <li>将来的には地域通貨での受け取りも構想にある（現時点では円建て）</li>
           </ul>
         </article>
 
