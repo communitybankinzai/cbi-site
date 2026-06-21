@@ -501,6 +501,17 @@
       "actuals": [
         {
           "date": "2026-06-21",
+          "title": "資料タブが空白になる不具合を修正（admin.js のタブ配列に docs を追加） 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "site/admin/admin.js（switchTab のタブリストに 'docs' を追加）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "ユーザーから『資料タブを開いても中身が空白』との報告。原因：admin.js:228 のタブ配列が固定で ['ideas', 'mail', 'agents', 'changelog'] となっており、新規追加した docs タブが含まれていなかったため tab-docs パネルの hidden が解除されなかった。修正：配列末尾に 'docs' を追加。preview_start でローカル検証し、tab-docs パネルが正しく表示されること（docsPanelHidden:false, docsCardCount:1, タイトル『街活性室 橋爪様向け』表示）と consoleエラーなしを確認済み。"
+        },
+        {
+          "date": "2026-06-21",
           "title": "管理画面に『資料』タブ新設、プレゼン資料を外部閲覧可に 0.3時間",
           "category": "実装",
           "outputs": [
