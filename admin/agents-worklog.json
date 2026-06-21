@@ -6,6 +6,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-06-21",
+          "title": "cbi直下のファイル整理（散在ファイル76点を4ディレクトリに分類） 0.5時間",
+          "category": "事務",
+          "outputs": [
+            "cbi/proposals/ 新規（団体運営文書7点：会則/役員名簿/予算書/事業計画書/ロードマップ/AI役割設計/団体登録申請書）",
+            "cbi/references/{pdfs,images,videos,archives}/ 新規（参考資料計25点）",
+            "cbi/_workspace/{unpacked,scripts,intermediate}/ 新規（作業残骸計42点：unpacked_*10/解析py14/中間txt18）",
+            "cbi/versions/_old/ 新規（古い書類バージョン22点：v1〜v12 docx/pdf＋情熱部v1/v2）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "ユーザー指摘『cbi内のフォルダがごちゃごちゃ』に対応。直下に散在していた76ファイルを4つの新規ディレクトリ（proposals/references/_workspace/versions/_old）に分類して移動。CLAUDE.md指定の維持必須ファイル（CLAUDE.md/R6shorui.docx/fill_forms2.py/fill_schedule.py/make_supplement.js/CBI_市民活動団体登録決定通知書PDF/package.json）は直下に残した。直下のファイル数は76→8に削減。注意点：CLAUDE.mdの書類生成手順に出てくる『unpacked_v4』が _workspace/unpacked/ 配下に移動したため、次回の書類生成時はパス更新が必要。cbi直下はgit管理外のためコミット不要、site/admin/agents-worklog.jsonへの本記録のみpush。"
+        },
+        {
           "date": "2026-06-20",
           "title": "plans通知メール＋手順書のClaude Code実行担当を『会長 新井』→『中司 祐樹（会計）』に訂正",
           "category": "保守",
