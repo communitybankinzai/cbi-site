@@ -501,6 +501,18 @@
       "actuals": [
         {
           "date": "2026-06-21",
+          "title": "管理画面に『資料』タブ新設、プレゼン資料を外部閲覧可に 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/admin/index.html（タブナビ＋tab-docsパネル追加）",
+            "site/admin/proposals/machikatsu-meeting-v1.html（cbi/proposals/からコピー＋noindex追加）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "ユーザー指示『管理ページからリンクを貼って、自宅外でもすぐに見れる状態にしてほしい』に対応。プレゼン資料を site/admin/proposals/ に英数字ファイル名でコピー（noindex設定）、admin/index.htmlのタブナビに『📑 資料』を追加、対応する tab-docs パネルを追加。既存のタブ切替機構（data-tab属性ベース）に乗るためJS変更不要。閲覧URL：communitybankinzai.github.io/cbi-site/admin/proposals/machikatsu-meeting-v1.html。adminログイン後にタブから開く運用。スマホからも全画面表示可能、画面共有でMTGに使用可能。"
+        },
+        {
+          "date": "2026-06-21",
           "title": "街活性室MTG（橋爪様向け）プレゼン資料v1作成 0.7時間",
           "category": "事務",
           "outputs": [
