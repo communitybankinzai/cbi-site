@@ -501,6 +501,21 @@
       "actuals": [
         {
           "date": "2026-06-21",
+          "title": "事実誤認を訂正：コアメンバー4名／COCoLa上位組織記述を削除しDAO実証組織として位置づけ直し 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "site/admin/proposals/machikatsu-meeting-v1.html（スライド2のメンバーカード＋CiDAOカード訂正）",
+            "cbi/proposals/2026-06_街活性室MTG_橋爪様向け_v1.html（原本も同期）",
+            "site/uniqueness/index.html（CiDAO脚注をCBI主語に書き換え、COCoLa DAO外部リンク削除）",
+            "memory/cidao-definition.md（COCoLa登録解除予定の事実追記）",
+            "memory/feedback-pr-writing.md（非開示リストに『COCoLa上位組織記述』と『コアメンバー6名の誤記』追加）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "ユーザー指摘：(1)プレゼン資料の『コアメンバー6名』は誤り、正しくは『新井、小林、中司、須田の4人』、(2)『上位コミュニティCOCoLa』はCOCoLaが間もなく登録解除予定のため記述削除、CBIはDAOの実証組織として位置づけ。役職構成（会長／副会長／会計／監事）は memory/cbi-roles.md と整合。今後の外部発信物では『COCoLa傘下』『上位コミュニティCOCoLa』表現は禁止、CBIは『Citizen DAO（市民DAO）の実証組織』として独立した位置づけで書く。memoryにルール追加済みのため再発防止。"
+        },
+        {
+          "date": "2026-06-21",
           "title": "資料タブが空白になる不具合を修正（admin.js のタブ配列に docs を追加） 0.1時間",
           "category": "保守",
           "outputs": [

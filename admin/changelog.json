@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-21",
+      "type": "fix",
+      "target": "site/uniqueness/index.html（CiDAO脚注）／site/admin/proposals/machikatsu-meeting-v1.html／cbi/proposals/原本",
+      "title": "事実誤認を訂正：コアメンバー4名（6名は誤り）、COCoLaは登録解除予定のため上位組織記述を削除しDAO実証組織として位置づけ直し",
+      "detail": "ユーザー指摘：(1)プレゼン資料の『代表者 新井 則夫、会計 中司 祐樹ほかコアメンバー６名で運営』は誤り、正しくは『新井、小林、中司、須田の４人』、(2)『上位コミュニティ COCoLa』はCOCoLaが間もなく登録解除予定のため記述削除、CBIはDAOの実証組織として位置づける。対応3ファイル：(a)site/admin/proposals/machikatsu-meeting-v1.html スライド2のメンバーカードを『会長 新井 則夫、副会長 小林 康子、会計 中司 祐樹、監事 須田 翔 の４名のコアメンバーで運営』に訂正、CiDAOカード見出しを『COCoLa傘下、CiDAO（市民DAO）を実証する団体』→『Citizen DAO（市民DAO）の実証組織』に変更し本文も『CBIは…CiDAOを実証する組織として運営』に書き換え、(b)cbi/proposals/原本も同じ修正、(c)site/uniqueness/index.html CiDAO脚注を『CBIの上位コミュニティ COCoLa が運営する仕組み』→『CiDAOは提案・投票による意思決定の仕組み。CBIはこのCiDAOを実証する組織として運営』に書き換え、COCoLa DAOページへの外部リンクも削除。memory 2件も訂正：cidao-definition.md にCOCoLa登録解除予定の事実を追記、feedback-pr-writing.md の非開示情報リストに『COCoLaを上位組織として位置づける記述』と『コアメンバー数を6名と書く誤り』の2項目追加。役職構成は memory/cbi-roles.md と一致（新井=会長／小林=副会長／中司=会計／須田=監事）。",
+      "author": "A10 / 国際広報AI"
+    },
+    {
+      "date": "2026-06-21",
       "type": "feature",
       "target": "site/admin/index.html（『📑 資料』タブ新設）／site/admin/proposals/machikatsu-meeting-v1.html（新規）",
       "title": "管理画面に『資料』タブを新設、街活性室MTGプレゼン資料を外部から閲覧できる状態に",
