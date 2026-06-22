@@ -71,6 +71,7 @@
       <button type="button" class="tab-btn" data-tab="agents" role="tab" aria-selected="false">🤖 エージェント</button>
       <button type="button" class="tab-btn" data-tab="changelog" role="tab" aria-selected="false">📝 更新履歴</button>
       <button type="button" class="tab-btn" data-tab="docs" role="tab" aria-selected="false">📑 資料</button>
+      <button type="button" class="tab-btn" data-tab="doc-comments" role="tab" aria-selected="false">💬 資料コメント</button>
     </nav>
 
     <!-- ===== タブ: アイデア ===== -->
@@ -321,6 +322,115 @@
         </div>
       </section>
     </div><!-- /tab-docs -->
+
+    <!-- ===== タブ: 資料コメント ===== -->
+    <div class="tab-panel" id="tab-doc-comments" role="tabpanel" hidden>
+      <section class="panel">
+        <div class="panel-head-row">
+          <h2 class="panel-title">資料コメント</h2>
+        </div>
+        <p class="panel-desc">各資料へのメンバー／AIエージェントのコメントを集約し、AIで改善案にとりまとめます。改善案をClaude Codeに渡してHTMLへ反映する2段階構造。</p>
+
+        <!-- 資料セレクタ -->
+        <div style="background:#fff; border:1px solid #e0d9c6; border-radius:8px; padding:18px 22px; margin-top:14px;">
+          <label class="field" style="margin:0;">
+            <span style="font-weight:700; color:#1e3a5f;">📄 対象資料を選択</span>
+            <select id="dc-document-select" style="width:100%; padding:10px 14px; font-size:15px; border:1px solid #e0d9c6; border-radius:6px; background:#faf8f3;">
+              <option value="">読み込み中…</option>
+            </select>
+          </label>
+          <div id="dc-document-meta" style="margin-top:10px; font-size:13px; color:#4a5663;" hidden>
+            <div id="dc-document-desc"></div>
+            <a id="dc-document-link" href="#" target="_blank" rel="noopener" style="display:inline-block; margin-top:6px; font-size:12px; color:#c9a55c; font-weight:700;">資料を開く →</a>
+          </div>
+        </div>
+
+        <!-- 投稿フォーム（資料選択後に表示） -->
+        <div id="dc-form-wrap" hidden style="margin-top:18px;">
+          <section class="panel panel-form" style="margin:0;">
+            <h2 class="panel-title">
+              <span>新規コメント投稿</span>
+            </h2>
+            <form id="dc-form" class="idea-form">
+              <input type="hidden" id="dc-document-id">
+              <div class="grid-3">
+                <label class="field">
+                  <span>投稿者</span>
+                  <select id="dc-author" required>
+                    <option value="">選択</option>
+                    <optgroup label="👥 メンバー">
+                      <option value="新井 則夫">新井 則夫</option>
+                      <option value="小林 康子">小林 康子</option>
+                      <option value="中司 祐樹">中司 祐樹</option>
+                      <option value="須田 翔">須田 翔</option>
+                    </optgroup>
+                    <optgroup label="🤖 AIエージェント（提案生成可）" id="dc-agent-optgroup">
+                      <!-- admin.js が agents.json から動的に追加 -->
+                    </optgroup>
+                    <option value="__custom__">その他（自由入力）</option>
+                  </select>
+                  <input type="text" id="dc-author-custom" placeholder="氏名を入力" hidden>
+                </label>
+                <label class="field">
+                  <span>カテゴリ</span>
+                  <select id="dc-category" required>
+                    <option value="">選択</option>
+                    <!-- admin.js が agents.json から動的に追加 -->
+                  </select>
+                </label>
+                <label class="field">
+                  <span>状態</span>
+                  <select id="dc-status" required>
+                    <option value="検討中">検討中</option>
+                    <option value="採用">採用</option>
+                    <option value="保留">保留</option>
+                    <option value="不採用">不採用</option>
+                    <option value="反映済">反映済</option>
+                  </select>
+                </label>
+              </div>
+              <label class="field">
+                <span>コメント本文</span>
+                <textarea id="dc-body" rows="5" required placeholder="この資料に対する意見・改善提案・追記したい内容など"></textarea>
+              </label>
+              <div class="form-actions">
+                <button type="button" class="btn btn-ai" id="dc-ai-suggest" disabled title="AIエージェントを投稿者に選ぶと有効になります">✨ AIに意見させる</button>
+                <button type="submit" class="btn btn-primary" id="dc-submit">投稿する</button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <!-- コメント一覧 -->
+        <div id="dc-list-wrap" hidden style="margin-top:18px;">
+          <section class="panel panel-list" style="margin:0;">
+            <div class="panel-head-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <h2 class="panel-title" style="margin:0;">コメント一覧 <span id="dc-count" style="font-size:13px; font-weight:400; color:#4a5663;">0件</span></h2>
+              <button type="button" class="btn btn-ai" id="dc-ai-revise" disabled title="2件以上のコメントが必要です">🤝 AIで改善案にとりまとめる</button>
+            </div>
+            <div id="dc-list" class="idea-list" style="margin-top:14px;">
+              <p class="empty" id="dc-empty">読み込み中…</p>
+            </div>
+          </section>
+        </div>
+
+        <!-- AI改善案表示エリア -->
+        <div id="dc-revise-wrap" hidden style="margin-top:18px;">
+          <section class="panel" style="margin:0; background:linear-gradient(135deg,#faf3e3,#fff); border:2px solid #c9a55c;">
+            <div class="panel-head-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <h2 class="panel-title" style="color:#1e3a5f; margin:0;">🤝 AIによる改善案</h2>
+              <button type="button" class="btn btn-ghost btn-sm" id="dc-revise-close">閉じる</button>
+            </div>
+            <p style="font-size:13px; color:#4a5663; margin:8px 0;">下記の改善案テキストをコピーして Claude Code に貼り付け、HTML 反映を依頼してください（自動反映はしません）。</p>
+            <pre id="dc-revise-output" style="background:#fff; border:1px solid #e0d9c6; border-radius:6px; padding:16px; font-size:13px; line-height:1.7; white-space:pre-wrap; word-break:break-word; max-height:60vh; overflow-y:auto;"></pre>
+            <div class="form-actions" style="margin-top:12px;">
+              <button type="button" class="btn btn-ghost" id="dc-revise-copy">📋 クリップボードにコピー</button>
+            </div>
+          </section>
+        </div>
+
+      </section>
+    </div><!-- /tab-doc-comments -->
 
   </main>
 

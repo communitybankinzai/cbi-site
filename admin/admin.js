@@ -225,7 +225,7 @@ const UNREAD_POLL_MS = 30000;
       b.classList.toggle('active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    ['ideas', 'mail', 'agents', 'changelog', 'docs'].forEach(t => {
+    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
     document.body.classList.toggle('mail-fullwidth', name === 'mail');
@@ -235,6 +235,7 @@ const UNREAD_POLL_MS = 30000;
     if (name === 'agents' && !state.agentsLoaded) loadAgents();
     if (name === 'changelog' && !state.changelogLoaded) loadChangelog();
     if (name === 'mail') openMailTab();
+    if (name === 'doc-comments' && !state.documentsLoaded) initDocComments();
   }
 
   // =========================================================
@@ -2378,4 +2379,267 @@ const UNREAD_POLL_MS = 30000;
     return html.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
                .replace(/\n/g, '<br>');
   }
+
+  // =========================================================
+  // 資料コメント機能（doc-comments タブ）
+  // =========================================================
+  async function initDocComments() {
+    try {
+      const res = await fetch('data/documents.json', { cache: 'no-store' });
+      const data = await res.json();
+      state.documents = data.documents || [];
+      state.documentsLoaded = true;
+      renderDocumentSelector();
+      bindDocCommentEvents();
+      populateDocCommentSelects();
+    } catch (e) {
+      console.error('[initDocComments] error:', e);
+      const sel = $('dc-document-select');
+      if (sel) sel.innerHTML = '<option value="">読み込みに失敗しました</option>';
+    }
+  }
+
+  function renderDocumentSelector() {
+    const sel = $('dc-document-select');
+    if (!sel) return;
+    let html = '<option value="">資料を選択してください</option>';
+    state.documents.forEach(d => {
+      html += `<option value="${escapeAttr(d.id)}">${escapeHtml(d.title)}</option>`;
+    });
+    sel.innerHTML = html;
+  }
+
+  function populateDocCommentSelects() {
+    // カテゴリ（エージェント区分）を agents.json から流用
+    const catSel = $('dc-category');
+    const ideaCat = $('idea-category');
+    if (catSel && ideaCat && catSel.children.length <= 1) {
+      Array.from(ideaCat.children).forEach(opt => {
+        if (opt.value) catSel.appendChild(opt.cloneNode(true));
+      });
+    }
+    // 投稿者のAIエージェント候補
+    const agentGroup = $('dc-agent-optgroup');
+    const ideaAgentGroup = $('agent-optgroup');
+    if (agentGroup && ideaAgentGroup && agentGroup.children.length === 0) {
+      Array.from(ideaAgentGroup.children).forEach(opt => {
+        agentGroup.appendChild(opt.cloneNode(true));
+      });
+    }
+  }
+
+  function bindDocCommentEvents() {
+    if (state.docCommentsBound) return;
+    state.docCommentsBound = true;
+
+    $('dc-document-select').addEventListener('change', (e) => {
+      onDocumentChange(e.target.value);
+    });
+    $('dc-author').addEventListener('change', (e) => {
+      const isCustom = e.target.value === '__custom__';
+      $('dc-author-custom').hidden = !isCustom;
+      const isAgent = e.target.value && /^A\d+/.test(e.target.value);
+      $('dc-ai-suggest').disabled = !isAgent;
+    });
+    $('dc-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitDocComment();
+    });
+    $('dc-ai-suggest').addEventListener('click', aiSuggestDocComment);
+    $('dc-ai-revise').addEventListener('click', aiReviseDocument);
+    $('dc-revise-close').addEventListener('click', () => {
+      $('dc-revise-wrap').hidden = true;
+    });
+    $('dc-revise-copy').addEventListener('click', copyReviseToClipboard);
+  }
+
+  function onDocumentChange(docId) {
+    state.currentDocumentId = docId;
+    const meta = $('dc-document-meta');
+    const formWrap = $('dc-form-wrap');
+    const listWrap = $('dc-list-wrap');
+    $('dc-revise-wrap').hidden = true;
+    if (!docId) {
+      meta.hidden = true;
+      formWrap.hidden = true;
+      listWrap.hidden = true;
+      return;
+    }
+    const doc = state.documents.find(d => d.id === docId);
+    if (doc) {
+      $('dc-document-desc').innerHTML = `<strong>${escapeHtml(doc.category || '')}</strong>　${escapeHtml(doc.description || '')}`;
+      $('dc-document-link').href = doc.path;
+      meta.hidden = false;
+    }
+    $('dc-document-id').value = docId;
+    formWrap.hidden = false;
+    listWrap.hidden = false;
+    loadDocComments(docId);
+  }
+
+  async function loadDocComments(docId) {
+    const list = $('dc-list');
+    const empty = $('dc-empty');
+    const count = $('dc-count');
+    list.innerHTML = '<p class="empty">読み込み中…</p>';
+    try {
+      const r = await gasCall({ action: 'listComments', password: state.password });
+      if (!r.ok) throw new Error(r.error || 'fetch_failed');
+      const target = `doc:${docId}`;
+      const filtered = (r.comments || []).filter(c => c.ideaId === target);
+      // 古い順に並べ替え
+      filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      state.docComments = filtered;
+      renderDocCommentList(filtered);
+      count.textContent = `${filtered.length}件`;
+      $('dc-ai-revise').disabled = filtered.length < 2;
+      $('dc-ai-revise').title = filtered.length < 2 ? '2件以上のコメントが必要です' : 'AIで改善案にとりまとめる';
+    } catch (e) {
+      console.error('[loadDocComments] error:', e);
+      list.innerHTML = `<p class="empty">読み込み失敗：${escapeHtml(e.message || '')}</p>`;
+    }
+  }
+
+  function renderDocCommentList(comments) {
+    const list = $('dc-list');
+    if (comments.length === 0) {
+      list.innerHTML = '<p class="empty">まだコメントがありません。最初のコメントを投稿してください。</p>';
+      return;
+    }
+    let html = '';
+    comments.forEach(c => {
+      const dt = c.createdAt ? new Date(c.createdAt).toLocaleString('ja-JP') : '';
+      const cat = c.category || '';
+      const status = c.status || '';
+      const author = c.author || '匿名';
+      const body = linkify(escapeHtml(c.body || ''));
+      const isAgent = /^A\d+/.test(author);
+      const badge = isAgent ? '🤖' : '👥';
+      html += `
+        <article style="background:#fff; border:1px solid #e0d9c6; border-left:4px solid ${isAgent ? '#2d5a3d' : '#c9a55c'}; border-radius:8px; padding:14px 18px; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:start; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+            <div style="font-size:13px;">
+              <strong style="color:#1e3a5f;">${badge} ${escapeHtml(author)}</strong>
+              ${cat ? `<span style="display:inline-block; font-size:11px; padding:2px 8px; background:#faf3e3; color:#c9a55c; border-radius:999px; margin-left:8px;">${escapeHtml(cat)}</span>` : ''}
+              ${status ? `<span style="display:inline-block; font-size:11px; padding:2px 8px; background:#f1ece0; color:#4a5663; border-radius:999px; margin-left:4px;">${escapeHtml(status)}</span>` : ''}
+            </div>
+            <div style="font-size:11px; color:#4a5663;">${dt}</div>
+          </div>
+          <div style="font-size:14px; line-height:1.75; color:#1a2330;">${body}</div>
+        </article>
+      `;
+    });
+    list.innerHTML = html;
+  }
+
+  async function submitDocComment() {
+    const docId = $('dc-document-id').value;
+    if (!docId) { alert('資料を選択してください'); return; }
+    let author = $('dc-author').value;
+    if (author === '__custom__') author = $('dc-author-custom').value.trim();
+    const category = $('dc-category').value;
+    const status = $('dc-status').value;
+    const body = $('dc-body').value.trim();
+    if (!author || !category || !body) { alert('投稿者・カテゴリ・本文は必須です'); return; }
+
+    const btn = $('dc-submit');
+    btn.disabled = true;
+    btn.textContent = '投稿中…';
+    try {
+      const r = await gasCall({
+        action: 'addComment',
+        password: state.password,
+        comment: {
+          ideaId: `doc:${docId}`,
+          author: author,
+          body: `[${category}/${status}] ${body}`,
+        },
+        actor: author,
+      });
+      if (!r.ok) throw new Error(r.error || 'submit_failed');
+      $('dc-body').value = '';
+      await loadDocComments(docId);
+    } catch (e) {
+      console.error('[submitDocComment] error:', e);
+      alert('投稿に失敗しました：' + (e.message || ''));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '投稿する';
+    }
+  }
+
+  async function aiSuggestDocComment() {
+    const docId = $('dc-document-id').value;
+    const author = $('dc-author').value;
+    if (!docId || !author || !/^A\d+/.test(author)) { alert('資料とAIエージェントを選択してください'); return; }
+    const doc = state.documents.find(d => d.id === docId);
+    const btn = $('dc-ai-suggest');
+    btn.disabled = true;
+    btn.textContent = 'AI生成中…';
+    try {
+      const r = await gasCall({
+        action: 'aiSuggest',
+        password: state.password,
+        agentId: author.match(/^(A\d+)/)[1],
+        context: `資料『${doc?.title || docId}』に対する意見・改善提案を、このエージェントの立場で1案考えてください。資料の説明：${doc?.description || ''}`,
+      });
+      if (!r.ok) throw new Error(r.error || 'ai_failed');
+      const suggestion = r.suggestion || r.body || r.text || '';
+      if (suggestion) {
+        $('dc-body').value = suggestion;
+      } else {
+        alert('AIの応答が空でした');
+      }
+    } catch (e) {
+      console.error('[aiSuggestDocComment] error:', e);
+      alert('AI提案に失敗しました：' + (e.message || ''));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '✨ AIに意見させる';
+    }
+  }
+
+  async function aiReviseDocument() {
+    const docId = state.currentDocumentId;
+    const comments = state.docComments || [];
+    if (!docId || comments.length < 2) return;
+    const doc = state.documents.find(d => d.id === docId);
+    const btn = $('dc-ai-revise');
+    btn.disabled = true;
+    btn.textContent = 'AI処理中…';
+    try {
+      const r = await gasCall({
+        action: 'aiReviseDocument',
+        password: state.password,
+        documentId: docId,
+        documentTitle: doc?.title || docId,
+        documentDescription: doc?.description || '',
+        comments: comments.map(c => ({ author: c.author, body: c.body, createdAt: c.createdAt })),
+      });
+      if (!r.ok) throw new Error(r.error || 'ai_failed');
+      $('dc-revise-output').textContent = r.revised || r.text || '（応答なし）';
+      $('dc-revise-wrap').hidden = false;
+      $('dc-revise-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      console.error('[aiReviseDocument] error:', e);
+      alert('AI改善案の生成に失敗しました：' + (e.message || ''));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🤝 AIで改善案にとりまとめる';
+    }
+  }
+
+  function copyReviseToClipboard() {
+    const text = $('dc-revise-output').textContent;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = $('dc-revise-copy');
+      const orig = btn.textContent;
+      btn.textContent = '✅ コピーしました';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    }).catch(e => {
+      alert('コピーに失敗しました：' + e.message);
+    });
+  }
+
 })();

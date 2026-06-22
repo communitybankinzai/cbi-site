@@ -1,0 +1,33 @@
+{
+  "updatedAt": "2026-06-23",
+  "note": "資料コメントタブで管理する内部資料の一覧。HTMLを追加したらこのリストに登録する。id はファイルパスから独立した安定識別子（comments.targetId と一致）。",
+  "documents": [
+    {
+      "id": "machikatsu-meeting",
+      "title": "街活性室 橋爪様向け｜CBI × 街活性室 連携の方向性",
+      "path": "proposals/machikatsu-meeting-v1.html",
+      "category": "提案資料・プレゼンスライド",
+      "description": "戦略B（CBIフロントエンド × 街活性室バックエンド）の提案資料。10枚構成のHTMLスライド。",
+      "createdAt": "2026-06-21",
+      "updatedAt": "2026-06-22"
+    },
+    {
+      "id": "ekimae-marche",
+      "title": "駅前常設マルシェ提案｜2025-03-25 市長タウンミーティング",
+      "path": "proposals/ekimae-marche-proposal-v1.html",
+      "category": "アーカイブ・元提案資料",
+      "description": "COCoLa有志メンバーが藤代市長に提示した千葉NT中央駅前歩道エリア活用提案。9枚構成。後のCBI設立につながった元提案。",
+      "createdAt": "2026-06-22",
+      "updatedAt": "2026-06-22"
+    },
+    {
+      "id": "container-shokan",
+      "title": "コンテナ別 市役所主管マッピング｜駅前常設マルシェ協業設計",
+      "path": "proposals/container-shokan-mapping-v1.html",
+      "category": "設計資料・協業パッケージ",
+      "description": "7コンテナ（学び/物販/喫茶/国際/創業/広報/ステージ）を印西市の各課主管と紐づけ、CBI連携体の協業価値を可視化した7枚構成。各コンテナに収益源欄付き。",
+      "createdAt": "2026-06-22",
+      "updatedAt": "2026-06-23"
+    }
+  ]
+}

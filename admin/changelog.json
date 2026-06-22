@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-23",
+      "type": "feature",
+      "target": "site/admin/index.html（『💬 資料コメント』タブ新設）／site/admin/admin.js（doc-comments関連ロジック追加）／site/admin/data/documents.json（新規）／cbi-admin-gas/Code.gs（aiReviseDocumentアクション追加）",
+      "title": "管理画面に『資料コメント』タブを新設：各資料へのメンバー／AIエージェントのコメント投稿＋AIによる改善案テキスト自動生成（2段階構造）",
+      "detail": "ユーザー要望『各資料に対するメンバー／エージェントのコメントを入力でき、それをAIで資料に反映する枠組みが欲しい』を受けて、アイデアタブと同じ構造で資料コメント機能を実装。設計のポイント：(1)既存commentsシートを流用（ideaId列に『doc:{documentId}』形式で保存）、新規シート不要、(2)documents.jsonに資料3本のメタ情報を登録（machikatsu-meeting/ekimae-marche/container-shokan）、(3)タブ構成：資料セレクタ→投稿フォーム（投稿者・カテゴリ・状態・本文／AIエージェント選択時は『✨AIに意見させる』有効）→コメント一覧→『🤝AIで改善案にとりまとめる』ボタン、(4)AI改善案は5項目構造（改善方針サマリ／採用すべきコメント／保留・要確認／HTMLへの具体的反映指示／反映後の再確認）でGemini 2.5 Flashが生成、(5)HTMLへの直接自動書き換えはせず、改善案テキストをClaude Codeにコピペして反映する2段階構造（リスク回避）、(6)既存aiSuggest機能も流用してAIエージェント立場でのコメント生成可能。コメント2件以上で『改善案にとりまとめる』ボタンが有効化。クリップボードコピー機能付き。",
+      "author": "A1 / Core"
+    },
+    {
+      "date": "2026-06-23",
       "type": "content",
       "target": "site/admin/proposals/container-shokan-mapping-v1.html（7コンテナ詳細）",
       "title": "全7コンテナに『💰 収益源』欄を追加：単一収益ではなく多重収益源モデルを明示（行政補助＋利用料＋歩合＋協賛＋ふるさと納税GCF）",

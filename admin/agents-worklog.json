@@ -7,6 +7,20 @@
       "actuals": [
         {
           "date": "2026-06-23",
+          "title": "管理画面に『資料コメント』タブ新設：投稿フォーム＋AI改善案生成（2段階構造）の枠組み実装 3.0時間",
+          "category": "実装",
+          "outputs": [
+            "site/admin/data/documents.json 新規（資料3本のメタ情報を登録）",
+            "site/admin/index.html（タブナビに『💬 資料コメント』追加、tab-doc-commentsパネル新設 約110行）",
+            "site/admin/admin.js（doc-comments関連の関数群追加：initDocComments/renderDocumentSelector/onDocumentChange/loadDocComments/renderDocCommentList/submitDocComment/aiSuggestDocComment/aiReviseDocument/copyReviseToClipboard 約250行）",
+            "cbi-admin-gas/Code.gs（aiReviseDocumentアクション追加＋handleAiReviseDocument_ 約80行）"
+          ],
+          "hours": 3.0,
+          "partnerApproved": false,
+          "note": "ユーザー要望『各資料へのコメント機能＋AI反映の枠組み』を受けて、案B（新規タブ）で実装。設計のポイント：(1)既存commentsシートをスキーマ拡張せず流用するため、ideaId列に『doc:{documentId}』形式でレコード保存（GAS側はaddComment無変更）、(2)資料リストはdocuments.jsonで静的管理、(3)AI改善案は『HTML直接書き換え』ではなく『5項目構造の改善案テキスト生成』に留め、Claude Codeに渡してHTML反映する2段階構造でリスク回避、(4)Gemini 2.5 Flash使用、(5)既存aiSuggestの仕組みを流用してAIエージェント立場でのコメント生成も可能、(6)コメント数2件以上で改善案ボタン有効化、(7)クリップボードコピー機能付き。⚠️ clasp push実行時に『The caller does not have permission』エラーが発生。GAS側のデプロイは中司側で clasp login → clasp push → clasp deploy の手動実行が必要。git push分は完了。"
+        },
+        {
+          "date": "2026-06-23",
           "title": "コンテナ別マッピングHTML：全7コンテナに『💰 収益源』欄を追加（多重収益源モデルの可視化） 0.5時間",
           "category": "保守",
           "outputs": [
