@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>駅前常設マルシェ提案｜2025-03-25 市長タウンミーティング</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c-navy:        #1e3a5f;
+  --c-navy-dark:   #14283f;
+  --c-navy-soft:   #2c4a72;
+  --c-gold:        #c9a55c;
+  --c-gold-soft:   #d8b97a;
+  --c-green:       #2d5a3d;
+  --c-green-soft:  #3f7351;
+  --c-red:         #c0392b;
+  --c-bg:          #faf8f3;
+  --c-bg-alt:      #f1ece0;
+  --c-paper:       #ffffff;
+  --c-ink:         #1a2330;
+  --c-ink-sub:     #4a5663;
+  --c-line:        #e0d9c6;
+  --font-serif: "Noto Serif JP", "Yu Mincho", serif;
+  --font-sans:  "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  color: var(--c-ink);
+  background: var(--c-bg-alt);
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+}
+.slide {
+  min-height: 100vh;
+  width: 100%;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 80px;
+  position: relative;
+}
+.slide .num {
+  position: absolute;
+  top: 28px;
+  right: 40px;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  color: var(--c-ink-sub);
+  letter-spacing: 0.1em;
+}
+.slide .num strong { color: var(--c-navy); font-weight: 700; font-size: 16px; }
+.slide h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(36px, 5vw, 60px);
+  color: var(--c-navy);
+  margin: 0 0 24px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+.slide h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 3.5vw, 42px);
+  color: var(--c-navy);
+  margin: 0 0 32px;
+  padding-bottom: 16px;
+  border-bottom: 3px solid var(--c-gold);
+  display: inline-block;
+  line-height: 1.4;
+}
+.slide h3 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  color: var(--c-navy);
+  margin: 0 0 12px;
+}
+.slide p { font-size: 17px; color: var(--c-ink); margin: 0 0 14px; }
+.slide .eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--c-gold);
+  margin: 0 0 16px;
+  font-weight: 700;
+}
+.slide ul { padding-left: 0; list-style: none; margin: 0 0 16px; }
+.slide ul li {
+  font-size: 17px;
+  color: var(--c-ink);
+  padding: 10px 0 10px 32px;
+  position: relative;
+  line-height: 1.85;
+  border-bottom: 1px dashed var(--c-line);
+}
+.slide ul li:last-child { border-bottom: none; }
+.slide ul li::before {
+  content: "◆";
+  position: absolute;
+  left: 8px; top: 12px;
+  color: var(--c-gold);
+  font-size: 12px;
+}
+.container { max-width: 1100px; margin: 0 auto; width: 100%; }
+.accent { color: var(--c-gold); }
+.red { color: var(--c-red); font-weight: 700; }
+
+/* ====== SLIDE 1 (Title) ====== */
+#s1 {
+  background:
+    radial-gradient(ellipse at top, rgba(201,165,92,0.18), transparent 60%),
+    linear-gradient(180deg, var(--c-navy-dark) 0%, var(--c-navy) 100%);
+  color: #fff;
+  text-align: center;
+}
+#s1 h1 { color: #fff; }
+#s1 h1 .accent { color: var(--c-gold); }
+#s1 .lead {
+  color: rgba(255,255,255,0.88);
+  font-family: var(--font-serif);
+  font-size: clamp(16px, 1.8vw, 22px);
+  margin: 0 0 40px;
+}
+#s1 .meta {
+  display: inline-block;
+  padding: 12px 28px;
+  border: 1px solid var(--c-gold);
+  border-radius: 999px;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: var(--c-gold-soft);
+  background: rgba(201,165,92,0.08);
+  margin-top: 16px;
+}
+#s1 .badge {
+  display: inline-block;
+  padding: 6px 18px;
+  border: 1px solid var(--c-gold);
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--c-gold-soft);
+  margin-bottom: 32px;
+  background: rgba(201,165,92,0.08);
+}
+
+/* ====== Slides ====== */
+#s2 { background: var(--c-bg); }
+#s3 { background: var(--c-paper); }
+#s4 { background: var(--c-bg); }
+#s5 { background: linear-gradient(135deg, var(--c-bg-alt), var(--c-bg)); }
+#s6 { background: var(--c-paper); }
+#s7 { background: var(--c-bg); }
+#s8 { background: var(--c-paper); }
+#s9 { background: linear-gradient(135deg, var(--c-navy-dark), var(--c-navy)); color: #fff; }
+#s9 h2 { color: #fff; border-bottom-color: var(--c-gold); }
+#s9 h3 { color: var(--c-gold-soft); }
+#s9 p { color: rgba(255,255,255,0.9); }
+#s9 ul li { color: rgba(255,255,255,0.92); border-bottom-color: rgba(255,255,255,0.15); }
+#s9 ul li::before { color: var(--c-gold); }
+
+/* Cards */
+.cards-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+.cards-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 24px;
+}
+.card {
+  background: var(--c-paper);
+  border: 1px solid var(--c-line);
+  border-left: 4px solid var(--c-gold);
+  border-radius: 8px;
+  padding: 22px 24px;
+}
+.card.dark { background: var(--c-navy); color: #fff; border-color: var(--c-gold); }
+.card.dark h4 { color: var(--c-gold-soft); }
+.card.dark p, .card.dark ul li { color: rgba(255,255,255,0.9); }
+.card h4 { margin: 0 0 10px; font-size: 16px; color: var(--c-navy); }
+.card p, .card ul li { font-size: 14px; }
+.card .tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--c-bg-alt);
+  color: var(--c-gold);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+/* Pillar list (slide 5) */
+.pillars { display: grid; gap: 14px; margin-top: 20px; }
+.pillar {
+  background: var(--c-paper);
+  border-left: 5px solid var(--c-gold);
+  padding: 18px 22px;
+  border-radius: 0 8px 8px 0;
+  box-shadow: 0 2px 6px rgba(20,40,63,0.05);
+}
+.pillar h4 {
+  font-family: var(--font-serif);
+  margin: 0 0 6px;
+  font-size: 19px;
+  color: var(--c-navy);
+}
+.pillar p { font-size: 15px; margin: 0; color: var(--c-ink-sub); }
+.pillar.c1 { border-left-color: #2d8c54; }
+.pillar.c2 { border-left-color: #1976d2; }
+.pillar.c3 { border-left-color: var(--c-navy); }
+.pillar.c4 { border-left-color: #d4574b; }
+.pillar.c5 { border-left-color: #b14a8a; }
+.pillar.c6 { border-left-color: var(--c-green); }
+
+/* Table (slide 6) */
+.tbl-wrap { overflow-x: auto; margin-top: 24px; }
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: var(--c-paper);
+}
+.tbl th, .tbl td {
+  padding: 12px 14px;
+  border: 1px solid var(--c-line);
+  text-align: left;
+  vertical-align: top;
+}
+.tbl th {
+  background: var(--c-navy);
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.tbl tr:nth-child(even) td { background: var(--c-bg); }
+.tbl td:first-child { font-weight: 700; color: var(--c-navy); white-space: nowrap; }
+
+/* Container grid (slide 7) */
+.containers-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 28px;
+}
+.container-box {
+  background: var(--c-paper);
+  border: 2px solid var(--c-gold);
+  border-radius: 8px;
+  padding: 14px 8px;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-navy);
+  position: relative;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.container-box .idx {
+  position: absolute;
+  top: 4px; left: 6px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--c-gold);
+  letter-spacing: 0.05em;
+}
+.container-box.stage {
+  background: linear-gradient(180deg, var(--c-bg-alt), var(--c-paper));
+}
+.container-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+.cd-card {
+  background: var(--c-paper);
+  border: 1px solid var(--c-line);
+  border-top: 3px solid var(--c-gold);
+  border-radius: 6px;
+  padding: 14px 16px;
+}
+.cd-card h5 {
+  font-family: var(--font-serif);
+  margin: 0 0 8px;
+  color: var(--c-navy);
+  font-size: 15px;
+}
+.cd-card ul { margin: 0; }
+.cd-card ul li {
+  font-size: 13px;
+  padding: 4px 0 4px 16px;
+  border-bottom: none;
+  line-height: 1.6;
+}
+.cd-card ul li::before {
+  content: "・";
+  top: 4px;
+  left: 0;
+  font-size: 14px;
+}
+.cd-area {
+  background: var(--c-bg);
+  border: 1px dashed var(--c-line);
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--c-ink-sub);
+  margin-top: 18px;
+  text-align: center;
+}
+
+/* Two-pane (slide 4) */
+.two-pane {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+.pane {
+  background: var(--c-paper);
+  border-radius: 8px;
+  padding: 22px 24px;
+  border: 1px solid var(--c-line);
+}
+.pane.warn { border-top: 4px solid var(--c-red); }
+.pane.hope { border-top: 4px solid var(--c-green); }
+.pane h4 {
+  font-family: var(--font-serif);
+  margin: 0 0 14px;
+  font-size: 19px;
+  color: var(--c-navy);
+}
+.pane.warn h4 { color: var(--c-red); }
+.pane.hope h4 { color: var(--c-green); }
+.pane ol {
+  padding-left: 20px;
+  margin: 0;
+}
+.pane ol li {
+  font-size: 14px;
+  margin-bottom: 10px;
+  line-height: 1.7;
+}
+.pane ol li small {
+  display: block;
+  color: var(--c-ink-sub);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.note-box {
+  background: var(--c-bg-alt);
+  border-left: 4px solid var(--c-gold);
+  padding: 14px 18px;
+  font-size: 14px;
+  border-radius: 0 6px 6px 0;
+  margin-top: 18px;
+  color: var(--c-ink-sub);
+}
+
+/* Hint */
+.nav-hint {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--c-ink-sub);
+  background: rgba(255,255,255,0.9);
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--c-line);
+  letter-spacing: 0.06em;
+  z-index: 100;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 900px) {
+  .slide { padding: 48px 32px; }
+  .cards-2, .cards-3, .two-pane, .container-details { grid-template-columns: 1fr; }
+  .containers-row { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ====== SLIDE 1: Title ====== -->
+<section class="slide" id="s1">
+  <div class="num"><strong>1</strong> / 9</div>
+  <div class="container">
+    <span class="badge">CITY ACTIVATION PROPOSAL</span>
+    <h1>印西市活性化のための<br><span class="accent">提案</span></h1>
+    <p class="lead">
+      千葉ニュータウン中央駅<br>
+      駅前歩道エリアの活用で実現できること
+    </p>
+    <div class="meta">2025年3月25日｜COCoLa 有志メンバー</div>
+    <p style="color: rgba(255,255,255,0.6); font-size: 12px; letter-spacing: 0.08em; margin-top: 24px;">
+      ※ 本提案は藤代市長タウンミーティングでの提示資料（公開版）。後の CBI 設立につながった元提案
+    </p>
+  </div>
+</section>
+
+<!-- ====== SLIDE 2: 藤代市長への共感 ====== -->
+<section class="slide" id="s2">
+  <div class="num"><strong>2</strong> / 9</div>
+  <div class="container">
+    <p class="eyebrow">RESONANCE</p>
+    <h2>藤代市長の目指す街づくりに<br>私たちも参加したい</h2>
+    <p>
+      藤代健吾市長のマニフェストが掲げる6本柱
+      <strong>「教育・子育て／地域づくり／産業・農業・観光／健康・医療・介護・福祉／インフラ防災・防犯」</strong>
+      に深く共感しました。
+    </p>
+    <p>
+      とりわけ、JR沿線エリアの「<span class="accent">古さと新しさが優しく溶け合う街</span>」、
+      北総線沿線エリアの「<span class="accent">人が輝き常に NEW なまち</span>」というビジョンに対して、
+      市民の側からも具体的に動きたいと考えています。
+    </p>
+    <p style="margin-top: 28px; font-size: 22px; font-family: var(--font-serif); color: var(--c-navy);">
+      その一手として、千葉ニュータウン中央駅の<br>
+      <span class="red">駅前常設マルシェ</span>を提案します。
+    </p>
+    <div class="note-box">
+      引用：藤代健吾マニフェスト公式図／市長タウンミーティング（2025-03-25）配布資料
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 3: 駅前常設マルシェのイメージ ====== -->
+<section class="slide" id="s3">
+  <div class="num"><strong>3</strong> / 9</div>
+  <div class="container">
+    <p class="eyebrow">VISION</p>
+    <h2>駅前常設マルシェを<br>想像してみました</h2>
+    <p style="font-size: 19px; font-weight: 500;">
+      芝エリアには常設のコンテナが並び、開放的な立ち寄りやすいスペースで、
+      <span class="accent">子どもからお年寄りに外国籍の人</span>、多様性に富んだ人々で賑わっています。
+    </p>
+    <div class="cards-2">
+      <div class="card">
+        <h4>常設の場</h4>
+        <p>仮設テントではなく、コンテナ建築による常設拠点。雨の日でも、平日でも、いつ来ても何かがある。</p>
+      </div>
+      <div class="card">
+        <h4>多様性</h4>
+        <p>子ども、子育て世代、シニア、外国籍住民、ビジネスパーソン、市民活動団体まで、混ざり合う。</p>
+      </div>
+      <div class="card">
+        <h4>入れ替わる中身</h4>
+        <p>各コンテナでは様々な取り組みが定期・不定期に入れ替わり、いつも何か新しい。</p>
+      </div>
+      <div class="card">
+        <h4>ワクワクする空間</h4>
+        <p>「また来たい」「次は何をやってるんだろう」と、皆がワクワクし続けられる場所。</p>
+      </div>
+    </div>
+    <div class="note-box">
+      コンテナ図は三共フロンティアより引用・合成
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 4: 悩ましさと有ったらうれしい環境 ====== -->
+<section class="slide" id="s4">
+  <div class="num"><strong>4</strong> / 9</div>
+  <div class="container">
+    <p class="eyebrow">CURRENT ISSUES</p>
+    <h2>現在の『悩ましさ』と<br>『有ったらうれしい環境』</h2>
+    <div class="two-pane">
+      <div class="pane warn">
+        <h4>悩ましさ（モヤモヤする）</h4>
+        <ol>
+          <li>
+            印西ならではの魅力が、市内外に伝わっていない
+            <small>行政広報が目に入り難い／駅周辺に人流が集中し、他エリアの活動が認知されにくい</small>
+          </li>
+          <li>
+            起業・創業したくても、チャレンジへのハードルが高い
+            <small>人口集中地域で立地の良い商業テナントは限定的で、金額も非常に高い</small>
+          </li>
+          <li>
+            生活を豊かにし得る生涯学習制度があるが、うまく機能していない
+            <small>登録した講師のうち、実際に講座を開設するケースは少ない</small>
+          </li>
+          <li>
+            国際化都市に資する街だが、英語や外国文化に接する機会が極めて少ない
+          </li>
+        </ol>
+      </div>
+      <div class="pane hope">
+        <h4>有ったらうれしい環境</h4>
+        <ol>
+          <li>
+            印西の文化や市民団体、行政など市内全域の様々な活動を<span class="accent">効率的にPR</span>できる
+          </li>
+          <li>
+            低額かつ効率的に起業・創業のマーケティング（アイデア試行、告知）ができる
+            <small>ビジネスとして確立を目指し、新たな雇用も生む<span class="accent">システム</span>づくり</small>
+          </li>
+          <li>
+            生涯学習講師が定期的かつ<span class="accent">能動的に講座を開講</span>できる
+          </li>
+          <li>
+            外国人といつでも気軽に交流できる場があり、<span class="accent">英語を学ぶ動機とチャンス</span>がある
+          </li>
+        </ol>
+      </div>
+    </div>
+    <p style="text-align: center; font-size: 22px; font-weight: 700; color: var(--c-navy); margin-top: 28px;">
+      ⬇ 千葉NT中央駅の<span class="red">駅前常設マルシェ</span>で実現できると考えます
+    </p>
+  </div>
+</section>
+
+<!-- ====== SLIDE 5: 市長の想いに共感した提案 6項目 ====== -->
+<section class="slide" id="s5">
+  <div class="num"><strong>5</strong> / 9</div>
+  <div class="container">
+    <p class="eyebrow">PROPOSAL</p>
+    <h2>市長の想いに共感した<br>私たちの提案</h2>
+    <div class="note-box" style="margin-top: 0; margin-bottom: 20px;">
+      2023年に条例に反映された「歩行者利便増進道路」いわゆる<strong>「ほこみち」制度</strong>の適用で、
+      千葉NT中央駅近くの歩道エリアに、コンテナによる<span class="red">「駅前常設マルシェ」</span>を整備し、以下の実現を目指します。
+    </div>
+    <div class="pillars">
+      <div class="pillar c1">
+        <h4>① 溢れるイベントで楽しむ繋がる</h4>
+        <p>季節のイベントなど、年間を通して様々なイベントを実施。飽きさせない工夫。</p>
+      </div>
+      <div class="pillar c2">
+        <h4>② 自分らしく輝く　人を応援する環境</h4>
+        <p>やってみたいコトにチャレンジでき、周囲が応援できる機会・環境の提供。「企画提案型協働事業」の試行や「アイデアのたまご」の公開の場にも。</p>
+      </div>
+      <div class="pillar c3">
+        <h4>③ 新たな産業、雇用の拠点</h4>
+        <p>起業、創業のハードルを下げ、市内に新たな産業や雇用を生む。</p>
+      </div>
+      <div class="pillar c4">
+        <h4>④ スポーツや音楽、各種文化の拠点</h4>
+        <p>市政活動、地元文化、学び、国際交流などを紹介し、参画を促す。</p>
+      </div>
+      <div class="pillar c5">
+        <h4>⑤ 人がやさしくつながる安全なまち</h4>
+        <p>印西市に約200ある市民活動団体の紹介、活動支援、マッチングによる活性化。</p>
+      </div>
+      <div class="pillar c6">
+        <h4>⑥ JRエリアの発展と共存共栄</h4>
+        <p>他エリアの店舗や活動を紹介し、市内全域に人が行き来するまちづくり。②③でチャレンジした結果をもって、JRエリアでの創業も視野に入る。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 6: 実現項目と実施アイデア ====== -->
+<section class="slide" id="s6">
+  <div class="num"><strong>6</strong> / 9</div>
+  <div class="container">
+    <p class="eyebrow">EXECUTION IDEAS</p>
+    <h2>実現のための<br>「項目」と「実施アイデア」</h2>
+    <p style="font-size: 14px; color: var(--c-ink-sub);">複数あるコンテナにて、定期・不定期に入れ替わる想定</p>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width: 22%;">項目</th>
+            <th>実施アイデア（案）</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>① 溢れるイベント</td>
+            <td>イルミライと連携、地元ミュージシャンやダンスクラブ発表、MBX 実演・体験／防災訓練、子ども食堂、フードロス対策／祝日・季節にちなんだイベント（クリスマスマーケット、コスモス摘み）</td>
+          </tr>
+          <tr>
+            <td>② 自分らしく輝く</td>
+            <td>レストランお試し出店／レザークラフトなどの体験（普及の機会創出）／<span class="red">Free Free（フレーフレー）事業</span></td>
+          </tr>
+          <tr>
+            <td>③ 新たな産業・雇用</td>
+            <td>起業・創業アイデアのチャレンジの機会を創出／職業（副業）紹介、人材紹介／外国人主催のイベントやビジネスチャレンジへの応援</td>
+          </tr>
+          <tr>
+            <td>④ 文化の拠点</td>
+            <td>歴史・文化資産資料常設、ツアー開催／フラワーアレンジ、ヨガ、茶道などの体験／外国人（文化）との交流、学習の機会</td>
+          </tr>
+          <tr>
+            <td>⑤ 人がやさしく繋がる安全なまち</td>
+            <td>市民活動団体（約200団体）の支援、交流、マッチング／フードロス対策、子ども食堂、学習支援／高齢者向け、IT機器や各種サービス、防災等のセミナー</td>
+          </tr>
+          <tr>
+            <td>⑥ JRエリアと共存共栄</td>
+            <td>JRエリア店舗商品の代理販売／JRエリア飲食店の期間限定出店／各地域のイベントや施設の紹介、ツアー企画</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top: 24px; text-align: center; font-size: 18px; font-weight: 700; color: var(--c-navy);">
+      <span class="red">ボランティア精神の活動</span>や、<span class="red">しっかり稼げて長く続けられる事業</span>で、街づくりを！
+    </p>
+    <p style="text-align: center; font-size: 15px; color: var(--c-ink-sub);">
+      フリーペーパーの発行や SNS 配信にて、広くタイムリーに伝え、活動を盛り上げます。
+    </p>
+    <div class="note-box">
+      <strong>※ Free Free（フレーフレー）事業とは</strong><br>
+      コーヒーなどの飲み物や軽食を提供し、多くの人に来店してもらう多目的スペースを運営。
+      運営コンセプトは「応援（フレーフレー）」で、<strong>皆が誰かのチャレンジを応援し、感謝されるループを作り出す</strong>。
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 7: 7コンテナのイメージ ====== -->
+<section class="slide" id="s7">
+  <div class="num"><strong>7</strong> / 9</div>
+  <div class="container">
+    <p class="eyebrow">CONTAINER LAYOUT</p>
+    <h2>駅前常設マルシェの<br>イメージ</h2>
+    <div class="cd-area">
+      <strong>立地：</strong>千葉ニュータウン中央駅北口 芝生エリア（<span class="accent">約8m × 約60m</span>） ／ 大塚前公園・イオン隣接
+    </div>
+    <div class="containers-row">
+      <div class="container-box"><span class="idx">①</span>学び</div>
+      <div class="container-box"><span class="idx">②</span>物販</div>
+      <div class="container-box"><span class="idx">③</span>喫茶</div>
+      <div class="container-box"><span class="idx">④</span>国際</div>
+      <div class="container-box"><span class="idx">⑤</span>創業<br>チャレンジ</div>
+      <div class="container-box"><span class="idx">⑥</span>広報</div>
+      <div class="container-box stage"><span class="idx">⑦</span>ステージ</div>
+    </div>
+    <div class="container-details">
+      <div class="cd-card">
+        <h5>① 学び</h5>
+        <ul>
+          <li>生涯学習講座</li>
+          <li>スクールバス待ち合い</li>
+          <li>パソコン(IT)教室</li>
+          <li>語学講座／茶道</li>
+          <li>読書会／着付け</li>
+          <li>投資講座</li>
+          <li>救命、防災セミナー</li>
+        </ul>
+      </div>
+      <div class="cd-card">
+        <h5>② 物販</h5>
+        <ul>
+          <li>ベーカリー／お蕎麦</li>
+          <li>お菓子／装飾品</li>
+          <li>ハンドメイド</li>
+          <li>クリスマス雑貨</li>
+          <li><span class="red">JRエリアの商店から</span></li>
+        </ul>
+      </div>
+      <div class="cd-card">
+        <h5>③ 喫茶（応援喫茶 Free Free）</h5>
+        <ul>
+          <li>ドリンク、軽食</li>
+          <li>企業応援</li>
+          <li>チャレンジャー応援</li>
+          <li>企業コラボイベント</li>
+          <li>サンプリング</li>
+          <li>マーケティング</li>
+        </ul>
+      </div>
+      <div class="cd-card">
+        <h5>④ 国際交流</h5>
+        <ul>
+          <li>外国籍住民の憩い</li>
+          <li>語学、文化交流</li>
+          <li>共同イベント</li>
+        </ul>
+      </div>
+      <div class="cd-card">
+        <h5>⑤ 創業チャレンジ</h5>
+        <ul>
+          <li>起業、創業アイデアの実行</li>
+          <li>フィットネス／コーチング</li>
+          <li>レザークラフト／飲食店</li>
+          <li>各種サービス／ハンドメイド</li>
+          <li>フラワーアレンジ</li>
+        </ul>
+      </div>
+      <div class="cd-card">
+        <h5>⑥ 広報（行政活動広報）</h5>
+        <ul>
+          <li>議会、施行実績PR</li>
+          <li>市民団体活動紹介</li>
+          <li>まちづくり／健康福祉</li>
+          <li>子育て支援／生きがい</li>
+        </ul>
+      </div>
+      <div class="cd-card" style="grid-column: span 3;">
+        <h5>⑦ ステージ</h5>
+        <ul style="columns: 2;">
+          <li>毎朝のラジオ体操</li>
+          <li>ミュージシャン発表</li>
+          <li>ダンス他各種クラブチーム</li>
+          <li><span class="red">BMX 紹介、体験</span></li>
+          <li><span class="red">イルミライ</span>のイベント</li>
+          <li>フリーマーケット</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 8: なぜ？ ====== -->
+<section class="slide" id="s8">
+  <div class="num"><strong>8</strong> / 9</div>
+  <div class="container">
+    <p class="eyebrow">WHY?</p>
+    <h2>なぜ？</h2>
+    <div class="cards-2">
+      <div class="card">
+        <span class="tag">LOCATION</span>
+        <h4>なぜ千葉ニュータウン中央駅周辺なのか</h4>
+        <ul>
+          <li>通勤通学で毎日 2 万人以上の人が行きかう最大の人流エリア</li>
+          <li>市外から『ビジネスモール』に通勤する多くの会社員と接点が取れる</li>
+          <li>市内外からの通行者に訴求し、やがて市内全域の経済活動に取り込める</li>
+        </ul>
+        <p style="margin-top: 12px; color: var(--c-navy); font-weight: 700;">だから、この場所が最適</p>
+      </div>
+      <div class="card">
+        <span class="tag">CAPABILITY</span>
+        <h4>なぜ私たちが実現できるのか</h4>
+        <ul>
+          <li>COCoLa メンバーには、起業家、IT 系、飲食店経営者などの多彩な経験と能力を持った人財が、同じ想いで集まっており、いつでも協力し合える</li>
+          <li>多くの市民活動団体との交流があり、様々な分野で連携できる</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top: 32px; font-family: var(--font-serif); font-size: 22px; color: var(--c-navy); text-align: center; line-height: 1.7;">
+      リスクや不安、ネガティブなことをたくさん感じていますが、<br>
+      <span class="red">できない理由よりも、どうやれば実現できるかにフォーカスしたい！</span><br>
+      ぜひ本提案の実現に向け、私たちを絡ませていただけたらと思います！
+    </p>
+  </div>
+</section>
+
+<!-- ====== SLIDE 9: 結語（CBI設立への接続） ====== -->
+<section class="slide" id="s9">
+  <div class="num"><strong>9</strong> / 9</div>
+  <div class="container">
+    <p class="eyebrow">FROM PROPOSAL TO CBI</p>
+    <h2>この提案から、CBI へ</h2>
+    <p>
+      2025-03-25 のこの提案から1年あまり、提案メンバーの一部が
+      <strong>Community Bank INZAI（CBI）</strong> を立ち上げました。
+    </p>
+    <p>
+      2026 年 6 月、印西市が公示した
+      <strong>「公民連携によるまちづくり支援業務委託」</strong>
+      では、まさにこの千葉 NT 中央駅北口歩道（市道 27-010 号線、延長約 360 m × 幅員 30 m）と
+      大塚前公園の<strong class="accent">一体的活用</strong>が市公式方針として明示されています。
+    </p>
+    <ul>
+      <li>市公式想定：「通過動線でしかなかった歩道を<strong class="accent">滞在したいと思える</strong>へと変換」</li>
+      <li>市公式想定：「まちの顔となる<strong class="accent">ブランドイメージ</strong>が構築される空間」</li>
+      <li>市公式想定：「<strong class="accent">回遊性</strong>を持たせることで訪れる人々に新しい価値や体験を提供」</li>
+      <li>市公式言質：サウンディング型市場調査で<strong class="accent">「エリア全体を統括・指導するマネジメント組織の構築」</strong>が提案として明記</li>
+      <li>事業手法：<strong class="accent">「ほこみち制度」「Park-PFI ＋指定管理者制度の併用」「20 年程度の長期事業期間」</strong></li>
+    </ul>
+    <p style="margin-top: 24px;">
+      本提案で描いた未来は、いま市の公民連携施策と接続できる位置にあります。
+      CBI は、街活性室・受託事業者・観光協会・市民活動団体の <strong>補完関係</strong> の中で、
+      この提案の実現に貢献していきます。
+    </p>
+    <div class="note-box" style="background: rgba(255,255,255,0.08); border-left-color: var(--c-gold); color: rgba(255,255,255,0.85); margin-top: 28px;">
+      ※ 本資料は 2025-03-25 タウンミーティング公開版 PDF を底本として、CBI 管理画面用に整形した内部閲覧資料です。<br>
+      ※ 引用：藤代健吾マニフェスト／三共フロンティア社カタログ
+    </div>
+  </div>
+</section>
+
+<div class="nav-hint">スクロールで次のページへ</div>
+
+</body>
+</html>
