@@ -2451,6 +2451,16 @@ const UNREAD_POLL_MS = 30000;
       $('dc-revise-wrap').hidden = true;
     });
     $('dc-revise-copy').addEventListener('click', copyReviseToClipboard);
+    $('dc-revise-mark-all').addEventListener('click', markAllCommentsReflected);
+    // コメントリスト内の個別ボタンへのイベント委譲
+    $('dc-list').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action="toggle-reflected"]');
+      if (btn) {
+        const id = btn.getAttribute('data-comment-id');
+        const toReflected = btn.getAttribute('data-to') === 'reflected';
+        toggleCommentReflected(id, toReflected);
+      }
+    });
   }
 
   function onDocumentChange(docId) {
@@ -2509,27 +2519,117 @@ const UNREAD_POLL_MS = 30000;
     let html = '';
     comments.forEach(c => {
       const dt = c.createdAt ? new Date(c.createdAt).toLocaleString('ja-JP') : '';
-      const cat = c.category || '';
-      const status = c.status || '';
       const author = c.author || '匿名';
-      const body = linkify(escapeHtml(c.body || ''));
+      const rawBody = c.body || '';
+      // body 先頭の [カテゴリ/状態] プレフィックスを解析
+      const m = rawBody.match(/^\[([^\/\]]+)\/([^\]]+)\]\s*([\s\S]*)$/);
+      const cat = m ? m[1].trim() : (c.category || '');
+      const stat = m ? m[2].trim() : (c.status || '');
+      const text = m ? m[3] : rawBody;
+      const body = linkify(escapeHtml(text));
       const isAgent = /^A\d+/.test(author);
       const badge = isAgent ? '🤖' : '👥';
+      const isReflected = stat === '反映済';
+      const borderColor = isReflected ? '#2d5a3d' : (isAgent ? '#2d5a3d' : '#c9a55c');
+      const bgColor = isReflected ? '#f0f5f1' : '#fff';
+      const statBadgeColor = isReflected
+        ? 'background:#2d5a3d; color:#fff;'
+        : 'background:#f1ece0; color:#4a5663;';
+      const btnLabel = isReflected ? '⏪ 検討中に戻す' : '✅ 反映済にする';
+      const btnTo = isReflected ? 'pending' : 'reflected';
+      const btnStyle = isReflected
+        ? 'background:#fff; color:#4a5663; border:1px solid #e0d9c6;'
+        : 'background:#2d5a3d; color:#fff; border:none;';
       html += `
-        <article style="background:#fff; border:1px solid #e0d9c6; border-left:4px solid ${isAgent ? '#2d5a3d' : '#c9a55c'}; border-radius:8px; padding:14px 18px; margin-bottom:10px;">
+        <article style="background:${bgColor}; border:1px solid #e0d9c6; border-left:4px solid ${borderColor}; border-radius:8px; padding:14px 18px; margin-bottom:10px;">
           <div style="display:flex; justify-content:space-between; align-items:start; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
             <div style="font-size:13px;">
               <strong style="color:#1e3a5f;">${badge} ${escapeHtml(author)}</strong>
               ${cat ? `<span style="display:inline-block; font-size:11px; padding:2px 8px; background:#faf3e3; color:#c9a55c; border-radius:999px; margin-left:8px;">${escapeHtml(cat)}</span>` : ''}
-              ${status ? `<span style="display:inline-block; font-size:11px; padding:2px 8px; background:#f1ece0; color:#4a5663; border-radius:999px; margin-left:4px;">${escapeHtml(status)}</span>` : ''}
+              ${stat ? `<span style="display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; margin-left:4px; ${statBadgeColor}">${escapeHtml(stat)}</span>` : ''}
             </div>
             <div style="font-size:11px; color:#4a5663;">${dt}</div>
           </div>
           <div style="font-size:14px; line-height:1.75; color:#1a2330;">${body}</div>
+          <div style="margin-top:10px; text-align:right;">
+            <button type="button" data-action="toggle-reflected" data-comment-id="${escapeAttr(c.id)}" data-to="${btnTo}" style="font-size:12px; padding:5px 12px; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em; ${btnStyle}">${btnLabel}</button>
+          </div>
         </article>
       `;
     });
     list.innerHTML = html;
+  }
+
+  // 個別コメントの状態をトグル（反映済 ⇔ 検討中）
+  async function toggleCommentReflected(commentId, toReflected) {
+    const comment = (state.docComments || []).find(c => c.id === commentId);
+    if (!comment) return;
+    const rawBody = comment.body || '';
+    const m = rawBody.match(/^\[([^\/\]]+)\/([^\]]+)\]\s*([\s\S]*)$/);
+    let newBody;
+    const newStatus = toReflected ? '反映済' : '検討中';
+    if (m) {
+      newBody = `[${m[1]}/${newStatus}] ${m[3]}`;
+    } else {
+      // プレフィックスがない古いコメント
+      newBody = `[未分類/${newStatus}] ${rawBody}`;
+    }
+    try {
+      const r = await gasCall({
+        action: 'updateComment',
+        password: state.password,
+        id: commentId,
+        body: newBody,
+        actor: state.me || '中司 祐樹',
+      });
+      if (!r.ok) throw new Error(r.error || 'update_failed');
+      await loadDocComments(state.currentDocumentId);
+    } catch (e) {
+      console.error('[toggleCommentReflected] error:', e);
+      alert('状態更新に失敗しました：' + (e.message || ''));
+    }
+  }
+
+  // AI改善案エリアの「全コメントを反映済にマーク」
+  async function markAllCommentsReflected() {
+    const comments = state.docComments || [];
+    const targets = comments.filter(c => {
+      const m = (c.body || '').match(/^\[([^\/\]]+)\/([^\]]+)\]/);
+      return !m || m[2].trim() !== '反映済';
+    });
+    if (targets.length === 0) {
+      alert('反映済にできるコメントがありません（全件すでに反映済）');
+      return;
+    }
+    if (!confirm(`${targets.length}件のコメントを「反映済」にマークします。よろしいですか？`)) return;
+    const btn = $('dc-revise-mark-all');
+    btn.disabled = true;
+    btn.textContent = '更新中…';
+    let ok = 0, fail = 0;
+    for (const c of targets) {
+      const rawBody = c.body || '';
+      const m = rawBody.match(/^\[([^\/\]]+)\/([^\]]+)\]\s*([\s\S]*)$/);
+      const newBody = m
+        ? `[${m[1]}/反映済] ${m[3]}`
+        : `[未分類/反映済] ${rawBody}`;
+      try {
+        const r = await gasCall({
+          action: 'updateComment',
+          password: state.password,
+          id: c.id,
+          body: newBody,
+          actor: state.me || '中司 祐樹',
+        });
+        if (r.ok) ok++; else fail++;
+      } catch (e) {
+        fail++;
+        console.error('[markAllCommentsReflected] error:', e);
+      }
+    }
+    btn.disabled = false;
+    btn.textContent = '✅ 全コメントを反映済にマーク';
+    await loadDocComments(state.currentDocumentId);
+    alert(`完了：${ok}件成功 / ${fail}件失敗`);
   }
 
   async function submitDocComment() {

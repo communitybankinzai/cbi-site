@@ -445,8 +445,9 @@
             </div>
             <p style="font-size:13px; color:#4a5663; margin:8px 0;">下記の改善案テキストをコピーして Claude Code に貼り付け、HTML 反映を依頼してください（自動反映はしません）。</p>
             <pre id="dc-revise-output" style="background:#fff; border:1px solid #e0d9c6; border-radius:6px; padding:16px; font-size:13px; line-height:1.7; white-space:pre-wrap; word-break:break-word; max-height:60vh; overflow-y:auto;"></pre>
-            <div class="form-actions" style="margin-top:12px;">
+            <div class="form-actions" style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
               <button type="button" class="btn btn-ghost" id="dc-revise-copy">📋 クリップボードにコピー</button>
+              <button type="button" class="btn" id="dc-revise-mark-all" style="background:#2d5a3d; color:#fff;">✅ 全コメントを反映済にマーク</button>
             </div>
           </section>
         </div>
@@ -527,6 +528,6 @@
   <div id="toast" class="toast" hidden></div>
 </section>
 
-<script src="admin.js?v=20260623doccomments2"></script>
+<script src="admin.js?v=20260623reflectmark"></script>
 </body>
 </html>

@@ -7,6 +7,19 @@
       "actuals": [
         {
           "date": "2026-06-23",
+          "title": "資料コメントに『反映済』マーク機能追加（個別ボタン＋一括ボタン、GAS v23デプロイ） 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs（updateCommentアクション＋handleUpdateComment_追加、v23デプロイ）",
+            "site/admin/index.html（AI改善案エリアに『✅ 全コメントを反映済にマーク』ボタン追加、キャッシュバスタ→reflectmark）",
+            "site/admin/admin.js（renderDocCommentListに個別反映済ボタン追加、toggleCommentReflected/markAllCommentsReflected関数追加、bodyプレフィックス解析ロジック追加）"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "ユーザー指摘『コメントを反映したら反映済をコメントに付してほしい』に案C（個別＋一括）で対応。bodyプレフィックス『[カテゴリ/状態]』方式で状態管理する設計を踏襲し、updateComment APIでbody全体を書き換える方式を採用（スキーマ変更不要）。反映済コメントはカード背景・左ボーダー色を緑に変化、状態バッジも緑塗りで視覚的に明示。トグル可（戻せる）。"
+        },
+        {
+          "date": "2026-06-23",
           "title": "資料コメント機能のUX改善：カードから直接ジャンプ＋反映フロー3ステップ明示＋AIとりまとめ1件で有効化 0.5時間",
           "category": "実装",
           "outputs": [
