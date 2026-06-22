@@ -2492,8 +2492,8 @@ const UNREAD_POLL_MS = 30000;
       state.docComments = filtered;
       renderDocCommentList(filtered);
       count.textContent = `${filtered.length}件`;
-      $('dc-ai-revise').disabled = filtered.length < 2;
-      $('dc-ai-revise').title = filtered.length < 2 ? '2件以上のコメントが必要です' : 'AIで改善案にとりまとめる';
+      $('dc-ai-revise').disabled = filtered.length < 1;
+      $('dc-ai-revise').title = filtered.length < 1 ? 'コメントが1件以上必要です' : 'AIで改善案にとりまとめる';
     } catch (e) {
       console.error('[loadDocComments] error:', e);
       list.innerHTML = `<p class="empty">読み込み失敗：${escapeHtml(e.message || '')}</p>`;
@@ -2602,7 +2602,7 @@ const UNREAD_POLL_MS = 30000;
   async function aiReviseDocument() {
     const docId = state.currentDocumentId;
     const comments = state.docComments || [];
-    if (!docId || comments.length < 2) return;
+    if (!docId || comments.length < 1) return;
     const doc = state.documents.find(d => d.id === docId);
     const btn = $('dc-ai-revise');
     btn.disabled = true;
@@ -2641,5 +2641,33 @@ const UNREAD_POLL_MS = 30000;
       alert('コピーに失敗しました：' + e.message);
     });
   }
+
+  // 📑 資料タブのカードから直接 💬 資料コメントタブへ飛ぶグローバル関数
+  window.openDocComments = async function(docId) {
+    if (!state.password) {
+      alert('先にログインしてください');
+      return;
+    }
+    switchTab('doc-comments');
+    // initDocComments は switchTab 内で呼ばれる（未ロード時のみ）
+    // ロード完了を待ってから資料セレクタを設定
+    let tries = 0;
+    while (!state.documentsLoaded && tries < 30) {
+      await new Promise(r => setTimeout(r, 100));
+      tries++;
+    }
+    const sel = $('dc-document-select');
+    if (sel && state.documents.some(d => d.id === docId)) {
+      sel.value = docId;
+      onDocumentChange(docId);
+      // スムーズスクロールでフォーム位置へ
+      setTimeout(() => {
+        const target = $('dc-form-wrap');
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    } else {
+      console.warn('[openDocComments] docId not found:', docId);
+    }
+  };
 
 })();
