@@ -7,6 +7,18 @@
       "actuals": [
         {
           "date": "2026-06-23",
+          "title": "cbi-admin-gas v22 デプロイ：資料コメント機能（aiReviseDocument）の本番反映完了 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas Code.gs（clasp push＋clasp deploy --deploymentId AKfycbz0UJ...XBf9yV3）",
+            "デプロイバージョン：v21 → v22"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "中司側で clasp login 再認証完了の連絡を受けて、清書済みCode.gsをGASにアップロード＋本番WebApp（v22）を更新。aiReviseDocumentアクションが本番で有効化。これで資料コメントタブの全機能（投稿＋AI意見生成＋AI改善案とりまとめ）が動作可能。次は実際にコメント投稿してAI改善案生成の動作確認を行う。"
+        },
+        {
+          "date": "2026-06-23",
           "title": "管理画面に『資料コメント』タブ新設：投稿フォーム＋AI改善案生成（2段階構造）の枠組み実装 3.0時間",
           "category": "実装",
           "outputs": [

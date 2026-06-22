@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-23",
+      "type": "deploy",
+      "target": "cbi-admin-gas（v22デプロイ）",
+      "title": "GAS v22 デプロイ：資料コメント機能の本番反映完了（aiReviseDocumentアクション有効化）",
+      "detail": "中司側のclasp login再認証完了を受けて、clasp push＋clasp deploy --deploymentId AKfycbz0UJ...XBf9yV3 を実行。v21→v22に更新。これで管理画面の『💬 資料コメント』タブの全機能（投稿／AI意見生成／AI改善案とりまとめ）が動作可能に。",
+      "author": "A1 / Core"
+    },
+    {
+      "date": "2026-06-23",
       "type": "feature",
       "target": "site/admin/index.html（『💬 資料コメント』タブ新設）／site/admin/admin.js（doc-comments関連ロジック追加）／site/admin/data/documents.json（新規）／cbi-admin-gas/Code.gs（aiReviseDocumentアクション追加）",
       "title": "管理画面に『資料コメント』タブを新設：各資料へのメンバー／AIエージェントのコメント投稿＋AIによる改善案テキスト自動生成（2段階構造）",
