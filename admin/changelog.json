@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-23",
+      "type": "fix",
+      "target": "site/admin/index.html（admin.js キャッシュバスタ更新）",
+      "title": "admin.js のキャッシュバスタを ?v=20260620mail4 → ?v=20260623doccomments に更新（資料コメントタブが表示されない問題の修正）",
+      "detail": "ユーザー報告『なにもかわっていない』を受けて調査。GitHub Pages 側のHTMLには『💬 資料コメント』タブが反映されていたが、admin.js のキャッシュバスタが古いまま（mail4）のためブラウザが旧admin.jsを読み込み、switchTab に『doc-comments』が追加されたロジックが効かない状態だった。バスタを doccomments に更新してキャッシュバスト。",
+      "author": "A1 / Core"
+    },
+    {
+      "date": "2026-06-23",
       "type": "deploy",
       "target": "cbi-admin-gas（v22デプロイ）",
       "title": "GAS v22 デプロイ：資料コメント機能の本番反映完了（aiReviseDocumentアクション有効化）",
