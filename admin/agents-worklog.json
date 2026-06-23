@@ -7,6 +7,20 @@
       "actuals": [
         {
           "date": "2026-06-23",
+          "title": "CiDAO v2.1 を管理画面の資料一覧とコメント対象に登録（ドキュメント公開時のリンク漏れ対応） 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "cbi/site/admin/index.html（資料タブ：v2.0 カード直後に v2.1 Addendum カードを margin-left:24px でインデント追加／コメントボタンの docId 設定）",
+            "cbi/site/admin/data/documents.json（v2.1 を id=cidao-specification-v2-1-election で追加）",
+            "site/admin/changelog.json（type:feature で1件追記）",
+            "site/admin/agents-worklog.json（本記録）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "v2.1 HTML を新規公開した直後にユーザー指摘『v2.1はどこからアクセスすればよい？サイトにリンクはない？』への対応。原因は HTML 配置のみで管理画面側の登録を忘れたこと。教訓：新規ドキュメント公開時には必ず admin/index.html カード追加 ＋ admin/data/documents.json 登録 をセットで実施する。発見した別問題：そもそも v2.0 も documents.json には未登録だった（カードはあるがコメント機能は動かない状態）。本作業のスコープ外として spawn_task で別タスク化。"
+        },
+        {
+          "date": "2026-06-23",
           "title": "CiDAO 仕様書 v2.1『電子投票拡張モジュール』起案：他自治体動向Web調査(3軸並列)＋JPKI/公職連携拡張性を Addendum HTML として実装 2.0時間",
           "category": "実装",
           "outputs": [

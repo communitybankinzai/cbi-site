@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-23",
+      "type": "feature",
+      "target": "cbi/site/admin/index.html（資料タブ）＋ cbi/site/admin/data/documents.json",
+      "title": "CiDAO 仕様書 v2.1 を管理画面の資料一覧とコメント対象に登録：v2.0 子要素として並列閲覧・コメント可能に",
+      "detail": "v2.1 仕様書HTMLを新規公開した直後、ユーザー指摘『v2.1はどこからアクセスすればよい？サイトにリンクはない？』への対応。原因：HTMLファイルを配置しただけで管理画面の資料タブにカードを追加していなかった。対応：(1)site/admin/index.html の資料タブで v2.0 カード直後に v2.1 Addendum カードを追加。v2.0 の子要素であることを表現するため margin-left:24px でインデントし、border-left は金色(#c9a55c)で v2.0(緑#2d5a3d)と区別。バッジ表示は『↳ v2.0 Addendum（差分追補）』。コメントボタンは v2.1 用に docId='cidao-specification-v2-1-election' を指定。(2)site/admin/data/documents.json に v2.1 をエントリ追加（id=cidao-specification-v2-1-election）し、コメントタブの資料セレクタからも選択可能とした。教訓：新規ドキュメントHTML公開時には必ず admin/index.html のカード追加と admin/data/documents.json への登録をセットで実施すること。",
+      "author": "CiDAO担当エージェント / A1 Core"
+    },
+    {
+      "date": "2026-06-23",
       "type": "docs",
       "target": "cbi/site/admin/proposals/cidao-specification-v2.1-election-extension.html（新規）",
       "title": "CiDAO 仕様書 v2.1『電子投票拡張モジュール』を新規公開：他自治体動向調査と将来JPKI/公職連携への拡張性を仕様化",
