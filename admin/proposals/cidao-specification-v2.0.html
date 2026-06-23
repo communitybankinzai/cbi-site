@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>CiDAO 開発仕様書 v2.0｜参加と貢献の循環基盤</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c-navy:        #1e3a5f;
+  --c-navy-dark:   #14283f;
+  --c-navy-soft:   #2c4a72;
+  --c-gold:        #c9a55c;
+  --c-gold-soft:   #d8b97a;
+  --c-green:       #2d5a3d;
+  --c-green-soft:  #3f7351;
+  --c-red:         #c0392b;
+  --c-bg:          #faf8f3;
+  --c-bg-alt:      #f1ece0;
+  --c-paper:       #ffffff;
+  --c-ink:         #1a2330;
+  --c-ink-sub:     #4a5663;
+  --c-line:        #e0d9c6;
+  --font-serif: "Noto Serif JP", "Yu Mincho", serif;
+  --font-sans:  "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  color: var(--c-ink);
+  background: var(--c-bg-alt);
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+.hero {
+  background:
+    radial-gradient(ellipse at top right, rgba(201,165,92,0.22), transparent 60%),
+    linear-gradient(180deg, var(--c-navy-dark) 0%, var(--c-navy) 100%);
+  color: #fff;
+  padding: 56px 0 48px;
+  border-bottom: 4px solid var(--c-gold);
+  margin-bottom: 40px;
+}
+.hero .wrap { padding-bottom: 0; }
+.hero .eyebrow {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: var(--c-gold-soft);
+  margin: 0 0 14px;
+}
+.hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 4.5vw, 44px);
+  color: #fff;
+  margin: 0 0 14px;
+  line-height: 1.4;
+}
+.hero h1 .accent { color: var(--c-gold); }
+.hero .lead {
+  color: rgba(255,255,255,0.92);
+  font-size: clamp(15px, 1.8vw, 18px);
+  margin: 0 0 22px;
+  max-width: 760px;
+}
+.hero .meta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.hero .pill {
+  display: inline-block;
+  padding: 8px 18px;
+  border: 1px solid var(--c-gold);
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--c-gold-soft);
+  background: rgba(20,40,63,0.4);
+}
+.hero .pill strong { color: #fff; }
+.section {
+  background: var(--c-paper);
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
+  padding: 36px 40px;
+  margin: 0 0 24px;
+  box-shadow: 0 2px 8px rgba(20,40,63,0.04);
+}
+.section h2 {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  color: var(--c-navy);
+  margin: 0 0 22px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--c-gold);
+  display: inline-block;
+}
+.section h3 {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  color: var(--c-navy);
+  margin: 28px 0 12px;
+}
+.section h4 {
+  font-size: 16px;
+  color: var(--c-navy-soft);
+  margin: 18px 0 8px;
+  font-weight: 700;
+}
+.section p { font-size: 15px; color: var(--c-ink); margin: 0 0 12px; }
+.section ul, .section ol { padding-left: 22px; margin: 0 0 16px; }
+.section li { margin-bottom: 6px; font-size: 15px; }
+.section code {
+  background: var(--c-bg);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: 'Consolas', 'Menlo', monospace;
+  color: var(--c-navy);
+  border: 1px solid var(--c-line);
+}
+.lede {
+  background: var(--c-bg);
+  border-left: 4px solid var(--c-gold);
+  padding: 18px 22px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--c-ink-sub);
+  margin: 18px 0;
+}
+.lede strong { color: var(--c-navy); }
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.spec-table th, .spec-table td {
+  border: 1px solid var(--c-line);
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+.spec-table th {
+  background: var(--c-bg);
+  font-weight: 700;
+  color: var(--c-navy);
+  font-size: 13px;
+}
+.spec-table tr:nth-child(even) td { background: rgba(250,243,227,0.4); }
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.tag.qb { background: var(--c-bg); color: var(--c-gold); border: 1px solid var(--c-gold); }
+.tag.qf { background: rgba(45,90,61,0.1); color: var(--c-green); border: 1px solid var(--c-green-soft); }
+.tag.qw { background: rgba(192,57,43,0.1); color: var(--c-red); border: 1px solid var(--c-red); }
+.trap-box {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 16px;
+  background: var(--c-bg);
+  padding: 18px 22px;
+  border-radius: 8px;
+  margin: 12px 0;
+  border-left: 4px solid var(--c-red);
+}
+.trap-box .trap-id {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  color: var(--c-red);
+  font-weight: 700;
+  line-height: 1;
+}
+.trap-box .trap-title {
+  font-weight: 700;
+  color: var(--c-navy);
+  margin-bottom: 6px;
+}
+.trap-box .trap-body { font-size: 14px; color: var(--c-ink-sub); }
+.toc {
+  background: var(--c-bg);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 16px 0;
+}
+.toc h3 { margin-top: 0; }
+.toc ul { list-style: none; padding-left: 0; }
+.toc li { font-size: 14px; padding: 4px 0; }
+.toc a { color: var(--c-navy); text-decoration: none; border-bottom: 1px dotted var(--c-line); }
+.toc a:hover { color: var(--c-gold); border-bottom-color: var(--c-gold); }
+.toc .sub { padding-left: 18px; color: var(--c-ink-sub); font-size: 13px; }
+.cta-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+.cta-btn {
+  display: inline-block;
+  padding: 12px 22px;
+  background: var(--c-green);
+  color: #fff;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  border: none;
+  cursor: pointer;
+}
+.cta-btn:hover { background: var(--c-green-soft); }
+.cta-btn.gold { background: var(--c-gold); }
+.cta-btn.gold:hover { background: var(--c-gold-soft); }
+.cta-btn.outline {
+  background: transparent;
+  color: var(--c-navy);
+  border: 2px solid var(--c-navy);
+}
+.cta-btn.outline:hover { background: var(--c-navy); color: #fff; }
+.q-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.q-card {
+  background: var(--c-bg);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  border-left: 3px solid var(--c-gold);
+}
+.q-card .q-id {
+  font-weight: 700;
+  color: var(--c-gold);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+.q-card .q-title {
+  font-weight: 700;
+  color: var(--c-navy);
+  margin: 4px 0;
+}
+.q-card .q-detail { color: var(--c-ink-sub); font-size: 12.5px; }
+.foot {
+  text-align: center;
+  margin-top: 40px;
+  padding: 24px;
+  color: var(--c-ink-sub);
+  font-size: 13px;
+  border-top: 1px solid var(--c-line);
+}
+.foot a { color: var(--c-navy); }
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+.role-card {
+  background: var(--c-bg);
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  border-left: 3px solid var(--c-navy);
+}
+.role-card .role-id { color: var(--c-navy); font-weight: 700; font-size: 12px; }
+.role-card .role-name { color: var(--c-ink); margin: 3px 0; font-weight: 700; }
+.role-card .role-desc { color: var(--c-ink-sub); font-size: 11.5px; }
+@media (max-width: 720px) {
+  .section { padding: 28px 22px; }
+  .section h2 { font-size: 22px; }
+  .hero { padding: 40px 0 32px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">CiDAO ・ CITIZEN DAO</p>
+    <h1>開発仕様書 <span class="accent">v2.0</span><br>参加と貢献の循環基盤</h1>
+    <p class="lead">
+      COCoLaの後付け機能による複雑化・反映遅延の反省を踏まえ、
+      <strong>仕様を事前に固めて後戻りがないように</strong>、Q1〜Q17・F1〜F15の対話形式策定で確定。
+      Part 1（確定仕様）／ Part 2（Phase 2+ 想定）／ 付録 の構造分離で、未確定機能の前提化を構造的に防ぐ。
+    </p>
+    <div class="meta-row">
+      <span class="pill"><strong>v2.0</strong> ／ 2026-06-23 作成</span>
+      <span class="pill">status: <strong>draft</strong></span>
+      <span class="pill">owner: <strong>CiDAO担当エージェント</strong></span>
+      <span class="pill">主実装: <strong>A1 Core</strong></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section class="section">
+  <h2>本書のポイント</h2>
+
+  <p>本仕様書は、COCoLaの3つの反省点（罠1〜3）への構造的対応を明示する。</p>
+
+  <div class="trap-box">
+    <div class="trap-id">罠1</div>
+    <div>
+      <div class="trap-title">機能優先順位の喪失</div>
+      <div class="trap-body">「あったらいいな」を順次追加 → 複雑化／使われない機能の温床。<br>
+      <strong>対策</strong>：KPI を1つに絞る ＋ やらないリスト ＋ 3点ゲート ＋ 設定UI作らない（4層防御）</div>
+    </div>
+  </div>
+
+  <div class="trap-box">
+    <div class="trap-id">罠2</div>
+    <div>
+      <div class="trap-title">反映遅延</div>
+      <div class="trap-body">GAS＋静的JSONで体験が断片的。<br>
+      <strong>対策</strong>：GAS撤廃／Next.js + Supabase Realtime（投票・コメントは即時、KPI集計は日次バッチ）</div>
+    </div>
+  </div>
+
+  <div class="trap-box">
+    <div class="trap-id">罠3</div>
+    <div>
+      <div class="trap-title">未確定が前提扱い</div>
+      <div class="trap-body">「将来やる」と書いた機能が前提として読まれる。<br>
+      <strong>対策</strong>：Part 1（確定）／Part 2（想定）の構造分離 ＋ 四半期レビュー ＋ 設定UI非実装</div>
+    </div>
+  </div>
+
+  <div class="lede" style="margin-top: 22px;">
+    <strong>本書の構造</strong>：Part 1 は Phase 1 で実装する確定仕様。Part 2 は将来検討の想定スコープ（<strong>確約ではない</strong>）。
+    詳細仕様はPart 1 にのみ書く。Part 2 は概念と意図のみ。
+  </div>
+</section>
+
+<section class="section">
+  <h2>目次</h2>
+  <div class="toc">
+    <h3>Part 1：確定仕様（Phase 1 実装スコープ）</h3>
+    <ul>
+      <li><a href="#sec1">1. システム概要</a></li>
+      <li><a href="#sec2">2. システム構成</a></li>
+      <li><a href="#sec3">3. 機能要件</a>
+        <ul class="sub">
+          <li>3.1 認証・会員管理 ／ 3.2 提案・投票 ／ 3.3 議論機能 ／ 3.4 貢献度ポイント</li>
+          <li>3.5 マイページ ／ 3.6 イベント ／ 3.7 団体紹介ページ ／ 3.8 AI団体マッチング</li>
+          <li>3.9 人材バンク ／ 3.10 FreeFree掲示板 ／ 3.11 SNS自動配信 ／ 3.12 通知設計 ／ 3.13 管理画面</li>
+        </ul>
+      </li>
+      <li><a href="#sec4">4. 非機能要件</a></li>
+      <li><a href="#sec5">5. データモデル</a></li>
+      <li><a href="#sec6">6. API設計方針</a></li>
+      <li><a href="#sec7">7. UI/UX 要件</a></li>
+      <li><a href="#sec8">8. 法務・コンプライアンス</a></li>
+      <li><a href="#sec9">9. 段階的展開</a></li>
+      <li><a href="#sec10">10. 運営体制</a></li>
+      <li><a href="#sec11">11. 既存資産活用</a></li>
+      <li><a href="#sec12">12. MVP絶対要件</a></li>
+      <li><a href="#sec13">13. 文書管理・意見集約・改訂サイクル</a></li>
+    </ul>
+    <h3 style="margin-top: 20px;">Part 2：Phase 2+ 想定スコープ（確約ではない）</h3>
+    <ul>
+      <li>P1 認証拡張 ／ P2 通貨・SBT ／ P3 加盟店ネットワーク ／ P4 行政連携</li>
+      <li>P5 街活性室・連携体 ／ P6 機能拡張 ／ P7 資金調達 ／ P8 オンチェーン透明性</li>
+    </ul>
+    <h3 style="margin-top: 20px;">付録</h3>
+    <ul>
+      <li>A 用語集 ／ B 参照文書 ／ C 変更履歴詳細 ／ D v1.0との対応表 ／ E Q1〜Q17 根拠 ／ F F1〜F15 機能リスト</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="sec1">
+  <h2>1. システム概要（核心の確定事項）</h2>
+
+  <table class="spec-table">
+    <tr><th width="160">名称</th><td>CiDAO（Citizen DAO ／ 市民DAO）</td></tr>
+    <tr><th>目的【Q1=B】</th><td>印西市民および関係人口が、<strong>参加と貢献を循環させる基盤</strong>を構築する。提案・投票・活動を貢献度として積み上げ、将来的に地域通貨へ転換する循環設計を、CBI（市民活動団体 ０８－００１）単独で運用開始する。</td></tr>
+    <tr><th>KPI【Q2=B】</th><td><strong>月次アクティブ率 40%以上を 3ヶ月連続維持</strong>。提案投稿／投票／コメント／質問／回答／イベント主催・参加・スタッフのいずれか1回以上で「アクティブ」とカウント。</td></tr>
+    <tr><th>対象【Q3=B】</th><td>印西市民 ＋ 関係人口（在勤・在学・出身・観光協会経由など）</td></tr>
+    <tr><th>拘束力【Q5=B】</th><td>CBI内部運営・主催事業 → <strong>市民投票のみ拘束</strong>。関係人口は参考。外部提案 → 全員諮問。</td></tr>
+    <tr><th>段階展開【Q6=C】</th><td>仕様書は全範囲、初期実装はCBI内部のみ。3ヶ月→6ヶ月で段階解禁。</td></tr>
+  </table>
+
+  <h3>投票の重み【Q4=C, F9=C】</h3>
+  <table class="spec-table">
+    <tr><th>ステータス</th><th>市民</th><th>関係人口</th><th>参加可能事項</th></tr>
+    <tr><td>未登録</td><td>–</td><td>–</td><td>閲覧・参加申込のみ</td></tr>
+    <tr><td>ライト登録</td><td>0.1</td><td>0.1</td><td>諮問的のみ</td></tr>
+    <tr><td>メール登録のみ</td><td>0.3</td><td>0.15</td><td>諮問＋拘束的</td></tr>
+    <tr><td>住所確認済（本登録）</td><td><strong>1.0</strong></td><td><strong>0.5</strong></td><td>諮問＋拘束的</td></tr>
+  </table>
+</section>
+
+<section class="section" id="sec2">
+  <h2>2. システム構成と技術スタック</h2>
+
+  <table class="spec-table">
+    <tr><th width="180">構成【Q9=A】</th><td>PWA1本＋API＋DB＋メール（運営管理もPWA内のロール切替で実現、別アプリ作らない）</td></tr>
+    <tr><th>技術スタック【Q12=A】</th><td><strong>Next.js + Supabase + Vercel</strong>（PWA対応、Postgres、Realtime、Supabase Auth、pg_cron）<br>立ち上げ200人想定で<strong>無料枠運用可</strong>。</td></tr>
+    <tr><th>反映速度【Q13=B】</th><td>投票・通知は<strong>即時</strong>（Supabase Realtime）／AI分類・貢献度は数秒（Edge Functions）／KPI集計は<strong>日次バッチ</strong>（pg_cron）</td></tr>
+    <tr><th>反映方針の理由</th><td>罠2（反映遅延）の構造的解消。GASは初期実装に使わない。</td></tr>
+  </table>
+</section>
+
+<section class="section" id="sec3">
+  <h2>3. 機能要件（F1〜F15 のサマリ）</h2>
+
+  <p>機能は<strong>15個の確定機能（F1〜F15）</strong>として詳細化。F1・F4・F6・F8・F12 は改訂で拡張済み。詳細はGitHub原本の §3 参照。</p>
+
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-id">F1 ▸ 投票UI</div>
+      <div class="q-title">拘束力別出し分け</div>
+      <div class="q-detail">拘束的：賛成/反対/保留。諮問的：協力できる/難しい/わからない。撤回1回、層別参加状況の可視化、賛否内訳は終了後。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F2 ▸ 通知</div>
+      <div class="q-title">充実＋カスタマイズ可</div>
+      <div class="q-detail">メール限定（Phase 1）、10種類のタイミング、頻度3段階、特定電子メール法準拠。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F3 ▸ 提案フォーム</div>
+      <div class="q-title">標準＋AI分類</div>
+      <div class="q-detail">タイトル/本文/予算/期限/関連リンク。AIがカテゴリ・拘束力・類似検出。下書き7日保持。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F4 ▸ 貢献度配点</div>
+      <div class="q-title">月次総上限 320pt</div>
+      <div class="q-detail">提案30/投票3/イベント主催40/参加5/FreeFree掲載5/応援1/質問2/回答3/連続ログイン5。Phase 1 は失効なし。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F5 ▸ マイページ</div>
+      <div class="q-title">標準＋ランキングオプトイン</div>
+      <div class="q-detail">達成バッジ、項目別公開制御、所属団体（F10連動）、人材バンクPR（F13連動）、CSV出力。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F6 ▸ 管理画面</div>
+      <div class="q-title">F7〜F15 統合・設定UI作らない</div>
+      <div class="q-detail">11カテゴリのメニュー構成。配点・しきい値の管理画面変更は禁止（仕様書改訂＋デプロイで対応）。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F7 ▸ イベント</div>
+      <div class="q-title">団体検索＋4種別タグ</div>
+      <div class="q-detail">任意団体／市民活動団体／企業／行政の4種別。一般公開カレンダー、iCal出力、団体ページ相互遷移。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F8 ▸ SNS自動配信</div>
+      <div class="q-title">X/Facebook/LINE 3媒体</div>
+      <div class="q-detail">イベント告知5タイミング＋団体PR週2回＋FreeFree週3回。立ち上げ期は無料枠運用、キルスイッチ。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F9 ▸ ライト登録</div>
+      <div class="q-title">90秒で完了、重み0.1</div>
+      <div class="q-detail">メアド/表示名/区分/興味分野のみ。諮問的のみ参加可。本登録への昇格動線あり。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F10 ▸ 団体紹介ページ</div>
+      <div class="q-title">複数所属対応（多対多）</div>
+      <div class="q-detail">活動概要・実績・メンバー（オプトイン）・連絡可否。新規団体作成は運営委員会承認。代表変更は二重承認。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F11 ▸ AI団体マッチング</div>
+      <div class="q-title">登録直後5団体カード</div>
+      <div class="q-detail">活性度重み付け、マッチ理由説明、逆方向マッチング、スキップ学習、A/Bテスト（派生案全取込）。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F12 ▸ 登録フォーム</div>
+      <div class="q-title">ライト90秒・本登録5分</div>
+      <div class="q-detail">所属団体ドロップリスト＋自由入力、入力補助、プログレスバー、下書き保存、SNS連携（派生案全取込）。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F13 ▸ 人材バンク</div>
+      <div class="q-title">PR項目＋検索＋メッセージ</div>
+      <div class="q-detail">資格・好きなこと・自己PR・時間帯。最小限カード＋検索ヒット詳細展開。推薦・通報・ブロック（派生案全取込）。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F14 ▸ 提案議論機能</div>
+      <div class="q-title">質問＆回答・48時間議論期間</div>
+      <div class="q-detail">提案者発言の強調表示、AI類似質問統合、FAQ自動生成、質問優先順位投票（派生案全取込）。</div>
+    </div>
+    <div class="q-card">
+      <div class="q-id">F15 ▸ FreeFree掲示板</div>
+      <div class="q-title">地域応援掲示板</div>
+      <div class="q-detail">8カテゴリ、クーポン、応援ボタン、freefree-clasp 移行。応援ランキング、QR、AI掲載審査（派生案全取込）。</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sec10">
+  <h2>10. 運営体制と機能追加判断</h2>
+
+  <table class="spec-table">
+    <tr><th width="160">運営【Q15=A】</th><td><strong>CBI（08-001）単独運営</strong>、任意団体のまま。法人化は Phase 2+ の検討事項（戦略F）</td></tr>
+    <tr><th>資金【Q16=A】</th><td><strong>自己資金＋会費のみ</strong>。クラファン・ふるさと納税GCFは Part 2／別途運営内規へ</td></tr>
+    <tr><th>機能追加判断【Q17=B】</th><td><strong>3点ゲート</strong>：①KPI効果の事前見立て ②やらないリスト照合 ③運営委員会の承認</td></tr>
+    <tr><th>レビュー周期</th><td>四半期レビュー（quarterly）</td></tr>
+  </table>
+</section>
+
+<section class="section" id="sec12">
+  <h2>12. MVP絶対要件（18項目）と「やらないリスト」</h2>
+
+  <h3>絶対要件 18項目</h3>
+  <table class="spec-table">
+    <tr><th width="40">#</th><th>要件</th></tr>
+    <tr><td>1</td><td>モバイル体験：iOS Safari / Android Chrome で3秒以内表示</td></tr>
+    <tr><td>2</td><td>提案作成：スマホで90秒以内、AI分類90%以上</td></tr>
+    <tr><td>3</td><td>投票：1タップで完了、重み合計可視化</td></tr>
+    <tr><td>4</td><td>通知：配信成功率 99%以上</td></tr>
+    <tr><td>5</td><td>登録フロー：メール登録から投票可能まで3分以内</td></tr>
+    <tr><td>6</td><td>アクセシビリティ：WCAG 2.1 AA 準拠</td></tr>
+    <tr><td>7</td><td>管理画面：モデレーション・AI分類修正が1画面で完結</td></tr>
+    <tr><td>8</td><td>クリティカルバグ・データ損失ゼロ</td></tr>
+    <tr><td>9</td><td>イベント機能：登録→カレンダー→参加記録→貢献度反映が一気通貫</td></tr>
+    <tr><td>10</td><td>SNS自動配信：X+Facebook+LINE の3媒体、3カテゴリ</td></tr>
+    <tr><td>11</td><td>団体紹介ページ＋複数所属対応</td></tr>
+    <tr><td>12</td><td>AI団体マッチング：登録直後5団体カード</td></tr>
+    <tr><td>13</td><td>登録フォーム：ライト90秒・本登録5分</td></tr>
+    <tr><td>14</td><td>所属団体選択：ドロップリスト＋自由入力、F10多対多と連動</td></tr>
+    <tr><td>15</td><td>人材バンク：PR項目・最小カード検索・オプトインメッセージ</td></tr>
+    <tr><td>16</td><td>提案議論機能：質問&回答・48時間議論期間・AI支援</td></tr>
+    <tr><td>17</td><td>FreeFree掲示板：掲載→クーポン→応援→SNS拡散、データ移行完了</td></tr>
+    <tr><td>18</td><td>文書管理・意見集約：仕様書をCiDAO内で公開、議論機能で節別コメント受付、四半期反映、採用/却下を理由付き公開</td></tr>
+  </table>
+
+  <h3>やらないリスト（罠1対策）</h3>
+  <ul>
+    <li>ネイティブアプリ（PWAで足りる）</li>
+    <li>SBT・地域通貨（Phase 2+）</li>
+    <li>加盟店ネットワーク（駅前マルシェ運用後）</li>
+    <li>複雑な提案テンプレート（AI分類で代替）</li>
+    <li>多言語対応（Phase 2+）</li>
+    <li>WebPush（Phase 2）</li>
+    <li>凝った分析ダッシュボード（KPIだけシンプル表示）</li>
+    <li>募金・カンパ機能（Q16=A と矛盾、Phase 2+）</li>
+    <li>地域マップ専用機能（F7カレンダー＋FreeFree地図表示で代替）</li>
+    <li>アンケート機能（F14議論機能で代替可能性、必要なら Phase 2+）</li>
+    <li><strong>設定UI（配点・定足数の管理画面変更）</strong> ← 仕様書改訂＋デプロイで対応（罠1対策の核）</li>
+    <li>個人事業のオンライン決済（Phase 2+）</li>
+  </ul>
+
+  <p class="lede" style="margin-top: 16px;">
+    リスト変更は<strong>運営委員会の議決が必要</strong>。一見「ちょっと変えとこ」が罠1の入口。
+  </p>
+</section>
+
+<section class="section" id="sec13">
+  <h2>13. 文書管理・意見集約・改訂サイクル</h2>
+
+  <h3>役割分担</h3>
+  <div class="role-grid">
+    <div class="role-card">
+      <div class="role-id">主管</div>
+      <div class="role-name">CiDAO 担当エージェント</div>
+      <div class="role-desc">仕様書・ロードマップ・懸案事項を継続更新</div>
+    </div>
+    <div class="role-card">
+      <div class="role-id">A1 Core</div>
+      <div class="role-name">実装・運用</div>
+      <div class="role-desc">コード生成・PR下書き・障害対応・稼働監視</div>
+    </div>
+    <div class="role-card">
+      <div class="role-id">A2 Voice</div>
+      <div class="role-name">分析・四半期レポート</div>
+      <div class="role-desc">提案・投票データの統計集計、メンバーコメント集約</div>
+    </div>
+    <div class="role-card">
+      <div class="role-id">A4 Voice-Out</div>
+      <div class="role-name">SNS発信・周知</div>
+      <div class="role-desc">告知文・SNSコピー作成</div>
+    </div>
+    <div class="role-card">
+      <div class="role-id">A5 Bridge</div>
+      <div class="role-name">行政連携用整形</div>
+      <div class="role-desc">行政提出レポートの最終整形</div>
+    </div>
+    <div class="role-card">
+      <div class="role-id">A8 Ledger</div>
+      <div class="role-name">会計・コスト管理</div>
+      <div class="role-desc">AI関連費の月次モニタリング</div>
+    </div>
+    <div class="role-card">
+      <div class="role-id">A9 Stage</div>
+      <div class="role-name">議事録・運営支援</div>
+      <div class="role-desc">議事録の自動文字起こし・要約・ToDo抽出</div>
+    </div>
+    <div class="role-card">
+      <div class="role-id">A10 Scout</div>
+      <div class="role-name">先進事例調査</div>
+      <div class="role-desc">他自治体・海外事例のリサーチ</div>
+    </div>
+  </div>
+
+  <h3>メンバー意見反映の仕組み</h3>
+  <table class="spec-table">
+    <tr><th width="180">Phase 1 リリース前</th><td>CBI 管理画面「内部資料・提案資料」タブ（本ページ）の <strong>💬 コメントボタン</strong> を流用</td></tr>
+    <tr><th>Phase 1 リリース後</th><td>CiDAO 内「📚 文書・公開資料」セクションで F14 議論機能（節別コメント）を利用</td></tr>
+    <tr><th>四半期レビュー</th><td>A2 Voice が集約 → §10.3 の3点ゲートを通過した項目を反映 → 採用/却下を理由付き公開</td></tr>
+    <tr><th>反映の透明性</th><td>「採用された意見」「却下された意見」を理由付きで公開、追跡可能</td></tr>
+  </table>
+</section>
+
+<section class="section">
+  <h2>完全版・関連資料</h2>
+
+  <p>本ページはサマリです。<strong>全1,500行の完全版（Markdown）</strong> および 関連文書は以下からアクセスしてください。</p>
+
+  <div class="cta-row">
+    <a href="https://github.com/communitybankinzai/cidao/blob/main/docs/01_開発仕様書_v2.0.md" class="cta-btn">
+      📄 GitHub で完全版を見る
+    </a>
+    <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('cidao-specification-v2-0');" class="cta-btn gold">
+      💬 この資料にコメント
+    </button>
+    <a href="../index.html#tab-docs" class="cta-btn outline">
+      📚 内部資料一覧へ戻る
+    </a>
+  </div>
+
+  <h3 style="margin-top: 28px;">関連文書</h3>
+  <ul>
+    <li>旧版：<code>cidao/docs/archive/01_開発仕様書_v1.0.md</code></li>
+    <li>開発ロードマップ：<code>cidao/docs/02_開発ロードマップ_v1.0.md</code></li>
+    <li>外注計画：<code>cidao/docs/03_外注計画_v1.0.md</code></li>
+    <li>懸案事項管理表：<code>cidao/docs/04_懸案事項管理表_v1.0.md</code></li>
+    <li>工程定義：<code>cidao/docs/05_工程定義_v1.0.md</code></li>
+    <li>競合事例調査：<code>cidao/docs/06_競合事例調査_v1.0.md</code></li>
+    <li>エージェント定義：<code>cidao/CLAUDE.md</code>、<code>cbi/site/admin/agents.json</code></li>
+  </ul>
+</section>
+
+<div class="foot">
+  <p><strong>CiDAO 開発仕様書 v2.0</strong> ／ status: draft<br>
+  最終更新：2026-06-23 by CiDAO 担当エージェント<br>
+  次回レビュー予定：2026-09-23（四半期レビュー）</p>
+  <p style="margin-top: 12px; font-size: 12px; color: var(--c-ink-sub);">
+    本書は draft です。承認前のため意思決定の最終根拠としないでください。<br>
+    Part 2（Phase 2+ 想定スコープ）は確約ではなく検討材料です。
+  </p>
+</div>
+
+</div><!-- /wrap -->
+
+</body>
+</html>

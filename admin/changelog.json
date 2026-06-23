@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-23",
+      "type": "docs",
+      "target": "cbi/site/admin/proposals/cidao-specification-v2.0.html（新規HTMLビュー）／cbi/site/admin/index.html（内部資料・提案資料タブにCiDAO仕様書 v2.0 カード追加）／cidao/docs/01_開発仕様書_v2.0.md（新規本体、約1,500行）／cidao/docs/archive/01_開発仕様書_v1.0.md（v1.0退避）／cidao/README.md（最新版インデックス更新）／cidao/worklog.md（作業記録追記）",
+      "title": "CiDAO 開発仕様書 v2.0 を全面改訂、CBI管理画面の内部資料タブから閲覧＋コメント可能になった",
+      "detail": "COCoLaの後付け機能による複雑化・反映遅延の反省を踏まえ、Q1〜Q17（6部17問の対話形式策定）+ F1〜F15（機能詳細15問、派生案全取込）の確定事項を反映。Part 1（確定仕様）/ Part 2（Phase 2+ 想定）/ 付録の構造分離により未確定機能の前提化を構造的に防止。主な確定事項：目的=参加と貢献の循環基盤／KPI=月次アクティブ率40%を3ヶ月連続／対象=印西市民+関係人口（ライト登録重み0.1+本登録1.0/0.5）／技術=Next.js+Supabase+Vercel（PWA1本構成、GAS撤廃）／MVP絶対要件18項目+やらないリスト12項目。COCoLa反省点（罠1機能優先順位喪失/罠2反映遅延/罠3未確定の前提化）への構造的対応を明示。メンバー意見反映の仕組みも§13で明示（Phase 1リリース前は内部資料タブの💬コメントボタン流用、リリース後はCiDAO内のF14議論機能へ移行）。HTMLビューは既存スタイル踏襲、GitHub原本へのリンク付き。",
+      "author": "CiDAO担当エージェント / A1 Core"
+    },
+    {
+      "date": "2026-06-23",
       "type": "feature",
       "target": "site/admin/index.html（一括反映済ボタン追加＋キャッシュバスタ→reflectmark）／site/admin/admin.js（個別反映済トグル＋一括処理）／cbi-admin-gas/Code.gs（updateCommentアクション追加・v23デプロイ）",
       "title": "資料コメントに『反映済』マーク機能を追加（個別ボタン＋AI改善案エリアの一括ボタン）：状態のトグル可、反映済はカード色変化＋緑バッジで明示",
