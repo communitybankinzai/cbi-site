@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>CiDAO 開発仕様書 v2.1 ｜ 電子投票拡張モジュール（Addendum）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c-navy: #1e3a5f; --c-navy-dark: #14283f; --c-navy-soft: #2c4a72;
+  --c-gold: #c9a55c; --c-gold-soft: #d8b97a;
+  --c-green: #2d5a3d; --c-green-soft: #3f7351;
+  --c-red: #c0392b;
+  --c-bg: #faf8f3; --c-bg-alt: #f1ece0; --c-paper: #ffffff;
+  --c-ink: #1a2330; --c-ink-sub: #4a5663; --c-line: #e0d9c6;
+  --font-serif: "Noto Serif JP", "Yu Mincho", serif;
+  --font-sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  color: var(--c-ink);
+  background: var(--c-bg-alt);
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 24px 80px; }
+.hero {
+  background:
+    radial-gradient(ellipse at top right, rgba(201,165,92,0.22), transparent 60%),
+    linear-gradient(180deg, var(--c-navy-dark) 0%, var(--c-navy) 100%);
+  color: #fff;
+  padding: 48px 0 40px;
+  border-bottom: 4px solid var(--c-gold);
+  margin-bottom: 32px;
+}
+.hero .wrap { padding-bottom: 0; }
+.hero .eyebrow {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--c-gold-soft);
+  margin: 0 0 12px;
+}
+.hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 4vw, 38px);
+  color: #fff;
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+.hero h1 .accent { color: var(--c-gold); }
+.hero .lead {
+  color: rgba(255,255,255,0.9);
+  font-size: 14px;
+  margin: 0;
+  max-width: 720px;
+}
+.hero .meta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.hero .pill {
+  display: inline-block; padding: 6px 14px;
+  border: 1px solid var(--c-gold); border-radius: 999px;
+  font-size: 11px; letter-spacing: 0.12em;
+  color: var(--c-gold-soft); background: rgba(20,40,63,0.4);
+}
+.hero .pill strong { color: #fff; }
+.nav-bar {
+  background: var(--c-paper);
+  border-bottom: 1px solid var(--c-line);
+  padding: 10px 0;
+  position: sticky; top: 0; z-index: 100;
+  margin: -32px 0 24px;
+}
+.nav-bar .wrap {
+  padding: 0 24px;
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+}
+.nav-bar a {
+  display: inline-block; padding: 6px 14px;
+  color: var(--c-navy); text-decoration: none;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
+  border: 1px solid var(--c-line); border-radius: 999px;
+  transition: all .15s;
+}
+.nav-bar a:hover { background: var(--c-navy); color: #fff; }
+.nav-bar a.primary { background: var(--c-green); color: #fff; border-color: var(--c-green); }
+.nav-bar a.primary:hover { background: var(--c-green-soft); }
+.notice {
+  background: #fdf4f3;
+  border-left: 4px solid var(--c-red);
+  padding: 14px 20px;
+  border-radius: 6px;
+  margin: 0 0 24px;
+  font-size: 13px;
+  color: var(--c-ink-sub);
+}
+.notice strong { color: var(--c-red); }
+.notice.info {
+  background: #f0f6fb;
+  border-left-color: var(--c-navy-soft);
+}
+.notice.info strong { color: var(--c-navy); }
+#content {
+  background: var(--c-paper);
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
+  padding: 40px 48px;
+  box-shadow: 0 2px 8px rgba(20,40,63,0.04);
+}
+#content h1 {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  color: var(--c-navy);
+  margin: 8px 0 20px;
+  padding-bottom: 14px;
+  border-bottom: 3px solid var(--c-gold);
+}
+#content h2 {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  color: var(--c-navy);
+  margin: 40px 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--c-gold);
+}
+#content h3 {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  color: var(--c-navy);
+  margin: 28px 0 12px;
+}
+#content h4 {
+  font-size: 16px;
+  color: var(--c-navy-soft);
+  margin: 20px 0 10px;
+  font-weight: 700;
+}
+#content p { font-size: 15px; color: var(--c-ink); margin: 0 0 14px; }
+#content ul, #content ol { padding-left: 22px; margin: 0 0 16px; }
+#content li { margin-bottom: 6px; font-size: 14.5px; }
+#content code {
+  background: var(--c-bg);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-family: 'Consolas', 'Menlo', monospace;
+  color: var(--c-navy);
+  border: 1px solid var(--c-line);
+}
+#content pre {
+  background: var(--c-navy-dark);
+  color: #f1ece0;
+  padding: 18px 22px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.65;
+  margin: 14px 0;
+}
+#content pre code { background: transparent; border: none; color: inherit; padding: 0; font-size: inherit; }
+#content blockquote {
+  border-left: 4px solid var(--c-gold);
+  background: var(--c-bg);
+  padding: 14px 20px;
+  margin: 14px 0;
+  color: var(--c-ink-sub);
+  font-size: 14px;
+  border-radius: 0 6px 6px 0;
+}
+#content table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px; }
+#content th, #content td { border: 1px solid var(--c-line); padding: 8px 12px; text-align: left; vertical-align: top; }
+#content th { background: var(--c-bg); font-weight: 700; color: var(--c-navy); font-size: 12.5px; }
+#content tr:nth-child(even) td { background: rgba(250,243,227,0.3); }
+#content hr { border: none; border-top: 1px solid var(--c-line); margin: 32px 0; }
+#content a { color: var(--c-navy); text-decoration: underline; text-decoration-color: var(--c-gold); }
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  margin-right: 6px; vertical-align: middle;
+}
+.tag-new { background: var(--c-green); color: #fff; }
+.tag-amend { background: var(--c-gold); color: var(--c-navy-dark); }
+.tag-ref { background: var(--c-navy-soft); color: #fff; }
+.refs li { font-size: 13px; line-height: 1.6; }
+.refs a { word-break: break-all; }
+.toc {
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  border-radius: 8px;
+  padding: 18px 24px;
+  margin: 0 0 28px;
+}
+.toc h4 { margin-top: 0; }
+.toc ol { margin: 0; padding-left: 22px; }
+.toc li { font-size: 13.5px; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">CIDAO SPECIFICATION ADDENDUM</p>
+    <h1>CiDAO 開発仕様書 <span class="accent">v2.1</span><br>電子投票拡張モジュール</h1>
+    <p class="lead">公職選挙の電子投票（投票所内／インターネット投票）の他自治体動向を踏まえ、CiDAO の認証・投票アーキテクチャに将来拡張可能な抽象化を組み込むための差分仕様。v2.0 本体は変更しない。</p>
+    <div class="meta-row">
+      <span class="pill"><strong>v2.1</strong> / Addendum</span>
+      <span class="pill">作成日：<strong>2026-06-23</strong></span>
+      <span class="pill">起案：<strong>CBI 中司</strong></span>
+      <span class="pill">対象：<strong>v2.0 本体</strong>への差分</span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <div class="wrap">
+    <a href="cidao-specification-v2.0-full.html">← v2.0 本体（完全版）</a>
+    <a href="cidao-specification-v2.0.html">v2.0 サマリ</a>
+    <a href="../proposals.html" class="primary">提案一覧へ戻る</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<div class="notice info">
+<strong>位置づけ</strong>：本書は v2.0 への <em>Addendum（差分追補）</em>。v2.0 §3.1（認証）・§3.2（投票）・§4.3（セキュリティ）・§P1（認証拡張）・§P4（行政連携）に対する拡張ポイントを定義する。v2.0 本体の記述は変更しない。Phase 1 リリース判断には影響しない。
+</div>
+
+<div class="notice">
+<strong>背景</strong>：印西市議会議員つづきまり子氏が、他自治体に倣い電子投票導入の意向を示した（2026年6月）。CBI 中司より「公職選挙の電子投票は CBI 単独では運営不可だが、将来行政連携時に CiDAO の認証・投票基盤が接続可能となるよう拡張点を確保したい」との要請を受け、本拡張モジュールを起案する。
+</div>
+
+<article id="content">
+
+<h1>CiDAO v2.1 電子投票拡張モジュール</h1>
+
+<div class="toc">
+<h4>目次</h4>
+<ol>
+  <li>位置づけと前提（公職選挙と CiDAO の境界）</li>
+  <li>他自治体動向まとめ（2026年6月時点）</li>
+  <li>拡張アーキテクチャ（v2.0 への差分）</li>
+  <li>ロードマップ（v2.0 Phase 1/2/3 との対応）</li>
+  <li>印西市議会・行政との接続パターン</li>
+  <li>参考文献</li>
+</ol>
+</div>
+
+<h2>1. 位置づけと前提</h2>
+
+<h3>1.1 公職選挙と CiDAO の境界</h3>
+
+<p>公職選挙（市議会議員選挙等）の電子投票は、<strong>公職選挙法および電磁的記録式投票法（地方選挙のみ）</strong>の管轄であり、市民活動団体（CBI、登録番号０８－００１）が単独で運営することは法的に不可能である。本拡張モジュールが目的とするのは「CiDAO が公職選挙を代替する」ことではなく、以下の <strong>3 つの拡張可能性を仕様レベルで確保する</strong>ことに限定される。</p>
+
+<table>
+  <thead><tr><th>拡張可能性</th><th>具体例</th><th>確信度</th></tr></thead>
+  <tbody>
+    <tr><td>① CiDAO アカウントが将来、公的投票 ID と連携できる</td><td>マイナンバーカード公的個人認証（JPKI）でログイン可能にし、自治体ネット投票実証実験への参加導線になる</td><td>高</td></tr>
+    <tr><td>② CiDAO の意向投票結果を、公職選挙の参考データとして議会・行政に提示できる</td><td>v2.0 §P4「投票結果共有（印西市議会への意見集約）」の技術的実装</td><td>中</td></tr>
+    <tr><td>③ 自治体が電子投票を導入した際、CiDAO の運用ノウハウ（参加率向上・UI 設計）が転用できる</td><td>つくば市スーパーシティ実証への CBI からの提案・参加</td><td>中</td></tr>
+  </tbody>
+</table>
+
+<h3>1.2 公職選挙法・関連法令の整理</h3>
+
+<p>v2.0 §法令対応表（公職選挙法行）の記述は維持。本拡張モジュールでは以下の追加整理を行う。</p>
+
+<table>
+  <thead><tr><th>制度</th><th>適用範囲</th><th>CiDAO との関係</th></tr></thead>
+  <tbody>
+    <tr><td>電磁的記録式投票法</td><td>地方公共団体選挙（首長・議員）のみ／投票所内限定</td><td>CiDAO は対象外。将来、自治体採用時に投票端末モード（§3.3）で連携余地</td></tr>
+    <tr><td>公職選挙法（インターネット投票規定）</td><td>2026年6月時点で未制定。在外選挙のみ総務省研究会で実証中</td><td>CiDAO は「諮問的市民投票」として位置づけ（v2.0 §法令対応表のとおり）</td></tr>
+    <tr><td>マイナンバー法</td><td>マイナンバー本体の利用は厳格制限。JPKI 電子証明書は別建て</td><td>CiDAO は JPKI（公的個人認証）のみ利用可能性あり。マイナンバー本体は使わない</td></tr>
+    <tr><td>地方自治法（直接請求権）</td><td>市民の請求権は別制度</td><td>v2.0 維持：法的拘束力なしと明示</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2>2. 他自治体動向まとめ（2026年6月時点）</h2>
+
+<p>本節は CiDAO 設計の前提となる事実関係。一次情報の URL は §6 参考文献に集約。</p>
+
+<h3>2.1 投票所内電子投票（電磁的記録式）</h3>
+
+<p><strong>結論</strong>：2002年新見市開始 → 2003年可児市の機器トラブルと選挙無効訴訟（2005年最高裁確定）→ 専用機メーカー撤退 → <strong>2016年で実施途絶</strong>。<strong>2024年12月22日に大阪府四條畷市が8年ぶりに再開</strong>し、京セラ「デジ選」（タブレット汎用機）で実施。総務省が2020年に汎用機を許容する方針に転換したことが追い風。確信度：高。</p>
+
+<table>
+  <thead><tr><th>年</th><th>自治体</th><th>出来事</th></tr></thead>
+  <tbody>
+    <tr><td>2002.6</td><td>岡山県新見市</td><td>全国初の電子投票（市長・市議選）</td></tr>
+    <tr><td>2003.7</td><td>岐阜県可児市</td><td>市議選でサーバー過熱・投票中断、後に最高裁で選挙無効確定（2005）</td></tr>
+    <tr><td>〜2016</td><td>累計10団体25回</td><td>専用機メーカー撤退で実施途絶</td></tr>
+    <tr><td>2020</td><td>総務省</td><td>タブレット等汎用機器を許容する方針へ転換</td></tr>
+    <tr><td>2024.12.22</td><td>大阪府四條畷市</td><td>市長選・市議補選で8年ぶり再開。京セラ「デジ選」採用。開票1時間40分、開票要員1/3（27人）</td></tr>
+    <tr><td>2024.12</td><td>同上</td><td>視覚障害者向け音声機能省略で批判</td></tr>
+    <tr><td>2025〜</td><td>四條畷市</td><td>費用対効果検証を市議会で実施</td></tr>
+  </tbody>
+</table>
+
+<h3>2.2 インターネット投票（実証実験）</h3>
+
+<p><strong>結論</strong>：<strong>つくば市が日本のフロントランナー</strong>。2019年からブロックチェーン＋JPKI＋顔認証で実証を継続し、2025年2-3月にもスーパーシティ施策投票で本番運用級の実証を実施。2024年には市長がデジタル臨調で「次の市長選・市議選でネット投票を」と表明。ただし<strong>現行法では公職選挙に使えない</strong>ため、住民投票・施策意向調査での運用に限定。確信度：高。</p>
+
+<table>
+  <thead><tr><th>年</th><th>主体</th><th>出来事</th></tr></thead>
+  <tbody>
+    <tr><td>2019.8</td><td>つくば市</td><td>最終審査会で150票のネット投票実証。Hyperledger Fabric ＋ マイナカード ＋ 顔認証</td></tr>
+    <tr><td>2022.11</td><td>内閣府×つくば市</td><td>スーパーシティ枠組で模擬住民投票</td></tr>
+    <tr><td>2024.2</td><td>つくば市長</td><td>デジタル臨調で「次の市長選・市議選でネット投票を」表明</td></tr>
+    <tr><td>2025.2-3</td><td>つくば市</td><td>スーパーシティ施策3分野でJPKI署名認証ネット投票実施。上書き投票（買収対策）も実証</td></tr>
+    <tr><td>2025年度</td><td>つくば市</td><td>投票システム改修＋大規模模擬投票予定</td></tr>
+  </tbody>
+</table>
+
+<h3>2.3 総務省・在外選挙インターネット投票</h3>
+
+<p><strong>結論</strong>：総務省は<strong>令和元年度〜令和6年度まで6年連続で在外選挙インターネット投票調査研究報告書</strong>を公表。令和6年度版は<strong>スマホ搭載マイナカード機能の活用検討・アプリ要件整理</strong>が中心。2025年4月公布の公職選挙法改正（法律19号・20号）で電磁的記録式投票機の期日前投票所等の規定を整備（19号：2025年5月施行、20号：2026年1月施行）。ただし<strong>インターネット投票を一般の公職選挙で解禁する法案はまだ国会提出に至っていない</strong>。確信度：高。</p>
+
+<h3>2.4 CiDAO への含意（要約）</h3>
+
+<ul>
+  <li><strong>「投票所内電子投票」と「インターネット投票」は別制度</strong>。前者は地方選で実施可能だが投票所限定、後者は公職選挙では未解禁。つづきまり子議員への説明・市議会提案時には厳密に区別する必要あり</li>
+  <li><strong>JPKI 認証が事実上の標準</strong>になりつつある（つくば市・総務省研究会）。CiDAO の認証層を JPKI に差し替え可能なアダプタ設計にしておくことが拡張性の中核</li>
+  <li><strong>上書き投票（強制・買収対策）</strong>はつくば実証で15回まで観測。CiDAO も投票期間中の票差し替え機能を仕様化する価値あり</li>
+  <li><strong>アクセシビリティ（視覚障害者対応）</strong>を最初から組み込むこと。四條畷市は音声機能省略で批判を受けた実例あり</li>
+  <li><strong>ブロックチェーン採用は必須ではない</strong>。つくば市は Hyperledger Fabric を採用しているが、改ざん耐性は監査ログ＋公証で代替可能。Phase 1 では非採用が現実解</li>
+</ul>
+
+<hr>
+
+<h2>3. 拡張アーキテクチャ（v2.0 への差分）</h2>
+
+<h3>3.1 <span class="tag tag-new">NEW</span> AuthProvider 抽象化層</h3>
+
+<p>v2.0 §3.1（認証・会員管理）の実装方針を維持しつつ、将来 JPKI/xID/TRUSTDOCK 等を差し替え可能にするため、認証層を <code>AuthProvider</code> インタフェースで抽象化する。</p>
+
+<pre><code>// 概念モデル（実装言語は v2.0 §4 に従う）
+interface AuthProvider {
+  id: string;                  // "email" | "jpki" | "xid" | "trustdock"
+  level: AuthLevel;            // light | basic | verified | publicId
+  authenticate(): SubjectId;   // 不透明文字列。個人情報は含まない
+  verifyHandle(): VerifyResult;// 検証可能な属性（住所等）
+}
+
+type AuthLevel = "light" | "basic" | "verified" | "publicId";
+// publicId = 公的個人認証相当（JPKI/eIDAS 相当）</code></pre>
+
+<p><strong>設計指針</strong>：</p>
+<ul>
+  <li>v2.0 §3.1.3 の認証段階表（ライト／メール／住所確認済）に、将来「公的認証済（publicId）」段階を追加可能とする</li>
+  <li>主体 ID（<code>SubjectId</code>）は<strong>不透明文字列</strong>として扱い、認証方式が変わっても投票履歴・貢献度の継続性を確保</li>
+  <li>JPKI 利用者証明用電子証明書のシリアル番号を <code>SubjectId</code> として使えば、個人情報を CiDAO 側で保持せずに同一性のみ担保できる</li>
+  <li>初期実装（Phase 1）は <code>email</code> プロバイダのみ。<code>jpki</code> 等は Phase 2+ で追加（v2.0 §P1 と整合）</li>
+</ul>
+
+<h3>3.2 <span class="tag tag-amend">AMEND</span> 認証段階表の拡張（v2.0 §3.1.3 への将来差分）</h3>
+
+<p>v2.0 §3.1.3 の表に「公的認証済」段階を将来追加するための予約。<strong>Phase 1 では実装しない</strong>。</p>
+
+<table>
+  <thead><tr><th>ステータス</th><th>v2.0</th><th>v2.1 拡張案（Phase 2+）</th></tr></thead>
+  <tbody>
+    <tr><td>未登録</td><td>閲覧・参加申込のみ</td><td>同左</td></tr>
+    <tr><td>ライト登録</td><td>重み 0.1／諮問的のみ</td><td>同左</td></tr>
+    <tr><td>メール登録のみ</td><td>重み 0.3／0.15</td><td>同左</td></tr>
+    <tr><td>住所確認済（ハガキ）</td><td>重み 1.0／0.5</td><td>同左</td></tr>
+    <tr><td><strong>公的認証済（JPKI）</strong></td><td>—</td><td>重み 1.0／0.5（住所確認済と同等）。<strong>「公的認証済」バッジ</strong>を加点的に表示。公職連携モード（§3.3）でのみ別枠集計可能</td></tr>
+  </tbody>
+</table>
+
+<p><strong>設計意図</strong>：JPKI を「重みを増やす」のではなく「<strong>別枠集計可能にする</strong>」用途に位置づける。これにより、公職選挙参考データとしての提出時に「JPKI 認証票のみ」を抽出可能となる。マイナカード未保有者の排除を避けるため、重みの上下は付けない。</p>
+
+<h3>3.3 <span class="tag tag-new">NEW</span> 投票モード3階層</h3>
+
+<p>v2.0 §3.2（提案・投票）に投票モードの概念を追加。投票案件ごとに以下のいずれかのモードを設定する。</p>
+
+<table>
+  <thead><tr><th>モード</th><th>対象</th><th>認証要件</th><th>結果の扱い</th></tr></thead>
+  <tbody>
+    <tr><td><strong>諮問モード</strong>（既定）</td><td>市民意向把握・施策提案</td><td>ライト〜住所確認済（v2.0 既存）</td><td>参考。公的拘束なし</td></tr>
+    <tr><td><strong>拘束的内部モード</strong></td><td>CBI 内部運営（v2.0 §3.1.2 既存）</td><td>住所確認済以上</td><td>CBI 内部で拘束</td></tr>
+    <tr><td><strong>公職連携モード</strong>（Phase 2+）</td><td>自治体ネット投票実証等、行政連携時のみ</td><td>JPKI 必須</td><td>自治体仕様に従う（CiDAO は認証・UI のみ提供）</td></tr>
+  </tbody>
+</table>
+
+<p>公職連携モードは <strong>CBI が単独で発動できない</strong>。自治体（印西市）との協定が成立し、自治体側のシステムと API 連携した場合のみ、自治体側の運用責任下で発動する。</p>
+
+<h3>3.4 <span class="tag tag-new">NEW</span> 投票端末モード</h3>
+
+<p>v2.0 はオンライン（ブラウザ／スマホ）のみを想定。将来、自治体が投票所内電子投票（四條畷市方式）を導入し CiDAO 連携を求めた場合に備え、端末モードを抽象化する。</p>
+
+<table>
+  <thead><tr><th>端末モード</th><th>説明</th><th>Phase</th></tr></thead>
+  <tbody>
+    <tr><td><strong>online</strong>（既定）</td><td>ブラウザ・スマホアプリから個人認証で投票</td><td>Phase 1〜</td></tr>
+    <tr><td><strong>kiosk</strong></td><td>自治体管理の投票所端末。投票管理者がカード読取→端末解放→投票→端末ロック</td><td>Phase 3+（自治体連携時のみ）</td></tr>
+  </tbody>
+</table>
+
+<p>kiosk モードは <strong>CiDAO 単独では使用しない</strong>。あくまで将来の連携余地として API ・スキーマレベルで対応可能性を残す。</p>
+
+<h3>3.5 <span class="tag tag-new">NEW</span> 投票履歴の改ざん耐性（監査ログ）</h3>
+
+<p>v2.0 §4.3（セキュリティ）に追加すべき項目。<strong>ブロックチェーンは Phase 1 では採用しない</strong>が、それと同等の改ざん耐性を以下で代替する。</p>
+
+<ul>
+  <li>投票確定時に <code>(proposal_id, subject_id_hash, choice, timestamp)</code> のハッシュチェーンを Append-only ログに記録</li>
+  <li>日次でハッシュ最新値を Git リポジトリ（site/admin/audit-log/）に公開コミット → タイムスタンプ的役割</li>
+  <li>選任監査人（運営委員以外）が四半期で検証</li>
+  <li>Phase 2+ で Hyperledger Fabric 等のブロックチェーン移行可能なよう、ログフォーマットを互換設計</li>
+</ul>
+
+<h3>3.6 <span class="tag tag-new">NEW</span> 上書き投票（投票期間中の票差し替え）</h3>
+
+<p>つくば市実証で買収・強制対策として有効性が確認された機能。v2.0 §3.2 に追加。</p>
+
+<ul>
+  <li>投票期間中、同一 SubjectId は何度でも投票を上書き可能</li>
+  <li>最終票のみが集計に反映される</li>
+  <li>上書き回数は<strong>本人にも非表示</strong>（強制者に対する反証可能性のため）</li>
+  <li>UI 上は「現在の投票：◯◯」とだけ表示</li>
+</ul>
+
+<h3>3.7 <span class="tag tag-new">NEW</span> アクセシビリティ要件</h3>
+
+<p>四條畷市の音声機能省略批判を踏まえ、Phase 1 から以下を必須化。v2.0 §3 全体への補足。</p>
+
+<ul>
+  <li>WCAG 2.1 AA 準拠（既存 v2.0 維持）</li>
+  <li>スクリーンリーダー読み上げ確認（NVDA／VoiceOver）</li>
+  <li>キーボードのみで投票完結可能（マウス必須にしない）</li>
+  <li>文字サイズ拡大・コントラスト切替の UI 提供</li>
+  <li>公職連携モード（§3.3）採用時は<strong>音声投票機能を必須</strong>とする</li>
+</ul>
+
+<hr>
+
+<h2>4. ロードマップ（v2.0 Phase 対応）</h2>
+
+<table>
+  <thead><tr><th>Phase</th><th>時期目安</th><th>v2.0 既定スコープ</th><th>v2.1 追加スコープ</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Phase 1</strong></td>
+      <td>2026〜2027</td>
+      <td>メール認証＋ハガキ住所確認、諮問・拘束的内部モード</td>
+      <td><strong>AuthProvider 抽象化（§3.1）の実装基盤のみ準備</strong>。上書き投票（§3.6）・監査ログ（§3.5）・アクセシビリティ（§3.7）は Phase 1 から組込</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 2</strong></td>
+      <td>2027〜2028</td>
+      <td>JPKI 認証（v2.0 §P1）、地域通貨 SBT（v2.0 §P2）</td>
+      <td>JPKI AuthProvider の実装（xID/TRUSTDOCK のいずれか採用）。「公的認証済」段階の追加（§3.2）</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 3</strong></td>
+      <td>2028〜</td>
+      <td>行政連携（v2.0 §P4）、街活性室連携（v2.0 §P5）</td>
+      <td>公職連携モード（§3.3）・kiosk 端末モード（§3.4）の設計確定。<strong>自治体側の意思決定とセット</strong>のため、CBI 単独では発動しない</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>注</strong>：Phase 2 以降は v2.0 と同じく <em>確約ではない想定スコープ</em>。実装可否は Phase 1 リリース後の四半期レビューで再評価する。</p>
+
+<hr>
+
+<h2>5. 印西市議会・行政との接続パターン</h2>
+
+<h3>5.1 つづきまり子議員提案を受けた CBI の立ち位置</h3>
+
+<p>議員が他自治体に倣い電子投票導入を提案する場合、参考にすべき2つの実例（四條畷市・つくば市）は<strong>制度的位置づけが全く異なる</strong>。CBI は議員提案前に以下の整理を提供することが有益。</p>
+
+<table>
+  <thead><tr><th>提案方向</th><th>参考自治体</th><th>制度的位置づけ</th><th>CBI/CiDAO の関わり方</th></tr></thead>
+  <tbody>
+    <tr><td>A. 投票所内電子投票（市議選で開票効率化）</td><td>四條畷市</td><td>電磁的記録式投票法（地方選のみ可）。現行法で実施可能</td><td>CiDAO は<strong>関与しない</strong>。市が単独で機器調達・運用</td></tr>
+    <tr><td>B. インターネット投票実証（住民投票・施策意向）</td><td>つくば市</td><td>公職選挙ではなく住民投票として実施。現行法可</td><td>CiDAO が<strong>認証基盤と UI を提供可能</strong>（公職連携モード）</td></tr>
+    <tr><td>C. 公職選挙そのもののネット投票化</td><td>—</td><td>現行法不可。総務省研究会で在外選挙のみ検討中</td><td>CBI の射程外。法改正待ち</td></tr>
+  </tbody>
+</table>
+
+<h3>5.2 提案テンプレ（市議会向け、CBI からの参考資料想定）</h3>
+
+<blockquote>
+  <p><strong>表題</strong>：印西市における電子投票・インターネット投票導入の検討にあたって</p>
+  <p><strong>論点</strong>：他自治体事例（四條畷市・つくば市）は制度的に全く異なるため、まず以下を整理されたい。</p>
+  <ol>
+    <li>目的は「開票効率化」か「市民参加拡大」か（前者なら投票所内、後者ならネット）</li>
+    <li>対象は「公職選挙」か「住民投票・施策意向調査」か（公職選挙のネット投票は現行法不可）</li>
+    <li>本人認証はマイナンバーカード（JPKI）を前提とするか（投票所モードでは免許証等の併用も可）</li>
+  </ol>
+  <p><strong>CBI からの協力可能性</strong>：CBI は CiDAO（市民意向把握プラットフォーム）を運営しており、住民投票・施策意向調査の認証基盤・UI 提供は将来的に協議可能。ただし<strong>公職選挙そのものの運営は CBI の射程外</strong>。</p>
+</blockquote>
+
+<p>本テンプレは外部公開しない（v2.0 §法令対応表の趣旨に沿い、議員・市行政との対話用内部資料として保持）。</p>
+
+<hr>
+
+<h2>6. 参考文献</h2>
+
+<h3>6.1 投票所内電子投票（電磁的記録式）</h3>
+<ul class="refs">
+  <li>総務省「電磁的記録式投票法の概要」 <a href="https://www.soumu.go.jp/senkyo/senkyo_s/news/touhyou/denjiteki/denjiteki01.html">https://www.soumu.go.jp/senkyo/senkyo_s/news/touhyou/denjiteki/denjiteki01.html</a></li>
+  <li>総務省 PDF（実施団体実績） <a href="https://www.soumu.go.jp/main_content/000547414.pdf">https://www.soumu.go.jp/main_content/000547414.pdf</a></li>
+  <li>RadiChubu「電子投票の歴史と現状」 <a href="https://radichubu.jp/plus/contents/id=55707">https://radichubu.jp/plus/contents/id=55707</a></li>
+  <li>日経xTECH「四條畷市8年ぶり再開」 <a href="https://xtech.nikkei.com/atcl/nxt/column/18/00001/10465/">https://xtech.nikkei.com/atcl/nxt/column/18/00001/10465/</a></li>
+  <li>京セラ「デジ選」プレスリリース <a href="https://www.kyocera.co.jp/newsroom/news/2024/002615.html">https://www.kyocera.co.jp/newsroom/news/2024/002615.html</a></li>
+  <li>関西テレビ報道 <a href="https://www.ktv.jp/news/feature/241223-tohyo/">https://www.ktv.jp/news/feature/241223-tohyo/</a></li>
+  <li>東京新聞「視覚障害者対応の課題」 <a href="https://www.tokyo-np.co.jp/article/381809">https://www.tokyo-np.co.jp/article/381809</a></li>
+  <li>四條畷市意見箱（費用対効果検証） <a href="https://www.city.shijonawate.lg.jp/site/ikenbako/73061.html">https://www.city.shijonawate.lg.jp/site/ikenbako/73061.html</a></li>
+</ul>
+
+<h3>6.2 インターネット投票（つくば市）</h3>
+<ul class="refs">
+  <li>つくば市公式「インターネット投票の取組」 <a href="https://www.city.tsukuba.lg.jp/soshikikarasagasu/seisakuinnovationbudigitalseisakuka/gyomuannai/1/1008320.html">https://www.city.tsukuba.lg.jp/soshikikarasagasu/seisakuinnovationbudigitalseisakuka/gyomuannai/1/1008320.html</a></li>
+  <li>内閣府「スーパーシティ枠組でのネット投票」 <a href="https://www.chisou.go.jp/tiiki/kokusentoc/supercity/supercity_221108_InterNetTouhyou.html">https://www.chisou.go.jp/tiiki/kokusentoc/supercity/supercity_221108_InterNetTouhyou.html</a></li>
+  <li>内閣官房 デジタル臨調つくば市長発言 PDF <a href="https://www.cas.go.jp/jp/seisaku/digital_gyozaikaikaku/taiwa5/240215taiwa4.pdf">https://www.cas.go.jp/jp/seisaku/digital_gyozaikaikaku/taiwa5/240215taiwa4.pdf</a></li>
+  <li>つくば市 2025年スーパーシティ施策投票 <a href="https://www.city.tsukuba.lg.jp/soshikikarasagasu/seisakuinnovationbudigitalseisakuka/gyomuannai/1/23238.html">https://www.city.tsukuba.lg.jp/soshikikarasagasu/seisakuinnovationbudigitalseisakuka/gyomuannai/1/23238.html</a></li>
+</ul>
+
+<h3>6.3 総務省・在外選挙研究会、公職選挙法改正</h3>
+<ul class="refs">
+  <li>総務省 在外選挙ネット投票 研究会一覧 <a href="https://www.soumu.go.jp/senkyo/senkyo_s/news/senkyo/zaigai_senkyo/index.html">https://www.soumu.go.jp/senkyo/senkyo_s/news/senkyo/zaigai_senkyo/index.html</a></li>
+  <li>令和4年度報告書 <a href="https://www.soumu.go.jp/main_content/000904096.pdf">https://www.soumu.go.jp/main_content/000904096.pdf</a></li>
+  <li>令和5年度報告書 <a href="https://www.soumu.go.jp/main_content/000958383.pdf">https://www.soumu.go.jp/main_content/000958383.pdf</a></li>
+  <li>令和6年度報告書概要 <a href="https://www.soumu.go.jp/main_content/001022659.pdf">https://www.soumu.go.jp/main_content/001022659.pdf</a></li>
+  <li>2025年公職選挙法改正情報 <a href="https://www.soumu.go.jp/senkyo/senkyo_s/news/touhyou/shikkokeihi/index_2025.html">https://www.soumu.go.jp/senkyo/senkyo_s/news/touhyou/shikkokeihi/index_2025.html</a></li>
+</ul>
+
+<h3>6.4 JPKI（公的個人認証）・民間連携</h3>
+<ul class="refs">
+  <li>公的個人認証サービス ポータル <a href="https://www.jpki.go.jp/">https://www.jpki.go.jp/</a></li>
+  <li>総務省「公的個人認証サービスによる電子証明書」 <a href="https://www.soumu.go.jp/kojinbango_card/kojinninshou-01.html">https://www.soumu.go.jp/kojinbango_card/kojinninshou-01.html</a></li>
+  <li>デジタル庁 JPKI Introduction（EN） <a href="https://www.digital.go.jp/en/policies/mynumber/private-business/jpki-introduction">https://www.digital.go.jp/en/policies/mynumber/private-business/jpki-introduction</a></li>
+  <li>J-LIS 民間事業者向け手続き <a href="https://www.j-lis.go.jp/jpki/minkan/procedure1_2_2.html">https://www.j-lis.go.jp/jpki/minkan/procedure1_2_2.html</a></li>
+  <li>総務省 認定事業者一覧 PDF <a href="https://www.soumu.go.jp/main_content/000807546.pdf">https://www.soumu.go.jp/main_content/000807546.pdf</a></li>
+  <li>TRUSTDOCK プラットフォーム事業者認定 <a href="https://biz.trustdock.io/news/jpki_platformer">https://biz.trustdock.io/news/jpki_platformer</a></li>
+  <li>デジタル庁 普及率ダッシュボード <a href="https://www.digital.go.jp/en/resources/govdashboard/mynumber_penetration_rate">https://www.digital.go.jp/en/resources/govdashboard/mynumber_penetration_rate</a></li>
+  <li>総務省マイナンバーカード交付状況 <a href="https://www.soumu.go.jp/kojinbango_card/kofujokyo.html">https://www.soumu.go.jp/kojinbango_card/kofujokyo.html</a></li>
+</ul>
+
+<h3>6.5 関連先行事例（市民参加プラットフォーム）</h3>
+<ul class="refs">
+  <li>加古川市版 Decidim <a href="https://kakogawa.diycities.jp/pages/whatisdecidim?format=html&amp;locale=ja">https://kakogawa.diycities.jp/pages/whatisdecidim?format=html&amp;locale=ja</a></li>
+  <li>加古川市公式 Decidim 紹介 <a href="https://www.city.kakogawa.lg.jp/soshikikarasagasu/kikakubu/jouhouseisakuka/ict_1/36257.html">https://www.city.kakogawa.lg.jp/soshikikarasagasu/kikakubu/jouhouseisakuka/ict_1/36257.html</a></li>
+</ul>
+
+<hr>
+
+<h2>付録 A. v2.0 への変更影響まとめ</h2>
+
+<table>
+  <thead><tr><th>v2.0 セクション</th><th>v2.1 での扱い</th></tr></thead>
+  <tbody>
+    <tr><td>§3.1 認証・会員管理</td><td>本体不変。§3.1 配下に AuthProvider 抽象化（v2.1 §3.1）を Phase 1 から準備</td></tr>
+    <tr><td>§3.1.3 認証段階と投票重み</td><td>本体不変。Phase 2+ で「公的認証済」段階追加の予約のみ（v2.1 §3.2）</td></tr>
+    <tr><td>§3.1.4 マイナンバー未所持者対応</td><td>本体不変。v2.1 §3.2 で「重みは上げず別枠集計」と方針明確化</td></tr>
+    <tr><td>§3.2 提案・投票</td><td>本体不変。投票モード3階層（v2.1 §3.3）・端末モード（v2.1 §3.4）・上書き投票（v2.1 §3.6）を追加</td></tr>
+    <tr><td>§4.3 セキュリティ</td><td>本体不変。監査ログ（v2.1 §3.5）を追加</td></tr>
+    <tr><td>§6.2 認証 API</td><td>本体不変。AuthProvider 抽象化に応じた API 拡張は Phase 2+</td></tr>
+    <tr><td>§法令対応表（公職選挙法行）</td><td>本体不変。v2.1 §1.2 で詳細整理を追加</td></tr>
+    <tr><td>§P1 認証拡張</td><td>本体不変。v2.1 §3.1〜3.2 で技術仕様を具体化</td></tr>
+    <tr><td>§P4 行政連携</td><td>本体不変。v2.1 §3.3「公職連携モード」・§5 で接続パターンを具体化</td></tr>
+  </tbody>
+</table>
+
+<p><strong>結論</strong>：v2.0 本体への破壊的変更はゼロ。Phase 1 への実装影響は AuthProvider 抽象化（v2.1 §3.1）と監査ログ（§3.5）・上書き投票（§3.6）・アクセシビリティ（§3.7）の4点のみ。これらは v2.0 のスコープ拡大ではなく <strong>実装方針の明確化</strong>と位置づけられる。</p>
+
+</article>
+
+</main>
+
+</body>
+</html>
