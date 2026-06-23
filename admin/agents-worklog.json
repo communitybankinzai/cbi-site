@@ -7,6 +7,18 @@
       "actuals": [
         {
           "date": "2026-06-23",
+          "title": "CiDAO 仕様書 v2.0 サマリ/フル両ページのコメントボタン不動作問題を修正（window.opener フォールバック） 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "cbi/site/admin/proposals/cidao-specification-v2.0.html（onclick書換＋openCidaoSpecComments関数追加）",
+            "cbi/site/admin/proposals/cidao-specification-v2.0-full.html（同上）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "原因：proposals/配下のHTMLは独立ページで admin.js が読み込まれていないため、onclick で呼んでいた window.openDocComments が undefined。対応：openCidaoSpecComments() 関数を両ページに追加し、window.opener が使えれば親で実行＋自タブclose、なければ ../index.html#tab-doc-comments へ遷移。教訓：proposals/配下の独立ページから親管理画面の関数を呼ぶ際は window.opener フォールバックが必須。"
+        },
+        {
+          "date": "2026-06-23",
           "title": "CiDAO 開発仕様書 v2.0 のフル版HTMLビュー新規作成（marked.js で Markdown 動的レンダリング、未存在GitHubリンク修正） 0.5時間",
           "category": "実装",
           "outputs": [

@@ -641,7 +641,7 @@ body {
     <a href="cidao-specification-v2.0-full.html" class="cta-btn">
       📖 フル版を見る（同管理画面内・限定共有）
     </a>
-    <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('cidao-specification-v2-0');" class="cta-btn gold">
+    <button type="button" onclick="openCidaoSpecComments(event)" class="cta-btn gold">
       💬 この資料にコメント
     </button>
     <a href="../index.html#tab-docs" class="cta-btn outline">
@@ -673,6 +673,23 @@ body {
 </div>
 
 </div><!-- /wrap -->
+
+<script>
+function openCidaoSpecComments(ev) {
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  // 親ウィンドウ（管理画面）が開いていれば、そちらの openDocComments を呼ぶ
+  try {
+    if (window.opener && !window.opener.closed && typeof window.opener.openDocComments === 'function') {
+      window.opener.openDocComments('cidao-specification-v2-0');
+      window.opener.focus();
+      window.close();
+      return;
+    }
+  } catch (e) { /* cross-origin の場合は無視してフォールバックへ */ }
+  // フォールバック：管理画面の「💬 資料コメント」タブを直接開く
+  window.location.href = '../index.html#tab-doc-comments';
+}
+</script>
 
 </body>
 </html>

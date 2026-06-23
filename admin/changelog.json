@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-23",
+      "type": "fix",
+      "target": "cbi/site/admin/proposals/cidao-specification-v2.0.html（コメントボタン修正）／cbi/site/admin/proposals/cidao-specification-v2.0-full.html（コメントボタン修正）",
+      "title": "CiDAO 仕様書 v2.0 サマリ/フル両ページの『💬 コメント』ボタンが反応しない問題を修正（window.opener フォールバック追加）",
+      "detail": "ユーザー報告『コメント受付機能を押しても反応しない』への対応。原因：proposals/配下のHTMLは独立ページで admin.js が読み込まれていないため、onclick で呼んでいた window.openDocComments が undefined だった。対応：openCidaoSpecComments() 関数を両ページに追加し、(1)window.openerが存在し親に openDocComments があれば親で実行＋自タブclose、(2)なければフォールバックで ../index.html#tab-doc-comments へ遷移、の二段構え。target=_blank で開いた場合は親で資料セレクタが選択され、直接URLで開いた場合は管理画面のコメントタブへ移動する。GitHub Pages HTMLキャッシュ（標準10分）も併せて案内。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-23",
       "type": "docs",
       "target": "cbi/site/admin/proposals/cidao-specification-v2.0-full.html（新規・フル版HTMLビュー）／cbi/site/admin/proposals/cidao-specification-v2.0.html（サマリページのリンク差し替え）",
       "title": "CiDAO 開発仕様書 v2.0 のフル版HTMLビューを追加（marked.js で Markdown を動的レンダリング）：サマリページから遷移可能に",

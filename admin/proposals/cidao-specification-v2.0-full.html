@@ -258,7 +258,7 @@ body {
   <div class="wrap">
     <a href="cidao-specification-v2.0.html">← サマリ版に戻る</a>
     <a href="../index.html#tab-docs">📚 内部資料一覧</a>
-    <a href="#" class="primary" onclick="event.preventDefault();window.openDocComments&&window.openDocComments('cidao-specification-v2-0');">💬 この資料にコメント</a>
+    <a href="#" class="primary" onclick="openCidaoSpecComments(event)">💬 この資料にコメント</a>
   </div>
 </nav>
 
@@ -2021,6 +2021,21 @@ CBI（08-001）として独立運営。COCoLaは間もなく登録解除予定�
 
 **最終更新**：2026-06-23 by CiDAO 担当エージェント
 **次回レビュー予定**：2026-09-23（四半期レビュー）
+</script>
+
+<script>
+function openCidaoSpecComments(ev) {
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  try {
+    if (window.opener && !window.opener.closed && typeof window.opener.openDocComments === 'function') {
+      window.opener.openDocComments('cidao-specification-v2-0');
+      window.opener.focus();
+      window.close();
+      return;
+    }
+  } catch (e) { /* cross-origin の場合は無視 */ }
+  window.location.href = '../index.html#tab-doc-comments';
+}
 </script>
 
 <script type="module">
