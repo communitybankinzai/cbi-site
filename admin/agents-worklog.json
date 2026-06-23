@@ -7,6 +7,18 @@
       "actuals": [
         {
           "date": "2026-06-23",
+          "title": "CiDAO 開発仕様書 v2.0 のフル版HTMLビュー新規作成（marked.js で Markdown 動的レンダリング、未存在GitHubリンク修正） 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "cbi/site/admin/proposals/cidao-specification-v2.0-full.html（新規、2,035行、HTML骨格＋Markdown埋め込み＋marked.js）",
+            "cbi/site/admin/proposals/cidao-specification-v2.0.html（CTAリンク差し替え：GitHubリンク→フル版HTMLビューへ）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "ユーザー報告『GitHubで完全版を見るが404』への対応。原因はcidao/がローカル管理（cidao/CLAUDE.md規定）でGitHubリポジトリ未作成なのに、HTMLビューのリンクが存在しないパスを指していた。3択（A:既存ページに統合 / B:別ページ作成 / C:リンク削除）のB（推奨）で対応。Markdown原本（1,737行）をクライアントサイドレンダリング（marked.js@13 GFM対応、フロントマター除去）。サマリ版・フル版とも cbi/site/admin/proposals/ 配下（CBI管理画面の限定共有エリア、noindex設定継承）。GitHubのprivateリポジトリ化は提案したが、collaborator管理の運用負担と『CiDAO上で公開しない方針』との混同リスクを避けてB案採用。Markdown を別ファイル化せず単一HTML内に埋め込むことで、別ファイルダウンロード経路を作らない設計とした。"
+        },
+        {
+          "date": "2026-06-23",
           "title": "CiDAO 開発仕様書 v2.0 の共有範囲を限定共有方針に改訂（CiDAO 一般公開は実施しない） 0.3時間",
           "category": "実装",
           "outputs": [
