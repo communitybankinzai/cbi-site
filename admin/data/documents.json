@@ -30,6 +30,24 @@
       "updatedAt": "2026-06-23"
     },
     {
+      "id": "cidao-specification-v2-0",
+      "title": "CiDAO 開発仕様書 v2.0｜参加と貢献の循環基盤",
+      "path": "proposals/cidao-specification-v2.0.html",
+      "category": "開発仕様書・コア文書",
+      "description": "Q1〜Q17 + F1〜F15（派生案全取込）の確定事項を反映した CiDAO の Phase 1 実装仕様。Part 1（確定仕様）/ Part 2（Phase 2+ 想定）/ 付録の3部構成。COCoLa反省点（罠1〜3：機能優先順位喪失／反映遅延／未確定の前提化）への構造的対応を含む。本書は本管理画面のみで限定共有（CiDAO 上での一般公開はしない）。",
+      "createdAt": "2026-06-23",
+      "updatedAt": "2026-06-23"
+    },
+    {
+      "id": "cidao-specification-v2-0-full",
+      "title": "CiDAO 開発仕様書 v2.0｜参加と貢献の循環基盤（完全版・フル）",
+      "path": "proposals/cidao-specification-v2.0-full.html",
+      "category": "開発仕様書・コア文書",
+      "description": "v2.0 サマリ版に対する完全版（フル）。Part 1〜2 と付録を省略せず全文掲載。サマリ版と同じく管理画面のみで限定共有。詳細仕様確認・他自治体配布用途を想定。",
+      "createdAt": "2026-06-23",
+      "updatedAt": "2026-06-23"
+    },
+    {
       "id": "cidao-specification-v2-1-election",
       "title": "CiDAO 開発仕様書 v2.1｜電子投票拡張モジュール（Addendum）",
       "path": "proposals/cidao-specification-v2.1-election-extension.html",

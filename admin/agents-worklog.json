@@ -7,6 +7,19 @@
       "actuals": [
         {
           "date": "2026-06-23",
+          "title": "CiDAO v2.0 サマリ版・フル版を documents.json に追加登録（コメントタブ『docId not found』警告の解消） 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "cbi/site/admin/data/documents.json（id=cidao-specification-v2-0 と id=cidao-specification-v2-0-full の2件追加、v2.1 の前に挿入）",
+            "site/admin/changelog.json（type:fix で1件追記）",
+            "site/admin/agents-worklog.json（本記録）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "v2.1 登録作業の際に発見していた『v2.0 も documents.json に未登録』問題の対応（前回作業で spawn_task に切り出していたタスク）。index.html の v2.0 サマリ版カードは存在するが documents.json に対応エントリがなく、admin.js の openDocComments() が console.warn『docId not found』を出して資料コメントタブから v2.0 にコメントできない状態だった。対応：v2.0 サマリ版（id=cidao-specification-v2-0）と v2.0 フル版（id=cidao-specification-v2-0-full）の2件を追加。フル版 HTML（proposals/cidao-specification-v2.0-full.html）は既に配置済みだが index.html のカードは未配置のため、コメントタブのセレクタからのみ参照される運用となる。教訓：HTML 配置・カード追加・documents.json 登録の3点セットを毎回徹底し、ドキュメント公開時の管理画面側登録漏れを防ぐ。"
+        },
+        {
+          "date": "2026-06-23",
           "title": "CiDAO v2.1 を管理画面の資料一覧とコメント対象に登録（ドキュメント公開時のリンク漏れ対応） 0.2時間",
           "category": "保守",
           "outputs": [
