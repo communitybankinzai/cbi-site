@@ -5,6 +5,14 @@
     {
       "date": "2026-06-23",
       "type": "fix",
+      "target": "cbi/site/admin/proposals/cidao-specification-v2.1-election-extension.html",
+      "title": "CiDAO 仕様書 v2.1 を議員質問の実態に合わせて訂正：投票所内タブレット型に限定／インターネット投票・JPKIは議員提案射程外と明示",
+      "detail": "つづきまり子議員 Instagram @mariko77t 議会報告 Vol.13 のスクリーンショット直接確認により、令和8年6月議会一般質問『2. 投票方法のデジタル化について』が(a)タブレット端末を活用した投票所内電子投票（四條畷市方式）に限定、(b)インターネット投票やマイナンバー認証は念頭になし、(c)提案段階は『研究・検討開始』であり導入決定ではない、と判明。初版v2.1で『他自治体に倣い導入の意向／インターネット投票も視野』と書いた前提が不正確だったため4箇所訂正：(1)冒頭notice『背景』を議員質問の引用ベースに書き換え、(2)§1.1『公職選挙とCiDAOの境界』に『議員提案の正確な射程』段落を追加し議員提案＝投票所内タブレット型／CiDAO拡張アーキは将来別シナリオに備えた仕様面の余地確保と明示、(3)§5.1表に『議員提案との関係』列を追加してA案＝議員提案／B・C案＝議員提案射程外と整理、(4)§5.2を新設してCBIの具体支援可能性4項目（事例整理／市民意向諮問投票／両論併記資料／三者意見交換会）を表化、(5)§5.3として論点テンプレを6項目に拡充（開票効率化目的の優先順位／対象選挙範囲／アクセシビリティ／機器調達／コスト試算／事故時救済策）。さらに§6.6『議員質問出典』追加（Instagram・スマート中継URL）、付録Bとして改訂履歴を新設。技術仕様（§3拡張アーキテクチャ）は変更なし。教訓：政治家・関係者の発言を伝聞で受けず、必ず一次情報（SNS・議事録）で裏付けてから外部資料化する。",
+      "author": "CiDAO担当エージェント / A1 Core"
+    },
+    {
+      "date": "2026-06-23",
+      "type": "fix",
       "target": "cbi/site/admin/data/documents.json（CiDAO 仕様書 v2.0 サマリ版・フル版を追加）",
       "title": "CiDAO 仕様書 v2.0 を documents.json に登録：資料コメントタブで v2.0 にもコメントできるように修正（『docId not found』警告を解消）",
       "detail": "発見した不具合：index.html の資料タブには v2.0 サマリ版カード（コメントボタンが docId='cidao-specification-v2-0' を呼び出す）が配置されていたが、documents.json には v2.0 が未登録だったため admin.js の openDocComments() が console.warn『docId not found』を出力し、資料コメントタブから v2.0 にコメントできない状態だった（v2.1 登録時に v2.0 も未登録であることが判明したが本作業のスコープ外として spawn_task で別タスク化していた件の対応）。対応：documents.json に2件追加。(1)id='cidao-specification-v2-0' / path='proposals/cidao-specification-v2.0.html' / category='開発仕様書・コア文書' / title・description は index.html の v2.0 サマリ版カード文面から流用、(2)id='cidao-specification-v2-0-full' / path='proposals/cidao-specification-v2.0-full.html' / title 末尾に『（完全版・フル）』を付与（HTML ファイルは既に proposals/ 配下に配置済みだが index.html のカードは未配置のため、コメントタブのセレクタからのみアクセス可能）。順序は v2.0 → v2.0-full → v2.1 の流れに整列。教訓：HTML 配置とカード追加と documents.json 登録の3点セットを徹底することで『カードは押せるがコメントタブが反応しない』状態を防げる。",
