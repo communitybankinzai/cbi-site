@@ -28,6 +28,15 @@
       "description": "7コンテナ（学び/物販/喫茶/国際/創業/広報/ステージ）を印西市の各課主管と紐づけ、CBI連携体の協業価値を可視化した7枚構成。各コンテナに収益源欄付き。",
       "createdAt": "2026-06-22",
       "updatedAt": "2026-06-23"
+    },
+    {
+      "id": "cidao-specification-v2-1-election",
+      "title": "CiDAO 開発仕様書 v2.1｜電子投票拡張モジュール（Addendum）",
+      "path": "proposals/cidao-specification-v2.1-election-extension.html",
+      "category": "開発仕様書・コア文書",
+      "description": "印西市議つづきまり子氏の電子投票導入意向を受けた v2.0 への差分追補。他自治体動向（四條畷市/つくば市/総務省）を踏まえ AuthProvider 抽象化・投票モード3階層・kiosk 端末モード・上書き投票・監査ログ・アクセシビリティ要件の7項目を追加。v2.0 本体は不変。",
+      "createdAt": "2026-06-23",
+      "updatedAt": "2026-06-23"
     }
   ]
 }
