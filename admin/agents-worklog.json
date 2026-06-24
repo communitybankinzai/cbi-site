@@ -1,10 +1,76 @@
 {
-  "updatedAt": "2026-06-23",
+  "updatedAt": "2026-06-24",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": ["実装", "保守", "レポート", "分析", "会議", "広報", "事務", "調査", "その他"],
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-24",
+          "title": "CiDAO 構築 Step 6: Supabase Auth マジックリンクログイン実装（/login + /auth/callback + /auth/sign-out） 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "cidao/src/app/login/page.tsx（メール入力フォーム → signInWithOtp）",
+            "cidao/src/app/auth/callback/route.ts（exchangeCodeForSession 後ホーム遷移）",
+            "cidao/src/app/auth/sign-out/route.ts（POST セッションクリア）",
+            "cidao/src/app/page.tsx（ログイン状態でボタン切替）",
+            "cidao git commit 11a1b94 / push 完了"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "Step 5 で導入した handle_new_user トリガーが auth.users INSERT 時に public.members を tier='light' で自動作成する設計と連動。仕様§3.1.1 の二段登録（ライト 90秒 / 本登録 5分）は Step 9 マイページで完成させる方針（決定 B：統合マジックリンク）。設計判断：(a) Server Component で auth.getUser() を呼ぶことで初期描画から認証状態を反映、(b) サインアウトは POST route + form action にして CSRF 安全（GET だと事故リンクで誤ログアウト）、(c) callback の next クエリパラメータで遷移先制御を実装し将来 RBAC 拡張に備える。"
+        },
+        {
+          "date": "2026-06-24",
+          "title": "CiDAO 構築 Step 5: Supabase 22テーブル + RLS + トリガー + Realtime 設計・実装・本番DB適用 1.8時間",
+          "category": "実装",
+          "outputs": [
+            "cidao/supabase/migrations/20260624120000_init_schema.sql（22テーブル/25 ENUM型/inde x多数、800行）",
+            "cidao/supabase/migrations/20260624120001_rls_policies.sql（テーブル別ポリシー + is_admin/is_org_representative ヘルパー、260行）",
+            "cidao/supabase/migrations/20260624120002_triggers_and_realtime.sql（handle_new_user / 投票重み計算 / 貢献度自動加算 / vote_aggregates / Realtime publication、260行）",
+            "cidao/src/lib/supabase/database.types.ts（自動生成 TypeScript 型、1235行）",
+            "Supabase remote DB（oxuxvtuhijnsewivgrje / ap-northeast-1）に 3 migration 適用完了",
+            "cidao git commit 1bc3740 / push 完了"
+          ],
+          "hours": 1.8,
+          "partnerApproved": false,
+          "note": "仕様 v2.0 §3 全機能（F1-F15）対応の DB スキーマを一括設計。Explore エージェントに仕様精読・テーブル抽出を委譲（500行レポート）し、メイン側で設計判断。3決定：(5a) Migration ツール = Supabase CLI（公式・RLS/cron 一元）、(5b) 範囲 = 全22テーブル一括（FK密接で後追加が面倒）、(5c) 暗号化 = PII を public.members に持たず Auth user_metadata に隔離（pgsodium 不要・最小権限）。設計上の判断：(a) `public.members.id = auth.users.id` の 1:1 で RLS を `id = auth.uid()` 単純化、(b) 投票は本人にも非表示（個人投票秘密、SELECT ポリシー無し）、(c) 貢献度ポイント加算は SECURITY DEFINER トリガーで直接 INSERT 禁止、(d) vote_aggregates は INSERT 時にインクリメンタル更新（バッチ不要で即時表示）、(e) ENUM は安定する状態系のみ、カテゴリ等 TEXT で柔軟性確保。トラブル：(1) supports テーブルの `unique (...coalesce(md5(body),''))` が CREATE TABLE 内で不可 → partial unique index に変更で解消、(2) project ref を URL 表示から1文字落とし（oxuxvtuhijnsewivgrj）登録 → `supabase projects list` で正規 ref `oxuxvtuhijnsewivgrje` を取得して訂正、(3) `npx supabase login` が別プロセスから token 読めず → Personal Access Token 方式に切替で解決。教訓：URL 表示は省略の可能性があるので `projects list` API の正規値を採用する、PAT は CI/別プロセス利用前提では login より確実。"
+        },
+        {
+          "date": "2026-06-24",
+          "title": "CiDAO 構築 Step 4: Next.js 16 + Tailwind 4 + shadcn/ui + Supabase クライアント スキャフォールド 0.7時間",
+          "category": "実装",
+          "outputs": [
+            "cidao リポジトリに create-next-app（TS/Tailwind/ESLint/App Router/src/Turbopack/@-alias）",
+            "cidao/src/lib/supabase/{client.ts, server.ts, middleware.ts}（@supabase/ssr 経由のブラウザ/サーバー/Edge クライアント）",
+            "cidao/src/proxy.ts（Next.js 16 の proxy 規約、updateSession で Auth セッション refresh）",
+            "cidao/.env.local（NEXT_PUBLIC_SUPABASE_URL / ANON / SERVICE_ROLE / DATABASE_URL）",
+            "cidao/src/app/page.tsx（CiDAO ヘッダ + セットアップ状況表示）",
+            "cidao/src/components/ui/button.tsx（shadcn 初期化）",
+            "OneDrive/CBI/.claude/launch.json に cidao-dev 設定追加（npm --prefix で Repos 配下から起動）",
+            "cidao git commit 9f0704a / push 完了"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "仕様 §2.3 確定スタックを忠実に展開。Next.js 16 で middleware → proxy リネーム規約変更を踏襲。設計判断：(a) Supabase SSR は client/server/middleware の 3 層構造（公式パターン）、(b) ホームページに live ヘルスチェック実装（Auth reachable / ログイン状態）で初動動作を即可視化、(c) .claude/launch.json で `npm --prefix C:/Repos/cidao run dev` 形式とし、Claude セッション root と異なる場所のリポジトリも preview_start で起動可能化。トラブル：(1) shadcn init の `--base-color` フラグが新版で削除 → `-d -f` で defaults 採用、(2) git push 403（個人 you0810jmsdf アカウントで認証されていた）→ `gh auth switch -u communitybankinzai` で組織アカウント切替、Windows Credential Manager の git:https://github.com キャッシュも `cmdkey /delete` で破棄、(3) middleware → proxy リネーム時に関数名も `middleware` → `proxy` への変更が必要、.next キャッシュクリア必要。教訓：gh の active account はチームでの作業時に切替忘れが起きやすい、setup-git だけでなく switch を必須運用に。"
+        },
+        {
+          "date": "2026-06-24",
+          "title": "CiDAO 構築 Step 2-3: GitHub repo + gh CLI + Supabase + Vercel 環境準備 1.2時間",
+          "category": "事務",
+          "outputs": [
+            "C:\\Repos\\cidao フォルダ作成（OneDrive 外、node_modules 同期事故回避）",
+            "GitHub repo communitybankinzai/cidao（Public、初期コミット 8525413）",
+            "gh CLI 2.95.0 を winget でインストール（communitybankinzai アカウント認証完了）",
+            "Supabase プロジェクト cidao（ap-northeast-1 / Tokyo / Free / Project Ref: oxuxvtuhijnsewivgrje）",
+            "Vercel チーム cidao（Hobby / Free / GitHub 連携）",
+            "credentials.md §5 Supabase / §6 Vercel セクション追記（Project URL / Publishable key / Secret key / DB password / Personal Access Token を保存）",
+            "Supabase セキュリティ初期設定（Data API ON / 自動 expose OFF / 自動 RLS ON）"
+          ],
+          "hours": 1.2,
+          "partnerApproved": false,
+          "note": "CiDAO 開発の足場固め。3決定：(2a) ローカル配置 = C:\\Repos\\cidao（OneDrive 外、site/ と同じく node_modules 同期事故回避）、(2b) GitHub = communitybankinzai 組織配下（Vercel 連携 + 権限委譲容易）、(2c) Vercel team URL = cidao（communitybankinzai 取得済のため代替）。Vercel の Import は Step 4 後（Next.js コード push 後）に延期して Framework Detection が走る状態にする方針。Supabase 自動 RLS ON は新規テーブルの権限漏れ防止の核心設定、自動 expose OFF は意図しない API 公開抑止。教訓：(a) 他 PC との同期は OneDrive ではなく git 自体に任せる運用が node_modules 含む大型プロジェクトでは唯一実用的、(b) GitHub 組織アカウントが他者取得済の場合 Vercel 等で代替名（プロジェクト名そのまま）を採用する選択肢が現実的、(c) Supabase 新 API キー方式（sb_publishable_* / sb_secret_*）は Legacy `eyJ...` から段階移行中、新規プロジェクトは New を使用。"
+        },
         {
           "date": "2026-06-23",
           "title": "CiDAO v2.1 §5.4.6 新設＋§1.2 法令表更新：公選法138条の3（人気投票公表禁止）への対応を明文化 0.4時間",

@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-06-23",
+  "updatedAt": "2026-06-24",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-06-24",
+      "type": "content",
+      "target": "site/admin/agents-worklog.json（A1 actuals に Step 2-6 の4件追記）",
+      "title": "CiDAO 実装着手の作業実績を worklog に記録：Step 2-6（環境構築〜マジックリンク認証）合計 4.1 時間分を可視化",
+      "detail": "別リポジトリ communitybankinzai/cidao を新設し、Next.js 16 + Supabase スタックで CiDAO MVP の足場を構築。worklog に Step 2 (repo/gh CLI)、Step 3 (Supabase/Vercel プロジェクト作成)、Step 4 (Next.js + shadcn + Supabase クライアント)、Step 5 (22テーブル DB スキーマ + RLS + トリガー)、Step 6 (マジックリンク認証) の 4 件を追加。仕様書 v2.0 §2.3 確定スタック通り、§3 全機能（F1-F15）対応 DB スキーマを本番 Supabase（ap-northeast-1）に展開済。次は Step 7 提案・投票機能（F1-F3 MVP核心）。",
+      "author": "A1 Core"
+    },
     {
       "date": "2026-06-23",
       "type": "fix",
