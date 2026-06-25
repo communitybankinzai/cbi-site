@@ -8,6 +8,25 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "🔧 match-orgs の透明性改善（自己紹介フォーム注記 + 募集状況 field） 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "A. /me/edit の自己紹介フォーム改善: placeholder で具体的書き方の例示、「詳しく書くほど AI マッチング精度が上がる」明示、rows 3 → 4",
+            "B-1. supabase/migrations/20260625150000_org_recruitment_status.sql 新設: recruitment_status enum (open/closed/invitation_only/unknown) + organizations 列追加 (default 'unknown') + partial index",
+            "B-2. 本番 DB へ migration 適用: scripts/apply-migration.mjs 経由で BEGIN/COMMIT transaction、既存 219 件は default で 'unknown' に自動付与",
+            "B-3. src/lib/supabase/database.types.ts 手動更新: Enums セクションに recruitment_status 追加、organizations.Row/Insert/Update に列追加",
+            "B-4. src/lib/match-orgs.ts: 候補団体 SELECT に recruitment_status 追加、.in('recruitment_status', ['open', 'unknown']) で closed/invitation_only を除外、EnrichedMatch 型に status フィールド追加",
+            "B-5. src/app/me/page.tsx: RECRUITMENT_BADGE 定義（🟢募集中 / ⚪募集状況未確認 / 🔵招待制 / ⛔募集停止中）、各カードに badge 追加、カード末尾に説明文",
+            "B-6. scripts/seed-orgs.mjs: INSERT に recruitment_status カラム明示追加",
+            "scripts/apply-migration.mjs 新設: psql 不在環境でも migration を transaction で適用可能（再利用可）",
+            "ローカル npm run build clean、cidao 9127bc8 commit + push、本番 API 回帰テスト（empty body → 400, fake UUID → 404）OK"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "ユーザー指摘 3 点（A: 自己紹介の精度寄与の明示なし、B: 団体情報の詳しさ、C: 募集状況 field 不在）のうち、A + B（C は claim フローと同時実装の Phase 2 推奨）を実装。実装上の判断：(a) recruitment_status を enum 4 値で表現、'unknown' を初期値に置くことで「データ収集前の正直な状態」を可視化、(b) match-orgs は open + unknown を含めて closed/invitation_only を除外、seed 219 件は全て unknown だが マッチング自体は機能、(c) /me カードに 🟢⚪🔵⛔ の絵文字付きバッジを配置して直感的識別、(d) カード末尾の説明文で「未確認の団体は claim 待ち、問い合わせ前に確認推奨」と user に注意喚起、(e) supabase CLI なしでも migration 適用できる scripts/apply-migration.mjs を整備して将来の DB 変更時の再利用可能性確保。教訓：(i) database.types.ts は CLI なしだと手動メンテだが、enum 追加・新列追加は同じパターンで安全、(ii) 既存行に default 値を付与する migration は alter table add column 1 行で済む、別の UPDATE 文不要、(iii) ユーザーの product 視点フィードバックは「実装が動く」と「ユーザー価値がある」のギャップを埋める重要素。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "🎨 /me に「あなたに合う団体」UI を実装、Step 11c の体験ループが完成 0.6時間",
           "category": "実装",
           "outputs": [
