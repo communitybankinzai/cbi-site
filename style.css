@@ -111,6 +111,12 @@ h1, h2, h3 {
 }
 .site-nav a:hover { color: var(--c-navy); }
 .site-nav a:hover::after { transform: scaleX(1); }
+.site-nav a.nav-external {
+  color: var(--c-green);
+  font-weight: 700;
+}
+.site-nav a.nav-external:hover { color: var(--c-green-soft); }
+.site-nav a.nav-external::after { background: var(--c-green); }
 
 .nav-toggle {
   display: none;

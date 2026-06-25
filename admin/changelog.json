@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-06-25",
+  "updatedAt": "2026-06-26",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-06-26",
+      "type": "content",
+      "target": "site/index.html / site/style.css",
+      "title": "🔗 CBIホームページから姉妹プラットフォーム CiDAO（市民DAO, cidao.vercel.app）へのリンクを3箇所追加：ナビ・人材バンク登録カード・フッター",
+      "detail": "CBIサイトの来訪者がCiDAOへ自然に流入できる導線を整備。\n\n■ 設置箇所：(1) ヘッダーナビ末尾に「CiDAO ↗」をグリーン（var(--c-green)）で強調表示、外部リンクを明示、(2) 参加方法セクションの「① 人材バンクに登録する」カードの主CTAを mailto: から「CiDAO（市民DAO）で登録する ↗」に差し替え、メール登録は副CTA（btn-ghost）に降格、注記を「※ CBIの人材バンク・マッチングは、姉妹プラットフォーム CiDAO（市民DAO）で運用しています。」に書き換え、(3) フッターに「CiDAO（市民DAO）↗」を運営者ログインリンクの前に追加。\n\n■ CSS追加：.site-nav a.nav-external に green カラー・font-weight 700 を設定し、通常ナビ項目と差別化。ホバー時は green-soft、下線アクセントも green に統一。\n\n■ 設計判断：(a) 人材バンク機能の実体は CiDAO 側に存在するため、登録の主導線を CiDAO に切り替え（メールは fallback）、(b) ナビとフッター両方に置くことで、トップに来た人にもページを読み進めた人にも到達経路を確保、(c) 「準備中」表現を「姉妹プラットフォーム CiDAO で運用」に置き換え、サイト全体の信頼感を向上、(d) target=\"_blank\" + rel=\"noopener\" で新規タブ開き＋セキュリティ確保。\n\n■ 検証：localhost:8765 でデスクトップ表示確認、3箇所のリンクが正しい href/target で出力されることを DOM eval で確認、コンソールエラーなし。",
+      "author": "A1 Core"
+    },
     {
       "date": "2026-06-25",
       "type": "feature",

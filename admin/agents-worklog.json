@@ -1,11 +1,26 @@
 {
-  "updatedAt": "2026-06-25",
-  "_comment_updated": "2026-06-25 A1: CiDAO Step 11c/11d コード書換 3本 完了（actuals 追記）",
+  "updatedAt": "2026-06-26",
+  "_comment_updated": "2026-06-26 A1: CBIサイトからCiDAOへのリンク追加（ナビ/人材バンクCTA/フッター 3箇所）",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": ["実装", "保守", "レポート", "分析", "会議", "広報", "事務", "調査", "その他"],
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-26",
+          "title": "🔗 CBIサイトからCiDAOへの導線追加（ナビ＋人材バンクCTA＋フッター） 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/index.html: ヘッダーナビ末尾に `<a href=\"https://cidao.vercel.app/\" target=\"_blank\" rel=\"noopener\" class=\"nav-external\">CiDAO ↗</a>` 追加",
+            "site/index.html: 参加方法 #join の人材バンク登録カードの主CTAを mailto → CiDAO 登録リンクに差し替え、メール登録を btn-ghost に降格、注記を「姉妹プラットフォーム CiDAO で運用しています」に書き換え",
+            "site/index.html: フッターに CiDAO リンクを運営者ログインの前に追加",
+            "site/style.css: .site-nav a.nav-external にグリーン強調（color/font-weight/hover/underline）スタイル追加",
+            "localhost:8765 で DOM eval により3箇所のリンク href/target を確認、コンソールエラーなし、デスクトップ1280x800スクリーンショットで視覚確認"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "ユーザー依頼「CBIホームページからCiDAOへのリンクをつけたい」に対応。CiDAO（cidao.vercel.app）は「Citizen DAO · 市民DAO」で人材バンク・マッチング・イベント等のデジタル基盤、CBIの人材バンク機能の実体。3箇所に置いた意図：(a) ナビは「外部関連サイトとして常時アクセス可能」、(b) 人材バンクCTAは「準備中の mailto から実体のCiDAOへ主導線を切替」、(c) フッターは「ページを読み終えた人の最終アンカー」。target=\"_blank\"+rel=\"noopener\" でセキュリティ確保。CSS nav-external は緑色で他のナビと差別化して外部リンクであることを視覚的に示した。"
+        },
         {
           "date": "2026-06-25",
           "title": "🔧 match-orgs の透明性改善（自己紹介フォーム注記 + 募集状況 field） 0.6時間",
