@@ -7,6 +7,22 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "Vercel 2FA 設定完了（iOS パスワード QR スキャン方式・リカバリー6件）0.3時間 — CiDAO 残課題🔴 2FA 全 4/4 完走",
+          "category": "事務",
+          "outputs": [
+            "Vercel Account Settings → Authentication → Two-Factor Authentication: Inactive → Active",
+            "iOS パスワード「vercel.com」新規エントリで QR スキャン → 6 桁 Continue 成功",
+            "リカバリーコード 6 件（fb0f0f35-52a7e576 ほか・8文字-8文字 hex フォーマット）取得・credentials.md §7.3 に保管",
+            "正しい設定URL は https://vercel.com/account/settings/authentication （旧 `/account/security` は 404、UI ナビゲーション経由でようやく到達）",
+            "credentials.md §7.3 ステータス: ☐ 未設定 → ☑ 設定済（2026-06-25 完了）",
+            "事前案内「リカバリー10件」は誤りで実測6件、credentials.md に訂正注記追加"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "D 候補（2FA 設定）最終 4 段階目完了。トラブル：(1) `/account/security` `/account/login-connections` 等の URL 直打ちは全部 404、(2) cidao team の左サイドバー Settings は team 設定で個人 Account とは別、(3) `vercel.com/account` で Teams 一覧画面に着き、そこから左サイドバー「≡」展開→ Settings → Authentication でようやく到達。教訓：Vercel は URL 直打ちより UI ナビゲーション経由が確実。Supabase と違って Vercel はリカバリーコードあり（6件、GitHub の 16 件より少ない）。setup key は QR スキャン専念したため取得せず、必要なら 2FA Reset 後に再取得可能。\n\n=== D 候補（2FA 設定）全体総括 ===\n4/4 完走：(1) GitHub communitybankinzai、(2) GitHub you0810jmsdf、(3) Supabase MFA、(4) Vercel 2FA。所要合計 1.2 時間（実質 30分／待機 30分）。CiDAO MVP Step 12 残課題🔴最優先「2FA 未設定」を完全消化。守られた資産：cbi-site / cidao / cocola / n's factory の 4 リポジトリ + Supabase 本番 DB + Vercel 本番ホスティング。リカバリー保管：credentials.md §7（gitignore 対象、push されない）+ iOS パスワード iCloud 同期（iPhone/iPad/Mac 共有）の二重化。残：iOS パスワード「Github — you0810jmsdf」の中身が communitybankinzai 用 secret になっている誤記訂正（実害なし、表記のみ）、Supabase の「2 つ目 authenticator app を別端末に」推奨対応（任意）。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "Supabase MFA 設定完了（iOS パスワード QR スキャン方式・factor App 912）0.2時間",
           "category": "事務",
           "outputs": [
