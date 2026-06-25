@@ -8,6 +8,22 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "🐛 classify-proposal の JSON schema 修正（min/max 削除）+ 本番疎通テスト完了 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "本番疎通で classify-proposal が HTTP 500 / Content-Length 0 → Vercel function logs を確認、Anthropic API 400 invalid_request_error: 'output_config.format.schema: For number type, properties maximum, minimum are not supported' を特定",
+            "C:\\Repos\\cidao/src/app/api/ai/classify-proposal/route.ts: confidence の `minimum: 0, maximum: 1` 削除（型 number のみ残す）",
+            "C:\\Repos\\cidao/src/app/api/ai/match-orgs/route.ts: score の `minimum: 0, maximum: 1` 削除（同上、同根の問題）",
+            "0316f09 commit + push → Vercel 自動再デプロイ（約 20 秒で Ready）→ 疎通テスト HTTP 200 で確定",
+            "本番疎通結果: 入力『印西市内の里山保全活動 / 白井の谷津田を地域ボランティアで定期清掃...』→ category=kankyo, confidence=0.6, reason='里山保全と環境教育の活動と推定', method=claude-opus-4-7, usage=(input 758, output 44 tokens) ≈ $0.005/req",
+            "メール疎通: notify/email を communitybankinzai@gmail.com 宛で HTTP 200 / accepted=true / message_id=84ddb982-a89e-4db1-a813-aecc1af1b246 で確認、Resend 経由実送信成功"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "Step 11c/11d 完走計画 (7) 後の本番疎通テストでバグ発覚→即修正→確定の補完作業。教訓：claude-api skill のドキュメント「output_config.format で minimum/maximum/multipleOf 等の数値制約は未サポート、SDK が自動除去するが messages.parse() 経由でのみ」を見落とした（messages.create() 経由では除去されない）。同 SDK でも `messages.parse()` を使うと自動除去されるが、当方は `output_config.format` を直接指定する方式を採用していたため API レイヤーまで制約が透過してエラー化。コスト見積：$5 クレジットで分類 1000 件相当、MVP β拡大（100-200 提案/月想定）には十分余裕。次セッションでは match-orgs と notify/email の同等テスト + Resend のドメイン認証 + classify-proposal を実画面（/proposals/new）に組み込む UI 接続が候補。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "🎯 cidao git push (a62ecda) → Vercel 自動デプロイ — Step 11c/11d 完走計画 (7) 消化 / 全 7 ステップ完走 0.1時間",
           "category": "実装",
           "outputs": [

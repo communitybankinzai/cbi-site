@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-25",
+      "type": "fix",
+      "target": "C:\\Repos\\cidao/src/app/api/ai/classify-proposal/route.ts ／ match-orgs/route.ts ／ commit 0316f09 ／ https://cidao.vercel.app/api/ai/classify-proposal（本番稼働）",
+      "title": "🐛→✅ classify-proposal 本番 500 エラー解消：JSON schema から API 未サポートの min/max を削除、本番疎通テスト 200 で確定 — CiDAO の AI 提案分類が本当に動く状態に",
+      "detail": "Step 11c/11d 完走計画 (7) 後の本番疎通テスト時に発覚した不具合を即修正。\n\n■ 症状：本番デプロイ後の classify-proposal への POST で HTTP 500 / Content-Length 0 / unhandled exception。notify/email は同時に HTTP 200 / Resend 実送信成功（message_id 84ddb982-）で稼働確認できていたため、AI 系のみの問題と判明。\n\n■ 原因特定：Vercel function logs を user が確認し Anthropic API のエラーメッセージ判明：『output_config.format.schema: For \"number\" type, properties maximum, minimum are not supported』。当方の JSON schema 定義で confidence と score に `minimum: 0, maximum: 1` を入れていたのが直接原因。claude-api skill のドキュメント「Numerical constraints (minimum, maximum, multipleOf) は output_config.format で未サポート」を見落とした。SDK の `messages.parse()` 経由なら自動で除去されるが、当方は `messages.create()` + 明示的 `output_config` 方式を採用していたため API レイヤーまで透過してエラー化。\n\n■ 修正：classify-proposal と match-orgs の両方で該当行から `minimum: 0, maximum: 1` を削除（同根の問題、2 行 / 2 ファイル）。値の範囲はモデルへの system プロンプトの自然言語指示で担保（『confidence は 0〜1』等を記述済）。commit 0316f09 → push → Vercel 約 20 秒で再デプロイ完了。\n\n■ 本番疎通確認：\n  - 入力『印西市内の里山保全活動 / 白井の谷津田を地域ボランティアで定期清掃するプロジェクト。子どもの環境学習も兼ねる。』\n  - 出力 HTTP 200 / category=kankyo（環境・自然・里山、正解）/ confidence=0.6 / reason=『里山保全と環境教育の活動と推定』（適切）/ method=claude-opus-4-7 / usage=(input 758 + output 44 tokens) ≈ $0.005/req\n  - メール疎通：communitybankinzai@gmail.com 宛で HTTP 200 / accepted=true / message_id=84ddb982-a89e-4db1-a813-aecc1af1b246（受信箱確認推奨）\n\n■ 教訓：(a) 本番疎通テストは型チェックとビルドが通っても必ず実施すべき（型では拾えない API ランタイム制約あり）、(b) Anthropic SDK の `output_config.format` を使うときは JSON schema の制約事項（minimum/maximum/multipleOf/minLength/maxLength は受け付けない）を事前確認、`messages.parse()` 方式に切り替えると SDK が自動除去してくれる選択肢もある、(c) Vercel function logs は本番不具合の調査で最重要、URL は vercel.com/cidao/cidao/logs。\n\n■ コスト見通し：1 分類リクエスト約 $0.005、$5 残高で約 1000 件分。MVP β（想定 100-200 提案/月）には十分余裕。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
       "type": "deploy",
       "target": "communitybankinzai/cidao main ブランチ（commit a62ecda）／ https://cidao.vercel.app（自動デプロイ）／ site/admin/agents-worklog.json A1 actuals + plans から完走計画エントリ削除",
       "title": "🎯 CiDAO の AI 提案分類・団体マッチング・メール通知が本番稼働を開始：Step 11c/11d 完走計画 全 7 ステップ完了、cidao.vercel.app で実 API が動作する状態に",
