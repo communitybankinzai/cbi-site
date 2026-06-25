@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-25",
+      "type": "feature",
+      "target": "C:\\Repos\\cidao\\src\\app\\api\\ai\\classify-proposal/route.ts ／ match-orgs/route.ts ／ notify/email/route.ts ／ package.json ／ .env.local（すべてリポジトリ外、別途 git push 予定）／ site/admin/agents-worklog.json A1 actuals + plans",
+      "title": "CiDAO の AI 提案分類・団体マッチング・メール通知 API がスタブから実装版へ：Claude Opus 4.8 で提案を 9 カテゴリに自動分類でき、興味と団体概要を意味的にマッチして上位 5 団体を提示でき、Resend で実送信できるようになった",
+      "detail": "Step 11c/11d 完走計画の (4)(5)(6) を実装。\n\n■ classify-proposal：従来のキーワード正規表現分類から @anthropic-ai/sdk + claude-opus-4-8 + 構造化出力（output_config.format JSON schema、enum で PROPOSAL_CATEGORIES の 9 キーに制約）に切替。confidence と reason（日本語30字）付きで返す。\n\n■ match-orgs：従来の純粋 category overlap 単一スコアから、2段マッチング（organization_categories で候補30件絞り込み → Claude による semantic rerank で top 5 + reason 日本語50字）に切替。注：Anthropic は native embedding API を提供していないため、true vector embedding ではなく LLM-as-ranker 方式で代替。将来 vector 化したい場合は Voyage AI 等の別 API キーが必要。ANTHROPIC_API_KEY 未設定時は overlap 順 fallback でグレースフル劣化。\n\n■ notify/email：console.log スタブから Resend SDK に切替。RESEND_API_KEY / MAIL_FROM env 必須、replyTo 任意、Resend message_id 返却。\n\n■ 依存：@anthropic-ai/sdk ^0.106.0 + resend ^4.0.0 追加（^0.65.0 で先に試したが output_config の型が未対応で latest に upgrade）。\n\n■ 検証：npx tsc --noEmit clean / npm run build 成功（25 ルート全コンパイル）。\n\n■ 残：(1) Anthropic Console で $5 クレジット追加、(2) Vercel cidao project の env vars に ANTHROPIC_API_KEY 追加、(3) Resend signup → API キー取得 → .env.local + Vercel env、(7) cidao 側で git push → Vercel 自動デプロイで本番確認。これら 4 件は外部サービス操作のため user 作業。\n\n■ コスト注記：classify-proposal は分類タスクなので claude-haiku-4-5（$1/$5 per 1M tokens）に下げると $5 クレジットが 5 倍長持ち（現状は default rule に従い claude-opus-4-8）。user 判断で model 文字列 1 箇所変更すれば切替可能。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
       "type": "docs",
       "target": "agents/a1-core/credentials.md §3.1（gitignore）／ C:\\Repos\\cidao （ローカル開発環境、リポジトリ外）／ A1 plans / A8 plans",
       "title": "Step 11c/11d 着手準備完了：Anthropic Console アカウント開設＋ API キー cidao-production-v2 発行＋ローカル clone（区切り、次回再開ポイント明確化）",
