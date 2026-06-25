@@ -8,6 +8,21 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "🎯 cidao git push (a62ecda) → Vercel 自動デプロイ — Step 11c/11d 完走計画 (7) 消化 / 全 7 ステップ完走 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao で git add -A → 5 ファイル変更（package.json / package-lock.json / src/app/api/ai/classify-proposal/route.ts / match-orgs/route.ts / notify/email/route.ts、計 +525/-44 行）",
+            "commit a62ecda: 「feat: Step 11c/11d - AI 提案分類・団体マッチング (Claude Opus 4.7) + メール通知 (Resend)」、Co-Authored-By: Claude Opus 4.7",
+            "git push origin main → communitybankinzai/cidao（1130b23..a62ecda）",
+            "Vercel 自動デプロイトリガー（GitHub 連携済み、デプロイ進捗: vercel.com/cidao/cidao/deployments）",
+            "PowerShell 経由の手動実行は forward-slash パス記法問題で失敗 → Bash tool 経由（Git Bash 互換）で代替実行"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "🎯 Step 11c/11d 完走計画 (1)〜(7) 全消化。本日 1 セッションで (1) Anthropic クレジット $5 / (2) Vercel env ANTHROPIC / (3) Resend signup + 2 env / (4-6) コード書換 3 本 / (7) git push の 7 ステップを完了、所要合計約 1.5 時間（見込 2-3時間より短縮）。残：A1 plans の本完走計画エントリを削除。Vercel 本番疎通確認は次セッションでも可。トラブル：(a) PowerShell が Git Bash 記法 `/c/Repos/cidao` を解釈できず（C:¥c¥Repos¥cidao として解決→ ObjectNotFound）、Set-Location C:\\Repos\\cidao への変換が必要だった、(b) commit メッセージの em-dash が CP932 で `?` に化けるため英語化、(c) Bash tool は Git Bash 互換なので forward-slash パスを正しく扱える → 私が代替実行で解決。教訓：Windows ユーザーへのコマンド提示は PowerShell 正規記法（Set-Location + バックスラッシュ）を優先、Git Bash 記法は併記。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "Resend signup + API キー取得 + .env.local + Vercel env 投入 — Step 11c/11d 完走計画 (3) 消化 0.3時間",
           "category": "事務",
           "outputs": [
@@ -984,13 +999,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-06-30",
-          "title": "CiDAO Step 11c/11d 実装完走（Anthropic クレジット追加 → Vercel env → Resend キー → コード実装）",
-          "category": "実装",
-          "priority": "高",
-          "note": "2026-06-25 にコード書換 3本（(4) classify-proposal / (5) match-orgs / (6) notify-email）完了 + ローカル build 成功 + (1) Anthropic クレジット $5 購入 + (2) Vercel env に ANTHROPIC_API_KEY + (3) Resend signup + RESEND_API_KEY / MAIL_FROM を .env.local + Vercel env 両方に投入完了。残：(7) cidao 側 git push → Vercel 自動デプロイで本番確認のみ。残所要見込 0.1〜0.2時間（push + デプロイ確認のみ）。"
-        },
         {
           "due": "2026-07-31",
           "title": "GitHub Actions スケジュール実行の安定化監視",
