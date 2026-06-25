@@ -11,7 +11,7 @@
           "title": "CiDAO Step 11c/11d コード書換 3本（classify-proposal / match-orgs / notify-email）+ SDK upgrade + build 検証 0.7時間",
           "category": "実装",
           "outputs": [
-            "cidao/src/app/api/ai/classify-proposal/route.ts: @anthropic-ai/sdk 利用版に書換（claude-opus-4-8 + output_config.format JSON schema、enum で PROPOSAL_CATEGORIES の 9 キーに制約、confidence/reason 付き）",
+            "cidao/src/app/api/ai/classify-proposal/route.ts: @anthropic-ai/sdk 利用版に書換（claude-opus-4-7 + output_config.format JSON schema、enum で PROPOSAL_CATEGORIES の 9 キーに制約、confidence/reason 付き）",
             "cidao/src/app/api/ai/match-orgs/route.ts: category overlap で候補上限 30 件絞り込み → Claude semantic rerank で top 5 を返す 2 段構成（API キー未設定時は overlap 順 fallback、Anthropic は embedding API 非提供のため LLM-as-ranker 方式で代替）",
             "cidao/src/app/api/notify/email/route.ts: Resend SDK 利用版に書換（RESEND_API_KEY / MAIL_FROM env 必須、replyTo 任意、message_id 返却）",
             "cidao/package.json: @anthropic-ai/sdk ^0.106.0 + resend ^4.0.0 追加（最初 ^0.65.0 で型欠落 → latest に upgrade）",
@@ -20,7 +20,7 @@
           ],
           "hours": 0.7,
           "partnerApproved": false,
-          "note": "Step 11c (classify-proposal, match-orgs) + Step 11d (notify/email) のコード書換のみ完了。残：(1) Anthropic Console で $5 クレジット追加、(2) Vercel cidao project の env vars に ANTHROPIC_API_KEY 追加、(3) Resend signup → API キー取得 → .env.local + Vercel env に追加、(7) git push → Vercel 自動デプロイで本番確認。設計判断：(a) classify-proposal はモデルを claude-opus-4-8 固定（rule に従う）だが、本タスクは分類なので user 判断で haiku-4-5 に下げると $5 budget が 5 倍長持ちする ($1/$5 per 1M tokens vs $5/$25)、(b) match-orgs は Anthropic native embedding がないため pure rerank に切替。true vector embedding が必要なら別途 Voyage AI 等の API キー追加が必要、(c) output_config.format は SDK 0.65 系の型に未含のため最新 0.106 に upgrade で解決、(d) notify/sns は今回スコープ外（plan note (6) に含まれていない）。トラブル：なし。所要見込 2-3時間中のコード部分 0.7時間で完了。"
+          "note": "Step 11c (classify-proposal, match-orgs) + Step 11d (notify/email) のコード書換のみ完了。残：(1) Anthropic Console で $5 クレジット追加、(2) Vercel cidao project の env vars に ANTHROPIC_API_KEY 追加、(3) Resend signup → API キー取得 → .env.local + Vercel env に追加、(7) git push → Vercel 自動デプロイで本番確認。設計判断：(a) モデルは当初 claude-opus-4-8 で実装したが user 指示「opus-4-8 は不安定なので使用しない、4.7 を」を受けて claude-opus-4-7 に切替（同価格 $5/$25、API サーフェス同一、再ビルド clean）、(b) match-orgs は Anthropic native embedding がないため pure rerank に切替。true vector embedding が必要なら別途 Voyage AI 等の API キー追加が必要、(c) output_config.format は SDK 0.65 系の型に未含のため最新 0.106 に upgrade で解決、(d) notify/sns は今回スコープ外（plan note (6) に含まれていない）。トラブル：なし。所要見込 2-3時間中のコード部分 0.7時間で完了。"
         },
         {
           "date": "2026-06-25",
