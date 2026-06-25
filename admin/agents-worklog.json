@@ -8,6 +8,21 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "Resend signup + API キー取得 + .env.local + Vercel env 投入 — Step 11c/11d 完走計画 (3) 消化 0.3時間",
+          "category": "事務",
+          "outputs": [
+            "Resend アカウント開設：resend.com を GitHub `communitybankinzai` SSO で認証（OAuth scope: Email addresses read-only のみ）、CBI 統一運用（2FA 済み GitHub アカウント経由）",
+            "API キー発行：Resend オンボーディング自動生成キー（name=default、Permission: Sending access、Domain: All domains）。`re_` で始まる値を C:\\Repos\\cidao\\.env.local の RESEND_API_KEY 行に貼付＋保存",
+            "MAIL_FROM 設定：.env.local に MAIL_FROM='CiDAO <onboarding@resend.dev>' 追加。Resend 提供の onboarding テスト用 from アドレス使用、自己宛配信のみ可能だが MVP 動作確認には十分。自前ドメイン認証は本番拡大時に対応",
+            "Vercel env vars 投入：cidao project に RESEND_API_KEY（Sensitive ✅、Production + Preview）と MAIL_FROM（Sensitive 不要、Production + Preview）を追加。計 7 変数（既存 4 + Anthropic + Resend + MAIL_FROM）が揃った",
+            "登録直後の Vercel ポップアップ Redeploy は前回同様 Dismiss 選択（コード未 push のため誤デプロイ防止）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "Step 11c/11d 完走計画 (1)〜(7) の (3) を消化、残：(7) cidao 側 git push → Vercel 自動デプロイで本番確認のみ。トラブル：(a) Resend は他の API サービスと違いオンボーディング時に API キーを自動生成済み（手動で Add API Key する必要なし）、(b) 自動生成キーの name は \"default\" になっているため後で API keys タブから cidao-production に rename 推奨（管理性、本作業ではスキップ）。教訓：Resend のオンボーディングは API キー発行が組み込まれているのでフローを 1 ステップ短縮できる、次回 onboarding 解説に反映。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "Vercel cidao project env vars に ANTHROPIC_API_KEY 追加 — Step 11c/11d 完走計画 (2) 消化 0.2時間",
           "category": "事務",
           "outputs": [
@@ -974,7 +989,7 @@
           "title": "CiDAO Step 11c/11d 実装完走（Anthropic クレジット追加 → Vercel env → Resend キー → コード実装）",
           "category": "実装",
           "priority": "高",
-          "note": "2026-06-25 にコード書換 3本（(4) classify-proposal / (5) match-orgs / (6) notify-email）完了 + ローカル build 成功 + (1) Anthropic クレジット $5 購入完了 + (2) Vercel env に ANTHROPIC_API_KEY 追加完了。残：(3) Resend signup → cidao-production キー取得→ .env.local + Vercel env に追加、(7) git push → Vercel 自動デプロイで本番確認。残所要見込 0.2〜0.5時間（外部サービス操作のみ）。"
+          "note": "2026-06-25 にコード書換 3本（(4) classify-proposal / (5) match-orgs / (6) notify-email）完了 + ローカル build 成功 + (1) Anthropic クレジット $5 購入 + (2) Vercel env に ANTHROPIC_API_KEY + (3) Resend signup + RESEND_API_KEY / MAIL_FROM を .env.local + Vercel env 両方に投入完了。残：(7) cidao 側 git push → Vercel 自動デプロイで本番確認のみ。残所要見込 0.1〜0.2時間（push + デプロイ確認のみ）。"
         },
         {
           "due": "2026-07-31",
