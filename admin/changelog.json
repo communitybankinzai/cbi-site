@@ -5,6 +5,14 @@
     {
       "date": "2026-06-25",
       "type": "docs",
+      "target": "agents/a1-core/credentials.md（gitignore 対象、リポジトリ外）",
+      "title": "credentials.md に §5 Supabase / §6 Vercel / §7 2FA 設定状況 を骨組み追加（CiDAO 残課題🔴 2FA 設定の伴走準備）",
+      "detail": "Step 12 で残課題🔴最優先となっていた 2FA 設定（GitHub/Supabase/Vercel）の対応を開始。ユーザー判断：TOTP=iOS パスワード（無料・iCloud同期）、バックアップ=credentials.md、範囲=3 サービス全部。credentials.md（gitignore 対象なので push されない）に §5 Supabase（Project Ref oxuxvtuhijnsewivgrje / Dashboard / 4 キー転記欄）、§6 Vercel（チーム slug cidao / Production URL / env vars 一覧）、§7 2FA 設定状況（iOS パスワード TOTP 方針＋GitHub・Supabase・Vercel の 3 サブセクション）を骨組みで追加。GitHub は組織 communitybankinzai と個人 you0810jmsdf の両アカウント別保管欄（リカバリー16桁×16件×2）、Supabase は TOTP secret 保管欄＋リカバリーコード機能なし注記（喪失時 support@supabase.com）、Vercel はリカバリーコード10件保管欄を準備。実機操作（ブラウザでの 2FA 有効化・QRスキャン・コード入力）はユーザーが iOS パスワードで実施、完了報告を受けてから §7 各ステータスを「設定済（日付）」に更新する 2 段階運用。changelog/worklog のみ git push 対象。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
+      "type": "docs",
       "target": "site/admin/agents-worklog.json（A1 actuals に本番検収レポート1件追加）",
       "title": "CiDAO 本番 HTTP 検収完了：15 エンドポイント全て期待値通り、Vercel 稼働を立証（操作系の網羅は β 利用フィードバックに委譲）",
       "detail": "C-1 軽量検収を実施。WebFetch + curl で 15 エンドポイントを並列確認、本番稼働 https://cidao.vercel.app を立証。検収結果：ページ 9 本（/, /login, /proposals, /events, /orgs, /talent, /freefree, /ranking, /icon.svg, /manifest.webmanifest）全 HTTP 200 + 適切な空状態描画／ /me は未認証 307 リダイレクト（Server Component auth gate 動作）／ API スタブ 4 本 GET=405 Method Not Allowed・POST 空 body=400 Bad Request（POST 設計＋validation 動作）／ PWA manifest 配信OK（standalone・#1e3a5f・icon.svg）／ HSTS preload + Next.js 16 App Router 最適化（RSC prefetch ヘッダー Vary 正常）。残E2E（マジックリンク受信→ログイン→提案作成→投票→集計）は CBI メンバー β 利用フィードバックで自然収集。所要 5 分（ローカル clone 案 C-3 の 1/5〜1/10）。",

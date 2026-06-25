@@ -7,6 +7,24 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "credentials.md §5 Supabase / §6 Vercel / §7 2FA 設定状況 を骨組み追加（ユーザー実機操作待ち）0.3時間",
+          "category": "事務",
+          "outputs": [
+            "agents/a1-core/credentials.md (gitignore 済) に §5 Supabase（Project Ref / Dashboard / 4 キー転記欄）追加",
+            "同 §6 Vercel（チーム slug / Production URL / Dashboard / env vars 一覧）追加",
+            "同 §7 2FA 設定状況：iOS パスワード TOTP 方針＋GitHub/Supabase/Vercel の 3 サブセクション（設定URL/手順/リカバリーコード保管欄）",
+            "§4 GitHub の 2段階認証行を §7.1 ポインタに変更、計画リポジトリ表に cidao 行追加",
+            "§7.1 GitHub: communitybankinzai と you0810jmsdf の両アカウント別保管欄を準備（リカバリー16桁×16件×2）",
+            "§7.2 Supabase: TOTP secret 保管欄＋リカバリーコード機能なし注記（喪失時 support@supabase.com）",
+            "§7.3 Vercel: リカバリーコード10件保管欄",
+            "§7.4 設定漏れ時の対応（SSH/PAT/サポート復旧経路）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "D 候補（2FA 設定対応）の伴走準備。ユーザー判断：(1) TOTP=iOS パスワード（無料・iCloud同期）、(2) バックアップ=credentials.md、(3) 範囲=3 サービス全部。Step 12 note で「§5/§6 追記」とあった分が本メインPC側 credentials.md に同期されていなかったため、骨組み（キー値転記欄をプレースホルダー化）込みで一括整備。実機操作（ブラウザでの 2FA 有効化・QRスキャン・コード入力・リカバリーコード貼り付け）はユーザーが iOS パスワードで実施。完了報告を受けてから本ファイル §7 の各ステータスを「設定済（日付）」に更新する 2 段階運用。credentials.md 自体は agents/.gitignore で除外済みなので push されない（site/ 側 changelog/worklog のみ git push 対象）。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "CiDAO 本番 HTTP 検収（C-1 軽量）：15 エンドポイント全て期待値通り、本番稼働を立証 0.3時間",
           "category": "保守",
           "outputs": [
