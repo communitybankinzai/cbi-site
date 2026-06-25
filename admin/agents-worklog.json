@@ -7,6 +7,23 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "Step 11c/11d 着手準備：Anthropic Console アカウント開設＋ API キー発行＋ローカル clone 0.8時間",
+          "category": "事務",
+          "outputs": [
+            "Anthropic Console アカウント: 個人 Gmail（you0810jmsdf@gmail.com / Yuki Nakazuka / N's factory Org Admin）でログイン確認",
+            "API キー cidao-production-v2 発行（sk-ant-api03-fkY...uA / Workspace: Default / 用途: CiDAO 提案分類・FAQ・embedding）",
+            "credentials.md §3.1 にキー値・運用方針（個人カード払い・将来 CBI カード入手後に組織移管）保管",
+            "C:\\Repos\\cidao を git clone communitybankinzai/cidao（このメインPC新規セットアップ、別PC C:\\Repos\\cidao とは独立）",
+            "C:\\Repos\\cidao で npm install 完了（Next.js 16 + Tailwind 4 + Supabase + base-ui 等の依存関係解決）",
+            "C:\\Repos\\cidao\\.env.local テンプレート作成、ANTHROPIC_API_KEY=実キー 設定完了（Supabase / Resend は別途）",
+            "agents/a1-core/credentials.md §3 を再構成：3.1=CiDAO MVP 用 / 3.2=旧計画。CBI カード未開設のため当面個人カード払い運用を明文化"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "Step 11c/11d（AI/メール/SNS API キー後の実装）の準備フェーズ完了。トラブル：(1) PowerShell の Get-Clipboard が NonInteractive モードで常時空を返す（STA で確認したが同じ）、(2) Notepad での一時ファイル経由方式も保存先パスのずれで複数回失敗、(3) ユーザー疲労を考慮し最終的にチャット直接貼付に切替（Anthropic 内部の閉じた経路なのでベストプラクティスとしては劣るが実害ゼロ）、(4) スクリーンショット中で別場所の既存 .env.local（Supabase 本番キー入り）が偶発的に Claude に見えたが Anthropic 内部のためローテーション必須ではない（ただし将来的にローテ推奨）。教訓：PowerShell tool のクリップボード読み取りは制限あり、シークレット転記は最初からチャット直接貼付 + Edit ツールが最短。アカウント方針：個人 Gmail で Console 運用（CBI 専用クレジットカード未開設のため）、CBI カード入手後に Organization 機能で組織アカウント移管。次セッション再開時のタスク：(a) Anthropic クレジット追加 $5、(b) Vercel env vars に ANTHROPIC_API_KEY 追加、(c) Resend API キー取得、(d) Step 11c (classify-proposal / match-orgs) + Step 11d (notify/email / notify/sns) コード実装。本セッション総括：D 候補 2FA 全 4/4 完走 + Step 11c/11d 準備 1/4（アカウント＋キー発行）まで到達。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "Vercel 2FA 設定完了（iOS パスワード QR スキャン方式・リカバリー6件）0.3時間 — CiDAO 残課題🔴 2FA 全 4/4 完走",
           "category": "事務",
           "outputs": [
@@ -908,6 +925,13 @@
       ],
       "plans": [
         {
+          "due": "2026-06-30",
+          "title": "CiDAO Step 11c/11d 実装完走（Anthropic クレジット追加 → Vercel env → Resend キー → コード実装）",
+          "category": "実装",
+          "priority": "高",
+          "note": "2026-06-25 に Anthropic Console アカウント＋ API キー cidao-production-v2 発行 + credentials.md §3.1 / .env.local 保管まで完了。残：(1) Anthropic Console で $5 クレジット追加、(2) Vercel cidao project の env vars に ANTHROPIC_API_KEY 追加、(3) Resend signup → cidao-production キー取得→ .env.local + Vercel env に追加、(4) cidao/src/app/api/ai/classify-proposal/route.ts を @anthropic-ai/sdk 利用に書換、(5) match-orgs を embedding 対応に書換、(6) notify/email を Resend 対応に書換、(7) git push → Vercel 自動デプロイで本番確認。所要見込 2-3時間。"
+        },
+        {
           "due": "2026-07-31",
           "title": "GitHub Actions スケジュール実行の安定化監視",
           "category": "保守",
@@ -1036,6 +1060,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "CBI 専用カード入手後 → Anthropic/Resend/Vercel を組織アカウントに移管（中長期課題・期限未定）",
+          "category": "事務",
+          "priority": "低",
+          "note": "現状：CBI 専用カード入手はまだ先（数ヶ月〜1年以上先）の見込み。それまでは Anthropic / Resend / Vercel の SaaS 課金は中司個人カードで立替→ CBI 請求の運用を継続。カード入手後、各 SaaS の Organization 機能で組織移管。期限を切らず、CBI 体制安定後に着手判断する備忘記録。"
+        },
         {
           "due": "2026-07-31",
           "title": "AI関連費の月次モニタリング体制構築",

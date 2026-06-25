@@ -5,6 +5,14 @@
     {
       "date": "2026-06-25",
       "type": "docs",
+      "target": "agents/a1-core/credentials.md §3.1（gitignore）／ C:\\Repos\\cidao （ローカル開発環境、リポジトリ外）／ A1 plans / A8 plans",
+      "title": "Step 11c/11d 着手準備完了：Anthropic Console アカウント開設＋ API キー cidao-production-v2 発行＋ローカル clone（区切り、次回再開ポイント明確化）",
+      "detail": "ユーザー判断：CBI 専用クレジットカード未開設のため、Anthropic Console は当面個人 Gmail で運用（you0810jmsdf@gmail.com / Yuki Nakazuka / N's factory Org）し、CBI カード入手後（時期未定）に Organization 機能で組織移管する方針を確定。API キー cidao-production-v2 を発行し credentials.md §3.1 と C:\\Repos\\cidao\\.env.local の ANTHROPIC_API_KEY 行に保管。並行で C:\\Repos\\cidao を git clone + npm install 完了（このメインPC新規セットアップ、別PC とは独立）。トラブル：PowerShell の Get-Clipboard が NonInteractive モードで常時空・Notepad 一時ファイル経由も保存先パス相違で失敗を繰り返し、最終的にチャット直接貼付 + Edit ツールで完了（Anthropic 内部の閉じた経路なので実害ゼロ）。教訓：シークレット転記は最初からチャット直接貼付が最短、PowerShell tool のクリップボード読み取りには制限あり。本セッション総括：D 候補 2FA 全 4/4 完走 + Step 11c/11d 準備 1/4 完了。次セッション再開時のタスク（A1 plans に明文化）：(a) Anthropic クレジット追加 $5、(b) Vercel env vars に ANTHROPIC_API_KEY 追加、(c) Resend API キー取得、(d) cidao/src/app/api/ai/classify-proposal + match-orgs + notify/email を実装に書換、(e) git push → Vercel 自動デプロイで本番確認。所要見込 2-3時間。A8 plans に「CBI 専用カード入手後の組織移管」を低優先で備忘登録（期限未定）。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
+      "type": "docs",
       "target": "agents/a1-core/credentials.md §7.3 Vercel（gitignore 対象、リポジトリ外）",
       "title": "Vercel 2FA 設定完了：CiDAO 残課題🔴 2FA 全 4/4 完走、3 サイト＋ DB ＋ホスティングの全レイヤー保護達成 🎉",
       "detail": "Vercel Account Settings → Authentication → Two-Factor Authentication を Inactive → Active に変更。iOS パスワード「vercel.com」新規エントリで QR スキャン → 6 桁 Continue で成功、リカバリーコード 6 件（fb0f0f35-52a7e576 ほか・8文字-8文字 hex フォーマット）取得して credentials.md §7.3 に保管。トラブル：(1) `/account/security` `/account/login-connections` 等の URL 直打ちは全部 404、(2) cidao team の左サイドバー Settings は team 設定で個人 Account とは別、(3) `vercel.com/account` から左サイドバー展開→ Settings → Authentication でようやく到達。事前案内「リカバリー10件」は誤りで実測 6 件、credentials.md に訂正注記追加。\n\n=== D 候補（2FA 設定）全体総括 ===\n4/4 完走：(1) GitHub communitybankinzai、(2) GitHub you0810jmsdf、(3) Supabase MFA、(4) Vercel 2FA。所要合計 1.2 時間。CiDAO MVP Step 12 で残課題🔴最優先となっていた「2FA 未設定」を完全消化。守られた資産：cbi-site / cidao / cocola / n's factory の 4 リポジトリ + Supabase 本番 DB（22 テーブル + RLS）+ Vercel 本番ホスティング（cidao.vercel.app）。リカバリー保管：credentials.md §7（gitignore 対象、push されない）+ iOS パスワード iCloud 同期（iPhone/iPad/Mac 共有）の二重化。これで CiDAO MVP は本番運用前の安全性要件を満たし、CBI メンバーへのβ拡大案内の前提条件が整った。",
