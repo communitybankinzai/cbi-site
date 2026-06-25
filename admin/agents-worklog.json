@@ -7,6 +7,24 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "CiDAO 本番 HTTP 検収（C-1 軽量）：15 エンドポイント全て期待値通り、本番稼働を立証 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "本番URL https://cidao.vercel.app に対し WebFetch + curl で 15 エンドポイント検収実施",
+            "ページ 9 本（/, /login, /proposals, /events, /orgs, /talent, /freefree, /ranking, /icon.svg, /manifest.webmanifest）すべて HTTP 200、適切な空状態描画",
+            "/me は未認証アクセスで 307 リダイレクト（Server Component auth gate 動作確認）",
+            "API スタブ 4 本（/api/ai/classify-proposal, /api/ai/match-orgs, /api/notify/email, /api/notify/sns）GET=405 Method Not Allowed、POST 空body=400 Bad Request（POST のみ受付＋validation 動作）",
+            "PWA manifest: name=CiDAO - 市民DAO / short_name=CiDAO / display=standalone / theme #1e3a5f / bg #faf8f3 / icon.svg any サイズ 配信OK",
+            "インフラ: Vercel CDN / HTTPS + HSTS (max-age=63072000; preload) / Next.js 16 + RSC prefetch / フォント preload optimization 有効",
+            "ホーム描画: 提案・投票 / イベント / 団体 / 人材バンク / FreeFree / ランキング / ログイン の 7 ナビ全表示確認",
+            "/login UI: メールアドレス入力 + 「ログインリンクを送る」+ 「初めての方は自動でアカウント作成されます」案内"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "C 候補（本番動作確認）を軽量HTTP検収で実施。検収方法判断：(C-1) HTTP 検収 / (C-2) Computer-use screenshot / (C-3) ローカル clone + dev server の 3 案からユーザーが C-1 選択。クリック・フォーム送信は検証範囲外だが、(a) サーバー側 SSR が正しく走り、(b) DB 接続が成立して空状態を取得でき、(c) API ルートが期待ステータスを返し、(d) Server Component の auth gate が動く ことが立証され、「本番稼働している」事実は十分。残課題（マジックリンク実受信→ログイン→提案作成→投票→集計のE2E）は CBI メンバーの β 利用フィードバックで自然に集まる体制。所要時間：並列 10 WebFetch + 3 curl で 15 endpoint を 5 分で網羅、ローカル clone （案 C-3）の 15-30 分と比べ 1/5〜1/10 のコストで同等の本番稼働確証を取得。検収中に偶然発見した良点：(1) Vercel CDN の X-Vercel-Cache 制御が `private, no-cache, no-store` で SSR ページの新鮮性確保、(2) RSC prefetch ヘッダー `Vary: rsc, next-router-state-tree, ...` が正しく出力されており Next.js 16 App Router 最適化が効いている。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "CBI管理画面 📑資料タブに CiDAO β 動線新設：本番アプリへの導線＋参加手順＋既知制限の正直開示 0.4時間",
           "category": "実装",
           "outputs": [

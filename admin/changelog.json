@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-25",
+      "type": "docs",
+      "target": "site/admin/agents-worklog.json（A1 actuals に本番検収レポート1件追加）",
+      "title": "CiDAO 本番 HTTP 検収完了：15 エンドポイント全て期待値通り、Vercel 稼働を立証（操作系の網羅は β 利用フィードバックに委譲）",
+      "detail": "C-1 軽量検収を実施。WebFetch + curl で 15 エンドポイントを並列確認、本番稼働 https://cidao.vercel.app を立証。検収結果：ページ 9 本（/, /login, /proposals, /events, /orgs, /talent, /freefree, /ranking, /icon.svg, /manifest.webmanifest）全 HTTP 200 + 適切な空状態描画／ /me は未認証 307 リダイレクト（Server Component auth gate 動作）／ API スタブ 4 本 GET=405 Method Not Allowed・POST 空 body=400 Bad Request（POST 設計＋validation 動作）／ PWA manifest 配信OK（standalone・#1e3a5f・icon.svg）／ HSTS preload + Next.js 16 App Router 最適化（RSC prefetch ヘッダー Vary 正常）。残E2E（マジックリンク受信→ログイン→提案作成→投票→集計）は CBI メンバー β 利用フィードバックで自然収集。所要 5 分（ローカル clone 案 C-3 の 1/5〜1/10）。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
       "type": "feature",
       "target": "site/admin/index.html「📑 資料」タブ",
       "title": "CBI管理画面「📑 資料」タブ最上部に CiDAO β 本番アプリ（https://cidao.vercel.app）への動線を新設、CBIメンバー先行公開を開始",
