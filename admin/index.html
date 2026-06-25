@@ -267,6 +267,61 @@
 
     <!-- ===== タブ: 資料 ===== -->
     <div class="tab-panel" id="tab-docs" role="tabpanel" hidden>
+
+      <!-- CiDAO β 運用中（仕様書とは性質が異なるためトップに別 panel として配置） -->
+      <section class="panel" style="border:2px solid #2d5a3d; background:linear-gradient(135deg,#f5fbf7 0%,#fff 100%);">
+        <div class="panel-head-row">
+          <h2 class="panel-title" style="color:#1e3a5f;">🚀 CiDAO β 運用中（CBIメンバー先行公開）</h2>
+        </div>
+        <p class="panel-desc">仕様書 v2.0 / v2.1 に基づく MVP 18 機能の本番アプリが 2026-06-25 から稼働しています。CBIメンバー向けに先行公開中です。重要な意思決定にはまだ使わず、操作感の確認とフィードバックにご協力ください。</p>
+
+        <div style="display:grid; gap:14px; margin-top:8px;">
+
+          <a href="https://cidao.vercel.app" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #2d5a3d; border-left:6px solid #2d5a3d; border-radius:8px; padding:22px 26px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
+            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:240px;">
+                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#fff; font-weight:700; background:#c0392b; padding:3px 12px; border-radius:999px; margin-bottom:10px;">β · 本番稼働中</div>
+                <h3 style="margin:0 0 8px; font-size:20px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">CiDAO β — https://cidao.vercel.app</h3>
+                <p style="margin:0 0 8px; font-size:13px; color:#4a5663; line-height:1.7;">印西市の参加と貢献の循環基盤（市民DAO）の本番アプリ。マジックリンクでメール認証 → 提案・投票・議論・イベント・団体・人材バンク・FreeFree 応援掲示板 が利用できます。スマホ／PC 両対応（PWA、ホーム画面追加可）。</p>
+                <div style="font-size:13px; color:#1e3a5f; font-weight:700;">▶ クリックして開く（新規タブ）</div>
+              </div>
+              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                <div>Phase 1 MVP ／ 2026-06-25 公開</div>
+                <div style="color:#2d5a3d; font-weight:700;">アプリを開く →</div>
+              </div>
+            </div>
+          </a>
+
+          <div style="background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c9a55c; border-radius:8px; padding:18px 22px;">
+            <h3 style="margin:0 0 10px; font-size:15px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">📋 はじめての参加手順（3 ステップ・約 90 秒）</h3>
+            <ol style="margin:0; padding-left:22px; font-size:13px; color:#4a5663; line-height:1.9;">
+              <li><strong>https://cidao.vercel.app</strong> を開き「ログイン」をタップ</li>
+              <li>メールアドレスを入力 → 届いたマジックリンクをタップ（パスワード不要）</li>
+              <li>ログイン後、ホーム画面の 6 機能（提案・議論・マイページ・イベント・団体・FreeFree）を試す</li>
+            </ol>
+            <p style="margin:10px 0 0; font-size:12px; color:#4a5663; line-height:1.7;">※ 初回ログインで「ライト登録」（重み 0.1）として自動作成されます。マイページから「本登録」に進むと重み 0.5〜1.0 に昇格します（市民／関係人口の選択あり）。</p>
+          </div>
+
+          <div style="background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c0392b; border-radius:8px; padding:18px 22px;">
+            <h3 style="margin:0 0 10px; font-size:15px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">⚠️ β 期間の既知の制限（重要）</h3>
+            <ul style="margin:0; padding-left:22px; font-size:13px; color:#4a5663; line-height:1.9;">
+              <li><strong>2FA 未設定</strong>：GitHub / Supabase / Vercel の二要素認証が未導入。本格運用前に対応予定</li>
+              <li><strong>AI 機能はスタブ</strong>：提案分類・団体マッチングは keyword 簡易判定（LLM 差替待ち）</li>
+              <li><strong>メール／SNS 通知未実装</strong>：Resend / X / Facebook / LINE への配信は API キー取得後に対応</li>
+              <li><strong>tier=verified 昇格未実装</strong>：ハガキ送付による身元確認の動線はこれから整備</li>
+              <li><strong>/admin 運営画面未実装</strong>：投票期間調整等の管理操作はまだ DB 直編集</li>
+              <li><strong>重要な意思決定には未使用推奨</strong>：拘束的決議の本格運用は CBI 運営委員会承認後</li>
+            </ul>
+          </div>
+
+          <div style="background:#fff; border:1px solid #e0d9c6; border-left:4px solid #2d5a3d; border-radius:8px; padding:18px 22px;">
+            <h3 style="margin:0 0 10px; font-size:15px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">💬 フィードバック方法</h3>
+            <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">操作で気づいた点・要望は、当面は CBI 公式 LINE または「📧 メール」タブで A1 Core 宛にお寄せください。Phase 1 後半で F18「仕様書を CiDAO 内に公開し節別コメント」を実装後はアプリ内で完結します。技術詳細は下段の <strong>CiDAO 開発仕様書 v2.0 / v2.1</strong> を参照。</p>
+          </div>
+
+        </div>
+      </section>
+
       <section class="panel">
         <div class="panel-head-row">
           <h2 class="panel-title">内部資料・提案資料</h2>

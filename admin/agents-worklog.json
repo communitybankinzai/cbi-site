@@ -7,6 +7,24 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "CBI管理画面 📑資料タブに CiDAO β 動線新設：本番アプリへの導線＋参加手順＋既知制限の正直開示 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/admin/index.html: docs タブ内に新規 <section class='panel'> 追加（既存「内部資料・提案資料」panel の上）",
+            "新 panel: 「🚀 CiDAO β 運用中（CBIメンバー先行公開）」緑系強調デザイン（border:2px #2d5a3d / 淡緑グラデ）",
+            "構成1: 本番URL大型カード（https://cidao.vercel.app への β赤バッジ付きCTA、6機能概要）",
+            "構成2: 「はじめての参加手順 3ステップ・約90秒」（マジックリンク認証→6機能→マイページ本登録昇格）",
+            "構成3: 「β期間の既知の制限」赤系警告ボックス（2FA未設定・AIスタブ・メール/SNS未実装・verified未実装・/admin未実装・重要意思決定未使用推奨の6項目）",
+            "構成4: フィードバック方法（当面 LINE / 📧メールタブ、Phase 1後半に F18 アプリ内コメント完結）",
+            "site/admin/changelog.json: feature エントリ1件先頭追加",
+            "site/admin/agents-worklog.json: 本エントリ追加"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "B 候補（メンバー先行公開動線整備）を実装。設計判断：(a) 新規タブを増やさず既存 docs タブ内に同梱で認知負荷抑制、(b) 仕様書（読む文書）と本番アプリ（試用）を panel タイトルで明確分離、(c) 既知の制限を「隠さず6項目正直開示」することで β 期待値を適切設定（重要意思決定への未使用推奨を明記し、後で「聞いてない」が発生しないように）、(d) フィードバック動線は当面の LINE/メール → 将来の F18 アプリ内コメントの 2 段階で記述（Phase 1 後半計画と整合）。CLAUDE.md「機能を増やすな・抽象化するな」遵守：新規タブなし・新規JS なし・既存 doc-card パターン踏襲。次の自然な後続：(1) C 候補で MVP 18 機能の実機動作確認、(2) D 候補で 2FA 設定の集中対応、(3) LINE 等で CBI メンバーへ β 案内文の配信。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "CiDAO ローカル文書同期：cidao/worklog.md と README.md を Step 2-12 完了状態に更新 0.3時間",
           "category": "保守",
           "outputs": [

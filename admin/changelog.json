@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-25",
+      "type": "feature",
+      "target": "site/admin/index.html「📑 資料」タブ",
+      "title": "CBI管理画面「📑 資料」タブ最上部に CiDAO β 本番アプリ（https://cidao.vercel.app）への動線を新設、CBIメンバー先行公開を開始",
+      "detail": "CiDAO MVP の本番稼働（2026-06-25, Step 12 完了）を受け、CBIメンバーが管理画面ログイン → 📑 資料タブから 1 タップで本番アプリに辿り着けるようにした。docs タブ内の既存「内部資料・提案資料」panel の上に新規 panel「🚀 CiDAO β 運用中（CBIメンバー先行公開）」を緑系強調デザイン（border:2px #2d5a3d / 淡緑グラデ）で追加。構成：(1) 本番URLへの大型 doc-card（β赤バッジ／クリックして開く CTA／6 機能の概要）、(2) 「はじめての参加手順 3ステップ・約90秒」（マジックリンク認証→6機能を試す→マイページから本登録昇格）、(3) 「β期間の既知の制限」赤系警告ボックス（2FA未設定／AI機能スタブ／メール・SNS通知未実装／verified昇格未実装／/admin未実装／重要意思決定への未使用推奨の6項目を正直に列挙）、(4) フィードバック方法（当面は LINE か 📧メールタブで A1 Core 宛、Phase 1 後半に F18 で CiDAO 内コメント完結予定）。仕様書 v2.0 / v2.1 カードは別 panel として下段に残置（読む文書とβアプリの性質分離）。新規タブは追加せず、既存 docs タブ内に同梱して認知負荷を抑えた。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
       "type": "docs",
       "target": "cidao/worklog.md ／ cidao/README.md（CBI とは別ローカル文書、git管理外）",
       "title": "CiDAO ローカル文書を MVP 本番稼働状況に同期更新：Phase 0 実証実験準備 → Phase 1 MVP 本番運用開始",
