@@ -8,6 +8,26 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "🌱 印西市市民活動団体 219 件を seed → match-orgs の実用化完了 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "scripts/seed-orgs-data.json: inzaiparque.com /civicactivity から抽出した 219 団体（名前 / inzaiparque 分野 / 1行説明）",
+            "scripts/seed-orgs.mjs: bulk insert スクリプト（dry-run と --apply モード、idempotent な name-based skip、22→9 カテゴリ mapping、name prefix で type 推定）",
+            "scripts/verify-data.mjs: 投入後の DB 集計と match overlap シミュレーション",
+            "scripts/verify-match-orgs.mjs: 認証 API 経由動作確認用（RLS で 404、認証セッション必要）",
+            "システムプレースホルダー member 1 件: email='system-placeholder@cidao.internal' / display_name='印西市公式登録（未認証プレースホルダー）' / tier='verified' / UUID=943a665e-474d-46da-9f2d-a8cfa0f1bcaa、219 団体全ての representative_id を担当",
+            "organizations 219 件投入完了: type=voluntary 188 / civic 31、全件 public_flag=true / accept_messages=false（未認証なので受信オフ）",
+            "organization_categories 231 件投入完了: bunka 60 / machizukuri 43 / kodomo 42 / fukushi 35 / kankyo 15 / other 14 / tabunka 11 / bosai 8 / sangyo 3",
+            "シミュレーション確認: interests=[kankyo,kodomo,bunka] で overlap=2 が 7 件取得、interests=[bosai] で 8 件取得、match-orgs API の 2 段マッチング前提が成立",
+            "cidao deps に pg ^8.x 追加（DATABASE_URL 直接接続、Supabase RLS の service_role GRANT 不足回避用）",
+            "cidao 1e27d0e commit + push: scripts/ ディレクトリ追加（4 ファイル、+868 行）"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "match-orgs を「実装はあるが使い物にならない（DB 空）」状態から「219 団体に対して実マッチング可能」状態に引き上げ。教訓：(a) Supabase service_role でも migration で REVOKE / GRANT が漏れているテーブルへの操作は permission denied になる（earlier の anon key 失敗 → service_role 失敗の流れ）、DATABASE_URL の postgres ロール経由が確実、(b) auth.users INSERT → public.members に自動行が作られるトリガーがある（cidao 設計、Supabase 一般的）ため、後続の INSERT は UPSERT or UPDATE に変更必要、(c) match-orgs エンドポイントは authenticated session が無いと RLS で 404、API 単体テストは難しい — データ層は SQL で直接検証、(d) ユーザー指摘「データなければ機能しない」は的確で、コードだけでは UX 価値ゼロという良い教訓。データソースは inzaiparque.com（市民キュレーション）で次善、公式 inzai-cac.org は接続不能だったため。将来 CBI 側で公式 PDF/CSV を入手したら inzai_registration_number を後追い更新可能。各団体は claim フロー（未実装）で本物の代表者が情報更新できる設計。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "🐛 classify-proposal の JSON schema 修正（min/max 削除）+ 本番疎通テスト完了 0.3時間",
           "category": "保守",
           "outputs": [

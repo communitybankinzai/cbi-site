@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-25",
+      "type": "content",
+      "target": "Supabase 本番 DB organizations / organization_categories / members（system placeholder 1 件）／ C:\\Repos\\cidao/scripts/* (commit 1e27d0e)",
+      "title": "🌱 印西市市民活動団体 219 件を seed 投入：match-orgs（新規メンバー → 興味に合う団体マッチング）が空マッチから実マッチングに変わった、cidao.vercel.app/orgs で実団体一覧が見られるように",
+      "detail": "ユーザー指摘「新規加入者の団体マッチング機能は団体情報がないとできないのでは？」を受けて、本番 DB に印西市市民活動団体のシード投入を実施。\n\n■ データソース：inzaiparque.com /civicactivity（市民キュレーション、2026-06-25 WebFetch 抽出）。印西市市民活動支援センター公式（inzai-cac.org）は接続拒否されたため次善。22 分野分類のもとで 219 団体が掲載されていた。\n\n■ 設計判断（前段で承認済み 1A + 2A + 3A）：(1) inzaiparque.com の 219 件をまるごと採用、(2) 「印西市公式登録（未認証プレースホルダー）」というシステムメンバー 1 件を作成して全 219 団体の representative_id に設定、(3) public_flag = true で初日から match-orgs / /orgs ページに出現させる。\n\n■ システムメンバー：email='system-placeholder@cidao.internal' / tier='verified' / UUID=943a665e-474d-46da-9f2d-a8cfa0f1bcaa。本物の代表者が将来 claim フロー（未実装）で representative_id を置換する設計。\n\n■ 投入結果：organizations 219 件（type 内訳：voluntary 188、civic 31、name prefix で自動分類）、organization_categories 231 件（22→9 mapping、bunka 60 / machizukuri 43 / kodomo 42 / fukushi 35 / kankyo 15 / other 14 / tabunka 11 / bosai 8 / sangyo 3）、全件 public_flag=true、accept_messages=false（未認証なので受信オフ）。\n\n■ 実装ファイル（cidao/scripts/ ディレクトリ新設、commit 1e27d0e）：\n  - seed-orgs-data.json: 219 団体の元データ\n  - seed-orgs.mjs: dry-run + --apply の bulk insert（idempotent、22→9 カテゴリ mapping 内包）\n  - verify-data.mjs: 投入後の集計と overlap シミュレーション\n  - verify-match-orgs.mjs: 認証 API 経由動作確認用\n\n■ 動作確認：SQL 直接で overlap シミュレーション実行、interests=[kankyo,kodomo,bunka] で overlap=2 が 7 件、interests=[bosai] で 8 件取得を確認。match-orgs エンドポイント自体は RLS 認証必須のため API 単体テストは不能、認証済み新規メンバーが /me/edit 完了後等のフローで初めて呼ばれる想定。\n\n■ トラブル教訓：(a) Supabase service_role でも migration で REVOKE 後の GRANT 漏れがあると permission denied、DATABASE_URL の postgres ロールが確実、(b) auth.users INSERT 時に public.members に自動行が作成されるトリガー（Supabase 一般）があるため、後続 INSERT は UPDATE / UPSERT に統一必要、(c) inzai-cac.org は接続不能（おそらく Cloudflare WAF の bot 検出）で公式リスト直接取得は不可能だった。\n\n■ 残課題：(a) 公式 inzai_registration_number (08-XXX) は未取得、CBI 経由で市役所から PDF/CSV 入手できたら後追い更新可能、(b) 連絡先（メール/URL）は未掲載のため空、各団体は claim 時に補完想定、(c) claim フロー本体は未実装（仕様§3.4 verified tier 昇格と統合予定）、(d) 219 件には自治会・町内会・ロータリークラブ等の任意性が高い団体も含まれるため、公式登録番号を持つ「市民活動団体登録」だけに絞るかは CBI 内で運用判断。\n\n■ 副次効果：cidao.vercel.app/orgs で実団体一覧が表示されるようになる（既存空ページ → 219 件の充実画面）、match-orgs が初日から meaningful、新規加入者の Step 11c の体験が完成。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
       "type": "fix",
       "target": "C:\\Repos\\cidao/src/app/api/ai/classify-proposal/route.ts ／ match-orgs/route.ts ／ commit 0316f09 ／ https://cidao.vercel.app/api/ai/classify-proposal（本番稼働）",
       "title": "🐛→✅ classify-proposal 本番 500 エラー解消：JSON schema から API 未サポートの min/max を削除、本番疎通テスト 200 で確定 — CiDAO の AI 提案分類が本当に動く状態に",
