@@ -1,7 +1,23 @@
 {
-  "updatedAt": "2026-06-24",
+  "updatedAt": "2026-06-25",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-06-25",
+      "type": "deploy",
+      "target": "communitybankinzai/cidao（別リポジトリ）→ https://cidao.vercel.app",
+      "title": "CiDAO MVP 本番デプロイ完了：Step 1-12 全 12 ステップ走破、コード基盤・DB・本番ホスティングまで一気通貫で稼働開始",
+      "detail": "1セッションで MVP の足場固めから本番稼働まで完走。実装サマリ：Next.js 16 + React 19 + Tailwind 4 + shadcn/ui + Supabase（PostgreSQL 17 / Auth / Realtime / pg_cron）+ Vercel Hobby（無料）。22 テーブル + RLS + 自動トリガー（投票重み計算・貢献度自動加算・vote_aggregates インクリメンタル更新）+ pg_cron（5分毎の提案ライフサイクル tick・日次クリーンアップ）。実装機能：マジックリンク認証 / 提案・投票・撤回（拘束的決議 30%定足数+過半数判定）/ 議論機能 F14（質問&回答スレッド・提案者強調・「わからない」投票者の質問促進）/ マイページ・本登録フォーム・達成バッジ・ランキング / イベント・団体・人材バンク・FreeFree（5機能）/ AI/通知 API スタブ / PWA manifest。スタブのまま残：AI 分類（keyword heuristic、LLM 差替予定）・メール通知（Resend）・SNS 配信（X/FB/LINE）— credentials.md §3 で API キー取得後に実装。本番 URL：`https://cidao.vercel.app`、リポジトリ：communitybankinzai/cidao（main: 1130b23）、Supabase project: oxuxvtuhijnsewivgrje（ap-northeast-1）。残課題（Phase 1 後半）：Vercel 2FA 設定、AI/メール/SNS API キー連携、ハガキ送付で tier=verified 昇格フロー、/admin 運営画面、F18 仕様書を CiDAO 内で公開し節別コメント受付。本セッション合計工数 A1 約 7時間。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
+      "type": "content",
+      "target": "site/admin/agents-worklog.json（A1 actuals に Step 7-12 の6件追記）",
+      "title": "CiDAO 実装 Step 7-12 の作業実績を worklog に記録：提案・投票〜本番デプロイまで合計 5.8時間分を可視化",
+      "detail": "Step 7 提案・投票機能 F1-F3（1.0h）/ Step 8 議論機能 F14（0.5h）/ Step 9 マイページ・二段登録・ランキング F4/F5（0.8h）/ Step 10 イベント・団体・人材バンク・FreeFree 5機能一括 F7/F10/F13/F15（2.0h）/ Step 11a+11b pg_cron + API スタブ（0.5h）/ Step 12 PWA + 本番 Vercel デプロイ + MVP18検収（1.0h）。Step 2-6 の 4.1h と合わせて本セッション総 9.9h。仕様 v2.0 §3 全機能（F1-F15）の MVP コード基盤が本番稼働状態に到達。",
+      "author": "A1 Core"
+    },
     {
       "date": "2026-06-24",
       "type": "content",

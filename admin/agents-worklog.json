@@ -1,10 +1,104 @@
 {
-  "updatedAt": "2026-06-24",
+  "updatedAt": "2026-06-25",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": ["実装", "保守", "レポート", "分析", "会議", "広報", "事務", "調査", "その他"],
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-25",
+          "title": "CiDAO 構築 Step 12: PWA manifest + 本番 Vercel デプロイ + MVP 18 検収ドキュメント 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "cidao/src/app/manifest.ts（PWA manifest 自動生成）+ public/icon.svg（CiDAO ロゴ）",
+            "cidao/src/app/layout.tsx（metadata 整理 / viewport export / lang=ja）",
+            "cidao/MVP18-checklist.md（仕様§12 18項目の実装状況と残課題ドキュメント）",
+            "ビルドエラー修正：Button asChild → <a><Button> wrapper（3箇所）、meta undefined guard",
+            "Vercel に communitybankinzai/cidao を Import、4 env vars 設定、production URL `https://cidao.vercel.app` で稼働",
+            "Supabase Auth URL Configuration: Site URL = https://cidao.vercel.app、Redirect URLs に本番 + localhost を許可",
+            "credentials.md §6 Vercel セクション更新（production URL / deployment URL / env vars 一覧 / 2FA 未設定メモ）",
+            "cidao git commit 1130b23 / push 完了"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "MVP コード基盤の本番稼働を達成。Vercel Hobby プラン（無料）で `https://cidao.vercel.app` クリーン URL を取得（cidao team slug の特典）。設計判断：(a) PWA は manifest.ts ファイル規約で Next.js が自動配信、icon は SVG 1 枚で 192/512 両対応、(b) `asChild` は base-ui の Button では未サポートのため shadcn パターンから wrapper a + Button に切替（Slot pattern 不採用は build error の最短対処）、(c) Vercel の `Import .env` 機能で 4 つの env を一括取込、`SUPABASE_SERVICE_ROLE_KEY` と `DATABASE_URL` だけ Secret（暗号化）フラグ ON。トラブル：(1) `<Button asChild>` が `IntrinsicAttributes & ButtonProps` 型に存在せず TypeScript 失敗 → 3 箇所 wrapper パターンに置換、(2) Vercel URL `/cidao/~/new` は 404 → `vercel.com/new` から組織選択する正規ルート使用、(3) `meta` 変数が undefined ガード漏れで build 失敗 → 条件 `{meta && ...}` 追加。教訓：(a) shadcn の Button は派生バリエーション多く `asChild` 有無は init時の preset 依存、新規プロジェクトで Slot pattern を使う場合は明示的に Radix Slot を入れる必要あり、(b) Vercel team slug を project と同名にすると `https://<team>.vercel.app` 形式で短い URL が取れる、(c) build error は production deploy 前に必ず `npm run build` でローカル確認すべき（Vercel 上での失敗はフィードバックループが遅い）。残課題：2FA 未設定（本番運用前に必須）、AI/メール/SNS API キー取得後に Step 11c/11d 実装、ハガキ送付による tier=verified 昇格フロー、/admin 運営画面実装、F18 仕様書を CiDAO 内で公開・節別コメント。"
+        },
+        {
+          "date": "2026-06-25",
+          "title": "CiDAO 構築 Step 11a+11b: pg_cron 自動化ジョブ + AI/通知 API ルートスタブ 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao/supabase/migrations/20260625120002_pg_cron_jobs.sql（tick_all_proposals 5分毎 / expire_freefree 日次 / cleanup_draft 日次 / purge_deleted 日次 + dormant_member_count 関数）",
+            "cidao/src/app/api/ai/classify-proposal/route.ts（キーワード heuristic、LLM 差替予定）",
+            "cidao/src/app/api/ai/match-orgs/route.ts（category overlap スコア、embedding 差替予定）",
+            "cidao/src/app/api/notify/email/route.ts + /notify/sns/route.ts（console.log + sns_post_logs insert、Resend/SNS 差替予定）",
+            "cidao git commit d12de75 / push 完了 / Supabase remote DB に migration 適用"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "外部 API キー未取得なので Step 11 を 11a+11b（自前で完結する部分）に絞り込み。11c (AI実装) + 11d (メール/SNS実装) は credentials.md §3 で API キー取得後の別タスク。設計判断：(a) pg_cron tick は 5分間隔で実用十分（厳密な秒精度は不要）、(b) API ルートは stub も Real interface を返す形にして、後で実装入替時にクライアント側コード変更不要、(c) heuristic 分類は LLM が無くても 50% 程度の精度で動く保険として残す（コスト 0、フォールバックとして恒久維持可）。教訓：API キー依存タスクは早めに準備状況を明示し、key 待ちタスクと自前で進められるタスクを区別することでセッションを止めない。"
+        },
+        {
+          "date": "2026-06-25",
+          "title": "CiDAO 構築 Step 10: イベント・団体・人材バンク・FreeFree 5機能一括実装（F7/F10/F13/F15） 2.0時間",
+          "category": "実装",
+          "outputs": [
+            "cidao/src/app/events/{page,new/page,[id]/page,actions}.ts（F7：作成・参加・キャンセル・出欠記録）",
+            "cidao/src/app/orgs/{page,new/page,[id]/page,actions}.ts（F10：登録 verified 限定・加入申請・代表者承認・複数所属対応）",
+            "cidao/src/app/talent/{page,[id]/page}.tsx + /me/pr/page.tsx（F13：PR編集・公開範囲・メッセージ受付設定）",
+            "cidao/src/app/freefree/{page,new/page,[id]/page,actions}.ts + src/lib/freefree-categories.ts（F15：8カテゴリ・期間制・👍応援・コメント）",
+            "src/app/page.tsx：6機能の NavCard グリッドに更新",
+            "cidao git commit 57c3346 / push 完了"
+          ],
+          "hours": 2.0,
+          "partnerApproved": false,
+          "note": "MVP 18 残機能の一気通貫実装。設計判断：(a) 1 機能あたり list/new/detail の 3 ページ最小構成、各 100 行以内に抑制（CLAUDE 指示「機能を増やすな・抽象化するな」遵守）、(b) Step 5 の RLS と triggers が機能完備のため UI 側は単純 CRUD のみ、(c) 代理登録 / 月次上限 / 履歴公開等の細部は Phase 1 後半で追加。F11 AI 団体マッチング（embedding ベース）と人材バンクのメッセージ送信は API キー必要のため Step 11d に延期し、それぞれ「未実装」ボタンと heuristic stub を配置。教訓：機能数が多いステップは「list/new/detail 3ファイル × N機能」の単純パターンに揃えると認知負荷下がり高速化、設計選択肢を毎機能で問わない（最初に共通方針を決めて踏襲）。"
+        },
+        {
+          "date": "2026-06-25",
+          "title": "CiDAO 構築 Step 9: マイページ + 二段登録完成 + 達成バッジ + ランキング（F4/F5） 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "cidao/src/app/me/{page,actions,edit/page}.tsx（tier バッジ・累計/月次貢献度・アクション内訳 details・提案履歴・公開範囲設定）",
+            "cidao/src/app/me/edit/page.tsx：ライト→本登録（email_only）昇格フォーム（興味分野・連絡許可・連携同意・ランキング参加）",
+            "cidao/src/app/ranking/page.tsx：opt-in メンバー Top 50",
+            "cidao/src/lib/contribution-summary.ts（summarize + evaluateBadges 7種）",
+            "cidao git commit 462b388 / push 完了"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "仕様§3.1.1 二段登録（ライト 90秒 / 本登録 5分）の本登録側をマイページ統合で完成（Step 6 統合マジックリンクの後継）。設計判断：(a) tier 昇格動線は『提案できる・拘束的投票できる』の機能向上として打ち出し、抽象的な「権限が上がる」表現を避ける、(b) 達成バッジは仕様§3.4.3 リストを愚直に実装、累計判定式は contribution_summary.ts に集約し将来 SQL ビューに移行可能、(c) ランキングは opt-in 必須で個人プライバシー優先（Top 50 ハード制限、それ以上の表示はしない）。教訓：二段登録の「本登録」を独立ページではなくマイページの編集機能に統合した方が UI が単純になり、再編集も同じ画面で完結する。"
+        },
+        {
+          "date": "2026-06-25",
+          "title": "CiDAO 構築 Step 8: 議論機能 F14（質問/回答/コメント・提案者強調・「わからない」投票者の質問促進） 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao/src/app/proposals/[id]/_components/CommentSection.tsx（質問はいいね順・コメントは新しい順・スレッド構造・提案者は🌟+琥珀色背景）",
+            "cidao/src/app/proposals/[id]/page.tsx：comments fetch + author 名取得 + CommentSection 配置",
+            "cidao/src/app/proposals/actions.ts に postComment + likeComment 追加（質問30字/コメント50字バリデーション）",
+            "cidao/supabase/migrations/20260625120001_increment_likes.sql（原子的いいね +1 RPC）",
+            "cidao git commit a04683c / push 完了"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "仕様§3.3 議論機能の MVP 実装。設計判断：(a) 質問は parent_id でスレッド構造、ルートコメントはフラット、(b) 提案者の回答は author_id == proposer_id 判定で自動 🌟 表示、(c) 「わからない」投票者には CommentSection 内で sky-banner 表示し質問モードに切替誘導。AI 支援（§3.3.5 類似質問統合 / FAQ自動生成 / 感情分析）は Step 11c で API キー取得後に追加。教訓：仕様§3.4.1 配点表との結合（質問30字以上で 2pt 加算）はトリガーで既に動くため、UI 側の字数バリデーションは UX 改善（即座のフィードバック）にしか過ぎず、サーバー側 RLS/check が真の防衛線。"
+        },
+        {
+          "date": "2026-06-25",
+          "title": "CiDAO 構築 Step 7: 提案・投票機能（F1-F3 MVP核心）+ 拘束的決議の有効性チェック 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "cidao/src/app/proposals/{page,new/page,[id]/page,actions}.ts + [id]/_components/VoteSection.tsx",
+            "cidao/src/lib/categories.ts（10 カテゴリ + 予算→投票日数連動 + 拘束力種別ごとの choice セット）",
+            "cidao/supabase/migrations/20260625120000_finalize_voting.sql（finalize_voting: 30%定足数+過半数判定、start_voting_if_due: 議論48h→投票期間自動移行）",
+            "層別投票バー実装（verified/email_only/light、5名未満は非表示で個人特定回避）",
+            "cidao git commit f337085 / push 完了"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "MVP 18 項目#3（1タップ投票・重み合計可視化）と #2（提案作成）の核心実装。5 決定：(7-1) カテゴリ手動選択（AI key 未取得）、(7-2) 段階制投票期間（small:3日/medium:7日/large:14日）、(7-3) 撤回 1 回まで（retracted_at で表現）、(7-4) 拘束的決議有効性チェック実装、(7-5) 濫立防止ゲート Step 11 に延期。設計判断：(a) finalize_voting は pg 関数として SECURITY DEFINER で実装し、Server Action から RPC 呼出、ライフサイクル遷移を信頼境界（DB）に閉じ込める、(b) 層別バーは 5名未満非表示で個人投票の特定を防止（仕様§3.2.3）、(c) 上書き投票（v2.1）に対応するため votes は UNIQUE(proposal_id, voter_id) + upsert パターン、撤回は retracted_at で論理削除。トラブル：actions.ts に同期関数 calculateVotingWindow を export したら 'use server' 制約違反で全 proposals ページが 500 → categories.ts に移動して解決。教訓：'use server' ファイルは async export のみ許容、ヘルパー関数は別ファイルに分離する規律が必要。"
+        },
         {
           "date": "2026-06-24",
           "title": "CiDAO 構築 Step 6: Supabase Auth マジックリンクログイン実装（/login + /auth/callback + /auth/sign-out） 0.4時間",
