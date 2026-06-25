@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-25",
+      "type": "deploy",
+      "target": "Anthropic Console（platform.claude.com/settings/billing、リポジトリ外）／ site/admin/agents-worklog.json A1 actuals + plans note",
+      "title": "Anthropic クレジット $5 購入完了：CiDAO の AI 機能（提案分類・団体マッチング）が本番で稼働可能な状態に",
+      "detail": "Anthropic Console → 請求 → 「クレジットを購入」から $5.00 USD を追加。支払は Link by Stripe（カード既登録）でワンタイム認証経由、即時反映。残高 $0.00 → $5.00、ページ上部の赤バナー「APIを使い始めるにはクレジットをご購入ください」消失を確認。自動リロードは引き続きオフ（推奨デフォルト $10 残高→ $50 補充はスキップ）— MVP 検証フェーズで意図せぬ追加課金を避けるため。支払者は個人カード（CBI 専用カード未開設のため worklog の運用方針通り、将来 CBI カード入手後に Anthropic Organization 機能で組織アカウント移管予定）。これで Step 11c/11d 完走計画 (1)〜(7) の (1) を消化、残作業は (2) Vercel env に ANTHROPIC_API_KEY 追加、(3) Resend signup → キー取得、(7) cidao git push の 3 件。$5 残高なので claude-opus-4-7（$5/$25 per 1M tokens）でも数千リクエスト相当はテスト可能、分類タスクを claude-haiku-4-5（$1/$5）に下げれば 5 倍長持ち。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
       "type": "feature",
       "target": "C:\\Repos\\cidao\\src\\app\\api\\ai\\classify-proposal/route.ts ／ match-orgs/route.ts ／ notify/email/route.ts ／ package.json ／ .env.local（すべてリポジトリ外、別途 git push 予定）／ site/admin/agents-worklog.json A1 actuals + plans",
       "title": "CiDAO の AI 提案分類・団体マッチング・メール通知 API がスタブから実装版へ：Claude Opus 4.7 で提案を 9 カテゴリに自動分類でき、興味と団体概要を意味的にマッチして上位 5 団体を提示でき、Resend で実送信できるようになった",

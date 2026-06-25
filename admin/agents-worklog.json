@@ -8,6 +8,20 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "Anthropic Console クレジット $5 購入 — Step 11c/11d 完走計画 (1) 消化 0.1時間",
+          "category": "事務",
+          "outputs": [
+            "Anthropic Console → 請求 → クレジットを購入で $5.00 USD 追加（支払: Link by Stripe 既存登録カード、認証ワンタイム）",
+            "残高 $0.00 → $5.00 確認、上部の「APIを使い始めるにはクレジットをご購入ください」赤バナー消失",
+            "自動リロード: 引き続きオフ（推奨デフォ $10/$50 はスキップ、MVP 検証フェーズで意図せぬ追加課金を避ける）",
+            "支払者：個人カード（CBI 専用カード未開設のため worklog の運用方針通り）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "Step 11c/11d 完走計画 (1)〜(7) の (1) を消化。残：(2) Vercel cidao project の env vars に ANTHROPIC_API_KEY 追加、(3) Resend signup → API キー取得 → .env.local + Vercel env、(7) cidao 側で git push → Vercel 自動デプロイで本番確認。コード書換 (4)(5)(6) は既に完了済み（同日先行作業）。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "CiDAO Step 11c/11d コード書換 3本（classify-proposal / match-orgs / notify-email）+ SDK upgrade + build 検証 0.7時間",
           "category": "実装",
           "outputs": [
@@ -946,7 +960,7 @@
           "title": "CiDAO Step 11c/11d 実装完走（Anthropic クレジット追加 → Vercel env → Resend キー → コード実装）",
           "category": "実装",
           "priority": "高",
-          "note": "2026-06-25 にコード書換 3本（(4) classify-proposal / (5) match-orgs / (6) notify-email）完了 + ローカル build 成功。残：(1) Anthropic Console で $5 クレジット追加、(2) Vercel cidao project の env vars に ANTHROPIC_API_KEY 追加、(3) Resend signup → cidao-production キー取得→ .env.local + Vercel env に追加、(7) git push → Vercel 自動デプロイで本番確認。残所要見込 0.5〜1時間（外部サービス操作のみ）。"
+          "note": "2026-06-25 にコード書換 3本（(4) classify-proposal / (5) match-orgs / (6) notify-email）完了 + ローカル build 成功 + (1) Anthropic クレジット $5 購入完了。残：(2) Vercel cidao project の env vars に ANTHROPIC_API_KEY 追加、(3) Resend signup → cidao-production キー取得→ .env.local + Vercel env に追加、(7) git push → Vercel 自動デプロイで本番確認。残所要見込 0.3〜0.7時間（外部サービス操作のみ）。"
         },
         {
           "due": "2026-07-31",
