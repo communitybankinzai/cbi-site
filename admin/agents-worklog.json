@@ -7,6 +7,22 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "GitHub you0810jmsdf 2FA 設定完了（iOS 新規エントリ + setup key 手動入力）0.3時間",
+          "category": "事務",
+          "outputs": [
+            "GitHub you0810jmsdf アカウントで TOTP 2FA を正式有効化（リカバリーコード表示画面到達）",
+            "TOTP setup key ZYBVZTXZ4AU3SRHV を iOS パスワードに「Github — you0810jmsdf」新規エントリとして登録（既存「GitHub — you0810jmsdf@gmail.com」とは別）",
+            "新リカバリーコード 16 件（18df3-d67bd ほか）取得・credentials.md §7.1 you0810jmsdf に保管完了",
+            "credentials.md §7.1 ステータス: 🔄 設定中 → ☑ 設定済（2026-06-25 完了）",
+            "解釈訂正：communitybankinzai と you0810jmsdf 両方の生コピー文字列（変則18トークン形式）の正しい解析規則を確定。GitHub Copy ボタンの出力は『コード1前半-コード1後半コード2前半-コード2後半…』の連続結合で、各コード間の `-` が一部脱落するパターン。スクリーンショット原本との突合で確定",
+            "credentials.md 内 communitybankinzai 旧コード（無効化済）の解釈案も同じ規則で参考再構成"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "D 候補 2 段階目完了。communitybankinzai と同じトラブル（既存『GitHub — you0810jmsdf@gmail.com』エントリの古い TOTP secret 干渉）が発生し、660458 が verification failed。同じ代案（iOS パスワードに新規エントリ作成）で setup key 手動入力 → Verify 成功。重要な解釈訂正：最初に communitybankinzai 旧コードを「先頭5+末尾5を結合して16件」と推測したが、you0810jmsdf の新コードでスクリーンショット原本と照合した結果、正しい解析規則は『5-5 / 5-5 / 5-5 …』の単純な並びで、生コピー文字列は各コード間の改行→ハイフン変換のうち一部が脱落して見かけ上 18 トークン (5+10×15+5) になる、と判明。GitHub の Download ボタンを使えばこの解釈問題は発生しないため、次回からは Download 推奨。残：Supabase / Vercel（多くの場合 GitHub SSO で代用可能）。3 サイト保護の主目的（n's factory / cocola = you0810jmsdf, cbi / cidao = communitybankinzai）は両 GitHub アカウントの 2FA 完了で達成。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "GitHub communitybankinzai 2FA 設定完了（iOS パスワード TOTP + setup key 手動入力方式）0.4時間",
           "category": "事務",
           "outputs": [
