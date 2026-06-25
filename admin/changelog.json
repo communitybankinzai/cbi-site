@@ -5,6 +5,14 @@
     {
       "date": "2026-06-25",
       "type": "deploy",
+      "target": "Vercel cidao project Environment Variables（vercel.com/cidao/cidao/settings/environment-variables、リポジトリ外）／ C:\\Repos\\cidao\\.env.local（gitignore 対象、リポジトリ外）／ site/admin/agents-worklog.json A1 actuals + plans note",
+      "title": "Vercel 環境変数に ANTHROPIC_API_KEY 追加完了：本番デプロイ後に AI 提案分類・団体マッチングが Vercel 上で稼働できる準備が整った",
+      "detail": "Step 11c/11d 完走計画の (2) を消化。Vercel cidao team / cidao project / Settings → Environment Variables → Add Environment Variable から ANTHROPIC_API_KEY を追加（値は本作業 PC の C:\\Repos\\cidao\\.env.local に保管した cidao 用キー、Sensitive フラグ ON、Production + Preview の 2 環境を選択、Development はチェックなし — 既存 Supabase 系 4 変数 NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY / DATABASE_URL と同じパターン）。これで Vercel 変数リストは 5 行に。\n\n登録直後の Vercel ポップアップ「A new deployment is needed for changes to take effect」が Redeploy ボタン付きで出現したが Dismiss を選択。理由：(a) コード書換版がまだ git push されていない、(b) RESEND_API_KEY / MAIL_FROM が未投入、いずれも揃っていない段階で Redeploy すると古いコード + ANTHROPIC キーだけの中途半端デプロイになる。本デプロイは (7) cidao git push 時に自動トリガーされるため明示的 Redeploy は不要という運用方針。\n\nトラブル教訓：(a) 当初 worklog の「ANTHROPIC_API_KEY=実キー 設定完了」「credentials.md §3.1 にキー値保管」記述に反し本作業ディレクトリの .env.local も credentials.md §3 もキー値が空だった（別 PC での記録ずれ、または OneDrive 同期未反映）。ユーザーが Anthropic Console から再取得して .env.local に直接貼付して回復。次回からは worklog の「保管完了」表現はセッション開始時に必ず実ファイルで再確認すること。(b) Vercel URL 初回コピペ時に markdown 装飾文字（** や全角括弧）が混入し 404、リテラル URL を ``` で囲んで再案内して解決。チャット内の URL はアドレスバー直接コピペ用途では装飾なしで提示すべき。\n\n残：(3) Resend signup → API キー取得 → .env.local + Vercel env、(7) cidao git push → Vercel 自動デプロイで本番確認 の 2 件のみ。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
+      "type": "deploy",
       "target": "Anthropic Console（platform.claude.com/settings/billing、リポジトリ外）／ site/admin/agents-worklog.json A1 actuals + plans note",
       "title": "Anthropic クレジット $5 購入完了：CiDAO の AI 機能（提案分類・団体マッチング）が本番で稼働可能な状態に",
       "detail": "Anthropic Console → 請求 → 「クレジットを購入」から $5.00 USD を追加。支払は Link by Stripe（カード既登録）でワンタイム認証経由、即時反映。残高 $0.00 → $5.00、ページ上部の赤バナー「APIを使い始めるにはクレジットをご購入ください」消失を確認。自動リロードは引き続きオフ（推奨デフォルト $10 残高→ $50 補充はスキップ）— MVP 検証フェーズで意図せぬ追加課金を避けるため。支払者は個人カード（CBI 専用カード未開設のため worklog の運用方針通り、将来 CBI カード入手後に Anthropic Organization 機能で組織アカウント移管予定）。これで Step 11c/11d 完走計画 (1)〜(7) の (1) を消化、残作業は (2) Vercel env に ANTHROPIC_API_KEY 追加、(3) Resend signup → キー取得、(7) cidao git push の 3 件。$5 残高なので claude-opus-4-7（$5/$25 per 1M tokens）でも数千リクエスト相当はテスト可能、分類タスクを claude-haiku-4-5（$1/$5）に下げれば 5 倍長持ち。",

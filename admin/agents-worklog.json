@@ -8,6 +8,20 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "Vercel cidao project env vars に ANTHROPIC_API_KEY 追加 — Step 11c/11d 完走計画 (2) 消化 0.2時間",
+          "category": "事務",
+          "outputs": [
+            "Vercel cidao team / cidao project / Settings → Environment Variables → Add Environment Variable で ANTHROPIC_API_KEY 追加（Sensitive フラグ ON、Production + Preview の 2 環境、Development はチェック不要 — 既存 Supabase 系 4 変数と同じパターン）",
+            "C:\\Repos\\cidao\\.env.local の ANTHROPIC_API_KEY 行に実値貼付（sk-ant-api03-VxVL...PJS6dQAA、cidao-production-v2 と別キーの可能性あり — 値の最終ソースは現状 .env.local のみ）",
+            "Vercel 環境変数の登録後ポップアップ「A new deployment is needed for changes to take effect」が Redeploy ボタン付きで表示されるが、コード未 push・Resend 未投入のため Dismiss 選択（誤 Redeploy 防止）",
+            "credentials.md §3.1 は引き続き未更新（後工程で OneDrive 同期前提でまとめて更新予定）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "Step 11c/11d 完走計画 (1)〜(7) の (2) を消化。残：(3) Resend signup → API キー取得 → .env.local + Vercel env、(7) cidao 側で git push → Vercel 自動デプロイで本番確認。トラブル：(a) 当初 worklog 「ANTHROPIC_API_KEY=実キー 設定完了」「credentials.md §3.1 にキー値保管」の記述に反し本作業ディレクトリの .env.local も credentials.md §3 もキー値が空だった（別 PC での記録ずれ、または OneDrive 同期未反映）。ユーザーが Anthropic Console から再度キーを取得して .env.local に直接貼付して対応。(b) Vercel URL 初回コピペ時に markdown 装飾文字（** や全角括弧）が混入して 404、リテラル URL を再案内して解決。教訓：(i) credentials.md は OneDrive 経由で全 PC 同期想定だが、書き込みが片方の PC でしか走っていないケースに注意、worklog の「保管完了」記述は次セッション開始時に必ず実ファイルで再確認、(ii) チャットの markdown 装飾はアドレスバーへの直接コピペ用途には不適、リテラル文字列は ``` で囲む方が安全。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "Anthropic Console クレジット $5 購入 — Step 11c/11d 完走計画 (1) 消化 0.1時間",
           "category": "事務",
           "outputs": [
@@ -960,7 +974,7 @@
           "title": "CiDAO Step 11c/11d 実装完走（Anthropic クレジット追加 → Vercel env → Resend キー → コード実装）",
           "category": "実装",
           "priority": "高",
-          "note": "2026-06-25 にコード書換 3本（(4) classify-proposal / (5) match-orgs / (6) notify-email）完了 + ローカル build 成功 + (1) Anthropic クレジット $5 購入完了。残：(2) Vercel cidao project の env vars に ANTHROPIC_API_KEY 追加、(3) Resend signup → cidao-production キー取得→ .env.local + Vercel env に追加、(7) git push → Vercel 自動デプロイで本番確認。残所要見込 0.3〜0.7時間（外部サービス操作のみ）。"
+          "note": "2026-06-25 にコード書換 3本（(4) classify-proposal / (5) match-orgs / (6) notify-email）完了 + ローカル build 成功 + (1) Anthropic クレジット $5 購入完了 + (2) Vercel env に ANTHROPIC_API_KEY 追加完了。残：(3) Resend signup → cidao-production キー取得→ .env.local + Vercel env に追加、(7) git push → Vercel 自動デプロイで本番確認。残所要見込 0.2〜0.5時間（外部サービス操作のみ）。"
         },
         {
           "due": "2026-07-31",
