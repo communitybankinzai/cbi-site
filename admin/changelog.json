@@ -5,6 +5,14 @@
     {
       "date": "2026-06-25",
       "type": "docs",
+      "target": "agents/a1-core/credentials.md §7.1 communitybankinzai（gitignore 対象、リポジトリ外）",
+      "title": "GitHub communitybankinzai 2FA 設定完了：TOTP + 新リカバリーコード16件 保管、CiDAO 残課題🔴の 1/4 を消化",
+      "detail": "GitHub communitybankinzai アカウントの 2FA を iOS パスワード TOTP で正式有効化。トラブル経緯：(1) 最初の setup で TOTP 登録〜リカバリーコード発行までいったが Verify 6 桁が secret 不一致で連続失敗、(2) 原因：iOS パスワードの既存『github.com — you0810jmsdf』エントリの古い TOTP secret が QR スキャンで更新されない iOS 仕様、(3) 対処：setup key 手動入力方式に切替＋ iOS パスワードに『communitybankinzai』専用の新規エントリを作成（既存は無傷）、(4) iOS 26.5 で『コードを設定...』→『セットアップキーを入力』に ZO6OBCPBZFRWF2HR を貼って TOTP secret を強制一致、Verify 成功。新リカバリーコード16件（798dc-def68 ほか）を credentials.md §7.1 に保管。旧リカバリーコードは GitHub の TOTP 再設定により invalidate 済として参考保管。重要：(a) 3 サイト（n's factory / cocola / cbi）は 2 GitHub アカウント（communitybankinzai / you0810jmsdf）で管理されており、アカウント単位の 2FA 設定で全カバー、(b) TOTP 変更は git push / Pages / Vercel 連携 / GitHub Actions など既存サービスに一切影響しない（TOTP はブラウザログイン 2 段目のみ）。残：you0810jmsdf 2FA（cocola + n's factory カバー）、Supabase / Vercel（SSO 経由なら不要）。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
+      "type": "docs",
       "target": "agents/a1-core/credentials.md（gitignore 対象、リポジトリ外）",
       "title": "credentials.md に §5 Supabase / §6 Vercel / §7 2FA 設定状況 を骨組み追加（CiDAO 残課題🔴 2FA 設定の伴走準備）",
       "detail": "Step 12 で残課題🔴最優先となっていた 2FA 設定（GitHub/Supabase/Vercel）の対応を開始。ユーザー判断：TOTP=iOS パスワード（無料・iCloud同期）、バックアップ=credentials.md、範囲=3 サービス全部。credentials.md（gitignore 対象なので push されない）に §5 Supabase（Project Ref oxuxvtuhijnsewivgrje / Dashboard / 4 キー転記欄）、§6 Vercel（チーム slug cidao / Production URL / env vars 一覧）、§7 2FA 設定状況（iOS パスワード TOTP 方針＋GitHub・Supabase・Vercel の 3 サブセクション）を骨組みで追加。GitHub は組織 communitybankinzai と個人 you0810jmsdf の両アカウント別保管欄（リカバリー16桁×16件×2）、Supabase は TOTP secret 保管欄＋リカバリーコード機能なし注記（喪失時 support@supabase.com）、Vercel はリカバリーコード10件保管欄を準備。実機操作（ブラウザでの 2FA 有効化・QRスキャン・コード入力）はユーザーが iOS パスワードで実施、完了報告を受けてから §7 各ステータスを「設定済（日付）」に更新する 2 段階運用。changelog/worklog のみ git push 対象。",

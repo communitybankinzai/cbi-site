@@ -7,6 +7,22 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "GitHub communitybankinzai 2FA 設定完了（iOS パスワード TOTP + setup key 手動入力方式）0.4時間",
+          "category": "事務",
+          "outputs": [
+            "GitHub communitybankinzai アカウントで TOTP 2FA を正式有効化（緑チェック「You have enabled two-factor authentication using your authenticator app.」確認）",
+            "TOTP setup key ZO6OBCPBZFRWF2HR を iOS パスワードに新規エントリ「Github — communitybankinzai」として登録",
+            "新リカバリーコード 16 件取得・credentials.md §7.1 communitybankinzai に保管完了",
+            "旧リカバリーコード（最初の setup で発行された変則フォーマット 18 トークン）は GitHub 側で invalidate 済として参考保管",
+            "credentials.md §7.1 ステータス: 🔄再設定中 → ☑ 設定済（2026-06-25 完了）",
+            "iOS パスワード状態: 既存「GitHub — you0810jmsdf」（古い）+ 新規「Github — communitybankinzai」の 2 エントリ並存（you0810jmsdf 用 TOTP はまだ未設定、既存エントリに後で追加予定）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "D 候補（2FA 設定）の第 1 段階完了。トラブル経緯：(1) 最初に GitHub setup で TOTP 登録→リカバリーコード16件発行までいったが、Verify の 6 桁が secret 不一致で連続失敗、(2) 原因：iOS パスワードの既存「github.com — you0810jmsdf」エントリに古い TOTP secret が残っており、QR スキャンしても同エントリの secret が更新されない iOS 仕様のため、入力した 6 桁は古い secret 由来で新 QR とは一致しなかった、(3) 対処：setup key 手動入力方式に切替＋ iOS パスワードに「communitybankinzai」専用の新規エントリを作成（既存 you0810jmsdf エントリは触らず）、(4) iOS 26.5 で「コードを設定...」（左下青字リンク）から「セットアップキーを入力」を選び ZO6OBCPBZFRWF2HR を貼って TOTP secret を強制一致、Verify 成功。教訓：(a) 同一ドメイン複数アカウントの 2FA は iOS パスワード上でエントリを分けて管理する規律が必要、(b) GitHub の QR は毎回新 secret を生成するため、過去 QR スキャンの再利用は不可、(c) setup key 手動入力は QR よりトラブルシュート確実、 (d) 「N's factory」「cocola」「cbi」の 3 サイトは 2 GitHub アカウント（communitybankinzai / you0810jmsdf）で管理、サイト単位ではなくアカウント単位で 2FA 設定すれば全カバー。次：you0810jmsdf 2FA 設定（cocola + N's factory カバー）、Supabase / Vercel（SSO 経由なら不要）。credentials.md は agents/.gitignore で push されない。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "credentials.md §5 Supabase / §6 Vercel / §7 2FA 設定状況 を骨組み追加（ユーザー実機操作待ち）0.3時間",
           "category": "事務",
           "outputs": [
