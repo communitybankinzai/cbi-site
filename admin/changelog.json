@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-25",
+      "type": "docs",
+      "target": "cidao/worklog.md ／ cidao/README.md（CBI とは別ローカル文書、git管理外）",
+      "title": "CiDAO ローカル文書を MVP 本番稼働状況に同期更新：Phase 0 実証実験準備 → Phase 1 MVP 本番運用開始",
+      "detail": "仕様書フォルダ（C:\\COCoLa\\cidao\\）側が 06-23 v2.1 改訂までしか反映されておらず、Step 2-12 の実装履歴と本番デプロイ事実が記載されていなかったため同期更新。worklog.md 最上部に「2026-06-24〜25 CiDAO MVP 本番実装完了（Step 2-12, 計 9.9時間 / A1 Core）」セクションを追加：実装フロー12ステップ表、本番URL（https://cidao.vercel.app）／GitHub（communitybankinzai/cidao）／Supabase Project Ref（oxuxvtuhijnsewivgrje）、22 テーブル＋RLS＋triggers＋Realtime構成、実装済 F1-F7/F10/F13-F15、設計判断（投票本人非表示・SECURITY DEFINER トリガー・5名未満層別バー非表示等）、残課題（2FA・API キー後の Step 11c/11d・ハガキ verified 昇格・/admin 画面・F18 仕様書 CiDAO 内公開）、トラブル教訓（Supabase ref 1文字落とし／shadcn asChild 未対応／Next.js 16 proxy リネーム等）を網羅。README.md は「現在のフェーズ」を Phase 0 → Phase 1 MVP 本番運用開始に更新、関連リソース表に本番 URL／GitHub／Supabase／ローカルリポジトリ／MVP18-checklist の 5 行を先頭追加、最終更新日を 2026-05-27 → 2026-06-25 に更新。これによりサイト側 admin の worklog actuals（A1 Step 2-12 全件）と仕様書フォルダ側 worklog.md の事実が一致し、次セッションでの状況把握コストを削減。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
       "type": "deploy",
       "target": "communitybankinzai/cidao（別リポジトリ）→ https://cidao.vercel.app",
       "title": "CiDAO MVP 本番デプロイ完了：Step 1-12 全 12 ステップ走破、コード基盤・DB・本番ホスティングまで一気通貫で稼働開始",

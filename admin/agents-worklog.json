@@ -7,6 +7,20 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "CiDAO ローカル文書同期：cidao/worklog.md と README.md を Step 2-12 完了状態に更新 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "C:\\COCoLa\\cidao\\worklog.md 最上部に「2026-06-24〜25 CiDAO MVP 本番実装完了（Step 2-12, 計 9.9時間）」セクションを追加（実装フロー12ステップ表 / 主要成果物 / 設計判断 / 実装済機能 / 残課題 / トラブル教訓）",
+            "C:\\COCoLa\\cidao\\README.md「現在のフェーズ」を Phase 0 → Phase 1 MVP 本番運用開始 に更新、ステータス11項目を実装済✅/作業中🔄/今後🔜で再整理",
+            "C:\\COCoLa\\cidao\\README.md 関連リソース表に本番URL（cidao.vercel.app）／GitHub（communitybankinzai/cidao）／Supabase Ref（oxuxvtuhijnsewivgrje）／ローカルリポジトリ（C:\\Repos\\cidao）／MVP18-checklist の 5 行を先頭追加、最終更新日を 2026-06-25 に更新",
+            "site/admin/changelog.json に docs エントリ1件追記（cidao/ ローカル文書同期）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "仕様書フォルダ側 cidao/ が 06-23 v2.1 改訂までで止まっており、Step 2-12 の実装履歴と本番デプロイ事実が反映されていなかったため同期更新。これによりサイト側 admin worklog actuals（Step 2-12 全件）と仕様書フォルダ側 worklog.md の事実が一致、次セッションでの状況把握コスト削減。cidao/ は git管理外のローカルフォルダのため push 不要、site/admin/ 側 2 ファイルのみ git push 対象。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "CiDAO 構築 Step 12: PWA manifest + 本番 Vercel デプロイ + MVP 18 検収ドキュメント 1.0時間",
           "category": "実装",
           "outputs": [
