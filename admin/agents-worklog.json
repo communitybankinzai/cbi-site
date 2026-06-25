@@ -8,6 +8,22 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "🎨 /me に「あなたに合う団体」UI を実装、Step 11c の体験ループが完成 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "src/lib/match-orgs.ts 新設: match-orgs のロジック本体を抽出（EnrichedMatch 型で org name/description/type 込みで返す、API route と Server Component の両方から呼べる、no_candidates / no_interests / member_not_found を構造化エラーで分岐）",
+            "src/app/api/ai/match-orgs/route.ts: lib を呼ぶ wrapper に簡略化（行数 158 → 28）",
+            "src/app/me/page.tsx: searchParams.updated=1 のときだけ findMatchingOrgs を直接呼び出し、上位 5 団体をカード表示（通常閲覧時はクレジット節約のため呼ばない）。空マッチ時は「全団体一覧から探す→」リンク、エラー時は amber バナー",
+            "UX 設計: /me/edit で保存 → /me?updated=1 にリダイレクト → トップに「あなたに合う団体」セクション登場 → 各カード=org name + AI reason + organization_type バッジ、クリックで /orgs/[id] へ遷移",
+            "API 回帰テスト: 空 body → 400 'memberId required'、fake UUID → 404 'member not found' で挙動同一を確認",
+            "ローカル build clean、cidao cce9e1c commit + push、Vercel 自動再デプロイ"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "Step 11c の AI マッチング機能が「コードが動く」段階から「ユーザーが体験できる」段階に到達。新規メンバーの登録フロー: /login → Magic Link → /me（light tier） → 本登録フォーム → /me/edit → 興味分野・自己紹介を入力して保存 → /me?updated=1 → 「あなたに合う団体」5 件が表示される、までが繋がった。次の自然な動線は「気になる団体をクリック → /orgs/[id] で詳細閲覧 → 加入申請」だが、加入申請は仕様§3.4 verified tier 昇格と紐づくため Phase 2 で実装予定。技術判断：(a) lib 抽出により API route と Server Component が同じロジックを共有（DRY、テストしやすい）、(b) updated=1 トリガー方式により通常閲覧の Claude クレジット消費ゼロ、毎セッションで 1 回だけ呼ばれる、(c) try/catch で Anthropic API エラー時もページ全体が落ちないようガード、(d) ユーザー手動 UI 確認が必要（authenticated session 必須のため curl では検証不可、本人ログインで動作確認していただく）。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "🌱 印西市市民活動団体 219 件を seed → match-orgs の実用化完了 0.8時間",
           "category": "実装",
           "outputs": [

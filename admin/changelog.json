@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-25",
+      "type": "feature",
+      "target": "C:\\Repos\\cidao/src/lib/match-orgs.ts (新規) / src/app/api/ai/match-orgs/route.ts / src/app/me/page.tsx ／ commit cce9e1c ／ https://cidao.vercel.app/me（authenticated 時）",
+      "title": "🎨 /me に「あなたに合う団体」5 件カードを実装：新規ライト→本登録の保存直後に AI マッチングが自動表示、CiDAO の新規参加体験が完成",
+      "detail": "Step 11c の AI マッチング機能を実 UI に接続。\n\n■ ユーザー体験：(1) ログイン → /me で light tier 表示 → 「本登録フォームを開く」ボタンクリック、(2) /me/edit で表示名・居住区分・興味分野（9 区分から複数選択）・自己紹介を入力して「本登録する」、(3) /me?updated=1 にリダイレクト、トップに「プロフィールを更新しました」緑バナーの直下に「あなたに合う団体」セクションが出現、(4) 上位 5 団体のカードを表示（団体名 + organization_type バッジ + AI による親和性 reason 日本語50字）、各カードクリックで /orgs/[id] へ遷移して詳細閲覧。\n\n■ 実装ファイル（cidao commit cce9e1c）：\n  - src/lib/match-orgs.ts 新設：match-orgs ロジック本体を抽出、EnrichedMatch 型で org name/description/type 込みで返す、API ルートと Server Component の両方から呼べる、空マッチ/興味分野なし/メンバー不在を構造化エラーで分岐\n  - src/app/api/ai/match-orgs/route.ts：lib を呼ぶ thin wrapper に簡略化（158 行 → 28 行）\n  - src/app/me/page.tsx：searchParams.updated=1 のときだけ findMatchingOrgs を直接呼び、結果をカード表示。通常閲覧時は API を叩かない設計（クレジット節約）\n\n■ 設計判断：(a) lib 抽出により DRY、API route と Server Component が同じ実装を共有、(b) updated=1 トリガー方式で通常閲覧時のクレジット消費ゼロ、毎セッション 1 回だけ呼ばれる、(c) try/catch で Anthropic API エラー時もページ全体が落ちない、(d) 0 件時は「全団体一覧から探す→」リンクで /orgs に誘導してデッドエンドを防止、(e) 各カードに organization_type バッジ（任意団体 / 市民活動団体 / 企業 / 行政）で視覚的に種別がわかる。\n\n■ API 回帰テスト：空 body → 400、fake UUID → 404 で挙動同一を確認（lib 抽出による regression なし）。\n\n■ 検証：ローカル npm run build clean。本番 UI 動作確認はユーザー本人による Magic Link ログイン後の手動確認をお願いしている（authenticated session が必須のため curl では検証不可）。\n\n■ 体験完成度：Step 11c で実装した AI 分類・マッチングのうち、マッチング側はこれで「コードが動く」→「ユーザーが体験できる」段階に到達。新規メンバーの登録フロー全体が繋がった。次の自然な動線は「気になる団体をクリック → /orgs/[id] で詳細閲覧 → 加入申請」だが、加入申請は仕様§3.4 verified tier 昇格と紐づくため Phase 2 で実装予定。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
       "type": "content",
       "target": "Supabase 本番 DB organizations / organization_categories / members（system placeholder 1 件）／ C:\\Repos\\cidao/scripts/* (commit 1e27d0e)",
       "title": "🌱 印西市市民活動団体 219 件を seed 投入：match-orgs（新規メンバー → 興味に合う団体マッチング）が空マッチから実マッチングに変わった、cidao.vercel.app/orgs で実団体一覧が見られるように",
