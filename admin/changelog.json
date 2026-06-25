@@ -5,6 +5,14 @@
     {
       "date": "2026-06-25",
       "type": "docs",
+      "target": "agents/a1-core/credentials.md §7.2 Supabase（gitignore 対象、リポジトリ外）",
+      "title": "Supabase MFA 設定完了（factor App 912）：CiDAO 残課題🔴の 3/4 を消化、DB レイヤーも GitHub アカウント独立保護",
+      "detail": "Supabase Dashboard Security → Add new app で QR コード表示、iOS パスワードに「supabase.com」新規エントリ作成→「コードを設定...」→「QR コードをスキャン」で TOTP secret を取得、iOS が出す 6 桁を 30 秒以内に Confirm して MFA「1 APP CONFIGURED」確認。factor 名 App 912（自動命名）、登録時刻 2026-06-25 14:31:10 JST。TOTP setup key ICPZNUDR2GGD7Z3XHX6D2LXEO7J4JQSE（32 文字 base32）を credentials.md §7.2 に保管。Supabase はリカバリーコード機能なし（仕様）のため setup key 本ファイル保管 + iOS パスワード iCloud 同期で二重化。GitHub SSO 経由ログイン推定（組織名「communitybankinzai's Org」が示唆）だったが Supabase 側で独立 MFA を追加することで GitHub アカウント突破時の単一障害点を回避（DB レイヤー独立保護達成）。所要 2 分、GitHub の既存エントリ干渉問題は最初から新規エントリ前提で進めたため発生せず QR スキャン一発成功。残：Vercel 1 サービス（同じく独立 MFA 推奨）。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-25",
+      "type": "docs",
       "target": "agents/a1-core/credentials.md §7.1 you0810jmsdf（gitignore 対象、リポジトリ外）",
       "title": "GitHub you0810jmsdf 2FA 設定完了：TOTP + 新リカバリーコード16件 保管、CiDAO 残課題🔴の 2/4 を消化（n's factory / cocola / cbi / cidao の主要 3 サイト保護完了）",
       "detail": "GitHub you0810jmsdf アカウントの 2FA を iOS パスワード TOTP で正式有効化。communitybankinzai と同じトラブル（既存『GitHub — you0810jmsdf@gmail.com』エントリの古い TOTP secret 干渉で 660458 が Verify 失敗）が発生したが、同じ代案（iOS パスワードに『Github — you0810jmsdf』新規エントリ作成）で setup key ZYBVZTXZ4AU3SRHV を手動入力 → Verify 成功。新リカバリーコード16件（18df3-d67bd ほか）を credentials.md §7.1 you0810jmsdf に保管。解釈訂正：communitybankinzai 旧コードで採用した『先頭5+末尾5を結合』仮説は誤りで、スクリーンショット原本との突合により正解は『5-5/5-5/5-5…』の単純な並びと判明（生コピー文字列は改行→ハイフン変換時の脱落で 18 トークンに見えるが、コード1前半-コード1後半コード2前半-コード2後半… の連続結合）。次回からは GitHub の Download ボタンで `.txt` 取得が解釈問題を回避する確実な方法。主目的達成：n's factory / cocola = you0810jmsdf、cbi / cidao = communitybankinzai の 2 GitHub アカウントで保護完了、3 サイト×4 リポジトリの主要資産がパスワード漏洩耐性を獲得。残：Supabase / Vercel（多くの場合 GitHub SSO で代用可能）。",

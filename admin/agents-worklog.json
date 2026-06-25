@@ -7,6 +7,21 @@
       "actuals": [
         {
           "date": "2026-06-25",
+          "title": "Supabase MFA 設定完了（iOS パスワード QR スキャン方式・factor App 912）0.2時間",
+          "category": "事務",
+          "outputs": [
+            "Supabase Dashboard Security → Add new app → QR コード表示 → iOS パスワード「supabase.com」新規エントリで QR スキャン → 6桁 Confirm 成功",
+            "MFA 1 APP CONFIGURED（factor 名: App 912、登録時刻 2026-06-25 14:31:10 JST）",
+            "TOTP setup key ICPZNUDR2GGD7Z3XHX6D2LXEO7J4JQSE（32 文字 base32）を credentials.md §7.2 に保管",
+            "credentials.md §7.2 ステータス: 🔄 設定中 → ☑ 設定済（2026-06-25 完了）",
+            "Supabase はリカバリーコード機能なし（仕様）。setup key 保管が唯一の独立復旧手段、喪失時は support@supabase.com 経由のみ"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "D 候補 3 段階目完了。GitHub のときの「既存エントリ干渉」問題は Supabase では発生せず（最初から新規エントリ前提で進めたため）、QR スキャン方式で一発成功。所要 2 分。GitHub と異なる挙動：(a) Supabase は MFA 有効化後の確認画面でリカバリーコードを表示しない、(b) MFA 一覧に factor 名（App 912 等の自動命名）と登録時刻が記録される、(c) 「2 つ目の authenticator app を別端末に」を推奨表示するが、iCloud キーチェーン同期で iPhone/iPad/Mac 間は実質同一 secret 共有のため未対応で十分。組織名「communitybankinzai's Org」から GitHub SSO 経由ログイン推定だったが、Supabase 側で独立 MFA を追加する選択は正解：GitHub アカウント突破時の単一障害点を回避。残：Vercel 1 サービス（同じく GitHub SSO 経由なら独立 MFA で二重化推奨）。"
+        },
+        {
+          "date": "2026-06-25",
           "title": "GitHub you0810jmsdf 2FA 設定完了（iOS 新規エントリ + setup key 手動入力）0.3時間",
           "category": "事務",
           "outputs": [
