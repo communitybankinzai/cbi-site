@@ -8,6 +8,23 @@
       "actuals": [
         {
           "date": "2026-06-26",
+          "title": "🔁 COCoLa→CiDAO ingest 開通＋4月から壊れていたGASプロジェクトの修復 1.5時間",
+          "category": "保守",
+          "outputs": [
+            "CiDAO bot アカウント communitybankinzai+ingestbot@gmail.com を magic link で作成、members.id UUID=31f6bcf1-ce27-4825-a11c-591c5d3cd729 を DATABASE_URL 直接接続で取得（auth.users.id と同値、トリガー handle_new_user で members 行自動生成を確認）",
+            "agents/a1-core/credentials.md の INGEST_BOT_MEMBER_ID プレースホルダを実 UUID に置換",
+            "Supabase 本番 DB に migration 4本適用（events.organizer_name_text / can_edit_event関数＋RLS / event-flyers バケット＋flyer_image_url / external_source＋UNIQUE index）。DATABASE_URL 直接接続でトランザクション適用し、列・関数・バケット・index・ポリシーの存在を検証",
+            "本番 ingest API スモークテスト：空body→400、実payload→200で event作成、再送→deduped:true（UNIQUE動作）、DB検証後にテストイベント削除。Vercel env INGEST_BOT_MEMBER_ID 更新→Redeploy はユーザー実施、サーバ側で反映確認",
+            "COCoLa TOPICS（Apps Script, script_id 1zOZBor…）の重大破損を発見・修復：const TOPICS_* の二重宣言でプロジェクト全体がコンパイル不能だった（imageScanLastTime が4月下旬で停止＝scanDriveEventImages が約2ヶ月死亡）。原因は clasp×OneDrive ドリフトで生じた重複ファイル（event-topics-normalized-submit / -row-repair の無印版・古い214/144行）。clasp pull で全16ファイル取得→バックアップ保全→古い無印2ファイルを無効化（中身コメント化、clasp 3.x が remote 削除非対応のため）→clasp push で const 重複解消、testCidaoIngest がコンパイル通過するのを確認",
+            "setCidaoIngestConfig のプレースホルダ __here_paste__ を実シークレットに置換して clasp push（手入力プロパティの取りこぼし対策＋将来の地雷除去）。ユーザーが setCidaoIngestConfig→testCidaoIngest 実行で『取り込み 2da3242e…』を確認＝COCoLa→CiDAO 配管開通、画像 Storage コピーも動作。検証後テストイベント削除",
+            "旧トリガー関数 scanCoCoLaEventImages / scanNewEventImages はコードに存在しないことを確認（ステップ6は孤立トリガーがあれば消すのみ）"
+          ],
+          "hours": 1.5,
+          "partnerApproved": false,
+          "note": "前回 plans の ingest 開通残作業を遂行。最大の発見は『前回 push したはずの統合が Code.gs に無い』→実は日本語名 コード.gs（別ファイル）に正しく入っており、英語 Code.gs を検索していた取り違えだった。さらに調査で COCoLa TOPICS が4月下旬からコンパイル不能（const 二重宣言）と判明、clasp×OneDrive ドリフトの実害。これを機に CLAUDE.md に『クラウド正本の原則』を新設（GAS は online 直接編集／コードは GitHub 正本／OneDrive にローカル正本を置かない、メモリ cloud-source-of-truth.md にも保存）。教訓：(a) GAS は online が正本でローカル clasp コピーを信用しない、(b) 破損調査は clasp pull で全ファイル取得→横断 grep が最速、(c) clasp 3.x の push は remote ファイル削除非対応＝削除でなく無効化で対応、(d) 重複でも const/let のみがコンパイルを壊し var/function は後勝ちで合法、犯人特定は宣言キーワードで絞る。残：本番スキャナーでの新規画像→OCR→CiDAO の目視クローズ（連結部品は全て検証済み、自動トリガー10分ごとで今後は自動化）、ステップ6の孤立トリガー確認。"
+        },
+        {
+          "date": "2026-06-26",
           "title": "🔁 COCoLa→CiDAO ingest パイプライン構築（Drive画像1枚で両サイト反映） 1.0時間",
           "category": "実装",
           "outputs": [
