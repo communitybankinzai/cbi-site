@@ -21,7 +21,7 @@
           ],
           "hours": 1.5,
           "partnerApproved": false,
-          "note": "前回 plans の ingest 開通残作業を遂行。最大の発見は『前回 push したはずの統合が Code.gs に無い』→実は日本語名 コード.gs（別ファイル）に正しく入っており、英語 Code.gs を検索していた取り違えだった。さらに調査で COCoLa TOPICS が4月下旬からコンパイル不能（const 二重宣言）と判明、clasp×OneDrive ドリフトの実害。これを機に CLAUDE.md に『クラウド正本の原則』を新設（GAS は online 直接編集／コードは GitHub 正本／OneDrive にローカル正本を置かない、メモリ cloud-source-of-truth.md にも保存）。教訓：(a) GAS は online が正本でローカル clasp コピーを信用しない、(b) 破損調査は clasp pull で全ファイル取得→横断 grep が最速、(c) clasp 3.x の push は remote ファイル削除非対応＝削除でなく無効化で対応、(d) 重複でも const/let のみがコンパイルを壊し var/function は後勝ちで合法、犯人特定は宣言キーワードで絞る。残：本番スキャナーでの新規画像→OCR→CiDAO の目視クローズ（連結部品は全て検証済み、自動トリガー10分ごとで今後は自動化）、ステップ6の孤立トリガー確認。"
+          "note": "前回 plans の ingest 開通残作業を遂行。最大の発見は『前回 push したはずの統合が Code.gs に無い』→実は日本語名 コード.gs（別ファイル）に正しく入っており、英語 Code.gs を検索していた取り違えだった。さらに調査で COCoLa TOPICS が4月下旬からコンパイル不能（const 二重宣言）と判明、clasp×OneDrive ドリフトの実害。これを機に CLAUDE.md に『クラウド正本の原則』を新設（GAS は online 直接編集／コードは GitHub 正本／OneDrive にローカル正本を置かない、メモリ cloud-source-of-truth.md にも保存）。教訓：(a) GAS は online が正本でローカル clasp コピーを信用しない、(b) 破損調査は clasp pull で全ファイル取得→横断 grep が最速、(c) clasp 3.x の push は remote ファイル削除非対応＝削除でなく無効化で対応、(d) 重複でも const/let のみがコンパイルを壊し var/function は後勝ちで合法、犯人特定は宣言キーワードで絞る。本番クローズ達成：22:58 に新規チラシ『東京アウトドアショー』を scanDriveEventImagesNow で処理→Gemini OCR（title=東京アウトドアショー / location=幕張メッセ / description 抽出、inputTokens415/outputTokens110）→CiDAO 正式登録 d2e50ad9（画像 Storage コピー＋[GH] workflow_dispatch 204 も発火）を確認。新規チラシ1枚で COCoLa シート＋CiDAO カレンダー両方に自動掲載の単一投入フロー完成。注意：日時は parse フォールバックで当日になる場合あり（/events/[id]/edit で修正可）。残：ステップ6の孤立トリガー scanCoCoLaEventImages/scanNewEventImages のトリガー画面確認のみ（関数本体はコードに無い）。"
         },
         {
           "date": "2026-06-26",
