@@ -1157,6 +1157,20 @@
       ],
       "plans": [
         {
+          "due": "2026-06-27",
+          "title": "🕘 イベント時刻の9hズレ修正（TZ処理を JST 基準で統一）",
+          "category": "実装",
+          "priority": "高",
+          "note": "events.start_at/end_at は timestamptz だが、ingest route / createEvent / updateEvent が datetime-local の素の JST 文字列をそのまま挿入し UTC として保存→表示で+9hズレ（例：東京アウトドアショー d2e50ad9 が DB 14:00Z＝JST 23:00 表示）。修正：(1) ingest postToCidao_ の start_at と createEvent/updateEvent の挿入で JST→UTC 変換、(2) 編集フォーム defaultValue（toLocalDatetime）は UTC→JST 表示、(3) カレンダー表示も JST で統一。雑にやると全イベント時刻を壊すので round-trip テスト必須。既存イベントの時刻補正も。これが直るまで投稿者の編集UIで時刻は正しく直せない。"
+        },
+        {
+          "due": "2026-07-31",
+          "title": "📷 写真投稿者の identity 紐づけ（claim）＋情報提供への貢献度ポイント設計",
+          "category": "分析",
+          "priority": "中",
+          "note": "現状 ingest イベントは bot 主催で、写真を投稿した実際の市民が (a) 自分で編集できない（can_edit_event の権限は organizer=bot のみ）、(b) 貢献度ポイントが付かない（award_on_event_attendance は主催参加40pt/スタッフ20pt/参加5pt で、登録自体は対象外。かつ bot 主催）。Drive アップ者 or CiDAO ログインユーザーを投稿イベントに紐づける claim フローと、『情報提供』への新ポイント種別を設計。編集権限の email 一致パスとも整合。ユーザー指摘『投稿者が直接直したい』『登録者にポイントは付かないのか』が起点。"
+        },
+        {
           "due": "2026-07-31",
           "title": "GitHub Actions スケジュール実行の安定化監視",
           "category": "保守",
