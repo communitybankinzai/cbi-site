@@ -8,6 +8,23 @@
       "actuals": [
         {
           "date": "2026-06-26",
+          "title": "🕘 CiDAO イベント時刻TZ修正＋📆複数日カレンダー表示＋東京アウトドアショー修正 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/datetime.ts 新規 — jstLocalToUtcIso()（datetime-local/ingest の JST 壁掛け時刻を UTC ISO に変換、二重変換防止ガード付き）",
+            "cidao: src/app/events/actions.ts の createEvent/updateEvent で start_at/end_at を jstLocalToUtcIso 変換（27ef8f3）",
+            "cidao: src/app/api/events/ingest/route.ts の insert で start_at/end_at を同変換",
+            "本番検証：ingest に JST 10:00 を送り DB に UTC 01:00:00Z で保存されることを確認（ポーリング＋テストデータ自動削除）",
+            "cidao: src/app/events/page.tsx — 複数日イベントを開始〜終了の各JST日のセルに展開表示、取得クエリを期間重なり（start<窓末 AND end>窓頭）に変更、jstDayNoonMs ヘルパー追加（0eb6442）",
+            "本番検証：3日間テストイベントが3日分のセルに表示されることを HTML で確認（id 9回出現、テストデータ削除）",
+            "東京アウトドアショー：時刻を正しい JST に DB 補正→当初単一→日割り3分割→複数日表示実装後に1件(d2e50ad9, 6/26 14:00→6/28 17:00)へ統合。本番で 6/26・27・28 の3日表示を確認"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "plans の #1（TZ修正・高）と #3（複数日表示・低）を実装・完了。最大の発見：TZバグは書き込み側のみ（読み取りの toLocalDatetime / hmFmt は既に Asia/Tokyo で正しい）。datetime-local/ingest の素の JST 文字列を timestamptz にそのまま入れると UTC 解釈で +9h ズレるため、書き込み3経路（createEvent/updateEvent/ingest）に JST→UTC 変換を1つ挟むだけで解決。既存の東京アウトドアショーは DB 直接補正。#2（写真投稿者の claim＋情報提供ポイント）は設計案を提示（案C=claimボタン推奨）、実装は次回。教訓：TZは『保存=UTC／表示=JST／入力=JST壁掛けをUTCに変換』の3点を1箇所ずつ揃えるのが安全。複数日イベントは start_at だけでなく span 全日に展開＋取得も overlap 条件が要る。"
+        },
+        {
+          "date": "2026-06-26",
           "title": "🔁 COCoLa→CiDAO ingest 開通＋4月から壊れていたGASプロジェクトの修復 1.5時間",
           "category": "保守",
           "outputs": [
@@ -1157,25 +1174,11 @@
       ],
       "plans": [
         {
-          "due": "2026-06-27",
-          "title": "🕘 イベント時刻の9hズレ修正（TZ処理を JST 基準で統一）",
-          "category": "実装",
-          "priority": "高",
-          "note": "events.start_at/end_at は timestamptz だが、ingest route / createEvent / updateEvent が datetime-local の素の JST 文字列をそのまま挿入し UTC として保存→表示で+9hズレ（例：東京アウトドアショー d2e50ad9 が DB 14:00Z＝JST 23:00 表示）。修正：(1) ingest postToCidao_ の start_at と createEvent/updateEvent の挿入で JST→UTC 変換、(2) 編集フォーム defaultValue（toLocalDatetime）は UTC→JST 表示、(3) カレンダー表示も JST で統一。雑にやると全イベント時刻を壊すので round-trip テスト必須。既存イベントの時刻補正も。これが直るまで投稿者の編集UIで時刻は正しく直せない。"
-        },
-        {
           "due": "2026-07-31",
-          "title": "📷 写真投稿者の identity 紐づけ（claim）＋情報提供への貢献度ポイント設計",
-          "category": "分析",
-          "priority": "中",
-          "note": "現状 ingest イベントは bot 主催で、写真を投稿した実際の市民が (a) 自分で編集できない（can_edit_event の権限は organizer=bot のみ）、(b) 貢献度ポイントが付かない（award_on_event_attendance は主催参加40pt/スタッフ20pt/参加5pt で、登録自体は対象外。かつ bot 主催）。Drive アップ者 or CiDAO ログインユーザーを投稿イベントに紐づける claim フローと、『情報提供』への新ポイント種別を設計。編集権限の email 一致パスとも整合。ユーザー指摘『投稿者が直接直したい』『登録者にポイントは付かないのか』が起点。"
-        },
-        {
-          "due": "2026-08-31",
-          "title": "📆 カレンダーで複数日イベントを全日表示（現状は開始日のみ）",
+          "title": "📷 写真投稿者の claim（身元紐づけ）＋情報提供への貢献度ポイント実装",
           "category": "実装",
-          "priority": "低",
-          "note": "events/page.tsx の byDate は start_at の日付にしか振り分けず、複数日イベントが初日にしか表示されない。start_at〜end_at がまたがる場合は該当全日のセルに表示するよう拡張。実装後は、当面の対処として日ごとに3件へ分割した『東京アウトドアショー』(d2e50ad9=6/26 / 234ff597=6/27 / 14f9fbdf=6/28) を1件に統合可能。ユーザー指摘『6/27・6/28がカレンダーに反映されない』が起点。"
+          "priority": "中",
+          "note": "【設計確定 2026-06-26】現状 ingest イベントは bot 主催で、投稿者本人が (a) 編集できない（can_edit_event は organizer=bot のみ）、(b) ポイントが付かない（award_on_event_attendance は主催40/スタッフ20/参加5pt で登録自体は対象外、かつ bot 主催）。実装手順（案C=claimボタン採用、Drive メール取得の案Aは権限重く段階的）：(1) events.submitter_member_id 列追加 migration、(2) 詳細ページに『これは私が投稿しました』claim server action（ログインユーザーが申告→submitter_member_id セット、必要なら email 照合で補強）、(3) can_edit_event に submitter_member_id=auth.uid() 条件を追加、(4) award_contribution に新種別 event_submitted（例10pt）を追加し claim 時に投稿者へ付与。ユーザー指摘『投稿者が直接直したい』『登録者にポイントは付かないのか』が起点。"
         },
         {
           "due": "2026-07-31",
