@@ -1,11 +1,65 @@
 {
   "updatedAt": "2026-06-26",
-  "_comment_updated": "2026-06-26 A1: CBIサイトからCiDAOへのリンク追加（ナビ/人材バンクCTA/フッター 3箇所）",
+  "_comment_updated": "2026-06-26 A1: CiDAO イベント機能の大幅刷新 + COCoLa↔CiDAO 連携パイプライン構築（3セッション分まとめ追記、ルール7違反の遡及記録）",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": ["実装", "保守", "レポート", "分析", "会議", "広報", "事務", "調査", "その他"],
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-26",
+          "title": "🔁 COCoLa→CiDAO ingest パイプライン構築（Drive画像1枚で両サイト反映） 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260626150000_event_external_source.sql 追加 — events に external_source / external_source_id 列追加、両方 NOT NULL のとき UNIQUE で重複防止",
+            "cidao: src/app/api/events/ingest/route.ts 新規 — 共有シークレット認証(x-ingest-secret) + service_role で events insert、JSON+base64 で画像同梱、event-flyers バケットに cocola-ingest/<source_id>.<ext> として保存、dedupe で既存があれば event_id を返すのみ",
+            "cidao: e84e084 commit + push",
+            "COCoLa Apps Script: コード.gs (4775行) の scanDriveEventImages 内 sheet.appendRow 直後に postToCidao_ best-effort 呼び出し追加、postToCidao_ / tryParseEventDatetimeIso_ / setCidaoIngestConfig / testCidaoIngest の4関数を末尾に追加、clasp push でデプロイ済み",
+            "ローカルの孤立した image-scan.gs.gs（412行）は本物ではなかった（clasp で push されていなかった、本体は コード.gs の scanDriveEventImages）と判明、BACKUP として保管後ユーザーが削除",
+            "Vercel env var 設定支援（INGEST_SHARED_SECRET=96ba7443..., INGEST_BOT_MEMBER_ID, SUPABASE_SERVICE_ROLE_KEY の3つ）— ユーザーがダッシュボードで実行、Bot member 作成はこの時点で未完了"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "目的: Drive の監視フォルダに画像1枚 drop すると COCoLa シート + CiDAO カレンダー両方に登場する単一投入フローの確立。設計上の判断: (a) Apps Script→Web API の最小信頼境界は共有シークレットヘッダーで十分（OAuth は過剰）、(b) service_role を使うため CiDAO ingest API は必ずサーバサイドのみで、bot member（事前作成の CiDAO アカウント）を organizer にしてイベントを擬人化、(c) dedupe キーは Drive file ID なので同じ画像を何度処理しても二重登録されない、(d) 画像も同梱して CiDAO 側 Storage にコピー保存することで Drive 公開リンク切れリスクを回避し独立性確保。教訓: (i) clasp の scriptExtensions 設定で .gs.gs（拡張子重複）の扱いが直感に反するため、ローカルファイルの実体が online と一致しているか必ず確認すること、(ii) Apps Script 本体に既存の同種スクリプト（scanDriveEventImages）があったので、新規 image-scan.gs を作るより既存に統合するのが正解だった — 最初に コード.gs を grep してから判断すべきだった、(iii) ユーザー側の作業（Vercel UI 操作、Apps Script エディタでの実行、Supabase migration 適用）が複数ステップ並ぶ場合、現在地と次の1手だけを明示する案内が必要、長いチェックリストは詰む。本セッション内で「以前やった作業を覚えていない」とユーザー指摘あり — ルール7違反（worklog 未追記）の構造的失敗、次回以降は作業開始前に plans 確認 + 各タスク完了時に actuals 追記を厳守。"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "✏️ CiDAO /events/[id]/edit 編集機能 + email一致での編集権限拡張 0.7時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260626130000_event_edit_permission.sql 追加 — can_edit_event(events) 関数 + events_update_organizer / events_delete_organizer RLS ポリシーを差し替え。proxy_registration かつ name 一致団体の officer/rep、関連団体 contact_email = auth.jwt().email 一致 を許可条件に追加",
+            "cidao: src/app/events/[id]/edit/page.tsx 新規 — 既存値 defaultValue でプリフィル、OrganizerPicker は既存 organizer から初期値復元（org→UUID、proxy で名前一致→その団体UUID、それ以外→__external__ + 名前プリフィル）",
+            "cidao: src/lib/event-permissions.ts 新規 — canUserEditEvent ヘルパー集約、詳細ページのボタン出し分けと編集ページの事前ガードで共用",
+            "cidao: src/app/events/actions.ts に updateEvent 追加（createEvent と同じ organizer_choice ルーティング）",
+            "cidao: src/app/events/[id]/page.tsx に編集ボタン追加（権限あり時のみ）、?error=forbidden で赤帯メッセージ",
+            "cidao: src/app/events/new/_components/OrganizerPicker.tsx に initialNameText prop 追加",
+            "cidao: 5362491 commit + push"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "ユーザー要望「登録した内容に間違いがあったので、カレンダー画面から修正したい。編集権限はメールアドレスが団体メンバーと照合すればよい」に対応。動線はカレンダー→詳細→編集（カレンダー側に inline 編集アイコンは N+1 クエリ重いので付けず）。email 一致ロジックは inzaiparque から取り込んだ団体の代表者連絡先が CiDAO 未登録でも編集できる経路を確保するため。"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "📅 CiDAO /events を月グリッドカレンダー化 + 全団体ドロップダウン + 画像スキャン+Storage 2.0時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260626120000_events_organizer_name_text.sql — organizer_name_text 列追加（未登録団体名フリーテキスト用）",
+            "cidao: supabase/migrations/20260626140000_event_flyers_storage.sql — event-flyers Storage バケット + events.flyer_image_url 列追加（チラシ画像保存）",
+            "cidao: src/app/events/page.tsx 大幅刷新 — 月7×6グリッドカレンダー、月送り/今月/カレンダー↔リスト切替、JST基準で日付集約、当日マーカー、日曜/土曜色分け、各セル最大3件+「+N件」、event chip にポスター画像サムネ表示",
+            "cidao: src/app/events/new/page.tsx 改修 — ?date= プリフィル、全登録団体（500件まで名前順）を含む単一 OrganizerPicker、画像スキャン UI 追加",
+            "cidao: src/app/api/events/scan/route.ts 新規 — multipart 画像受信 → Claude Vision (claude-opus-4-7) で title/description/start_at/end_at/location/online_flag/organizer_name/capacity/fee を構造化JSON抽出、並列で event-flyers Storage に保存、flyer_image_url 返却",
+            "cidao: src/app/events/new/_components/ImageScanField.tsx 新規 — ファイル選択→API呼び出し→React 19 controlled select も含めて form 自動入力（ネイティブ setter 経由）、organizer_name は登録済み団体名と一致したら UUID 自動選択",
+            "cidao: src/app/events/new/_components/OrganizerPicker.tsx 新規 — 自分の所属団体/全登録団体/未登録自由入力/個人 を optgroup で統合、デフォルトは所属団体→なければ未登録（個人を回避）",
+            "cidao: src/app/events/actions.ts の createEvent を organizer_choice ベースに再設計、非メンバーが既存団体名義で登録した場合は proxy_registration=true + organizer_name_text に organizations.name を入れて将来 claim で紐付け可能に",
+            "cidao: src/app/events/[id]/page.tsx に主催団体名表示（org→リンク、proxy→「（代理登録）」付）",
+            "cidao: src/app/orgs/[id]/page.tsx に「活動カレンダー」セクション追加 — organizer_id 紐付き + name 一致 proxy 登録 両方を or() で取得、代理登録には (代理登録) ラベル",
+            "cidao: d149dfd, 5362491 commit + push（途中で /events/[id]/edit を含む）"
+          ],
+          "hours": 2.0,
+          "partnerApproved": false,
+          "note": "ユーザー要望: 「/events を FullCalendar 風に作り込む。cocolaはあくまでもイメージでイベント登録時（画像スキャンまたは直接入力方式）に団体名情報が必要」に対応。設計判断: (a) FullCalendar ライブラリ導入は避け Tailwind+React で月グリッド自作（依存追加なし、Next.js 16 RSC 互換性確保）、(b) 主催欄は当初3択 UI だったがユーザー指摘で全登録団体を含む単一ドロップダウンに刷新、デフォルトを「個人として」から外して所属団体優先、(c) 画像スキャンは AI 抽出と Storage 保存を Promise.all で並列実行（待ち時間半減）、(d) React 19 controlled component に対する DOM 経由値設定はネイティブ setter trick が必須、(e) organizer 解決のフォールバックチェーンが createEvent と updateEvent と editページ initialChoice 復元の3箇所で並走するため、ロジックを揃えて drift 防止。当初ユーザーが「7.18 のイベントが反映されない」と報告した件は、変更がまだ本番 push されておらず旧バージョンが動いていたため = 開発フロー全体の指摘として受け止め、以降は push を忘れず案内。"
+        },
         {
           "date": "2026-06-26",
           "title": "🔗 CBIサイトからCiDAOへの導線追加（ナビ＋人材バンクCTA＋フッター） 0.3時間",
