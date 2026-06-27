@@ -5,6 +5,14 @@
     {
       "date": "2026-06-27",
       "type": "feature",
+      "target": "cidao: アバター画像の位置・拡大調整UI（マウスドラッグ＋ホイール＋スライダー）＋人材バンクカード掲載",
+      "title": "🎨 マイページのアバター画像を、円内で位置調整・拡大縮小できるようになった（人材バンク一覧/詳細にもアバター表示）",
+      "detail": "代表からの『マイページの画像の範囲を下にずらしたい→マウスで調整できないの？→拡大もできるようにして→上下左右動かしたい』の段階的要望に対応。\n\n■ 何ができるようになったか：(1) /me/edit のアバターアップロード欄で円形プレビュー内をマウスで上下左右ドラッグして見せたい位置を中央に持ってこられる、(2) マウスホイールまたは下部のスライダーで 1.00× ～ 3.00× の拡大、(3) 設定した位置と拡大率はDBに永続化（avatar_position / avatar_zoom 列）され、/me マイページ、/talent 人材バンク一覧（カード左 48px）、/talent/[id] 詳細（ヘッダー 80px）など全画面で同じ見え方になる、(4) 『変更を取り消す』『初期状態に戻す』ボタンで復元可能、(5) 拡大が 1.00× のままだと画像が枠ぴったりで動かない仕様を UI で明示。\n\n■ 技術的な紆余曲折：当初は img + object-position + transform: scale で実装したが、拡大後の位置調整が効かないため background-image + background-size + background-position 方式に切替。background-position は 0–100% で枠内の表示位置を直感的に制御でき、拡大率に応じて自動的に動かせる範囲が広がる。ドラッグ感度も拡大率に応じて適切に調整（box_size × (zoom-1) で 100% シフトする正確な計算）。\n\n■ 他のセッション内対応：(a) org_interests の UPDATE policy 抜けで email_sent_at/email_error が記録できていなかった問題を migration 修正、(b) InterestForm を複数回応募可能に改善（前回の応募行が残っていても『もう一度送信する』ボタンで再送可能に）、(c) /api/talent-bank/stats の定義を『members 本登録』から『member_profiles_pr 公開済み』に修正して /talent の実数（1名）と一致させた、(d) CBI サイトの人材バンク文言も『CBI の人材バンク = CiDAO の本登録』から『CBI の人材バンク = CiDAO の「あなたのPR」』に直球で訂正、CTA を /login?next=/me/pr 直結に。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-27",
+      "type": "feature",
       "target": "cbi-site + cidao: 人材バンク機能の『看板』化 + 『応募動線』追加 + 登録者数 API",
       "title": "🤝 「CBI の人材バンク = CiDAO の本登録」を明確化、団体ページに『この団体で活動したい』ボタンと通知メールを追加",
       "detail": "代表からの問い『人材バンクの機能は、個人登録時点で働くことにならないか？』に対応。回答：その通り、すでに動いている。CiDAO 本登録 (/me/edit) で興味分野＋自己紹介を入れた瞬間に AI マッチングで合う団体が出る = 人材バンクの利用者側はすでに完成。今回はそれを (a) 看板で見える化、(b) 応募動線で完成させた。\n\n■ CBI サイト側『看板』改修：参加方法の人材バンクカード文面を改訂し『CBI の人材バンク = CiDAO の本登録です』を直球で書いた。説明文に『AIが約220団体から、あなたに合う団体を見つけて提案』を追加。主CTAを CiDAO トップ経由から /login?next=/me/edit に直接化（1クリック減）。『現在 N 名が人材バンクに登録しています』のリアルタイムカウンター追加（CiDAO の /api/talent-bank/stats から fetch、fetch 失敗時は hidden で隠れる安全な設計）。\n\n■ CiDAO『応募動線』追加：団体詳細ページ /orgs/[id] に新セクション『🤝 この団体で活動したい人を募集しています』を活動カレンダーと参加/加入の間に配置。展開フォーム（400字、メール開示可否チェック）→ 送信で org_interests テーブルに記録 + 団体の contact_email に Resend で通知メール送信（差出人名・メッセージ・CiDAO ページリンク付き、reply-to で応募者本人のメールに返信可能）+ 本人控え。状態別 UI：未ログイン → 『ログインして人材バンクに登録』、tier=light → 『本登録すると応募できます』、送信済み → 『✓ 送信しました』、団体に contact_email 無し → 『記録のみ、団体への通知は届きません』と明示。\n\n■ 既存『参加 / 加入』(memberships) との使い分け：軽い意思表示＝org_interests（一回限り、メッセージ+メール）、正式メンバー＝memberships（claim/approval 状態機械）。両方並列で動作。\n\n■ 技術詳細：(1) supabase/migrations/20260627190000_org_interests.sql 新規（INSERT は本登録以上のみ、SELECT は本人または can_edit_org の編集権者）。(2) src/app/api/talent-bank/stats/route.ts 新規（GET、CORS 開放、5分キャッシュ、tier in (email_only,verified) AND interests あり の count を返す）。(3) src/app/orgs/[id]/_components/InterestForm.tsx 新規（client component、useTransition で送信、状態別表示）。(4) src/app/orgs/actions.ts に expressInterest 追加（Resend は best-effort、失敗時は email_error 列に記録、DB INSERT は成功扱い）。",

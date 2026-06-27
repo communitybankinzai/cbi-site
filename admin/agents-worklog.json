@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: 人材バンクの『看板』化＋『応募動線』追加＋登録者数 API",
+  "_comment_updated": "2026-06-27 A1: アバター位置調整・拡大UI＋人材バンクカード掲載＋org_interests関連バグ修正",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": [
     "実装",
@@ -16,6 +16,32 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "🎨 アバター位置・拡大調整UI＋人材バンクカード掲載＋org_interests関連バグ修正 1.8時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260627200000_org_interests_update_policy.sql — org_interests に UPDATE policy 抜けで email_sent_at/email_error が記録できないバグを修正（member_id=auth.uid() のみ UPDATE 可）",
+            "cidao: supabase/migrations/20260627210000_avatar_position.sql — members.avatar_position text 列追加（CSS object-position 値を保存）",
+            "cidao: supabase/migrations/20260627220000_avatar_zoom.sql — members.avatar_zoom numeric(4,2) default 1.0 列追加",
+            "上記 migration 3本を本番 DB に適用（プーラー aws-1 経由）",
+            "cidao: src/app/api/talent-bank/stats/route.ts 定義修正 — 当初『tier in (email_only,verified) AND interests あり』だったが /talent ページの実数（PR公開済み 1名）と一致せず、代表指摘『2名と出るが実際は1名』を受けて member_profiles_pr.message_acceptance != 'closed' の count に変更",
+            "cidao: src/app/orgs/[id]/_components/InterestForm.tsx を複数回応募可能に改善 — alreadyApplied/result 分岐ともに『もう一度送信する』ボタン追加、過去応募時刻表示、prop を lastAppliedAt に変更",
+            "cidao: src/app/orgs/[id]/page.tsx — InterestForm への prop を lastAppliedAt に",
+            "cidao: src/components/ui/avatar.tsx 大幅改修 — objectPosition + zoom prop 対応、最初 img+object-position+transform:scale → 拡大後の位置調整効かないため background-image+background-size+background-position 方式に切替、parseAvatarPosition export で AvatarUpload と共有",
+            "cidao: src/app/me/edit/_components/AvatarUpload.tsx に位置・拡大調整UI 追加（240→400行）— 円形プレビュー内でマウスドラッグで上下左右位置調整、ホイール or スライダー（1.0×～3.0×）で拡大、リアルタイムプレビュー、『位置を保存』『変更を取り消す』『初期状態に戻す』ボタン、ドラッグ感度を拡大率に応じて自動調整、zoom=1.0 のとき動かせない仕様を UI で明示",
+            "cidao: src/app/me/edit/page.tsx — AvatarUpload に initialPosition/initialZoom prop 渡し",
+            "cidao: src/app/me/page.tsx — Avatar に member.avatar_position と member.avatar_zoom 渡し",
+            "cidao: src/app/talent/page.tsx — 人材バンク一覧カード左に Avatar (lg=48px) 表示、select に avatar_url/position/zoom 追加",
+            "cidao: src/app/talent/[id]/page.tsx — 詳細ヘッダーに Avatar (xl=80px) 表示",
+            "cbi-site: index.html の人材バンクカード文言を『CBI の人材バンク = CiDAO の本登録』→『CBI の人材バンク = CiDAO の「あなたのPR」』に訂正（後者が /talent ページの実体に整合）、CTA を /login?next=/me/pr 直結に変更、note に /talent ページへの外部リンク追加",
+            "cidao 修正コミット 5本 + cbi-site 1本 push → Vercel 自動デプロイ × 6回",
+            "本番検証 curl：/talent ページに background-image:url(...avatars/0abcc627-...webp) で role=img のアバター表示確認、人材バンク登録者数 API は {registered:1} に補正完了"
+          ],
+          "hours": 1.8,
+          "partnerApproved": true,
+          "note": "代表からの段階的フィードバックを受けながら3つの大きな課題を1セッションで解決：\n\n■ 課題1：org_interests のメール送信不達調査\n前回送信時に email_sent_at/email_error が両方 NULL のまま残り、Resend が呼ばれたかすら DB から確認できない状態だった。原因は org_interests に INSERT/SELECT/DELETE policy のみで UPDATE policy 抜け→ server action の write-back が RLS で silently 拒否されていた。member_id=auth.uid() の UPDATE policy 追加で解消。直接 /api/notify/email を curl 経由でテストして Resend 自体は機能していること（accepted=true, message_id 取得）も確認。なお代表の Gmail には curl テストメールが届いたが本文が文字化け、これは Git Bash で日本語を直接コマンドライン引数で渡したときの CP932 エンコーディング問題（メモリに既記載）で Resend や Next.js 経由は UTF-8 で正常。\n\n■ 課題2：CBIサイトの登録者数表示が /talent と齟齬\n『2名登録』と CBI サイトに出るが /talent ページは1名のみ表示で代表指摘あり。原因は私が当初『人材バンク登録 = 本登録 (tier email_only+ AND interests あり)』と定義した API クエリと、/talent ページの『member_profiles_pr に公開行あり』の定義が違っていたこと。CiDAO の正しい『人材バンク』は後者（自分から PR を公開した人）で、本登録は『AI マッチング対象になる母集団』という別概念。CBI サイトの文言を『CBI の人材バンク = CiDAO の「あなたのPR」』に直球で訂正、CTA を /login?next=/me/pr 直結化。\n\n■ 課題3：アバター画像の調整（4段階の要望進化）\n(1)『マイページの画像の範囲を下にずらしたい』→ Avatar に objectPosition prop 追加、xl サイズだけ 'center 70%' でハードコード対応 → (2)『マウスで調整できないの？』→ avatar_position 列追加、ドラッグ UI 実装、ただし pointer event の target が img になっていて動かない問題発生 → document への直接 addEventListener 方式に切替で解決 → (3)『拡大もできるようにして』→ avatar_zoom 列追加、スライダー＋ホイール対応 → (4)『拡大縮小はできるが上下左右位置が変えられない』→ img+object-position+transform 方式では拡大後の位置調整が効かないため、background-image+background-size+background-position 方式に全面切替。box_size × (zoom-1) を 100% シフト分とする正確な感度計算でドラッグ感もスムーズに。\n\n副次成果：人材バンクが『1名（代表本人）』から始まる伸びが今後可視化される（/api/talent-bank/stats を CBI サイトが fetch）。最初の利用者である代表本人の体験を最良にすることが、後続ユーザーへの最良の案内となる。"
+        },
         {
           "date": "2026-06-27",
           "title": "🤝 人材バンク：CBIサイト看板改修＋CiDAO応募動線＋登録者数 API 1.0時間",
