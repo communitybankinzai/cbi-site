@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: アバター位置調整・拡大UI＋人材バンクカード掲載＋org_interests関連バグ修正",
+  "_comment_updated": "2026-06-27 A1: FreeFree 5機能フル拡張（5区分対応＋画像＋クーポン＋SNS定期紹介＋サンプル5件）",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": [
     "実装",
@@ -16,6 +16,44 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "🛍 FreeFree 5機能フル拡張（5区分対応・画像・クーポン・SNS定期紹介・サンプル5件） 2.3時間",
+          "category": "実装",
+          "outputs": [
+            "Step 1 — 掲載者5区分対応（個人/個人事業/団体/企業/行政）: cidao b69598b commit",
+            "  - src/lib/freefree-categories.ts に FREEFREE_POSTER_KINDS（5区分の表示メタ）+ resolveFreefreePosterKind ヘルパー追加",
+            "  - 既存 freefree_poster_type enum (member/org/individual_business) と organizations.type (civic_group/business/government) の組合せから論理5区分を導出（DB migration 不要）",
+            "  - new フォーム client component 化、組織選択UIで「自分が代表/編集権者の組織」のみ選択可能（権限なしは UI で明示）",
+            "  - actions.ts createFreefreePost で poster_kind→DB列マッピング、canUserEditOrg で権限チェック",
+            "  - 一覧ページに FreefreeBrowser 新設：掲載者バッジ（色分け 5色）、5区分フィルタチップ、カテゴリチップ、検索、新着/締切順ソート、件数バッジ",
+            "  - 詳細ページに掲載者バッジ + 組織名表示",
+            "Step 2 — 画像アップロード（最大3枚）: cidao f56eda0 commit",
+            "  - supabase/migrations/20260627230000_freefree_images_storage.sql — freefree-images bucket (public, 5MB, image only) + RLS 3本（upload/read/owner-delete）。本番DB適用済",
+            "  - src/lib/image-resize.ts に resizeImagePreserveAspect 追加（縦横比保持、長辺 1200px、WebP/JPEG）",
+            "  - FreefreeImagesUpload.tsx 新規（3スロット、+追加 / hover で削除、進捗表示、pending/<userId>/<ts>-<rand>.<ext> 暫定パス）",
+            "  - 一覧カードに 1枚目サムネ、詳細にギャラリー（1枚=ヒーロー、複数=グリッド、クリックで原寸新タブ）",
+            "Step 3 — クーポン機能: cidao 0127ac4 commit",
+            "  - actions.ts に createCoupon（createFreefreePost に統合）+ useCoupon 新規（unique 制約で1ユーザー1回担保）",
+            "  - new フォームに「🎟 クーポンを同時に発行する」チェックボックス展開UI（内容80字必須/条件200字任意/使用上限数値任意）",
+            "  - detail ページに「利用できるクーポン」セクション（黄色点線枠カード、残数・残日数、ボタン状態別UI、未ログイン→ログイン誘導）",
+            "  - 一覧カードに「🎟 クーポン」バッジ",
+            "Step 4 — SNS定期紹介ローテーション機能: cidao 646e29e commit",
+            "  - supabase/migrations/20260627240000_sns_rotation.sql — sns_rotation 自動投入トリガー（freefree active/event open/org insert）、バックフィルで org 223件 + event 4件投入、pick_next_sns_targets / run_sns_rotation_cycle 関数、pg_cron 'cidao_sns_rotation' 毎日 0時 UTC（JST 9時）登録。本番DB適用済",
+            "  - src/lib/sns-template.ts — 媒体別本文生成（X短文/FB・LINE詳細）、カテゴリ別絵文字プレフィックス、ハッシュタグ自動付与",
+            "  - POST /api/sns/rotate — 管理者のみ、手動 1サイクル実行",
+            "  - POST /api/sns/dispatch — 管理者のみ、pending log を読んで Facebook Graph API v22 + LINE Messaging API broadcast へ実投稿。env 未設定なら pending のまま error_message='credentials missing'。X は API 有料化のため Phase 2",
+            "  - /admin/sns 管理画面 — 過去30日ログ統計、次に紹介される候補7件、手動操作ボタン、認証情報の状態案内",
+            "Step 5 — サンプル投稿5件投入: cidao 19891e8 commit",
+            "  - scripts/seed-freefree.mjs 新規（180行）— 5区分カバーするサンプル投稿、business/government org が無ければサンプル org も自動投入、--apply/--reset/dry-run",
+            "  - 本番DBに 5件投入：member(写真散歩)/individual_business(出張パン教室+クーポン500円オフ)/civic_group(読み聞かせボラ)/business(企業協賛枠)/government(補助金説明会)",
+            "  - サンプル org 2件投入：[サンプル] まちかどカフェ印西（business）/ [サンプル] 印西市役所（government）",
+            "本番検証 curl：cidao.vercel.app/freefree で 5区分バッジ・クーポンバッジ・「すべて (5)」・サンプル5件すべて表示確認、/freefree/<個人事業id> で クーポン詳細（500円オフ・初回のみ・0/20使用・未ログイン誘導）すべて表示確認。pg_cron 'cidao_sns_rotation' 登録確認"
+          ],
+          "hours": 2.3,
+          "partnerApproved": false,
+          "note": "代表問い『団体/個人事業/企業/行政 すべて区分できるか？／SNS定期紹介投稿は実装できるか？』への回答 = 両方 YES、その場で5ステップ実装。\n\n■ 設計判断\n(a) DB migration 不要で5区分実現 — freefree_poster_type enum (member/org/individual_business) と organizations.type (civic_group/business/government) の組合せが既に5区分を完全カバーしていることに気付き、論理ヘルパー resolveFreefreePosterKind() で UI 層に5区分を表出。新規 migration を1本も追加せず（画像 storage / SNS rotation の2本のみ）に5区分が動いた。\n(b) FreeFree 投稿は email_only tier 以上必須（DB RLS で強制）— 当初の回答で『light tier でもOK』と説明したが RLS を見直して訂正、ユーザーに正確に再説明。\n(c) サンプル投稿で『business/government type の org が DB に0件』が発覚 — seed-freefree.mjs を「不在時は自動でサンプル org も投入」する設計に変更し、シーディングが「DB の前提条件を満たさないと動かない」状態を回避。\n(d) SNS実投稿は3媒体で温度差あり — Facebook/LINE は無料でAPI接続可能なので /api/sns/dispatch で実投稿コードを書ききった（env 設定するだけで本番稼働）。X は API 有料化により Phase 2 として stub のまま、ただし管理画面 UI には『なぜ pending か』を明示した。\n(e) ローテーション選出は DB 関数のみで完結 — 各 target_type で per_kind 件、最も古く紹介された対象を返す pick_next_sns_targets を SQL union all で実装。pg_cron は SQL を直接呼ぶだけで HTTP 不要にしたため pg_cron 内で完結（HTTP endpoint は手動実行用）。\n\n■ ローカル preview の制約\nSupabase publishable key (sb_publishable_) の Auth 制約で local preview server からは freefree_posts が select できない（既知の問題、worklog 既出）。検証は cidao.vercel.app 本番側で全要素 curl + Python 正規表現マッチで実施、5区分バッジ全表示・クーポン詳細全表示・サンプル5件すべて表示を確認。\n\n■ 副次効果\n(1) サンプル org 2件投入で「business」「government」type が DB に存在するようになり、本番ユーザーが org 編集時に種別を変更できる選択肢ができた。\n(2) sns_rotation テーブルに org 223件・event 4件が seed され、今すぐ管理画面の「次に紹介される候補」リストが充実した状態でデモ可能。\n(3) 画像 storage バケットが揃ったので、今後他機能（events のチラシ等）でも同じパターンを使い回し可能。"
+        },
         {
           "date": "2026-06-27",
           "title": "🎨 アバター位置・拡大調整UI＋人材バンクカード掲載＋org_interests関連バグ修正 1.8時間",
