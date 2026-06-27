@@ -7,6 +7,23 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-06-27",
+          "title": "📷 写真投稿者の claim（身元紐づけ）＋情報提供ポイント実装 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260627120000_event_submitter_claim.sql — events.submitter_member_id 列追加、can_edit_event に submitter本人条件追加、claim_event() SECURITY DEFINER 関数（未claim の取り込みイベントを申告→submitter セット＋event_submitted 10pt 付与、二重付与防止・横取り防止）",
+            "本番DBへ migration 適用（プーラー aws-1-ap-northeast-1 経由。直接ホスト db.* が IPv6 のみ解決で到達不可になったため切替）",
+            "cidao: src/app/events/actions.ts に claimEvent server action（supabase.rpc('claim_event')）",
+            "cidao: src/lib/event-permissions.ts の canUserEditEvent に submitter本人条件追加（編集ボタン出し分け用）",
+            "cidao: src/app/events/[id]/page.tsx に『情報提供』セクション（未claim→『これは私が投稿しました』ボタン／claim済み→確認表示）、詳細ページ日時を Asia/Tokyo 表示に修正（TZ表示バグ）",
+            "cidao bed900d commit + push → Vercel デプロイ",
+            "検証：claim_event を DB で JWT 模擬テスト（claim→10pt付与 / 再claim→二重なし / 別ユーザー→already_claimed）全合格。本番HTMLで claim セクション表示＋詳細14:00表示を確認"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "plans #2（中）完了。設計案C（claimボタン）を実装。鶏卵問題（未claim だと UPDATE RLS で弾かれる）は SECURITY DEFINER 関数 claim_event で回避し、関数内で『未claim かつ外部取り込みイベントのみ』に制限。投稿者が自己申告→編集権限獲得＋貢献度10pt、という市民協力を本人の手柄として残す導線が完成。先着ロックで横取り防止、related_id+action_type 重複チェックで二重付与防止。インフラ知見：Supabase 直接接続ホスト db.<ref>.supabase.co が IPv6 のみ解決でこの環境から到達不可になり、プーラー aws-1-ap-northeast-1.pooler.supabase.com:5432（ユーザー postgres.<ref>、prefix は aws-1。aws-0 は tenant not found）に切替、credentials.md に記録。Supabase クライアントは <Database> 型なし＝未型付けのため database.types.ts 更新不要。"
+        },
+        {
           "date": "2026-06-26",
           "title": "🕘 CiDAO イベント時刻TZ修正＋📆複数日カレンダー表示＋東京アウトドアショー修正 1.0時間",
           "category": "実装",
@@ -1173,13 +1190,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-07-31",
-          "title": "📷 写真投稿者の claim（身元紐づけ）＋情報提供への貢献度ポイント実装",
-          "category": "実装",
-          "priority": "中",
-          "note": "【設計確定 2026-06-26】現状 ingest イベントは bot 主催で、投稿者本人が (a) 編集できない（can_edit_event は organizer=bot のみ）、(b) ポイントが付かない（award_on_event_attendance は主催40/スタッフ20/参加5pt で登録自体は対象外、かつ bot 主催）。実装手順（案C=claimボタン採用、Drive メール取得の案Aは権限重く段階的）：(1) events.submitter_member_id 列追加 migration、(2) 詳細ページに『これは私が投稿しました』claim server action（ログインユーザーが申告→submitter_member_id セット、必要なら email 照合で補強）、(3) can_edit_event に submitter_member_id=auth.uid() 条件を追加、(4) award_contribution に新種別 event_submitted（例10pt）を追加し claim 時に投稿者へ付与。ユーザー指摘『投稿者が直接直したい』『登録者にポイントは付かないのか』が起点。"
-        },
         {
           "due": "2026-07-31",
           "title": "GitHub Actions スケジュール実行の安定化監視",
