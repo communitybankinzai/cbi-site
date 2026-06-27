@@ -5,6 +5,14 @@
     {
       "date": "2026-06-27",
       "type": "feature",
+      "target": "cidao: /proposals 一覧活性化 + 詳細を Realtime 化 + サンプル提案5件投入",
+      "title": "🗳️ 提案ページが『投票中／議論中／結果』タブで見やすくなり、詳細の層別バーがリアルタイム更新するようになった（サンプル提案5件で動作確認可能に）",
+      "detail": "■ 何ができるようになったか：(1) /proposals 一覧にタブ追加（投票中 N／議論中 N／結果 N／すべて N）と件数バッジ、投票中は締切が近い順・議論中は次に投票へ移る順・結果は新しい順に自動ソート、(2) 各カードに『あと N 日 N 時間』のカウントダウンと『賛成 82% 反対 9% 保留 9%／12票』のような snapshot バー表示（拘束/諮問で choices 自動切替）、(3) 分野フィルタも追加（提案数が増えても探しやすい）、(4) 詳細ページの層別投票状況バーが Supabase Realtime で vote_aggregates の変更を購読してライブ反映、投票期間中は『● リアルタイム更新中』バッジ点灯、(5) サンプル提案5件投入（discussion×1 / voting×2 / passed×1 / rejected×1）でゼロ件問題を解消、これまで提案0件だった /proposals が実データで動作確認可能に。\n\n■ 重要バグ修正：本番DB の touch_last_active() トリガー関数が PL/pgSQL の CASE 全分岐コンパイル制約に引っかかっており、『INSERT INTO proposals』が必ず失敗する状態だった（誰も提案を作成していなかったため顕在化していなかった）。CASE を IF/ELSIF に書き換える migration 20260627180000 で修正。これがなかったら『提案を投稿する』ボタンが押せても server action がエラーで返るところだった。\n\n■ 技術詳細：/proposals/_components/ProposalsBrowser.tsx 新規（client、タブ・件数・フィルタ・snapshot バー）、/proposals/[id]/_components/LiveLayerBars.tsx 新規（client、Supabase Realtime channel で vote_aggregates 購読、status=voting のみ subscribe、投票期間外は静的表示）、scripts/seed-proposals.mjs（DRY-RUN/--apply/--reset、提案者は印西市公式登録プレースホルダー、vote_aggregates も直接挿入で層別バー実数表示）。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-27",
+      "type": "feature",
       "target": "cidao: /events フィルタ・検索・主催種別（EventsBrowser 新設）",
       "title": "🔎 イベントページでフィルタ・検索ができるようになった（団体絞り込み・文字検索・市民活動団体/事業者/行政の種別選択・オンラインのみ）",
       "detail": "代表指摘『特定の団体のみに絞ったり、文字検索したり、企業や行政の予定なども選択表示できるようにしたい』に対応。\n\n■ 何ができるようになったか：(1) 検索ボックスでイベント名・場所・主催団体・説明文を横断検索、(2) 種別フィルタチップ（市民活動団体／事業者／行政）で主催団体の種別ごとに絞り込み、(3) 主催ドロップダウンで個人主催のみ／特定団体のみ／全主催を切り替え、(4) 『オンラインのみ』チップでオンラインイベントだけ表示、(5) フィルタ解除ボタンで一発リセット、(6) 結果件数を『N / 全件 件』形式で表示。\n\n■ 既存機能は維持：カレンダー/リスト切替・月送り・今月ボタン・新規登録ボタンは従来通り URL クエリ（ym, view）で動作。フィルタはクライアント状態（URL に乗せない）で即時反映。\n\n■ リストビューの改善：チラシ画像が無い団体イベントには団体ロゴ（OrgLogo）を 64px で表示、種別が civic_group 以外（事業者/行政）は種別バッジを併記して視認性向上。\n\n■ 技術詳細：/events/page.tsx は server component のままデータ取得に専念（events に description 列追加、organizations に type/legal_form/logo_url を join 取得）、新規 EventsBrowser.tsx（client component）にフィルタ状態管理＋カレンダー/リスト両ビューを移管。useMemo で型別件数・主催別件数・絞り込み結果を派生計算しているため、フィルタ変更時の再レンダリングは軽量。",

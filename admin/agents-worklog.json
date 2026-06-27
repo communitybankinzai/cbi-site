@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: /events フィルタ・検索・主催種別追加",
+  "_comment_updated": "2026-06-27 A1: 提案投票機能の一覧活性化＋Realtime化＋touch_last_active バグ修正＋サンプル提案5件投入",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": [
     "実装",
@@ -16,6 +16,26 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "🗳️ 提案投票機能の一覧活性化＋Realtime化＋本番DB touch_last_active バグ修正＋サンプル提案5件投入 1.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/proposals/_components/ProposalsBrowser.tsx 新規（client component、243行）— タブ（投票中/議論中/結果/すべて）+ 件数バッジ + 分野フィルタ + status 別のソート（投票中=締切順、議論中=次に投票する順、結果=新しい順）+ カードに残り時間カウントダウン + snapshot バー（賛成%/反対%/保留% と票数）",
+            "cidao: src/app/proposals/page.tsx 刷新（90行→90行、構造変更）— server で proposals と vote_aggregates を取得、binding_type に応じて snapshot.yesPct/noPct/holdPct を算出、ProposalsBrowser に渡す",
+            "cidao: src/app/proposals/[id]/_components/LiveLayerBars.tsx 新規（120行、client component）— Supabase Realtime で vote_aggregates の postgres_changes（filter: proposal_id=eq.X）を購読、変更検知で aggregates を再取得して setState、status=voting のときのみ subscribe（投票期間外は静的表示）、『● リアルタイム更新中』バッジ表示",
+            "cidao: src/app/proposals/[id]/page.tsx 修正 — inline LayerBars 関数（70行）を削除、LiveLayerBars に差し替え、TIER_LABEL 重複削除",
+            "cidao: supabase/migrations/20260627180000_fix_touch_last_active.sql — touch_last_active() 関数の CASE 式を IF/ELSIF に書き換え（クリティカルバグ修正）",
+            "本番DBへ migration 適用（プーラー aws-1 経由）",
+            "cidao: scripts/seed-proposals.mjs 新規（180行）— サンプル提案5件投入スクリプト（DRY-RUN/--apply/--reset）、提案者は印西市公式登録プレースホルダー (943a665e...) 、vote_aggregates も直接挿入（votes は NULL 制約があるので入れない）",
+            "本番DBにサンプル5件投入：(1)印旛沼景観整備=discussion (2)駅前マルシェ=voting残6日 (3)デジタル防災マップ=voting残12日(諮問) (4)CBI通信=passed (5)全戸ポスティング=rejected。各 vote_aggregates もダミー値投入で 14-19票/件のスナップショット形成",
+            "cidao 126a504 commit + push → Vercel 自動デプロイ",
+            "本番検証 curl：cidao.vercel.app/proposals で『市民から寄せられた 5 件の提案』『投票中(2)が active』『snapshot バー 賛成 82% 反対 9% 保留 9%/協力できる 78% 難しい 9% わからない 13%』『あと 5日23時間/11日23時間』表示確認。/proposals/599fc201-... で『層別投票状況』『住所確認済/メール登録/ライト登録』3 tier 行、『リアルタイム更新中』バッジ、liveEnabled=true 確認"
+          ],
+          "hours": 1.5,
+          "partnerApproved": false,
+          "note": "ユーザー要望『/proposals 一覧の活性化＋リアルタイム更新』に対応。前段で本番DB調査したところ proposals 0/votes 0/comments 0 件と判明、空のページに飾り付けるだけにならないようサンプル5件投入してから UI 強化（合意済み）。\n\n重大発見：本番DB の touch_last_active() トリガー関数が PL/pgSQL のCASE 全分岐コンパイル制約に引っかかっており、INSERT INTO proposals が必ず失敗していた状態。PL/pgSQL は CASE の全 WHEN 分岐の式を関数ロード時にすべて解析するため、new.voter_id を when 'votes' 分岐に書いていても when 'proposals' 分岐に入る INSERT 時にも参照しようとして『record \"new\" has no field \"voter_id\"』エラーになる。誰も提案を作成していなかったためこれまで顕在化していなかった（最初の提案投稿で初めて発覚するクリティカルバグ）。CASE を IF/ELSIF に書き換えで解消。\n\nリアルタイム購読は curl で検証不可（client side）だが、init_schema migration で vote_aggregates が supabase_realtime publication に追加済みなので postgres_changes イベントは流れる前提。ブラウザで投票→数秒で他の閲覧者の画面も更新、というデモシナリオが回せるようになった。今後 CBI で実物の提案を1件立てて、運営メンバーに投票してもらうと『あ、リアルタイムで動いてる』が見える。\n\nサンプル提案は『[サンプル] ...』プレフィックスで識別、本物の提案が複数件入った段階で seed-proposals.mjs --reset で一発削除可能。"
+        },
         {
           "date": "2026-06-27",
           "title": "🔎 /events フィルタ・検索・主催種別実装（EventsBrowser 新設） 0.7時間",
