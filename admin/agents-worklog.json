@@ -1,7 +1,7 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: FreeFree 5機能フル拡張（5区分対応＋画像＋クーポン＋SNS定期紹介＋サンプル5件）",
-  "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
+  "_comment_updated": "2026-06-27 A1: マッチング相談に「メンバーを探す」追加＋人材バンク→登録メンバー全置換＋hours 算出ルールを output_tokens/100k に変更",
+  "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
     "実装",
     "保守",
@@ -16,6 +16,27 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "🤝 マッチング相談に「メンバーを探す」追加＋人材バンク→登録メンバー全置換＋ログイン/イベントUX改善 1.4時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/login/page.tsx — Supabase レート制限注意書き + 'email rate limit exceeded' 日本語化（デフォルトSMTPは 2通/時 のため初見ユーザーが連打しないよう琥珀色ボックスで案内）",
+            "cidao: src/app/events/page.tsx — タイトル『印西市のイベント・活動カレンダー』に変更、主催4種（市民団体/企業/行政/個人）を本文で明示、未ログイン時は『ログイン→イベント登録』動線追加",
+            "cidao: src/app/events/_components/EventsBrowser.tsx — スマホ表示時 (md:hidden) にリスト推奨ヒント追加",
+            "cidao: src/app/api/agents/a7-members/route.ts NEW — メンバーマッチング Claude Opus 4.7 ストリーミング API。member_profiles_pr（公開許可分・message_acceptance!='closed'）120件まで system prompt 投入、ephemeral cache 有効、askerプロフィールも併せて文脈化",
+            "cidao: src/app/match/page.tsx — 『団体を探す / メンバーを探す』タブ追加、?mode=members で切替",
+            "cidao: src/app/match/_components/MatchChat.tsx — mode prop で API endpoint・サジェスト・linkify 対象・フッターを差し替え（汎用化）",
+            "cidao: src/app/page.tsx — マッチング相談カードを2エントリ内包型に再構成（🏛️団体を探す / 🤝メンバーを探す）、NavCard /talent ラベルを『登録メンバー』に",
+            "cidao: 用語置換 7ファイル（人材バンク → 登録メンバー）— talent/page.tsx, talent/[id]/page.tsx, talent/actions.ts（メール件名・本文）, orgs/actions.ts（メール件名・本文）, orgs/[id]/_components/InterestForm.tsx（案内文・ボタン）, me/pr/page.tsx, me/page.tsx。内部API パス /api/talent-bank/stats・JSDocコメントは互換性のためスコープ外",
+            "CBI: scripts/session-stats.py NEW — Claude Code セッションの output_tokens 集計＋hours 算出（output_tokens / 100,000）＋Opus 4.7 単価でコスト試算",
+            "CBI: CLAUDE.md ルール 7 を更新 — hours は主観でなく output_tokens / 100k で算出、note 末尾に session/output/cost を1行記録する運用を明文化",
+            "型チェック: tsc --noEmit 通過"
+          ],
+          "hours": 1.4,
+          "partnerApproved": false,
+          "note": "■代表問1『cidao ログインできなくなった』への対応：Supabase Cloud のデフォルトSMTPは 2通/時 制限が原因と特定。恒久対応はカスタムSMTP（Resend 等）だが、まずユーザー混乱を防ぐ UX 対応（事前注意 + エラー日本語化）。\n■代表問2『イベントカレンダー何が掲載されるかわかりにくい・スマホで見にくい』への対応：タイトル明確化（『印西市のイベント・活動カレンダー』）+ 主催4種を本文で明示 + スマホでリスト推奨ヒント。\n■代表問3『マッチングは団体と個人の2種、登録情報からAIマッチング、人材バンク用語を避けたい』への対応：(1) /match に2モードタブ追加、(2) 新規 /api/agents/a7-members を A7 と同設計で実装（member_profiles_pr＋membersをsystem promptに、RLSで公開許可分のみ、Claude Opus 4.7 ストリーミング）、(3) 用語『人材バンク』→『登録メンバー』を全UI/メール文/ボタンに反映。フォルダ名・内部APIパス・JSDocコメントは互換性のため変更せずスコープ最小化。\n■工数記録ルール変更：従来は主観見積もりだったが、客観性のため output_tokens / 100,000 = hours に変更。本セッションは output 138,269 tokens → 1.4h（偶然主観見積もり 1.3h とほぼ一致）。\n■AIコスト記録：(a) Claude Code 開発コスト（本セッション）は worklog の note で記録（下記）。(b) /api/agents/a7-members が本番稼働したら docs/api-cost-log.md に実測値追記（モデル: claude-opus-4-7、in tokens は登録メンバー数×プロフィール文字数に比例、cache_control: ephemeral 適用済み）。\n■本番動作未検証：別チャットの dev server 起動中で port 競合のため preview_start を実行せず、ブラウザリロード検証は代表に依頼。\n\nsession: 27bc44de-771a-4c32-bb1d-b08b0984b1cc / output: 138,269 / cost: $16.94"
+        },
         {
           "date": "2026-06-27",
           "title": "🛍 FreeFree 5機能フル拡張（5区分対応・画像・クーポン・SNS定期紹介・サンプル5件） 2.3時間",
