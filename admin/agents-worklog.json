@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: 団体ロゴ機能（CBI投入済み）+ 自動取得は次回 plans",
+  "_comment_updated": "2026-06-27 A1: /events フィルタ・検索・主催種別追加",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": [
     "実装",
@@ -16,6 +16,21 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "🔎 /events フィルタ・検索・主催種別実装（EventsBrowser 新設） 0.7時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/events/_components/EventsBrowser.tsx 新規（397行）— client component で検索/種別/主催/オンラインフィルタを統合、カレンダー/リスト両ビュー、useMemo で派生計算（type/org 別件数、絞り込み結果）",
+            "cidao: src/app/events/page.tsx 刷新（294行→101行に削減）— server component はデータ取得（events に description 追加、orgs に type/legal_form/logo_url を join）と月グリッドセル計算のみ、UI は EventsBrowser に委譲",
+            "リストビュー改善：チラシ画像が無い団体イベントには OrgLogo を 64px 表示、種別が civic_group 以外（事業者/行政）は種別バッジを併記",
+            "cidao 6d10e1b commit + push → Vercel 自動デプロイ",
+            "本番検証 curl：/events?ym=2026-06&view=list で『2 / 2 件』『すべての種別』『すべての主催』『個人主催のみ』『オンラインのみ』『主催:』『フィルタを解除』全要素出現確認、select option 2件、検索 input type=search 出力確認"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "代表指摘『/events で特定団体絞り込み・文字検索・企業/行政の予定選択表示』に対応。OrgsBrowser と同じ思想で /events も client component 化、フィルタは URL でなく state 管理で即時反映。\n\nフィルタの組み合わせ：\n(a) 種別チップ（civic_group/business/government）— 件数 0 は非表示\n(b) 主催ドロップダウン — 全主催／個人主催のみ／特定団体（件数降順、現月の orgs のみリスト化）\n(c) オンラインのみチップ\n(d) 検索 — title/description/location/organizer_name 横断、case-insensitive\n\n複数フィルタは AND 条件で適用、解除ボタンで一発リセット。月送り・ビュー切替は既存 URL クエリ（ym, view）維持、フィルタは state（URL に乗せない＝月変更時にリセット、ブックマーク不可）。\n\n副次効果：『市民活動団体だけ』『行政の予定だけ』『XX 団体の今月の予定』が瞬時に見られる→ 市民が知りたい『近い分野のイベント』検索性が大幅向上。市役所視点でも『行政が関与しているイベント数』をワンタップで把握可能。\n\nローカル preview は Supabase publishable key の Auth 制約で events データ取れず、UI shell（検索ボックス・フィルタチップ・件数表示）の表示確認のみ。実データ検証は本番 curl で全要素 OK 確認済。"
+        },
         {
           "date": "2026-06-27",
           "title": "🎨 団体ロゴ機能（logo_url列・Storage・表示・upload UI）+ CBI 投入 0.7時間",
