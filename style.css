@@ -424,6 +424,21 @@ h1, h2, h3 {
   margin: 0;
   opacity: 0.8;
 }
+.join-card .talent-bank-counter {
+  background: rgba(45, 90, 61, 0.06);
+  border-left: 3px solid var(--c-green);
+  padding: 10px 14px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--c-ink);
+  border-radius: 0 6px 6px 0;
+}
+.join-card .talent-bank-counter strong {
+  color: var(--c-green);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 2px;
+}
 
 /* ---------- Report / News ---------- */
 .news-list {

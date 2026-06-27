@@ -5,6 +5,14 @@
     {
       "date": "2026-06-27",
       "type": "feature",
+      "target": "cbi-site + cidao: 人材バンク機能の『看板』化 + 『応募動線』追加 + 登録者数 API",
+      "title": "🤝 「CBI の人材バンク = CiDAO の本登録」を明確化、団体ページに『この団体で活動したい』ボタンと通知メールを追加",
+      "detail": "代表からの問い『人材バンクの機能は、個人登録時点で働くことにならないか？』に対応。回答：その通り、すでに動いている。CiDAO 本登録 (/me/edit) で興味分野＋自己紹介を入れた瞬間に AI マッチングで合う団体が出る = 人材バンクの利用者側はすでに完成。今回はそれを (a) 看板で見える化、(b) 応募動線で完成させた。\n\n■ CBI サイト側『看板』改修：参加方法の人材バンクカード文面を改訂し『CBI の人材バンク = CiDAO の本登録です』を直球で書いた。説明文に『AIが約220団体から、あなたに合う団体を見つけて提案』を追加。主CTAを CiDAO トップ経由から /login?next=/me/edit に直接化（1クリック減）。『現在 N 名が人材バンクに登録しています』のリアルタイムカウンター追加（CiDAO の /api/talent-bank/stats から fetch、fetch 失敗時は hidden で隠れる安全な設計）。\n\n■ CiDAO『応募動線』追加：団体詳細ページ /orgs/[id] に新セクション『🤝 この団体で活動したい人を募集しています』を活動カレンダーと参加/加入の間に配置。展開フォーム（400字、メール開示可否チェック）→ 送信で org_interests テーブルに記録 + 団体の contact_email に Resend で通知メール送信（差出人名・メッセージ・CiDAO ページリンク付き、reply-to で応募者本人のメールに返信可能）+ 本人控え。状態別 UI：未ログイン → 『ログインして人材バンクに登録』、tier=light → 『本登録すると応募できます』、送信済み → 『✓ 送信しました』、団体に contact_email 無し → 『記録のみ、団体への通知は届きません』と明示。\n\n■ 既存『参加 / 加入』(memberships) との使い分け：軽い意思表示＝org_interests（一回限り、メッセージ+メール）、正式メンバー＝memberships（claim/approval 状態機械）。両方並列で動作。\n\n■ 技術詳細：(1) supabase/migrations/20260627190000_org_interests.sql 新規（INSERT は本登録以上のみ、SELECT は本人または can_edit_org の編集権者）。(2) src/app/api/talent-bank/stats/route.ts 新規（GET、CORS 開放、5分キャッシュ、tier in (email_only,verified) AND interests あり の count を返す）。(3) src/app/orgs/[id]/_components/InterestForm.tsx 新規（client component、useTransition で送信、状態別表示）。(4) src/app/orgs/actions.ts に expressInterest 追加（Resend は best-effort、失敗時は email_error 列に記録、DB INSERT は成功扱い）。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-27",
+      "type": "feature",
       "target": "cidao: /proposals 一覧活性化 + 詳細を Realtime 化 + サンプル提案5件投入",
       "title": "🗳️ 提案ページが『投票中／議論中／結果』タブで見やすくなり、詳細の層別バーがリアルタイム更新するようになった（サンプル提案5件で動作確認可能に）",
       "detail": "■ 何ができるようになったか：(1) /proposals 一覧にタブ追加（投票中 N／議論中 N／結果 N／すべて N）と件数バッジ、投票中は締切が近い順・議論中は次に投票へ移る順・結果は新しい順に自動ソート、(2) 各カードに『あと N 日 N 時間』のカウントダウンと『賛成 82% 反対 9% 保留 9%／12票』のような snapshot バー表示（拘束/諮問で choices 自動切替）、(3) 分野フィルタも追加（提案数が増えても探しやすい）、(4) 詳細ページの層別投票状況バーが Supabase Realtime で vote_aggregates の変更を購読してライブ反映、投票期間中は『● リアルタイム更新中』バッジ点灯、(5) サンプル提案5件投入（discussion×1 / voting×2 / passed×1 / rejected×1）でゼロ件問題を解消、これまで提案0件だった /proposals が実データで動作確認可能に。\n\n■ 重要バグ修正：本番DB の touch_last_active() トリガー関数が PL/pgSQL の CASE 全分岐コンパイル制約に引っかかっており、『INSERT INTO proposals』が必ず失敗する状態だった（誰も提案を作成していなかったため顕在化していなかった）。CASE を IF/ELSIF に書き換える migration 20260627180000 で修正。これがなかったら『提案を投稿する』ボタンが押せても server action がエラーで返るところだった。\n\n■ 技術詳細：/proposals/_components/ProposalsBrowser.tsx 新規（client、タブ・件数・フィルタ・snapshot バー）、/proposals/[id]/_components/LiveLayerBars.tsx 新規（client、Supabase Realtime channel で vote_aggregates 購読、status=voting のみ subscribe、投票期間外は静的表示）、scripts/seed-proposals.mjs（DRY-RUN/--apply/--reset、提案者は印西市公式登録プレースホルダー、vote_aggregates も直接挿入で層別バー実数表示）。",

@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: 提案投票機能の一覧活性化＋Realtime化＋touch_last_active バグ修正＋サンプル提案5件投入",
+  "_comment_updated": "2026-06-27 A1: 人材バンクの『看板』化＋『応募動線』追加＋登録者数 API",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": [
     "実装",
@@ -16,6 +16,28 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "🤝 人材バンク：CBIサイト看板改修＋CiDAO応募動線＋登録者数 API 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "代表問い『人材バンクは個人登録時点でもう動いてるよね？』に回答：はい、CiDAO 本登録 (/me/edit) でマッチング表示まで動作している。残るは『看板』『応募動線』『登録者数表示』なのでそこを今回仕上げた",
+            "cbi-site: index.html の人材バンクカード文面改訂 — 『AIが約220団体から、あなたに合う団体を見つけて提案』を説明文に追加、note に『CBI の人材バンク = CiDAO の本登録です』を直球で記述、主CTA を /login?next=/me/edit に直接化",
+            "cbi-site: 『現在 N 名が人材バンクに登録しています』カウンター追加（script.js で CiDAO /api/talent-bank/stats を fetch、fetch 失敗時は hidden で隠れる安全設計）",
+            "cbi-site: style.css に .talent-bank-counter スタイル（緑色アクセント、左ボーダー、太字大文字）",
+            "cidao: src/app/api/talent-bank/stats/route.ts 新規 — GET で tier in (email_only,verified) AND interests あり の count を返す、CORS 開放、5分キャッシュ。CBI サイト等の外部からも fetch 可能",
+            "cidao: supabase/migrations/20260627190000_org_interests.sql 新規 — org_interests テーブル (org_id, member_id, message 400字, contact_ok, email_sent_at, email_error) + RLS 3本（INSERT は本登録以上の本人のみ、SELECT は本人 or can_edit_org の編集権者、DELETE は本人）",
+            "本番DBへ migration 適用（プーラー aws-1 経由）",
+            "cidao: src/app/orgs/actions.ts に expressInterest server action 追加 — org_interests INSERT + 団体 contact_email へ Resend で通知メール送信（差出人名・メッセージ・CiDAOページリンク・reply-to で応募者本人のメールに返信可能）+ 本人控え、Resend 失敗は best-effort で email_error 列に保存",
+            "cidao: src/app/orgs/[id]/_components/InterestForm.tsx 新規（client component、165行）— 『🤝 この団体で活動したい』展開フォーム、状態別 UI（未ログイン/light/email_only+/送信済み/contact_email無し）、メール開示可否チェック、400字カウンター",
+            "cidao: src/app/orgs/[id]/page.tsx に InterestForm 配置（活動カレンダーと参加/加入の間）、自分の応募履歴 (org_interests) と tier を取得して props 渡し",
+            "cidao 9e10180 commit + push → Vercel 自動デプロイ",
+            "ローカル preview (cbi-site) で DOM 検証：主CTA href=/login?next=/me/edit、説明文に『AIが約220団体』含む、note に『CBI の人材バンク = CiDAO の本登録』含む、カウンターは hidden（API 未デプロイ時の安全挙動）。スクリーンショットは fetch hang でタイムアウトしたが文言は OK"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "ユーザー指摘『人材バンクの機能は、個人登録時点で働くことにならないか？』への回答が完璧な気付き：CiDAO 本登録 = 人材バンク登録 が既に成立していた。新規実装より『看板』『応募動線』『カウンター』の3点で看板化する方針に合意。\n\n設計判断：\n(a) 既存 requestJoinOrg (memberships) との使い分け — 軽い意思表示=org_interests（一回限り、メッセージ+メール）、正式メンバー=memberships（claim/approval 状態機械）。両方並列で動作させる方が現実の段階的関わりに即している。\n(b) Resend は best-effort — DB INSERT 成功なら UI 上『送信しました』表示、メール送信失敗は email_error 列に記録して後追い調査可能。これでユーザー体験を中断しない。\n(c) 団体に contact_email 無しの場合の挙動 — 『記録のみ、団体への通知は届きません』と明示。inzaiparque 取り込みの 200+ 団体は contact_email 未設定が多いはずなので、UI で正直に伝えるのが重要（黙って成功させない）。\n(d) reply-to ヘッダーに応募者本人のメール — 団体が直接『ご連絡ありがとうございます』で返信できる動線（CiDAO 経由のメッセージング機能を作らずに済む、最小コスト最大効果）。\n(e) CBI サイトの主CTA を /login?next=/me/edit に直接 — CiDAO トップ経由だと『なんのサイト？』で迷子になる可能性、直接 magic link → /me/edit が本登録への最短路。\n\n副次効果：人材バンク登録者数が CBI サイトに出ることで、CBI が市・企業に『現状の登録規模』を即答可能。将来 100人・1000人と増えたら看板も自動で更新される。"
+        },
         {
           "date": "2026-06-27",
           "title": "🗳️ 提案投票機能の一覧活性化＋Realtime化＋本番DB touch_last_active バグ修正＋サンプル提案5件投入 1.5時間",

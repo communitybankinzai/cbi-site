@@ -27,4 +27,20 @@
       });
     });
   }
+
+  // 人材バンク登録者数を CiDAO から fetch して表示
+  const counter = document.getElementById('talentBankCounter');
+  const counterValue = document.getElementById('talentBankCount');
+  if (counter && counterValue) {
+    fetch('https://cidao.vercel.app/api/talent-bank/stats')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && typeof data.registered === 'number') {
+          counterValue.textContent = String(data.registered);
+          counter.hidden = false;
+          counter.setAttribute('data-counter-loaded', 'true');
+        }
+      })
+      .catch(() => { /* 取得失敗時は表示しない（hidden のまま） */ });
+  }
 })();
