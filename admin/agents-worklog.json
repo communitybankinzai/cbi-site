@@ -1,11 +1,43 @@
 {
-  "updatedAt": "2026-06-26",
-  "_comment_updated": "2026-06-26 A1: CiDAO イベント機能の大幅刷新 + COCoLa↔CiDAO 連携パイプライン構築（3セッション分まとめ追記、ルール7違反の遡及記録）",
+  "updatedAt": "2026-06-27",
+  "_comment_updated": "2026-06-27 A1: 団体情報の自動拡充パイプライン構築（migration+UI+claude-haiku-4-5 抽出スクリプト）、3件試走まで完走、220件バッチはコスト超過のため見送り",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
-  "categories": ["実装", "保守", "レポート", "分析", "会議", "広報", "事務", "調査", "その他"],
+  "categories": [
+    "実装",
+    "保守",
+    "レポート",
+    "分析",
+    "会議",
+    "広報",
+    "事務",
+    "調査",
+    "その他"
+  ],
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "🔎 団体情報の自動拡充パイプライン構築＋3件試走 2.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260627140000_organizations_enrichment.sql — organizations に website_url / sns_links(jsonb) / activity_detail / activity_area / enriched_at / enrichment_source(jsonb 出典URL配列) / info_verified の7列追加＋idx_organizations_enriched_at / idx_organizations_info_verified インデックス",
+            "cidao: supabase/migrations/20260627150000_org_edit_permission.sql — can_edit_org(o) 関数（SECURITY DEFINER、representative_id本人 / officer・rep の confirmed member / contact_email=JWT email の3条件）、orgs_update_rep を orgs_update_editor に置換（inzaiparque 取込 219 件は placeholder rep のため旧 RLS では誰も編集不可だった問題を解消）",
+            "本番DBへ migration 2本適用（プーラー aws-1 経由）",
+            "cidao: scripts/enrich-organizations.mjs（331行）— claude-haiku-4-5 + web_search_20250305(max_uses=5) + strict tool_use(submit_enrichment) で {website_url/sns_links/activity_detail/activity_area/contact_email/contact_url/sources/notes} を構造化抽出、空欄のみ補完、enriched_at＋enrichment_source(出典URL配列付き)＋info_verified=false で provisional 保存。--limit/--org/--all/--dry-run/--reenrich/--sleep フラグ対応",
+            "cidao: src/lib/org-permissions.ts に canUserEditOrg ヘルパー追加（page で編集ボタン出し分け用）",
+            "cidao: src/app/orgs/actions.ts に verifyOrgInfo（軽量「確認した」アクション）と updateOrgInfo（編集 server action、info_verified=true セット）追加",
+            "cidao: src/app/orgs/[id]/page.tsx — 新フィールド表示、enriched_at 有 && !info_verified なら『⚠️自動収集・未確認』バッジ、編集権者には『この内容で正しい（確認する）』ボタンと『情報を修正する』導線、確認済みなら『✓ 代表者により確認済み』",
+            "cidao: src/app/orgs/[id]/edit/page.tsx 新規（209行）— 活動詳細/短い説明/活動エリア/公式サイトURL/連絡先メール/問い合わせURL/SNS 7種（X/Facebook/Instagram/YouTube/LINE/note/ブログ）の編集フォーム。保存で info_verified=true",
+            "cidao d3262bd commit + push（migration 2本＋実装6ファイル＋scripts 1本、786行追加）",
+            "cidao ef99c6a 修正 push（schema validation で sources.maxItems が tool input_schema 非対応で 400 のため削除、description で5件上限を誘導）",
+            "3件試走（DRY-RUN→WRITE）：木下まち育て塾（machijuku.info 公式サイト取得、活動詳細、印西市木下・六軒地区）／木下夢探訪（活動詳細、印西市木下駅周辺）／船穂中学校区さわやかコミュニティ地域推進委員会（活動詳細、船穂中学校区内）。3件すべて DB 書込成功、enriched_at＋enrichment_source 出典4-5件記録、info_verified=false でバッジ表示",
+            "本番 https://cidao.vercel.app/orgs/02d4d5c9-6c28-43ad-86e5-156e92373b1b （木下まち育て塾）で『自動収集・未確認』バッジ・活動エリア・公式サイトURL・活動詳細の表示を curl で確認"
+          ],
+          "hours": 2.5,
+          "partnerApproved": false,
+          "note": "前回繰越 plans #1（団体情報の自動拡充・高）に着手。コード一式は完成し本番反映、3件で精度確認まで完走。ただし 220件バッチは見送り：実測コストが Haiku でも 1件 $0.12（in tokens 86K-141K = web_search のページ本文がコンテキストに入るため）、220件想定 $26 に対し残高 $4.61 で大幅超過のため。今回は3件サンプルで仕組みが動くことの実証＋UI/編集導線/RLS まで含めた完成版を本番に上げる、というセッションとして完了。インフラ知見：(1) tool input_schema に maxItems は使えない（output_format/strict tool は OK だが web_search 併用の通常 tool_use は不可）→ description で誘導、(2) cidao の ANTHROPIC_API_KEY は Vercel で Sensitive 扱い＝CLI で値取得不可、Anthropic Console も平文非保管、credentials.md は『未保管』記録、で完全に紛失していたため新キー（cidao-enrichment-local）を発行して .env.local に貼付、(3) claude-haiku-4-5 + web_search_20250305 でも構造化抽出の品質は十分（公式サイト URL・長文活動説明・活動エリアを妥当に取得）、(4) cost optimization で max_uses を 5→2 にする選択肢もあったが精度低下リスクのためユーザー判断で見送り。次回クレジット追加後に civic 32件→voluntary 188件の順でバッチ実行する想定。"
+        },
         {
           "date": "2026-06-27",
           "title": "✅ イベント出欠・役割管理UI（スタッフ/参加/主催の貢献度ポイント付与）実装 0.7時間",
@@ -1019,7 +1051,9 @@
           "date": "2026-06-19",
           "title": "[補完追記] 公開サイト：団体情報の事業期間・総事業費を空白化",
           "category": "実装",
-          "outputs": ["site/index.html"],
+          "outputs": [
+            "site/index.html"
+          ],
           "hours": 0.1,
           "partnerApproved": false,
           "note": "団体情報セクションの『事業期間』『総事業費』の値を空欄に。事後補完追記。"
@@ -1136,7 +1170,9 @@
           "date": "2026-06-19",
           "title": "ヒーロー動画の右下ウォーターマークをCSSで隠蔽",
           "category": "実装",
-          "outputs": ["site/style.css"],
+          "outputs": [
+            "site/style.css"
+          ],
           "hours": 0.1,
           "partnerApproved": false,
           "note": ".hero::after で右下280×100pxにnavyラジアルグラデを重ねvidu透かしを覆う。hero-inner z-index 2→3。動画再エンコード不要。"
@@ -1145,7 +1181,12 @@
           "date": "2026-06-19",
           "title": "ヒーローセクションに動画背景を実装",
           "category": "実装",
-          "outputs": ["site/assets/hero/hero.mp4", "site/assets/hero/hero-poster.jpg", "site/index.html", "site/style.css"],
+          "outputs": [
+            "site/assets/hero/hero.mp4",
+            "site/assets/hero/hero-poster.jpg",
+            "site/index.html",
+            "site/style.css"
+          ],
           "hours": 0.5,
           "partnerApproved": false,
           "note": "vidu動画(HEVC 1920×1080 8秒 3.3MB)をffmpegでH.264(3.2MB)に変換、1秒地点のJPEGポスター抽出。autoplay/loop/muted/playsinline、prefers-reduced-motion対応、ロゴdrop-shadow、ガラス調btn-ghost、テキストshadowで動画背景上の可読性確保。"
@@ -1154,7 +1195,10 @@
           "date": "2026-06-19",
           "title": "CBIロゴPNGの白背景を透過化",
           "category": "実装",
-          "outputs": ["site/assets/cbi-logo.png", "site/assets/cbi-logo-original.png"],
+          "outputs": [
+            "site/assets/cbi-logo.png",
+            "site/assets/cbi-logo-original.png"
+          ],
           "hours": 0.2,
           "partnerApproved": false,
           "note": "1254×1254 RGB→RGBA変換、四隅Floodfill方式（thresh=25）で白背景のみ透過。ロゴ内部の白要素は保護。オリジナルは別名でバックアップ保存。"
@@ -1163,7 +1207,9 @@
           "date": "2026-06-19",
           "title": "事業概要内KVテーブル削除（団体情報と重複していたため）",
           "category": "実装",
-          "outputs": ["site/index.html"],
+          "outputs": [
+            "site/index.html"
+          ],
           "hours": 0.1,
           "partnerApproved": false,
           "note": "代表者・登録番号が団体情報セクションと重複、事業期間・総事業費が空欄になっていたためKVブロックを丸ごと削除。事業概要はリード文＋3カードのみのすっきりした構成に。"
@@ -1172,7 +1218,10 @@
           "date": "2026-06-19",
           "title": "公開TOPに管理画面リンクを追加（パスワード認証は既存）",
           "category": "実装",
-          "outputs": ["site/index.html", "site/style.css"],
+          "outputs": [
+            "site/index.html",
+            "site/style.css"
+          ],
           "hours": 0.2,
           "partnerApproved": false,
           "note": "フッターのコピーライト横に控えめな『運営者ログイン →』リンクを追加。admin/ は既にGAS WebApp経由のパスワード認証で保護されており、未認証アクセスはログイン画面でブロックされる。meta robots noindex も既設定。"
@@ -1181,7 +1230,12 @@
           "date": "2026-06-19",
           "title": "エージェント作業実績・予定の管理と提出用PDF出力を実装",
           "category": "実装",
-          "outputs": ["site/admin/agents-worklog.json", "site/admin/index.html", "site/admin/admin.js", "site/admin/admin.css"],
+          "outputs": [
+            "site/admin/agents-worklog.json",
+            "site/admin/index.html",
+            "site/admin/admin.js",
+            "site/admin/admin.css"
+          ],
           "hours": 2.0,
           "partnerApproved": false,
           "note": "A1〜A10の実績/予定を構造化保存し、エージェント詳細に表示。A4縦・代表者署名欄つきの印刷専用ビューで市・企業提出用PDFを生成可能に。"
@@ -1190,7 +1244,13 @@
           "date": "2026-06-19",
           "title": "管理画面のエージェントタブ・更新履歴タブを実装",
           "category": "実装",
-          "outputs": ["site/admin/index.html", "site/admin/admin.js", "site/admin/admin.css", "site/admin/agents.json", "site/admin/changelog.json"],
+          "outputs": [
+            "site/admin/index.html",
+            "site/admin/admin.js",
+            "site/admin/admin.css",
+            "site/admin/agents.json",
+            "site/admin/changelog.json"
+          ],
           "hours": 1.5,
           "partnerApproved": false,
           "note": "3タブ構成(アイデア/エージェント/更新履歴)に再編。エージェント役割の自動表示と更新履歴の自動反映機構を構築。"
@@ -1199,7 +1259,10 @@
           "date": "2026-06-19",
           "title": "CBI公式LP・管理画面の初版公開",
           "category": "実装",
-          "outputs": ["site/index.html", "site/admin/index.html"],
+          "outputs": [
+            "site/index.html",
+            "site/admin/index.html"
+          ],
           "hours": 4,
           "partnerApproved": false,
           "note": "公開LP(事業概要・参加方法・活動報告・資料・団体情報)と、GAS連携のアイデア管理画面を初版公開。"
@@ -1207,11 +1270,11 @@
       ],
       "plans": [
         {
-          "due": "2026-07-15",
-          "title": "🔎 団体情報の自動拡充（Web/SNS から収集して団体プロフィールを厚くする）",
+          "due": "2026-08-15",
+          "title": "🔎 団体情報の自動拡充：220件バッチ実行（Anthropic クレジット追加後）",
           "category": "実装",
-          "priority": "高",
-          "note": "印西の市民活動団体 219 件は inzaiparque 由来の1行説明のみで情報が薄い。Web/SNS から収集して厚くする。設計：(1) organizations に website_url / sns_links(jsonb) / activity_detail(長文) / enriched_at / enrichment_source / info_verified 列を追加する migration、(2) 拡充パイプライン（scripts/ or 定期ジョブ）= 団体名で Web 検索→候補ページ取得→Claude で {長文説明・公式サイトURL・SNSリンク・活動エリア・募集状況・連絡先} を構造化抽出→空欄のみ補完、info_verified=false で provisional 保存、出典URL記録、(3) /orgs/[id] に『自動収集・未確認』バッジ付きで表示、(4) 団体の本物の代表が claim/編集で確認（既存 representative / claim 思想と整合）。注意：X/FB/Instagram の本文取得は API 制限・ToS で困難なので『SNSアカウントへのリンク収集』中心にし、本文スクレイピングはしない。コスト：219件×Claude抽出はレート制御＋バッチで。公式 inzai-cac.org が到達可なら優先ソース。ユーザー要望『団体情報をSNSやWEBから取得し厚くしたい』が起点。"
+          "priority": "中",
+          "note": "2026-06-27 にコード一式（migration＋scripts/enrich-organizations.mjs＋/orgs/[id] 表示＋edit ページ＋can_edit_org RLS）完成して 3 件で動作確認済み。残り 217 件は実測 $0.12/件 × 217件 = $26 で残高 $4.61 を超過するため見送り。Anthropic Console にクレジット追加（最低 $30 推奨）後に：(1) civic 32件のみ先行（重要度高、~$3.8）→ サンプル目視で品質チェック、(2) voluntary 残り 185 件をバッチ実行（~$22）。実行コマンド：node scripts/enrich-organizations.mjs --all（civic 先行は --org UUID 個別指定 or 一時的に SQL で type=civic 絞り込みクエリへ修正）。途中で API 失敗しても enriched_at で再開できる設計済み（未拡充だけ拾う）。コスト削減オプション：scripts 内の WEB_SEARCH_TOOL.max_uses を 5→2 にすれば in tokens 半減で $13 程度まで下げられるが精度低下リスクあり、--limit 5 で試走して判断。"
         },
         {
           "due": "2026-07-31",
@@ -1246,7 +1309,10 @@
         }
       ]
     },
-    "A3": { "actuals": [], "plans": [] },
+    "A3": {
+      "actuals": [],
+      "plans": []
+    },
     "A4": {
       "actuals": [],
       "plans": [
@@ -1258,9 +1324,18 @@
         }
       ]
     },
-    "A5": { "actuals": [], "plans": [] },
-    "A6": { "actuals": [], "plans": [] },
-    "A7": { "actuals": [], "plans": [] },
+    "A5": {
+      "actuals": [],
+      "plans": []
+    },
+    "A6": {
+      "actuals": [],
+      "plans": []
+    },
+    "A7": {
+      "actuals": [],
+      "plans": []
+    },
     "A8": {
       "actuals": [
         {

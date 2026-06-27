@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-06-26",
+  "updatedAt": "2026-06-27",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-06-27",
+      "type": "feature",
+      "target": "cidao: /orgs/[id] / /orgs/[id]/edit / scripts/enrich-organizations.mjs",
+      "title": "🔎 団体ページに公式サイト・SNS・活動詳細を表示できるようになり、AI が Web から自動収集→代表者が claim/編集して確認する仕組みができた",
+      "detail": "印西の市民活動団体 220 件は inzaiparque 由来の1行説明だけで情報が薄かった問題に対応。\n\n■ 何ができるようになったか：(1) 団体詳細ページ /orgs/[id] に「公式サイト」「SNSリンク（X/Facebook/Instagram/YouTube/LINE/note/ブログ）」「活動詳細（長文）」「活動エリア」「連絡先メール」「問い合わせフォーム」が表示されるようになった。(2) AI が Web から自動収集した情報には「⚠️自動収集・未確認」バッジが付き、出典 URL もデータベースに記録される。(3) 本物の代表者・役員（または contact_email と同じメールでログイン中の人）が「この内容で正しい」ボタンで確認、または /orgs/[id]/edit で修正できるようになった。確認/編集すると「✓ 代表者により確認済み」表示に切り替わる。\n\n■ 3件試走で品質確認：木下まち育て塾（公式サイト machijuku.info 取得・活動詳細・活動エリア「印西市木下・六軒地区」）、木下夢探訪（活動詳細・活動エリア「印西市木下駅周辺」）、船穂中学校区さわやかコミュニティ地域推進委員会（活動詳細・活動エリア「印西市船穂中学校区」）。3件ともデータベース書き込み成功、本番サイトで表示確認済み。\n\n■ 残り 217 件は今回見送り：実測コストが Claude Haiku でも1件 $0.12（Web 検索結果ページ本文がコンテキストに入るため、in tokens 86K-141K）、220件想定 $26 に対し残高 $4.61 で大幅超過のため。Anthropic クレジット追加後に civic 32件→voluntary 残り185件の順でバッチ実行する。\n\n■ 技術詳細：organizations テーブルに7列追加（website_url / sns_links jsonb / activity_detail / activity_area / enriched_at / enrichment_source 出典URL配列 / info_verified）、can_edit_org() 関数で編集権限を3条件に拡張（representative_id本人 / officer・rep の confirmed member / contact_email=JWT email）、claude-haiku-4-5 + web_search_20250305 + strict tool_use(submit_enrichment) で構造化抽出。空欄のみ補完で既存ユーザー入力を上書きしない設計。",
+      "author": "A1 Core"
+    },
     {
       "date": "2026-06-26",
       "type": "content",
