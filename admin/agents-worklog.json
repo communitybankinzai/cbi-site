@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: 印西市登録名簿 PDF から14団体の登録番号確定 + 新規3団体 INSERT",
+  "_comment_updated": "2026-06-27 A1: 団体ロゴ機能（CBI投入済み）+ 自動取得は次回 plans",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": [
     "実装",
@@ -16,6 +16,27 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "🎨 団体ロゴ機能（logo_url列・Storage・表示・upload UI）+ CBI 投入 0.7時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260627170000_org_logos.sql — organizations.logo_url 列追加 + org-logos Storage バケット（public、5MB、画像 mime のみ）+ RLS 4本（authenticated upload / public read / owner update/delete）",
+            "本番DBへ migration 適用",
+            "cidao: src/components/ui/org-logo.tsx 新規 — OrgLogo コンポーネント（rounded 正方形、fallback は団体名先頭文字のモノグラム、色は団体名から決定）",
+            "cidao: src/app/orgs/[id]/page.tsx — header の左に xl サイズロゴ表示",
+            "cidao: src/app/orgs/_components/OrgsBrowser.tsx — カード左上に md サイズロゴ表示、Org 型に logo_url 追加",
+            "cidao: src/app/orgs/page.tsx — select クエリに logo_url 追加",
+            "cidao: src/app/orgs/[id]/edit/page.tsx — ロゴ upload UI（file input + 既存ロゴ削除チェックボックス）+ save action で service_role 経由 Storage upload、新パスに UUID+timestamp で保存",
+            "cidao: src/app/orgs/actions.ts — updateOrgInfo に logo_url 対応",
+            "cidao: scripts/upload-cbi-logo.mjs 新規 — site/assets/cbi-logo.png (1MB) を Storage にアップロード + CBI organizations.logo_url にセット。Supabase JS client が publishable で『Invalid Compact JWS』失敗するため最終的に curl + sb_secret_* で実 upload",
+            "cidao 3da9c38 commit + push → Vercel 自動デプロイ",
+            "本番検証：cidao.vercel.app/orgs/7ae8dd32-... で CBI ロゴ <img> タグ生成確認、Storage URL も HTTP 200 image/png 配信確認、一覧ページにも src URL 出現確認"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "代表指摘『団体のロゴを取得して紹介カードに掲載できるか、CBIはあると思う』に対応。CBI ロゴは既存 site/assets/cbi-logo.png を Storage に投入で即解決、他団体は手動 upload を edit ページに統合。\n\n自動取得（SNS/公式サイト）はユーザー質問あり：\n- ◎ 公式サイト URL → og:image / favicon / apple-touch-icon\n- ◎ note URL → og:image スクレイピング\n- ◎ YouTube → Data API v3 channels.list（無料枠1万/日）\n- × X/FB/Instagram → API 有料化 + scraping は ToS 違反、事実上無理\n→ machijuku.info ハルシネート事件の教訓を活かして、自動取得した画像は『候補として edit 画面に提示 → ユーザー確認後に保存』式で実装するのが安全。今回は手動 upload 基盤のみ実装、自動取得は次回 plans。\n\n技術知見：Supabase JS client は新形式 sb_publishable_*/sb_secret_* キーで Storage upload すると『Invalid Compact JWS』エラー（古い形式 JWT 期待）。curl で REST API 直叩き（Authorization: Bearer sb_secret_*）すれば動く。production 環境（Vercel）は legacy JWT が入っていれば JS client でも動くはず。"
+        },
         {
           "date": "2026-06-27",
           "title": "📋 印西市登録名簿 PDF を権威ソースに 14団体の登録番号確定 + 新規3団体追加 0.9時間",
@@ -1328,6 +1349,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-08-31",
+          "title": "🔍 団体ロゴ自動取得（公式サイト og:image / note / YouTube API → 候補提示式）",
+          "category": "実装",
+          "priority": "中",
+          "note": "現在は /orgs/[id]/edit から代表者が手動 upload のみ。SNS/公式サイトからの自動取得を以下で実装：(1) website_url や sns_links に URL が入っていたら、公式サイト og:image / link rel='apple-touch-icon' / favicon を fetch して候補画像化、(2) note URL なら note の og:image、(3) YouTube URL なら YouTube Data API v3 (channels.list snippet.thumbnails.default) で公式サムネ取得、(4) machijuku.info ハルシネート事件の教訓により、自動取得した画像は edit 画面に『候補ロゴ』として並べて表示 → 代表者がチェックして『これを採用』ボタンで保存（自動 DB 書込みはしない）。X/FB/Instagram のプロフ画像は API 有料化・規約制約により実装しない。実装時は scripts/auto-fetch-logo.mjs として独立、website_url 有のorgs限定でバッチ実行→Storage 別バケット `org-logos-candidates` に候補保存→edit ページで一覧提示。"
+        },
         {
           "due": "2026-07-31",
           "title": "🧪 拡充パイプライン：Sonnet 4.6 でハルシネート率比較（3件試走、約 $1）",

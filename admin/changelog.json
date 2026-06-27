@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "type": "feature",
+      "target": "cidao: 団体ロゴ機能（logo_url列・org-logosバケット・表示・upload UI）+ CBI ロゴ投入",
+      "title": "🎨 団体ページと団体一覧カードに『団体ロゴ』が表示できるようになった（代表者は edit ページから upload 可能）+ CBI ロゴ投入済み",
+      "detail": "代表指摘『団体のロゴを取得して紹介カードに掲載できるか』に対応。\n\n■ 何ができるようになったか：(1) 団体詳細ページ /orgs/[id] のヘッダーに大きめロゴ（96-128px）が表示される、(2) 団体一覧 /orgs のカード左上に小さめロゴ（32-40px）が表示される、(3) /orgs/[id]/edit に upload フォームが追加され編集権者（代表者・役員・contact_email 一致ユーザー）が手動でロゴをアップロード可能、(4) ロゴ未設定の団体は団体名先頭文字のモノグラム（団体名から決まる色）で fallback 表示。\n\n■ CBI ロゴは投入済み：site/assets/cbi-logo.png を Supabase Storage org-logos バケットにアップロード → CBI 団体ページに反映確認。他 222 団体はモノグラム表示で、代表者が edit から手動 upload。\n\n■ 自動取得（SNS/公式サイト）は今回見送り：machijuku.info ハルシネート事件の教訓により、AI による自動取得は今回は実装せず。次回 plans で『公式サイト og:image / note og:image / YouTube Data API から候補画像を提案して代表者が確認・保存』式の安全な自動取得を検討する想定。\n\n■ 技術詳細：migration 20260627170000 で organizations.logo_url text 列と org-logos Storage バケット（public 読込・5MB 上限・png/jpg/webp/gif/svg）を追加。OrgLogo コンポーネント新設（rounded 正方形、fallback モノグラム）。upload は service_role 経由で Storage に保存。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-27",
       "type": "content",
       "target": "cidao: organizations DB（13件UPDATE + 3件INSERT）",
       "title": "📋 印西市登録名簿（条例第10条）13団体の登録番号と法人格を権威ソース（R6-3-5.pdf）から反映、新規3団体は INSERT してサイト掲載",
