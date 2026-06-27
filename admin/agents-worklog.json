@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: マッチング相談に「メンバーを探す」追加＋人材バンク→登録メンバー全置換＋hours 算出ルールを output_tokens/100k に変更",
+  "_comment_updated": "2026-06-27 A1: tier 表記をハガキ廃止→マイナンバー方式予定に統一（cidao + cbi-site）",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
     "実装",
@@ -16,6 +16,21 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "📝 tier 表記新方針への一斉更新（ハガキ廃止→マイナンバー方式予定） 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/me/page.tsx — TIER_LABEL の email_only 「本登録」→「通常メンバー」、verified 「住所確認済」→「マイナンバー確認済（将来）」、tier=light のバナーを『メアド以外の情報を登録すると通常メンバー』に書き換え、tier=email_only の『住所確認で投票重みを最大化／本人確認ハガキの発送機能は Phase 1 後半で実装予定』バナーを削除",
+            "cidao: src/app/proposals/[id]/_components/LiveLayerBars.tsx — TIER_LABEL の email_only 「メール登録」→「通常メンバー」、verified 「住所確認済」→「マイナンバー確認済（将来）」",
+            "cbi-site: site/admin/index.html — 参加手順の※注釈で『マイページから本登録に進むと重み 0.5〜1.0 に昇格』を『プロフィール編集でメアド以外の情報を登録すると通常メンバーに昇格、重み 0.3。行政連携時のマイナンバー確認で 1.0 に上がる予定』に、β期間の既知制限の『tier=verified 昇格未実装：ハガキ送付による身元確認の動線はこれから整備』を『マイナンバー確認方式は未実装：行政連携時にマイナンバー方式で対応予定（ハガキ方式は採用しない方針）』に",
+            "メモリ: cidao-verified-tier-dropped.md を上書き更新（廃止のみ→『廃止＋マイナンバー方式へ移行予定』）、MEMORY.md インデックスも更新",
+            "cidao adec550 commit + push、CBI site も継続コミット"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "代表からの方針指摘『はがき確認は面倒くさいのでやらないことになったはず。記録していないの？／メアド以外の情報登録で通常メンバー、行政連携時にマイナンバー方式に移行したい』に対応。\n\nFreeFree 5区分対応で『企業/団体として掲載するなら verified 必須にすべきか』を代表に投げかけた際に発覚。私が前会話の決定を記憶していなかったため再確認になった。今後同種の混乱を防ぐためメモリ cidao-verified-tier-dropped.md を richer に上書き更新：(1) ハガキ廃止の why（運用コスト）、(2) 行政連携時のマイナンバー方式への移行予定、(3) UI tier label の標準訳（ライト登録/通常メンバー/マイナンバー確認済（将来））、(4) schema の verified enum と residence_verified_at 列はマイナンバー時刻の保存先として再利用想定で残置、を明記。\n\n歴史的仕様書 HTML（site/admin/proposals/cidao-specification-v2.0.html / v2.0-full.html / v2.1-election-extension.html）にもハガキ記述が大量にあるが、これらは過去の提案ドラフト資料として本文は触らず。必要なら冒頭にバナー注記を1行追加するかは代表確認案件として残す。"
+        },
         {
           "date": "2026-06-27",
           "title": "🤝 マッチング相談に「メンバーを探す」追加＋人材バンク→登録メンバー全置換＋ログイン/イベントUX改善 1.4時間",
