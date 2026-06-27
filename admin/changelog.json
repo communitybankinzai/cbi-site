@@ -5,6 +5,14 @@
     {
       "date": "2026-06-27",
       "type": "fix",
+      "target": "cidao: organizations.type / legal_form 全面再設計（migration + UI 14ファイル）",
+      "title": "📜 印西市市民活動推進条例 第2条準拠に団体種別を再設計：『任意団体 vs 市民活動団体』の誤った対立軸を廃止、220件すべて『市民活動団体』に統合＋法人格と市登録を別軸化",
+      "detail": "代表からの『任意団体と市民活動団体の区分がぐちゃぐちゃ』という指摘を受けて、印西市市民活動推進条例 逐条解説（令和7年8月改訂版 PDF、14ページ）を学習。条例上『任意団体 vs 市民活動団体』という対立軸は存在せず、両方とも『市民活動団体（市民活動を行うことを主たる目的とする団体。NPO等の法人格の有無は問わない）』であることが判明。旧 type 列が実際に表していたのは『印西市市民活動推進条例 第10条登録の有無（登録番号 08-XXX）』だった。\n\n■ DB 再設計：(1) enum organization_type を voluntary/civic/company → civic_group/business/government に置換、(2) 全220件を civic_group に統合（旧 voluntary 188 + civic 32）、(3) 法人格を新規列 legal_form (text) で表現：npo_corp 28 / general_incorporated_association 3 / nintei_chien_dantai_or_unincorp 25 / unincorporated 164、(4) 市登録は inzai_registration_number IS NOT NULL で判定（既存仕様継続）。\n\n■ サイト変更：(1) 団体詳細ページに『市民活動団体』『任意団体（法人格なし）』『市登録なし』のような3軸バッジが並ぶようになった、(2) 団体一覧ページのフィルタが『種別』『市登録あり/なし』『法人格』の3軸独立指定に拡張（NPO法人だけ、町内会だけ、市登録ありだけ、等の絞り込みが可能）、(3) 団体新規登録フォームに法人格選択欄を追加、登録番号欄に『協働の機会への参加・提案権を得るための任意登録』と条例準拠の説明を明記、(4) 団体編集ページに法人格・登録番号の編集欄を追加。\n\n■ 共通モジュール src/lib/org-labels.ts を新設して TYPE_LABEL/LEGAL_FORM_LABEL/ORDER を単一の真実源とし、6ファイルの重複定義を撤去。\n\n■ 本番反映確認：cidao.vercel.app/orgs で『市民活動団体』603回・『法人格』153回・『任意団体』152回・『NPO法人』60回・『地縁団体』20回・『市登録あり/なし/不問』フィルタ表示、旧 enum 値（voluntary/civic/company）の残存ゼロ。詳細ページも『市民活動団体 ／ 任意団体（法人格なし） ／ 市登録なし』バッジが正しく並ぶ。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-27",
+      "type": "fix",
       "target": "cidao: scripts/enrich-organizations.mjs + DB（木下まち育て塾の website_url）",
       "title": "🛡️ AI 自動拡充の URL ハルシネーション対策：保存前に必ず実 fetch して生存確認するように修正、偽 URL（machijuku.info）も DB から削除",
       "detail": "3 件試走の結果検証中、木下まち育て塾の公式サイトとして AI が返した『https://www.machijuku.info』が実は HTTP 404 ＋ Wix の空ドメイン（ConnectYourDomain エラー）で**サイトの中身が存在しない**ことが判明。AI のメモには『公式サイトで活動内容、イベント、歴史、組織情報が詳しく記載されている』と書かれていた＝**存在しないページの中身を捏造**していた典型的ハルシネート。\n\n■ 対処：(a) 当該団体の website_url を NULL に戻し、enrichment_source に補正経緯・hallucination_corrected=true を記録、(b) スクリプトに isUrlAlive() 関数を追加 — 保存前に必ず website_url / sns_links を実 fetch して 200 でない・parked パターン（ConnectYourDomain、wixErrorPagesApp、This domain may be for sale、under construction 等）にマッチするものは拒否、(c) 拒否時は enrichment_source.url_verification に理由記録。\n\n■ 他の出典 URL 検証結果：3 件分の全 URL を fetch 確認、捏造は machijuku.info 1 件のみ（全 URL 12-15 件中の約 7-10%）。inzaiparque / 印西市公式 / Wikipedia / Facebook ページなどは全て実在を確認。\n\n■ 事業化請求への教訓：220 件バッチに突入していたら約 22 件分に偽情報混入のリスク。docs/api-cost-log.md に事業化請求モデルを A/B/C コースで再設計記録（C コース＝代表者 claim 経由を基本運用、A/B は依頼ベース有償提供）。\n\n■ 残存リスク：自動検証で防げないのは『実在 URL を誤って公式扱い』『activity_detail の盛り捏造』『SNS 乗っ取りアカウント』。次回バッチ前に Sonnet 4.6 で品質比較が plans 追加。",

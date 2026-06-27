@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: 団体情報の自動拡充パイプライン構築 + ハルシネート発覚→対処（URL検証追加・DB修正・事業化請求モデル再設計）",
+  "_comment_updated": "2026-06-27 A1: 団体情報自動拡充パイプライン + ハルシネート対策 + 条例準拠の team type 再設計（civic_group統合+legal_form分離）",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": [
     "実装",
@@ -16,6 +16,31 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "📜 organizations.type を条例準拠に再設計（civic_group統合 + legal_form分離） 1.2時間",
+          "category": "実装",
+          "outputs": [
+            "印西市市民活動推進条例 逐条解説（令和7年8月改訂版 PDF）を全14ページ学習。第2条の定義で『任意団体 vs 市民活動団体』の対立軸は存在しないこと、旧 type が実は『第10条登録の有無』を表していたことを特定",
+            "cidao: supabase/migrations/20260627160000_org_type_chrei_compliance.sql — enum 再設計（voluntary/civic/company → civic_group/business/government）＋ legal_form 列追加＋ name パターンから legal_form を backfill（npo_corp 28 / nintei_chien_dantai_or_unincorp 25 / general_incorporated_association 3 / unincorporated 164）",
+            "本番DBへ migration 適用（プーラー aws-1 経由、全220件 civic_group 統合確認）",
+            "cidao: src/lib/org-labels.ts 新規 — TYPE_LABEL/LEGAL_FORM_LABEL/ORDER の単一の真実源 + orgTypeLabel() + isInzaiRegistered() ヘルパー",
+            "cidao: src/app/orgs/[id]/page.tsx — header に種別/法人格/印西市登録(08-XXX)or市登録なしの3軸バッジ",
+            "cidao: src/app/orgs/_components/OrgsBrowser.tsx — フィルタを type / 市登録あり/なし / 法人格 の3軸独立指定に拡張、カード内バッジも 印西市登録 + 法人格 の2種に",
+            "cidao: src/app/orgs/page.tsx — クエリに legal_form 追加",
+            "cidao: src/app/orgs/new/page.tsx — type ドロップダウン更新、法人格セレクト追加、登録番号欄に条例第10条の説明文",
+            "cidao: src/app/orgs/[id]/edit/page.tsx — 法人格セレクト + 登録番号入力欄追加",
+            "cidao: src/app/orgs/actions.ts — OrgInput type 更新 + legal_form/inzai_registration_number 編集対応",
+            "cidao: src/app/me/page.tsx / OrgClaimPicker / api/agents/a7/route.ts — ラベル共通モジュール参照に統一",
+            "cidao: src/lib/supabase/database.types.ts — organization_type enum 値更新",
+            "scripts/enrich-organizations.mjs / seed-orgs.mjs / check-civic.mjs — 旧 civic/voluntary 参照を新スキーマに更新",
+            "cidao ef4cdd7 commit + push（14ファイル、+327 -69 行）→ Vercel 自動デプロイ",
+            "本番検証：cidao.vercel.app/orgs で『市民活動団体』603回・『法人格』153回・『任意団体』152回・『NPO法人』60回・『地縁団体』20回・『市登録あり/なし/不問』フィルタ表示、旧 enum 値（voluntary/civic/company）の残存ゼロ。詳細ページも『市民活動団体 ／ 任意団体（法人格なし） ／ 市登録なし』バッジが正しく並ぶ"
+          ],
+          "hours": 1.2,
+          "partnerApproved": false,
+          "note": "ユーザー指摘『任意団体と市民活動団体の区分がぐちゃぐちゃ』に対応。条例 PDF を熟読して、軸の混乱の正体を特定（条例上 NPO法人/任意団体/町内会 すべて『市民活動団体』カテゴリ、別軸として『第10条登録の有無』『法人格』）。enum を後方互換なしで再設計したが Postgres の ALTER COLUMN TYPE で USING CASE マッピング使って一発移行できた。インデックスは自動再構築。\n\nローカル preview 検証は Supabase 新形式 publishable key が Auth で動かない既知制約のため失敗（フィルタチップ等の UI shell は表示確認、データ部分は本番でのみ検証可能）。本番 https://cidao.vercel.app/orgs で全 220 件・フィルタ・バッジ・詳細ページとも正常レンダリングを確認。\n\n副作用：『任意団体 188 / 市民活動団体 32』だった分布が『市民活動団体 220』に変わったため、CBI 公表資料に過去の分布数字が載っている場合は要更新（次回確認すべき）。"
+        },
         {
           "date": "2026-06-27",
           "title": "🛡️ ハルシネート発覚→DB修正＋スクリプトURL検証追加＋事業化請求モデル再設計 0.8時間",
