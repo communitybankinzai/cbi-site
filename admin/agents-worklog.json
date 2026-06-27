@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: 団体情報自動拡充パイプライン + ハルシネート対策 + 条例準拠の team type 再設計（civic_group統合+legal_form分離）",
+  "_comment_updated": "2026-06-27 A1: 印西市登録名簿 PDF から14団体の登録番号確定 + 新規3団体 INSERT",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": [
     "実装",
@@ -16,6 +16,23 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "📋 印西市登録名簿 PDF を権威ソースに 14団体の登録番号確定 + 新規3団体追加 0.9時間",
+          "category": "実装",
+          "outputs": [
+            "代表提供の R6-3-5.pdf『令和6年度第3回 資料5 市民活動団体等登録名簿（印西市市民活動推進条例第10条）』を pypdf でテキスト抽出 + 私が目視で全13件を構造化（AI不使用、ハルシネート防止）",
+            "scripts/official-registry.json 新規（13件の name/registration_number/registration_date/founded_at/legal_form/representative/address_district/activity_category）",
+            "scripts/extract-org-pdf.py / scripts/match-pdf-to-db.py / scripts/apply-registry.py を実装。dry-run → apply フラグの段階適用、ALIAS マッピングで表記揺れ吸収",
+            "本番DB適用：UPDATE 10件（既存マッチ8件 + 表記揺れ alias 2件＝『印西子どもの文化連絡会（子文連）』『ベジガールズ』）— inzai_registration_number + founded_at（フル日付のみ）+ legal_form 補正",
+            "本番DB適用：INSERT 3件（アトリエわお！06-003 / みんなのいっぽ 04-007 / 一般社団法人SODO 06-004）— civic_group + legal_form + registration_number + 自動生成 description + placeholder representative",
+            "DB件数 220 → 223 件、inzai_registration_number セット数 1 → 14 件（CBI 08-001 含む全14件）",
+            "本番検証 cidao.vercel.app/orgs/<エコネットちば>：『市民活動団体 ／ 特定非営利活動法人（NPO法人） ／ 印西市登録 20-001 ／ 環境・自然・里山』の4軸バッジ並列表示確認。新規3団体の詳細ページも HTTP 200"
+          ],
+          "hours": 0.9,
+          "partnerApproved": false,
+          "note": "代表指摘『登録番号は R6-3-5.pdf に掲載されている』を受けて即対応。条例第10条登録の権威ソース確定。\n\nハルシネート教訓を活かして AI抽出は使わず、私が PDF を目視で 13件を JSON 化（official-registry.json）してから決定論的に適用。安全パス。\n\nユーザー判断項目：\n1. PDF は『令和6年度第3回時点の名簿』であって全部ではない可能性 → ユーザー認識『PDFは一部』で合意\n2. 表記揺れマッチ2件は同一団体扱いで更新OKで合意\n3. DB未存在3件は INSERT してサイト掲載で合意\n\n後続の登録名簿資料が入手できれば apply-registry.py で段階追加可能。\n\n副次効果：これで CiDAO 上で『市登録あり』フィルタを使うと正確な14件が出るようになり、印西市協働事業の対象団体検索が条例準拠で機能する。CBI 提出資料に『印西市登録団体○件』と書く場合の数値根拠もこれで取れる。"
+        },
         {
           "date": "2026-06-27",
           "title": "📜 organizations.type を条例準拠に再設計（civic_group統合 + legal_form分離） 1.2時間",
