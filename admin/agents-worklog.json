@@ -8,6 +8,22 @@
       "actuals": [
         {
           "date": "2026-06-27",
+          "title": "✅ イベント出欠・役割管理UI（スタッフ/参加/主催の貢献度ポイント付与）実装 0.7時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260627130000_event_participant_manage.sql — manage_event_participant() SECURITY DEFINER 関数（authz=can_edit_event、role/attended 更新）＋ ep_select_editor RLS（管理者が参加者一覧を閲覧可）",
+            "本番DB適用（プーラー aws-1 経由）",
+            "cidao: src/app/events/actions.ts に manageParticipant server action（rpc manage_event_participant）",
+            "cidao: src/app/events/[id]/page.tsx に『出欠・役割の管理（主催者用）』パネル — 参加者ごとに『参加で出席+5』『スタッフで出席+20』『主催で出席+40』『出席取消』ボタン。canEdit のユーザーのみ表示",
+            "cidao fd68fa1 commit + push",
+            "検証：manage_event_participant を DB で JWT 模擬テスト（管理者がスタッフ＋出席→event_staff 20pt 付与 / 非管理者→forbidden）合格"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "ユーザー指摘『スタッフとして参加した貢献度は反映されない？』に対応。判明：参加系ポイント（主催40/スタッフ20/参加5）は award_on_event_attendance トリガーで attended=true 時に役割に応じ付与される設計だが、(a) event_participants に UPDATE ポリシーが無く出欠更新が全員 RLS 拒否、(b) 出欠記録UIが未実装、(c) スタッフ役割割当導線も無し、で実際には誰にも付いていなかった。SECURITY DEFINER 関数 manage_event_participant（can_edit_event でauthz）＋管理者向けUIで解決。設計上の注意：トリガーは attended が true に変わった瞬間の role を見るため、出席をつける時点で役割を確定させる必要（UIは『スタッフで出席』のように役割＋出席を1操作で設定）。出席後の役割変更は再付与されない（MVP制約、必要なら別途トリガー拡張）。"
+        },
+        {
+          "date": "2026-06-27",
           "title": "📷 写真投稿者の claim（身元紐づけ）＋情報提供ポイント実装 1.0時間",
           "category": "実装",
           "outputs": [
