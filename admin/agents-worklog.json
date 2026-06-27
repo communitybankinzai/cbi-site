@@ -1207,6 +1207,13 @@
       ],
       "plans": [
         {
+          "due": "2026-07-15",
+          "title": "🔎 団体情報の自動拡充（Web/SNS から収集して団体プロフィールを厚くする）",
+          "category": "実装",
+          "priority": "高",
+          "note": "印西の市民活動団体 219 件は inzaiparque 由来の1行説明のみで情報が薄い。Web/SNS から収集して厚くする。設計：(1) organizations に website_url / sns_links(jsonb) / activity_detail(長文) / enriched_at / enrichment_source / info_verified 列を追加する migration、(2) 拡充パイプライン（scripts/ or 定期ジョブ）= 団体名で Web 検索→候補ページ取得→Claude で {長文説明・公式サイトURL・SNSリンク・活動エリア・募集状況・連絡先} を構造化抽出→空欄のみ補完、info_verified=false で provisional 保存、出典URL記録、(3) /orgs/[id] に『自動収集・未確認』バッジ付きで表示、(4) 団体の本物の代表が claim/編集で確認（既存 representative / claim 思想と整合）。注意：X/FB/Instagram の本文取得は API 制限・ToS で困難なので『SNSアカウントへのリンク収集』中心にし、本文スクレイピングはしない。コスト：219件×Claude抽出はレート制御＋バッチで。公式 inzai-cac.org が到達可なら優先ソース。ユーザー要望『団体情報をSNSやWEBから取得し厚くしたい』が起点。"
+        },
+        {
           "due": "2026-07-31",
           "title": "GitHub Actions スケジュール実行の安定化監視",
           "category": "保守",
