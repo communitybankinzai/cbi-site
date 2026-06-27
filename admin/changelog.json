@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "type": "fix",
+      "target": "cidao: scripts/enrich-organizations.mjs + DB（木下まち育て塾の website_url）",
+      "title": "🛡️ AI 自動拡充の URL ハルシネーション対策：保存前に必ず実 fetch して生存確認するように修正、偽 URL（machijuku.info）も DB から削除",
+      "detail": "3 件試走の結果検証中、木下まち育て塾の公式サイトとして AI が返した『https://www.machijuku.info』が実は HTTP 404 ＋ Wix の空ドメイン（ConnectYourDomain エラー）で**サイトの中身が存在しない**ことが判明。AI のメモには『公式サイトで活動内容、イベント、歴史、組織情報が詳しく記載されている』と書かれていた＝**存在しないページの中身を捏造**していた典型的ハルシネート。\n\n■ 対処：(a) 当該団体の website_url を NULL に戻し、enrichment_source に補正経緯・hallucination_corrected=true を記録、(b) スクリプトに isUrlAlive() 関数を追加 — 保存前に必ず website_url / sns_links を実 fetch して 200 でない・parked パターン（ConnectYourDomain、wixErrorPagesApp、This domain may be for sale、under construction 等）にマッチするものは拒否、(c) 拒否時は enrichment_source.url_verification に理由記録。\n\n■ 他の出典 URL 検証結果：3 件分の全 URL を fetch 確認、捏造は machijuku.info 1 件のみ（全 URL 12-15 件中の約 7-10%）。inzaiparque / 印西市公式 / Wikipedia / Facebook ページなどは全て実在を確認。\n\n■ 事業化請求への教訓：220 件バッチに突入していたら約 22 件分に偽情報混入のリスク。docs/api-cost-log.md に事業化請求モデルを A/B/C コースで再設計記録（C コース＝代表者 claim 経由を基本運用、A/B は依頼ベース有償提供）。\n\n■ 残存リスク：自動検証で防げないのは『実在 URL を誤って公式扱い』『activity_detail の盛り捏造』『SNS 乗っ取りアカウント』。次回バッチ前に Sonnet 4.6 で品質比較が plans 追加。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-06-27",
       "type": "feature",
       "target": "cidao: /orgs/[id] / /orgs/[id]/edit / scripts/enrich-organizations.mjs",
       "title": "🔎 団体ページに公式サイト・SNS・活動詳細を表示できるようになり、AI が Web から自動収集→代表者が claim/編集して確認する仕組みができた",

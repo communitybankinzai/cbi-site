@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-27",
-  "_comment_updated": "2026-06-27 A1: 団体情報の自動拡充パイプライン構築（migration+UI+claude-haiku-4-5 抽出スクリプト）、3件試走まで完走、220件バッチはコスト超過のため見送り",
+  "_comment_updated": "2026-06-27 A1: 団体情報の自動拡充パイプライン構築 + ハルシネート発覚→対処（URL検証追加・DB修正・事業化請求モデル再設計）",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。",
   "categories": [
     "実装",
@@ -16,6 +16,23 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-06-27",
+          "title": "🛡️ ハルシネート発覚→DB修正＋スクリプトURL検証追加＋事業化請求モデル再設計 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "ユーザー指摘：machijuku.info（拡充1件目の website_url）が実は HTTP 404・Wix の ConnectYourDomain 空ドメイン＝AIが「公式サイトに活動内容詳しく記載」と捏造していた典型的ハルシネート",
+            "全 3件分の出典 URL（12-15件）を fetch 検証：machijuku.info のみ捏造、他は inzaiparque/印西市公式/Wikipedia/Facebook 等で実在確認、捏造率約 7-10%",
+            "cidao: 木下まち育て塾 (02d4d5c9-...) の website_url を NULL に戻し enrichment_source.notes に補正経緯と hallucination_corrected=true 記録（DB 直接更新）",
+            "cidao: scripts/enrich-organizations.mjs に isUrlAlive() 追加 — 保存前に website_url / sns_links を実 fetch、200 でない・body 200B 未満・parked パターン（ConnectYourDomain/wixErrorPagesApp/for sale/under construction/coming soon/expired）にマッチで拒否、拒否理由を enrichment_source.url_verification に記録",
+            "docs/api-cost-log.md に「重大教訓」セクション追加、事業化請求モデルを A/B/C コースで再設計（C=代表者 claim 経由を基本運用、A/B は依頼ベース有償）",
+            "agents/a1-core/worklog.md / CBI worklog.md（note-diary 用）/ changelog.json にも教訓追記",
+            "残存リスク明示：自動検証で防げないのは『実在URLを公式扱い誤認』『activity_detail 捏造』『SNS 乗っ取り』→ LLM-as-judge 二段階 or 人間 verify が必要"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "代表が念のためブラウザで machijuku.info を開いたことで発覚。「詐欺に合った、220件やらなくて良かった」とのコメント。事業化前に発覚で良かった案件。Anthropic web_search の挙動（max_uses=5 でページ全文をコンテキスト注入）が逆に効いて、Claude が「web で確認済み」と誤信して URL を捏造する可能性が示唆された。次回バッチ前に Sonnet 4.6 で品質比較必須（コスト3倍だが 3件 $1 で検証可）。\n\nAI 利用料の請求設計への直接影響：見積もり単価に必ず「品質保証コスト」を上乗せする必要。C コース運用（代表者claim経由で公式扱い、AI出力は『未確認』バッジ付き）が安全策として既に本番実装済み。詳細は docs/api-cost-log.md 参照。"
+        },
         {
           "date": "2026-06-27",
           "title": "🔎 団体情報の自動拡充パイプライン構築＋3件試走 2.5時間",
@@ -1269,6 +1286,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-07-31",
+          "title": "🧪 拡充パイプライン：Sonnet 4.6 でハルシネート率比較（3件試走、約 $1）",
+          "category": "調査",
+          "priority": "高",
+          "note": "Haiku 4.5 で URL 捏造 1/12（約 8%）が発覚した教訓。Sonnet 4.6 はコスト 3 倍だが品質向上で捏造率がどれだけ下がるか実測。同じ 3 件（木下まち育て塾・木下夢探訪・船穂中…）で再試走、isUrlAlive 検証ログから拒否数を集計、activity_detail も目視で比較。$1 程度で検証可。Sonnet で十分品質出るなら 220 件バッチも Sonnet 採用（$75 程度）で事業化請求の信頼性確保。enrich-organizations.mjs の model 行を 1 箇所変更するだけで試せる。"
+        },
         {
           "due": "2026-08-15",
           "title": "🔎 団体情報の自動拡充：220件バッチ実行（Anthropic クレジット追加後）",
