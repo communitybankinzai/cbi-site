@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-07-03",
+          "title": "🗺️ Obsidian「CBI」保管庫にHOME＋分野別MOC 4本を整備（ナレッジの入口づくり）0.2時間",
+          "category": "事務",
+          "outputs": [
+            "HOME.md — 保管庫の入口ノート新規作成（分野別MOC・よく使うノート・卒業論文の章別横断リンク・運用メモ）",
+            "MOC_CiDAO.md — CiDAO開発文書（docs 01〜06）・市長説明資料への目次ノート新規作成",
+            "MOC_行政調整.md — 市長説明・公民連携業務委託メモ（読む順付き）・生涯学習課調整経緯の目次ノート新規作成",
+            "MOC_エージェント.md — A1〜A10のREADME/worklog/知識ベースの一覧表ノート新規作成",
+            "MOC_申請書類.md — versions/配下の提出書類・生成スクリプト・会計費用根拠の目次ノート新規作成",
+            "cidao/README.md／agents/README.md — 末尾に関連ノート節（MOCへのwikilink）追記",
+            "worklog.md — 冒頭にHOME/MOCへのリンク追記（日記生成スクリプトの日付ブロックは非改変）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "保管庫内の全md（約100件）を走査・4分野に分類し、パス指定wikilink（[[パス|表示名]]）で誤リンクを防止。これによりObsidianで開けば全知識文書へ2クリックで到達できる状態になった。Obsidianの有効活用方針（フォルダ分類でなくリンク中心・1テーマ1ノート・frontmatter付与）も中司へレクチャー済み。\nsession: 095c051c-c8b4-4029-8287-ecae68524931 / output: 18,729 / cost: $4.09",
+          "session": "095c051c-c8b4-4029-8287-ecae68524931"
+        },
+        {
+          "date": "2026-07-03",
           "title": "📮 CiDAO メール通知セットアップ完走（代表と共同）：PR #1 マージ→migration適用→CRON_SECRET登録→試運転成功 0.2時間",
           "category": "実装",
           "outputs": [
