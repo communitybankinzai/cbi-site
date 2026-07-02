@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-07-02",
+      "type": "feature",
+      "target": "cidao: 提案・投票のメール通知（Resend）本実装 — PR #1 マージ待ち",
+      "title": "📮 投票開始・締切前・結果確定の3通知がメールで届くようになる（マージ＋キー設定後に稼働）",
+      "detail": "これまで /api/notify/email は console.log のみのスタブで、議論48時間が終わって投票が始まっても誰にも知らされず、投票率が上がらない構造だった。今回、提案ライフサイクルに連動する3種類のメール通知を Resend で本実装した。\n\n■ 届くようになる通知（対象: 通常メンバー以上の未退会メンバー）\n1. 投票開始 — 議論期間終了で投票が始まったとき（選択肢・締切日時つき）\n2. まもなく締切 — 投票締切の36時間前まで（日次実行でも取りこぼさない窓設計）\n3. 結果のお知らせ — 可決/否決/締切の確定時\n\n■ 利用者側の変更\nプロフィール編集（/me/edit）に「提案・投票のメール通知を受け取る」チェックボックスが追加され、いつでも配信停止できる（既定はオン）。\n\n■ 仕組み\nVercel Cron が毎日 JST 8:07 に /api/cron/notify を起動（CRON_SECRET 認証）。notification_log テーブルの unique(proposal_id, kind) で同じ通知は一度しか送られない（何度実行しても安全）。?dryRun=1 で送信せず対象一覧を確認可能。RESEND_API_KEY 未設定の間は何もしない安全設計のため、マージ・デプロイ自体に副作用はない。\n\n■ 稼働までの残作業（別PC/ブラウザ作業）\n(1) PR https://github.com/communitybankinzai/cidao/pull/1 のマージ、(2) migration の SQL Editor 適用、(3) Resend API キー取得、(4) Vercel 環境変数設定、(5) dryRun 確認。あわせて Supabase Auth のカスタムSMTP を Resend に切り替えれば、マジックリンク 2通/時 制限（6/27 ログイン障害の原因）も解消される。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-07-02",
       "type": "content",
       "target": "cbi-site: 管理画面「エージェント」タブ（agents-worklog.json の plans）",
       "title": "🔍 両サイト総点検にもとづく改善計画12件が管理画面に表示されるようになり、全10エージェントが予定を保有する体制になった",

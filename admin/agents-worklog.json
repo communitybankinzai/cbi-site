@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-07-02",
+          "title": "📮 CiDAO メール通知（Resend）本実装＋PR #1 作成 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260702100000_notification_log.sql NEW — 通知送信記録テーブル。unique(proposal_id, kind) で重複送信防止、RLS は admin SELECT のみ・書き込みは service_role 限定",
+            "cidao: src/app/api/cron/notify/route.ts NEW — 投票開始・締切24h前（36時間窓）・結果確定の3通知。CRON_SECRET Bearer 認証、?dryRun=1 プレビュー、RESEND_API_KEY/MAIL_FROM 未設定時は skipped を返す安全設計、初回大量送信防止の72時間窓、Resend batch API（100通/回）、宛先は email_only/verified の未退会メンバーでオプトアウト尊重",
+            "cidao: vercel.json NEW — Vercel Cron 日次 23:07 UTC（JST 8:07）",
+            "cidao: src/app/me/actions.ts + src/app/me/edit/page.tsx — 「提案・投票のメール通知を受け取る」チェックボックス（contact_preferences.proposal_email、既定オン、jsonb マージで既存キー保持）",
+            "PR: https://github.com/communitybankinzai/cidao/pull/1（tsc --noEmit / next build 通過確認済み）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "総点検で最短の投票率向上施策と判定した通知実装。Resend 導入は Supabase デフォルトSMTP 2通/時 制限（6/27 ログイン障害の原因）の恒久対応も兼ねる。\n\n■push が PR 経由になった経緯：C:\\Repos\\cidao のローカル main が origin と乖離（ahead 10/behind 71、リモート履歴書き換え起因）していたため backup-local-main-20260702 ブランチ退避後に origin/main へ同期して実装。git push は「Permission denied to you0810jmsdf」で拒否（このPCの認証は you0810jmsdf のみ、communitybankinzai の認証は別PC。cbi-site はリポジトリ限定資格情報で push 可）。GCM ブラウザ対話認証も5分タイムアウトしたため、you0810jmsdf の fork 経由で PR #1 を作成。\n\n■残作業（代表・別PC作業）：(1) PR #1 マージ、(2) migration を Supabase Dashboard SQL Editor で適用、(3) Resend API キー取得（credentials.md §3.1 で未取得のまま）、(4) Vercel env に RESEND_API_KEY / MAIL_FROM / CRON_SECRET を設定、(5) dryRun=1 で動作確認。コードはキー未設定でも副作用なし（skipped）。\nsession: a69dd927-acb4-4f58-af75-a4304e6d3f4e / output: 82,950（うち本作業分 39,889）/ cost: $21.66（セッション累計）",
+          "session": "a69dd927-acb4-4f58-af75-a4304e6d3f4e"
+        },
+        {
+          "date": "2026-07-02",
           "title": "📊 scripts/session-stats.py 再作成＋CLAUDE.md ルール7 復元 0.2時間",
           "category": "実装",
           "outputs": [
@@ -1553,7 +1569,7 @@
           "title": "📮 メール通知の本実装（Resend）＋投票締切リマインダー",
           "category": "実装",
           "priority": "高",
-          "note": "2026-07-02 総点検で投票率向上の最短施策と判定。現在 /api/notify/email は console.log スタブ。通知が無いと議論48h→投票開始に誰も気づかず投票率が上がらない。まず3通知（投票開始・締切24h前・結果確定）から実装。Resend 導入は Supabase デフォルトSMTP 2通/時 制限（2026-06-27 ログイン障害の原因）の恒久対応を兼ねる。カスタムSMTP切替でマジックリンク制限も同時解消。"
+          "note": "【2026-07-02 実装完了・マージ待ち】コードは PR https://github.com/communitybankinzai/cidao/pull/1 として提出済み（actuals 参照）。残作業＝代表の別PC or ブラウザで：(1) PR マージ、(2) migration 適用（Supabase SQL Editor）、(3) Resend API キー取得、(4) Vercel env 設定（RESEND_API_KEY / MAIL_FROM / CRON_SECRET）、(5) dryRun 動作確認。完了したら本 plan を削除。※Supabase Auth のカスタムSMTP切替（マジックリンク 2通/時 制限解消）は Resend キー取得後に Supabase Dashboard 側で別途設定。"
         },
         {
           "due": "2026-09-30",
