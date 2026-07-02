@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-07-02",
-  "_comment_updated": "2026-07-02 A1: session-stats.py 再作成（前回『要追跡』解消）＋CLAUDE.md ルール7 復元",
+  "updatedAt": "2026-07-03",
+  "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
     "実装",
@@ -16,6 +16,22 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-07-03",
+          "title": "🗂️ CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian「CBI」保管庫）へ一本化 0.5時間",
+          "category": "事務",
+          "outputs": [
+            "C:\\Users\\nsfactory\\OneDrive\\CBI — C:\\COCoLa\\cbi の全書類を新しい方優先でマージ（robocopy /XO、17ファイル更新・失敗0。site/ は git pull --ff-only で dd782d8→7420342 に同期、node_modules 除外）",
+            "C:\\Users\\nsfactory\\OneDrive\\CBI\\cidao\\ — CiDAO 知識文書（docs/・worklog.md・VERSIONING.md・README.md、7/2移動）に加え CLAUDE.md・agents/ も移動し完全集約。空になった C:\\COCoLa\\cidao は削除",
+            "CLAUDE.md（CBI・cidao 両方）— 新パスと運用ルール（コードは GitHub 正・C:\\Repos\\cidao は OneDrive 外維持）を明記",
+            "Claude Code メモリ 12 ファイルを新プロジェクトパス（C--Users-nsfactory-OneDrive-CBI）へ複製",
+            "Obsidian: 当初 C:\\COCoLa\\cidao を保管庫化→複数PC共用の代表判断で OneDrive 側に一本化（本セッション前半）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "代表指示『ローカルは OneDrive\\CBI のみとしたい』への対応。移行前に確認した事実：cbi-site は GitHub に完全 push 済み・未コミット無し／両フォルダは 6/27（OneDrive側）と 7/2（ローカル側）で双方向に分岐しており単純上書き不可のためタイムスタンプ優先マージを採用。旧 C:\\COCoLa\\cbi は本セッションが cwd として掴んでおりリネーム不可 → セッション終了後に _deprecated_cbi_20260703 へ凍結し2週間後に削除する運用（3択で代表が選択）。C:\\Repos\\cidao は node_modules 同期事故回避の過去判断（worklog 2026-06-24）を踏襲し OneDrive 外に維持。\nsession: 23170266-53f0-45a9-b8c8-86d0be6a45ba / output: 47,599 / cost: $12.59（記録時点）",
+          "session": "23170266-53f0-45a9-b8c8-86d0be6a45ba"
+        },
         {
           "date": "2026-07-02",
           "title": "📮 CiDAO メール通知（Resend）本実装＋PR #1 作成 0.4時間",
