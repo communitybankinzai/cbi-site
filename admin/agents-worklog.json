@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-07-03",
+          "title": "Claude Code スキル棚卸し（dashboard-design-guidebook 診断・原本照合・矛盾2件修正）",
+          "category": "保守",
+          "outputs": [
+            "~/.claude/skills/dashboard-design-guidebook/SKILL.md",
+            "~/.claude/skills/dashboard-design-guidebook/references/checklist.md",
+            "~/.claude/skills/dashboard-design-guidebook/references/color-palette.md",
+            "docs/claude-skills-audit-2026-07.md",
+            "MOC_エージェント.md"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "守り6項目診断＋原本PDF p.35-36とHEX全照合（一致）。グリッド6×6固定表記→2〜6分割へ矛盾修正、Solid Gray/Yellow中間トーンの出典注記追加。v02が最新版であることをWeb確認。バックアップ: ~/.claude/backups/skills_backup_20260703。session: 47adb368-b0a6-447b-bc32-9640948e3e43 / output: 18,819 / cost: $5.16"
+        },
+        {
+          "date": "2026-07-03",
           "title": "📝 Obsidianナレッジ運用ルールをCLAUDE.mdに制定＋テンプレート2種＋README別名付与 0.2時間",
           "category": "事務",
           "outputs": [
