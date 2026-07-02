@@ -1718,7 +1718,21 @@
       ]
     },
     "A4": {
-      "actuals": [],
+      "actuals": [
+        {
+          "date": "2026-07-03",
+          "title": "📹 SNS投稿下書き：Obsidianグラフビュー動画（Claude Code連携紹介）＋公開前チェックリスト作成 0.1時間",
+          "category": "広報",
+          "outputs": [
+            "agents/a4-voice-out/knowledge/sns-drafts/2026-07-03_Obsidian連携グラフ動画投稿.md — 録画手順（Snipping Tool）・公開前チェックリスト（ノート名映り込み確認・内部方針非公開・CBI名義時の承認とAI明示・根拠なき断定禁止）・キャプション3案（個人視点/Before-After/CBI名義）",
+            "MOC_エージェント.md — A4の知識ノート欄に下書きへのリンク追記"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "保管庫グラフビューの録画をSNS公開したいとの中司の依頼。機密タイトル（調整経緯・市長説明・credentials等）の映り込み防止をチェックリスト化し、テキストフェード閾値でノート名を非表示にする手順を明記。CBI名義投稿はパートナー承認＋AI生成明示が前提。\nsession: 095c051c-c8b4-4029-8287-ecae68524931 / output: 41,841（うち本作業分 7,525）/ cost: \\.23（セッション累計）",
+          "session": "095c051c-c8b4-4029-8287-ecae68524931"
+        }
+      ],
       "plans": [
         {
           "due": "2026-10-31",
