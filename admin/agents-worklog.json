@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-07-02",
-  "_comment_updated": "2026-07-02 A1: 両サイト総点検→改善計画12件を全エージェントplansへ起票（全10体がplans保有）",
+  "_comment_updated": "2026-07-02 A1: session-stats.py 再作成（前回『要追跡』解消）＋CLAUDE.md ルール7 復元",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
     "実装",
@@ -16,6 +16,20 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-07-02",
+          "title": "📊 scripts/session-stats.py 再作成＋CLAUDE.md ルール7 復元 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "CBI: scripts/session-stats.py NEW（再作成）— transcript JSONL から output_tokens 集計、hours = output/100k、モデル別単価（Fable5 $10/$50・Opus $5/$25・Sonnet $3/$15・Haiku $1/$5、cache write 5m=1.25x/1h=2x・read=0.1x）でコスト試算、subagents/*.jsonl も集計、message.id で streaming 重複行を dedup、--latest / --project / --no-subagents オプション",
+            "CBI: CLAUDE.md ルール7 — hours の output_tokens/100k 算出と note 末尾 session/output/cost 1行記録の運用を復元明記",
+            "site/admin/agents-worklog.json — 本エントリ追記"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "前回追跡メモ（2026-07-02『要追跡』）の解消。worklog 2026-06-27 に記録された scripts/session-stats.py が cbi/ 配下にも C:\\Repos\\cidao にも実在しないことを確認し、worklog 記載の仕様どおり再作成した。あわせて同日『CLAUDE.md ルール7 を更新』と記録されていた運用明文化も現 CLAUDE.md から欠落していたため復元。検証：a69dd927（7/2 総点検セッション）で実行し output 43,061（subagent 2体含む）＝0.4h・$6.84 を実測（当時の概算 0.6h を客観値で補正可能に）。27bc44de（6/27、照合値 output 138,269 / $16.94 あり）の transcript は既に削除済みで突合不可。単価は claude-api スキルで確認した公式値（Opus 4.7/4.8 = $5/$25 per MTok）。\nsession: 36a74595-a3c3-42ab-991f-f75e59725390 / output: 16,437 / cost: $10.56",
+          "session": "36a74595-a3c3-42ab-991f-f75e59725390"
+        },
         {
           "date": "2026-07-02",
           "title": "🔍 CBIサイト×CiDAO 両サイト総点検＋改善計画12件を各エージェントplansへ起票 0.6時間",
