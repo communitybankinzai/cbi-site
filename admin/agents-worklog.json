@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-07-03",
+          "title": "📮 CiDAO メール通知セットアップ完走（代表と共同）：PR #1 マージ→migration適用→CRON_SECRET登録→試運転成功 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "GitHub: PR #1 マージ（communitybankinzai/cidao main へ取り込み、Vercel 自動デプロイ）",
+            "Supabase: notification_log migration を SQL Editor で本番適用（Success 確認）",
+            "Vercel: CRON_SECRET を環境変数に追加＋Redeploy（RESEND_API_KEY / MAIL_FROM は 6/25 登録済みと判明し追加不要）",
+            "試運転: GET /api/cron/notify?dryRun=1 → HTTP 200。deadline_24h 1件（サンプル提案『駅前マルシェの月例開催』）・宛先2名を正しく検出",
+            "credentials.md（OneDrive版）— CRON_SECRET の値と、セットアップ中に誤発行した重複 Resend キー（未使用・削除可）を記録"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "代表がブラウザ操作（GitHub マージ・Supabase SQL・Vercel env）、A1 が手順案内と検証を担当した共同作業。ブラウザ操作を1画面ずつ案内し、Supabase/Vercel の2FA は iPhone「パスワード」アプリの TOTP で通過。\n\n■判明事項：C:\\COCoLa\\cbi\\agents\\a1-core\\credentials.md は旧版で「Resend 未取得」のままだったが、OneDrive 版では 6/25 取得・Vercel 登録済みだった（credentials の正は OneDrive 版）。セットアップ中に代表が新規 Resend キー（cidao-production）を発行したが未使用のため Resend ダッシュボードから削除してよい。\n\n■稼働開始：毎朝 JST 8:07 に Vercel Cron が起動。初回は明朝、サンプル提案の締切リマインダーが2名に送られる見込み。MAIL_FROM がテスト用（onboarding@resend.dev）の場合、アカウント所有者以外の宛先はエラーになる可能性があり、notification_log の errors_count で確認する。本配信には独自ドメイン取得（選択肢B、年1,000〜2,000円）が必要で、代表は当面テストモード（選択肢A）を選択。\nsession: a69dd927-acb4-4f58-af75-a4304e6d3f4e / output: 106,463（うち本作業分 23,513）/ cost: $33.29（セッション累計）",
+          "session": "a69dd927-acb4-4f58-af75-a4304e6d3f4e"
+        },
+        {
+          "date": "2026-07-03",
           "title": "🗂️ CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian「CBI」保管庫）へ一本化 0.5時間",
           "category": "事務",
           "outputs": [
@@ -1579,13 +1595,6 @@
           "category": "実装",
           "priority": "高",
           "note": "2026-07-02 総点検で最重要ボトルネックと判定。tier昇格（email_only→verified）が現在手動SQLのみで、投票重みの運用が回らない。仕様§3.13 の F6 を最小構成で実装：(1) メンバー一覧＋tier昇格ボタン、(2) 唯一のKPI『月次アクティブ率40%』の自動算出カード、(3) 提案・コメントのモデレーション。新規団体作成の運営承認フローもここに含める。"
-        },
-        {
-          "due": "2026-08-31",
-          "title": "📮 メール通知の本実装（Resend）＋投票締切リマインダー",
-          "category": "実装",
-          "priority": "高",
-          "note": "【2026-07-02 実装完了・マージ待ち】コードは PR https://github.com/communitybankinzai/cidao/pull/1 として提出済み（actuals 参照）。残作業＝代表の別PC or ブラウザで：(1) PR マージ、(2) migration 適用（Supabase SQL Editor）、(3) Resend API キー取得、(4) Vercel env 設定（RESEND_API_KEY / MAIL_FROM / CRON_SECRET）、(5) dryRun 動作確認。完了したら本 plan を削除。※Supabase Auth のカスタムSMTP切替（マジックリンク 2通/時 制限解消）は Resend キー取得後に Supabase Dashboard 側で別途設定。"
         },
         {
           "due": "2026-09-30",
