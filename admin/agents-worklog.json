@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-07-03",
+          "title": "📝 Obsidianナレッジ運用ルールをCLAUDE.mdに制定＋テンプレート2種＋README別名付与 0.2時間",
+          "category": "事務",
+          "outputs": [
+            "CLAUDE.md — 「ナレッジ運用ルール（Obsidian保管庫）」7項目を新設（ノート化義務・frontmatter/リンクの型・MOC登録・パス指定wikilink・README リネーム禁止・既存ノート非改変・横断検索での取り出し）",
+            "templates/会議メモ.md・templates/調査メモ.md — 新規作成（frontmatter・関連ノート節・確信度/出典欄入り）",
+            ".obsidian/templates.json — テンプレートフォルダを templates/ に設定",
+            "agents/README.md＋A1〜A10のREADME計11件 — frontmatter に aliases（A1 Core等）を追記。Ctrl+Oで「A1」等から直接検索可能に（ファイル名は不変）",
+            "HOME.md・MOC_CiDAO.md — 表内wikilinkの \\| エスケープ漏れを修正（表崩れ解消）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "これで全セッションが自動で知識をノート化→MOCへ接続する運用になった。READMEリネーム案は不採用（GitHubフォルダ表示・agents.json運用が名前を参照するため）と判断し、代替としてaliasesを採用。中司にはHOMEの開き方・ブックマーク登録・Ctrl+Oをレクチャー済み。\nsession: 095c051c-c8b4-4029-8287-ecae68524931 / output: 34,316（うち本作業分 15,587）/ cost: $7.04（セッション累計）",
+          "session": "095c051c-c8b4-4029-8287-ecae68524931"
+        },
+        {
+          "date": "2026-07-03",
           "title": "🗺️ Obsidian「CBI」保管庫にHOME＋分野別MOC 4本を整備（ナレッジの入口づくり）0.2時間",
           "category": "事務",
           "outputs": [
