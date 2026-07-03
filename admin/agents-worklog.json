@@ -18,18 +18,19 @@
       "actuals": [
         {
           "date": "2026-07-03",
-          "title": "Claude Code スキル棚卸し（dashboard-design-guidebook 診断・原本照合・矛盾2件修正）",
+          "title": "Claude Code スキル棚卸し＋実績還流（dashboard-design-guidebook 診断・矛盾修正・A8ダッシュボード事後レビュー）",
           "category": "保守",
           "outputs": [
             "~/.claude/skills/dashboard-design-guidebook/SKILL.md",
             "~/.claude/skills/dashboard-design-guidebook/references/checklist.md",
             "~/.claude/skills/dashboard-design-guidebook/references/color-palette.md",
+            "docs/claude-skills-audit-2026-07.md（レビュー結果追記）",
             "docs/claude-skills-audit-2026-07.md",
             "MOC_エージェント.md"
           ],
-          "hours": 0.2,
+          "hours": 0.3,
           "partnerApproved": false,
-          "note": "守り6項目診断＋原本PDF p.35-36とHEX全照合（一致）。グリッド6×6固定表記→2〜6分割へ矛盾修正、Solid Gray/Yellow中間トーンの出典注記追加。v02が最新版であることをWeb確認。バックアップ: ~/.claude/backups/skills_backup_20260703。session: 47adb368-b0a6-447b-bc32-9640948e3e43 / output: 18,819 / cost: $5.16"
+          "note": "守り6項目診断＋原本PDF p.35-36とHEX全照合（一致）。グリッド6×6固定表記→2〜6分割へ矛盾修正、Solid Gray/Yellow中間トーンの出典注記追加。v02が最新版であることをWeb確認。推奨アイテム実行：A8 AI利用量ダッシュボードをチェックリストで事後レビュー（コントラスト実測5.40〜6.49:1全合格、欠落1件=集計時点表示なし→別タスク化）、合格点とNG例をSKILL.md「適用実例」節へ出典付き還流。バックアップ: ~/.claude/backups/skills_backup_20260703。session: 47adb368-b0a6-447b-bc32-9640948e3e43 / output: 31,184 / cost: $9.23"
         },
         {
           "date": "2026-07-03",
