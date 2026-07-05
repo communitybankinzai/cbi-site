@@ -1737,17 +1737,21 @@
       "actuals": [
         {
           "date": "2026-07-05",
-          "title": "🎞 CiDAO機能紹介HTMLスライド（20枚・実画面キャプチャ入り）を新規作成 0.6時間",
+          "title": "🎞 CiDAO機能紹介HTMLスライド（20枚・実画面キャプチャ入り）作成＋管理画面 資料タブへ登録 0.8時間",
           "category": "広報",
           "outputs": [
             "proposals/2026-07_CiDAO機能紹介_一般向け_v1.html — 一般市民向け20枚構成の単一HTMLスライド（約1.8MB、実画面スクショをbase64埋め込み）",
             "キャプチャ手法：本番 cidao.vercel.app の15画面＋縦長6画面をヘッドレスChrome（幅470px）で取得。ローカルdevはDB未接続で空表示のため本番から取得",
             ".claude/launch.json — proposals/ 静的配信用の proposals-static 設定を追加（検証用）",
-            "操作性：←→キー・クリック・スワイプでページ送り、#N で直行、?still でアニメ無効（印刷・検証用）、スマホ画面の自動スクロール演出付き"
+            "操作性：←→キー・クリック・スワイプでページ送り、#N で直行、?still でアニメ無効（印刷・検証用）、スマホ画面の自動スクロール演出付き",
+            "site/admin/proposals/cidao-feature-intro-v1.html — 管理画面 資料タブ配信用コピー",
+            "site/admin/index.html — 資料タブ先頭に doc-card 追加、site/admin/data/documents.json — id: cidao-feature-intro 登録（資料コメント対応）",
+            "site/admin/changelog.json — content エントリ追記",
+            "修正：投票の重み・はじめかたの2枚を β制限記載（ハガキ方式不採用・マイナンバー確認方式予定）に整合させた"
           ],
-          "hours": 0.6,
+          "hours": 0.8,
           "partnerApproved": false,
-          "note": "Canva直接操作は不可のためHTMLスライドで作成（ユーザー選択）。全20枚をヘッドレス実レンダリングで目視検証済み。数値表現は仕様書v2.0・実画面の表記に準拠し、将来構想は「検討段階」と明記。\nsession: 54d32428-be65-40df-a972-d41332b97806 / output: 61,677 / cost: $15.24",
+          "note": "Canva直接操作は不可のためHTMLスライドで作成（ユーザー選択）。全20枚をヘッドレス実レンダリングで目視検証済み。数値表現は仕様書v2.0・実画面の表記に準拠し、将来構想は「検討段階」と明記。\nsession: 54d32428-be65-40df-a972-d41332b97806 / output: 81,991 / cost: $26.70",
           "session": "54d32428-be65-40df-a972-d41332b97806"
         },
         {

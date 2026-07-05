@@ -1,7 +1,16 @@
 {
-  "updatedAt": "2026-06-23",
+  "updatedAt": "2026-07-05",
   "note": "資料コメントタブで管理する内部資料の一覧。HTMLを追加したらこのリストに登録する。id はファイルパスから独立した安定識別子（comments.targetId と一致）。",
   "documents": [
+    {
+      "id": "cidao-feature-intro",
+      "title": "CiDAO機能紹介スライド｜一般向け・20枚（実画面キャプチャ入り）",
+      "path": "proposals/cidao-feature-intro-v1.html",
+      "category": "広報資料・プレゼンスライド",
+      "description": "一般市民向けにCiDAOの7機能を本番アプリの実画面スクショで紹介する20枚構成のHTMLスライド。←→キー・クリック・スワイプで操作、?still でアニメ無効（印刷用）、#N でページ直行。画面はβ版（サンプルデータ含む）。",
+      "createdAt": "2026-07-05",
+      "updatedAt": "2026-07-05"
+    },
     {
       "id": "machikatsu-meeting",
       "title": "街活性室 橋爪様向け｜CBI × 街活性室 連携の方向性",
