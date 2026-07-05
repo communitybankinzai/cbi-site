@@ -1737,7 +1737,7 @@
       "actuals": [
         {
           "date": "2026-07-05",
-          "title": "🎞 CiDAO機能紹介HTMLスライド（20枚・実画面キャプチャ入り）作成＋管理画面 資料タブへ登録 0.8時間",
+          "title": "🎞 CiDAOスライドに受付(QR)機能を追加、20→22枚に拡充 1.4時間",
           "category": "広報",
           "outputs": [
             "proposals/2026-07_CiDAO機能紹介_一般向け_v1.html — 一般市民向け20枚構成の単一HTMLスライド（約1.8MB、実画面スクショをbase64埋め込み）",
@@ -1747,11 +1747,14 @@
             "site/admin/proposals/cidao-feature-intro-v1.html — 管理画面 資料タブ配信用コピー",
             "site/admin/index.html — 資料タブ先頭に doc-card 追加、site/admin/data/documents.json — id: cidao-feature-intro 登録（資料コメント対応）",
             "site/admin/changelog.json — content エントリ追記",
-            "修正：投票の重み・はじめかたの2枚を β制限記載（ハガキ方式不採用・マイナンバー確認方式予定）に整合させた"
+            "修正：投票の重み・はじめかたの2枚を β制限記載（ハガキ方式不採用・マイナンバー確認方式予定）に整合させた",
+            "proposals/cidao-deck-src/shots/reception_899.png・reception_900.png — ユーザー提供の実ログイン画面（団体ページ導入／受付モード本体）をPILでSafari UIトリミングして追加",
+            "8機能マップに「受付（QR）」を08として追加、新規スライド2枚（FEATURE 08：導入／QRスキャン）を貢献度の直後に挿入。合計20→22枚",
+            "site/admin/proposals/cidao-feature-intro-v1.html も同内容に更新"
           ],
-          "hours": 0.8,
+          "hours": 1.4,
           "partnerApproved": false,
-          "note": "Canva直接操作は不可のためHTMLスライドで作成（ユーザー選択）。全20枚をヘッドレス実レンダリングで目視検証済み。数値表現は仕様書v2.0・実画面の表記に準拠し、将来構想は「検討段階」と明記。\nsession: 54d32428-be65-40df-a972-d41332b97806 / output: 81,991 / cost: $26.70",
+          "note": "Canva直接操作は不可のためHTMLスライドで作成（ユーザー選択）。全20枚をヘッドレス実レンダリングで目視検証済み。数値表現は仕様書v2.0・実画面の表記に準拠し、将来構想は「検討段階」と明記。\n受付ページはログイン必須のためユーザー本人に実機スクショ提供を依頼（自動操作は誤って別ウィンドウを最大化する事故があり中止、以後は人手提供に切替）。\nsession: 54d32428-be65-40df-a972-d41332b97806 / output: 136,242 / cost: $45.46",
           "session": "54d32428-be65-40df-a972-d41332b97806"
         },
         {
