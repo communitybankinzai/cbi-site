@@ -1737,6 +1737,20 @@
       "actuals": [
         {
           "date": "2026-07-18",
+          "title": "🎞 CiDAO機能紹介スライドも同様に一般公開ページ化 0.1時間",
+          "category": "広報",
+          "outputs": [
+            "site/proposals/cidao-intro/index.html — 既存の資料タブ限定版（site/admin/proposals/cidao-feature-intro-v1.html）と同内容を、ログイン不要の完全公開ページとして新設（og:meta・description付き）",
+            "site/index.html — 活動報告欄にCiDAO機能紹介スライドへの導線を追加（まちのコイン構想の上に追加）",
+            "site/admin/changelog.json — content エントリ追記"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "直前のまちのコイン構想ページ公開に続き、ユーザーから「CiDAOの紹介スライドも同様にしてください」との依頼。既存の資料タブ版をコピーし同じ公開手順（og:meta追加・戻りリンク・トップページ導線・changelog記録）を適用。ブラウザプレビューでは新旧2件のnews-list項目のうち新規追加分が表示に反映されないキャッシュ挙動があったが、Grepでファイル内容の正しさを直接確認し検証を代替した。\nsession: 691e24a8-ce53-4338-8ac1-1d5882a6da2f / output: 67,271 / cost: $13.88",
+          "session": "691e24a8-ce53-4338-8ac1-1d5882a6da2f"
+        },
+        {
+          "date": "2026-07-18",
           "title": "🪙 CiDAO×まちのコイン連携構想を公開プレゼン化＋一般公開ページ新設 0.6時間",
           "category": "広報",
           "outputs": [
