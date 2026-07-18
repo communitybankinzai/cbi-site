@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CiDAO × まちのコイン 連携構想｜貢献が、まちをめぐる。</title>
+<meta name="description" content="CiDAOの貢献度ポイントとコミュニティ通貨「まちのコイン」を将来つなぐ連携構想。Community Bank INZAI（印西市市民活動団体 登録番号08-001）による構想段階のご提案です。">
+<meta property="og:title" content="CiDAO × まちのコイン 連携構想｜貢献が、まちをめぐる。">
+<meta property="og:description" content="参加の積み重ね（貢献度）を、まちで使える価値に。CBIが描く構想段階のご提案です。">
+<meta property="og:type" content="website">
+<meta name="robots" content="index,follow">
+<link rel="icon" type="image/png" href="../../assets/cbi-logo.png">
+<style>
+:root{
+  --ink:#17293c; --ink2:#44576b; --paper:#f7f5f0; --card:#ffffff;
+  --green:#0e9f6e; --green-d:#0b7a55; --gold:#c9a04e; --line:#e3ded4;
+  --coin:#e8892b; --coin-d:#b96a1a;
+  --serif:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;
+  --sans:"Yu Gothic UI","Hiragino Sans","Noto Sans JP","Meiryo",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#0d1b26;font-family:var(--sans);color:var(--ink)}
+.deck{position:relative;width:100vw;height:100vh}
+.slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0;visibility:hidden;transform:scale(.985);transition:opacity .55s ease,transform .55s ease,visibility .55s;
+  background:var(--paper);padding:5vh 6vw;overflow:hidden}
+.slide.active{opacity:1;visibility:visible;transform:scale(1);z-index:2}
+.slide.dark{background:linear-gradient(135deg,#0d1b26 0%,#12303c 55%,#0e3f38 100%);color:#f2efe8}
+.slide.dark .kicker{color:#7fd6b4}
+.slide.dark .sub{color:#b9c6cf}
+
+/* ---- 汎用 ---- */
+.kicker{font-size:clamp(11px,1.3vw,15px);letter-spacing:.35em;color:var(--green-d);font-weight:700;text-transform:uppercase}
+h1{font-family:var(--serif);font-size:clamp(40px,7.2vw,96px);line-height:1.12;letter-spacing:.02em;font-weight:600}
+h2{font-family:var(--serif);font-size:clamp(26px,3.6vw,48px);line-height:1.25;font-weight:600}
+.sub{color:var(--ink2);font-size:clamp(14px,1.5vw,19px);line-height:1.9}
+.note{font-size:clamp(10px,1vw,13px);color:var(--ink2);opacity:.75}
+.num{font-family:var(--serif);color:var(--gold);font-size:clamp(14px,1.5vw,18px);letter-spacing:.2em}
+.pill{display:inline-block;background:#e8f5ef;color:var(--green-d);border:1px solid #bfe3d3;border-radius:999px;
+  padding:.35em 1em;font-size:clamp(11px,1.2vw,14px);font-weight:700;margin:0 .3em .5em 0}
+.split{display:flex;align-items:center;gap:5vw;width:100%;max-width:1500px}
+.split .txt{flex:1.15;min-width:0}
+.split .vis{flex:1;display:flex;align-items:center;justify-content:center;min-width:0}
+ul.feat{list-style:none;margin-top:2.2vh}
+ul.feat li{position:relative;padding:.55em 0 .55em 1.7em;font-size:clamp(13px,1.45vw,18px);line-height:1.7;color:var(--ink)}
+ul.feat li::before{content:"";position:absolute;left:.1em;top:1.05em;width:.65em;height:.65em;border-radius:50%;
+  background:var(--green);opacity:.85}
+ul.feat li b{color:var(--green-d)}
+
+/* ---- アニメーション ---- */
+.a{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.slide.active .a{opacity:1;transform:none}
+.slide.active .d1{transition-delay:.12s}.slide.active .d2{transition-delay:.28s}
+.slide.active .d3{transition-delay:.44s}.slide.active .d4{transition-delay:.6s}
+.slide.active .d5{transition-delay:.76s}.slide.active .d6{transition-delay:.92s}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(var(--tilt,0deg))}50%{transform:translateY(-10px) rotate(var(--tilt,0deg))}}
+
+/* ---- 表紙 ---- */
+.cover-wrap{max-width:1500px;width:100%;display:flex;align-items:center;gap:5vw}
+.cover-txt{flex:1.2}
+.brand{font-family:var(--serif);font-size:clamp(44px,7.5vw,104px);line-height:1.15;color:#fff;letter-spacing:.01em}
+.brand small{display:block;font-size:clamp(13px,1.5vw,19px);letter-spacing:.5em;color:#7fd6b4;margin-bottom:2.5vh;font-family:var(--sans);font-weight:700}
+.cover-sub{font-size:clamp(16px,2vw,26px);color:#dfe8ea;margin-top:3vh;line-height:1.8;font-weight:600}
+.cover-url{display:inline-block;margin-top:4vh;padding:.7em 1.6em;border:1px solid rgba(127,214,180,.6);border-radius:999px;
+  color:#7fd6b4;font-size:clamp(13px,1.5vw,19px);letter-spacing:.08em}
+.cover-note{margin-top:3vh;color:#8fa2ad;font-size:clamp(10px,1.05vw,13px);line-height:1.8}
+
+/* ---- グリッドカード ---- */
+.grid7{display:grid;grid-template-columns:repeat(4,1fr);gap:1.4vw;width:100%;max-width:1200px;margin-top:3.5vh}
+.gcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:2.4vh 1.4vw;text-align:center;
+  box-shadow:0 6px 18px rgba(13,27,38,.06);transition:transform .3s ease,box-shadow .3s ease}
+.gcard:hover{transform:translateY(-6px);box-shadow:0 16px 34px rgba(13,27,38,.14)}
+.gcard .ico{font-size:clamp(26px,3.4vw,44px);line-height:1}
+.gcard h3{font-size:clamp(13px,1.4vw,18px);margin:1.2vh 0 .6vh;color:var(--ink)}
+.gcard p{font-size:clamp(10px,1.05vw,13px);color:var(--ink2);line-height:1.6}
+.gcard .no{font-family:var(--serif);color:var(--gold);font-size:clamp(11px,1.1vw,14px);letter-spacing:.15em}
+
+/* ---- タイムライン ---- */
+.tl{display:flex;align-items:stretch;gap:0;width:100%;max-width:1250px;margin-top:5vh}
+.tl .step{flex:1;position:relative;text-align:center;padding:0 .6vw}
+.tl .dot{width:clamp(14px,1.6vw,20px);height:clamp(14px,1.6vw,20px);border-radius:50%;background:var(--green);margin:0 auto;
+  box-shadow:0 0 0 6px #d9efe5;position:relative;z-index:2}
+.tl .bar{position:absolute;top:calc(clamp(14px,1.6vw,20px)/2 - 2px);left:calc(50% + clamp(14px,1.6vw,20px)/2 + 4px);right:calc(-50% + clamp(14px,1.6vw,20px)/2 + 4px);height:4px;background:linear-gradient(90deg,var(--green),#bfe3d3);border-radius:2px;z-index:1}
+.tl .step:last-child .bar{display:none}
+.tl h4{font-size:clamp(13px,1.5vw,19px);margin-top:2vh;color:var(--ink)}
+.tl p{font-size:clamp(10px,1.1vw,14px);color:var(--ink2);margin-top:.8vh;line-height:1.65}
+.tl .tag{display:inline-block;margin-top:.9vh;background:#fdf3df;color:#946f24;border-radius:6px;padding:.2em .7em;font-size:clamp(9px,1vw,12px);font-weight:700}
+
+/* ---- ステップカード ---- */
+.steps3{display:flex;gap:2.2vw;margin-top:4.5vh;max-width:1250px;width:100%}
+.scard{flex:1;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:3.4vh 1.8vw;
+  box-shadow:0 6px 18px rgba(13,27,38,.06)}
+.scard .sno{font-family:var(--serif);font-size:clamp(30px,4vw,52px);color:var(--gold);line-height:1}
+.scard h3{font-size:clamp(15px,1.7vw,22px);margin:1.4vh 0 1vh}
+.scard p{font-size:clamp(11px,1.2vw,15px);color:var(--ink2);line-height:1.8}
+.scard .chip{display:inline-block;margin-top:1.2vh;background:#e8f5ef;color:var(--green-d);border-radius:6px;padding:.25em .8em;font-size:clamp(10px,1.05vw,13px);font-weight:700}
+
+/* ---- 循環図 ---- */
+.cycle{position:relative;width:min(52vh,460px);height:min(52vh,460px);margin:0 auto}
+.cycle .cnode{position:absolute;width:34%;aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;background:var(--card);border:2px solid var(--line);
+  box-shadow:0 10px 26px rgba(13,27,38,.1);padding:1em}
+.cycle .cnode .ico{font-size:clamp(22px,3vw,38px);line-height:1.2}
+.cycle .cnode b{font-size:clamp(11px,1.2vw,15px);margin-top:.4em;line-height:1.4}
+.cycle .cnode span{font-size:clamp(8px,.85vw,11px);color:var(--ink2);line-height:1.4;margin-top:.2em}
+.cycle .cnode.n1{top:0;left:50%;transform:translateX(-50%);border-color:var(--green)}
+.cycle .cnode.n2{top:50%;right:0;transform:translateY(-50%);border-color:var(--gold)}
+.cycle .cnode.n3{bottom:0;left:50%;transform:translateX(-50%);border-color:var(--coin)}
+.cycle .cnode.n4{top:50%;left:0;transform:translateY(-50%);border-color:var(--green-d)}
+.cycle svg{position:absolute;inset:0;width:100%;height:100%;z-index:-1}
+.cycle svg path{fill:none;stroke:#bfd6c9;stroke-width:3;stroke-dasharray:8 7}
+.slide.active .cycle svg path{animation:dashmove 20s linear infinite}
+@keyframes dashmove{to{stroke-dashoffset:-600}}
+
+/* ---- ブリッジ図 ---- */
+.bridge{display:flex;align-items:center;gap:0;width:100%;max-width:1250px;margin-top:5vh}
+.bside{flex:1.1;background:var(--card);border:2px solid var(--line);border-radius:22px;padding:3.4vh 2vw;text-align:center;
+  box-shadow:0 10px 28px rgba(13,27,38,.08)}
+.bside.cidao{border-color:var(--green)}
+.bside.coin{border-color:var(--coin)}
+.bside .blogo{font-family:var(--serif);font-size:clamp(20px,2.6vw,34px);font-weight:600}
+.bside.cidao .blogo{color:var(--green-d)}
+.bside.coin .blogo{color:var(--coin-d)}
+.bside .brole{font-size:clamp(11px,1.2vw,15px);color:var(--ink2);margin-top:.6vh;font-weight:700}
+.bside ul{list-style:none;margin-top:1.8vh;text-align:left}
+.bside li{position:relative;padding:.35em 0 .35em 1.5em;font-size:clamp(11px,1.15vw,15px);color:var(--ink);line-height:1.6}
+.bside li::before{content:"●";position:absolute;left:0;font-size:.55em;top:.95em}
+.bside.cidao li::before{color:var(--green)}
+.bside.coin li::before{color:var(--coin)}
+.bmid{flex:.75;text-align:center;padding:0 1vw;position:relative}
+.bmid .barrow{font-size:clamp(26px,3.6vw,48px);color:var(--gold);line-height:1.1}
+.bmid .brate{font-family:var(--serif);font-size:clamp(14px,1.7vw,22px);color:var(--ink);margin-top:1vh;font-weight:600}
+.bmid .btag{display:inline-block;margin-top:1.2vh;background:#fdf3df;color:#946f24;border-radius:999px;padding:.35em 1.1em;font-size:clamp(10px,1.05vw,13px);font-weight:700}
+
+/* ---- コインバッジ ---- */
+.coinbadge{display:inline-flex;align-items:center;justify-content:center;width:clamp(54px,6.5vw,84px);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 32% 30%,#ffd9a3,#e8892b 68%,#b96a1a);color:#fff;font-family:var(--serif);
+  font-size:clamp(20px,2.6vw,34px);box-shadow:0 8px 20px rgba(184,106,26,.35);animation:floaty 6s ease-in-out infinite}
+
+/* ---- 効果2軸カード ---- */
+.who{display:grid;grid-template-columns:repeat(2,1fr);gap:1.6vw;width:100%;max-width:1150px;margin-top:3.5vh}
+.who .gcard{text-align:left}
+.who .gcard h3{display:flex;align-items:center;gap:.5em}
+.who .gcard h3 .ico{font-size:clamp(20px,2.2vw,30px)}
+
+/* ---- ナビ ---- */
+.progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--green),var(--gold));width:0;z-index:50;transition:width .4s ease}
+.navui{position:fixed;right:22px;bottom:18px;display:flex;gap:10px;align-items:center;z-index:50}
+.navui button{width:44px;height:44px;border-radius:50%;border:1px solid rgba(120,130,140,.4);background:rgba(255,255,255,.85);
+  color:#17293c;font-size:18px;cursor:pointer;transition:all .25s;backdrop-filter:blur(4px)}
+.navui button:hover{background:var(--green);color:#fff;border-color:var(--green)}
+.counter{position:fixed;left:26px;bottom:22px;font-family:var(--serif);color:#8a94a0;letter-spacing:.2em;font-size:14px;z-index:50}
+.hint{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);color:#8a94a0;font-size:11px;letter-spacing:.15em;z-index:50;
+  opacity:1;transition:opacity 1s}
+.hint.off{opacity:0}
+@media (max-aspect-ratio: 1/1){
+  .split,.cover-wrap,.bridge{flex-direction:column;gap:3vh}
+  .grid7,.who{grid-template-columns:repeat(2,1fr)}
+  .steps3,.tl{flex-wrap:wrap}
+  .bmid .barrow{transform:rotate(90deg)}
+  .cycle{width:min(70vw,380px);height:min(70vw,380px)}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="counter" id="counter">1 / 14</div>
+<div class="hint" id="hint">← → キー・クリック・スワイプでめくれます</div>
+<div class="navui">
+  <button id="prev" aria-label="前へ">‹</button>
+  <button id="next" aria-label="次へ">›</button>
+</div>
+<a href="../../" style="position:fixed;left:22px;top:18px;z-index:50;font-size:12px;letter-spacing:.08em;color:#8a94a0;text-decoration:none;background:rgba(255,255,255,.7);padding:.5em 1em;border-radius:999px;backdrop-filter:blur(4px)">← CBIサイトへ戻る</a>
+
+<div class="deck" id="deck">
+
+<!-- 1 表紙 -->
+<section class="slide dark active">
+  <div class="cover-wrap">
+    <div class="cover-txt">
+      <div class="brand a"><small>CIDAO × COMMUNITY CURRENCY</small>貢献が、<br>まちをめぐる。</div>
+      <div class="cover-sub a d2">CiDAO × コミュニティ通貨「まちのコイン」<br>連携構想のご紹介</div>
+      <div class="a d3"><span class="cover-url">cidao.vercel.app</span></div>
+      <div class="cover-note a d4">Community Bank INZAI（印西市市民活動団体 登録番号 08-001）<br>※本資料は<b>構想段階</b>のご提案です。「まちのコイン」の印西市導入は決定していません。<br>※「まちのコイン」は株式会社カヤックが運営するコミュニティ通貨サービスです。</div>
+    </div>
+    <div class="vis a d3" style="flex-direction:column;gap:2vh">
+      <div class="coinbadge" style="--tilt:-4deg">🌱</div>
+      <div style="font-size:clamp(22px,3vw,40px);color:#7fd6b4">↓</div>
+      <div class="coinbadge" style="--tilt:3deg;animation-delay:1.2s">🪙</div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 CiDAOとは（おさらい） -->
+<section class="slide">
+  <div style="max-width:1250px;width:100%">
+    <div class="kicker a">ABOUT CIDAO</div>
+    <h2 class="a d1">CiDAO（シダオ）とは？ ── 30秒でおさらい</h2>
+    <p class="sub a d2" style="margin-top:2.5vh;max-width:950px">
+      「Citizen DAO ＝ 市民DAO」。<b>市民が提案し、話し合い、投票で決めていく</b>ための、印西発のデジタルプラットフォームです。
+      スマホのブラウザだけで参加でき、提案・投票・イベント・団体さがし・人材バンクなど8つの機能があります。
+    </p>
+    <div class="tl" style="margin-top:5vh">
+      <div class="step a d2"><div class="dot"></div><div class="bar"></div><h4>💡 提案する</h4><p>まちへのアイデアを<br>スマホから投稿</p></div>
+      <div class="step a d3"><div class="dot"></div><div class="bar"></div><h4>💬 話し合う</h4><p>質問と回答で<br>提案をみがく</p></div>
+      <div class="step a d4"><div class="dot"></div><div class="bar"></div><h4>🗳 投票する</h4><p>ワンタップで<br>意思表示</p></div>
+      <div class="step a d5"><div class="dot"></div><h4>🌱 貢献度がたまる</h4><p>参加の積み重ねが<br>「見える」しくみ</p></div>
+    </div>
+    <p class="note a d6" style="margin-top:4.5vh">運営：Community Bank INZAI（CBI）。機能の詳細は既公開の「CiDAO機能紹介」資料をご覧ください。</p>
+  </div>
+</section>
+
+<!-- 3 貢献度ポイントの現在地 -->
+<section class="slide">
+  <div class="split">
+    <div class="txt">
+      <div class="kicker a">CONTRIBUTION POINTS</div>
+      <h2 class="a d1">参加の積み重ねを<br>「貢献度」として記録</h2>
+      <ul class="feat">
+        <li class="a d2">提案・投票・コメント・イベント出席などで<b>貢献度ポイント</b>がたまる</li>
+        <li class="a d3">マイページで累計・月別の<b>貢献度ダッシュボード</b>を確認できる</li>
+        <li class="a d4">がんばりが<b>バッジやランキング</b>のかたちで見える（掲載は本人の同意制）</li>
+        <li class="a d5">団体の活動実績も自動集計 ──「どの団体が活発か」が伝わる</li>
+      </ul>
+      <p class="note a d6" style="margin-top:3vh">現状の貢献度は CiDAO の中だけで使える「見える化」の指標です。<br>── ここに、次のスライドの「まちのコイン」を掛け合わせる構想です。</p>
+    </div>
+    <div class="vis a d3">
+      <div style="text-align:center">
+        <div style="font-family:var(--serif);font-size:clamp(64px,10vw,140px);color:var(--green-d);line-height:1">🌱</div>
+        <div style="font-family:var(--serif);font-size:clamp(22px,2.8vw,36px);color:var(--ink);margin-top:2vh">貢献度ポイント</div>
+        <div class="a d4" style="margin-top:2vh"><span class="pill">提案</span><span class="pill">投票</span><span class="pill">議論</span><span class="pill">イベント出席</span><span class="pill">応援</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 まちのコインとは -->
+<section class="slide">
+  <div style="max-width:1250px;width:100%">
+    <div class="kicker a">WHAT IS MACHINO COIN</div>
+    <h2 class="a d1">「まちのコイン」とは？</h2>
+    <p class="sub a d2" style="margin-top:2vh;max-width:950px">
+      株式会社カヤック（鎌倉市）が運営する<b>コミュニティ通貨</b>。スマホアプリとQRコードで、
+      地域の体験やお手伝いに参加するとコインがもらえ、まちのお店や体験で使えます。全国の地域で導入されています。
+    </p>
+    <div class="grid7" style="grid-template-columns:repeat(4,1fr);max-width:1150px">
+      <div class="gcard a d2"><div class="ico">🗾</div><h3>全国で導入</h3><p>鎌倉・渋谷・高知市・日立など全国の地域で運用中</p></div>
+      <div class="gcard a d3"><div class="ico">💸</div><h3>換金できない</h3><p>法定通貨に換金しない設計。お金でなく「つながり」を生む通貨</p></div>
+      <div class="gcard a d4"><div class="ico">⏳</div><h3>ためこまず循環</h3><p>コインは一定期間で失効し、まちに再配布される循環のしくみ</p></div>
+      <div class="gcard a d5"><div class="ico">🎨</div><h3>体験は自分たちで作れる</h3><p>コインのもらい方・使い方は地域・お店・市民がアイデアを出して設計できる</p></div>
+    </div>
+    <p class="note a d6" style="margin-top:4vh">出典：まちのコイン公式サイト（coin.machino.co）2026年7月時点。<b>印西市はまだ導入されていません。</b>本資料はその導入も含めた将来構想です。</p>
+  </div>
+</section>
+
+<!-- 5 なぜ組み合わせるのか -->
+<section class="slide">
+  <div style="max-width:1250px;width:100%">
+    <div class="kicker a">WHY</div>
+    <h2 class="a d1">なぜ、CiDAO × まちのコイン なのか</h2>
+    <div class="steps3">
+      <div class="scard a d2"><div class="sno">01</div><h3>性格がぴったり同じ</h3><p>CiDAOの貢献度も、まちのコインも、<b>お金に換えない「参加の価値」</b>を扱うしくみ。換金性がないからこそ、報酬目当てでない自発的な参加と相性がよい。</p></div>
+      <div class="scard a d3"><div class="sno">02</div><h3>ゼロから作らない</h3><p>独自の地域通貨をゼロから開発・運用するのは大きな負担。<b>全国で運用実績のある基盤</b>に乗ることで、CBIは体験の設計に集中できる。</p></div>
+      <div class="scard a d4"><div class="sno">03</div><h3>使える場所が広がる</h3><p>CiDAOの貢献度はCiDAOの中だけのもの。まちのコインにつながれば、<b>まちのお店や体験</b>で使える価値に変わり、参加の実感が増す。</p></div>
+    </div>
+    <p class="note a d5" style="margin-top:4vh">※ 3つとも「構想の狙い」であり、効果を保証するものではありません。導入には印西エリアでの「まちのコイン」開設が前提となります。</p>
+  </div>
+</section>
+
+<!-- 6 交換ブリッジ図 -->
+<section class="slide">
+  <div style="max-width:1300px;width:100%">
+    <div class="kicker a">CONCEPT</div>
+    <h2 class="a d1">構想の骨格：「交換ブリッジ」でつなぐ</h2>
+    <div class="bridge">
+      <div class="bside cidao a d2">
+        <div class="blogo">CiDAO 貢献度</div>
+        <div class="brole">参加の記録・見える化</div>
+        <ul>
+          <li>提案・投票・イベント出席でたまる</li>
+          <li>CiDAOが自前で運用（主体性を維持）</li>
+          <li>いまも動いているしくみ</li>
+        </ul>
+      </div>
+      <div class="bmid a d3">
+        <div class="barrow">⇄</div>
+        <div class="brate">交換レートで変換</div>
+        <div class="btag">将来構想・検討段階</div>
+      </div>
+      <div class="bside coin a d4">
+        <div class="blogo">まちのコイン</div>
+        <div class="brole">まちで使える・めぐる</div>
+        <ul>
+          <li>お店・団体の「体験」で使える</li>
+          <li>全国実績のある共通基盤</li>
+          <li>印西エリア開設が前提（未導入）</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note a d5" style="margin-top:4.5vh">貢献度そのものを廃止してコインに置き換えるのではなく、<b>貢献度は残したまま「出口」としてコインへの交換窓口を設ける</b>二層構え。<br>まちのコイン側の運用ルールとの整合や交換レートの設計は、導入検討の段階でみなさんと一緒に決めていきたい部分です。</p>
+  </div>
+</section>
+
+<!-- 7 循環図 -->
+<section class="slide">
+  <div class="split">
+    <div class="txt">
+      <div class="kicker a">ECOSYSTEM</div>
+      <h2 class="a d1">めざすのは<br>「参加の循環」</h2>
+      <ul class="feat">
+        <li class="a d2">まちに関わる → <b>貢献度がたまる</b></li>
+        <li class="a d3">貢献度を <b>まちのコインに交換</b>（構想）</li>
+        <li class="a d4">コインで <b>まちのお店・体験</b> を楽しむ</li>
+        <li class="a d5">お店や団体との出会いが、<b>次の参加</b>につながる</li>
+      </ul>
+      <p class="note a d6" style="margin-top:3vh">ためこむほど得をする「ポイ活」ではなく、<br>使うほどまちとのつながりが増える設計をめざします。</p>
+    </div>
+    <div class="vis a d3">
+      <div class="cycle">
+        <svg viewBox="0 0 100 100"><path d="M50,8 A42,42 0 1,1 49.9,8"/></svg>
+        <div class="cnode n1"><div class="ico">🙋</div><b>まちに関わる</b><span>提案・投票・イベント</span></div>
+        <div class="cnode n2"><div class="ico">🌱</div><b>貢献度がたまる</b><span>CiDAOで記録</span></div>
+        <div class="cnode n3"><div class="ico">🪙</div><b>コインに交換</b><span>構想・検討段階</span></div>
+        <div class="cnode n4"><div class="ico">🏪</div><b>まちで使う</b><span>お店・体験・応援</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 効果：市民・団体 -->
+<section class="slide">
+  <div style="max-width:1200px;width:100%">
+    <div class="kicker a">EXPECTED BENEFITS 1/2</div>
+    <h2 class="a d1">期待できること ── 市民・活動団体にとって</h2>
+    <div class="who">
+      <div class="gcard a d2"><h3><span class="ico">🙋</span>市民のみなさん</h3><p style="margin-top:1vh">投票やイベント参加といった<b>「まちへのひと手間」が、目に見えるお返し</b>になって戻ってくる。はじめて参加する理由、続ける理由がひとつ増えます。</p></div>
+      <div class="gcard a d3"><h3><span class="ico">🏛</span>市民活動団体</h3><p style="margin-top:1vh">イベントの受付QRとつなげば、<b>手伝ってくれた人・来てくれた人にその場でお礼</b>ができる。ボランティアの担い手さがしの新しい入口になります。</p></div>
+      <div class="gcard a d4"><h3><span class="ico">🌟</span>これから始めたい人</h3><p style="margin-top:1vh">「何かやってみたい」人が、コインをきっかけに<b>気軽な一歩</b>を踏み出せる。CiDAOのAIマッチングと組み合わせて、活動先との出会いを後押しします。</p></div>
+      <div class="gcard a d5"><h3><span class="ico">🤝</span>コミュニティ全体</h3><p style="margin-top:1vh">誰がどんな活動をしているかが伝わりやすくなり、<b>団体どうし・世代どうしの助け合い</b>が生まれやすくなります。</p></div>
+    </div>
+    <p class="note a d6" style="margin-top:3.5vh">※ いずれも構想段階の「期待」です。効果は運用しながらみなさんと検証していきます。</p>
+  </div>
+</section>
+
+<!-- 9 効果：お店・まち -->
+<section class="slide">
+  <div style="max-width:1200px;width:100%">
+    <div class="kicker a">EXPECTED BENEFITS 2/2</div>
+    <h2 class="a d1">期待できること ── お店・まちにとって</h2>
+    <div class="who">
+      <div class="gcard a d2"><h3><span class="ico">🏪</span>まちのお店</h3><p style="margin-top:1vh">値引きではなく<b>「体験」でお客さまとつながれる</b>。常連さんづくり、こだわりのファンづくりに。コインのもらい方・使い方はお店ごとに自由に設計できます。</p></div>
+      <div class="gcard a d3"><h3><span class="ico">🏙</span>まちの経済</h3><p style="margin-top:1vh">コインは換金できず、一定期間で失効してまちに再配布。<b>ためこまれず、地域の中をめぐり続ける</b>しくみです。</p></div>
+      <div class="gcard a d4"><h3><span class="ico">📊</span>活動の見える化</h3><p style="margin-top:1vh">どんな体験に人が集まったかがデータでわかり、<b>まちの活動の実態を定量的に</b>ふり返ることができます。</p></div>
+      <div class="gcard a d5"><h3><span class="ico">🏛</span>行政・地域機関</h3><p style="margin-top:1vh">市民参加の活性度を測る<b>客観的な指標</b>として活用できる可能性。全国の導入地域では自治体との連携事例も生まれています。</p></div>
+    </div>
+    <p class="note a d6" style="margin-top:3.5vh">※ 行政との連携はあくまで将来の可能性であり、現時点で印西市と合意しているものではありません。</p>
+  </div>
+</section>
+
+<!-- 10 駅前常設マルシェ構想 -->
+<section class="slide">
+  <div class="split">
+    <div class="txt">
+      <div class="kicker a">VISION ─ MARCHE</div>
+      <h2 class="a d1">「使える場所」の本命：<br>駅前常設マルシェ構想</h2>
+      <ul class="feat">
+        <li class="a d2">2025年3月の市長タウンミーティングで、市民有志から<b>千葉ニュータウン中央駅前の歩道空間を活かした常設マルシェ</b>を提案</li>
+        <li class="a d3">物販・喫茶・学び・創業チャレンジ・ステージなど、<b>市民の「やってみたい」が集まる場</b>の構想</li>
+        <li class="a d4">この場が実現すれば、<b>コインを使う・もらう体験の集積地</b>になり得る</li>
+        <li class="a d5">マルシェでの出店・お手伝い・イベント参加 ⇄ CiDAOの貢献度・コインが<b>一気通貫</b>でつながる</li>
+      </ul>
+      <p class="note a d6" style="margin-top:3vh">※ マルシェは市民側からの提案・構想段階であり、実現の時期や形は未定です。</p>
+    </div>
+    <div class="vis a d3">
+      <div style="text-align:center;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:4vh 2.5vw;box-shadow:0 10px 28px rgba(13,27,38,.08);max-width:420px">
+        <div style="font-size:clamp(40px,6vw,72px)">⛺🌳⛺</div>
+        <div style="font-family:var(--serif);font-size:clamp(17px,2vw,26px);margin-top:1.5vh">駅前のみんなの広場</div>
+        <p style="font-size:clamp(11px,1.15vw,14px);color:var(--ink2);line-height:1.8;margin-top:1.2vh">出店する・学ぶ・応援する。<br>その一つひとつが貢献度になり、<br>コインになってまためぐる。</p>
+        <div style="margin-top:2vh"><span class="pill">物販</span><span class="pill">喫茶</span><span class="pill">学び</span><span class="pill">創業</span><span class="pill">ステージ</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 進め方 -->
+<section class="slide">
+  <div style="max-width:1300px;width:100%">
+    <div class="kicker a">ROADMAP</div>
+    <h2 class="a d1">あわてず、段階を踏んで</h2>
+    <div class="tl" style="margin-top:6vh">
+      <div class="step a d2"><div class="dot"></div><div class="bar"></div><h4>いま</h4><p>CiDAOの貢献度を運用し、<br>配点・ルールをみがく</p><span class="tag">現在地</span></div>
+      <div class="step a d3"><div class="dot" style="background:#c9a04e;box-shadow:0 0 0 6px #f3e8cf"></div><div class="bar"></div><h4>次の一歩</h4><p>交換のしくみを設計し、<br>市民のみなさんの声を聞く</p></div>
+      <div class="step a d4"><div class="dot" style="background:#e8892b;box-shadow:0 0 0 6px #f8e3cc"></div><div class="bar"></div><h4>導入検討</h4><p>地域のパートナーとともに<br>「まちのコイン」印西導入を検討</p></div>
+      <div class="step a d5"><div class="dot" style="background:#8a94a0;box-shadow:0 0 0 6px #e6e6e6"></div><h4>将来</h4><p>マルシェなど「使える場」と<br>つながる参加の循環へ</p></div>
+    </div>
+    <p class="note a d6" style="margin-top:6vh">導入の是非やタイミングは、CBIだけでは決められません。だからこそ、この構想を早い段階でオープンにし、<b>CiDAO上の議論と投票</b>でみなさんと一緒に決めていきたいと考えています。</p>
+  </div>
+</section>
+
+<!-- 12 正直な論点 -->
+<section class="slide">
+  <div style="max-width:1250px;width:100%">
+    <div class="kicker a">OPEN QUESTIONS</div>
+    <h2 class="a d1">正直にお伝えしたい、これからの論点</h2>
+    <div class="grid7" style="grid-template-columns:repeat(2,1fr);max-width:1100px">
+      <div class="gcard a d2" style="text-align:left"><div class="ico">🚪</div><h3>印西はまだ未導入</h3><p>「まちのコイン」を印西で使うには、地域としての導入（開設）が必要です。費用や運営体制を含め、これから検討する段階です。</p></div>
+      <div class="gcard a d3" style="text-align:left"><div class="ico">⚖️</div><h3>交換レートの設計</h3><p>「1貢献度＝何コイン」が公平か。がんばった人が報われつつ、コイン目当ての形だけの参加を生まないバランスを議論する必要があります。</p></div>
+      <div class="gcard a d4" style="text-align:left"><div class="ico">🔌</div><h3>システム連携の方法</h3><p>CiDAOとまちのコインを自動でつなげるかは未確認です。まずは窓口での手動交換から小さく始める想定です。</p></div>
+      <div class="gcard a d5" style="text-align:left"><div class="ico">🤲</div><h3>担い手と協力者</h3><p>コインが使える体験を用意してくださるお店・団体があってこそ成り立ちます。一緒に体験を作る仲間を増やすことが最大の課題です。</p></div>
+    </div>
+    <p class="note a d6" style="margin-top:3.5vh">課題を伏せずに共有するのも「市民DAO」の流儀です。ご意見・アイデアをぜひCiDAOにお寄せください。</p>
+  </div>
+</section>
+
+<!-- 13 参加の呼びかけ -->
+<section class="slide">
+  <div style="max-width:1300px;width:100%">
+    <div class="kicker a">GET INVOLVED</div>
+    <h2 class="a d1">この構想に、あなたの声を</h2>
+    <div class="steps3">
+      <div class="scard a d2"><div class="sno">01</div><h3>まずCiDAOに登録</h3><p>メールアドレスと表示名だけで始められます。閲覧・イベント参加はこれだけでOK。</p><span class="chip">目安 90秒</span></div>
+      <div class="scard a d3"><div class="sno">02</div><h3>構想に意見を出す</h3><p>「コインで何ができたら嬉しい？」「交換レートはどうあるべき？」── 提案・コメントでぜひ聞かせてください。</p><span class="chip">貢献度もたまります</span></div>
+      <div class="scard a d4"><div class="sno">03</div><h3>体験づくりの仲間に</h3><p>お店・団体のみなさま、「コインが使える体験」のアイデアを一緒に考えませんか。お気軽にご連絡ください。</p><span class="chip">お店・団体歓迎</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 まとめ -->
+<section class="slide dark">
+  <div style="max-width:1100px;width:100%;text-align:center">
+    <div class="kicker a" style="color:#7fd6b4">JOIN US</div>
+    <h1 class="a d1" style="font-size:clamp(32px,5.2vw,68px);color:#fff;margin-top:1.5vh">まちへの「ありがとう」が、<br>ぐるぐるめぐる印西へ。</h1>
+    <div class="a d2" style="margin-top:5vh"><span class="cover-url" style="font-size:clamp(16px,2.2vw,28px);padding:.8em 2em">cidao.vercel.app</span></div>
+    <p class="a d3" style="margin-top:4vh;color:#b9c6cf;font-size:clamp(12px,1.4vw,17px);line-height:2">
+      運営：Community Bank INZAI（印西市市民活動団体 登録番号 08-001）<br>
+      お問い合わせ：communitybankinzai@gmail.com
+    </p>
+    <p class="cover-note a d4">※ 本資料は構想段階のご提案です。「まちのコイン」の印西市導入は決定しておらず、内容は今後の議論により変更される場合があります。<br>※「まちのコイン」は株式会社カヤックの運営するサービスであり、本資料は同社および印西市の公認を受けたものではありません。</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  // ?still : アニメーション無効（検証・印刷用）
+  if(location.search.includes('still')){
+    const st=document.createElement('style');
+    st.textContent='.a{opacity:1 !important;transform:none !important} *{animation:none !important;transition:none !important}';
+    document.head.appendChild(st);
+  }
+  const slides=[...document.querySelectorAll('.slide')];
+  const prog=document.getElementById('prog');
+  const counter=document.getElementById('counter');
+  const hint=document.getElementById('hint');
+  let cur=0,hinted=false;
+  function go(n){
+    n=Math.max(0,Math.min(slides.length-1,n));
+    if(n===cur&&slides[cur].classList.contains('active'))return;
+    slides[cur].classList.remove('active');
+    cur=n;
+    slides[cur].classList.add('active');
+    prog.style.width=((cur+1)/slides.length*100)+'%';
+    counter.textContent=(cur+1)+' / '+slides.length;
+    if(!hinted&&cur>0){hint.classList.add('off');hinted=true;}
+    history.replaceState(null,'','#'+(cur+1));
+  }
+  document.getElementById('next').onclick=()=>go(cur+1);
+  document.getElementById('prev').onclick=()=>go(cur-1);
+  addEventListener('keydown',e=>{
+    if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();go(cur+1);}
+    if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(cur-1);}
+    if(e.key==='Home')go(0);
+    if(e.key==='End')go(slides.length-1);
+  });
+  document.getElementById('deck').addEventListener('click',e=>{
+    if(e.target.closest('a,button'))return;
+    go(cur+1);
+  });
+  let sx=null,sy=null;
+  addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+  addEventListener('touchend',e=>{
+    if(sx===null)return;
+    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy))go(cur+(dx<0?1:-1));
+    sx=sy=null;
+  },{passive:true});
+  prog.style.width=(1/slides.length*100)+'%';
+  const h=parseInt(location.hash.slice(1),10);
+  if(h>=2&&h<=slides.length){slides[0].classList.remove('active');cur=h-1;slides[cur].classList.add('active');
+    prog.style.width=((cur+1)/slides.length*100)+'%';counter.textContent=(cur+1)+' / '+slides.length;}
+})();
+</script>
+</body>
+</html>

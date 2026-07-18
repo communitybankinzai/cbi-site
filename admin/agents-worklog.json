@@ -1736,6 +1736,23 @@
     "A4": {
       "actuals": [
         {
+          "date": "2026-07-18",
+          "title": "🪙 CiDAO×まちのコイン連携構想を公開プレゼン化＋一般公開ページ新設 0.6時間",
+          "category": "広報",
+          "outputs": [
+            "cidao/proposals/2026-07-18_まちのコイン連携構想.md — 調査結果（印西市未導入・付与基準の自由度・交換ブリッジ設計）を反映した提案ノート、MOC_CiDAO.md 登録",
+            "memory: cidao-machino-coin-bridge.md — 交換ブリッジ型採用・独自コイン(COCoLa Coin)構想凍結の方針記録",
+            "proposals/2026-07-18_CiDAO×まちのコイン_公開プレゼン_v1.html — 14枚構成の単一HTMLスライド（既存CiDAO機能紹介スライドと同一デザインシステム）、作成メモ proposals/2026-07-18_CiDAO×まちのコイン_公開プレゼン_作成メモ.md",
+            "site/proposals/machino-coin/index.html — 資料タブ（会員限定）とは別に、ログイン不要の完全公開ページとして新設（og:meta・description付き）",
+            "site/index.html — 活動報告欄に公開ページへの導線を追加",
+            "site/admin/changelog.json — content エントリ追記"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "ユーザーから「まちのコインとCiDAOをうまく連携させる方法」「付与基準は独自に決められるか」の相談と、公開プレゼン作成・サイト公開の依頼。既存仕様書にあった独自コイン(COCoLa Coin/ERC-20)構想との整合をAskUserQuestionで確認し、交換ブリッジ型採用・独自コイン凍結で確定。公開範囲（会員限定資料タブ vs 完全公開）もユーザーに確認し、site/proposals/配下に新規公開ページを作成する方針で確定。ブラウザペインのスクリーンショット機能がタイムアウトしたため、read_page/コンソールログによるDOM検証で代替（画面キャプチャでの最終確認は未実施、ユーザーに申し送り済み）。\nsession: 691e24a8-ce53-4338-8ac1-1d5882a6da2f / output: 57,210 / cost: $10.52",
+          "session": "691e24a8-ce53-4338-8ac1-1d5882a6da2f"
+        },
+        {
           "date": "2026-07-05",
           "title": "🎞 CiDAOスライドに受付(QR)機能を追加、20→22枚に拡充 1.4時間",
           "category": "広報",
