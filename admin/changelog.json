@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-07-20",
+      "type": "content",
+      "target": "site: 全体（トップページ／独自性ページ／管理画面）",
+      "title": "🔖 事業名が「印西『あなたの出番』プロジェクト」から「印西『このゆびとまれ』プロジェクト」に変わった",
+      "detail": "代表・新井氏からの打診を受け、事業名称を正式に改称。トップページのタイトル・見出し・フッター、独自性ページの比較表・フッター、管理画面のプレゼンヘッダー、サイトREADME、GAS（Code.gs）のAIエージェントプロンプト文言を新称に統一。提出済み書類（versions/submitted_v1/等）は履歴として保持し、申請書類は新称でv13として別途作成する。",
+      "author": "Claude Code"
+    },
+    {
       "date": "2026-07-18",
       "type": "content",
       "target": "site: /proposals/cidao-intro/（新設・一般公開）",

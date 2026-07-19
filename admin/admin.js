@@ -971,7 +971,7 @@ const UNREAD_POLL_MS = 30000;
 
     let html =
       '<div class="pp-head">' +
-        '<p class="pp-eyebrow">COMMUNITY BANK INZAI / 印西「あなたの出番」プロジェクト</p>' +
+        '<p class="pp-eyebrow">COMMUNITY BANK INZAI / 印西「このゆびとまれ」プロジェクト</p>' +
         '<h1 class="pp-title">AIエージェント 作業実績報告書</h1>' +
         '<p class="pp-period">' + escape(periodText) + '</p>' +
         '<div class="pp-meta">' +
