@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-07-20",
+      "type": "feature",
+      "target": "admin: 自動投稿タブ＋cbi-admin-gas",
+      "title": "📅 Threads自動投稿のイベント情報源がCiDAOイベントDBに切り替わった",
+      "detail": "毎朝のThreads自動投稿が紹介するイベントを、COCoLaサイトの自動収集データからCiDAOイベントDB（会員・団体が登録したイベント）ベースに変更した。管理画面「自動投稿」タブに情報源の切替（CiDAO/COCoLa）とキーワードフィルタ適用のON/OFFを追加し、リンク先の既定もCiDAOのイベントページに変更。CiDAOは登録制で印西関連イベントが保証されるため、キーワードフィルタは既定OFF（COCoLaソース選択時は従来どおり常時適用）。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-07-20",
       "type": "fix",
       "target": "admin: CiDAOβ案内／資料タブのスライド",
       "title": "🔐 ログイン方法の案内が「メール認証」から「LINEログイン」に更新された",

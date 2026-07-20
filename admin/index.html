@@ -571,6 +571,19 @@
         </label>
 
         <div class="field">
+          <span>イベントの情報源</span>
+          <select id="sns-data-source">
+            <option value="cidao">CiDAO イベントDB（会員・団体が登録したイベント）</option>
+            <option value="cocola">COCoLa events/data.json（広報いんざい等の自動収集）</option>
+          </select>
+        </div>
+
+        <label class="field-check" style="margin: 12px 0;">
+          <input type="checkbox" id="sns-apply-filter">
+          <span>CiDAOソースでもキーワードフィルタを適用する（通常はOFF。COCoLaソースでは設定に関わらず常時適用されます）</span>
+        </label>
+
+        <div class="field">
           <span>優先的に含めるキーワード（1つでも合致したら採用。カンマまたは改行区切り）</span>
           <textarea id="sns-priority-include" rows="4" placeholder="千葉ニュータウン, CNT, 中央北, …"></textarea>
         </div>
