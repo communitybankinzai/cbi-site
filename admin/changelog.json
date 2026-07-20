@@ -6,6 +6,14 @@
       "date": "2026-07-20",
       "type": "feature",
       "target": "admin: 自動投稿タブ＋cbi-admin-gas",
+      "title": "🔄 WEB巡回イベント（広報いんざい等）がCiDAOイベントDBへ日次自動取込されるようになった",
+      "detail": "COCoLaのWEB自動巡回が収集した印西エリアのイベント（events/data.json）を、毎朝の投稿前・毎夕のプレビュー前にCiDAOのイベントDBへ自動取込する仕組みを追加した。取込は既存のingest APIの重複排除を利用し、Drive画像スキャン経由で既に取込済みのイベントは除外して二重登録を防ぐ。対象は今日から14日先までの印西関連イベント。管理画面「自動投稿」タブからON/OFF切替可能。これによりThreads自動投稿はCiDAOベースのまま、WEB巡回の情報量も維持される。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-07-20",
+      "type": "feature",
+      "target": "admin: 自動投稿タブ＋cbi-admin-gas",
       "title": "📅 Threads自動投稿のイベント情報源がCiDAOイベントDBに切り替わった",
       "detail": "毎朝のThreads自動投稿が紹介するイベントを、COCoLaサイトの自動収集データからCiDAOイベントDB（会員・団体が登録したイベント）ベースに変更した。管理画面「自動投稿」タブに情報源の切替（CiDAO/COCoLa）とキーワードフィルタ適用のON/OFFを追加し、リンク先の既定もCiDAOのイベントページに変更。CiDAOは登録制で印西関連イベントが保証されるため、キーワードフィルタは既定OFF（COCoLaソース選択時は従来どおり常時適用）。",
       "author": "Claude Code"

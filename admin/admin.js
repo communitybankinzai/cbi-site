@@ -251,6 +251,7 @@ const UNREAD_POLL_MS = 30000;
     $('sns-enabled').checked = !!cfg.enabled;
     $('sns-data-source').value = (cfg.dataSource === 'cocola') ? 'cocola' : 'cidao';
     $('sns-apply-filter').checked = !!cfg.applyKeywordFilter;
+    $('sns-sync-cocola').checked = !!cfg.syncFromCocola;
     $('sns-priority-include').value = (cfg.priorityInclude || []).join(', ');
     $('sns-exclude').value = (cfg.exclude || []).join(', ');
     $('sns-include').value = (cfg.include || []).join(', ');
@@ -265,6 +266,7 @@ const UNREAD_POLL_MS = 30000;
       enabled: $('sns-enabled').checked,
       dataSource: $('sns-data-source').value,
       applyKeywordFilter: $('sns-apply-filter').checked,
+      syncFromCocola: $('sns-sync-cocola').checked,
       priorityInclude: snsParseList($('sns-priority-include').value),
       exclude: snsParseList($('sns-exclude').value),
       include: snsParseList($('sns-include').value),

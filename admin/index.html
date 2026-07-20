@@ -583,6 +583,11 @@
           <span>CiDAOソースでもキーワードフィルタを適用する（通常はOFF。COCoLaソースでは設定に関わらず常時適用されます）</span>
         </label>
 
+        <label class="field-check" style="margin: 12px 0;">
+          <input type="checkbox" id="sns-sync-cocola">
+          <span>WEB巡回イベント（広報いんざい等の自動収集）をCiDAOイベントDBへ日次取込する（投稿・プレビュー前に自動実行。画像スキャン経由の分は二重登録されません）</span>
+        </label>
+
         <div class="field">
           <span>優先的に含めるキーワード（1つでも合致したら採用。カンマまたは改行区切り）</span>
           <textarea id="sns-priority-include" rows="4" placeholder="千葉ニュータウン, CNT, 中央北, …"></textarea>
