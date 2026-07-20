@@ -6,6 +6,14 @@
       "date": "2026-07-20",
       "type": "feature",
       "target": "admin: 自動投稿タブ＋cbi-admin-gas",
+      "title": "🧹 COCoLaサイト閉鎖に備え、イベント連携をシート直読み方式に最適化した",
+      "detail": "COCoLaサイトの閉鎖予定を受け、Threads自動投稿まわりのCOCoLaサイト依存を全廃した。WEB巡回イベントの取込は、閉鎖で消滅するevents/data.jsonを経由せず、スクレイパーが書き込む印西イベントシートをGASが直接読んでCiDAOへ送る方式に変更。あわせて不要になったdata.json取得・GitHub Actionsトリガー（GITHUB_PAT）・COCoLaソース切替UIを削除し、管理画面「自動投稿」タブをシンプルにした。キーワード設定は取込時の印西関連判定として引き続き利用。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-07-20",
+      "type": "feature",
+      "target": "admin: 自動投稿タブ＋cbi-admin-gas",
       "title": "🔄 WEB巡回イベント（広報いんざい等）がCiDAOイベントDBへ日次自動取込されるようになった",
       "detail": "COCoLaのWEB自動巡回が収集した印西エリアのイベント（events/data.json）を、毎朝の投稿前・毎夕のプレビュー前にCiDAOのイベントDBへ自動取込する仕組みを追加した。取込は既存のingest APIの重複排除を利用し、Drive画像スキャン経由で既に取込済みのイベントは除外して二重登録を防ぐ。対象は今日から14日先までの印西関連イベント。管理画面「自動投稿」タブからON/OFF切替可能。これによりThreads自動投稿はCiDAOベースのまま、WEB巡回の情報量も維持される。",
       "author": "Claude Code"
