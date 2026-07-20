@@ -18,7 +18,7 @@
       "actuals": [
         {
           "date": "2026-07-20",
-          "title": "事業名改称＋CBI SNS開設＋CiDAO認証LINE一本化＋Threads自動投稿のCBI移管（管理画面タブ新設）",
+          "title": "事業名改称＋SNS開設＋CiDAO認証LINE一本化＋Threads自動投稿移管＋イベント連携のCiDAOベース化",
           "category": "実装",
           "outputs": [
             "CLAUDE.md／site/index.html／site/uniqueness/index.html／site/admin/admin.js／site/README.md／cbi-admin-gas/Code.gs 他（事業名改称）",
@@ -35,11 +35,13 @@
             "cbi-admin-gas/ThreadsDailyPost.gs（新規・COCoLaから移植＋設定外部化）",
             "cbi-admin-gas/Code.gs（SNS設定API 3種追加）",
             "site/admin/index.html／admin.js（「自動投稿」タブ新設）",
-            "proposals/cidao-deck-src/instagram/caption.md（LINE一文追記・承認済み化）"
+            "proposals/cidao-deck-src/instagram/caption.md（LINE一文追記・承認済み化）",
+            "cbi-admin-gas/ThreadsDailyPost.gs（最終版：印西イベントシート直読み→CiDAO ingest取込＋CiDAO REST読取投稿）",
+            "site/admin/index.html／admin.js（自動投稿タブ：情報源簡素化・WEB取込ON/OFF）"
           ],
-          "hours": 2.3,
+          "hours": 3,
           "partnerApproved": false,
-          "note": "事業名を「あなたの出番」→「このゆびとまれ」に改称（提出済みv10は保全、v13生成は別タスク）。CBIのInstagram/Threadsアカウント取得を支援（@communitybankinzai、N's factory個人アカウント内の追加プロフィール構成）。CiDAO認証をメールOTPからLINEログインに一本化：仕様書v2.1改訂→LINE Developersチャネル開設支援→Supabase側はGoTrue Admin APIで設定（OIDC型はLINEのHS256署名と非互換のためOAuth2型を採用）→ローカル疎通成功→本番デプロイ。付随して初回ログイン表示名確認（実名公開防止）・団体脱退・アカウント退会（30日復元）を実装。LINEチャネルは同日中に「公開」へ切替完了（全ユーザーがログイン可能に）。既存メール認証5アカウントは精査の結果すべて運営者自身の管理下（本人2・団体1・bot1・システム1）と判明し、外部への再登録案内は不要で完結。残：30日匿名化バッチ。 さらに同日、COCoLaで中止予定のThreads毎朝自動投稿（印西エリアイベント紹介）をCBIへ移管：GASをcbi-admin-gasに移植し、ハードコードだった対象キーワード等をScript Properties化、管理画面に「自動投稿」タブを新設（CBI基調カラー・キーワード編集/ON-OFF/投稿プレビュー付き）。CBI用Threadsトークン取得（既存Metaアプリ流用・テスター承認）を支援し、@communitybankinzai への初回自動投稿成功（投稿ID 18053365205538850、公開リトライ処理を追加して解決）。WebApp新デプロイのAPI疎通も検証済み。Instagramカルーセル（デッキ版10枚）はLINE訴求一文を追記して承認済み化。session: 7b4cc4d2-6e85-4f32-b163-722b4dca42d1 / output: 232,956 / cost: $132.97"
+          "note": "事業名を「あなたの出番」→「このゆびとまれ」に改称（提出済みv10は保全、v13生成は別タスク）。CBIのInstagram/Threadsアカウント取得を支援（@communitybankinzai、N's factory個人アカウント内の追加プロフィール構成）。CiDAO認証をメールOTPからLINEログインに一本化：仕様書v2.1改訂→LINE Developersチャネル開設支援→Supabase側はGoTrue Admin APIで設定（OIDC型はLINEのHS256署名と非互換のためOAuth2型を採用）→ローカル疎通成功→本番デプロイ。付随して初回ログイン表示名確認（実名公開防止）・団体脱退・アカウント退会（30日復元）を実装。LINEチャネルは同日中に「公開」へ切替完了（全ユーザーがログイン可能に）。既存メール認証5アカウントは精査の結果すべて運営者自身の管理下（本人2・団体1・bot1・システム1）と判明し、外部への再登録案内は不要で完結。残：30日匿名化バッチ。 さらに同日、COCoLaで中止予定のThreads毎朝自動投稿（印西エリアイベント紹介）をCBIへ移管：GASをcbi-admin-gasに移植し、ハードコードだった対象キーワード等をScript Properties化、管理画面に「自動投稿」タブを新設（CBI基調カラー・キーワード編集/ON-OFF/投稿プレビュー付き）。CBI用Threadsトークン取得（既存Metaアプリ流用・テスター承認）を支援し、@communitybankinzai への初回自動投稿成功（投稿ID 18053365205538850、公開リトライ処理を追加して解決）。WebApp新デプロイのAPI疎通も検証済み。Instagramカルーセル（デッキ版10枚）はLINE訴求一文を追記して承認済み化。 終盤で「イベントをCiDAOベースに」の方針決定を受け追加実装：Threads投稿の情報源をCiDAOイベントDBに切替、WEB巡回結果は印西イベントシート直読み→ingest API取込方式に（COCoLaサイト閉鎖に備えdata.json/GitHub Actions依存を全廃）。タイトル表記ゆれの重複防止（正規化ID）も実装し、実データで新規10件・重複0件を検証。管理画面から情報源設定・キーワード・取込ON/OFFを編集可能。COCoLa資産完全依存ゼロ化（スクレイパー・画像スキャンのCBI移植）はplans登録済み（8/31期限）。session: 7b4cc4d2-6e85-4f32-b163-722b4dca42d1 / output: 304,989 / cost: $186.32"
         },
         {
           "date": "2026-07-03",
