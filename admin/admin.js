@@ -61,6 +61,7 @@ const UNREAD_POLL_MS = 30000;
   function init() {
     bindLogin();
     bindAdmin();
+    initSnsTab();
     const pw = localStorage.getItem(STORAGE_KEYS.PW);
     if (pw) {
       state.password = pw;
@@ -225,7 +226,7 @@ const UNREAD_POLL_MS = 30000;
       b.classList.toggle('active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments'].forEach(t => {
+    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
     document.body.classList.toggle('mail-fullwidth', name === 'mail');
@@ -236,6 +237,102 @@ const UNREAD_POLL_MS = 30000;
     if (name === 'changelog' && !state.changelogLoaded) loadChangelog();
     if (name === 'mail') openMailTab();
     if (name === 'doc-comments' && !state.documentsLoaded) initDocComments();
+    if (name === 'sns' && !state.snsLoaded) loadSnsConfig();
+  }
+
+  // =========================================================
+  // 自動投稿（Threads）設定
+  // =========================================================
+  function snsParseList(text) {
+    return String(text || '').split(/[,、\n]/).map(s => s.trim()).filter(Boolean);
+  }
+
+  function snsFillForm(cfg) {
+    $('sns-enabled').checked = !!cfg.enabled;
+    $('sns-priority-include').value = (cfg.priorityInclude || []).join(', ');
+    $('sns-exclude').value = (cfg.exclude || []).join(', ');
+    $('sns-include').value = (cfg.include || []).join(', ');
+    $('sns-source-always').value = (cfg.sourceAlwaysInclude || []).join(', ');
+    $('sns-hashtags').value = cfg.hashtags || '';
+    $('sns-events-url').value = cfg.eventsPageUrl || '';
+    $('sns-preview-email').value = cfg.previewEmail || '';
+  }
+
+  function snsReadForm() {
+    return {
+      enabled: $('sns-enabled').checked,
+      priorityInclude: snsParseList($('sns-priority-include').value),
+      exclude: snsParseList($('sns-exclude').value),
+      include: snsParseList($('sns-include').value),
+      sourceAlwaysInclude: snsParseList($('sns-source-always').value),
+      hashtags: $('sns-hashtags').value.trim(),
+      eventsPageUrl: $('sns-events-url').value.trim(),
+      previewEmail: $('sns-preview-email').value.trim(),
+    };
+  }
+
+  async function loadSnsConfig() {
+    if (!GAS_WEBAPP_URL) { toast('GAS未接続のため自動投稿設定を利用できません', 'err'); return; }
+    try {
+      const r = await gasCall({ action: 'getSnsConfig', password: state.password });
+      if (r && r.ok) {
+        state.snsDefaults = r.defaults || null;
+        snsFillForm(r.config || {});
+        state.snsLoaded = true;
+      } else {
+        toast('設定の取得に失敗: ' + (r && r.error || 'unknown'), 'err');
+      }
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    }
+  }
+
+  async function saveSnsConfig() {
+    const btn = $('sns-save');
+    btn.disabled = true;
+    try {
+      const r = await gasCall({ action: 'saveSnsConfig', password: state.password, config: snsReadForm() });
+      if (r && r.ok) {
+        snsFillForm(r.config || {});
+        toast('自動投稿設定を保存しました', 'ok');
+      } else {
+        toast('保存に失敗: ' + (r && r.error || 'unknown'), 'err');
+      }
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function previewSnsPost(offsetDays) {
+    const wrap = $('sns-preview-wrap');
+    const pre = $('sns-preview-text');
+    wrap.hidden = false;
+    pre.textContent = '生成中…（保存済みの設定で判定されます）';
+    try {
+      const r = await gasCall({ action: 'previewSnsPost', password: state.password, offsetDays });
+      if (r && r.ok) {
+        pre.textContent = r.text || '（対象イベントなし — この日は投稿がスキップされます）';
+      } else {
+        pre.textContent = 'エラー: ' + (r && r.error || 'unknown');
+      }
+    } catch (err) {
+      pre.textContent = '通信エラー: ' + err.message;
+    }
+  }
+
+  function initSnsTab() {
+    const save = $('sns-save');
+    if (!save) return;
+    save.addEventListener('click', saveSnsConfig);
+    $('sns-preview-today').addEventListener('click', () => previewSnsPost(0));
+    $('sns-preview-tomorrow').addEventListener('click', () => previewSnsPost(1));
+    $('sns-reset-defaults').addEventListener('click', () => {
+      if (!state.snsDefaults) { toast('初期値が未取得です（設定を一度読み込んでください）', 'err'); return; }
+      if (!confirm('フォームを初期値に戻します（保存するまで反映されません）。よろしいですか？')) return;
+      snsFillForm(state.snsDefaults);
+    });
   }
 
   // =========================================================

@@ -72,6 +72,7 @@
       <button type="button" class="tab-btn" data-tab="changelog" role="tab" aria-selected="false">📝 更新履歴</button>
       <button type="button" class="tab-btn" data-tab="docs" role="tab" aria-selected="false">📑 資料</button>
       <button type="button" class="tab-btn" data-tab="doc-comments" role="tab" aria-selected="false">💬 資料コメント</button>
+      <button type="button" class="tab-btn" data-tab="sns" role="tab" aria-selected="false">📣 自動投稿</button>
     </nav>
 
     <!-- ===== タブ: アイデア ===== -->
@@ -554,6 +555,69 @@
 
       </section>
     </div><!-- /tab-doc-comments -->
+
+    <!-- ===== タブ: 自動投稿 ===== -->
+    <div class="tab-panel" id="tab-sns" role="tabpanel" hidden>
+      <section class="panel">
+        <h2 class="panel-title">📣 Threads 自動投稿設定</h2>
+        <p class="meta-note">
+          毎朝7時に印西エリアの当日イベントを Threads（@communitybankinzai）へ自動投稿します。
+          前日18時にプレビューメールが届きます。キーワードの変更は次回投稿から反映されます。
+        </p>
+
+        <label class="field-check" style="margin: 12px 0;">
+          <input type="checkbox" id="sns-enabled">
+          <span>自動投稿を有効にする（OFFにすると投稿・プレビューメールとも停止）</span>
+        </label>
+
+        <div class="field">
+          <span>優先的に含めるキーワード（1つでも合致したら採用。カンマまたは改行区切り）</span>
+          <textarea id="sns-priority-include" rows="4" placeholder="千葉ニュータウン, CNT, 中央北, …"></textarea>
+        </div>
+
+        <div class="field">
+          <span>除外キーワード（上に合致しない場合、合致したら除外）</span>
+          <textarea id="sns-exclude" rows="4" placeholder="本埜, 木下, …"></textarea>
+        </div>
+
+        <div class="field">
+          <span>含めるキーワード（どちらにも合致しない場合、合致したら採用）</span>
+          <textarea id="sns-include" rows="2" placeholder="印西市, 白井市, いんざい, …"></textarea>
+        </div>
+
+        <div class="field">
+          <span>情報元が次を含む場合は無条件で採用（例：広報いんざい）</span>
+          <textarea id="sns-source-always" rows="1" placeholder="広報いんざい"></textarea>
+        </div>
+
+        <div class="field">
+          <span>ハッシュタグ（投稿末尾に付きます）</span>
+          <input type="text" id="sns-hashtags" placeholder="#印西 #千葉ニュータウン #CBI">
+        </div>
+
+        <div class="field">
+          <span>「詳細はこちら」リンク先URL</span>
+          <input type="url" id="sns-events-url" placeholder="https://…">
+        </div>
+
+        <div class="field">
+          <span>プレビューメールの宛先</span>
+          <input type="email" id="sns-preview-email" placeholder="communitybankinzai@gmail.com">
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;">
+          <button type="button" class="btn btn-primary" id="sns-save">設定を保存</button>
+          <button type="button" class="btn btn-ghost" id="sns-preview-today">投稿プレビュー（今日）</button>
+          <button type="button" class="btn btn-ghost" id="sns-preview-tomorrow">投稿プレビュー（明日）</button>
+          <button type="button" class="btn btn-ghost" id="sns-reset-defaults">初期値に戻す</button>
+        </div>
+
+        <div class="field" style="margin-top: 14px;" id="sns-preview-wrap" hidden>
+          <span>投稿プレビュー（この内容で投稿されます・実投稿はされません）</span>
+          <pre id="sns-preview-text" style="white-space: pre-wrap; background: var(--c-bg-alt); border: 1px solid var(--c-line); border-radius: var(--radius); padding: 12px; font-family: var(--font-sans); font-size: 0.9rem;"></pre>
+        </div>
+      </section>
+    </div><!-- /tab-sns -->
 
   </main>
 
