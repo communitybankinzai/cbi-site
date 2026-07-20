@@ -283,7 +283,7 @@
               <div style="flex:1; min-width:240px;">
                 <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#fff; font-weight:700; background:#c0392b; padding:3px 12px; border-radius:999px; margin-bottom:10px;">β · 本番稼働中</div>
                 <h3 style="margin:0 0 8px; font-size:20px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">CiDAO β — https://cidao.vercel.app</h3>
-                <p style="margin:0 0 8px; font-size:13px; color:#4a5663; line-height:1.7;">印西市の参加と貢献の循環基盤（市民DAO）の本番アプリ。マジックリンクでメール認証 → 提案・投票・議論・イベント・団体・人材バンク・FreeFree 応援掲示板 が利用できます。スマホ／PC 両対応（PWA、ホーム画面追加可）。</p>
+                <p style="margin:0 0 8px; font-size:13px; color:#4a5663; line-height:1.7;">印西市の参加と貢献の循環基盤（市民DAO）の本番アプリ。LINEログイン → 提案・投票・議論・イベント・団体・人材バンク・FreeFree 応援掲示板 が利用できます。スマホ／PC 両対応（PWA、ホーム画面追加可）。</p>
                 <div style="font-size:13px; color:#1e3a5f; font-weight:700;">▶ クリックして開く（新規タブ）</div>
               </div>
               <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
@@ -297,10 +297,10 @@
             <h3 style="margin:0 0 10px; font-size:15px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">📋 はじめての参加手順（3 ステップ・約 90 秒）</h3>
             <ol style="margin:0; padding-left:22px; font-size:13px; color:#4a5663; line-height:1.9;">
               <li><strong>https://cidao.vercel.app</strong> を開き「ログイン」をタップ</li>
-              <li>メールアドレスを入力 → 届いたマジックリンクをタップ（パスワード不要）</li>
+              <li>「LINEでログイン」をタップし、LINEアカウントで認可するだけ（初めての方は自動でアカウント作成）</li>
               <li>ログイン後、ホーム画面の 6 機能（提案・議論・マイページ・イベント・団体・FreeFree）を試す</li>
             </ol>
-            <p style="margin:10px 0 0; font-size:12px; color:#4a5663; line-height:1.7;">※ 初回ログインで「ライト登録」（重み 0.1）として自動作成されます。マイページから「プロフィール編集」でメアド以外の情報（名前・市内/関係人口・興味分野など）を登録すると「通常メンバー」に昇格し、提案投稿・拘束的投票・コメントが可能になります（重み 0.3 → 行政連携時のマイナンバー確認で 1.0 に上がる予定）。</p>
+            <p style="margin:10px 0 0; font-size:12px; color:#4a5663; line-height:1.7;">※ 初回ログインで「ライト登録」（重み 0.1）として自動作成されます。マイページから「プロフィール編集」で氏名・住所などを登録し本登録申請すると「LINE登録のみ（ハガキ未受領）」（重み 0.3）に、運営が郵送ハガキの受領を確認すると「住所確認済」（重み 1.0）に昇格します（仕様書 v2.1）。</p>
           </div>
 
           <div style="background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c0392b; border-radius:8px; padding:18px 22px;">
@@ -309,7 +309,7 @@
               <li><strong>2FA 未設定</strong>：GitHub / Supabase / Vercel の二要素認証が未導入。本格運用前に対応予定</li>
               <li><strong>AI 機能はスタブ</strong>：提案分類・団体マッチングは keyword 簡易判定（LLM 差替待ち）</li>
               <li><strong>メール／SNS 通知未実装</strong>：Resend / X / Facebook / LINE への配信は API キー取得後に対応</li>
-              <li><strong>マイナンバー確認方式は未実装</strong>：上位 tier（重み 1.0）への昇格は、行政連携が始まる段階でマイナンバー確認方式で対応予定（住所確認ハガキ方式は採用しない方針）</li>
+              <li><strong>本登録の住所確認フローは運営が手動処理</strong>：上位 tier（重み 1.0）への昇格は、運営が郵送ハガキの受領を管理画面で確認する方式（仕様書 v2.1。JPKI／マイナンバーカード連携は Phase 2+ で検討）</li>
               <li><strong>/admin 運営画面未実装</strong>：投票期間調整等の管理操作はまだ DB 直編集</li>
               <li><strong>重要な意思決定には未使用推奨</strong>：拘束的決議の本格運用は CBI 運営委員会承認後</li>
             </ul>
