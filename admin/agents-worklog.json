@@ -1659,6 +1659,13 @@
       "plans": [
         {
           "due": "2026-08-31",
+          "title": "🏗 イベント収集のCBI完結化（COCoLa資産依存ゼロへ移植）",
+          "category": "実装",
+          "priority": "高",
+          "note": "COCoLaサイト閉鎖に伴う恒久対応。cocola_topics GASの広報いんざいPDF巡回（Gemini抽出）・WEB巡回スクレイパーと、COCoLa コード.gs のDrive画像スキャン（Gemini Vision）を cbi-admin-gas へ移植し、CiDAO ingest APIへ直接送る構成にする。CBI専用Driveフォルダを新設。完了後は印西イベントシート・COCoLa GASトリガーを停止し、シート直読み版の syncWebEventsToCidao_ を除去。GEMINI_API_KEY はCBI GASに設定済み。設計メモは2026-07-20セッション参照。"
+        },
+        {
+          "due": "2026-08-31",
           "title": "🗑 CiDAO退会30日後の物理削除（匿名化）バッチ実装",
           "category": "実装",
           "priority": "中",
