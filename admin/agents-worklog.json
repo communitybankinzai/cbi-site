@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-05",
+  "updatedAt": "2026-07-20",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
@@ -1763,6 +1763,20 @@
     },
     "A4": {
       "actuals": [
+        {
+          "date": "2026-07-20",
+          "title": "📸 CiDAO機能紹介のInstagramカルーセル投稿（10枚+キャプション案）を新規作成 0.3時間",
+          "category": "広報",
+          "outputs": [
+            "proposals/cidao-deck-src/ig_template.html — Instagram用1080×1080・10枚構成の新規テンプレート（既存スクショを再利用）",
+            "proposals/cidao-deck-src/instagram/slide01〜10.png — カルーセル投稿用画像10枚（表紙／8機能マップ／機能別7枚／まとめ）",
+            "proposals/cidao-deck-src/instagram/caption.md — 投稿キャプション案（206字）・ハッシュタグ案（コメント欄用12個）・画像内容一覧"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "外部発信のため投稿前に副会長承認が必要（agents/a4-voice-out/README.md準拠、caption.mdにも明記）。全10枚をヘッドレスレンダリングで目視確認済み。\nsession: 54d32428-be65-40df-a972-d41332b97806 / output: 163,425 / cost: $57.84",
+          "session": "54d32428-be65-40df-a972-d41332b97806"
+        },
         {
           "date": "2026-07-18",
           "title": "🎞 CiDAO機能紹介スライドも同様に一般公開ページ化 0.1時間",

@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-07-18",
+  "updatedAt": "2026-07-20",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-07-20",
+      "type": "content",
+      "target": "広報素材",
+      "title": "📸 CiDAO紹介用のInstagramカルーセル素材（画像10枚＋キャプション案）ができた",
+      "detail": "既存のCiDAO機能紹介スライド（22枚）から主要10機能を厳選し、Instagram用の正方形（1080×1080）画像10枚として作り直した。投稿キャプション案（206字）とハッシュタグ案もセットで用意。副会長承認後に投稿予定。",
+      "author": "A4 Voice-Out"
+    },
     {
       "date": "2026-07-20",
       "type": "content",
