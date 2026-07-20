@@ -1774,7 +1774,7 @@
           ],
           "hours": 0.3,
           "partnerApproved": false,
-          "note": "外部発信のため投稿前に副会長承認が必要（agents/a4-voice-out/README.md準拠、caption.mdにも明記）。全10枚をヘッドレスレンダリングで目視確認済み。\nsession: 54d32428-be65-40df-a972-d41332b97806 / output: 163,425 / cost: $57.84",
+          "note": "外部発信のため投稿前に中司祐樹（会計・SNS担当）の承認が必要（ユーザー訂正、2026-07-20。当初caption.mdに副会長承認と記載していたが修正済み）。全10枚をヘッドレスレンダリングで目視確認済み。\nsession: 54d32428-be65-40df-a972-d41332b97806 / output: 163,425 / cost: $57.84",
           "session": "54d32428-be65-40df-a972-d41332b97806"
         },
         {
