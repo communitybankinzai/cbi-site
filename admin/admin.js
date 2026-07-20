@@ -237,7 +237,7 @@ const UNREAD_POLL_MS = 30000;
     if (name === 'changelog' && !state.changelogLoaded) loadChangelog();
     if (name === 'mail') openMailTab();
     if (name === 'doc-comments' && !state.documentsLoaded) initDocComments();
-    if (name === 'sns' && !state.snsLoaded) loadSnsConfig();
+    if (name === 'sns' && !state.snsLoaded) { loadSnsConfig(); loadSnsQueue(); }
   }
 
   // =========================================================
@@ -335,6 +335,80 @@ const UNREAD_POLL_MS = 30000;
       if (!confirm('フォームを初期値に戻します（保存するまで反映されません）。よろしいですか？')) return;
       snsFillForm(state.snsDefaults);
     });
+    $('snsq-add').addEventListener('click', addSnsQueuePost);
+    $('snsq-refresh').addEventListener('click', loadSnsQueue);
+  }
+
+  // ---------------------------------------------------------
+  // 予約投稿キュー
+  // ---------------------------------------------------------
+  const SNSQ_STATUS_LABEL = {
+    scheduled: '⏳ 予約中', posted: '✅ 投稿済み', partial: '⚠️ 一部成功',
+    failed: '❌ 失敗', canceled: '― 取消済み',
+  };
+  const esc = (s) => escapeHtml(s);
+
+  async function loadSnsQueue() {
+    const wrap = $('snsq-list');
+    try {
+      const r = await gasCall({ action: 'listSnsQueue', password: state.password });
+      if (!r || !r.ok) { wrap.innerHTML = '<p class="meta-note">取得失敗: ' + esc((r && r.error) || 'unknown') + '</p>'; return; }
+      if (!r.queue.length) { wrap.innerHTML = '<p class="meta-note">予約はまだありません</p>'; return; }
+      wrap.innerHTML = r.queue.map(q => `
+        <div style="border: 1px solid var(--c-line); border-radius: var(--radius); padding: 10px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; gap: 8px; align-items: baseline;">
+            <strong style="font-size: 0.85rem;">${esc(q.scheduledAt)}</strong>
+            <span style="font-size: 0.75rem;">${esc(SNSQ_STATUS_LABEL[q.status] || q.status)}
+              ${q.threads ? ' / Threads' : ''}${q.instagram ? ' / Instagram' : ''}</span>
+          </div>
+          <p style="font-size: 0.8rem; white-space: pre-wrap; margin: 6px 0; color: var(--c-ink-sub);">${esc(q.text.slice(0, 120))}${q.text.length > 120 ? '…' : ''}</p>
+          ${q.imageUrl ? `<p style="font-size: 0.7rem; color: var(--c-ink-sub); word-break: break-all;">🖼 ${esc(q.imageUrl)}</p>` : ''}
+          ${q.note ? `<p style="font-size: 0.7rem; color: var(--c-ink-sub);">${esc(q.note)}</p>` : ''}
+          ${q.status === 'scheduled' ? `<button type="button" class="btn btn-ghost btn-sm" data-snsq-cancel="${esc(q.id)}">取消</button>` : ''}
+        </div>`).join('');
+      wrap.querySelectorAll('[data-snsq-cancel]').forEach(b => {
+        b.addEventListener('click', async () => {
+          if (!confirm('この予約を取り消しますか？')) return;
+          const res = await gasCall({ action: 'cancelSnsQueuePost', password: state.password, id: b.dataset.snsqCancel });
+          if (res && res.ok) { toast('取り消しました', 'ok'); loadSnsQueue(); }
+          else toast('取消失敗: ' + ((res && res.error) || 'unknown'), 'err');
+        });
+      });
+    } catch (err) {
+      wrap.innerHTML = '<p class="meta-note">通信エラー: ' + esc(err.message) + '</p>';
+    }
+  }
+
+  async function addSnsQueuePost() {
+    const text = $('snsq-text').value.trim();
+    const imageUrl = $('snsq-image').value.trim();
+    const when = $('snsq-when').value; // datetime-local: YYYY-MM-DDTHH:MM
+    const threads = $('snsq-threads').checked;
+    const instagram = $('snsq-instagram').checked;
+    if (!text) { toast('本文を入力してください', 'err'); return; }
+    if (!when) { toast('投稿日時を指定してください', 'err'); return; }
+    if (!threads && !instagram) { toast('投稿先を選んでください', 'err'); return; }
+    if (instagram && !imageUrl) { toast('Instagramに投稿する場合は画像URLが必須です', 'err'); return; }
+    const btn = $('snsq-add');
+    btn.disabled = true;
+    try {
+      const r = await gasCall({
+        action: 'addSnsQueuePost', password: state.password,
+        post: { text, imageUrl, scheduledAt: when.replace('T', ' '), threads, instagram },
+      });
+      if (r && r.ok) {
+        toast('予約を追加しました', 'ok');
+        $('snsq-text').value = ''; $('snsq-image').value = '';
+        loadSnsQueue();
+      } else {
+        const msg = { text_required: '本文が空です', invalid_scheduledAt: '日時の形式が不正です', instagram_requires_image: 'Instagramは画像URL必須です' }[r && r.error] || (r && r.error) || 'unknown';
+        toast('追加失敗: ' + msg, 'err');
+      }
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
+    }
   }
 
   // =========================================================

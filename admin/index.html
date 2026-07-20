@@ -627,6 +627,42 @@
           <pre id="sns-preview-text" style="white-space: pre-wrap; background: var(--c-bg-alt); border: 1px solid var(--c-line); border-radius: var(--radius); padding: 12px; font-family: var(--font-sans); font-size: 0.9rem;"></pre>
         </div>
       </section>
+
+      <section class="panel" style="margin-top: 16px;">
+        <h2 class="panel-title">🗓 予約投稿</h2>
+        <p class="meta-note">
+          日時を指定してThreads / Instagramへ自動投稿します（15分毎にチェック）。
+          Instagramは画像URL必須。Instagram投稿はトークン設定後に有効になります。
+        </p>
+
+        <div class="field">
+          <span>本文</span>
+          <textarea id="snsq-text" rows="5" placeholder="投稿本文（ハッシュタグ含む）"></textarea>
+        </div>
+        <div class="field">
+          <span>画像URL（任意・Instagramに投稿する場合は必須。公開URLのみ）</span>
+          <input type="url" id="snsq-image" placeholder="https://communitybankinzai.github.io/cbi-site/assets/…">
+        </div>
+        <div class="field">
+          <span>投稿日時</span>
+          <input type="datetime-local" id="snsq-when">
+        </div>
+        <div style="display: flex; gap: 16px; margin: 10px 0;">
+          <label class="field-check"><input type="checkbox" id="snsq-threads" checked><span>Threads</span></label>
+          <label class="field-check"><input type="checkbox" id="snsq-instagram"><span>Instagram</span></label>
+        </div>
+        <button type="button" class="btn btn-primary" id="snsq-add">予約を追加</button>
+
+        <div style="margin-top: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3 style="font-size: 0.95rem; font-weight: 600;">予約一覧</h3>
+            <button type="button" class="btn btn-ghost btn-sm" id="snsq-refresh">更新</button>
+          </div>
+          <div id="snsq-list" style="margin-top: 8px;">
+            <p class="meta-note">読み込み中…</p>
+          </div>
+        </div>
+      </section>
     </div><!-- /tab-sns -->
 
   </main>

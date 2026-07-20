@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-07-21",
+      "type": "feature",
+      "target": "admin: 自動投稿タブ＋cbi-admin-gas",
+      "title": "🗓 日時指定でThreads/Instagramへ予約投稿できるようになった",
+      "detail": "管理画面「自動投稿」タブに予約投稿セクションを新設。本文・画像URL・投稿日時・投稿先（Threads/Instagram）を指定して予約すると、GASが15分毎にキューを確認し時刻が来たものを自動投稿する。予約一覧の状態表示（予約中/投稿済み/失敗）と取消も可能。キューはスプレッドシート「SNS予約投稿」シートで管理。Instagram投稿処理も実装済みで、アクセストークン設定後に有効化される。CiDAO機能紹介の連載（全10回・2日間隔）を画像付きで一括予約する関数も用意。",
+      "author": "Claude Code"
+    },
+    {
       "date": "2026-07-20",
       "type": "feature",
       "target": "admin: 自動投稿タブ＋cbi-admin-gas",
