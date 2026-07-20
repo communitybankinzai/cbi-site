@@ -18,24 +18,24 @@
       "actuals": [
         {
           "date": "2026-07-20",
-          "title": "事業名改称対応（あなたの出番→このゆびとまれ）：サイト・GAS・申請書類生成スクリプト・SNS取得手続き支援",
+          "title": "事業名改称対応＋CBI SNS取得支援＋CiDAO認証LINE一本化（仕様v2.1改訂・実装・疎通確認・退会/脱退機能）",
           "category": "実装",
           "outputs": [
-            "CLAUDE.md",
-            "site/index.html",
-            "site/uniqueness/index.html",
-            "site/admin/admin.js",
-            "site/README.md",
-            "cbi-admin-gas/Code.gs",
-            "MOC_申請書類.md",
-            "agents/a5-bridge/knowledge/templates/request-letter.md",
-            "fill_forms2.py",
-            "make_supplement.js",
-            "site/admin/changelog.json"
+            "CLAUDE.md／site/index.html／site/uniqueness/index.html／site/admin/admin.js／site/README.md／cbi-admin-gas/Code.gs 他（事業名改称）",
+            "site/admin/changelog.json",
+            "cidao/docs/01_開発仕様書_v2.1.md（新規、v2.0はarchiveへ）",
+            "cidao/README.md／cidao/worklog.md",
+            "C:/Repos/cidao: src/app/login/page.tsx（LINEログイン化＋採用理由説明）",
+            "C:/Repos/cidao: supabase/migrations/20260720100000_line_login_support.sql",
+            "C:/Repos/cidao: src/app/auth/callback/route.ts（初回誘導・退会復元）",
+            "C:/Repos/cidao: src/app/me/actions.ts（退会）／me/page.tsx／me/_components/DeleteAccountSection.tsx",
+            "C:/Repos/cidao: src/app/orgs/actions.ts（脱退）／me/edit/page.tsx／OrgClaimPicker.tsx",
+            "agents/a1-core/credentials.md（Instagram/Threads・LINE Developers・Supabaseプロバイダ設定を追記）",
+            "調整経緯/2026-07-20_事業名改称_あなたの出番からこのゆびとまれへ.md"
           ],
-          "hours": 0.3,
+          "hours": 1.5,
           "partnerApproved": false,
-          "note": "代表・新井氏からの打診により事業名を『あなたの出番』から『このゆびとまれ』へ改称。稼働中ファイル（サイト・GAS・生成スクリプト・エージェント知識）を新称に統一、提出済み書類(versions/submitted_v1/)は履歴として保持し変更せず。v13（新称の申請書類一式）の生成は別タスク化（fill_forms2.py/fill_schedule.pyのパスが移転前旧フォルダのままハードコードされている問題、およびdocxスキルのunpack.py/pack.py廃止＝unzip/zip方式への移行が必要なため）。あわせてCBI SNSアカウント（Instagram優先）取得の手続き支援を実施、団体Googleアカウント運用を確認。session: 7b4cc4d2-6e85-4f32-b163-722b4dca42d1 / output: 29,528 / cost: $2.49"
+          "note": "事業名を「あなたの出番」→「このゆびとまれ」に改称（提出済みv10は保全、v13生成は別タスク）。CBIのInstagram/Threadsアカウント取得を支援（@communitybankinzai、N's factory個人アカウント内の追加プロフィール構成）。CiDAO認証をメールOTPからLINEログインに一本化：仕様書v2.1改訂→LINE Developersチャネル開設支援→Supabase側はGoTrue Admin APIで設定（OIDC型はLINEのHS256署名と非互換のためOAuth2型を採用）→ローカル疎通成功→本番デプロイ。付随して初回ログイン表示名確認（実名公開防止）・団体脱退・アカウント退会（30日復元）を実装。残：LINEチャネル公開切替、既存4名の再登録案内、30日匿名化バッチ。session: 7b4cc4d2-6e85-4f32-b163-722b4dca42d1 / output: 151,728 / cost: $68.79"
         },
         {
           "date": "2026-07-03",
@@ -1653,6 +1653,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-08-31",
+          "title": "🗑 CiDAO退会30日後の物理削除（匿名化）バッチ実装",
+          "category": "実装",
+          "priority": "中",
+          "note": "退会（ソフトデリート）と再ログイン復元は2026-07-20実装済み。仕様書v2.1 §4.4「退会から30日で削除」を守るため、deleted_atから30日経過したmembersの匿名化バッチ（pg_cron）が必要。実装までは復元期限が事実上無期限になっている。"
+        },
+        {
+          "due": "2026-08-15",
+          "title": "📢 LINEログインチャネル公開切替＋既存メール認証ユーザー4名へ再登録案内",
+          "category": "事務",
+          "priority": "高",
+          "note": "チャネル（ID 2010761098）は開発中ステータスのため現在は管理者のみログイン可。市民公開前にLINE Developersで「公開」へ切替が必要。あわせて既存メール認証の実ユーザー4名（bot除く）へLINE再登録の個別案内を送る。投票・提案履歴の引き継ぎ要否も確認。"
+        },
         {
           "due": "2026-08-31",
           "title": "📄 申請書類v13を新事業名『このゆびとまれ』で生成",
