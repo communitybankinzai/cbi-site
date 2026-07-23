@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-07-24",
+      "type": "content",
+      "target": "site: トップページhero背景",
+      "title": "🖼 トップページの背景が動画から「指差す手」の実写写真になった",
+      "detail": "トップページ最上部（ヒーロー）の背景を、これまでの動画（hero.mp4）から実写写真（assets/hero/hero-photo.jpg、空を指差す手）に変更。動画のHTML/CSSは削除せずコメントアウトで保持しており、index.htmlのコメント指示に従えばいつでも動画背景に戻せる。",
+      "author": "Claude Code"
+    },
+    {
       "date": "2026-07-21",
       "type": "feature",
       "target": "admin: 自動投稿タブ＋cbi-admin-gas",
