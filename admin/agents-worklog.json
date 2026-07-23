@@ -18,17 +18,18 @@
       "actuals": [
         {
           "date": "2026-07-24",
-          "title": "トップページheroの背景を動画→実写写真（指差す手）に差し替え、ロールバック可能な形でコメントアウト保持",
+          "title": "トップページheroの背景を動画→実写写真に差し替え、見出し横にプロジェクト専用アイコン追加",
           "category": "実装",
           "outputs": [
-            "site/index.html（hero-video→コメントアウト、hero-photo追加）",
-            "site/style.css（.hero-photo定義追加）",
+            "site/index.html（hero-video→コメントアウト、hero-photo追加、hero-title-icon追加）",
+            "site/style.css（.hero-photo／.hero-title-icon定義追加）",
             "site/assets/hero/hero-photo.jpg（新規）",
+            "site/assets/hero/hero-icon.png（新規・白背景を透過PNG化）",
             "site/admin/changelog.json"
           ],
-          "hours": 0.2,
+          "hours": 0.3,
           "partnerApproved": false,
-          "note": "動画背景(hero.mp4)を写真背景に置換。動画側のHTML/CSSは削除せずコメントアウトで保持しており、いつでも復元可能。session: 90cf67ab-12f7-48a0-9246-098bf395afcf / output: 19,278 / cost: $2.14"
+          "note": "動画背景(hero.mp4)を写真背景に置換、動画側のHTML/CSSはコメントアウトでいつでも復元可能。続けて見出し横にプロジェクト専用の指差しアイコン（透過PNG）を追加、CBI団体ロゴとは別枠。session: 90cf67ab-12f7-48a0-9246-098bf395afcf / output: 34,734 / cost: $4.85"
         },
         {
           "date": "2026-07-21",
