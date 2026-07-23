@@ -230,6 +230,12 @@ h1, h2, h3 {
   color: var(--c-navy);
   border-color: #ffffff;
 }
+.hero-cta-note {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.82);
+  margin: -18px 0 24px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+}
 .hero-meta {
   display: inline-block;
   font-size: 13px;
