@@ -210,10 +210,20 @@ h1, h2, h3 {
   font-weight: 500;
 }
 .hero-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   font-size: clamp(28px, 5vw, 46px);
   margin: 0 0 20px;
   color: #ffffff;
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+}
+.hero-title-icon {
+  height: 1.5em;
+  width: auto;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
 }
 .hero-sub {
   font-size: clamp(14px, 1.6vw, 17px);

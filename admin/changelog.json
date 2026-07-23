@@ -5,6 +5,14 @@
     {
       "date": "2026-07-24",
       "type": "content",
+      "target": "site: トップページhero見出し",
+      "title": "🖐 hero見出しの横に「このゆびとまれ」プロジェクト専用の指差しアイコンが付いた",
+      "detail": "トップページ見出し「印西『このゆびとまれ』プロジェクト」の横に、プロジェクト固有の指差しアイコン（透過PNG、assets/hero/hero-icon.png）を追加。CBI団体ロゴ（cbi-logo.png）とは別枠のプロジェクト専用アイコンで、他プロジェクトが加わった際の扱いは今後検討。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-07-24",
+      "type": "content",
       "target": "site: トップページhero背景",
       "title": "🖼 トップページの背景が動画から「指差す手」の実写写真になった",
       "detail": "トップページ最上部（ヒーロー）の背景を、これまでの動画（hero.mp4）から実写写真（assets/hero/hero-photo.jpg、空を指差す手）に変更。動画のHTML/CSSは削除せずコメントアウトで保持しており、index.htmlのコメント指示に従えばいつでも動画背景に戻せる。",
