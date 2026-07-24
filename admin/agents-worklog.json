@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-25",
+          "title": "いいね連打の不具合修正（1人1回トグル化）＋返信・いいねのアプリ内通知追加",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: supabase/migrations/20260725100000_comment_likes.sql（comment_likesテーブル・adjust_comment_likes関数新規、既存いいね数リセット）",
+            "CiDAO: src/app/proposals/actions.ts（likeCommentトグル化・返信先投稿者への通知・いいね通知）",
+            "CiDAO: src/app/proposals/[id]/page.tsx（自分のいいね済みID取得）",
+            "CiDAO: src/app/proposals/[id]/_components/CommentSection.tsx（いいね済み表示）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "代表新井氏の指摘（いいねが何回でも押せる）への対応。あわせて「質問への返信が質問者に通知されない」実装漏れも修正。既存のいいね数は連打重複を含み実数不明のため0リセット（ユーザー承認済み）。hoursはセッション累計3.3hから記録済み3.0hの差分。session: 472492b7-6951-4eb0-a649-0417b7ab14b9 / output: 329,036 / cost: $144.93"
+        },
+        {
+          "date": "2026-07-25",
           "title": "CiDAOにアプリ内通知（🔔ベル）を新設（コメント・質問・回答・投票の通知基盤）",
           "category": "実装",
           "outputs": [
