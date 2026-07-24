@@ -41,6 +41,7 @@ const UNREAD_POLL_MS = 30000;
     worklogLoaded: false,
     actualsDynamic: [],
     plansDynamic: [],
+    bugReports: [],
     mail: {
       label: 'inbox',
       query: '',
@@ -62,6 +63,7 @@ const UNREAD_POLL_MS = 30000;
     bindLogin();
     bindAdmin();
     initSnsTab();
+    initBugReportsTab();
     const pw = localStorage.getItem(STORAGE_KEYS.PW);
     if (pw) {
       state.password = pw;
@@ -226,7 +228,7 @@ const UNREAD_POLL_MS = 30000;
       b.classList.toggle('active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns'].forEach(t => {
+    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
     document.body.classList.toggle('mail-fullwidth', name === 'mail');
@@ -238,6 +240,7 @@ const UNREAD_POLL_MS = 30000;
     if (name === 'mail') openMailTab();
     if (name === 'doc-comments' && !state.documentsLoaded) initDocComments();
     if (name === 'sns' && !state.snsLoaded) { loadSnsConfig(); loadSnsQueue(); }
+    if (name === 'bug-reports') loadBugReports();
   }
 
   // =========================================================
@@ -409,6 +412,97 @@ const UNREAD_POLL_MS = 30000;
     } finally {
       btn.disabled = false;
     }
+  }
+
+  // =========================================================
+  // 不具合・要望レポート（CiDAO Supabase bug_reports 経由）
+  // =========================================================
+  const BUGREPORT_STATUS_LABEL = { open: '未対応', in_progress: '対応中', resolved: '解決済み', closed: 'クローズ' };
+  const BUGREPORT_CATEGORY_LABEL = { bug: '不具合', feature_request: '要望', other: 'その他' };
+  const BUGREPORT_SOURCE_LABEL = { cbi_site: 'CBIサイト', cidao_app: 'CiDAOアプリ' };
+
+  function initBugReportsTab() {
+    const search = $('bugreports-search');
+    const filterStatus = $('bugreports-filter-status');
+    const refresh = $('bugreports-refresh');
+    if (!search) return;
+    search.addEventListener('input', renderBugReports);
+    filterStatus.addEventListener('change', renderBugReports);
+    refresh.addEventListener('click', loadBugReports);
+  }
+
+  async function loadBugReports() {
+    const wrap = $('bugreports-list');
+    wrap.innerHTML = '<p class="meta-note">読み込み中…</p>';
+    try {
+      const r = await gasCall({ action: 'listBugReports', password: state.password });
+      if (!r || !r.ok) { wrap.innerHTML = '<p class="meta-note">取得失敗: ' + esc((r && r.error) || 'unknown') + '</p>'; return; }
+      state.bugReports = r.reports || [];
+      renderBugReports();
+    } catch (err) {
+      wrap.innerHTML = '<p class="meta-note">通信エラー: ' + esc(err.message) + '</p>';
+    }
+  }
+
+  function renderBugReports() {
+    const wrap = $('bugreports-list');
+    const q = ($('bugreports-search').value || '').trim().toLowerCase();
+    const statusFilter = $('bugreports-filter-status').value;
+    let rows = state.bugReports;
+    if (statusFilter) rows = rows.filter(r => r.status === statusFilter);
+    if (q) {
+      rows = rows.filter(r =>
+        (r.description || '').toLowerCase().includes(q) ||
+        (r.reporter_name || '').toLowerCase().includes(q) ||
+        (r.reporter_email || '').toLowerCase().includes(q)
+      );
+    }
+    if (!rows.length) { wrap.innerHTML = '<p class="meta-note">該当する報告はありません</p>'; return; }
+
+    wrap.innerHTML = rows.map(r => `
+      <div style="border: 1px solid var(--c-line); border-radius: var(--radius); padding: 10px; margin-bottom: 8px;">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.72rem; margin-bottom: 6px;">
+          <span style="padding: 2px 6px; border-radius: 4px; background: var(--c-bg-alt);">${esc(BUGREPORT_SOURCE_LABEL[r.source] || r.source)}</span>
+          <span style="padding: 2px 6px; border-radius: 4px; background: var(--c-bg-alt);">${esc(BUGREPORT_CATEGORY_LABEL[r.category] || r.category)}</span>
+          <span style="padding: 2px 6px; border-radius: 4px; background: var(--c-bg-alt); font-weight: 600;">${esc(BUGREPORT_STATUS_LABEL[r.status] || r.status)}</span>
+          <span style="color: var(--c-ink-sub);">${esc(new Date(r.created_at).toLocaleString('ja-JP'))}</span>
+        </div>
+        <p style="font-size: 0.85rem; white-space: pre-wrap; margin: 0 0 6px;">${esc(r.description)}</p>
+        <p style="font-size: 0.72rem; color: var(--c-ink-sub); margin: 0 0 8px;">
+          ${r.page_url ? ('ページ: ' + esc(r.page_url) + ' / ') : ''}報告者: ${esc(r.reporter_name || '(未入力)')}${r.reporter_email ? (' / ' + esc(r.reporter_email)) : ''}
+        </p>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+          <select data-bugreport-status="${esc(r.id)}" style="font-size: 0.75rem;">
+            ${Object.keys(BUGREPORT_STATUS_LABEL).map(s => `<option value="${s}" ${s === r.status ? 'selected' : ''}>${BUGREPORT_STATUS_LABEL[s]}</option>`).join('')}
+          </select>
+          <input type="text" data-bugreport-note="${esc(r.id)}" value="${esc(r.admin_note || '')}" placeholder="対応メモ" style="flex: 1; min-width: 140px; font-size: 0.75rem;">
+          <button type="button" class="btn btn-ghost btn-sm" data-bugreport-save="${esc(r.id)}">更新</button>
+        </div>
+      </div>`).join('');
+
+    wrap.querySelectorAll('[data-bugreport-save]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.bugreportSave;
+        const status = wrap.querySelector(`[data-bugreport-status="${id}"]`).value;
+        const note = wrap.querySelector(`[data-bugreport-note="${id}"]`).value;
+        btn.disabled = true;
+        try {
+          const res = await gasCall({ action: 'updateBugReportStatus', password: state.password, id, status, admin_note: note });
+          if (res && res.ok) {
+            toast('更新しました', 'ok');
+            const target = state.bugReports.find(x => x.id === id);
+            if (target) { target.status = status; target.admin_note = note; }
+            renderBugReports();
+          } else {
+            toast('更新失敗: ' + ((res && res.error) || 'unknown'), 'err');
+          }
+        } catch (err) {
+          toast('通信エラー: ' + err.message, 'err');
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
   }
 
   // =========================================================

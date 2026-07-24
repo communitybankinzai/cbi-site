@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-07-24",
+          "title": "不具合・要望レポート機能を新設（CiDAO投稿フォーム＋DB＋メール通知＋CBI管理画面タブ）",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: supabase/migrations/20260724100000_bug_reports.sql（bug_reportsテーブル・RLS新規）",
+            "CiDAO: src/app/bug-report/page.tsx／actions.ts／_components/BugReportForm.tsx（投稿フォーム、未ログイン可）",
+            "CiDAO: src/app/admin/bug-reports/page.tsx／actions.ts（管理者向け一覧・ステータス管理）",
+            "CiDAO: src/app/me/page.tsx（マイページに投稿導線追加）",
+            "site/index.html（お問い合わせ欄に投稿リンク追加）",
+            "site/admin/index.html／admin.js（「🐛 不具合レポート」タブ新設）",
+            "cbi-admin-gas/Code.gs（listBugReports／updateBugReportStatus、Supabase service_role経由）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 1.9,
+          "partnerApproved": false,
+          "note": "重複していたCiDAOメンバーアカウント(you0810jmsdf gmail/ybb.ne.jp、ゆうさん)の整理も同セッションで実施。GASデプロイ権限エラーの解決に時間を要した。session: 90cf67ab-12f7-48a0-9246-098bf395afcf / output: 218,678 / cost: $44.40"
+        },
+        {
+          "date": "2026-07-24",
           "title": "トップページheroの背景を動画→実写写真に差し替え、見出し横にプロジェクト専用アイコン追加",
           "category": "実装",
           "outputs": [
