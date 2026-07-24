@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-20",
+  "updatedAt": "2026-07-24",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
@@ -16,6 +16,22 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-07-24",
+          "title": "CiDAO管理画面にメンバー一覧・イベント参加者一覧を新設（運営の登録状況把握）",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: supabase/migrations/20260724110000_event_participants_admin_view.sql（staff以上が全イベント参加者を閲覧できるRLSポリシー新規）",
+            "CiDAO: src/app/admin/members/page.tsx（メンバー一覧・本登録済み、新規）",
+            "CiDAO: src/app/admin/members/light/page.tsx（メンバー一覧・ライト、新規）",
+            "CiDAO: src/app/admin/events/page.tsx（イベント一覧・参加人数、新規）",
+            "CiDAO: src/app/admin/events/[id]/page.tsx（イベント別参加者一覧、新規）",
+            "CiDAO: src/app/admin/page.tsx（管理画面トップにメニュー追加）"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "きっかけはCBI管理画面「📧メール」タブの動作確認と、CiDAO登録項目（個人情報最小化）の相談。人材バンク`/talent`の登録者表示（1名）は仕様通り（PR掲載同意者のみ表示）と判明、全会員数を運営が把握する手段が無かったため本機能を追加。DBマイグレーションは認証情報(credentials.md記載分)が失効しており自動適用できず、ユーザーがSupabase SQL Editorで手動実行。session: e41d40e8-326c-4628-bd8a-b5f98c5224e9 / output: 69,023 / cost: $10.49"
+        },
         {
           "date": "2026-07-24",
           "title": "不具合・要望レポート機能を新設（CiDAO投稿フォーム＋DB＋メール通知＋CBI管理画面タブ）",
