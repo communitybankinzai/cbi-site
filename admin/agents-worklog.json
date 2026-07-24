@@ -17,6 +17,22 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-07-25",
+          "title": "CiDAOにアプリ内通知（🔔ベル）を新設（コメント・質問・回答・投票の通知基盤）",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: supabase/migrations/20260724120000_notifications.sql（notificationsテーブル・RLS・GRANT新規）",
+            "CiDAO: src/lib/notify.ts（service_role経由のbest-effort通知挿入ヘルパー）",
+            "CiDAO: src/app/proposals/actions.ts（postComment・castVoteに通知トリガー追加）",
+            "CiDAO: src/app/notifications/actions.ts（取得・全既読化のServer Action）",
+            "CiDAO: src/components/NotificationBell.tsx（右上固定ベル・未読バッジ・一覧・既読化）",
+            "CiDAO: src/app/layout.tsx（全ページにベル配置）"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "投票通知は投票の秘密のため投票者IDを保存しない設計。メール/LINE push等の配信手段はこの通知基盤の上に次段階で追加予定（COCoLa DAOのservice-worker実装が参考候補、LINE User ID未保存の制約も判明済み）。hoursはセッション累計3.0hから同会話で記録済みの2.2h（不具合レポート機能）を差し引いた差分。session: 472492b7-6951-4eb0-a649-0417b7ab14b9 / output: 298,522 / cost: $112.76"
+        },
+        {
           "date": "2026-07-24",
           "title": "CiDAO管理画面にメンバー一覧・イベント参加者一覧を新設（運営の登録状況把握）",
           "category": "実装",
