@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-07-25",
+          "title": "Webプッシュ通知（PWA）実装＋FreeFree団体投稿の権限緩和",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: supabase/migrations/20260725130000_push_subscriptions.sql（購読テーブル・RLS・GRANT）",
+            "CiDAO: public/sw.js＋public/icon-192.png（Service Worker・通知アイコン）",
+            "CiDAO: src/lib/push.ts（web-push送信、失効購読の自動削除）＋src/lib/notify.ts（ベル通知と連動）",
+            "CiDAO: src/components/PushToggle.tsx＋me/page.tsx（通知を受け取るトグル、iPhone向け案内）",
+            "CiDAO: supabase/migrations/20260725120000_freefree_org_member_posting.sql（is_org_member新設、役員限定→所属メンバー全員）",
+            "CiDAO: src/app/freefree/new/page.tsx（団体リストの役職フィルタ撤廃）",
+            "CiDAO: src/app/talent/actions.ts（声がけ通知の連絡先表示をメール保有時のみに修正）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "スリープ中のスマホ待機画面への通知要望に対し、LINE push（月200通で課金・友だち追加が障壁）ではなくCOCoLa DAO実績のあるWebプッシュを採用。ローカルでエンドツーエンド受信確認済み。本番有効化にはVercelへのVAPID環境変数3件の追加が必要（未実施）。hoursはセッション累計4.4hから記録済み4.1hの差分。session: 472492b7-6951-4eb0-a649-0417b7ab14b9 / output: 440,089 / cost: $356.24"
+        },
+        {
+          "date": "2026-07-25",
           "title": "トップページ刷新（目指す3つのこと＋丸ゴシック化）＋CiDAO UX改善（声がけベル通知・ログイン判定修正・マイページ導線整理）",
           "category": "実装",
           "outputs": [
