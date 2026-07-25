@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-07-25",
+          "title": "トップページ刷新（目指す3つのこと＋丸ゴシック化）＋CiDAO UX改善（声がけベル通知・ログイン判定修正・マイページ導線整理）",
+          "category": "実装",
+          "outputs": [
+            "site/index.html（事業概要→CBIが目指す３つのこと、3色カード化）",
+            "site/style.css＋uniqueness/index.html（フォントをZen Maru Gothicに変更）",
+            "CiDAO: src/app/talent/actions.ts（声がけをアプリ内ベル通知にも送信。LINEユーザーに通知が届かない欠陥の修復）",
+            "CiDAO: src/app/page.tsx（ログイン判定をemail有無→user有無に修正）",
+            "CiDAO: src/app/me/page.tsx（役割明示ナビカード・本登録案内の具体化・重複設定リンク削除）",
+            "CiDAO: src/app/me/edit＋me/pr（各ページの目的を一行明示）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "代表新井氏レビューのフィードバック対応第2弾。スリープ中のスマホ待機画面への通知はLINE push（保留中）が本命である旨を回答済み。hoursはセッション累計4.1hから記録済み3.8hの差分。session: 472492b7-6951-4eb0-a649-0417b7ab14b9 / output: 409,847 / cost: $297.41"
+        },
+        {
+          "date": "2026-07-25",
           "title": "コメントUX改善一式（字数制限撤廃・ポイント履歴・管理者削除・返信いいね・ホームボタン）＋uniqueness街活性室記述削除",
           "category": "実装",
           "outputs": [
