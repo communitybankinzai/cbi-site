@@ -63,6 +63,7 @@ const UNREAD_POLL_MS = 30000;
     bindLogin();
     bindAdmin();
     initSnsTab();
+    initFreefreeSnsUI();
     initBugReportsTab();
     const pw = localStorage.getItem(STORAGE_KEYS.PW);
     if (pw) {
@@ -239,7 +240,7 @@ const UNREAD_POLL_MS = 30000;
     if (name === 'changelog' && !state.changelogLoaded) loadChangelog();
     if (name === 'mail') openMailTab();
     if (name === 'doc-comments' && !state.documentsLoaded) initDocComments();
-    if (name === 'sns' && !state.snsLoaded) { loadSnsConfig(); loadSnsQueue(); }
+    if (name === 'sns' && !state.snsLoaded) { loadSnsConfig(); loadSnsQueue(); loadFreefreeSnsConfig(); }
     if (name === 'bug-reports') loadBugReports();
   }
 
@@ -411,6 +412,136 @@ const UNREAD_POLL_MS = 30000;
       toast('通信エラー: ' + err.message, 'err');
     } finally {
       btn.disabled = false;
+    }
+  }
+
+  // =========================================================
+  // FreeFree自動配信（Instagram）設定
+  // =========================================================
+  function initFreefreeSnsUI() {
+    const save = $('ffsns-save');
+    if (!save) return;
+    const hourSel = $('ffsns-hour');
+    for (let h = 0; h < 24; h++) {
+      const opt = document.createElement('option');
+      opt.value = String(h);
+      opt.textContent = h + ':00';
+      hourSel.appendChild(opt);
+    }
+    save.addEventListener('click', saveFreefreeSnsConfig);
+    $('ffsns-preview').addEventListener('click', previewFreefreeSns);
+  }
+
+  function ffsnsFillForm(cfg) {
+    $('ffsns-enabled').checked = !!cfg.enabled;
+    $('ffsns-hour').value = String(cfg.hour ?? 12);
+    $('ffsns-hashtags').value = cfg.hashtags || '';
+    document.querySelectorAll('#ffsns-days input[type="checkbox"]').forEach(cb => {
+      cb.checked = (cfg.days || []).includes(Number(cb.value));
+    });
+  }
+
+  function ffsnsReadForm() {
+    const days = [];
+    document.querySelectorAll('#ffsns-days input[type="checkbox"]').forEach(cb => {
+      if (cb.checked) days.push(Number(cb.value));
+    });
+    // 配信対象リストが読み込み済みなら、チェックを外したIDを除外リストにする。
+    // 未読み込み時は前回の除外リストを保持（誤って全許可にしない）
+    let excludedIds = (state.ffsnsConfig && state.ffsnsConfig.excludedIds) || [];
+    if (state.ffsnsTargetsLoaded) {
+      excludedIds = [];
+      document.querySelectorAll('[data-ffsns-target]').forEach(cb => {
+        if (!cb.checked) excludedIds.push(cb.dataset.ffsnsTarget);
+      });
+    }
+    return {
+      enabled: $('ffsns-enabled').checked,
+      days,
+      hour: Number($('ffsns-hour').value),
+      hashtags: $('ffsns-hashtags').value.trim(),
+      excludedIds,
+    };
+  }
+
+  async function loadFreefreeSnsConfig() {
+    if (!$('ffsns-save')) return;
+    try {
+      const r = await gasCall({ action: 'getFreefreeSnsConfig', password: state.password });
+      if (r && r.ok) {
+        state.ffsnsConfig = r.config || {};
+        ffsnsFillForm(state.ffsnsConfig);
+      }
+    } catch (err) {
+      toast('FreeFree配信設定の取得に失敗: ' + err.message, 'err');
+    }
+    loadFreefreeSnsTargets();
+  }
+
+  async function loadFreefreeSnsTargets() {
+    const wrap = $('ffsns-targets');
+    if (!wrap) return;
+    wrap.innerHTML = '<p class="meta-note">読み込み中…</p>';
+    state.ffsnsTargetsLoaded = false;
+    try {
+      const r = await gasCall({ action: 'listFreefreeSnsTargets', password: state.password });
+      if (!r || !r.ok) { wrap.innerHTML = '<p class="meta-note">取得失敗: ' + esc((r && r.error) || 'unknown') + '</p>'; return; }
+      if (!r.targets.length) { wrap.innerHTML = '<p class="meta-note">配信候補がありません（掲載中・画像あり・SNS許可の掲示物が0件）</p>'; return; }
+      wrap.innerHTML = r.targets.map(t => `
+        <label class="field-check" style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--c-line);">
+          <input type="checkbox" data-ffsns-target="${esc(t.id)}" ${t.excluded ? '' : 'checked'}>
+          <img src="${esc(t.imageUrl)}" alt="" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px;">
+          <span style="font-size: 0.85rem;">${esc(t.title)}</span>
+        </label>`).join('');
+      state.ffsnsTargetsLoaded = true;
+    } catch (err) {
+      wrap.innerHTML = '<p class="meta-note">通信エラー: ' + esc(err.message) + '</p>';
+    }
+  }
+
+  async function saveFreefreeSnsConfig() {
+    const btn = $('ffsns-save');
+    btn.disabled = true;
+    try {
+      const r = await gasCall({ action: 'saveFreefreeSnsConfig', password: state.password, config: ffsnsReadForm() });
+      if (r && r.ok) {
+        state.ffsnsConfig = r.config || {};
+        ffsnsFillForm(state.ffsnsConfig);
+        toast('FreeFree配信設定を保存しました', 'ok');
+      } else {
+        toast('保存に失敗: ' + ((r && r.error) || 'unknown'), 'err');
+      }
+    } catch (err) {
+      toast('通信エラー: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function previewFreefreeSns() {
+    const wrap = $('ffsns-preview-wrap');
+    const pre = $('ffsns-preview-text');
+    const img = $('ffsns-preview-image');
+    wrap.hidden = false;
+    pre.textContent = '取得中…';
+    img.style.display = 'none';
+    try {
+      const r = await gasCall({ action: 'previewFreefreeSnsPost', password: state.password });
+      if (r && r.ok) {
+        if (r.empty) {
+          pre.textContent = r.message || '配信対象がありません';
+        } else {
+          pre.textContent = r.caption || '';
+          if (r.imageUrl) {
+            img.src = r.imageUrl;
+            img.style.display = 'block';
+          }
+        }
+      } else {
+        pre.textContent = 'エラー: ' + ((r && r.error) || 'unknown');
+      }
+    } catch (err) {
+      pre.textContent = '通信エラー: ' + err.message;
     }
   }
 

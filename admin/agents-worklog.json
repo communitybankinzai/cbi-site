@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-07-25",
+          "title": "FreeFree掲示物のInstagram定期自動配信＋公開PRのSNSリンク欄を実装",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs（FreeFree配信設定・ローテーション選定・1時間毎トリガー・テスト投稿関数・配信対象一覧API）",
+            "site/admin/index.html＋admin.js（FreeFree自動配信セクション：有効化/曜日/時刻/ハッシュタグ/対象除外/プレビュー）",
+            "CiDAO: supabase/migrations/20260725150000_freefree_sns_share.sql（本人同意フラグ）",
+            "CiDAO: freefree掲載フォームに「SNSでの紹介を許可する」チェック追加、団体掲載のサーバー側権限チェック漏れ修正",
+            "CiDAO: supabase/migrations/20260725140000_pr_sns_links.sql＋me/pr＋talent/[id]（公開PRのSNSリンク欄）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "Instagramへのテスト実投稿（このゆびとまれ）成功を確認済み。配信は本人同意（sns_share）＋運営除外リストの二段制御。GAS反映時に追記貼り付け事故が1回発生したが全文再貼り付けで復旧。hoursはセッション累計4.9hから記録済み4.4hの差分。session: 472492b7-6951-4eb0-a649-0417b7ab14b9 / output: 485,884 / cost: $419.60"
+        },
+        {
+          "date": "2026-07-25",
           "title": "Webプッシュ通知（PWA）実装＋FreeFree団体投稿の権限緩和",
           "category": "実装",
           "outputs": [

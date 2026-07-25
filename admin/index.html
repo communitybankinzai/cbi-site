@@ -664,6 +664,57 @@
           </div>
         </div>
       </section>
+      <section class="panel" style="margin-top: 16px;">
+        <h2 class="panel-title">🖼 FreeFree自動配信（Instagram）</h2>
+        <p class="meta-note">
+          掲載中（画像あり）のFreeFree掲示物を、設定した曜日・時刻に1件ずつ順番にInstagramへ自動配信します。
+          画像のない掲示物はスキップされます。実投稿は15分毎のキュー処理で行われます。
+        </p>
+
+        <label class="field-check" style="margin: 12px 0;">
+          <input type="checkbox" id="ffsns-enabled">
+          <span>自動配信を有効にする</span>
+        </label>
+
+        <div class="field">
+          <span>配信する曜日</span>
+          <div style="display: flex; gap: 14px; flex-wrap: wrap;" id="ffsns-days">
+            <label class="field-check"><input type="checkbox" value="0"><span>日</span></label>
+            <label class="field-check"><input type="checkbox" value="1"><span>月</span></label>
+            <label class="field-check"><input type="checkbox" value="2"><span>火</span></label>
+            <label class="field-check"><input type="checkbox" value="3"><span>水</span></label>
+            <label class="field-check"><input type="checkbox" value="4"><span>木</span></label>
+            <label class="field-check"><input type="checkbox" value="5"><span>金</span></label>
+            <label class="field-check"><input type="checkbox" value="6"><span>土</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <span>配信時刻</span>
+          <select id="ffsns-hour"></select>
+        </div>
+
+        <div class="field">
+          <span>ハッシュタグ（投稿末尾に付きます）</span>
+          <input type="text" id="ffsns-hashtags" placeholder="#印西 #FreeFree #CiDAO #このゆびとまれ">
+        </div>
+
+        <div class="field">
+          <span>配信対象の掲示物（チェックを外して保存すると配信されません。掲載者がSNS紹介を許可した掲示物のみ表示）</span>
+          <div id="ffsns-targets"><p class="meta-note">「自動投稿」タブを開くと読み込まれます…</p></div>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;">
+          <button type="button" class="btn btn-primary" id="ffsns-save">設定を保存</button>
+          <button type="button" class="btn btn-ghost" id="ffsns-preview">次回投稿プレビュー</button>
+        </div>
+
+        <div class="field" style="margin-top: 14px;" id="ffsns-preview-wrap" hidden>
+          <span>次に配信される掲示物（この内容で投稿されます）</span>
+          <pre id="ffsns-preview-text" style="white-space: pre-wrap; background: var(--c-bg-alt); border: 1px solid var(--c-line); border-radius: var(--radius); padding: 12px; font-family: var(--font-sans); font-size: 0.9rem;"></pre>
+          <img id="ffsns-preview-image" src="" alt="" style="max-width: 240px; border-radius: 8px; margin-top: 8px; display: none;">
+        </div>
+      </section>
     </div><!-- /tab-sns -->
 
     <!-- ===== タブ: 不具合レポート ===== -->
