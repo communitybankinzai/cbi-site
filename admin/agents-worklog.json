@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-07-25",
+          "title": "トップに登録者数・団体数の実数表示＋団体一覧の200件上限不具合を修正",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: src/app/page.tsx（メンバー数=システムアカウント除外6名・公開団体数225を実数表示、団体一覧・メンバー一覧への導線明示、NavCardを「団体一覧・検索」に改名）",
+            "CiDAO: src/app/orgs/page.tsx（取得上限200→500。225団体のうち19件が一覧に出ない不具合の修正）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "登録者数の可視化は代表要望。少人数のうちは逆効果リスクがある旨は過去メモ（cidao-member-tier-visibility）通り伝えた上で実装。hoursはセッション累計5.0hから記録済み4.9hの差分。session: 472492b7-6951-4eb0-a649-0417b7ab14b9 / output: 496,141 / cost: $435.79"
+        },
+        {
+          "date": "2026-07-25",
           "title": "FreeFree掲示物のInstagram定期自動配信＋公開PRのSNSリンク欄を実装",
           "category": "実装",
           "outputs": [
