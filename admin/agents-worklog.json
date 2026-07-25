@@ -18,6 +18,25 @@
       "actuals": [
         {
           "date": "2026-07-25",
+          "title": "コメントUX改善一式（字数制限撤廃・ポイント履歴・管理者削除・返信いいね・ホームボタン）＋uniqueness街活性室記述削除",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: supabase/migrations/20260725110000_award_on_comment_length.sql（ポイント付与を字数条件付きに変更、投稿自体は何字でも可）",
+            "CiDAO: src/app/me/page.tsx（ポイント履歴一覧セクション新設）",
+            "CiDAO: src/lib/contribution-summary.ts（event_submitted=イベント情報提供ラベル追加）",
+            "CiDAO: src/app/proposals/actions.ts（deleteComment追加・字数下限撤廃）",
+            "CiDAO: src/app/proposals/[id]/page.tsx／CommentSection.tsx（管理者🗑削除ボタン・全コメントいいね対応）",
+            "CiDAO: src/components/HomeButton.tsx＋layout.tsx（全ページ左上に🏠ホームボタン）",
+            "CiDAO: src/app/me/edit（街活性室への情報連携同意チェックボックス削除）",
+            "site/uniqueness/index.html（「連携の方向性」セクション削除）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "代表新井氏のフィードバック（いいね連打・返信いいね・ホームボタン）と、街活性室連携不成立に伴う記述整理への対応。プロフィール編集の連携同意も撤去。hoursはセッション累計3.8hから記録済み3.3hの差分。session: 472492b7-6951-4eb0-a649-0417b7ab14b9 / output: 383,792 / cost: $255.55"
+        },
+        {
+          "date": "2026-07-25",
           "title": "いいね連打の不具合修正（1人1回トグル化）＋返信・いいねのアプリ内通知追加",
           "category": "実装",
           "outputs": [
