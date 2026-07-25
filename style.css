@@ -19,8 +19,9 @@
   --c-ink-sub:     #4a5663;
   --c-line:        #e0d9c6;
 
-  --font-serif: "Noto Serif JP", "Yu Mincho", serif;
-  --font-sans:  "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+  /* 2026-07-25 柔らかい印象に統一（明朝＋角ゴシック → 丸ゴシック） */
+  --font-serif: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  --font-sans:  "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif;
 
   --radius: 12px;
   --shadow-sm: 0 2px 6px rgba(20, 40, 63, 0.06);
@@ -380,6 +381,13 @@ h1, h2, h3 {
   font-size: 18px;
   margin: 0 0 12px;
 }
+/* CBIが目指す3つのこと（番号バッジ＋アクセント色） */
+.card-icon.goal-1 { background: #3a8f4f; color: #fff; }
+.card-icon.goal-2 { background: #ef8a2b; color: #fff; }
+.card-icon.goal-3 { background: #3d7bbf; color: #fff; }
+.card h3 .goal-label-1 { color: #2e7d43; }
+.card h3 .goal-label-2 { color: #e07b1a; }
+.card h3 .goal-label-3 { color: #2f6cad; }
 .card p {
   font-size: 14px;
   color: var(--c-ink-sub);
