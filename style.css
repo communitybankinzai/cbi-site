@@ -790,14 +790,37 @@ h1, h2, h3 {
   pointer-events: none;
   z-index: 2;
 }
-/* 空の色（0%=午前0時 → 25%=6時 → 50%=正午 → 75%=18時 → 100%=24時） */
-.hero-deco::before {
-  content: '';
+/* 空の色（0%=午前0時 → 25%=6時 → 50%=正午 → 75%=18時 → 100%=24時）
+   固定色レイヤーの opacity クロスフェード＝再ペイント無しの最軽量方式 */
+.sky-layer {
   position: absolute;
   inset: 0;
-  background-color: rgba(14, 18, 48, 0.55);
-  animation: skyCycle 180s linear infinite;
-  animation-delay: var(--sky-delay, 0s);
+  opacity: 0;
+  pointer-events: none;
+}
+.sky-night { background-color: rgba(14, 18, 48, 0.55);   animation: skyNight 180s linear infinite; animation-delay: var(--sky-delay, 0s); }
+.sky-dawn  { background-color: rgba(255, 138, 76, 0.26); animation: skyDawn 180s linear infinite;  animation-delay: var(--sky-delay, 0s); }
+.sky-day   { background-color: rgba(150, 200, 255, 0.08);animation: skyDay 180s linear infinite;   animation-delay: var(--sky-delay, 0s); }
+.sky-dusk  { background-color: rgba(255, 104, 66, 0.28); animation: skyDusk 180s linear infinite;  animation-delay: var(--sky-delay, 0s); }
+@keyframes skyNight {
+  0%, 20%   { opacity: 1; }
+  28%, 82%  { opacity: 0; }
+  90%, 100% { opacity: 1; }
+}
+@keyframes skyDawn {
+  0%, 20%  { opacity: 0; }
+  27%      { opacity: 1; }
+  35%, 100%{ opacity: 0; }
+}
+@keyframes skyDay {
+  0%, 30%  { opacity: 0; }
+  40%, 62% { opacity: 1; }
+  73%, 100%{ opacity: 0; }
+}
+@keyframes skyDusk {
+  0%, 66%  { opacity: 0; }
+  75%      { opacity: 1; }
+  85%, 100%{ opacity: 0; }
 }
 /* 夜だけ現れる星 */
 .hero-deco::after {
@@ -900,17 +923,6 @@ h1, h2, h3 {
   26%, 76%  { opacity: 0; }
   81%, 100% { opacity: 1; }
 }
-@keyframes skyCycle {
-  0%   { background-color: rgba(14, 18, 48, 0.55); }    /* 午前0時 夜 */
-  20%  { background-color: rgba(30, 32, 72, 0.45); }    /* 4:48 未明 */
-  27%  { background-color: rgba(255, 138, 76, 0.26); }  /* 6:29 朝焼け */
-  35%  { background-color: rgba(160, 205, 255, 0.10); } /* 8:24 午前 */
-  50%  { background-color: rgba(150, 200, 255, 0.07); } /* 正午 */
-  68%  { background-color: rgba(255, 168, 84, 0.16); }  /* 16:19 午後 */
-  75%  { background-color: rgba(255, 104, 66, 0.28); }  /* 18:00 夕焼け */
-  85%  { background-color: rgba(14, 18, 48, 0.55); }    /* 20:24 夜 */
-  100% { background-color: rgba(14, 18, 48, 0.55); }    /* 24時 */
-}
 /* 正午：太陽がロゴの真後ろに来た瞬間、CBIロゴがふわっと光る */
 .hero-logo {
   animation: logoFlash 180s linear infinite;
@@ -978,7 +990,7 @@ h1, h2, h3 {
   .hero-cta .btn-primary,
   .card-icon,
   .hero-logo { animation: none; }
-  .hero-deco::before { animation: none; background-color: transparent; }
+  .sky-layer { animation: none; opacity: 0; }
   .hero-deco::after,
   .hero-sun,
   .hero-moon,
