@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-07-26",
+      "type": "feature",
+      "target": "CiDAO: me/actions.ts ／ commit 169cd24",
+      "title": "🔔 本登録完了の瞬間に「一覧掲載には公開PR作成が必要」の通知が届くようになった",
+      "detail": "登録確認メールが存在しない（LINEログイン一本化）ため、本登録完了（light→email_only昇格）の瞬間に公開PR未作成の場合のみ、ベル通知＋Webプッシュで公開PR作成（/me/pr）を案内。保存直後のマイページバナーと合わせ、メールを持たないLINEユーザーにも案内が届く二重の導線になった。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-07-26",
       "type": "fix",
       "target": "CiDAO: /me（マイページ） ／ commit 2e89dcb",
       "title": "📣 本登録の保存直後に「一覧掲載には公開PRの作成が必要」の案内が出るようになった",

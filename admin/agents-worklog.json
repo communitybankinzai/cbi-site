@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "本登録完了時のPR作成案内をベル通知＋Webプッシュで実装",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: src/app/me/actions.ts（light→email_only昇格時、PR未作成なら/me/prへの案内通知を送信）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "当初依頼は「登録確認メールへの案内追記」だったが、LINEログイン一本化により確認メール自体が存在しないことを調査で確認し、3択提示のうえベル通知＋Webプッシュ案で合意。tsc・next build通過、commit 169cd24をpush。hoursはセッション累計0.4hから記録済み0.4hの差分を切り上げ。session: 2143d120-f210-4b65-8a23-6db568118d08 / output: 44,288 / cost: $14.83"
+        },
+        {
+          "date": "2026-07-26",
           "title": "「登録したのに一覧に載らない」問い合わせ調査＋PR作成案内バナー実装",
           "category": "実装",
           "outputs": [
