@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：太陽の均一放射化＋正午のロゴフラッシュ演出",
+          "category": "実装",
+          "outputs": [
+            "site/style.css（筋状光線を二重radial-gradientの均一グローに置換、logoFlash追加、モバイル用頂点調整）",
+            "site/script.js（logoFlashを位相同期対象に追加）",
+            "site/index.html（キャッシュバスター v=20260726c）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "「境界線が強い・筋を消して均一に」「最頂点でロゴと重ねてフラッシュ」の2要望対応。正午シミュレーションで重なり誤差PC14px/スマホ2px、フラッシュ発光を実測確認。hoursはセッション累計1.7hから記録済み1.5hの差分。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 166,995 / cost: $90.65"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：月の黒縁完全除去＋太陽光線強化＋キャッシュバスター",
           "category": "実装",
           "outputs": [
