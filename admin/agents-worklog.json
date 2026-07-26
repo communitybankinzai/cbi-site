@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：CiDAOツールチップ説明＋スクロール演出（動きのあるサイト化）",
+          "category": "実装",
+          "outputs": [
+            "site/index.html（「CiDAOとは？」ツールチップ2箇所、ナビ・フッターに title 属性説明）",
+            "site/style.css（ツールチップ、スクロール出現、ヒーローズーム、reduced-motion対応）",
+            "site/script.js（IntersectionObserver出現制御＋3秒全表示保険、人材バンク数カウントアップ）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "「いきなりCiDAOと出て分からない」「文字は減らしたい」「動きが欲しい」の3要望対応。ツールチップのvisibility:hiddenが横スクロールを発生させる問題を検出しdisplay:none方式へ修正、375px幅で解消確認。hoursはセッション累計0.5hから記録済み0.2hの差分。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 52,111 / cost: $17.33"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CiDAO 初回訪問者UX改善（ホーム・ログイン画面の導線・文言）",
           "category": "実装",
           "outputs": [
