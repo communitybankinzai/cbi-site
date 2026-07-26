@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：放射の縁の完全除去＋ロゴフラッシュ強化",
+          "category": "実装",
+          "outputs": [
+            "site/style.css（7段減衰＋blur 2px/12px、logoFlash輝度2.6倍・scale 1.07）",
+            "site/index.html（キャッシュバスター v=20260726d）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "「境界がはっきりし過ぎ」「フラッシュは極端に強くて良い」に対応。フラッシュ極大点のシミュレーションでbrightness 2.6・scale 1.07適用を実測確認。hoursはセッション累計1.7hから記録済み1.7hの差分を0.1h計上。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 174,674 / cost: $100.87"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CiDAOチラシAI抽出のHTTP 500障害対応（フェイルソフト化＋reason別案内表示）",
           "category": "実装",
           "outputs": "cidao: src/app/api/events/scan/route.ts, src/app/events/new/_components/ImageScanField.tsx（commit b271ba3, main push→Vercelデプロイ）",
