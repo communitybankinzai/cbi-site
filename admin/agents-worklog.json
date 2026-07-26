@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：会員比較表を実仕様ベースの記述に修正",
+          "category": "実装",
+          "outputs": [
+            "site/index.html（比較表の方法・できる事セルを全面書き換え）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "「内容は適当なので事実に基づいて」の指示に対応。CiDAOコードのtier制限（light=提案作成/団体応募/コンタクト不可）を確認して記述、3ステップカードとの対応も一致させた。hoursはセッション累計1.3hから記録済み1.2hの差分。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 123,550 / cost: $57.96"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：会員比較表＋太陽の放射光線修正＋NASA月写真差し替え",
           "category": "実装",
           "outputs": [
