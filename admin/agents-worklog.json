@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：会員比較表＋太陽の放射光線修正＋NASA月写真差し替え",
+          "category": "実装",
+          "outputs": [
+            "site/index.html（会員種別と、できる事の違いの比較表）",
+            "site/style.css（表スタイル、太陽の放射光線レイヤー、月の写真化）",
+            "site/assets/moon.jpg（NASA LRO満月写真、パブリックドメイン、11KB）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "会長提供の表案を掲載、「太陽が不自然」指摘に放射光線で対応、月写真はNASA画像APIから取得（3択確認済み）。表の内部スクロール・光線/月写真の適用・ページはみ出しなしを375px/1280pxで実測確認。hoursはセッション累計1.2hから記録済み1.0hの差分。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 114,281 / cost: $50.26"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：空の実時刻連動＋夜の月と星を追加",
           "category": "実装",
           "outputs": [
