@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "ログイン画面の整理（ボタン先頭配置＋説明の折りたたみ化）＋持ち越しタスクの完了状況確認",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: src/app/login/page.tsx（LINEでログインボタンを説明より上へ、説明2ブロックをdetails開閉式に）",
+            "確認: 声がけ受信箱(/me/inbox)・GAS新バージョンデプロイは並行セッションで完了済みを裏取り"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "devサーバーの/loginが404になる事象は.nextキャッシュ削除で解消。hoursはセッション累計5.3hから記録済み5.2hの差分。session: 472492b7-6951-4eb0-a649-0417b7ab14b9 / output: 533,281 / cost: $575.11"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：CiDAOツールチップ説明＋スクロール演出（動きのあるサイト化）",
           "category": "実装",
           "outputs": [
