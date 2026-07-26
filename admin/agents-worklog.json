@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：空の実時刻連動＋夜の月と星を追加",
+          "category": "実装",
+          "outputs": [
+            "site/style.css（1日=180秒・実時間配分のkeyframes再設計、月の実装）",
+            "site/script.js（実時刻→位相変換を--sky-delayで全レイヤー同期）",
+            "site/index.html（hero-moon要素追加）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "「開く時間で太陽の位置が変わると面白い。夜は星と月？」に対応。方式は3択提示で「実時刻スタート＋ゆっくり周回」を選択いただき実装。17:14実測で夕焼け・西の低い太陽を再現、0時シミュレーションで月南中・星・濃紺空を確認。hoursはセッション累計1.0hから記録済み0.8hの差分。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 96,875 / cost: $39.70"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：ヒーロー太陽日周アニメーション＋カレンダーボタン改行修正",
           "category": "実装",
           "outputs": [
