@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "「登録したのに一覧に載らない」問い合わせ調査＋PR作成案内バナー実装",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: src/app/me/page.tsx（本登録保存直後・PR未作成時のみ「公開PRを作成する」導線バナー表示）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "らいさんからの問い合わせ。DB照会でmembers登録済み・member_profiles_pr未作成が原因（仕様どおり）と特定し、案内で回答。再発防止としてバナーを実装。tsc・next build通過、commit 2e89dcbをpush。hoursはセッション累計0.4hから記録済み0.3hの差分。session: 2143d120-f210-4b65-8a23-6db568118d08 / output: 37,573 / cost: $11.60"
+        },
+        {
+          "date": "2026-07-26",
           "title": "届いた声がけ受信箱（/me/inbox）＋アプリ内返信機能の実装（タスク#13）",
           "category": "実装",
           "outputs": [
