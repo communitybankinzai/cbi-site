@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CiDAOチラシAI抽出のHTTP 500障害対応（フェイルソフト化＋reason別案内表示）",
+          "category": "実装",
+          "outputs": "cidao: src/app/api/events/scan/route.ts, src/app/events/new/_components/ImageScanField.tsx（commit b271ba3, main push→Vercelデプロイ）",
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "Anthropic APIクレジット枯渇でAI抽出が500になりイベント登録を阻害していた問題。AI呼び出しをtry/catch分離しHTTP 200+{ok:false,reason}に変更（quota/config/busy/too_large/parse/unknown分類）、Storage保存・AI抽出・DB保存を独立化、市民向けにはグレー地お知らせ表示で手入力誘導。認証付きAPIテストでconfig/too_large両パスと画像アップロード独立性を確認済み。ブラウザUI目視はLINE認証のため未実施（ユーザー確認依頼中）。session: 55f6d859-3377-4c23-b264-4b33ea939bb7 / output: 45,360 / cost: $24.02"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：太陽の均一放射化＋正午のロゴフラッシュ演出",
           "category": "実装",
           "outputs": [
