@@ -863,9 +863,6 @@ h1, h2, h3 {
   margin-left: -70px;
   border-radius: 50%;
   background: url('assets/moon.png?v=4') center / cover no-repeat;
-  box-shadow:
-    0 0 26px 8px rgba(215, 228, 255, 0.55),
-    0 0 80px 30px rgba(170, 195, 255, 0.25);
   left: 50%;
   bottom: 58%;
   opacity: 0;
