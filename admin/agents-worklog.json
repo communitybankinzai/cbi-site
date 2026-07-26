@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "参加導線の改善一式（JOIN3ステップ化・CTA直リンク・掲載数カウント修正・SNS予約サムネイル）",
+          "category": "実装",
+          "outputs": [
+            "site/index.html（参加方法を①登録②PR公開③活動参加の3ステップカードに再構成）",
+            "site/uniqueness/index.html（CTA「登録フォームへ」→CiDAO登録直リンク、「参加方法を見る」併設）",
+            "CiDAO: src/app/api/talent-bank/stats/route.ts（人材バンク掲載数がRLSで1名に見えていた不具合をservice_role集計で修正、実数2名）",
+            "site/admin/admin.js（SNS予約投稿一覧に本文全文＋画像サムネイル表示）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "代表・会計両氏のUXフィードバック対応第3弾。hoursはセッション累計5.2hから記録済み5.0hの差分。session: 472492b7-6951-4eb0-a649-0417b7ab14b9 / output: 519,485 / cost: $532.21"
+        },
+        {
+          "date": "2026-07-26",
           "title": "ホーム画面追加（PWA）の案内ページ /install 新設＋トップ・マイページ導線",
           "category": "実装",
           "outputs": [
