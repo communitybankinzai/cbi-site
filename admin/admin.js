@@ -365,8 +365,8 @@ const UNREAD_POLL_MS = 30000;
             <span style="font-size: 0.75rem;">${esc(SNSQ_STATUS_LABEL[q.status] || q.status)}
               ${q.threads ? ' / Threads' : ''}${q.instagram ? ' / Instagram' : ''}</span>
           </div>
-          <p style="font-size: 0.8rem; white-space: pre-wrap; margin: 6px 0; color: var(--c-ink-sub);">${esc(q.text.slice(0, 120))}${q.text.length > 120 ? '…' : ''}</p>
-          ${q.imageUrl ? `<p style="font-size: 0.7rem; color: var(--c-ink-sub); word-break: break-all;">🖼 ${esc(q.imageUrl)}</p>` : ''}
+          <p style="font-size: 0.8rem; white-space: pre-wrap; margin: 6px 0; color: var(--c-ink-sub);">${esc(q.text)}</p>
+          ${q.imageUrl ? `<a href="${esc(q.imageUrl)}" target="_blank" rel="noopener"><img src="${esc(q.imageUrl)}" alt="投稿画像" style="max-width: 160px; max-height: 160px; border-radius: 8px; margin: 4px 0; border: 1px solid var(--c-line);"></a>` : ''}
           ${q.note ? `<p style="font-size: 0.7rem; color: var(--c-ink-sub);">${esc(q.note)}</p>` : ''}
           ${q.status === 'scheduled' ? `<button type="button" class="btn btn-ghost btn-sm" data-snsq-cancel="${esc(q.id)}">取消</button>` : ''}
         </div>`).join('');
