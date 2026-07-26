@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：空色レイヤーの描画抜け（右下の四角）修正",
+          "category": "保守",
+          "outputs": [
+            "site/style.css（skyCycle廃止、固定色4レイヤーのopacityクロスフェード）",
+            "site/index.html（sky-layer 4枚追加、v=20260726i）",
+            "site/script.js（同期対象アニメ名を更新）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "iPhone実機スクショ（23:34・右下の薄い矩形）対応。全面再ペイントの根絶。深夜/正午/夕方の各位相でレイヤー表示を実測確認。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 218,380 / cost: $131.91"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：フラッシュ起因のGPUクラッシュ修正（filter全廃・opacityレイヤー化）",
           "category": "保守",
           "outputs": [
