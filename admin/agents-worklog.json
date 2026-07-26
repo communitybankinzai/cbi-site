@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "ホーム画面追加（PWA）の案内ページ /install 新設＋トップ・マイページ導線",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: src/app/install/page.tsx（iPhone/Android別手順・端末自動判定・LINE内ブラウザ警告・standalone検出）",
+            "CiDAO: src/app/page.tsx（トップに導線カード）",
+            "CiDAO: src/app/me/page.tsx（プッシュ通知設定下に導線）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "「アプリとして利用するためのホーム画面登録要領はあるか」の問いに対し、PWA実装済み・案内はPushToggle内の1行のみと調査回答→専用ページ案で合意し実装。tsc・next build通過、commit 3ddfca6をpush。hoursはセッション累計0.5hから記録済み0.4hの差分。session: 2143d120-f210-4b65-8a23-6db568118d08 / output: 54,289 / cost: $20.39"
+        },
+        {
+          "date": "2026-07-26",
           "title": "本登録完了時のPR作成案内をベル通知＋Webプッシュで実装",
           "category": "実装",
           "outputs": [

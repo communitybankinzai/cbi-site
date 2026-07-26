@@ -5,6 +5,14 @@
     {
       "date": "2026-07-26",
       "type": "feature",
+      "target": "CiDAO: /install ／ commit 3ddfca6",
+      "title": "📲 スマホのホーム画面に追加してアプリとして使う手順ページ（/install）ができた",
+      "detail": "アプリストア不要でCiDAOをアプリとして使える「ホーム画面に追加」（PWA）の手順を、iPhone（Safari）・Android（Chrome）別にステップ形式で案内する専用ページを新設。端末を自動判定して該当手順を先頭に表示し、LINE内ブラウザで開いた場合は外部ブラウザで開き直す導線を表示。トップページとマイページから遷移できる。LINEでURLを共有してメンバーへの周知にも使える。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-07-26",
+      "type": "feature",
       "target": "CiDAO: me/actions.ts ／ commit 169cd24",
       "title": "🔔 本登録完了の瞬間に「一覧掲載には公開PR作成が必要」の通知が届くようになった",
       "detail": "登録確認メールが存在しない（LINEログイン一本化）ため、本登録完了（light→email_only昇格）の瞬間に公開PR未作成の場合のみ、ベル通知＋Webプッシュで公開PR作成（/me/pr）を案内。保存直後のマイページバナーと合わせ、メールを持たないLINEユーザーにも案内が届く二重の導線になった。",
