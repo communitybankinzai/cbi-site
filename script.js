@@ -43,7 +43,7 @@
     );
     // iOS Safari では CSS 変数経由の負ディレイが効かないことがあるため、
     // Web Animations API でアニメーションの現在位置を直接そろえる（擬似要素分も取れる）
-    const SKY_ANIMS = ['sunArc', 'sunGlow', 'moonArc', 'moonGlow', 'skyCycle', 'starsCycle'];
+    const SKY_ANIMS = ['sunArc', 'sunGlow', 'moonArc', 'moonGlow', 'skyCycle', 'starsCycle', 'logoFlash'];
     const syncSky = () => {
       if (typeof document.getAnimations !== 'function') return;
       document.getAnimations().forEach((a) => {
