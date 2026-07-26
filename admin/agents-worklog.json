@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：月の黒縁完全除去＋太陽光線強化＋キャッシュバスター",
+          "category": "実装",
+          "outputs": [
+            "site/assets/moon.png（内側マスクで再生成、黒縁画素ゼロを機械検証）",
+            "site/style.css（光線強化、moon.png?v=2）",
+            "site/index.html（style.css/script.jsに?v=20260726b付与）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "iPhone実機スクショ（17:59・月の黒縁残存）に基づく対応。黒縁はalpha>200かつ輝度<40の画素数0で検証。位相ズレはキャッシュ起因の可能性が高くバージョンクエリで対策。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 156,559 / cost: $77.71"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：太陽白基調化＋月の透過PNG化＋iOS時刻位相ズレ修正",
           "category": "実装",
           "outputs": [
