@@ -30,6 +30,19 @@
 
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // ヒーローの空を「開いた実時刻」の位相から始める（1日=180秒の周回）
+  // CSS 側の keyframes は 0%=午前0時 → 50%=正午 の実時間配分なので、
+  // 現在時刻の1日進捗ぶんだけアニメーションを負のディレイで先送りする
+  {
+    const now = new Date();
+    const dayProgress =
+      (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 86400;
+    document.documentElement.style.setProperty(
+      '--sky-delay',
+      `-${(dayProgress * 180).toFixed(1)}s`
+    );
+  }
+
   // 数字をふわっとカウントアップ（reduced-motion 時は即時表示）
   const animateCount = (el, to, duration = 900) => {
     if (prefersReduced || to <= 0) { el.textContent = String(to); return; }
