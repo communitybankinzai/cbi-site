@@ -34,25 +34,32 @@
   // CSS 側の keyframes は 0%=午前0時 → 50%=正午 の実時間配分なので、
   // 現在時刻の1日進捗ぶんだけアニメーションを先送りする
   {
-    const now = new Date();
-    const dayProgress =
-      (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 86400;
+    const dayProgressNow = () => {
+      const now = new Date();
+      return (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 86400;
+    };
     document.documentElement.style.setProperty(
       '--sky-delay',
-      `-${(dayProgress * 180).toFixed(1)}s`
+      `-${(dayProgressNow() * 180).toFixed(1)}s`
     );
     // iOS Safari では CSS 変数経由の負ディレイが効かないことがあるため、
     // Web Animations API でアニメーションの現在位置を直接そろえる（擬似要素分も取れる）
-    const SKY_ANIMS = ['sunArc', 'sunGlow', 'moonArc', 'moonGlow', 'skyCycle', 'starsCycle', 'logoFlash'];
+    const SKY_ANIMS = ['sunArc', 'sunGlow', 'moonArc', 'moonGlow', 'skyCycle', 'starsCycle', 'logoFlash', 'logoBurstSun', 'logoBurstMoon'];
     const syncSky = () => {
       if (typeof document.getAnimations !== 'function') return;
+      // 同期のたびに時刻を取り直す（固定値を使うと load 時の再同期で位相が巻き戻る）
+      const tSec = dayProgressNow() * 180;
       document.getAnimations().forEach((a) => {
         if (a.animationName && SKY_ANIMS.includes(a.animationName)) {
-          a.currentTime = dayProgress * 180 * 1000;
+          // currentTime は delay 込みのタイムライン位置：
+          // 実効位相 = currentTime - delay。delay が効いている環境（負値）と
+          // 効いていない環境（0）のどちらでも位相 tSec になるよう逆算する
+          const dSec = ((a.effect && a.effect.getTiming().delay) || 0) / 1000;
+          const ctSec = ((tSec + dSec) % 180 + 180) % 180;
+          a.currentTime = ctSec * 1000;
         }
       });
     };
-    // 読み込み直後とロード完了後の両方で同期（アニメ生成タイミング差への保険）
     syncSky();
     window.addEventListener('load', syncSky);
   }

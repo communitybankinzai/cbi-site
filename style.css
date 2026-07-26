@@ -832,7 +832,6 @@ h1, h2, h3 {
     rgba(255, 247, 216, 0.08) 78%,
     rgba(255, 247, 216, 0.03) 90%,
     rgba(255, 247, 216, 0) 100%);
-  filter: blur(2px);
   left: -10%;
   bottom: -14%;
   opacity: 0;
@@ -846,14 +845,15 @@ h1, h2, h3 {
   inset: -130px;
   border-radius: 50%;
   background: radial-gradient(circle,
-    rgba(255, 250, 228, 0.42) 0%,
-    rgba(255, 250, 228, 0.26) 22%,
-    rgba(255, 250, 228, 0.15) 38%,
-    rgba(255, 250, 228, 0.08) 52%,
-    rgba(255, 250, 228, 0.04) 66%,
-    rgba(255, 250, 228, 0.015) 80%,
+    rgba(255, 250, 228, 0.40) 0%,
+    rgba(255, 250, 228, 0.30) 14%,
+    rgba(255, 250, 228, 0.21) 27%,
+    rgba(255, 250, 228, 0.14) 39%,
+    rgba(255, 250, 228, 0.09) 51%,
+    rgba(255, 250, 228, 0.055) 62%,
+    rgba(255, 250, 228, 0.03) 73%,
+    rgba(255, 250, 228, 0.012) 84%,
     rgba(255, 250, 228, 0) 96%);
-  filter: blur(12px);
 }
 /* 月本体：NASA LRO の満月写真（パブリックドメイン・背景透過PNG） */
 .hero-moon {
@@ -917,17 +917,56 @@ h1, h2, h3 {
   animation-delay: var(--sky-delay, 0s);
 }
 @keyframes logoFlash {
-  /* 午前0時：月と重なって青白くフラッシュ（0%/100%はループ連続のため同値） */
-  0%        { filter: brightness(2.1) drop-shadow(0 0 34px rgba(214, 228, 255, 0.95)) drop-shadow(0 0 90px rgba(190, 210, 255, 0.75)); transform: scale(1.05); }
-  1.5%      { filter: brightness(2.5) drop-shadow(0 0 40px rgba(214, 228, 255, 1)) drop-shadow(0 0 110px rgba(190, 210, 255, 0.85)); transform: scale(1.07); }
+  /* 光の広がりは .logo-burst レイヤー（opacityのみ）が担当。ここは明るさと拡大だけ */
+  0%        { filter: brightness(2.1); transform: scale(1.05); }
+  1.5%      { filter: brightness(2.5); transform: scale(1.07); }
   3.5%, 46.5% { filter: none; transform: scale(1); }
-  /* 正午：太陽と重なって金色にフラッシュ */
-  48.5%     { filter: brightness(2.6) drop-shadow(0 0 40px rgba(255, 252, 230, 1)) drop-shadow(0 0 110px rgba(255, 248, 210, 0.9)); transform: scale(1.07); }
-  50%       { filter: brightness(1.9) drop-shadow(0 0 30px rgba(255, 252, 230, 0.95)) drop-shadow(0 0 80px rgba(255, 248, 210, 0.7)); transform: scale(1.04); }
-  51.5%     { filter: brightness(2.6) drop-shadow(0 0 40px rgba(255, 252, 230, 1)) drop-shadow(0 0 110px rgba(255, 248, 210, 0.9)); transform: scale(1.07); }
+  48.5%     { filter: brightness(2.6); transform: scale(1.07); }
+  50%       { filter: brightness(1.9); transform: scale(1.04); }
+  51.5%     { filter: brightness(2.6); transform: scale(1.07); }
   53.5%, 96.5% { filter: none; transform: scale(1); }
-  98.5%     { filter: brightness(2.5) drop-shadow(0 0 40px rgba(214, 228, 255, 1)) drop-shadow(0 0 110px rgba(190, 210, 255, 0.85)); transform: scale(1.07); }
-  100%      { filter: brightness(2.1) drop-shadow(0 0 34px rgba(214, 228, 255, 0.95)) drop-shadow(0 0 90px rgba(190, 210, 255, 0.75)); transform: scale(1.05); }
+  98.5%     { filter: brightness(2.5); transform: scale(1.07); }
+  100%      { filter: brightness(2.1); transform: scale(1.05); }
+}
+/* ロゴ背後で広がる光（opacityアニメのみ＝GPU負荷が極小） */
+.logo-burst {
+  position: absolute;
+  left: 50%;
+  bottom: calc(72% - 126px);
+  width: 340px;
+  height: 340px;
+  margin-left: -170px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+.logo-burst-sun {
+  background: radial-gradient(circle,
+    rgba(255, 250, 220, 0.95) 0%, rgba(255, 246, 200, 0.5) 30%,
+    rgba(255, 246, 200, 0.18) 50%, rgba(255, 246, 200, 0) 72%);
+  animation: logoBurstSun 180s linear infinite;
+  animation-delay: var(--sky-delay, 0s);
+}
+.logo-burst-moon {
+  background: radial-gradient(circle,
+    rgba(220, 232, 255, 0.95) 0%, rgba(196, 214, 255, 0.5) 30%,
+    rgba(196, 214, 255, 0.18) 50%, rgba(196, 214, 255, 0) 72%);
+  animation: logoBurstMoon 180s linear infinite;
+  animation-delay: var(--sky-delay, 0s);
+}
+@keyframes logoBurstSun {
+  0%, 46.5% { opacity: 0; }
+  48.5%     { opacity: 1; }
+  50%       { opacity: 0.7; }
+  51.5%     { opacity: 1; }
+  53.5%, 100% { opacity: 0; }
+}
+@keyframes logoBurstMoon {
+  0%        { opacity: 0.8; }
+  1.5%      { opacity: 1; }
+  3.5%, 96.5% { opacity: 0; }
+  98.5%     { opacity: 1; }
+  100%      { opacity: 0.8; }
 }
 @keyframes starsCycle {
   0%, 20%   { opacity: 0.9; }
@@ -942,7 +981,8 @@ h1, h2, h3 {
   .hero-deco::before { animation: none; background-color: transparent; }
   .hero-deco::after,
   .hero-sun,
-  .hero-moon { animation: none; opacity: 0; }
+  .hero-moon,
+  .logo-burst { animation: none; opacity: 0; }
 }
 
 /* ---------- 会員種別の比較表 ---------- */
@@ -1023,4 +1063,5 @@ h1, h2, h3 {
     87.5%     { left: 27%;  bottom: 52%; }
     100%      { left: 50%;  bottom: 78%; }
   }
+  .logo-burst { bottom: calc(78% - 126px); }
 }
