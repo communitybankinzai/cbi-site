@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CiDAO 初回訪問者UX改善（ホーム・ログイン画面の導線・文言）",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: src/app/page.tsx（サービス一言説明＋折りたたみ詳細、未ログイン時の2大入口カード、PR未作成者向け3ステップ進捗バナー）",
+            "CiDAO: src/app/login/page.tsx（CiDAOが何のサービスかの説明文を追加）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "サービス説明・2大入口カード・PR未作成者向け3ステップ進捗を追加。tsc/モバイル幅検証済み。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 17,459 / cost: $5.76"
+        },
+        {
+          "date": "2026-07-26",
           "title": "参加導線の改善一式（JOIN3ステップ化・CTA直リンク・掲載数カウント修正・SNS予約サムネイル）",
           "category": "実装",
           "outputs": [
