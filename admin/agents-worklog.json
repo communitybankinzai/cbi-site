@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：太陽白基調化＋月の透過PNG化＋iOS時刻位相ズレ修正",
+          "category": "実装",
+          "outputs": [
+            "site/style.css（太陽の白基調化・赤み廃止、月の透過PNG切替）",
+            "site/assets/moon.png（円形アルファマスク加工、30KB。moon.jpgは削除）",
+            "site/script.js（getAnimationsによる位相直接同期）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "iPhone実機スクショ2枚（月の黒枠・17時台に朝の太陽）に基づく修正。全6アニメのcurrentTime同期を実測確認（位相134s=17:52と一致）。hoursはセッション累計1.4hから記録済み1.3hの差分。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 142,002 / cost: $68.79"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：会員比較表を実仕様ベースの記述に修正",
           "category": "実装",
           "outputs": [
