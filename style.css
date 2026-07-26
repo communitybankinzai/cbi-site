@@ -825,11 +825,14 @@ h1, h2, h3 {
   border-radius: 50%;
   background: radial-gradient(circle,
     #ffffff 0%,
-    #fffef8 18%,
-    rgba(255, 251, 232, 0.92) 32%,
-    rgba(255, 247, 216, 0.55) 50%,
-    rgba(255, 247, 216, 0.22) 72%,
-    transparent 100%);
+    rgba(255, 253, 244, 0.95) 22%,
+    rgba(255, 249, 226, 0.62) 38%,
+    rgba(255, 247, 216, 0.36) 52%,
+    rgba(255, 247, 216, 0.18) 65%,
+    rgba(255, 247, 216, 0.08) 78%,
+    rgba(255, 247, 216, 0.03) 90%,
+    rgba(255, 247, 216, 0) 100%);
+  filter: blur(2px);
   left: -10%;
   bottom: -14%;
   opacity: 0;
@@ -843,10 +846,14 @@ h1, h2, h3 {
   inset: -130px;
   border-radius: 50%;
   background: radial-gradient(circle,
-    rgba(255, 250, 228, 0.50) 0%,
-    rgba(255, 250, 228, 0.26) 32%,
-    rgba(255, 250, 228, 0.10) 56%,
-    rgba(255, 250, 228, 0.0) 78%);
+    rgba(255, 250, 228, 0.42) 0%,
+    rgba(255, 250, 228, 0.26) 22%,
+    rgba(255, 250, 228, 0.15) 38%,
+    rgba(255, 250, 228, 0.08) 52%,
+    rgba(255, 250, 228, 0.04) 66%,
+    rgba(255, 250, 228, 0.015) 80%,
+    rgba(255, 250, 228, 0) 96%);
+  filter: blur(12px);
 }
 /* 月本体：NASA LRO の満月写真（パブリックドメイン・背景透過PNG） */
 .hero-moon {
@@ -913,11 +920,11 @@ h1, h2, h3 {
   animation-delay: var(--sky-delay, 0s);
 }
 @keyframes logoFlash {
-  0%, 47%   { filter: none; }
-  49%       { filter: brightness(1.55) drop-shadow(0 0 26px rgba(255, 250, 215, 0.95)) drop-shadow(0 0 60px rgba(255, 245, 200, 0.55)); }
-  50%       { filter: brightness(1.3) drop-shadow(0 0 20px rgba(255, 250, 215, 0.8)); }
-  51%       { filter: brightness(1.55) drop-shadow(0 0 26px rgba(255, 250, 215, 0.95)) drop-shadow(0 0 60px rgba(255, 245, 200, 0.55)); }
-  53%, 100% { filter: none; }
+  0%, 46.5% { filter: none; transform: scale(1); }
+  48.5%     { filter: brightness(2.6) drop-shadow(0 0 40px rgba(255, 252, 230, 1)) drop-shadow(0 0 110px rgba(255, 248, 210, 0.9)); transform: scale(1.07); }
+  50%       { filter: brightness(1.9) drop-shadow(0 0 30px rgba(255, 252, 230, 0.95)) drop-shadow(0 0 80px rgba(255, 248, 210, 0.7)); transform: scale(1.04); }
+  51.5%     { filter: brightness(2.6) drop-shadow(0 0 40px rgba(255, 252, 230, 1)) drop-shadow(0 0 110px rgba(255, 248, 210, 0.9)); transform: scale(1.07); }
+  53.5%, 100% { filter: none; transform: scale(1); }
 }
 @keyframes starsCycle {
   0%, 20%   { opacity: 0.9; }
