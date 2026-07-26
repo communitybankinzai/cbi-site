@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：フラッシュ起因のGPUクラッシュ修正（filter全廃・opacityレイヤー化）",
+          "category": "保守",
+          "outputs": [
+            "site/style.css（drop-shadow/blur全廃、logo-burst 2レイヤー追加、9段減衰グラデ）",
+            "site/script.js（syncSkyの位相巻き戻りバグ修正）",
+            "site/index.html（burst要素追加、v=20260726h）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "iPhone Chromeのレンダラークラッシュ報告（実機スクショ）対応。位相同期の期待値/実測一致（176s）、0時ピークの発光（brightness2.5・burst opacity1）、全filter=noneを実測確認。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 209,125 / cost: $120.89"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：月の青い輪（光暈）を削除",
           "category": "実装",
           "outputs": [
