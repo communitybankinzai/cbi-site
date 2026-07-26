@@ -782,7 +782,7 @@ h1, h2, h3 {
 .grid-3 > *:nth-child(2) .card-icon { animation-delay: 1.2s; }
 .grid-3 > *:nth-child(3) .card-icon { animation-delay: 2.4s; }
 
-/* ヒーローを漂う光の玉 */
+/* ヒーローの太陽（1日=24秒：左下から昇り→中央で最高点→右下へ沈む） */
 .hero-deco {
   position: absolute;
   inset: 0;
@@ -790,33 +790,84 @@ h1, h2, h3 {
   pointer-events: none;
   z-index: 2;
 }
-.hero-deco::before,
+/* 空の色（未明→朝焼け→昼→夕焼け→夜を太陽と同期で循環） */
+.hero-deco::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(30, 32, 72, 0.45);
+  animation: skyCycle 24s linear infinite;
+}
+/* 夜だけ現れる星 */
 .hero-deco::after {
   content: '';
   position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 12% 22%, rgba(255, 255, 255, 0.95), transparent 60%),
+    radial-gradient(1.6px 1.6px at 28% 12%, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(2px 2px at 45% 28%, rgba(255, 255, 255, 0.9), transparent 60%),
+    radial-gradient(1.4px 1.4px at 62% 10%, rgba(255, 255, 255, 0.75), transparent 60%),
+    radial-gradient(2.2px 2.2px at 78% 20%, rgba(255, 255, 255, 0.95), transparent 60%),
+    radial-gradient(1.6px 1.6px at 90% 32%, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(1.4px 1.4px at 55% 45%, rgba(255, 255, 255, 0.7), transparent 60%);
+  opacity: 0;
+  animation: starsCycle 24s linear infinite;
+}
+/* 太陽本体：中心の白熱＋実際の太陽に近い多層の光暈（グロー放射） */
+.hero-sun {
+  position: absolute;
+  width: 88px;
+  height: 88px;
+  margin-left: -44px; /* left の % 指定を太陽の中心基準にする */
   border-radius: 50%;
-  animation: drift 14s ease-in-out infinite alternate;
+  background: radial-gradient(circle,
+    #fffbe8 0%, #ffe9a8 30%, #ffce5e 52%, rgba(255, 176, 66, 0.85) 66%, transparent 74%);
+  box-shadow:
+    0 0 24px 6px rgba(255, 226, 130, 0.70),
+    0 0 60px 22px rgba(255, 190, 90, 0.45),
+    0 0 140px 60px rgba(255, 170, 70, 0.22);
+  left: -10%;
+  bottom: -14%;
+  opacity: 0;
+  animation: sunArc 24s linear infinite, sunGlow 24s linear infinite;
 }
-.hero-deco::before {
-  width: 180px; height: 180px;
-  background: radial-gradient(circle, rgba(201, 165, 92, 0.35), transparent 70%);
-  top: 18%; left: 8%;
+/* 弧の軌道（中間キーで放物線を近似） */
+@keyframes sunArc {
+  0%, 6%    { left: -4%;  bottom: -14%; }
+  27%       { left: 27%;  bottom: 44%; }
+  46%       { left: 50%;  bottom: 62%; }
+  65%       { left: 73%;  bottom: 44%; }
+  86%, 100% { left: 104%; bottom: -14%; }
 }
-.hero-deco::after {
-  width: 260px; height: 260px;
-  background: radial-gradient(circle, rgba(63, 115, 81, 0.32), transparent 70%);
-  bottom: 10%; right: 6%;
-  animation-duration: 18s;
-  animation-delay: 3s;
+/* 色味：朝夕は赤みを帯び、南中時は白く明るい */
+@keyframes sunGlow {
+  0%, 5%    { opacity: 0; filter: hue-rotate(-28deg) saturate(1.7) brightness(0.9); }
+  12%       { opacity: 1; filter: hue-rotate(-22deg) saturate(1.5) brightness(0.96); }
+  40%, 55%  { opacity: 1; filter: hue-rotate(0deg) saturate(1) brightness(1.08); }
+  78%       { opacity: 1; filter: hue-rotate(-30deg) saturate(1.8) brightness(0.92); }
+  85%, 100% { opacity: 0; filter: hue-rotate(-32deg) saturate(1.9) brightness(0.85); }
 }
-@keyframes drift {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(40px, -30px) scale(1.18); }
+@keyframes skyCycle {
+  0%   { background-color: rgba(30, 32, 72, 0.45); }    /* 未明 */
+  10%  { background-color: rgba(255, 138, 76, 0.26); }  /* 朝焼け */
+  22%  { background-color: rgba(160, 205, 255, 0.10); } /* 午前 */
+  46%  { background-color: rgba(150, 200, 255, 0.07); } /* 昼 */
+  68%  { background-color: rgba(255, 168, 84, 0.16); }  /* 午後〜夕方 */
+  80%  { background-color: rgba(255, 104, 66, 0.28); }  /* 夕焼け */
+  90%  { background-color: rgba(14, 18, 48, 0.55); }    /* 夜 */
+  100% { background-color: rgba(30, 32, 72, 0.45); }    /* 未明へ */
+}
+@keyframes starsCycle {
+  0%, 4%    { opacity: 0.9; }
+  12%, 84%  { opacity: 0; }
+  92%, 100% { opacity: 0.9; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-cta .btn-primary,
-  .card-icon,
-  .hero-deco::before,
-  .hero-deco::after { animation: none; }
+  .card-icon { animation: none; }
+  .hero-deco::before { animation: none; background-color: transparent; }
+  .hero-deco::after,
+  .hero-sun { animation: none; opacity: 0; }
 }
