@@ -862,10 +862,10 @@ h1, h2, h3 {
   height: 140px;
   margin-left: -70px;
   border-radius: 50%;
-  background: url('assets/moon.png?v=3') center / cover no-repeat;
+  background: url('assets/moon.png?v=4') center / cover no-repeat;
   box-shadow:
-    0 0 22px 6px rgba(215, 228, 255, 0.40),
-    0 0 70px 26px rgba(170, 195, 255, 0.18);
+    0 0 26px 8px rgba(215, 228, 255, 0.55),
+    0 0 80px 30px rgba(170, 195, 255, 0.25);
   left: 50%;
   bottom: 58%;
   opacity: 0;
@@ -920,11 +920,17 @@ h1, h2, h3 {
   animation-delay: var(--sky-delay, 0s);
 }
 @keyframes logoFlash {
-  0%, 46.5% { filter: none; transform: scale(1); }
+  /* 午前0時：月と重なって青白くフラッシュ（0%/100%はループ連続のため同値） */
+  0%        { filter: brightness(2.1) drop-shadow(0 0 34px rgba(214, 228, 255, 0.95)) drop-shadow(0 0 90px rgba(190, 210, 255, 0.75)); transform: scale(1.05); }
+  1.5%      { filter: brightness(2.5) drop-shadow(0 0 40px rgba(214, 228, 255, 1)) drop-shadow(0 0 110px rgba(190, 210, 255, 0.85)); transform: scale(1.07); }
+  3.5%, 46.5% { filter: none; transform: scale(1); }
+  /* 正午：太陽と重なって金色にフラッシュ */
   48.5%     { filter: brightness(2.6) drop-shadow(0 0 40px rgba(255, 252, 230, 1)) drop-shadow(0 0 110px rgba(255, 248, 210, 0.9)); transform: scale(1.07); }
   50%       { filter: brightness(1.9) drop-shadow(0 0 30px rgba(255, 252, 230, 0.95)) drop-shadow(0 0 80px rgba(255, 248, 210, 0.7)); transform: scale(1.04); }
   51.5%     { filter: brightness(2.6) drop-shadow(0 0 40px rgba(255, 252, 230, 1)) drop-shadow(0 0 110px rgba(255, 248, 210, 0.9)); transform: scale(1.07); }
-  53.5%, 100% { filter: none; transform: scale(1); }
+  53.5%, 96.5% { filter: none; transform: scale(1); }
+  98.5%     { filter: brightness(2.5) drop-shadow(0 0 40px rgba(214, 228, 255, 1)) drop-shadow(0 0 110px rgba(190, 210, 255, 0.85)); transform: scale(1.07); }
+  100%      { filter: brightness(2.1) drop-shadow(0 0 34px rgba(214, 228, 255, 0.95)) drop-shadow(0 0 90px rgba(190, 210, 255, 0.75)); transform: scale(1.05); }
 }
 @keyframes starsCycle {
   0%, 20%   { opacity: 0.9; }
