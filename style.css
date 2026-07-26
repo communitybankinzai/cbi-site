@@ -858,11 +858,11 @@ h1, h2, h3 {
 /* 月本体：NASA LRO の満月写真（パブリックドメイン・背景透過PNG） */
 .hero-moon {
   position: absolute;
-  width: 64px;
-  height: 64px;
-  margin-left: -32px;
+  width: 140px;
+  height: 140px;
+  margin-left: -70px;
   border-radius: 50%;
-  background: url('assets/moon.png?v=2') center / cover no-repeat;
+  background: url('assets/moon.png?v=3') center / cover no-repeat;
   box-shadow:
     0 0 22px 6px rgba(215, 228, 255, 0.40),
     0 0 70px 26px rgba(170, 195, 255, 0.18);
@@ -890,13 +890,13 @@ h1, h2, h3 {
 }
 /* 月の弧：18時に東から昇り、午前0時に南中、6時に西へ沈む（太陽の逆位相） */
 @keyframes moonArc {
-  0%        { left: 50%;  bottom: 58%; }
-  12.5%     { left: 73%;  bottom: 42%; }
+  0%        { left: 50%;  bottom: 68%; }
+  12.5%     { left: 73%;  bottom: 48%; }
   25%       { left: 104%; bottom: -14%; }
   25.1%, 74.9% { left: -4%; bottom: -14%; }
   75%       { left: -4%;  bottom: -14%; }
-  87.5%     { left: 27%;  bottom: 42%; }
-  100%      { left: 50%;  bottom: 58%; }
+  87.5%     { left: 27%;  bottom: 48%; }
+  100%      { left: 50%;  bottom: 68%; }
 }
 @keyframes moonGlow {
   0%, 22%   { opacity: 1; }
@@ -1005,5 +1005,19 @@ h1, h2, h3 {
     50%       { left: 50%;  bottom: 78%; }
     62.5%     { left: 73%;  bottom: 52%; }
     75%, 100% { left: 104%; bottom: -14%; }
+  }
+  .hero-moon {
+    width: 100px;
+    height: 100px;
+    margin-left: -50px;
+  }
+  @keyframes moonArc {
+    0%        { left: 50%;  bottom: 78%; }
+    12.5%     { left: 73%;  bottom: 52%; }
+    25%       { left: 104%; bottom: -14%; }
+    25.1%, 74.9% { left: -4%; bottom: -14%; }
+    75%       { left: -4%;  bottom: -14%; }
+    87.5%     { left: 27%;  bottom: 52%; }
+    100%      { left: 50%;  bottom: 78%; }
   }
 }
