@@ -694,3 +694,72 @@ h1, h2, h3 {
   .docs-list a { padding: 16px; gap: 14px; }
   .doc-icon { width: 44px; height: 44px; font-size: 12px; }
 }
+
+/* ---------- Tooltip（用語のホバー／タップ説明） ---------- */
+.tip {
+  position: relative;
+  border-bottom: 1px dotted currentColor;
+  cursor: help;
+}
+.tip::after {
+  /* display:none で隠す（visibility:hidden だと横スクロール領域を広げてしまう） */
+  content: attr(data-tip);
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(280px, 62vw);
+  background: rgba(15, 23, 42, 0.94);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.7;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 60;
+}
+.tip:hover::after,
+.tip:focus::after {
+  display: block;
+}
+/* カード内では左寄せで出す（画面左端での見切れ防止） */
+.join-card .tip::after {
+  left: 0;
+  transform: none;
+}
+
+/* ---------- 動きの演出（スクロール出現・ヒーローズーム） ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .7s cubic-bezier(.22, .61, .36, 1), transform .7s cubic-bezier(.22, .61, .36, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+/* グリッド内カードは少しずつ遅らせて順に出す */
+.grid-3 > .reveal:nth-child(2) { transition-delay: .12s; }
+.grid-3 > .reveal:nth-child(3) { transition-delay: .24s; }
+
+@keyframes heroZoom {
+  from { transform: scale(1); }
+  to   { transform: scale(1.08); }
+}
+.hero-photo {
+  animation: heroZoom 18s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .hero-photo { animation: none; }
+}
