@@ -824,10 +824,10 @@ h1, h2, h3 {
   margin-left: -44px; /* left の % 指定を中心基準にする */
   border-radius: 50%;
   background: radial-gradient(circle,
-    #fffbe8 0%, #ffe9a8 30%, #ffce5e 52%, rgba(255, 176, 66, 0.85) 66%, transparent 74%);
+    #ffffff 0%, #fffdf4 30%, #fff6d5 52%, rgba(255, 246, 214, 0.85) 66%, transparent 74%);
   box-shadow:
-    0 0 24px 6px rgba(255, 226, 130, 0.60),
-    0 0 60px 22px rgba(255, 190, 90, 0.35);
+    0 0 24px 6px rgba(255, 253, 240, 0.65),
+    0 0 60px 22px rgba(255, 248, 214, 0.38);
   left: -10%;
   bottom: -14%;
   opacity: 0;
@@ -841,8 +841,8 @@ h1, h2, h3 {
   inset: -80px;
   border-radius: 50%;
   background: repeating-conic-gradient(
-    rgba(255, 216, 120, 0.55) 0deg 5deg,
-    rgba(255, 216, 120, 0) 11deg 30deg
+    rgba(255, 250, 225, 0.55) 0deg 5deg,
+    rgba(255, 250, 225, 0) 11deg 30deg
   );
   -webkit-mask-image: radial-gradient(circle, rgba(0, 0, 0, 0.9) 18%, transparent 68%);
   mask-image: radial-gradient(circle, rgba(0, 0, 0, 0.9) 18%, transparent 68%);
@@ -853,17 +853,17 @@ h1, h2, h3 {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-/* 月本体：NASA LRO の満月写真（パブリックドメイン）。
-   mix-blend-mode: screen で写真の黒背景を消し、夜空に自然に光らせる */
+/* 月本体：NASA LRO の満月写真（パブリックドメイン・背景透過PNG） */
 .hero-moon {
   position: absolute;
   width: 64px;
   height: 64px;
   margin-left: -32px;
   border-radius: 50%;
-  background: url('assets/moon.jpg') center / cover no-repeat;
-  mix-blend-mode: screen;
-  filter: drop-shadow(0 0 18px rgba(215, 228, 255, 0.55)) drop-shadow(0 0 55px rgba(170, 195, 255, 0.30));
+  background: url('assets/moon.png') center / cover no-repeat;
+  box-shadow:
+    0 0 22px 6px rgba(215, 228, 255, 0.40),
+    0 0 70px 26px rgba(170, 195, 255, 0.18);
   left: 50%;
   bottom: 58%;
   opacity: 0;
@@ -879,13 +879,12 @@ h1, h2, h3 {
   62.5%     { left: 73%;  bottom: 44%; }
   75%, 100% { left: 104%; bottom: -14%; }
 }
-/* 朝夕は赤みを帯び、南中時は白く明るい */
+/* 点灯制御（色は白基調のまま変えない） */
 @keyframes sunGlow {
-  0%, 24%   { opacity: 0; filter: hue-rotate(-28deg) saturate(1.7) brightness(0.9); }
-  29%       { opacity: 1; filter: hue-rotate(-22deg) saturate(1.5) brightness(0.96); }
-  45%, 55%  { opacity: 1; filter: hue-rotate(0deg) saturate(1) brightness(1.08); }
-  71%       { opacity: 1; filter: hue-rotate(-30deg) saturate(1.8) brightness(0.92); }
-  76%, 100% { opacity: 0; filter: hue-rotate(-32deg) saturate(1.9) brightness(0.85); }
+  0%, 24%   { opacity: 0; }
+  29%       { opacity: 1; }
+  71%       { opacity: 1; }
+  76%, 100% { opacity: 0; }
 }
 /* 月の弧：18時に東から昇り、午前0時に南中、6時に西へ沈む（太陽の逆位相） */
 @keyframes moonArc {

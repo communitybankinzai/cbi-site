@@ -32,7 +32,7 @@
 
   // ヒーローの空を「開いた実時刻」の位相から始める（1日=180秒の周回）
   // CSS 側の keyframes は 0%=午前0時 → 50%=正午 の実時間配分なので、
-  // 現在時刻の1日進捗ぶんだけアニメーションを負のディレイで先送りする
+  // 現在時刻の1日進捗ぶんだけアニメーションを先送りする
   {
     const now = new Date();
     const dayProgress =
@@ -41,6 +41,20 @@
       '--sky-delay',
       `-${(dayProgress * 180).toFixed(1)}s`
     );
+    // iOS Safari では CSS 変数経由の負ディレイが効かないことがあるため、
+    // Web Animations API でアニメーションの現在位置を直接そろえる（擬似要素分も取れる）
+    const SKY_ANIMS = ['sunArc', 'sunGlow', 'moonArc', 'moonGlow', 'skyCycle', 'starsCycle'];
+    const syncSky = () => {
+      if (typeof document.getAnimations !== 'function') return;
+      document.getAnimations().forEach((a) => {
+        if (a.animationName && SKY_ANIMS.includes(a.animationName)) {
+          a.currentTime = dayProgress * 180 * 1000;
+        }
+      });
+    };
+    // 読み込み直後とロード完了後の両方で同期（アニメ生成タイミング差への保険）
+    syncSky();
+    window.addEventListener('load', syncSky);
   }
 
   // 数字をふわっとカウントアップ（reduced-motion 時は即時表示）

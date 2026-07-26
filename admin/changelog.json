@@ -4,6 +4,22 @@
   "entries": [
     {
       "date": "2026-07-26",
+      "type": "fix",
+      "target": "site: トップページ ヒーロー",
+      "title": "🌞 太陽が白の濃淡（やや黄色）になり、月の黒枠が消えた",
+      "detail": "「オレンジの太陽が不自然」「月の黒枠が不自然」のフィードバックに対応。太陽は朝夕に赤くなる色変化を廃止して白基調＋やや黄色の光に統一。月はNASA写真を背景透過PNG（円形切り抜き・30KB）に加工し直し、iPhoneで黒い縁が見えていた問題を根絶。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-07-26",
+      "type": "fix",
+      "target": "site: トップページ ヒーロー",
+      "title": "🕐 iPhoneで空が実時刻とズレる問題を修正",
+      "detail": "iOS Safariでは時刻位相の指定（CSS変数経由のanimation-delay）が効かず、夕方なのに朝の太陽が見える状態だった。Web Animations APIでアニメーションの現在位置を直接そろえる方式に変更し、どのブラウザでも開いた時刻の空が出るようにした。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-07-26",
       "type": "content",
       "target": "site: トップページ参加方法",
       "title": "📋 会員比較表の内容がCiDAOの実際の仕様に基づく記述になった",
