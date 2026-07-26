@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：常時アニメーション強化＋参加方法③にイベントカレンダー導線",
+          "category": "実装",
+          "outputs": [
+            "site/script.js（出現アニメを画面に入るたび毎回再生に変更）",
+            "site/style.css（登録ボタン脈動・番号バッジ浮遊・ヒーロー光の玉）",
+            "site/index.html（参加方法③にCiDAOイベントカレンダー直リンク追加、既存ボタン改名）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "「動くのは最初だけ」フィードバックと「③に印西市イベントカレンダー導線を」の提案に対応。デスクトップ/375px両方でレイアウト・横スクロールなしを確認。hoursはセッション累計0.6hから記録済み0.5hの差分。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 64,737 / cost: $24.29"
+        },
+        {
+          "date": "2026-07-26",
           "title": "ログイン画面の整理（ボタン先頭配置＋説明の折りたたみ化）＋持ち越しタスクの完了状況確認",
           "category": "実装",
           "outputs": [
