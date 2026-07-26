@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-24",
+  "updatedAt": "2026-07-26",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
@@ -16,6 +16,21 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-07-26",
+          "title": "届いた声がけ受信箱（/me/inbox）＋アプリ内返信機能の実装（タスク#13）",
+          "category": "実装",
+          "outputs": [
+            "CiDAO: supabase/migrations/20260726090000_talent_inquiry_replies.sql（reply_to_inquiry_id・read_at追加、返信用INSERTポリシー新設）",
+            "CiDAO: src/app/me/inbox/page.tsx＋_components/ReplyForm.tsx（受信箱：スレッド表示・返信フォーム・自動既読）",
+            "CiDAO: src/app/talent/actions.ts（replyTalentInquiry新設、メール送信ヘルパー化、通知リンクを/me/inboxへ）",
+            "CiDAO: src/app/me/page.tsx（「届いた声がけ」カード＋未読件数バッジ）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "前セッション残タスク#13の再開。tsc・next build 通過、commit e97670e をpush（Vercel自動デプロイ）。DBマイグレーションのSQL Editor適用（ユーザー作業）までは受信箱は空表示で本稼働しない。session: 2143d120-f210-4b65-8a23-6db568118d08 / output: 25,982 / cost: $5.95"
+        },
         {
           "date": "2026-07-25",
           "title": "トップに登録者数・団体数の実数表示＋団体一覧の200件上限不具合を修正",
