@@ -826,8 +826,8 @@ h1, h2, h3 {
   background: radial-gradient(circle,
     #ffffff 0%, #fffdf4 30%, #fff6d5 52%, rgba(255, 246, 214, 0.85) 66%, transparent 74%);
   box-shadow:
-    0 0 24px 6px rgba(255, 253, 240, 0.65),
-    0 0 60px 22px rgba(255, 248, 214, 0.38);
+    0 0 30px 10px rgba(255, 253, 240, 0.85),
+    0 0 90px 34px rgba(255, 248, 214, 0.50);
   left: -10%;
   bottom: -14%;
   opacity: 0;
@@ -838,15 +838,15 @@ h1, h2, h3 {
 .hero-sun::before {
   content: '';
   position: absolute;
-  inset: -80px;
+  inset: -120px;
   border-radius: 50%;
   background: repeating-conic-gradient(
-    rgba(255, 250, 225, 0.55) 0deg 5deg,
-    rgba(255, 250, 225, 0) 11deg 30deg
+    rgba(255, 250, 225, 0.8) 0deg 6deg,
+    rgba(255, 250, 225, 0) 12deg 30deg
   );
-  -webkit-mask-image: radial-gradient(circle, rgba(0, 0, 0, 0.9) 18%, transparent 68%);
-  mask-image: radial-gradient(circle, rgba(0, 0, 0, 0.9) 18%, transparent 68%);
-  filter: blur(6px);
+  -webkit-mask-image: radial-gradient(circle, rgba(0, 0, 0, 1) 16%, transparent 78%);
+  mask-image: radial-gradient(circle, rgba(0, 0, 0, 1) 16%, transparent 78%);
+  filter: blur(7px);
   animation: sunRays 90s linear infinite;
 }
 @keyframes sunRays {
@@ -860,7 +860,7 @@ h1, h2, h3 {
   height: 64px;
   margin-left: -32px;
   border-radius: 50%;
-  background: url('assets/moon.png') center / cover no-repeat;
+  background: url('assets/moon.png?v=2') center / cover no-repeat;
   box-shadow:
     0 0 22px 6px rgba(215, 228, 255, 0.40),
     0 0 70px 26px rgba(170, 195, 255, 0.18);
