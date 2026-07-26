@@ -63,21 +63,24 @@
     const targets = document.querySelectorAll(
       '.hero-title, .hero-sub, .hero-cta, .section-eyebrow, .section-title, .section-lead, .card, .join-card, .news-list li, .docs-list a'
     );
+    let ioFired = false;
     const io = new IntersectionObserver((entries) => {
+      ioFired = true;
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          io.unobserve(entry.target);
-        }
+        // 画面に入るたびに毎回ふわっと再生（出たら次回に備えてリセット）
+        entry.target.classList.toggle('is-visible', entry.isIntersecting);
       });
     }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
     targets.forEach((el) => {
       el.classList.add('reveal');
       io.observe(el);
     });
-    // 保険：何らかの理由で発火しない環境でも、3秒後には必ず全要素を表示する
+    // 保険：Observer が一度も発火しない環境では3秒後に全表示して以後の制御を放棄する
     setTimeout(() => {
-      targets.forEach((el) => el.classList.add('is-visible'));
+      if (!ioFired) {
+        io.disconnect();
+        targets.forEach((el) => el.classList.add('is-visible'));
+      }
     }, 3000);
   }
 })();

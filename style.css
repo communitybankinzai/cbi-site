@@ -763,3 +763,60 @@ h1, h2, h3 {
   }
   .hero-photo { animation: none; }
 }
+
+/* ---------- 常時動き続ける演出 ---------- */
+/* 登録ボタンの脈動（波紋がふわっと広がる） */
+@keyframes ctaPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(201, 165, 92, 0.55); }
+  70%  { box-shadow: 0 0 0 14px rgba(201, 165, 92, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 165, 92, 0); }
+}
+.hero-cta .btn-primary { animation: ctaPulse 2.4s ease-out infinite; }
+
+/* カード番号バッジのふわふわ浮遊（1→2→3の順で波打つ） */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+.card-icon { animation: floatY 3.6s ease-in-out infinite; }
+.grid-3 > *:nth-child(2) .card-icon { animation-delay: 1.2s; }
+.grid-3 > *:nth-child(3) .card-icon { animation-delay: 2.4s; }
+
+/* ヒーローを漂う光の玉 */
+.hero-deco {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+.hero-deco::before,
+.hero-deco::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  animation: drift 14s ease-in-out infinite alternate;
+}
+.hero-deco::before {
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(201, 165, 92, 0.35), transparent 70%);
+  top: 18%; left: 8%;
+}
+.hero-deco::after {
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(63, 115, 81, 0.32), transparent 70%);
+  bottom: 10%; right: 6%;
+  animation-duration: 18s;
+  animation-delay: 3s;
+}
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, -30px) scale(1.18); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cta .btn-primary,
+  .card-icon,
+  .hero-deco::before,
+  .hero-deco::after { animation: none; }
+}
