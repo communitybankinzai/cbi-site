@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：ヒーロー太陽日周アニメーション＋カレンダーボタン改行修正",
+          "category": "実装",
+          "outputs": [
+            "site/style.css（太陽の弧軌道・多層グロー・空色循環・夜の星、光の玉は置換）",
+            "site/index.html（hero-sun要素追加、カレンダーボタン文言短縮＋nbsp結合）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "「太陽が東から昇り西へ沈む・空も朝昼夜で変化」の要望と「ボタン改行が中途半端」の指摘に対応。全アニメ適用とボタン1行表示（375px/1280px）を実測確認。hoursはセッション累計0.8hから記録済み0.6hの差分。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 82,245 / cost: $32.18"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：常時アニメーション強化＋参加方法③にイベントカレンダー導線",
           "category": "実装",
           "outputs": [
