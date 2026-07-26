@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：月の青い輪（光暈）を削除",
+          "category": "実装",
+          "outputs": [
+            "site/style.css（月のbox-shadow削除）",
+            "site/index.html（v=20260726g）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "iPhone実機スクショ（22:44）の指摘対応。shadow/filter/blendすべてnoneを実測確認。時刻位相はスクショで正常動作を確認できた。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 194,867 / cost: $115.42"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：月の黒リム除去＋午前0時の青白フラッシュ追加",
           "category": "実装",
           "outputs": [
