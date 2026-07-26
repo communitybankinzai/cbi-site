@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-26",
+          "title": "CBIサイト：月の黒リム除去＋午前0時の青白フラッシュ追加",
+          "category": "実装",
+          "outputs": [
+            "site/assets/moon.png（内側4%マスク＋強フェードで再生成、暗画素ゼロ検証）",
+            "site/style.css（月グロー強化、logoFlashに0時フラッシュ追加）",
+            "site/index.html（キャッシュバスター v=20260726f）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "「月の輪郭がまだ黒い」「夜の月もロゴと重なったらフラッシュ強めに」に対応。0時ピークのbrightness 2.5・scale 1.07を実測確認。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 191,149 / cost: $111.92"
+        },
+        {
+          "date": "2026-07-26",
           "title": "CBIサイト：月をロゴサイズ化し午前0時にロゴと重なる演出",
           "category": "実装",
           "outputs": [
