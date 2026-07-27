@@ -44,7 +44,7 @@
     );
     // iOS Safari では CSS 変数経由の負ディレイが効かないことがあるため、
     // Web Animations API でアニメーションの現在位置を直接そろえる（擬似要素分も取れる）
-    const SKY_ANIMS = ['sunArc', 'sunGlow', 'moonArc', 'moonGlow', 'skyNight', 'skyDawn', 'skyDay', 'skyDusk', 'starsCycle', 'logoFlash', 'logoBurstSun', 'logoBurstMoon'];
+    const SKY_ANIMS = ['sunArc', 'sunGlow', 'moonArc', 'moonGlow', 'logoFlash', 'logoBurstSun', 'logoBurstMoon'];
     const syncSky = () => {
       if (typeof document.getAnimations !== 'function') return;
       // 同期のたびに時刻を取り直す（固定値を使うと load 時の再同期で位相が巻き戻る）
@@ -62,6 +62,47 @@
     };
     syncSky();
     window.addEventListener('load', syncSky);
+
+    // 空の色と星は「全画面要素のアニメーション」を避けるため、1秒ごとに値を直接更新する。
+    // 1日=180秒の周回なので、1秒刻みでも色の変化は十分なめらかに見える。
+    const SKY_STOPS = [
+      { p: 0.00, c: [14, 18, 48, 0.55] },   // 0時 夜
+      { p: 0.20, c: [30, 32, 72, 0.45] },   // 4:48 未明
+      { p: 0.27, c: [255, 138, 76, 0.26] }, // 6:29 朝焼け
+      { p: 0.35, c: [160, 205, 255, 0.10] },// 8:24 午前
+      { p: 0.50, c: [150, 200, 255, 0.07] },// 正午
+      { p: 0.68, c: [255, 168, 84, 0.16] }, // 16:19 午後
+      { p: 0.75, c: [255, 104, 66, 0.28] }, // 18時 夕焼け
+      { p: 0.85, c: [14, 18, 48, 0.55] },   // 20:24 夜
+      { p: 1.00, c: [14, 18, 48, 0.55] },
+    ];
+    const skyColorAt = (p) => {
+      let a = SKY_STOPS[0], b = SKY_STOPS[SKY_STOPS.length - 1];
+      for (let i = 0; i < SKY_STOPS.length - 1; i++) {
+        if (p >= SKY_STOPS[i].p && p <= SKY_STOPS[i + 1].p) { a = SKY_STOPS[i]; b = SKY_STOPS[i + 1]; break; }
+      }
+      const t = b.p === a.p ? 0 : (p - a.p) / (b.p - a.p);
+      const v = a.c.map((x, i) => x + (b.c[i] - x) * t);
+      return `rgba(${Math.round(v[0])}, ${Math.round(v[1])}, ${Math.round(v[2])}, ${v[3].toFixed(3)})`;
+    };
+    // 星：夜（〜4:48 と 20:24〜）だけ見せる
+    const starsOpacityAt = (p) => {
+      if (p <= 0.20) return 0.9;
+      if (p < 0.27) return 0.9 * (1 - (p - 0.20) / 0.07);
+      if (p < 0.83) return 0;
+      if (p < 0.90) return 0.9 * ((p - 0.83) / 0.07);
+      return 0.9;
+    };
+    const tint = document.querySelector('.sky-tint');
+    const paintSky = () => {
+      const p = dayProgressNow();
+      if (tint) tint.style.backgroundColor = skyColorAt(p);
+      document.documentElement.style.setProperty('--stars-opacity', String(starsOpacityAt(p).toFixed(3)));
+    };
+    if (!prefersReduced) {
+      paintSky();
+      setInterval(paintSky, 1000);
+    }
   }
 
   // 数字をふわっとカウントアップ（reduced-motion 時は即時表示）

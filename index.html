@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260727a">
+<link rel="stylesheet" href="style.css?v=20260727b">
 </head>
 <body>
 
@@ -64,7 +64,7 @@
         <span>令和９年４月 〜 令和１０年３月（１年目）</span>
       </div>
     </div>
-    <div class="hero-deco" aria-hidden="true"><span class="sky-layer sky-night"></span><span class="sky-layer sky-dawn"></span><span class="sky-layer sky-day"></span><span class="sky-layer sky-dusk"></span><span class="hero-sun"></span><span class="hero-moon"></span><span class="logo-burst logo-burst-sun"></span><span class="logo-burst logo-burst-moon"></span></div>
+    <div class="hero-deco" aria-hidden="true"><span class="sky-tint"></span><span class="hero-sun"></span><span class="hero-moon"></span><span class="logo-burst logo-burst-sun"></span><span class="logo-burst logo-burst-moon"></span></div>
   </section>
 
   <section id="about" class="section section-about">
@@ -134,38 +134,51 @@
         </div>
       </div>
 
-      <div class="member-table-wrap">
-        <table class="member-table">
-          <caption>会員種別と、できる事の違い</caption>
-          <thead>
-            <tr>
-              <th scope="col"></th>
-              <th scope="col">ステップ１</th>
-              <th scope="col">ステップ２</th>
-              <th scope="col">ステップ３</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="member-rank">
-              <th scope="row">会員種別</th>
-              <td>準会員<span class="member-sub">（ライト登録）</span></td>
-              <td colspan="2">正会員<span class="member-sub">（本登録）</span></td>
-            </tr>
-            <tr>
-              <th scope="row">方法</th>
-              <td>LINEでかんたん登録。ニックネームでOK、メールアドレスも電話番号も入力不要です</td>
-              <td>プロフィールで興味分野を選んで保存すると本登録完了。さらに「あなたのPR」で得意なこと・できる事を公開（任意）</td>
-              <td>「提案する」「投票する」ボタンや、団体・イベントのページから参加します</td>
-            </tr>
-            <tr>
-              <th scope="row">できる事<br>（メリット）</th>
-              <td>市内の団体・イベント・みんなの提案を見ることができます</td>
-              <td>提案・投票・コメント、団体への参加申込み、メンバーへの声がけができるようになります。PRを公開すると「登録メンバー」一覧に載り、団体から活動の声がけが届きます</td>
-              <td>自分の「やってみたい」を提案して賛同を集めたり、応援したい提案に投票したりできます</td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="note">＊すべて無料。ステップ１からそのままステップ２、ステップ３へ進められます</p>
+      <div class="member-plans">
+        <h3 class="member-plans-title">できること</h3>
+        <div class="plan-grid">
+          <div class="plan-card">
+            <p class="plan-name">準会員<span class="plan-sub">LINEで登録するだけ</span></p>
+            <ul class="plan-list">
+              <li>市内の団体を見る</li>
+              <li>みんなの提案を見る</li>
+              <li>イベントを探して参加を申し込む</li>
+            </ul>
+          </div>
+          <div class="plan-card plan-card-main">
+            <p class="plan-name">正会員<span class="plan-sub">興味分野を選ぶだけ</span></p>
+            <p class="plan-plus">準会員でできること すべてに加えて</p>
+            <ul class="plan-list">
+              <li>提案する・投票する・コメントする</li>
+              <li>団体へ参加を申し込む</li>
+              <li>メンバーに声をかける</li>
+              <li>「あなたのPR」を公開して人材バンクに載る</li>
+            </ul>
+          </div>
+        </div>
+        <p class="plan-free">登録・利用はすべて無料です</p>
+      </div>
+
+      <div class="guide-links">
+        <h3 class="guide-links-title">やりたいことから、はじめかたを見る</h3>
+        <div class="guide-link-grid">
+          <a class="guide-link" href="guide/propose/">
+            <span class="guide-link-name">提案する</span>
+            <span class="guide-link-desc">「やってみたい」を投稿して賛同を集める</span>
+          </a>
+          <a class="guide-link" href="guide/vote/">
+            <span class="guide-link-name">投票する</span>
+            <span class="guide-link-desc">応援したい提案に一票を入れる</span>
+          </a>
+          <a class="guide-link" href="guide/events/">
+            <span class="guide-link-name">イベントに参加する</span>
+            <span class="guide-link-desc">市内のイベントを探して申し込む</span>
+          </a>
+          <a class="guide-link" href="guide/pr/">
+            <span class="guide-link-name">あなたのPRを公開する</span>
+            <span class="guide-link-desc">得意なことを登録して声がけを受け取る</span>
+          </a>
+        </div>
       </div>
     </div>
   </section>
@@ -243,6 +256,6 @@
   </div>
 </footer>
 
-<script src="script.js?v=20260727a"></script>
+<script src="script.js?v=20260727b"></script>
 </body>
 </html>

@@ -782,40 +782,13 @@ h1, h2, h3 {
   pointer-events: none;
   z-index: 2;
 }
-/* 空の色（0%=午前0時 → 25%=6時 → 50%=正午 → 75%=18時 → 100%=24時）
-   固定色レイヤーの opacity クロスフェード＝再ペイント無しの最軽量方式 */
-.sky-layer {
+/* 空の色：全画面レイヤーはアニメーションさせない（合成タイル欠けの原因になるため）。
+   色は script.js が1秒ごとに直接更新する */
+.sky-tint {
   position: absolute;
   inset: 0;
-  opacity: 0;
   pointer-events: none;
-  will-change: opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-.sky-night { background-color: rgba(14, 18, 48, 0.55);   animation: skyNight 180s linear infinite; animation-delay: var(--sky-delay, 0s); }
-.sky-dawn  { background-color: rgba(255, 138, 76, 0.26); animation: skyDawn 180s linear infinite;  animation-delay: var(--sky-delay, 0s); }
-.sky-day   { background-color: rgba(150, 200, 255, 0.08);animation: skyDay 180s linear infinite;   animation-delay: var(--sky-delay, 0s); }
-.sky-dusk  { background-color: rgba(255, 104, 66, 0.28); animation: skyDusk 180s linear infinite;  animation-delay: var(--sky-delay, 0s); }
-@keyframes skyNight {
-  0%, 20%   { opacity: 1; }
-  28%, 82%  { opacity: 0; }
-  90%, 100% { opacity: 1; }
-}
-@keyframes skyDawn {
-  0%, 20%  { opacity: 0; }
-  27%      { opacity: 1; }
-  35%, 100%{ opacity: 0; }
-}
-@keyframes skyDay {
-  0%, 30%  { opacity: 0; }
-  40%, 62% { opacity: 1; }
-  73%, 100%{ opacity: 0; }
-}
-@keyframes skyDusk {
-  0%, 66%  { opacity: 0; }
-  75%      { opacity: 1; }
-  85%, 100%{ opacity: 0; }
+  background-color: transparent;
 }
 /* 夜だけ現れる星 */
 .hero-deco::after {
@@ -830,9 +803,7 @@ h1, h2, h3 {
     radial-gradient(2.2px 2.2px at 78% 20%, rgba(255, 255, 255, 0.95), transparent 60%),
     radial-gradient(1.6px 1.6px at 90% 32%, rgba(255, 255, 255, 0.8), transparent 60%),
     radial-gradient(1.4px 1.4px at 55% 45%, rgba(255, 255, 255, 0.7), transparent 60%);
-  opacity: 0;
-  animation: starsCycle 180s linear infinite;
-  animation-delay: var(--sky-delay, 0s);
+  opacity: var(--stars-opacity, 0);
 }
 /* 太陽本体：中心の白熱＋実際の太陽に近い多層の光暈（グロー放射） */
 .hero-sun {
@@ -853,7 +824,6 @@ h1, h2, h3 {
   left: -10%;
   bottom: -14%;
   opacity: 0;
-  will-change: left, bottom, opacity;
   animation: sunArc 180s linear infinite, sunGlow 180s linear infinite;
   animation-delay: var(--sky-delay, 0s), var(--sky-delay, 0s);
 }
@@ -885,7 +855,6 @@ h1, h2, h3 {
   left: 50%;
   bottom: 58%;
   opacity: 0;
-  will-change: left, bottom, opacity;
   animation: moonArc 180s linear infinite, moonGlow 180s linear infinite;
   animation-delay: var(--sky-delay, 0s), var(--sky-delay, 0s);
 }
@@ -977,8 +946,6 @@ h1, h2, h3 {
   98.5%     { opacity: 1; }
   100%      { opacity: 0.8; }
 }
-@keyframes starsCycle {
-  0%, 20%   { opacity: 0.9; }
   27%, 73%  { opacity: 0; }
   83%, 100% { opacity: 0.9; }
 }
@@ -987,66 +954,222 @@ h1, h2, h3 {
   .hero-cta .btn-primary,
   .card-icon,
   .hero-logo { animation: none; }
-  .sky-layer { animation: none; opacity: 0; }
+  .sky-tint { background-color: transparent; }
   .hero-deco::after,
   .hero-sun,
   .hero-moon,
   .logo-burst { animation: none; opacity: 0; }
 }
 
-/* ---------- 会員種別の比較表 ---------- */
-.member-table-wrap {
-  margin-top: 36px;
-  overflow-x: auto;
-}
-.member-table {
-  width: 100%;
-  min-width: 640px;
-  border-collapse: collapse;
-  background: var(--c-paper);
-  font-size: 13px;
-  line-height: 1.7;
-}
-.member-table caption {
-  caption-side: top;
-  text-align: left;
-  font-size: 16px;
+/* ---------- 会員種別でできること ---------- */
+.member-plans { margin-top: 40px; }
+.member-plans-title,
+.guide-links-title {
+  font-size: 18px;
   font-weight: 700;
   color: var(--c-ink);
-  padding-bottom: 12px;
+  margin: 0 0 16px;
 }
-.member-table th,
-.member-table td {
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.plan-card {
+  background: var(--c-paper);
   border: 1px solid var(--c-line);
-  padding: 12px 16px;
-  text-align: left;
-  vertical-align: top;
+  border-radius: var(--radius);
+  padding: 24px 26px;
+  box-shadow: var(--shadow-sm);
 }
-.member-table thead th {
-  background: var(--c-navy);
-  color: #fff;
-  text-align: center;
+.plan-card-main {
+  border-color: var(--c-gold);
+  box-shadow: var(--shadow-md);
+}
+.plan-name {
+  margin: 0 0 16px;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  color: var(--c-navy);
 }
-.member-table tbody th {
-  background: rgba(45, 90, 61, 0.06);
-  white-space: nowrap;
-  font-weight: 700;
-  width: 1%;
-}
-.member-rank td {
-  background: rgba(201, 165, 92, 0.10);
-  text-align: center;
-  font-weight: 700;
-}
-.member-sub {
+.plan-sub {
   display: block;
-  font-size: 11px;
+  margin-top: 4px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--c-ink-sub);
 }
-.member-table-wrap .note { margin-top: 8px; }
+.plan-plus {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-green);
+}
+.plan-list {
+  margin: 0;
+  padding-left: 1.3em;
+  font-size: 15px;
+  line-height: 2;
+}
+.plan-free {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c-green);
+}
+
+/* ---------- 機能別ガイドへの導線 ---------- */
+.guide-links { margin-top: 44px; }
+.guide-link-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.guide-link {
+  display: block;
+  padding: 18px 20px;
+  background: var(--c-paper);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.guide-link:hover,
+.guide-link:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--c-gold);
+  box-shadow: var(--shadow-md);
+}
+.guide-link-name {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-navy);
+}
+.guide-link-desc {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--c-ink-sub);
+}
+
+@media (max-width: 860px) {
+  .plan-grid { grid-template-columns: 1fr; }
+  .guide-link-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 520px) {
+  .guide-link-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- 機能別ガイドページ（guide/*/） ---------- */
+.guide-hero {
+  background: linear-gradient(180deg, var(--c-navy-dark) 0%, var(--c-navy) 100%);
+  color: #fff;
+  padding: 104px 0 64px;
+  text-align: center;
+}
+.guide-breadcrumb {
+  margin: 0 0 20px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+}
+.guide-breadcrumb a { color: var(--c-gold-soft); }
+.guide-hero h1 {
+  margin: 0 0 14px;
+  font-size: clamp(24px, 4.4vw, 38px);
+  line-height: 1.5;
+}
+.guide-lead {
+  max-width: 640px;
+  margin: 0 auto;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.88);
+}
+.guide-steps {
+  list-style: none;
+  counter-reset: gstep;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+}
+.guide-steps > li {
+  counter-increment: gstep;
+  position: relative;
+  padding: 22px 26px 22px 76px;
+  background: var(--c-paper);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.guide-steps > li::before {
+  content: counter(gstep);
+  position: absolute;
+  left: 24px;
+  top: 22px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--c-navy);
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.guide-step-title {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--c-navy);
+}
+.guide-step-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--c-ink-sub);
+}
+.guide-media {
+  margin-top: 40px;
+  padding: 34px 24px;
+  text-align: center;
+  background: var(--c-bg-alt);
+  border: 1px dashed var(--c-line);
+  border-radius: var(--radius);
+  color: var(--c-ink-sub);
+}
+.guide-media-label {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--c-gold);
+}
+.guide-media p { margin: 0; font-size: 13px; }
+.guide-cta {
+  margin-top: 40px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.guide-note {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--c-ink-sub);
+  text-align: center;
+}
+.guide-other { margin-top: 56px; }
+
+@media (max-width: 640px) {
+  .guide-steps > li { padding: 20px; }
+  .guide-steps > li::before { position: static; margin-bottom: 10px; }
+}
 
 /* スマホはヒーローが縦長になるため、太陽の頂点をロゴ位置まで上げる */
 @media (max-width: 860px) {
