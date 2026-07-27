@@ -18,7 +18,7 @@
       "actuals": [
         {
           "date": "2026-07-27",
-          "title": "CBIサイト：手の切り抜きレイヤー＋雲海反射＋フラッシュ復活",
+          "title": "CiDAO AI障害の復旧（クレジット枯渇＋キー失効）＋CBIサイト会員種別表の刷新・機能別ガイド4ページ新規作成",
           "category": "実装",
           "outputs": [
             "site/assets/hero/hero-hand.webp（クロマキー切り抜き・内部穴のBFS埋め）",
@@ -27,9 +27,9 @@
             "site/script.js（logoFlare同期）",
             "site/admin/changelog.json（1件追記）"
           ],
-          "hours": 0.3,
+          "hours": 1.8,
           "partnerApproved": false,
-          "note": "「手は文字の後ろ・雲海より前」「雲海に反射がない」「フラッシュ消えた」に対応。切り抜き品質は緑背景プレビューで目視確認（指先・穴なし）。層順・フラッシュ発光(0.95/scale1.07)を実測。■は?debug=outlineのスクショ依頼中。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 324,349 / cost: $211.26"
+          "note": "チラシAI抽出の500障害から出発し、根本原因はAnthropicクレジット枯渇（残高-$0.24でAPIアクセス停止）と.env.localのキー失効の二重要因と判明。$20チャージで本番cidao-production-v3が復旧、本番AI応答を実リクエストで確認済み（ローカル用キーは削除済みのため未復旧、本番稼働に影響なし）。あわせて(1)チラシ抽出をフェイルソフト化（HTTP200+{ok:false,reason}、Storage/AI/DB保存を分離）、(2)未認証で誰でも呼べAnthropic費用の悪用経路だった提案分類APIにログイン必須＋try/catchを追加、(3)同一クレジットプールを消費していたCOCoLa Threads自動投稿（タスクスケジューラ3件＋常駐approve_server4プロセス）を停止し、CBIのクレジットが他用途で枯渇する再発要因を除去。サイト側は会員種別の3列表を箇条書き＋登録無料の明記に刷新し、手順を機能別ガイド4ページへ分離、参加動線から「履歴書」表現も削除。記載はCiDAO実装と突合して検証（イベント参加は準会員で可能、投票選択肢は提案種別で2系統、PR公開範囲は3段階）。session: 55f6d859-3377-4c23-b264-4b33ea939bb7 / output: 177,294 / cost: $82.42"
         },
         {
           "date": "2026-07-27",
