@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：手の切り抜きレイヤー＋雲海反射＋フラッシュ復活",
+          "category": "実装",
+          "outputs": [
+            "site/assets/hero/hero-hand.webp（クロマキー切り抜き・内部穴のBFS埋め）",
+            "site/assets/sea.js（反射ビーム追加）",
+            "site/style.css・index.html（hero-hand層、logo-flare、v=20260727j）",
+            "site/script.js（logoFlare同期）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "「手は文字の後ろ・雲海より前」「雲海に反射がない」「フラッシュ消えた」に対応。切り抜き品質は緑背景プレビューで目視確認（指先・穴なし）。層順・フラッシュ発光(0.95/scale1.07)を実測。■は?debug=outlineのスクショ依頼中。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 324,349 / cost: $211.26"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：ボリューム雲海（レイマーチング）実装＋帯の高さ調整",
           "category": "実装",
           "outputs": [
