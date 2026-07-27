@@ -747,13 +747,6 @@ h1, h2, h3 {
 .grid-3 > .reveal:nth-child(2) { transition-delay: .12s; }
 .grid-3 > .reveal:nth-child(3) { transition-delay: .24s; }
 
-@keyframes heroZoom {
-  from { transform: scale(1); }
-  to   { transform: scale(1.08); }
-}
-.hero-photo {
-  animation: heroZoom 18s ease-in-out infinite alternate;
-}
 
 @media (prefers-reduced-motion: reduce) {
   .reveal {
@@ -761,7 +754,6 @@ h1, h2, h3 {
     transform: none !important;
     transition: none !important;
   }
-  .hero-photo { animation: none; }
 }
 
 /* ---------- 常時動き続ける演出 ---------- */
@@ -797,6 +789,9 @@ h1, h2, h3 {
   inset: 0;
   opacity: 0;
   pointer-events: none;
+  will-change: opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 .sky-night { background-color: rgba(14, 18, 48, 0.55);   animation: skyNight 180s linear infinite; animation-delay: var(--sky-delay, 0s); }
 .sky-dawn  { background-color: rgba(255, 138, 76, 0.26); animation: skyDawn 180s linear infinite;  animation-delay: var(--sky-delay, 0s); }
@@ -858,6 +853,7 @@ h1, h2, h3 {
   left: -10%;
   bottom: -14%;
   opacity: 0;
+  will-change: left, bottom, opacity;
   animation: sunArc 180s linear infinite, sunGlow 180s linear infinite;
   animation-delay: var(--sky-delay, 0s), var(--sky-delay, 0s);
 }
@@ -889,6 +885,7 @@ h1, h2, h3 {
   left: 50%;
   bottom: 58%;
   opacity: 0;
+  will-change: left, bottom, opacity;
   animation: moonArc 180s linear infinite, moonGlow 180s linear infinite;
   animation-delay: var(--sky-delay, 0s), var(--sky-delay, 0s);
 }
