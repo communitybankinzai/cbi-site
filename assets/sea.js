@@ -10,6 +10,7 @@
   const sea = document.querySelector('.hero-sea');
   if (!sea) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (new URLSearchParams(location.search).get('fx') === 'off') return;
 
   const canvas = document.createElement('canvas');
   canvas.className = 'sea-canvas';

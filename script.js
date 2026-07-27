@@ -64,6 +64,14 @@
       document.head.appendChild(s);
     }
     if (mode) document.documentElement.setAttribute('data-deco', mode);
+    // ?fx=off : 雲海・太陽・月などの演出をすべて止めた素の状態で表示する
+    if (new URLSearchParams(location.search).get('fx') === 'off') {
+      window.__cbiFxOff = true;
+      const s = document.createElement('style');
+      s.textContent = '.hero-deco, .hero-hand-shade { display: none !important; } '
+        + '*, *::before, *::after { animation: none !important; }';
+      document.head.appendChild(s);
+    }
     // ?debug=outline : 全要素に赤枠を引く。画面上の謎の矩形が
     // DOM要素ならば、その輪郭が赤枠として見えるはず（見えなければDOM外＝ブラウザ/OS側）
     if (new URLSearchParams(location.search).get('debug') === 'outline') {
