@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：ヒーロー下部を雲海に変更（fbmシェーダー・光の照らし復活）",
+          "category": "実装",
+          "outputs": [
+            "site/assets/sea.js（雲海シェーダーへ全面書き換え）",
+            "site/style.css（霧グラデフォールバック、旧海CSSの削除）",
+            "site/index.html（旧波・反射要素の削除、v=20260727g）",
+            "site/script.js（glint同期の除去）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "「海に見えないので雲海に。反射も消えている」に対応。光は雲の照らし＋silver liningとして再実装。WebGL初期化・シェーダーコンパイル成功、旧要素の削除、コンソールエラーなしを確認。見た目は実機確認待ち。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 290,652 / cost: $180.56"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：WebGL水面シミュレーションの移植（minamo-water最小構成）",
           "category": "実装",
           "outputs": [
