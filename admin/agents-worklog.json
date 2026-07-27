@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：WebGL雲海の撤去（フリーズ対応）＋ヒーロー構造の見直し",
+          "category": "保守",
+          "outputs": [
+            "site/index.html（sea.js読込削除、v=20260727s）",
+            "site/style.css（CSS雲海5層、isolation撤去、背景画像化、hero-photo定義削除）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "フリーズ報告を受けWebGLレイマーチングを撤去（判断：動かない機能は残さない）。?fx=offでも■が残ることから演出は無罪と確定し、isolation撤去＋img→background化を実施。CSS波括弧0・canvas不在・アニメ16件稼働を実測。■の解消可否は実機確認待ち。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 379,491 / cost: $247.32"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CiDAO AI障害の復旧＋イベント収集のCBI完結化（COCoLa GAS依存の解消）＋CBIサイト会員種別表の刷新",
           "category": "保守",
           "outputs": "cidao: api/events/scan/route.ts, events/new/_components/ImageScanField.tsx（b271ba3）, api/ai/classify-proposal/route.ts（9f6134a）, admin/events/import/{page.tsx,actions.ts,_components/BulkFlyerImport.tsx}＋admin/page.tsx（a648542）／ site: index.html, style.css, guide/{propose,vote,events,pr}/index.html（新規4ページ）, admin/changelog.json／ agents/a1-core/credentials.md（キー一覧と障害メモを追記）",
