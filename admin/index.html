@@ -641,8 +641,14 @@
           <textarea id="snsq-text" rows="5" placeholder="投稿本文（ハッシュタグ含む）"></textarea>
         </div>
         <div class="field">
-          <span>画像URL（任意・Instagramに投稿する場合は必須。公開URLのみ）</span>
-          <input type="url" id="snsq-image" placeholder="https://communitybankinzai.github.io/cbi-site/assets/…">
+          <span>画像（任意・Instagramに投稿する場合は必須）</span>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:6px;">
+            <input type="file" id="snsq-file" accept="image/jpeg,image/png,image/webp,image/gif" style="font-size:13px;">
+            <span id="snsq-file-status" class="meta-note" style="margin:0;"></span>
+          </div>
+          <img id="snsq-file-preview" alt="" hidden
+               style="max-width:140px; max-height:140px; border-radius:8px; border:1px solid var(--c-line); margin-bottom:6px;">
+          <input type="url" id="snsq-image" placeholder="写真を選ぶと自動で入ります（URLを直接貼ることもできます）">
         </div>
         <div class="field">
           <span>投稿日時</span>

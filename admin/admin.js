@@ -341,6 +341,13 @@ const UNREAD_POLL_MS = 30000;
     });
     $('snsq-add').addEventListener('click', addSnsQueuePost);
     $('snsq-refresh').addEventListener('click', loadSnsQueue);
+    const snsqFile = $('snsq-file');
+    if (snsqFile) {
+      snsqFile.addEventListener('change', (ev) => {
+        const f = ev.target.files && ev.target.files[0];
+        if (f) uploadSnsQueueImage(f);
+      });
+    }
   }
 
   // ---------------------------------------------------------
@@ -383,6 +390,57 @@ const UNREAD_POLL_MS = 30000;
     }
   }
 
+  // スマホで撮った写真をその場で保存し、公開URLを画像URL欄に自動で入れる。
+  // 保存先は Supabase Storage の公開バケット。GAS を経由するのは、
+  // このページが静的サイトで、保存用の鍵をページに置けないため。
+  const SNSQ_MAX_BYTES = 10 * 1024 * 1024;
+
+  async function uploadSnsQueueImage(file) {
+    const status = $('snsq-file-status');
+    const preview = $('snsq-file-preview');
+    const addBtn = $('snsq-add');
+    const setStatus = (msg) => { if (status) status.textContent = msg; };
+
+    if (!GAS_WEBAPP_URL) { toast('GAS未接続のため画像を保存できません', 'err'); return; }
+    if (file.size > SNSQ_MAX_BYTES) {
+      setStatus('');
+      toast(`画像が大きすぎます（${(file.size / 1048576).toFixed(1)}MB / 上限10MB）`, 'err');
+      return;
+    }
+
+    if (addBtn) addBtn.disabled = true;
+    setStatus('アップロード中…');
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('画像を読み込めませんでした'));
+        // data:image/jpeg;base64,XXXX → XXXX だけ取り出す
+        reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+        reader.readAsDataURL(file);
+      });
+
+      const r = await gasCall({
+        action: 'uploadSnsMedia', password: state.password,
+        base64, mime: file.type,
+      });
+
+      if (r && r.ok && r.imageUrl) {
+        $('snsq-image').value = r.imageUrl;
+        if (preview) { preview.src = r.imageUrl; preview.hidden = false; }
+        setStatus('アップロード完了');
+        toast('画像を保存しました', 'ok');
+      } else {
+        setStatus('');
+        toast('画像の保存に失敗: ' + ((r && r.error) || 'unknown'), 'err');
+      }
+    } catch (err) {
+      setStatus('');
+      toast('通信エラー: ' + err.message, 'err');
+    } finally {
+      if (addBtn) addBtn.disabled = false;
+    }
+  }
+
   async function addSnsQueuePost() {
     const text = $('snsq-text').value.trim();
     const imageUrl = $('snsq-image').value.trim();
@@ -403,6 +461,9 @@ const UNREAD_POLL_MS = 30000;
       if (r && r.ok) {
         toast('予約を追加しました', 'ok');
         $('snsq-text').value = ''; $('snsq-image').value = '';
+        const f = $('snsq-file'); if (f) f.value = '';
+        const p = $('snsq-file-preview'); if (p) { p.hidden = true; p.removeAttribute('src'); }
+        const s = $('snsq-file-status'); if (s) s.textContent = '';
         loadSnsQueue();
       } else {
         const msg = { text_required: '本文が空です', invalid_scheduledAt: '日時の形式が不正です', instagram_requires_image: 'Instagramは画像URL必須です' }[r && r.error] || (r && r.error) || 'unknown';
