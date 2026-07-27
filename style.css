@@ -1361,3 +1361,54 @@ h1, h2, h3 {
   mask-size: cover;
   mask-position: center;
 }
+
+/* ---------- ボタンの押した実感（押下→処理中の2段フィードバック） ---------- */
+.btn {
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+/* 1. 押した瞬間：軽く沈む */
+.btn:active {
+  transform: translateY(1px) scale(0.978);
+}
+/* 2. 押した位置から広がる波紋（リップル） */
+.btn-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.32;
+  transform: scale(0);
+  pointer-events: none;
+  animation: btnRipple .55s cubic-bezier(.22,.61,.36,1) forwards;
+}
+.btn-primary .btn-ripple { background: #fff; opacity: 0.28; }
+@keyframes btnRipple {
+  to { transform: scale(1); opacity: 0; }
+}
+/* 3. 処理中：ラベルを薄くしてスピナーを出す */
+.btn-label { display: inline-flex; align-items: center; gap: 6px; }
+.btn.is-busy { pointer-events: none; }
+.btn.is-busy .btn-label { opacity: 0.5; }
+.btn-spinner {
+  position: absolute;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  animation: btnSpin .62s linear infinite;
+}
+@keyframes btnSpin { to { transform: rotate(360deg); } }
+/* 4. 完了：一瞬チェックを見せる（押した結果が伝わるように） */
+.btn.is-done .btn-label::after {
+  content: ' ✓';
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn:active { transform: none; }
+  .btn-ripple { display: none; }
+  .btn-spinner { animation: none; }
+}

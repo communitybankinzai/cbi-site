@@ -239,6 +239,57 @@
     requestAnimationFrame(step);
   };
 
+  /* ---------- ボタンの押下フィードバック ----------
+     既存のHTMLは変更せず、ここでラベルを span.btn-label に包み、
+     押した位置からの波紋・処理中スピナー・完了チェックを付与する */
+  document.querySelectorAll('.btn').forEach((btn) => {
+    // ラベルを包む（すでに包まれていれば何もしない）
+    if (!btn.querySelector('.btn-label')) {
+      const label = document.createElement('span');
+      label.className = 'btn-label';
+      while (btn.firstChild) label.appendChild(btn.firstChild);
+      btn.appendChild(label);
+    }
+
+    btn.addEventListener('pointerdown', (e) => {
+      if (prefersReduced) return;
+      const r = btn.getBoundingClientRect();
+      const size = Math.max(r.width, r.height) * 2.2;
+      const ripple = document.createElement('span');
+      ripple.className = 'btn-ripple';
+      ripple.style.width = ripple.style.height = `${size}px`;
+      ripple.style.left = `${e.clientX - r.left - size / 2}px`;
+      ripple.style.top = `${e.clientY - r.top - size / 2}px`;
+      btn.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    });
+
+    btn.addEventListener('click', () => {
+      const href = btn.getAttribute('href') || '';
+      const isExternal = btn.target === '_blank' || /^https?:/i.test(href);
+      const isAnchor = href.startsWith('#');
+      if (isAnchor) {
+        // ページ内移動：押したことが伝わるよう一瞬チェックを出す
+        btn.classList.add('is-done');
+        setTimeout(() => btn.classList.remove('is-done'), 900);
+        return;
+      }
+      // 外部リンク・ページ遷移：新しいタブが開くまでの間、処理中を明示する
+      const label = btn.querySelector('.btn-label');
+      const original = label ? label.textContent : '';
+      btn.classList.add('is-busy');
+      const spinner = document.createElement('span');
+      spinner.className = 'btn-spinner';
+      btn.appendChild(spinner);
+      if (label) label.textContent = isExternal ? '開いています…' : '移動しています…';
+      setTimeout(() => {
+        btn.classList.remove('is-busy');
+        spinner.remove();
+        if (label) label.textContent = original;
+      }, 1800);
+    });
+  });
+
   // 人材バンク登録者数を CiDAO から fetch して表示
   const counter = document.getElementById('talentBankCounter');
   const counterValue = document.getElementById('talentBankCount');
