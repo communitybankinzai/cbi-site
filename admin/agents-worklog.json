@@ -24,9 +24,10 @@
             "site/assets/sea.js（影色を暗緑に統一、明るさ下限、色被り抑制）",
             "site/style.css（星3層＋3種の明滅波形）",
             "site/index.html（v=20260728a / sea.js?v=17）",
-            "site/admin/changelog.json（2件追記）"
+            "site/admin/changelog.json（2件追記）",
+            "cidao: api/cron/cost-alert/route.ts, lib/mail.ts, api/cron/notify/route.ts, vercel.json（52c0f1d, b2d6dc8, 7e11192, ff18d91）"
           ],
-          "hours": 0.2,
+          "hours": 3.0,
           "partnerApproved": false,
           "note": "「最初茶色→月が昇ると緑」は影色が茶系だったため。影も緑に統一し明るさ下限0.30を設定。星は8/26/48の3層に分け周期5.3/8.1/11.7秒＋負delayで不規則化、3層の独立稼働を実測確認。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 439,024 / cost: $266.08"
         },
@@ -2660,6 +2661,20 @@
     },
     "A8": {
       "actuals": [
+        {
+          "date": "2026-07-27",
+          "title": "AI関連費の監視体制を構築（残高・キー期限の枯渇前メール警告）",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/api/cron/cost-alert/route.ts（新規）",
+            "cidao: vercel.json（cron追加）",
+            "cidao: src/lib/mail.ts（新規）",
+            "agents/a1-core/credentials.md（キー一覧・障害メモ）"
+          ],
+          "hours": 0.0,
+          "partnerApproved": false,
+          "note": "A8プラン「AI関連費の月次モニタリング体制構築（期限2026-07-31）」の実体。2026-07-27のクレジット枯渇でCiDAOのAI機能が全停止した再発防止として、毎朝7時に残高とAPIキー有効期限を確認し、残高$5未満・キー失効30/14/7/3/1日前にメール警告する仕組みをVercel Cronで実装。Anthropicには残高APIが無いため『基準額−基準日以降の累計コスト』で算出（Cost APIのamountはセント建て、starting_atに当日指定不可という未文書の制約を実測で特定）。計算精度は直接APIとの突合で一致を確認。工数はA1の実績に合算計上のため0とする。"
+        },
         {
           "date": "2026-06-20",
           "title": "AIエージェント投稿時の自動実績追記機構を実装",
