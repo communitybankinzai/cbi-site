@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：星の強化・雲海のふわふわ化・風のうねり・草原モード追加",
+          "category": "実装",
+          "outputs": [
+            "site/style.css（星60個＋starTwinkle）",
+            "site/assets/sea.js（fbm5オクターブ、ドメインワープ、swellうねり、GRASSパレット、uGrass）",
+            "site/index.html（v=20260727x / sea.js?v=15）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "「星が見えない」「雲海が砂のよう」「草原に見えるなら緑に」「風のうねりが必要」の4点対応。草原は?scene=grassで比較可能にし、どちらを採用するかユーザー判断に委ねる構成。WebGL初期化・シェーダーコンパイルエラーなしを両モードで確認。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 418,529 / cost: $258.55"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：月とロゴのズレ修正＋Codex向け不具合切り分け依頼書の作成",
           "category": "実装",
           "outputs": [
