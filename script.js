@@ -85,13 +85,18 @@
   // CSS 側の keyframes は 0%=午前0時 → 50%=正午 の実時間配分なので、
   // 現在時刻の1日進捗ぶんだけアニメーションを先送りする
   {
-    const dayProgressNow = () => {
+    // 開いた瞬間の実時刻を起点に、1日=180秒の速さで進む位相（0=0時, 0.5=正午）
+    const clockProgress = () => {
       const now = new Date();
       return (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 86400;
     };
+    const phase0 = clockProgress();
+    const t0 = performance.now();
+    const dayProgressNow = () =>
+      ((phase0 + (performance.now() - t0) / 180000) % 1 + 1) % 1;
     document.documentElement.style.setProperty(
       '--sky-delay',
-      `-${(dayProgressNow() * 180).toFixed(1)}s`
+      `-${(phase0 * 180).toFixed(1)}s`
     );
     // iOS Safari では CSS 変数経由の負ディレイが効かないことがあるため、
     // Web Animations API でアニメーションの現在位置を直接そろえる（擬似要素分も取れる）
@@ -175,7 +180,8 @@
     };
     if (!prefersReduced) {
       paintSky();
-      setInterval(paintSky, 1000);
+      // 1日=180秒で色が変わるため、1秒間隔だと段差が見える。太陽と同じ間隔で更新する
+      setInterval(paintSky, 200);
     }
 
     // 太陽・月の運行は transform で行う。
@@ -196,11 +202,7 @@
         const edge = Math.min(t, 1 - t);
         el.style.opacity = String(Math.max(0, Math.min(1, edge / 0.06)));
       };
-      let lastOrbit = 0;
-      const orbit = (now) => {
-        // 太陽・月はゆっくり動くので 30fps で十分
-        if (now - lastOrbit < 33) { requestAnimationFrame(orbit); return; }
-        lastOrbit = now;
+      const orbit = () => {
         const p = dayProgressNow();
         const W = heroEl.clientWidth, H = heroEl.clientHeight;
         const peak = window.innerWidth <= 860 ? 0.78 : 0.72;
@@ -213,9 +215,11 @@
           sunEl.style.opacity = '0';
         }
         if (!(dayT >= 0 && dayT <= 1)) place(moonEl, nightT, W, H, peak);
-        requestAnimationFrame(orbit);
       };
-      requestAnimationFrame(orbit);
+      // 200ms ごと（1日=180秒なので1回あたり約1.4px）。
+      // requestAnimationFrame はタブが背面などで止まることがあるため使わない。
+      orbit();
+      setInterval(orbit, 200);
     }
   }
 

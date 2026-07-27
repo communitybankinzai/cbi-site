@@ -105,8 +105,9 @@ void main(){
     float d = densityAt(p);
     if(d > 0.012){
       // 自己陰影：光源側へ少し進んだ場所が濃ければこの点は影になる
-      float dl = densityAt(p + ld*0.85);
-      float lightAmt = clamp((d - dl)*2.8 + 0.28, 0.0, 1.0) * (0.30 + 0.70*uLightUp);
+      float dl = densityAt(p + ld*1.05);
+      float lightAmt = clamp((d - dl)*4.2 + 0.16, 0.0, 1.0);
+      lightAmt = pow(lightAmt, 0.85) * (0.32 + 0.68*uLightUp);
       vec3 sampleCol = mix(uShadow, uLit, lightAmt);
       sampleCol += uLit * phase * lightAmt * 0.24 * uLightUp;
       float absorb = exp(-d*dt*2.8);
@@ -123,10 +124,13 @@ void main(){
   col = mix(col, uHaze*alpha, hazeAmt*0.72);
 
   // 太陽・月の真下：雲海に映る反射のような光の帯
-  float beam = exp(-pow((vUv.x - uLightX)*2.1, 2.0)) * uLightUp;
-  // 手前ほど反射が伸びて見えるよう、下方向で強める
-  beam *= mix(1.35, 0.55, vUv.y);
-  col += uLit * beam * alpha * 1.15;
+  // 太陽・月の真下に伸びる光の道。中心は鋭く、周囲はやわらかく広がる
+  float dx = vUv.x - uLightX;
+  float core = exp(-pow(dx*7.0, 2.0));
+  float halo = exp(-pow(dx*2.2, 2.0));
+  float beam = (core*1.5 + halo*0.75) * uLightUp;
+  beam *= mix(1.5, 0.45, vUv.y);   // 手前ほど広く強く
+  col += uLit * beam * alpha * 1.25;
 
   // 帯の上端は空に溶かす（premultiplied のため色と透明度に同じ係数）
   float fade = smoothstep(1.0, 0.85, vUv.y);
@@ -164,15 +168,15 @@ void main(){
 
   /* ---- 時刻に応じた雲海の色（0=0時 → 0.5=正午 → 1=24時） ---- */
   const PALETTES = [
-    { p: 0.00, lit: [.40, .46, .66], shadow: [.02, .03, .08], haze: [.05, .07, .15] },  // 深夜：月光の銀
-    { p: 0.22, lit: [.42, .47, .64], shadow: [.03, .04, .09], haze: [.06, .08, .16] },  // 未明
-    { p: 0.29, lit: [1.0, .74, .52], shadow: [.30, .22, .32], haze: [.80, .55, .45] },  // 朝焼け
-    { p: 0.40, lit: [1.05, 1.03, 1.0], shadow: [.50, .58, .74], haze: [.74, .84, .94] },// 午前
-    { p: 0.50, lit: [1.08, 1.07, 1.05], shadow: [.52, .60, .76], haze: [.76, .86, .95] },// 正午
-    { p: 0.62, lit: [1.04, 1.0, .94], shadow: [.50, .56, .72], haze: [.75, .83, .93] }, // 午後
-    { p: 0.74, lit: [1.0, .60, .38], shadow: [.26, .17, .26], haze: [.78, .45, .34] },  // 夕焼け
-    { p: 0.84, lit: [.41, .46, .66], shadow: [.03, .04, .09], haze: [.06, .08, .16] },  // 宵
-    { p: 1.00, lit: [.40, .46, .66], shadow: [.02, .03, .08], haze: [.05, .07, .15] },
+    { p: 0.00, lit: [.62, .68, .88], shadow: [.02, .03, .07], haze: [.05, .07, .15] },  // 深夜：月光の銀
+    { p: 0.22, lit: [.64, .69, .86], shadow: [.03, .04, .08], haze: [.06, .08, .16] },  // 未明
+    { p: 0.29, lit: [1.15, .86, .62], shadow: [.22, .15, .24] , haze: [.80, .55, .45] },  // 朝焼け
+    { p: 0.40, lit: [1.22, 1.22, 1.20], shadow: [.34, .42, .60], haze: [.74, .84, .94] },// 午前
+    { p: 0.50, lit: [1.28, 1.28, 1.26], shadow: [.36, .44, .62], haze: [.76, .86, .95] },// 正午
+    { p: 0.62, lit: [1.22, 1.19, 1.12], shadow: [.34, .40, .58], haze: [.75, .83, .93] }, // 午後
+    { p: 0.74, lit: [1.15, .72, .46], shadow: [.20, .13, .22], haze: [.78, .45, .34] },  // 夕焼け
+    { p: 0.84, lit: [.62, .67, .87], shadow: [.03, .04, .08], haze: [.06, .08, .16] },  // 宵
+    { p: 1.00, lit: [.62, .68, .88], shadow: [.02, .03, .07], haze: [.05, .07, .15] },
   ];
   const mix3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   function paletteAt(p) {
@@ -193,10 +197,11 @@ void main(){
     const nightT = p < 0.25 ? (p + 0.25) / 0.5 : (p - 0.75) / 0.5;
     return { x: -0.04 + nightT * 1.08, up: Math.sin(nightT * Math.PI) };
   }
-  const dayProgress = () => {
-    const n = new Date();
-    return (n.getHours() * 3600 + n.getMinutes() * 60 + n.getSeconds()) / 86400;
-  };
+  // 開いた瞬間の実時刻を起点に、1日=180秒で進む（ページ側の空と同じ速さ）
+  const _n0 = new Date();
+  const _phase0 = (_n0.getHours() * 3600 + _n0.getMinutes() * 60 + _n0.getSeconds()) / 86400;
+  const _t0 = performance.now();
+  const dayProgress = () => ((_phase0 + (performance.now() - _t0) / 180000) % 1 + 1) % 1;
 
   /* ---- 描画ループ（帯が画面外・タブ非表示なら停止） ---- */
   let running = true;
