@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：太陽・月の停止バグ修正＋雲海の白さ/陰影/反射強化",
+          "category": "保守",
+          "outputs": [
+            "site/script.js（位相を180秒周期に修正、運行をsetInterval化、空更新200ms）",
+            "site/assets/sea.js（パレット白側へ、自己陰影4.2、反射core+halo）",
+            "site/index.html（v=20260727v）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "「固まる＝太陽が動かない」の実体は自分の周期バグ（transform移行時に180秒周期が欠落し実時刻直結に）。月の5秒91px移動を実測して復旧確認。WebGL撤去は誤判断でユーザー指摘により撤回済み。■は?fx=offでも残り未解決（環境要因の可能性）。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 399,769 / cost: $252.73"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：雲海の誤撤去を撤回し復活",
           "category": "保守",
           "outputs": [
