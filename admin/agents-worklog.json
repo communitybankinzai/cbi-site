@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：雲海の誤撤去を撤回し復活",
+          "category": "保守",
+          "outputs": [
+            "site/index.html（sea.js読込を復活、v=20260727t）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "雲海撤去後もフリーズが継続したため、WebGLは原因でないとユーザー指摘を受け撤回。生成テクスチャ案も試作したがもやついて塊感が出ずWebGL優位と判断し破棄。■・フリーズは?fx=offでも再現しており環境要因の可能性が高い。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 388,565 / cost: $249.97"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：WebGL雲海の撤去（フリーズ対応）＋ヒーロー構造の見直し",
           "category": "保守",
           "outputs": [
