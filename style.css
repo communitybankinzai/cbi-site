@@ -139,21 +139,12 @@ h1, h2, h3 {
 .hero {
   position: relative;
   padding: 96px 0 80px;
-  background: var(--c-navy-dark);
+  /* 背景写真は img 要素ではなく背景画像で敷く（img は単独の描画レイヤーになりやすく、
+     大きな画像だと右下のタイルが描き残される事象があったため） */
+  background: var(--c-navy-dark) url('assets/hero/hero-photo-1600.jpg') center / cover no-repeat;
   overflow: hidden;
-  isolation: isolate;
 }
 .hero-video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-  filter: saturate(1.08) contrast(1.05) brightness(1.0);
-  pointer-events: none;
-}
-.hero-photo {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1192,11 +1183,17 @@ h1, h2, h3 {
   overflow: hidden;
   pointer-events: none;
   z-index: 2;
-  /* 上端は空になじませ、手前ほど濃い霧（雲海のフォールバック表示） */
-  background: linear-gradient(180deg,
-    rgba(255, 255, 255, 0.0) 0%,
-    rgba(235, 240, 248, 0.45) 30%,
-    rgba(222, 230, 242, 0.82) 100%);
+  /* 雲海：上端は空になじませ、手前ほど濃く白い霧。
+     重ねたぼかし円で雲の起伏を表現する（静止・負荷ゼロ） */
+  background:
+    radial-gradient(60% 130% at 12% 100%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 70%),
+    radial-gradient(48% 120% at 38% 100%, rgba(248,251,255,0.90) 0%, rgba(248,251,255,0) 72%),
+    radial-gradient(66% 140% at 63% 100%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0) 70%),
+    radial-gradient(52% 125% at 88% 100%, rgba(246,250,255,0.88) 0%, rgba(246,250,255,0) 72%),
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.0) 0%,
+      rgba(238, 243, 250, 0.55) 34%,
+      rgba(228, 235, 246, 0.88) 100%);
 }
 @media (max-width: 860px) {
   .hero-sea { height: 13%; }
