@@ -115,9 +115,13 @@ void main(){
     float d = densityAt(p);
     if(d > 0.012){
       // 自己陰影：光源側へ少し進んだ場所が濃ければこの点は影になる
-      float dl = densityAt(p + ld*1.05);
-      float lightAmt = clamp((d - dl)*4.2 + 0.16, 0.0, 1.0);
-      lightAmt = pow(lightAmt, 0.85) * (0.32 + 0.68*uLightUp);
+      // 自己陰影：光源方向の密度差。振幅を大きく取り、常にはっきりした明暗を出す
+      float dl = densityAt(p + ld*1.15);
+      float lightAmt = clamp((d - dl)*6.0 + 0.10, 0.0, 1.0);
+      lightAmt = pow(lightAmt, 0.75);
+      // 起伏そのものによる陰影（光源が低い時間帯でも凹凸が消えないように）
+      float relief = clamp((d - densityAt(p + vec3(0.0, 0.55, 0.0)))*3.4 + 0.5, 0.0, 1.0);
+      lightAmt = mix(relief, lightAmt, 0.55 + 0.45*uLightUp);
       vec3 sampleCol = mix(uShadow, uLit, lightAmt);
       sampleCol += uLit * phase * lightAmt * 0.24 * uLightUp;
       float absorb = exp(-d*dt*2.0);
@@ -130,8 +134,8 @@ void main(){
   float alpha = 1.0 - T;
 
   // 大気遠近：遠くの雲は空の色にかすむ
-  float hazeAmt = smoothstep(0.5, 1.0, vUv.y);
-  col = mix(col, uHaze*alpha, hazeAmt*0.72);
+  float hazeAmt = smoothstep(0.62, 1.0, vUv.y);
+  col = mix(col, uHaze*alpha, hazeAmt*0.55);
 
   // 太陽・月の真下：雲海に映る反射のような光の帯
   // 太陽・月の真下に伸びる光の道。中心は鋭く、周囲はやわらかく広がる
@@ -193,16 +197,17 @@ void main(){
   const GRASS = [
     { p: 0.00, lit: [.16, .24, .19], shadow: [.02, .04, .04], haze: [.05, .08, .12] },  // 深夜
     { p: 0.22, lit: [.20, .28, .22], shadow: [.03, .05, .05], haze: [.07, .10, .14] },  // 未明
-    { p: 0.29, lit: [.88, .72, .40], shadow: [.14, .15, .10], haze: [.62, .48, .36] },  // 朝日
-    { p: 0.40, lit: [.62, .84, .40], shadow: [.13, .26, .14], haze: [.60, .76, .70] },  // 午前
-    { p: 0.50, lit: [.66, .88, .44], shadow: [.14, .28, .15], haze: [.62, .78, .72] },  // 正午
-    { p: 0.62, lit: [.64, .84, .40], shadow: [.13, .26, .14], haze: [.60, .76, .70] },  // 午後
-    { p: 0.74, lit: [.88, .62, .30], shadow: [.12, .13, .09], haze: [.60, .42, .32] },  // 夕日
+    { p: 0.29, lit: [1.00, .80, .42], shadow: [.08, .10, .07], haze: [.62, .48, .36] },  // 朝日
+    { p: 0.40, lit: [.72, .95, .44], shadow: [.07, .17, .09], haze: [.60, .76, .70] },  // 午前
+    { p: 0.50, lit: [.78, 1.00, .48], shadow: [.08, .19, .10], haze: [.62, .78, .72] },  // 正午
+    { p: 0.62, lit: [.74, .96, .44], shadow: [.07, .17, .09], haze: [.60, .76, .70] },  // 午後
+    { p: 0.74, lit: [1.00, .68, .32], shadow: [.07, .08, .06], haze: [.60, .42, .32] },  // 夕日
     { p: 0.84, lit: [.19, .27, .21], shadow: [.02, .04, .04], haze: [.06, .09, .13] },  // 宵
     { p: 1.00, lit: [.16, .24, .19], shadow: [.02, .04, .04], haze: [.05, .08, .12] },
   ];
+  // 標準は草原。?scene=cloud を付けると雲海表示になる
   const SCENE = new URLSearchParams(location.search).get('scene');
-  const IS_GRASS = SCENE === 'grass';
+  const IS_GRASS = SCENE !== 'cloud';
   const mix3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   function paletteAt(p) {
     const TBL = IS_GRASS ? GRASS : PALETTES;
