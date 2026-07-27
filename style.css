@@ -1268,6 +1268,9 @@ h1, h2, h3 {
   width: 100%;
   height: 100%;
   display: block;
+  /* opacityを1未満にすると、Windowsのオーバーレイ合成（MPO）による
+     灰色矩形の残留を避けられることがある（見た目への影響はない） */
+  opacity: 0.999;
 }
 .has-sea-webgl .hero-sea {
   background: none;
