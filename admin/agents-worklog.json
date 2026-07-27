@@ -17,6 +17,19 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-07-27",
+          "title": "CBIサイト：右下描画抜けの原因切り分けと写真ズーム停止",
+          "category": "保守",
+          "outputs": [
+            "site/style.css（heroZoom削除、sky-layer/太陽/月にwill-change・translateZ）",
+            "site/index.html（v=20260727a）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "PC Edgeでも再現との報告を受け、elementsFromPointで右下に要素が存在しないことを確認（合成側の問題と確定）。主因と判断した大画像の常時transformを停止。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 227,182 / cost: $144.35"
+        },
+        {
           "date": "2026-07-26",
           "title": "CBIサイト：空色レイヤーの描画抜け（右下の四角）修正",
           "category": "保守",
