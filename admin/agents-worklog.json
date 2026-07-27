@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：WebGL水面シミュレーションの移植（minamo-water最小構成）",
+          "category": "実装",
+          "outputs": [
+            "site/assets/sea.js（波の伝播＋描画シェーダー、時刻連動の光源・パレット）",
+            "site/style.css（sea-canvas、WebGL有効時のCSS版非表示切替）",
+            "site/index.html（sea.js読み込み、v=20260727f）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "「自然な海に見えない」を受け、代表の既存作品 minamo-water.html から水面の物理計算のみ移植。WebGL2初期化・シェーダーコンパイルエラーなし、CSS版フォールバック切替を確認。実描画の見た目は実機確認待ち。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 277,619 / cost: $167.59"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：ヒーロー海シーン実装＋描画抜けの原因特定と除去",
           "category": "実装",
           "outputs": [
