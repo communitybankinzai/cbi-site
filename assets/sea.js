@@ -1,8 +1,9 @@
-/* ヒーロー下部の雲海（WebGL2）
-   多層ノイズ（fbm）＋ドメインワープでもくもくした雲の起伏を描く。
-   - 光源はページの太陽／月と同じ時刻位相（1日=180秒）：真下の雲が明るく染まり、
-     雲の縁が銀色に光る（silver lining）。昼は白、朝夕は茜色、夜は月光の銀
-   - WebGL2 が使えない環境・視差軽減設定では何もせず、CSS の霧グラデのまま表示 */
+/* ヒーロー下部のボリューム雲海（WebGL2・GLSL レイマーチング）
+   3Dノイズの密度場をレイ（視線）で貫いて積分する本格的なボリュームレンダリング。
+   - 自己陰影：光源方向の密度差から雲の陰影を計算（もくもくの立体感）
+   - 前方散乱：太陽・月の方向を向いた雲が明るく輝く（silver lining）
+   - 光源はページの太陽／月と同じ時刻位相（1日=180秒）に連動
+   - WebGL2 が使えない環境・視差軽減設定では CSS の霧グラデのまま表示 */
 (() => {
   'use strict';
 
@@ -39,76 +40,90 @@ in vec2 vUv;
 out vec4 outColor;
 uniform float uTime;
 uniform vec2 uRes;
-uniform vec3 uLit;      // 光が当たる面の色
-uniform vec3 uShadow;   // 影の谷の色
-uniform vec3 uHaze;     // 遠景がなじむ空の色
+uniform vec3 uLit;      // 光が当たる雲の色
+uniform vec3 uShadow;   // 雲の陰の色
+uniform vec3 uHaze;     // 遠景がかすむ空の色
 uniform float uLightX;  // 太陽／月の横位置（0=左端, 1=右端）
 uniform float uLightUp; // 光源の高さ（0=沈んでいる, 1=天頂）
 
-float hash(vec2 p){
-  vec3 p3 = fract(vec3(p.x,p.y,p.x) * 0.1031);
-  p3 += dot(p3, p3.yzx + 33.33);
-  return fract((p3.x + p3.y) * p3.z);
+float hash(vec3 p){
+  p = fract(p*0.3183099 + vec3(0.1, 0.17, 0.13));
+  p *= 17.0;
+  return fract(p.x*p.y*p.z*(p.x + p.y + p.z));
 }
-float noise(vec2 p){
-  vec2 i = floor(p), f = fract(p);
-  float a = hash(i), b = hash(i+vec2(1.0,0.0)), c = hash(i+vec2(0.0,1.0)), d = hash(i+vec2(1.0,1.0));
-  vec2 u = f*f*(3.0-2.0*f);
-  return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+float noise3(vec3 x){
+  vec3 i = floor(x), f = fract(x);
+  f = f*f*(3.0 - 2.0*f);
+  return mix(
+    mix(mix(hash(i+vec3(0,0,0)), hash(i+vec3(1,0,0)), f.x),
+        mix(hash(i+vec3(0,1,0)), hash(i+vec3(1,1,0)), f.x), f.y),
+    mix(mix(hash(i+vec3(0,0,1)), hash(i+vec3(1,0,1)), f.x),
+        mix(hash(i+vec3(0,1,1)), hash(i+vec3(1,1,1)), f.x), f.y), f.z);
 }
-float fbm(vec2 p){
+float fbm(vec3 p){
   float v = 0.0, a = 0.5;
-  for(int i=0;i<4;i++){
-    v += a*noise(p);
-    p = p*2.03 + vec2(17.3, 9.1);
-    a *= 0.55;
+  for(int i = 0; i < 4; i++){
+    v += a*noise3(p);
+    p = p*2.13 + vec3(11.3, 5.1, 7.7);
+    a *= 0.5;
   }
   return v;
 }
 
+/* 雲の密度場：y=0 付近に厚い雲の層。ゆっくり流れ、形も変わり続ける */
+float densityAt(vec3 p){
+  vec3 q = p*vec3(0.30, 0.50, 0.30) + vec3(uTime*0.010, uTime*0.0022, uTime*0.005);
+  float base = fbm(q);
+  float heightFall = smoothstep(1.35, -0.3, p.y);   // 上に行くほど薄く
+  float d = base*1.30 - 0.66 + heightFall*0.58;
+  return clamp(d, 0.0, 1.0);
+}
+
 void main(){
-  // vUv.y: 0=帯の下端（手前）、1=上端（遠く・空との境）
-  // 遠くを強く圧縮して「見渡す雲海」の遠近をつくる
-  float py = pow(vUv.y, 1.7);
   float aspect = uRes.x / max(uRes.y, 1.0);
-  vec2 p = vec2(vUv.x * aspect, py * 2.6);
-  float scale = mix(1.7, 5.2, py);   // 遠くほど細かい雲
+  // 視線：帯の下端＝手前の雲を見下ろし、上端＝水平線近くを見渡す
+  vec3 ro = vec3(0.0, 2.1, 0.0);
+  vec3 rd = normalize(vec3((vUv.x - 0.5)*aspect*0.9, mix(-0.62, -0.03, vUv.y), 1.0));
 
-  // ドメインワープ2段でもくもく感を出し、全体をゆっくり流す
-  vec2 drift = vec2(uTime*0.016, uTime*0.004);
-  vec2 q = vec2(fbm(p*scale + drift),
-                fbm(p*scale + vec2(5.2,1.3) - drift*0.7));
-  float h = fbm(p*scale + q*1.9 + drift*0.6);
+  // 光源（太陽／月）の方向。前方散乱：光源の方を向いた雲ほど輝く
+  vec3 ld = normalize(vec3((uLightX - 0.5)*1.5, 0.30 + uLightUp*0.9, 0.4));
+  float phase = 0.3 + 4.2*pow(max(dot(rd, ld), 0.0), 6.0);
 
-  // 雲の密度（下ほど濃く敷き詰める）
-  float cover = mix(0.34, 0.52, py);          // 遠くほど隙間なく
-  float density = smoothstep(cover - 0.16, cover + 0.30, h);
+  // 雲層スラブとレイの交差区間
+  float tEnter = max((1.15 - ro.y)/rd.y, 0.0);
+  float tExit  = min((-2.0 - ro.y)/rd.y, 26.0);
 
-  // 起伏の傾きから照明を計算
-  float e = 0.02;
-  float hx = fbm(p*scale + q*1.9 + drift*0.6 + vec2(e,0.0)) - h;
-  float hy = fbm(p*scale + q*1.9 + drift*0.6 + vec2(0.0,e)) - h;
-  vec3 n = normalize(vec3(-hx*7.0, -hy*7.0, 1.0));
-  vec3 ld = normalize(vec3((uLightX - vUv.x)*1.3, 0.5 + uLightUp*0.4, 0.55));
-  float diff = clamp(dot(n, ld)*0.5 + 0.5, 0.0, 1.0);
+  // レイマーチング（開始位置をピクセルごとに散らして縞を防ぐ）
+  const int STEPS = 16;
+  float dt = (tExit - tEnter)/float(STEPS);
+  float t = tEnter + dt*hash(vec3(vUv*913.7, 0.0));
+  vec3 col = vec3(0.0);
+  float T = 1.0;   // 透過率
+  for(int i = 0; i < STEPS; i++){
+    vec3 p = ro + rd*t;
+    float d = densityAt(p);
+    if(d > 0.012){
+      // 自己陰影：光源側へ少し進んだ場所が濃ければこの点は影になる
+      float dl = densityAt(p + ld*0.6);
+      float lightAmt = clamp((d - dl)*1.7 + 0.38, 0.0, 1.0) * (0.30 + 0.70*uLightUp);
+      vec3 sampleCol = mix(uShadow, uLit, lightAmt);
+      sampleCol += uLit * phase * lightAmt * 0.24 * uLightUp;
+      float absorb = exp(-d*dt*2.8);
+      col += T*(1.0 - absorb)*sampleCol;
+      T *= absorb;
+      if(T < 0.045) break;   // ほぼ不透明になったら打ち切り
+    }
+    t += dt;
+  }
+  float alpha = 1.0 - T;
 
-  // 光源の真下：雲を明るく染める光の帯（水面反射の代わり）
-  float beam = exp(-pow((vUv.x - uLightX)*2.6, 2.0)) * uLightUp;
-  // 雲の頂の縁が光る（silver lining）
-  float rim = smoothstep(0.58, 0.92, h) * beam;
+  // 大気遠近：遠くの雲は空の色にかすむ
+  float hazeAmt = smoothstep(0.5, 1.0, vUv.y);
+  col = mix(col, uHaze*alpha, hazeAmt*0.72);
 
-  vec3 col = mix(uShadow, uLit, diff * (0.45 + 0.55*uLightUp));
-  col += uLit * beam * 0.5;
-  col += uLit * rim * 0.55;
-
-  // 遠くは空の色にかすませる（大気遠近）
-  col = mix(col, uHaze, smoothstep(0.45, 1.0, vUv.y)*0.75);
-
-  // 上端は空へ溶け、下端はしっかり敷き詰める
-  float alpha = clamp(density + smoothstep(0.30, 0.0, vUv.y)*0.85, 0.0, 1.0);
-  alpha *= smoothstep(1.0, 0.80, vUv.y);
-
-  outColor = vec4(col*alpha, alpha);
+  // 帯の上端は空に溶かす（premultiplied のため色と透明度に同じ係数）
+  float fade = smoothstep(1.0, 0.85, vUv.y);
+  outColor = vec4(col*fade, alpha*fade);
 }`));
   gl.linkProgram(prog);
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
@@ -133,24 +148,25 @@ void main(){
   function resize() {
     const r = sea.getBoundingClientRect();
     if (r.width < 2 || r.height < 2) return;
-    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
-    canvas.width = Math.floor(r.width * dpr);
-    canvas.height = Math.floor(r.height * dpr);
+    // レイマーチングは重いので内部解像度を落とす（雲はぼんやりした表現なので劣化は見えない）
+    const scale = Math.min(1.0, window.devicePixelRatio || 1) * 0.75;
+    canvas.width = Math.max(2, Math.floor(r.width * scale));
+    canvas.height = Math.max(2, Math.floor(r.height * scale));
   }
   resize();
   window.addEventListener('resize', resize);
 
   /* ---- 時刻に応じた雲海の色（0=0時 → 0.5=正午 → 1=24時） ---- */
   const PALETTES = [
-    { p: 0.00, lit: [.52, .58, .78], shadow: [.08, .10, .19], haze: [.10, .13, .24] },  // 深夜：月光の銀
-    { p: 0.22, lit: [.55, .58, .76], shadow: [.10, .11, .20], haze: [.13, .14, .25] },  // 未明
-    { p: 0.29, lit: [1.0, .74, .52], shadow: [.38, .28, .38], haze: [.80, .55, .45] },  // 朝焼け
-    { p: 0.40, lit: [1.0, .99, .96], shadow: [.58, .66, .80], haze: [.74, .84, .94] },  // 午前
-    { p: 0.50, lit: [1.0, 1.0, 1.0], shadow: [.60, .68, .82], haze: [.76, .86, .95] },  // 正午
-    { p: 0.62, lit: [1.0, .98, .92], shadow: [.58, .64, .78], haze: [.75, .83, .93] },  // 午後
-    { p: 0.74, lit: [1.0, .62, .40], shadow: [.34, .22, .30], haze: [.78, .45, .34] },  // 夕焼け
-    { p: 0.84, lit: [.54, .58, .78], shadow: [.09, .11, .20], haze: [.11, .13, .24] },  // 宵
-    { p: 1.00, lit: [.52, .58, .78], shadow: [.08, .10, .19], haze: [.10, .13, .24] },
+    { p: 0.00, lit: [.52, .58, .78], shadow: [.07, .09, .17], haze: [.10, .13, .24] },  // 深夜：月光の銀
+    { p: 0.22, lit: [.55, .58, .76], shadow: [.09, .10, .18], haze: [.13, .14, .25] },  // 未明
+    { p: 0.29, lit: [1.0, .74, .52], shadow: [.30, .22, .32], haze: [.80, .55, .45] },  // 朝焼け
+    { p: 0.40, lit: [1.05, 1.03, 1.0], shadow: [.50, .58, .74], haze: [.74, .84, .94] },// 午前
+    { p: 0.50, lit: [1.08, 1.07, 1.05], shadow: [.52, .60, .76], haze: [.76, .86, .95] },// 正午
+    { p: 0.62, lit: [1.04, 1.0, .94], shadow: [.50, .56, .72], haze: [.75, .83, .93] }, // 午後
+    { p: 0.74, lit: [1.0, .60, .38], shadow: [.26, .17, .26], haze: [.78, .45, .34] },  // 夕焼け
+    { p: 0.84, lit: [.54, .58, .78], shadow: [.08, .10, .18], haze: [.11, .13, .24] },  // 宵
+    { p: 1.00, lit: [.52, .58, .78], shadow: [.07, .09, .17], haze: [.10, .13, .24] },
   ];
   const mix3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   function paletteAt(p) {

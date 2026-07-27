@@ -1214,7 +1214,7 @@ h1, h2, h3 {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 26%;
+  height: 16%;
   overflow: hidden;
   pointer-events: none;
   z-index: 2;
@@ -1225,7 +1225,7 @@ h1, h2, h3 {
     rgba(222, 230, 242, 0.82) 100%);
 }
 @media (max-width: 860px) {
-  .hero-sea { height: 22%; }
+  .hero-sea { height: 13%; }
 }
 
 /* WebGL 水面（sea.js）。使える環境ではこちらが海を描き、CSS版のさざなみ・反射は隠す */
@@ -1240,3 +1240,9 @@ h1, h2, h3 {
   background: none;
 }
 
+
+/* 雲海と重なっても読めるよう、ヒーロー下部の文字に影を付ける */
+.hero-cta-note,
+.hero-meta {
+  text-shadow: 0 1px 6px rgba(20, 40, 63, 0.55), 0 0 18px rgba(20, 40, 63, 0.35);
+}
