@@ -191,12 +191,16 @@
     const moonEl = document.querySelector('.hero-moon');
     if (!prefersReduced && heroEl && sunEl && moonEl) {
       // 弧の形は従来の keyframes と同じ：地平線 -14%、天頂 72%（スマホ 78%）
+      // 太陽(88px)と月(140px)でサイズが違うため、下端ではなく「中心」を軌道に乗せる。
+      // そうしないと大きい月だけロゴより上にずれる。
+      const ORBIT_HALF = 44; // 基準（太陽の半径）。この高さを軌道の中心とみなす
       const place = (el, t, W, H, peak) => {
-        const w = el.offsetWidth;
+        const w = el.offsetWidth, h = el.offsetHeight;
         // 基準は left:0 / bottom:0。translate は基準からの相対移動で指定する
         const x = (-0.04 + t * 1.08) * W - w / 2;
         const bottomPct = -0.14 + (peak + 0.14) * Math.sin(t * Math.PI);
-        const y = -bottomPct * H;
+        const centerFromBottom = bottomPct * H + ORBIT_HALF;
+        const y = -(centerFromBottom - h / 2);
         el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
         // 地平線の際でフェードさせる
         const edge = Math.min(t, 1 - t);
