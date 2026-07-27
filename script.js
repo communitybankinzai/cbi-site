@@ -30,6 +30,25 @@
 
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // 描画不具合の切り分け用スイッチ（?deco=off / ?deco=sky / ?deco=photo）
+  // deco=off  : 空・太陽・月・星の装飾レイヤーをすべて外す
+  // deco=sky  : 空の色レイヤーだけ外す
+  // deco=photo: 背景写真の上に重ねるグラデーションを外す
+  {
+    const mode = new URLSearchParams(location.search).get('deco');
+    if (mode === 'off') {
+      const d = document.querySelector('.hero-deco');
+      if (d) d.style.display = 'none';
+    } else if (mode === 'sky') {
+      const t = document.querySelector('.sky-tint');
+      if (t) t.style.display = 'none';
+    } else if (mode === 'photo') {
+      const o = document.querySelector('.hero-video-overlay');
+      if (o) o.style.display = 'none';
+    }
+    if (mode) document.documentElement.setAttribute('data-deco', mode);
+  }
+
   // ヒーローの空を「開いた実時刻」の位相から始める（1日=180秒の周回）
   // CSS 側の keyframes は 0%=午前0時 → 50%=正午 の実時間配分なので、
   // 現在時刻の1日進捗ぶんだけアニメーションを先送りする
