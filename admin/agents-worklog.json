@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：草原を標準化＋起伏の陰影強化",
+          "category": "実装",
+          "outputs": [
+            "site/assets/sea.js（IS_GRASS既定化、relief陰影追加、パレット明暗拡大、haze低減）",
+            "site/index.html（sea.js?v=16）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "「いつ緑にするの」「濃淡が弱くのぺっと見える」に対応。のっぺりの原因は陰影係数をuLightUpに比例させていたことで、昼間ほど平坦化していた。起伏由来のrelief陰影を常時合成する方式へ変更。パラメータなしで草原表示になることを実測。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 432,131 / cost: $262.97"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：星の視認性改善と重なり順修正",
           "category": "実装",
           "outputs": [
