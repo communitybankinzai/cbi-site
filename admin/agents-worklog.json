@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CiDAOチラシAI抽出500障害の修正＋CBIサイト会員種別表の刷新・機能別ガイド4ページ新規作成",
+          "category": "実装",
+          "outputs": "cidao: src/app/api/events/scan/route.ts, src/app/events/new/_components/ImageScanField.tsx（commit b271ba3）／ site: index.html, style.css, guide/propose/index.html, guide/vote/index.html, guide/events/index.html, guide/pr/index.html（新規4ページ）, admin/changelog.json",
+          "hours": 1.1,
+          "partnerApproved": false,
+          "note": "前半：Anthropicクレジット枯渇でチラシAI抽出が500になりイベント登録を阻害していた問題をフェイルソフト化（HTTP 200+{ok:false,reason}、Storage保存/AI抽出/DB保存を分離、reason別の日本語お知らせ表示）。調査の結果ローカル・本番ともAPIキーが401 invalidで失効しており、新キー発行はユーザー対応待ち。後半：会員種別の3列表がわかりにくいとの指摘を受け箇条書き＋登録無料の明記に変更し、手順は機能別4ページへ分離。記載は実装と突き合わせて検証（イベント参加は準会員で可能、投票選択肢は提案種別で2系統、PR公開範囲は3段階）。CSSコメント内の */ でルールが壊れる不具合をブラウザ検証で発見・修正済み。session: 55f6d859-3377-4c23-b264-4b33ea939bb7 / output: 109,816 / cost: $47.99"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：右下描画抜けの根本解決（全画面アニメ廃止・JS直接更新化）",
           "category": "保守",
           "outputs": [

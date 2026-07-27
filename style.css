@@ -1066,7 +1066,7 @@ h1, h2, h3 {
   .guide-link-grid { grid-template-columns: 1fr; }
 }
 
-/* ---------- 機能別ガイドページ（guide/*/） ---------- */
+/* ---------- 機能別ガイドページ（guide 配下） ---------- */
 .guide-hero {
   background: linear-gradient(180deg, var(--c-navy-dark) 0%, var(--c-navy) 100%);
   color: #fff;
