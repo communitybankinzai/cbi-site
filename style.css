@@ -1293,3 +1293,17 @@ h1, h2, h3 {
   z-index: 2;
   pointer-events: none;
 }
+
+/* 手の影：手の形にマスクした色レイヤー。向き・濃さは script.js が太陽の位置から毎秒更新 */
+.hero-hand-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  -webkit-mask-image: url('assets/hero/hero-hand.webp?v=1');
+  -webkit-mask-size: cover;
+  -webkit-mask-position: center;
+  mask-image: url('assets/hero/hero-hand.webp?v=1');
+  mask-size: cover;
+  mask-position: center;
+}

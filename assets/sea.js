@@ -72,7 +72,7 @@ float fbm(vec3 p){
 
 /* 雲の密度場：y=0 付近に厚い雲の層。ゆっくり流れ、形も変わり続ける */
 float densityAt(vec3 p){
-  vec3 q = p*vec3(0.30, 0.50, 0.30) + vec3(uTime*0.010, uTime*0.0022, uTime*0.005);
+  vec3 q = p*vec3(0.30, 0.50, 0.30) + vec3(uTime*0.048, uTime*0.007, uTime*0.020);
   float base = fbm(q);
   float heightFall = smoothstep(1.35, -0.3, p.y);   // 上に行くほど薄く
   float d = base*1.30 - 0.66 + heightFall*0.58;
@@ -104,8 +104,8 @@ void main(){
     float d = densityAt(p);
     if(d > 0.012){
       // 自己陰影：光源側へ少し進んだ場所が濃ければこの点は影になる
-      float dl = densityAt(p + ld*0.6);
-      float lightAmt = clamp((d - dl)*1.7 + 0.38, 0.0, 1.0) * (0.30 + 0.70*uLightUp);
+      float dl = densityAt(p + ld*0.85);
+      float lightAmt = clamp((d - dl)*2.8 + 0.28, 0.0, 1.0) * (0.30 + 0.70*uLightUp);
       vec3 sampleCol = mix(uShadow, uLit, lightAmt);
       sampleCol += uLit * phase * lightAmt * 0.24 * uLightUp;
       float absorb = exp(-d*dt*2.8);

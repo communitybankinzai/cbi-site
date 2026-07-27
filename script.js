@@ -109,15 +109,16 @@
     // 空の色と星は「全画面要素のアニメーション」を避けるため、1秒ごとに値を直接更新する。
     // 1日=180秒の周回なので、1秒刻みでも色の変化は十分なめらかに見える。
     const SKY_STOPS = [
-      { p: 0.00, c: [14, 18, 48, 0.55] },   // 0時 夜
-      { p: 0.20, c: [30, 32, 72, 0.45] },   // 4:48 未明
+      // 月が出ている夜間は濃い夜空にする（背景写真の青空をほぼ隠す）
+      { p: 0.00, c: [7, 10, 28, 0.85] },    // 0時 夜
+      { p: 0.20, c: [10, 13, 34, 0.78] },   // 4:48 未明
       { p: 0.27, c: [255, 138, 76, 0.26] }, // 6:29 朝焼け
       { p: 0.35, c: [160, 205, 255, 0.10] },// 8:24 午前
       { p: 0.50, c: [150, 200, 255, 0.07] },// 正午
       { p: 0.68, c: [255, 168, 84, 0.16] }, // 16:19 午後
       { p: 0.75, c: [255, 104, 66, 0.28] }, // 18時 夕焼け
-      { p: 0.85, c: [14, 18, 48, 0.55] },   // 20:24 夜
-      { p: 1.00, c: [14, 18, 48, 0.55] },
+      { p: 0.85, c: [7, 10, 28, 0.85] },    // 20:24 夜
+      { p: 1.00, c: [7, 10, 28, 0.85] },
     ];
     const skyColorAt = (p) => {
       let a = SKY_STOPS[0], b = SKY_STOPS[SKY_STOPS.length - 1];
@@ -137,10 +138,32 @@
       return 0.9;
     };
     const tint = document.querySelector('.sky-tint');
+    // 太陽（6→18時）／月（18→翌6時）の横位置と高さ（CSSのsunArc/moonArcと同じ配分）
+    const lightAt = (p) => {
+      const dayT = (p - 0.25) / 0.5;
+      if (dayT >= 0 && dayT <= 1) return { x: -0.04 + dayT * 1.08, up: Math.sin(dayT * Math.PI), day: true };
+      const nightT = p < 0.25 ? (p + 0.25) / 0.5 : (p - 0.75) / 0.5;
+      return { x: -0.04 + nightT * 1.08, up: Math.sin(nightT * Math.PI), day: false };
+    };
+    const handShade = document.querySelector('.hero-hand-shade');
     const paintSky = () => {
       const p = dayProgressNow();
       if (tint) tint.style.backgroundColor = skyColorAt(p);
       document.documentElement.style.setProperty('--stars-opacity', String(starsOpacityAt(p).toFixed(3)));
+      // 手の影：太陽の反対側が暗くなる。朝夕ほど影が濃く、正午は薄い。夜は全体が青暗く
+      if (handShade) {
+        const li = lightAt(p);
+        const side = li.x < 0.5 ? 'to right' : 'to left'; // 光源の反対側へ向かって暗く
+        if (li.day) {
+          const strength = (0.12 + 0.30 * (1 - li.up)) * Math.min(1, li.up * 3 + 0.2);
+          handShade.style.background =
+            'linear-gradient(' + side + ', rgba(20, 25, 50, 0) 42%, rgba(20, 25, 50, ' + strength.toFixed(3) + ') 100%)';
+        } else {
+          const moon = 0.10 * li.up;
+          handShade.style.background =
+            'linear-gradient(' + side + ', rgba(8, 12, 30, ' + (0.38 - moon).toFixed(3) + ') 0%, rgba(8, 12, 30, ' + (0.58 - moon).toFixed(3) + ') 100%)';
+        }
+      }
     };
     if (!prefersReduced) {
       paintSky();
