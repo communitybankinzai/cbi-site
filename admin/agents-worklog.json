@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト＋CiDAO：ボタン押下フィードバックの実装",
+          "category": "実装",
+          "outputs": [
+            "site/style.css・script.js（.btn-label自動包み、波紋、スピナー、完了チェック）",
+            "CiDAO: src/components/ButtonFeedback.tsx（新規・全ページ共通のdocumentレベル制御）",
+            "CiDAO: src/app/globals.css（波紋/スピナー/押下沈み込み）、src/app/layout.tsx（組込）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "「押して反応しているか分からない」という利用者批判への対応。CBI側8ボタン全てで「開いています…」＋スピナー、ページ内リンクのチェック表示を実測確認。CiDAO側は波紋生成とdata-busy付与を実測、tsc exit 0。各画面の個別改修は不要な共通実装を選択。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 452,468 / cost: $279.40"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：草原の色被り修正＋星の不規則明滅",
           "category": "実装",
           "outputs": [
