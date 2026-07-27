@@ -683,7 +683,7 @@ h1, h2, h3 {
 
   .section { padding: 64px 0; }
   .hero { padding: 64px 0 56px; }
-  .hero-logo { width: 100px; height: 100px; }
+  .hero-logo-wrap { width: 100px; height: 100px; }
 
   .news-list li {
     grid-template-columns: 1fr;
@@ -899,9 +899,41 @@ h1, h2, h3 {
   81%, 100% { opacity: 1; }
 }
 /* 正午：太陽がロゴの真後ろに来た瞬間、CBIロゴがふわっと光る */
-.hero-logo {
+.hero-logo-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 24px;
   animation: logoFlash 180s linear infinite;
   animation-delay: var(--sky-delay, 0s);
+}
+.hero-logo-wrap .hero-logo {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+/* 正午・0時のフラッシュ：ロゴ表面が白く輝く光の膜（opacityのみ＝描画抜けを起こさない） */
+.hero-logo-flare {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 76%);
+  opacity: 0;
+  pointer-events: none;
+  animation: logoFlare 180s linear infinite;
+  animation-delay: var(--sky-delay, 0s);
+}
+@keyframes logoFlare {
+  0%        { opacity: 0.72; }
+  1.5%      { opacity: 0.95; }
+  3.5%, 46.5% { opacity: 0; }
+  48.5%     { opacity: 0.95; }
+  50%       { opacity: 0.68; }
+  51.5%     { opacity: 0.95; }
+  53.5%, 96.5% { opacity: 0; }
+  98.5%     { opacity: 0.95; }
+  100%      { opacity: 0.72; }
 }
 /* 光は .logo-burst（opacityのみ）が担当。ロゴ本体は transform だけ動かす
    （filter アニメーションは再描画を誘発し、描画抜けの原因になるため使わない） */
@@ -963,7 +995,8 @@ h1, h2, h3 {
 @media (prefers-reduced-motion: reduce) {
   .hero-cta .btn-primary::after,
   .card-icon,
-  .hero-logo { animation: none; }
+  .hero-logo-wrap { animation: none; }
+  .hero-logo-flare { animation: none; opacity: 0; }
   .sky-tint { background-color: transparent; }
   .hero-deco::after,
   .hero-sun,
@@ -1245,4 +1278,15 @@ h1, h2, h3 {
 .hero-cta-note,
 .hero-meta {
   text-shadow: 0 1px 6px rgba(20, 40, 63, 0.55), 0 0 18px rgba(20, 40, 63, 0.35);
+}
+
+/* 手の切り抜き：文字の後ろ・雲海より前に重ねる（元写真と同じ配置で位置ズレなし） */
+.hero-hand {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+  pointer-events: none;
 }

@@ -121,6 +121,10 @@ void main(){
   float hazeAmt = smoothstep(0.5, 1.0, vUv.y);
   col = mix(col, uHaze*alpha, hazeAmt*0.72);
 
+  // 太陽・月の真下：雲海に映る反射のような光の帯
+  float beam = exp(-pow((vUv.x - uLightX)*2.4, 2.0)) * uLightUp;
+  col += uLit * beam * alpha * 0.55;
+
   // 帯の上端は空に溶かす（premultiplied のため色と透明度に同じ係数）
   float fade = smoothstep(1.0, 0.85, vUv.y);
   outColor = vec4(col*fade, alpha*fade);
