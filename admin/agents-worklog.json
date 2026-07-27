@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：手の影の太陽連動＋夜空強化＋雲海調整＋■の原因確定",
+          "category": "実装",
+          "outputs": [
+            "site/script.js（hero-hand-shadeの毎秒更新、夜のSKY_STOPS強化）",
+            "site/style.css（手の形マスクの影レイヤー、sea-canvasのMPO抑止opacity）",
+            "site/assets/sea.js（陰影コントラスト・流速強化）",
+            "site/index.html（v=20260727l）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "?debug=outlineスクショで■はDOM要素でないと確定（Windows MPO疑い、opacity 0.999抑止を適用）。手の影は太陽位置から向き・濃さを算出（午後の実測: to left 0.125で妥当）。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 338,471 / cost: $226.67"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CiDAO AI障害の復旧（クレジット枯渇＋キー失効）＋CBIサイト会員種別表の刷新・機能別ガイド4ページ新規作成",
           "category": "実装",
           "outputs": [
