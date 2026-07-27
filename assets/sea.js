@@ -152,10 +152,10 @@ void main(){
   function resize() {
     const r = sea.getBoundingClientRect();
     if (r.width < 2 || r.height < 2) return;
-    // レイマーチングは重いので内部解像度を落とす（雲はぼんやりした表現なので劣化は見えない）
-    const scale = Math.min(1.0, window.devicePixelRatio || 1) * 0.75;
-    canvas.width = Math.max(2, Math.floor(r.width * scale));
-    canvas.height = Math.max(2, Math.floor(r.height * scale));
+    // 内部解像度は CSS 表示サイズと等倍にする。
+    // 拡大表示だと OS 側の合成（オーバーレイ）に載りやすく、描画の取り残しを招くため。
+    canvas.width = Math.max(2, Math.round(r.width));
+    canvas.height = Math.max(2, Math.round(r.height));
   }
   resize();
   window.addEventListener('resize', resize);
