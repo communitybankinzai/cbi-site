@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：ボリューム雲海（レイマーチング）実装＋帯の高さ調整",
+          "category": "実装",
+          "outputs": [
+            "site/assets/sea.js（3Dノイズ×レイマーチング16step、自己陰影・前方散乱）",
+            "site/style.css（帯26%→16%/13%、下部テキストにtext-shadow）",
+            "site/index.html（v=20260727h）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "「GLSLレイマーチングのボリューム雲を」の依頼と「白い字が見えない」「手が隠れる」の指摘に対応。three.jsは使わず既存WebGL2基盤で実装（外部CDN依存なし）。シェーダーコンパイル成功・帯16%・meta重なり39px（フェード帯内）を実測。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 305,120 / cost: $193.62"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：ヒーロー下部を雲海に変更（fbmシェーダー・光の照らし復活）",
           "category": "実装",
           "outputs": [
