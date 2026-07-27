@@ -1218,106 +1218,14 @@ h1, h2, h3 {
   overflow: hidden;
   pointer-events: none;
   z-index: 2;
-  /* 水平線側は空になじませ、手前ほど濃い海の色 */
+  /* 上端は空になじませ、手前ほど濃い霧（雲海のフォールバック表示） */
   background: linear-gradient(180deg,
-    rgba(96, 148, 196, 0.55) 0%,
-    rgba(48, 104, 158, 0.78) 34%,
-    rgba(22, 66, 116, 0.92) 100%);
-}
-/* 水平線のうっすらした光 */
-.hero-sea::before {
-  content: '';
-  position: absolute;
-  left: 0; right: 0; top: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-}
-/* さざなみ：3層。奥ほど細かく遅く、手前ほど太く速く流れる */
-.sea-waves {
-  position: absolute;
-  left: -20%;
-  right: -20%;
-  bottom: 0;
-  top: 0;
-  background-repeat: repeat-x;
-  will-change: transform;
-}
-.sea-waves-far {
-  top: 4%;
-  height: 30%;
-  background-image: repeating-linear-gradient(90deg,
-    rgba(255, 255, 255, 0.16) 0 3px, transparent 3px 26px);
-  animation: waveDrift 19s linear infinite;
-}
-.sea-waves-mid {
-  top: 30%;
-  height: 34%;
-  background-image: repeating-linear-gradient(90deg,
-    rgba(255, 255, 255, 0.20) 0 6px, transparent 6px 46px);
-  animation: waveDrift 13s linear infinite reverse;
-}
-.sea-waves-near {
-  top: 60%;
-  height: 40%;
-  background-image: repeating-linear-gradient(90deg,
-    rgba(255, 255, 255, 0.26) 0 11px, transparent 11px 78px);
-  animation: waveDrift 8s linear infinite;
-}
-@keyframes waveDrift {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(78px, 0, 0); }
-}
-/* 太陽・月の水面反射：本体と同じ左右の動きに追従する光の柱 */
-.sea-glint {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 130px;
-  margin-left: -65px;
-  opacity: 0;
-  pointer-events: none;
-  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.55) 45%, transparent 100%);
-  mask-image: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.55) 45%, transparent 100%);
-}
-.sea-glint-sun {
-  background: linear-gradient(180deg,
-    rgba(255, 250, 220, 0.75) 0%, rgba(255, 244, 200, 0.32) 40%, rgba(255, 244, 200, 0) 100%);
-  animation: glintX 180s linear infinite, sunGlow 180s linear infinite;
-  animation-delay: var(--sky-delay, 0s), var(--sky-delay, 0s);
-}
-.sea-glint-moon {
-  width: 100px;
-  margin-left: -50px;
-  background: linear-gradient(180deg,
-    rgba(222, 234, 255, 0.7) 0%, rgba(200, 218, 255, 0.28) 40%, rgba(200, 218, 255, 0) 100%);
-  animation: glintMoonX 180s linear infinite, moonGlow 180s linear infinite;
-  animation-delay: var(--sky-delay, 0s), var(--sky-delay, 0s);
-}
-/* 太陽の左右位置に同期（sunArc の left だけを取り出したもの） */
-@keyframes glintX {
-  0%, 25%   { left: -4%; }
-  37.5%     { left: 27%; }
-  50%       { left: 50%; }
-  62.5%     { left: 73%; }
-  75%, 100% { left: 104%; }
-}
-@keyframes glintMoonX {
-  0%           { left: 50%; }
-  12.5%        { left: 73%; }
-  25%          { left: 104%; }
-  25.1%, 74.9% { left: -4%; }
-  75%          { left: -4%; }
-  87.5%        { left: 27%; }
-  100%         { left: 50%; }
+    rgba(255, 255, 255, 0.0) 0%,
+    rgba(235, 240, 248, 0.45) 30%,
+    rgba(222, 230, 242, 0.82) 100%);
 }
 @media (max-width: 860px) {
   .hero-sea { height: 22%; }
-  .sea-glint { width: 90px; margin-left: -45px; }
-  .sea-glint-moon { width: 72px; margin-left: -36px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .sea-waves { animation: none; }
-  .sea-glint { animation: none; opacity: 0; }
 }
 
 /* WebGL 水面（sea.js）。使える環境ではこちらが海を描き、CSS版のさざなみ・反射は隠す */
@@ -1331,8 +1239,4 @@ h1, h2, h3 {
 .has-sea-webgl .hero-sea {
   background: none;
 }
-.has-sea-webgl .hero-sea::before,
-.has-sea-webgl .sea-waves,
-.has-sea-webgl .sea-glint {
-  display: none;
-}
+
