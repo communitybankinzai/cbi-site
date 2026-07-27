@@ -188,7 +188,11 @@
         const edge = Math.min(t, 1 - t);
         el.style.opacity = String(Math.max(0, Math.min(1, edge / 0.06)));
       };
-      const orbit = () => {
+      let lastOrbit = 0;
+      const orbit = (now) => {
+        // 太陽・月はゆっくり動くので 30fps で十分
+        if (now - lastOrbit < 33) { requestAnimationFrame(orbit); return; }
+        lastOrbit = now;
         const p = dayProgressNow();
         const W = heroEl.clientWidth, H = heroEl.clientHeight;
         const peak = window.innerWidth <= 860 ? 0.78 : 0.72;

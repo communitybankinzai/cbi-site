@@ -94,7 +94,7 @@ void main(){
   float tExit  = min((-2.0 - ro.y)/rd.y, 26.0);
 
   // レイマーチング（開始位置をピクセルごとに散らして縞を防ぐ）
-  const int STEPS = 16;
+  const int STEPS = 10;
   float dt = (tExit - tEnter)/float(STEPS);
   float t = tEnter + dt*hash(vec3(vUv*913.7, 0.0));
   vec3 col = vec3(0.0);
@@ -154,10 +154,9 @@ void main(){
   function resize() {
     const r = sea.getBoundingClientRect();
     if (r.width < 2 || r.height < 2) return;
-    // 内部解像度は CSS 表示サイズと等倍にする。
-    // 拡大表示だと OS 側の合成（オーバーレイ）に載りやすく、描画の取り残しを招くため。
-    canvas.width = Math.max(2, Math.round(r.width));
-    canvas.height = Math.max(2, Math.round(r.height));
+    // レイマーチングは重いので内部解像度を半分に落とす（雲はぼやけた表現なので劣化は見えない）
+    canvas.width = Math.max(2, Math.round(r.width * 0.5));
+    canvas.height = Math.max(2, Math.round(r.height * 0.5));
   }
   resize();
   window.addEventListener('resize', resize);
@@ -214,8 +213,12 @@ void main(){
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
+  let lastDraw = 0;
   function frame(now) {
     if (!running) return;
+    // 30fps に制限：雲の動きはゆっくりなので見た目は変わらず、負荷は半分になる
+    if (now - lastDraw < 33) { requestAnimationFrame(frame); return; }
+    lastDraw = now;
     const p = dayProgress();
     const pal = paletteAt(p);
     const li = lightAt(p);
