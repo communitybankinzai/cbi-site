@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：太陽・月のtransform運行化＋夜間表現の強化",
+          "category": "保守",
+          "outputs": [
+            "site/script.js（rAFによるtranslate3d運行、夜のSKY_STOPS強化）",
+            "site/style.css（sunArc等のkeyframes削除・孤立ブロック除去）",
+            "site/assets/sea.js（夜パレット暗化、反射ビーム約2倍）",
+            "site/index.html（v=20260727n）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "■対策の最終手（レイアウトアニメ全廃）。CSS波括弧バランス0・keyframes残存0を機械検証、正午のロゴ重なり誤差1px・朝夕の高度を実測。translate基準点のバグ（絶対座標を相対量として指定）を自己検出し修正。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 364,928 / cost: $242.79"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：手の影の太陽連動＋夜空強化＋雲海調整＋■の原因確定",
           "category": "実装",
           "outputs": [
