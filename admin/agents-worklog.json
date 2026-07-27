@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：右下描画抜けの根本解決（全画面アニメ廃止・JS直接更新化）",
+          "category": "保守",
+          "outputs": [
+            "site/style.css（sky-layer/starsCycle廃止、sky-tint追加、will-change撤去）",
+            "site/script.js（空色補間と星opacityの1秒間隔直接更新を実装）",
+            "site/index.html（sky-tint 1枚に置換、v=20260727b）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "PC Edge・iPhone両方で再現する矩形。hero-photo.jpg自体に矩形がないことを確認した上で、全画面要素のopacity/background-colorアニメが合成タイル欠けを誘発と判断。全画面アニメ要素0件を機械検証、Date偽装で5時刻の色・星を検証。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 235,280 / cost: $149.28"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：右下描画抜けの原因切り分けと写真ズーム停止",
           "category": "保守",
           "outputs": [
