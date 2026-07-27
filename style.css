@@ -790,20 +790,79 @@ h1, h2, h3 {
   pointer-events: none;
   background-color: transparent;
 }
-/* 夜だけ現れる星 */
+/* 夜だけ現れる星（--stars-opacity を script.js が更新）。
+   明るさの違う60個を配置し、ゆっくり瞬かせる */
 .hero-deco::after {
   content: '';
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(2px 2px at 12% 22%, rgba(255, 255, 255, 0.95), transparent 60%),
-    radial-gradient(1.6px 1.6px at 28% 12%, rgba(255, 255, 255, 0.8), transparent 60%),
-    radial-gradient(2px 2px at 45% 28%, rgba(255, 255, 255, 0.9), transparent 60%),
-    radial-gradient(1.4px 1.4px at 62% 10%, rgba(255, 255, 255, 0.75), transparent 60%),
-    radial-gradient(2.2px 2.2px at 78% 20%, rgba(255, 255, 255, 0.95), transparent 60%),
-    radial-gradient(1.6px 1.6px at 90% 32%, rgba(255, 255, 255, 0.8), transparent 60%),
-    radial-gradient(1.4px 1.4px at 55% 45%, rgba(255, 255, 255, 0.7), transparent 60%);
+    radial-gradient(2.0px 2.0px at 33.1% 11.9%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 9.0% 34.6%, rgba(255,255,255,0.61), transparent 62%),
+    radial-gradient(1.5px 1.5px at 50.7% 5.2%, rgba(255,255,255,0.62), transparent 62%),
+    radial-gradient(2.0px 2.0px at 10.7% 28.0%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 13.9% 16.2%, rgba(255,255,255,0.84), transparent 62%),
+    radial-gradient(2.6px 2.6px at 57.4% 26.4%, rgba(255,255,255,1.0), transparent 62%),
+    radial-gradient(1.5px 1.5px at 6.5% 53.6%, rgba(255,255,255,0.64), transparent 62%),
+    radial-gradient(2.0px 2.0px at 13.3% 21.2%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 19.3% 37.3%, rgba(255,255,255,0.69), transparent 62%),
+    radial-gradient(1.5px 1.5px at 54.6% 6.7%, rgba(255,255,255,0.65), transparent 62%),
+    radial-gradient(1.5px 1.5px at 67.3% 28.2%, rgba(255,255,255,0.75), transparent 62%),
+    radial-gradient(2.0px 2.0px at 45.5% 20.7%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 69.1% 17.4%, rgba(255,255,255,0.73), transparent 62%),
+    radial-gradient(1.5px 1.5px at 86.0% 46.0%, rgba(255,255,255,0.85), transparent 62%),
+    radial-gradient(2.0px 2.0px at 13.3% 27.7%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 16.6% 31.8%, rgba(255,255,255,0.77), transparent 62%),
+    radial-gradient(2.0px 2.0px at 75.4% 36.8%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 32.1% 44.0%, rgba(255,255,255,0.74), transparent 62%),
+    radial-gradient(2.6px 2.6px at 45.8% 52.6%, rgba(255,255,255,1.0), transparent 62%),
+    radial-gradient(1.5px 1.5px at 47.5% 42.2%, rgba(255,255,255,0.78), transparent 62%),
+    radial-gradient(2.0px 2.0px at 64.1% 61.6%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(2.0px 2.0px at 29.3% 25.8%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 4.2% 30.2%, rgba(255,255,255,0.63), transparent 62%),
+    radial-gradient(1.5px 1.5px at 7.7% 48.3%, rgba(255,255,255,0.66), transparent 62%),
+    radial-gradient(1.5px 1.5px at 39.5% 54.4%, rgba(255,255,255,0.71), transparent 62%),
+    radial-gradient(2.0px 2.0px at 54.7% 55.1%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 84.9% 19.4%, rgba(255,255,255,0.69), transparent 62%),
+    radial-gradient(1.5px 1.5px at 86.9% 59.5%, rgba(255,255,255,0.64), transparent 62%),
+    radial-gradient(1.5px 1.5px at 24.3% 16.8%, rgba(255,255,255,0.75), transparent 62%),
+    radial-gradient(1.5px 1.5px at 27.2% 3.2%, rgba(255,255,255,0.69), transparent 62%),
+    radial-gradient(2.0px 2.0px at 56.4% 59.2%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(2.0px 2.0px at 51.5% 39.4%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(2.0px 2.0px at 7.2% 56.1%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 86.0% 50.1%, rgba(255,255,255,0.7), transparent 62%),
+    radial-gradient(1.5px 1.5px at 11.9% 40.4%, rgba(255,255,255,0.62), transparent 62%),
+    radial-gradient(1.5px 1.5px at 22.0% 12.6%, rgba(255,255,255,0.61), transparent 62%),
+    radial-gradient(1.5px 1.5px at 2.0% 11.9%, rgba(255,255,255,0.69), transparent 62%),
+    radial-gradient(1.5px 1.5px at 4.4% 54.6%, rgba(255,255,255,0.64), transparent 62%),
+    radial-gradient(1.5px 1.5px at 26.2% 23.5%, rgba(255,255,255,0.63), transparent 62%),
+    radial-gradient(1.5px 1.5px at 83.5% 61.6%, rgba(255,255,255,0.72), transparent 62%),
+    radial-gradient(1.5px 1.5px at 10.2% 9.0%, rgba(255,255,255,0.67), transparent 62%),
+    radial-gradient(1.5px 1.5px at 81.6% 12.5%, rgba(255,255,255,0.84), transparent 62%),
+    radial-gradient(1.5px 1.5px at 52.7% 11.6%, rgba(255,255,255,0.61), transparent 62%),
+    radial-gradient(2.0px 2.0px at 52.7% 60.7%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 68.8% 18.4%, rgba(255,255,255,0.64), transparent 62%),
+    radial-gradient(2.0px 2.0px at 76.1% 34.4%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(2.0px 2.0px at 33.6% 16.2%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(2.0px 2.0px at 96.6% 53.3%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(1.5px 1.5px at 80.6% 46.7%, rgba(255,255,255,0.73), transparent 62%),
+    radial-gradient(1.5px 1.5px at 36.1% 4.7%, rgba(255,255,255,0.67), transparent 62%),
+    radial-gradient(2.6px 2.6px at 26.9% 43.9%, rgba(255,255,255,1.0), transparent 62%),
+    radial-gradient(2.6px 2.6px at 44.9% 58.3%, rgba(255,255,255,1.0), transparent 62%),
+    radial-gradient(1.5px 1.5px at 93.7% 24.5%, rgba(255,255,255,0.66), transparent 62%),
+    radial-gradient(1.5px 1.5px at 20.9% 15.1%, rgba(255,255,255,0.83), transparent 62%),
+    radial-gradient(2.0px 2.0px at 82.7% 31.3%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(2.0px 2.0px at 78.8% 8.0%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(2.0px 2.0px at 89.3% 49.2%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(2.0px 2.0px at 47.9% 13.5%, rgba(255,255,255,0.92), transparent 62%),
+    radial-gradient(2.6px 2.6px at 33.9% 50.2%, rgba(255,255,255,1.0), transparent 62%),
+    radial-gradient(2.6px 2.6px at 40.0% 26.7%, rgba(255,255,255,1.0), transparent 62%);
   opacity: var(--stars-opacity, 0);
+  animation: starTwinkle 6s ease-in-out infinite;
+}
+@keyframes starTwinkle {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.45); }
 }
 /* 太陽本体：中心の白熱＋実際の太陽に近い多層の光暈（グロー放射） */
 .hero-sun {

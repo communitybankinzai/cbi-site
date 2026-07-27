@@ -46,6 +46,7 @@ uniform vec3 uShadow;   // 雲の陰の色
 uniform vec3 uHaze;     // 遠景がかすむ空の色
 uniform float uLightX;  // 太陽／月の横位置（0=左端, 1=右端）
 uniform float uLightUp; // 光源の高さ（0=沈んでいる, 1=天頂）
+uniform float uGrass;   // 1.0 で草原モード（反射を抑え、地平線をはっきりさせる）
 
 float hash(vec3 p){
   p = fract(p*0.3183099 + vec3(0.1, 0.17, 0.13));
@@ -63,21 +64,30 @@ float noise3(vec3 x){
 }
 float fbm(vec3 p){
   float v = 0.0, a = 0.5;
-  for(int i = 0; i < 4; i++){
+  for(int i = 0; i < 5; i++){
     v += a*noise3(p);
-    p = p*2.13 + vec3(11.3, 5.1, 7.7);
-    a *= 0.5;
+    p = p*2.07 + vec3(11.3, 5.1, 7.7);
+    a *= 0.56;   // 高周波を残しすぎない＝ざらつかず、ふわっとした綿になる
   }
   return v;
 }
 
 /* 雲の密度場：y=0 付近に厚い雲の層。ゆっくり流れ、形も変わり続ける */
 float densityAt(vec3 p){
-  vec3 q = p*vec3(0.30, 0.50, 0.30) + vec3(uTime*0.048, uTime*0.007, uTime*0.020);
-  float base = fbm(q);
-  float heightFall = smoothstep(1.35, -0.3, p.y);   // 上に行くほど薄く
-  float d = base*1.30 - 0.66 + heightFall*0.58;
-  return clamp(d, 0.0, 1.0);
+  // ゆっくり流れる（風）。x方向に流し、形もじわじわ変える
+  vec3 flow = vec3(uTime*0.075, uTime*0.010, uTime*0.028);
+  vec3 q = p*vec3(0.26, 0.46, 0.26) + flow;
+  // 風のうねり：波が奥から手前へ渡っていく（周期の違う2つの波を重ねる）
+  float swell = sin(p.x*0.55 - p.z*0.30 - uTime*0.60) * 0.5
+              + sin(p.x*0.24 + p.z*0.18 - uTime*0.34) * 0.5;
+  q += vec3(swell*0.16, swell*0.09, swell*0.05);
+  // ドメインワープ：まっすぐな縞にならず、綿がうねるような形になる
+  vec3 w = vec3(fbm(q*0.7 + 3.1), fbm(q*0.7 + 8.4), fbm(q*0.7 + 1.7)) - 0.5;
+  float base = fbm(q + w*1.25) + swell*0.055;
+  float heightFall = smoothstep(1.45, -0.4, p.y);
+  float d = base*1.42 - 0.70 + heightFall*0.60;
+  // 端をなだらかにして、砂のような固い粒立ちをなくす
+  return smoothstep(0.0, 0.55, clamp(d, 0.0, 1.0));
 }
 
 void main(){
@@ -95,7 +105,7 @@ void main(){
   float tExit  = min((-2.0 - ro.y)/rd.y, 26.0);
 
   // レイマーチング（開始位置をピクセルごとに散らして縞を防ぐ）
-  const int STEPS = 10;
+  const int STEPS = 14;
   float dt = (tExit - tEnter)/float(STEPS);
   float t = tEnter + dt*hash(vec3(vUv*913.7, 0.0));
   vec3 col = vec3(0.0);
@@ -110,7 +120,7 @@ void main(){
       lightAmt = pow(lightAmt, 0.85) * (0.32 + 0.68*uLightUp);
       vec3 sampleCol = mix(uShadow, uLit, lightAmt);
       sampleCol += uLit * phase * lightAmt * 0.24 * uLightUp;
-      float absorb = exp(-d*dt*2.8);
+      float absorb = exp(-d*dt*2.0);
       col += T*(1.0 - absorb)*sampleCol;
       T *= absorb;
       if(T < 0.045) break;   // ほぼ不透明になったら打ち切り
@@ -130,10 +140,11 @@ void main(){
   float halo = exp(-pow(dx*2.2, 2.0));
   float beam = (core*1.5 + halo*0.75) * uLightUp;
   beam *= mix(1.5, 0.45, vUv.y);   // 手前ほど広く強く
-  col += uLit * beam * alpha * 1.25;
+  // 草原では鏡のような反射は起きないので、日なたが明るい程度に留める
+  col += uLit * beam * alpha * mix(1.25, 0.32, uGrass);
 
-  // 帯の上端は空に溶かす（premultiplied のため色と透明度に同じ係数）
-  float fade = smoothstep(1.0, 0.85, vUv.y);
+  // 上端の処理：雲海は空へ溶かし、草原は地平線をはっきり出す
+  float fade = mix(smoothstep(1.0, 0.85, vUv.y), smoothstep(1.0, 0.965, vUv.y), uGrass);
   outColor = vec4(col*fade, alpha*fade);
 }`));
   gl.linkProgram(prog);
@@ -152,7 +163,7 @@ void main(){
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
   const U = {};
-  ['uTime', 'uRes', 'uLit', 'uShadow', 'uHaze', 'uLightX', 'uLightUp'].forEach((k) => {
+  ['uTime', 'uRes', 'uLit', 'uShadow', 'uHaze', 'uLightX', 'uLightUp', 'uGrass'].forEach((k) => {
     U[k] = gl.getUniformLocation(prog, k);
   });
 
@@ -178,11 +189,26 @@ void main(){
     { p: 0.84, lit: [.62, .67, .87], shadow: [.03, .04, .08], haze: [.06, .08, .16] },  // 宵
     { p: 1.00, lit: [.62, .68, .88], shadow: [.02, .03, .07], haze: [.05, .07, .15] },
   ];
+  // 草原（?scene=grass）：同じ起伏の計算のまま、色と光の当たり方だけ草地に変える
+  const GRASS = [
+    { p: 0.00, lit: [.16, .24, .19], shadow: [.02, .04, .04], haze: [.05, .08, .12] },  // 深夜
+    { p: 0.22, lit: [.20, .28, .22], shadow: [.03, .05, .05], haze: [.07, .10, .14] },  // 未明
+    { p: 0.29, lit: [.88, .72, .40], shadow: [.14, .15, .10], haze: [.62, .48, .36] },  // 朝日
+    { p: 0.40, lit: [.62, .84, .40], shadow: [.13, .26, .14], haze: [.60, .76, .70] },  // 午前
+    { p: 0.50, lit: [.66, .88, .44], shadow: [.14, .28, .15], haze: [.62, .78, .72] },  // 正午
+    { p: 0.62, lit: [.64, .84, .40], shadow: [.13, .26, .14], haze: [.60, .76, .70] },  // 午後
+    { p: 0.74, lit: [.88, .62, .30], shadow: [.12, .13, .09], haze: [.60, .42, .32] },  // 夕日
+    { p: 0.84, lit: [.19, .27, .21], shadow: [.02, .04, .04], haze: [.06, .09, .13] },  // 宵
+    { p: 1.00, lit: [.16, .24, .19], shadow: [.02, .04, .04], haze: [.05, .08, .12] },
+  ];
+  const SCENE = new URLSearchParams(location.search).get('scene');
+  const IS_GRASS = SCENE === 'grass';
   const mix3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   function paletteAt(p) {
-    let a = PALETTES[0], b = PALETTES[PALETTES.length - 1];
-    for (let i = 0; i < PALETTES.length - 1; i++) {
-      if (p >= PALETTES[i].p && p <= PALETTES[i + 1].p) { a = PALETTES[i]; b = PALETTES[i + 1]; break; }
+    const TBL = IS_GRASS ? GRASS : PALETTES;
+    let a = TBL[0], b = TBL[TBL.length - 1];
+    for (let i = 0; i < TBL.length - 1; i++) {
+      if (p >= TBL[i].p && p <= TBL[i + 1].p) { a = TBL[i]; b = TBL[i + 1]; break; }
     }
     const t = b.p === a.p ? 0 : (p - a.p) / (b.p - a.p);
     return { lit: mix3(a.lit, b.lit, t), shadow: mix3(a.shadow, b.shadow, t), haze: mix3(a.haze, b.haze, t) };
@@ -240,6 +266,7 @@ void main(){
     gl.uniform3fv(U.uHaze, pal.haze);
     gl.uniform1f(U.uLightX, li.x);
     gl.uniform1f(U.uLightUp, Math.min(1, Math.max(0, li.up * 1.5)));
+    gl.uniform1f(U.uGrass, IS_GRASS ? 1 : 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     requestAnimationFrame(frame);
