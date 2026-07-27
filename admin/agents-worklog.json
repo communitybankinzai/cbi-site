@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：月とロゴのズレ修正＋Codex向け不具合切り分け依頼書の作成",
+          "category": "実装",
+          "outputs": [
+            "site/script.js（軌道基準を要素中心に変更、v=20260727w）",
+            "site/admin/changelog.json（1件追記）",
+            "codex-依頼_ヒーロー右下の矩形.md（否定済み仮説10件・診断URL一覧・構造抜粋つき）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "月140px/太陽88pxのサイズ差で下端基準だと26pxずれる問題を中心基準に修正、誤差1pxを実測。■はCodexへ切り分け依頼（プロンプトをクリップボード投入済み）。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 409,290 / cost: $255.76"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CBIサイト：太陽・月の停止バグ修正＋雲海の白さ/陰影/反射強化",
           "category": "保守",
           "outputs": [
