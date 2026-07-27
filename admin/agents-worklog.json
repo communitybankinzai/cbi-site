@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-27",
+          "title": "CBIサイト：ヒーロー海シーン実装＋描画抜けの原因特定と除去",
+          "category": "実装",
+          "outputs": [
+            "site/style.css（hero-sea・3層さざなみ・太陽/月の水面反射、logoFlash/ctaPulseの軽量化）",
+            "site/index.html（海レイヤー構造追加、v=20260727e）",
+            "site/script.js（切り分けスイッチ、glint位相同期）",
+            "site/admin/changelog.json（2件追記）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "?deco切り分けで「四角内に旧描画が残る＝再描画漏れ」と特定。filter/box-shadowアニメを全廃。海は会長提案。反射位置が太陽/月と完全一致（正午633px・0時667px）、昼夜の点灯切替も実測確認。session: fbebdb49-5b40-4911-b8bc-466a9a1b9a99 / output: 261,515 / cost: $154.61"
+        },
+        {
+          "date": "2026-07-27",
           "title": "CiDAOチラシAI抽出500障害の修正＋CBIサイト会員種別表の刷新・機能別ガイド4ページ新規作成",
           "category": "実装",
           "outputs": "cidao: src/app/api/events/scan/route.ts, src/app/events/new/_components/ImageScanField.tsx（commit b271ba3）／ site: index.html, style.css, guide/propose/index.html, guide/vote/index.html, guide/events/index.html, guide/pr/index.html（新規4ページ）, admin/changelog.json",
