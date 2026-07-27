@@ -45,6 +45,23 @@
     } else if (mode === 'photo') {
       const o = document.querySelector('.hero-video-overlay');
       if (o) o.style.display = 'none';
+    } else if (mode === 'noanim') {
+      // ページ内の CSS アニメーションをすべて停止
+      const s = document.createElement('style');
+      s.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; }';
+      document.head.appendChild(s);
+    } else if (mode === 'nophoto') {
+      const ph = document.querySelector('.hero-photo');
+      if (ph) ph.style.display = 'none';
+    } else if (mode === 'plain') {
+      // ヒーローを単色背景だけにする（写真・装飾・重ねグラデーションを全部外す）
+      ['.hero-photo', '.hero-video-overlay', '.hero-deco'].forEach((sel) => {
+        const el = document.querySelector(sel);
+        if (el) el.style.display = 'none';
+      });
+      const s = document.createElement('style');
+      s.textContent = '*, *::before, *::after { animation: none !important; }';
+      document.head.appendChild(s);
     }
     if (mode) document.documentElement.setAttribute('data-deco', mode);
   }
@@ -63,7 +80,7 @@
     );
     // iOS Safari では CSS 変数経由の負ディレイが効かないことがあるため、
     // Web Animations API でアニメーションの現在位置を直接そろえる（擬似要素分も取れる）
-    const SKY_ANIMS = ['sunArc', 'sunGlow', 'moonArc', 'moonGlow', 'logoFlash', 'logoBurstSun', 'logoBurstMoon'];
+    const SKY_ANIMS = ['sunArc', 'sunGlow', 'moonArc', 'moonGlow', 'logoFlash', 'logoBurstSun', 'logoBurstMoon', 'glintX', 'glintMoonX'];
     const syncSky = () => {
       if (typeof document.getAnimations !== 'function') return;
       // 同期のたびに時刻を取り直す（固定値を使うと load 時の再同期で位相が巻き戻る）

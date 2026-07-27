@@ -758,12 +758,21 @@ h1, h2, h3 {
 
 /* ---------- 常時動き続ける演出 ---------- */
 /* 登録ボタンの脈動（波紋がふわっと広がる） */
-@keyframes ctaPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(201, 165, 92, 0.55); }
-  70%  { box-shadow: 0 0 0 14px rgba(201, 165, 92, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(201, 165, 92, 0); }
+.hero-cta .btn-primary { position: relative; }
+.hero-cta .btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid rgba(201, 165, 92, 0.55);
+  pointer-events: none;
+  animation: ctaPulse 2.4s ease-out infinite;
 }
-.hero-cta .btn-primary { animation: ctaPulse 2.4s ease-out infinite; }
+@keyframes ctaPulse {
+  0%   { transform: scale(1);    opacity: 0.75; }
+  70%  { transform: scale(1.14); opacity: 0; }
+  100% { transform: scale(1.14); opacity: 0; }
+}
 
 /* カード番号バッジのふわふわ浮遊（1→2→3の順で波打つ） */
 @keyframes floatY {
@@ -894,17 +903,18 @@ h1, h2, h3 {
   animation: logoFlash 180s linear infinite;
   animation-delay: var(--sky-delay, 0s);
 }
+/* 光は .logo-burst（opacityのみ）が担当。ロゴ本体は transform だけ動かす
+   （filter アニメーションは再描画を誘発し、描画抜けの原因になるため使わない） */
 @keyframes logoFlash {
-  /* 光の広がりは .logo-burst レイヤー（opacityのみ）が担当。ここは明るさと拡大だけ */
-  0%        { filter: brightness(2.1); transform: scale(1.05); }
-  1.5%      { filter: brightness(2.5); transform: scale(1.07); }
-  3.5%, 46.5% { filter: none; transform: scale(1); }
-  48.5%     { filter: brightness(2.6); transform: scale(1.07); }
-  50%       { filter: brightness(1.9); transform: scale(1.04); }
-  51.5%     { filter: brightness(2.6); transform: scale(1.07); }
-  53.5%, 96.5% { filter: none; transform: scale(1); }
-  98.5%     { filter: brightness(2.5); transform: scale(1.07); }
-  100%      { filter: brightness(2.1); transform: scale(1.05); }
+  0%        { transform: scale(1.05); }
+  1.5%      { transform: scale(1.07); }
+  3.5%, 46.5% { transform: scale(1); }
+  48.5%     { transform: scale(1.07); }
+  50%       { transform: scale(1.04); }
+  51.5%     { transform: scale(1.07); }
+  53.5%, 96.5% { transform: scale(1); }
+  98.5%     { transform: scale(1.07); }
+  100%      { transform: scale(1.05); }
 }
 /* ロゴ背後で広がる光（opacityアニメのみ＝GPU負荷が極小） */
 .logo-burst {
@@ -951,7 +961,7 @@ h1, h2, h3 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-cta .btn-primary,
+  .hero-cta .btn-primary::after,
   .card-icon,
   .hero-logo { animation: none; }
   .sky-tint { background-color: transparent; }
@@ -1196,4 +1206,116 @@ h1, h2, h3 {
     100%      { left: 50%;  bottom: 78%; }
   }
   .logo-burst { bottom: calc(78% - 126px); }
+}
+
+/* ---------- ヒーロー下部の海（さざなみ＋太陽・月の水面反射） ---------- */
+.hero-sea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+  /* 水平線側は空になじませ、手前ほど濃い海の色 */
+  background: linear-gradient(180deg,
+    rgba(96, 148, 196, 0.55) 0%,
+    rgba(48, 104, 158, 0.78) 34%,
+    rgba(22, 66, 116, 0.92) 100%);
+}
+/* 水平線のうっすらした光 */
+.hero-sea::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+}
+/* さざなみ：3層。奥ほど細かく遅く、手前ほど太く速く流れる */
+.sea-waves {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  bottom: 0;
+  top: 0;
+  background-repeat: repeat-x;
+  will-change: transform;
+}
+.sea-waves-far {
+  top: 4%;
+  height: 30%;
+  background-image: repeating-linear-gradient(90deg,
+    rgba(255, 255, 255, 0.16) 0 3px, transparent 3px 26px);
+  animation: waveDrift 19s linear infinite;
+}
+.sea-waves-mid {
+  top: 30%;
+  height: 34%;
+  background-image: repeating-linear-gradient(90deg,
+    rgba(255, 255, 255, 0.20) 0 6px, transparent 6px 46px);
+  animation: waveDrift 13s linear infinite reverse;
+}
+.sea-waves-near {
+  top: 60%;
+  height: 40%;
+  background-image: repeating-linear-gradient(90deg,
+    rgba(255, 255, 255, 0.26) 0 11px, transparent 11px 78px);
+  animation: waveDrift 8s linear infinite;
+}
+@keyframes waveDrift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(78px, 0, 0); }
+}
+/* 太陽・月の水面反射：本体と同じ左右の動きに追従する光の柱 */
+.sea-glint {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 130px;
+  margin-left: -65px;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.55) 45%, transparent 100%);
+  mask-image: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.55) 45%, transparent 100%);
+}
+.sea-glint-sun {
+  background: linear-gradient(180deg,
+    rgba(255, 250, 220, 0.75) 0%, rgba(255, 244, 200, 0.32) 40%, rgba(255, 244, 200, 0) 100%);
+  animation: glintX 180s linear infinite, sunGlow 180s linear infinite;
+  animation-delay: var(--sky-delay, 0s), var(--sky-delay, 0s);
+}
+.sea-glint-moon {
+  width: 100px;
+  margin-left: -50px;
+  background: linear-gradient(180deg,
+    rgba(222, 234, 255, 0.7) 0%, rgba(200, 218, 255, 0.28) 40%, rgba(200, 218, 255, 0) 100%);
+  animation: glintMoonX 180s linear infinite, moonGlow 180s linear infinite;
+  animation-delay: var(--sky-delay, 0s), var(--sky-delay, 0s);
+}
+/* 太陽の左右位置に同期（sunArc の left だけを取り出したもの） */
+@keyframes glintX {
+  0%, 25%   { left: -4%; }
+  37.5%     { left: 27%; }
+  50%       { left: 50%; }
+  62.5%     { left: 73%; }
+  75%, 100% { left: 104%; }
+}
+@keyframes glintMoonX {
+  0%           { left: 50%; }
+  12.5%        { left: 73%; }
+  25%          { left: 104%; }
+  25.1%, 74.9% { left: -4%; }
+  75%          { left: -4%; }
+  87.5%        { left: 27%; }
+  100%         { left: 50%; }
+}
+@media (max-width: 860px) {
+  .hero-sea { height: 22%; }
+  .sea-glint { width: 90px; margin-left: -45px; }
+  .sea-glint-moon { width: 72px; margin-left: -36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sea-waves { animation: none; }
+  .sea-glint { animation: none; opacity: 0; }
 }
