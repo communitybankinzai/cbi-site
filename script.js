@@ -64,6 +64,13 @@
       document.head.appendChild(s);
     }
     if (mode) document.documentElement.setAttribute('data-deco', mode);
+    // ?debug=outline : 全要素に赤枠を引く。画面上の謎の矩形が
+    // DOM要素ならば、その輪郭が赤枠として見えるはず（見えなければDOM外＝ブラウザ/OS側）
+    if (new URLSearchParams(location.search).get('debug') === 'outline') {
+      const s = document.createElement('style');
+      s.textContent = '* { outline: 1px solid rgba(255, 0, 0, 0.6) !important; }';
+      document.head.appendChild(s);
+    }
   }
 
   // ヒーローの空を「開いた実時刻」の位相から始める（1日=180秒の周回）
