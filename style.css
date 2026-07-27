@@ -1319,3 +1319,20 @@ h1, h2, h3 {
   .sea-waves { animation: none; }
   .sea-glint { animation: none; opacity: 0; }
 }
+
+/* WebGL 水面（sea.js）。使える環境ではこちらが海を描き、CSS版のさざなみ・反射は隠す */
+.sea-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.has-sea-webgl .hero-sea {
+  background: none;
+}
+.has-sea-webgl .hero-sea::before,
+.has-sea-webgl .sea-waves,
+.has-sea-webgl .sea-glint {
+  display: none;
+}
