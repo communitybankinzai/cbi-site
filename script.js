@@ -87,7 +87,7 @@
     );
     // iOS Safari では CSS 変数経由の負ディレイが効かないことがあるため、
     // Web Animations API でアニメーションの現在位置を直接そろえる（擬似要素分も取れる）
-    const SKY_ANIMS = ['sunArc', 'sunGlow', 'moonArc', 'moonGlow', 'logoFlash', 'logoBurstSun', 'logoBurstMoon', 'logoFlare'];
+    const SKY_ANIMS = ['logoFlash', 'logoBurstSun', 'logoBurstMoon', 'logoFlare'];
     const syncSky = () => {
       if (typeof document.getAnimations !== 'function') return;
       // 同期のたびに時刻を取り直す（固定値を使うと load 時の再同期で位相が巻き戻る）
@@ -110,15 +110,15 @@
     // 1日=180秒の周回なので、1秒刻みでも色の変化は十分なめらかに見える。
     const SKY_STOPS = [
       // 月が出ている夜間は濃い夜空にする（背景写真の青空をほぼ隠す）
-      { p: 0.00, c: [7, 10, 28, 0.85] },    // 0時 夜
-      { p: 0.20, c: [10, 13, 34, 0.78] },   // 4:48 未明
+      { p: 0.00, c: [5, 7, 22, 0.93] },     // 0時 夜
+      { p: 0.20, c: [8, 10, 28, 0.88] },    // 4:48 未明
       { p: 0.27, c: [255, 138, 76, 0.26] }, // 6:29 朝焼け
       { p: 0.35, c: [160, 205, 255, 0.10] },// 8:24 午前
       { p: 0.50, c: [150, 200, 255, 0.07] },// 正午
       { p: 0.68, c: [255, 168, 84, 0.16] }, // 16:19 午後
       { p: 0.75, c: [255, 104, 66, 0.28] }, // 18時 夕焼け
-      { p: 0.85, c: [7, 10, 28, 0.85] },    // 20:24 夜
-      { p: 1.00, c: [7, 10, 28, 0.85] },
+      { p: 0.85, c: [5, 7, 22, 0.93] },     // 20:24 夜
+      { p: 1.00, c: [5, 7, 22, 0.93] },
     ];
     const skyColorAt = (p) => {
       let a = SKY_STOPS[0], b = SKY_STOPS[SKY_STOPS.length - 1];
@@ -168,6 +168,42 @@
     if (!prefersReduced) {
       paintSky();
       setInterval(paintSky, 1000);
+    }
+
+    // 太陽・月の運行は transform で行う。
+    // left/bottom を動かすと毎フレーム画面の再計算・再描画が起きるため使わない。
+    const heroEl = document.querySelector('.hero');
+    const sunEl = document.querySelector('.hero-sun');
+    const moonEl = document.querySelector('.hero-moon');
+    if (!prefersReduced && heroEl && sunEl && moonEl) {
+      // 弧の形は従来の keyframes と同じ：地平線 -14%、天頂 72%（スマホ 78%）
+      const place = (el, t, W, H, peak) => {
+        const w = el.offsetWidth;
+        // 基準は left:0 / bottom:0。translate は基準からの相対移動で指定する
+        const x = (-0.04 + t * 1.08) * W - w / 2;
+        const bottomPct = -0.14 + (peak + 0.14) * Math.sin(t * Math.PI);
+        const y = -bottomPct * H;
+        el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+        // 地平線の際でフェードさせる
+        const edge = Math.min(t, 1 - t);
+        el.style.opacity = String(Math.max(0, Math.min(1, edge / 0.06)));
+      };
+      const orbit = () => {
+        const p = dayProgressNow();
+        const W = heroEl.clientWidth, H = heroEl.clientHeight;
+        const peak = window.innerWidth <= 860 ? 0.78 : 0.72;
+        const dayT = (p - 0.25) / 0.5;
+        const nightT = p < 0.25 ? (p + 0.25) / 0.5 : (p - 0.75) / 0.5;
+        if (dayT >= 0 && dayT <= 1) {
+          place(sunEl, dayT, W, H, peak);
+          moonEl.style.opacity = '0';
+        } else {
+          sunEl.style.opacity = '0';
+        }
+        if (!(dayT >= 0 && dayT <= 1)) place(moonEl, nightT, W, H, peak);
+        requestAnimationFrame(orbit);
+      };
+      requestAnimationFrame(orbit);
     }
   }
 
