@@ -17,6 +17,18 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-07-29",
+          "title": "「はじめかた」ステップ4の断定表現を「必要に応じて」に緩和 0.0時間",
+          "category": "保守",
+          "outputs": [
+            "site/guide/propose/index.html:81（CBIが→CBIが必要に応じて）",
+            "site/admin/changelog.json（1件追記）"
+          ],
+          "hours": 0.0,
+          "partnerApproved": false,
+          "note": "「賛同が集まった提案は、CBIが実現に向けた検討や行政への橋渡しを進めます」が全提案への対応義務と読める懸念への対応。同種の断定が site/guide/vote/index.html:47 にも残っており、扱いは未確認（今回の指示範囲外のため未修正）。session: 28e39780-511c-4c99-baca-705c12027b46 / output: 2,844 / cost: $0.67"
+        },
+        {
           "date": "2026-07-27",
           "title": "CBIサイト＋CiDAO：ボタン押下フィードバックの実装",
           "category": "実装",
