@@ -44,13 +44,13 @@
             "cidao: src/app/page.tsx, match/page.tsx, match/_components/MatchChat.tsx, api/agents/a7/route.ts（219ハードコード撤廃）",
             "cidao: src/lib/org-placeholder.ts（新規・代表者未確定の判定）、orgs/[id]/page.tsx（更新待ちバナー）",
             "cidao: src/app/admin/org-candidates/{page.tsx,actions.ts}（新規・団体候補）、admin/page.tsx（導線）",
-            "cidao: supabase/migrations/20260729130000_org_candidates.sql, 20260729140000_mask_source_reference.sql（新規・未適用）",
+            "cidao: supabase/migrations/20260729130000_org_candidates.sql, 20260729140000_mask_source_reference.sql（新規・適用済み）",
             "cidao: scripts/seed-orgs.mjs, enrich-organizations.mjs, seed-orgs-data.json, migrations 3件（出典表記の置換）",
             "site/admin/changelog.json（4件追記）"
           ],
           "hours": 0.7,
           "partnerApproved": false,
-          "note": "団体数がホーム225・マッチング219と矛盾していた件から派生した一連の作業。実測で organizations は civic_group 223／business 1（サンプル）／government 1（サンプル）、イベント主催名32件中29件が未登録、代表者欄は224件がプレースホルダーと判明。(1)表示を223に統一し / と /match のSSR出力で実測確認、(2)「代表者による更新待ち」バナーの判定を修正し1件→223件で表示、スクショで確認、(3)団体候補の管理画面を新設（人が1件ずつ登録/除外を判断）、(4)個人サイトのドメイン名を「WEB公開情報」に置換。tsc exit 0。未実施：DDL/DML 2本は未適用でSupabase SQL Editorでのユーザー実行待ち、管理画面の実動作確認も適用後（テーブル未作成のため）。session: 28e39780-511c-4c99-baca-705c12027b46 / output: 70,079 / cost: $12.67"
+          "note": "団体数がホーム225・マッチング219と矛盾していた件から派生した一連の作業。実測で organizations は civic_group 223／business 1（サンプル）／government 1（サンプル）、イベント主催名32件中29件が未登録、代表者欄は224件がプレースホルダーと判明。(1)表示を223に統一し / と /match のSSR出力で実測確認、(2)「代表者による更新待ち」バナーの判定を修正し1件→223件で表示、スクショで確認、(3)団体候補の管理画面を新設（人が1件ずつ登録/除外を判断）、(4)個人サイトのドメイン名を「WEB公開情報」に置換。tsc exit 0。DDL/DML 2本はユーザーがSQL Editorで実行済み、適用後に検証：org_name_exclusions作成済み／旧ドメイン表記0件・新表記219件／団体候補29件を集計／管理画面は307（未ログインリダイレクト＝コンパイル成功）／本番 cidao.vercel.app/match で223表示。未実施：管理画面のボタン実操作はadminログインが必要なため未確認。session: 28e39780-511c-4c99-baca-705c12027b46 / output: 70,079 / cost: $12.67"
         },
         {
           "date": "2026-07-27",
