@@ -36,18 +36,21 @@
         },
         {
           "date": "2026-07-29",
-          "title": "ガイド断定表現の緩和＋CiDAO団体数のDB実数統一 0.3時間",
-          "category": "保守",
+          "title": "ガイド表現緩和＋CiDAO団体数の統一・団体候補管理画面・出典表記変更 0.7時間",
+          "category": "実装",
           "outputs": [
-            "site/guide/propose/index.html:81（CBIが→CBIが必要に応じて）",
-            "site/guide/vote/index.html:47（順に実現に向けて動き出します→必要に応じて実現に向けた検討を進めます）",
+            "site/guide/propose/index.html:81, site/guide/vote/index.html:47（断定表現に「必要に応じて」を追加）",
             "cidao: src/lib/org-count.ts（新規・civic_groupのみカウント）",
             "cidao: src/app/page.tsx, match/page.tsx, match/_components/MatchChat.tsx, api/agents/a7/route.ts（219ハードコード撤廃）",
-            "site/admin/changelog.json（2件追記）"
+            "cidao: src/lib/org-placeholder.ts（新規・代表者未確定の判定）、orgs/[id]/page.tsx（更新待ちバナー）",
+            "cidao: src/app/admin/org-candidates/{page.tsx,actions.ts}（新規・団体候補）、admin/page.tsx（導線）",
+            "cidao: supabase/migrations/20260729130000_org_candidates.sql, 20260729140000_mask_source_reference.sql（新規・未適用）",
+            "cidao: scripts/seed-orgs.mjs, enrich-organizations.mjs, seed-orgs-data.json, migrations 3件（出典表記の置換）",
+            "site/admin/changelog.json（4件追記）"
           ],
-          "hours": 0.3,
+          "hours": 0.7,
           "partnerApproved": false,
-          "note": "前半：全提案にCBIが対応する義務があると読める表現を propose/vote 両ガイドで緩和。後半：団体数がホーム225・マッチング219と矛盾していた件。実測で organizations は civic_group 223／business 1／government 1、イベント主催名32件中29件が未登録と判明。企業・行政を除いた223に統一し、/match のSSR出力で223表示を実測確認（tscエラーは進行中の proposals 系のみで本変更に無し）。イベント主催名29件の団体候補一覧は段階2として未着手。session: 28e39780-511c-4c99-baca-705c12027b46 / output: 28,329 / cost: $4.95"
+          "note": "団体数がホーム225・マッチング219と矛盾していた件から派生した一連の作業。実測で organizations は civic_group 223／business 1（サンプル）／government 1（サンプル）、イベント主催名32件中29件が未登録、代表者欄は224件がプレースホルダーと判明。(1)表示を223に統一し / と /match のSSR出力で実測確認、(2)「代表者による更新待ち」バナーの判定を修正し1件→223件で表示、スクショで確認、(3)団体候補の管理画面を新設（人が1件ずつ登録/除外を判断）、(4)個人サイトのドメイン名を「WEB公開情報」に置換。tsc exit 0。未実施：DDL/DML 2本は未適用でSupabase SQL Editorでのユーザー実行待ち、管理画面の実動作確認も適用後（テーブル未作成のため）。session: 28e39780-511c-4c99-baca-705c12027b46 / output: 70,079 / cost: $12.67"
         },
         {
           "date": "2026-07-27",
