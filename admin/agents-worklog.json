@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-07-29",
+          "title": "CiDAO投票の4択化＋締切の四半期デフォルト実装 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260729120000_quarterly_voting_and_four_choices.sql（新規・未適用／quarter_end_at追加・start_voting_if_due/finalize_voting改修・proposals.voting_deadline_override追加）",
+            "cidao: src/lib/categories.ts（VOTE_CHOICES 4択定義・quarterEndAt/formatJstDate 追加・BUDGET_SIZES から votingDays 削除）",
+            "cidao: src/app/proposals/actions.ts, new/page.tsx（締切の任意指定を受け取り・フォーム追加）",
+            "cidao: src/app/proposals/[id]/page.tsx, _components/VoteSection.tsx, _components/LiveLayerBars.tsx（4択ボタン・色・議論中の締切表示）",
+            "cidao: src/app/proposals/page.tsx, _components/ProposalsBrowser.tsx（一覧スナップショットを4択に）",
+            "cidao: src/app/api/cron/notify/route.ts（通知メールの選択肢文言）",
+            "cidao: src/lib/supabase/database.types.ts, scripts/seed-proposals.mjs",
+            "cidao: scripts/migrate-old-vote-choices.sql（新規・任意実行の旧票読み替え）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "会長依頼「大賛成/賛成/無理/反対の4択、締切は四半期毎をデフォルトに個別設定可」を実装。適用範囲（全種別統一）・可決判定（大賛成+賛成 vs 無理+反対）・締切定義（投票開始が属する四半期末）は事前に3択で確認して決定。検証：tsc --noEmit exit 0／next build exit 0／eslint は既存3件以外の新規エラーなし／四半期末計算を年跨ぎ含む6ケースで確認／dev(3001)で提案一覧が4択ラベル表示になることを目視。未実施：マイグレーションは本番未適用（SQL Editorでユーザー実行）、投票ボタン4択と提案フォームはログイン必須のため未目視。既知の残課題：旧票（協力できる/難しい/わからない/保留）は賛否に数えず内訳非表示、投票変更が集計に反映されない既存トリガーの穴。session: 6ed50179-95bc-45b6-b54e-ae314dd0d8b6 / output: 50,684 / cost: $7.82"
+        },
+        {
+          "date": "2026-07-29",
           "title": "ガイド断定表現の緩和＋CiDAO団体数のDB実数統一 0.3時間",
           "category": "保守",
           "outputs": [
