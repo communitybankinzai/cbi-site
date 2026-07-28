@@ -39,21 +39,22 @@
         },
         {
           "date": "2026-07-29",
-          "title": "ガイド表現緩和＋CiDAO団体数の統一・団体候補管理画面・出典表記変更 1.0時間",
+          "title": "ガイド表現の見直し＋CiDAO団体数の統一・団体候補管理画面・説明文の整理 1.1時間",
           "category": "実装",
           "outputs": [
-            "site/guide/propose/index.html:81, site/guide/vote/index.html:47（断定表現に「必要に応じて」を追加）",
+            "site/guide/propose/index.html:81, site/guide/vote/index.html:47（断定表現の緩和→有志スタート明記へ2段階で改訂）",
             "cidao: src/lib/org-count.ts（新規・civic_groupのみカウント）",
             "cidao: src/app/page.tsx, match/page.tsx, match/_components/MatchChat.tsx, api/agents/a7/route.ts（219ハードコード撤廃）",
             "cidao: src/lib/org-placeholder.ts（新規・代表者未確定の判定）、orgs/[id]/page.tsx（更新待ちバナー）",
             "cidao: src/app/admin/org-candidates/{page.tsx,actions.ts}（新規・団体候補）、admin/page.tsx（導線）",
             "cidao: supabase/migrations/20260729130000_org_candidates.sql, 20260729140000_mask_source_reference.sql（新規・適用済み）",
             "cidao: scripts/seed-orgs.mjs, enrich-organizations.mjs, seed-orgs-data.json, migrations 3件（出典表記の置換）",
-            "site/admin/changelog.json（4件追記）"
+            "cidao: supabase/migrations/20260729150000_remove_duplicate_org_notice.sql（新規・適用済み）、admin/org-candidates/actions.ts（登録時のdescriptionを廃止）",
+            "site/admin/changelog.json（5件追記）"
           ],
-          "hours": 1.0,
+          "hours": 1.1,
           "partnerApproved": false,
-          "note": "団体数がホーム225・マッチング219と矛盾していた件から派生した一連の作業。実測で organizations は civic_group 223／business 1（サンプル）／government 1（サンプル）、イベント主催名32件中29件が未登録、代表者欄は224件がプレースホルダーと判明。(1)表示を223に統一し / と /match のSSR出力で実測確認、(2)「代表者による更新待ち」バナーの判定を修正し1件→223件で表示、スクショで確認、(3)団体候補の管理画面を新設（人が1件ずつ登録/除外を判断）、(4)個人サイトのドメイン名を「WEB公開情報」に置換。tsc exit 0。DDL/DML 2本はユーザーがSQL Editorで実行済み、適用後に検証：org_name_exclusions作成済み／旧ドメイン表記0件・新表記219件／団体候補29件を集計／管理画面は307（未ログインリダイレクト＝コンパイル成功）／本番 cidao.vercel.app/match で223表示。その後ユーザーが管理画面で29件を仕分け（14件を団体登録・15件を除外）し、結果を検証：新規14件はすべて civic_group／公開／代表者なし＝更新待ち表示あり、団体数223→237、本番 cidao.vercel.app/match と /orgs で反映を確認。除外リストはRLSで管理者のみ参照可のためanonからは検証不可（設計どおり）。session: 28e39780-511c-4c99-baca-705c12027b46 / output: 95,025 / cost: $20.40"
+          "note": "団体数がホーム225・マッチング219と矛盾していた件から派生した一連の作業。実測で organizations は civic_group 223／business 1（サンプル）／government 1（サンプル）、イベント主催名32件中29件が未登録、代表者欄は224件がプレースホルダーと判明。(1)表示を223に統一し / と /match のSSR出力で実測確認、(2)「代表者による更新待ち」バナーの判定を修正し1件→223件で表示、スクショで確認、(3)団体候補の管理画面を新設（人が1件ずつ登録/除外を判断）、(4)個人サイトのドメイン名を「WEB公開情報」に置換。tsc exit 0。DDL/DML 2本はユーザーがSQL Editorで実行済み、適用後に検証：org_name_exclusions作成済み／旧ドメイン表記0件・新表記219件／団体候補29件を集計／管理画面は307（未ログインリダイレクト＝コンパイル成功）／本番 cidao.vercel.app/match で223表示。その後ユーザーが管理画面で29件を仕分け（14件を団体登録・15件を除外）し、結果を検証：新規14件はすべて civic_group／公開／代表者なし＝更新待ち表示あり、団体数223→237、本番 cidao.vercel.app/match と /orgs で反映を確認。除外リストはRLSで管理者のみ参照可のためanonからは検証不可（設計どおり）。最後にガイド文言を「有志で始められる／CBIは必要に応じて支える」へ改訂（会長案を口調調整のうえ採用、投票ページも整合）、団体説明233件からバナーと重複する案内文を削除（既存219件は案内行のみ除去、新規14件はdescriptionをnull化）。検証：案内文0件・空文字残存0件、本番 cidao.vercel.app の団体ページ2種とCBIサイトのガイド2ページで表示確認。session: 28e39780-511c-4c99-baca-705c12027b46 / output: 112,292 / cost: $28.60"
         },
         {
           "date": "2026-07-27",
