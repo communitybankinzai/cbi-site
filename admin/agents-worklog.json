@@ -18,21 +18,24 @@
       "actuals": [
         {
           "date": "2026-07-29",
-          "title": "CiDAO投票の4択化＋締切の四半期デフォルト実装 0.5時間",
+          "title": "CiDAO投票の選択肢統一・四半期締切・大賛成の名乗り出しとメッセージ実装＋集計不具合修正 1.4時間",
           "category": "実装",
           "outputs": [
-            "cidao: supabase/migrations/20260729120000_quarterly_voting_and_four_choices.sql（新規・未適用／quarter_end_at追加・start_voting_if_due/finalize_voting改修・proposals.voting_deadline_override追加）",
-            "cidao: src/lib/categories.ts（VOTE_CHOICES 4択定義・quarterEndAt/formatJstDate 追加・BUDGET_SIZES から votingDays 削除）",
-            "cidao: src/app/proposals/actions.ts, new/page.tsx（締切の任意指定を受け取り・フォーム追加）",
-            "cidao: src/app/proposals/[id]/page.tsx, _components/VoteSection.tsx, _components/LiveLayerBars.tsx（4択ボタン・色・議論中の締切表示）",
-            "cidao: src/app/proposals/page.tsx, _components/ProposalsBrowser.tsx（一覧スナップショットを4択に）",
-            "cidao: src/app/api/cron/notify/route.ts（通知メールの選択肢文言）",
-            "cidao: src/lib/supabase/database.types.ts, scripts/seed-proposals.mjs",
-            "cidao: scripts/migrate-old-vote-choices.sql（新規・任意実行の旧票読み替え）"
+            "cidao: supabase/migrations/20260729120000_quarterly_voting_and_vote_choices.sql（新規・未適用／quarter_end_at追加・start_voting_if_due（3日ガード込み）/finalize_voting改修・proposals.voting_deadline_override追加）",
+            "cidao: supabase/migrations/20260729150000_vote_support_followup.sql（新規・未適用／集計トリガーをinsert+update対応に置換・weight再計算・vote_aggregates再構築・votes.disclose_identity・votes RLS 2本・talent_inquiries.proposal_id・提案起点/提案者発の INSERT ポリシー2本・i_strongly_support関数）",
+            "cidao: src/lib/categories.ts（VOTE_CHOICES 4択・STRONG_SUPPORT_CHOICE/NEUTRAL_CHOICE・quarterEndAt/formatJstDate・BUDGET_SIZESからvotingDays削除）",
+            "cidao: src/app/proposals/actions.ts（castVoteに名乗りフラグ・大賛成時の実名通知／createProposalに締切指定）",
+            "cidao: src/app/talent/actions.ts（sendProposalSupportMessage・sendProposalOutreachMessage 新規）",
+            "cidao: src/app/proposals/[id]/_components/VoteSection.tsx（4択ボタン・名乗りチェック・支援者→提案者メッセージ欄）",
+            "cidao: src/app/proposals/[id]/_components/SupporterList.tsx（新規・提案者だけに見える名乗り出た人一覧＋送信）",
+            "cidao: src/app/proposals/[id]/_components/CommentSection.tsx（質問促進を保留票・未投票者向けに変更）",
+            "cidao: src/app/proposals/[id]/page.tsx, page.tsx, _components/ProposalsBrowser.tsx, _components/LiveLayerBars.tsx, new/page.tsx",
+            "cidao: src/app/api/cron/notify/route.ts, src/lib/supabase/database.types.ts, scripts/seed-proposals.mjs, scripts/migrate-old-vote-choices.sql",
+            "cidao文書: docs/01_開発仕様書_v2.2.md（v2.1からリネーム・§3.2.2/3.2.4/3.2.5/3.2.6新設/3.3.4改訂）, README.md, MOC_CiDAO.md, cidao/proposals/2026-07-29_投票4択と四半期締切の決定.md"
           ],
-          "hours": 0.5,
+          "hours": 1.4,
           "partnerApproved": false,
-          "note": "会長依頼「大賛成/賛成/無理/反対の4択、締切は四半期毎をデフォルトに個別設定可」を実装。適用範囲（全種別統一）・可決判定（大賛成+賛成 vs 無理+反対）・締切定義（投票開始が属する四半期末）は事前に3択で確認して決定。検証：tsc --noEmit exit 0／next build exit 0／eslint は既存3件以外の新規エラーなし／四半期末計算を年跨ぎ含む6ケースで確認／dev(3001)で提案一覧が4択ラベル表示になることを目視。未実施：マイグレーションは本番未適用（SQL Editorでユーザー実行）、投票ボタン4択と提案フォームはログイン必須のため未目視。既知の残課題：旧票（協力できる/難しい/わからない/保留）は賛否に数えず内訳非表示、投票変更が集計に反映されない既存トリガーの穴。session: 6ed50179-95bc-45b6-b54e-ae314dd0d8b6 / output: 50,684 / cost: $7.82"
+          "note": "会長依頼を3段階で実装。(1)4択＋四半期締切、(2)「無理」への疑義から一旦3択化、(3)中立を残す判断で「保留：もっと知りたい」を採用し4択に確定。適用範囲・可決判定・締切定義・名前の開示範囲・中立の文言は都度3択で確認。あわせて既存不具合3件を修正（投票変更/撤回が集計に反映されない、投票やり直しでweightが0になる、本人が自分の票を読めず選択中表示が出ない）。検証：tsc --noEmit exit 0／next build exit 0／eslint新規エラーなし（既存3件のみ）／四半期末計算を年跨ぎ含む6ケースで確認／dev(3001)で提案一覧の4択ラベル表示を目視。未実施：マイグレーション2本は本番未適用（適用用SQLをユーザーへ添付・クリップボード投入済み）、投票ボタン・名乗りチェック・メッセージ欄・支援者一覧はログイン必須のため未目視、RLSポリシーは未実行検証。session: 6ed50179-95bc-45b6-b54e-ae314dd0d8b6 / output: 143,015 / cost: $26.50"
         },
         {
           "date": "2026-07-29",
