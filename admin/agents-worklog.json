@@ -17,6 +17,19 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-07-30",
+          "title": "声がけ送信後の文言修正（届いていないと誤解される表示）0.1時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/talent/[id]/_components/ContactForm.tsx（成功時の主文を「ベル🔔に届きました」に変更。emailError='target email lookup failed' はメール未登録として補足表示、それ以外も内部コードを出さない）",
+            "site/admin/changelog.json（1件追記）",
+            "検証: npx tsc --noEmit エラー0件／npx eslint 指摘0件／npm run build 成功"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "ユーザーから「通知できないようです」と /talent/<id> のスクショで報告。調査の結果、sendTalentInquiry は insertNotification を先に実行しておりベル＋Webプッシュは成功していた。失敗していたのは補助のメール送信のみで、原因は相手が LINEログインで auth.users.email を持たないこと（既知の構造的制約）。つまり機能不具合ではなく文言の問題だったため、表示のみ修正した。同様の文言が orgs/[id]/_components/InterestForm.tsx にもあるが、団体の contact_email 宛でケースが異なる（ベル通知の受け皿が別）ため今回は変更せず、別途検討事項として残す。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 169,788 / cost: $44.91"
+        },
+        {
           "date": "2026-07-29",
           "title": "メンバー通知と実際の一覧掲載条件の食い違いを修正 0.2時間",
           "category": "保守",
