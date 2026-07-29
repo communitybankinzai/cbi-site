@@ -72,6 +72,11 @@
         + '*, *::before, *::after { animation: none !important; }';
       document.head.appendChild(s);
     }
+    // ?tile=split : ヒーローの合成レイヤー昇格（style.css の translateZ）を無効化する。
+    // 右下の矩形が「付けた状態で消え / 外した状態で出る」なら、原因はタイル分割で確定する
+    if (new URLSearchParams(location.search).get('tile') === 'split') {
+      document.documentElement.setAttribute('data-tile', 'split');
+    }
     // ?debug=outline : 全要素に赤枠を引く。画面上の謎の矩形が
     // DOM要素ならば、その輪郭が赤枠として見えるはず（見えなければDOM外＝ブラウザ/OS側）
     if (new URLSearchParams(location.search).get('debug') === 'outline') {
