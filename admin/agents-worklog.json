@@ -18,6 +18,28 @@
       "actuals": [
         {
           "date": "2026-07-29",
+          "title": "CiDAO全体通知の実装（自動配信5種＋管理者の一斉お知らせ画面）＋migration作成 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260729190000_notifications_broadcast.sql（新規・未適用／notifications.kindにfreefree・event・member・orgを追加、broadcast_id列と部分索引、送信履歴ビューnotification_broadcasts（service_roleのみgrant））",
+            "cidao: src/lib/notify.ts（notifyAllMembers新規／未退会メンバー全員へ500件ずつ一括INSERT、broadcast_id付与、push:falseでベルのみ、dedupeMinutesで連続通知抑制。NotificationKind型をexport）",
+            "cidao: src/lib/push.ts（sendWebPushToMany新規／購読を500件ずつin()で集め20並列で送信、失効購読の削除は既存どおり。resolveEnv/deliverに共通化）",
+            "cidao: src/app/freefree/actions.ts（createFreefreePostにafter()で全体通知）",
+            "cidao: src/app/events/actions.ts（createEvent・createEventBulkに全体通知。複数日程は1本にまとめ「ほか全N回」表記、shortJst追加）",
+            "cidao: src/app/proposals/actions.ts（createProposalに全体通知）",
+            "cidao: src/app/me/actions.ts（本登録完了 light→email_only の瞬間だけ全体通知）",
+            "cidao: src/app/orgs/actions.ts（createOrganizationは管理者の即公開時のみ、approveClaimはpublic_flagがfalse→trueになった時、updateOrgInfoは公開団体のみpush:false+6時間dedupe）",
+            "cidao: src/app/admin/notice/page.tsx・actions.ts・_components/NoticeForm.tsx（新規／管理者専用の一斉お知らせ。is_admin判定、確認ステップ、リンクはサイト内パスのみ許可、配信履歴50件と既読数表示）",
+            "cidao: src/app/admin/page.tsx（管理メニューに「お知らせ配信」を先頭追加）",
+            "site/admin/changelog.json（1件追記）",
+            "検証: npx tsc --noEmit エラー0件（初回はpush.tsのSupabaseClient型注釈で1件→推論に変更して解消）／npx eslint 変更9ファイル 指摘0件／npm run build 成功し /admin/notice がルートに生成されたことを app-path-routes-manifest.json で確認"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "「全般に知らせるべきアクションをベル通知とアプリ通知に流したい」「メンバー全員への一斉お知らせをどうするか」という相談が発端。調査の結果、ベルとWebプッシュは既にinsertNotificationで同時発火する作りになっており、不足は『全員に配る関数』と『各作成アクションのフック』の2点だけと判明したため、その2点に絞って実装した。宛先範囲は全メンバー（tier不問）・操作者は管理者のみ、はユーザー確認済み。一斉お知らせの手段としてLINE公式broadcastとResendメールも比較したが、前者は宛先がLINEフォロワーで登録メンバーと一致せず、後者はLINEログイン勢がauth.users.emailを持たず到達率が低いため、ベル＋Webプッシュを主経路とした。⚠migration未適用のうちはkindのCHECK制約とbroadcast_id列が無く全体通知だけが失敗する（best-effortのため投稿・登録自体は成立する）。残タスクはSQL Editorでの適用と、適用後の本番デプロイ。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 41,590 / cost: $5.78"
+        },
+        {
+          "date": "2026-07-29",
           "title": "FreeFree掲示板SNS一式：応援表明・掲示板導線・SNS表示名・AIチラシ読取・運営承認欄の実装 0.8時間",
           "category": "実装",
           "outputs": [
