@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-07-30",
+          "title": "配信履歴に既読者・未読者の名前表示を追加 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/admin/notice/page.tsx（notifications を broadcast_id in (...) で一括取得しmembers.display_nameと突合。details要素で既読/未読の氏名を展開表示。READ_DETAIL_LIMIT=20で取得件数を制限し、制限と『既読はベルを開いた時点で付く』旨を画面に明記）",
+            "site/admin/changelog.json（1件追記）",
+            "検証: npx tsc --noEmit エラー0件／npx eslint 指摘0件／npm run build 成功"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "「各メンバーの既読状況はわかるようになりませんか」という要望。notifications に recipient_id と read_at があるためデータは既に揃っており、表示を足すだけで済んだ。silent truncation を避けるため上限20件であることを画面に明記。既読の意味に注意が要る—markAllNotificationsRead はベルを開いた時点で当時届いていた通知をすべて既読にするため、『開いた』であって『読んだ』ではない。運営が未読者へ個別に催促する使い方をすると圧になりうる点は、表示先を管理者のみに限定することで最小化した。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 191,367 / cost: $50.87"
+        },
+        {
+          "date": "2026-07-30",
           "title": "Webプッシュ通知の本番開通（VAPID設定支援と疎通確認）0.1時間",
           "category": "保守",
           "outputs": [
