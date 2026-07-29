@@ -51,16 +51,21 @@
       s.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; }';
       document.head.appendChild(s);
     } else if (mode === 'nophoto') {
-      const ph = document.querySelector('.hero-photo');
-      if (ph) ph.style.display = 'none';
+      // 背景写真は .hero-photo という要素ではなく .hero の background で敷いている。
+      // 以前はここで存在しない要素を消していたため、写真は外れていなかった
+      const s = document.createElement('style');
+      s.textContent = '.hero { background-image: none !important; }';
+      document.head.appendChild(s);
     } else if (mode === 'plain') {
       // ヒーローを単色背景だけにする（写真・装飾・重ねグラデーションを全部外す）
-      ['.hero-photo', '.hero-video-overlay', '.hero-deco'].forEach((sel) => {
+      ['.hero-video-overlay', '.hero-deco'].forEach((sel) => {
         const el = document.querySelector(sel);
         if (el) el.style.display = 'none';
       });
       const s = document.createElement('style');
-      s.textContent = '*, *::before, *::after { animation: none !important; }';
+      s.textContent = '.hero { background-image: none !important; } '
+        + '.hero-hand, .hero-hand-shade { display: none !important; } '
+        + '*, *::before, *::after { animation: none !important; }';
       document.head.appendChild(s);
     }
     if (mode) document.documentElement.setAttribute('data-deco', mode);
