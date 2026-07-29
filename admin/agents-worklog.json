@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-07-29",
+          "title": "メンバー通知と実際の一覧掲載条件の食い違いを修正 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/me/actions.ts（本登録通知から linkUrl='/talent' を削除し、body を「公開PRが作られると『登録メンバー』一覧にも掲載されます」に変更）",
+            "cidao: src/app/me/pr/page.tsx（handleSave で保存前に既存行を確認し、公開PRの初回作成時のみ全メンバーへ通知。linkUrl は /talent/<member_id> で本人ページへ直行。message_acceptance='closed' は /talent が除外するため通知しない）",
+            "cidao: src/app/help/page.tsx（届く場面に「公開PRが作られて一覧に載ったとき」を追記）",
+            "検証: npx tsc --noEmit エラー0件／npx eslint 指摘0件／npm run build 成功／通知文面の埋め込みを grep で確認"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "ユーザーから「メンバー追加の通知が出たが一覧に出てこない」と指摘を受けて調査。原因は /talent が members ではなく member_profiles_pr（公開PR）を起点に引いているのに、通知を本登録（light→email_only）の瞬間に出していたこと＝実装時の確認不足。あわせて、公開PR未作成＝まだ公開の意思表示をしていない人の表示名を全員に配信している点をプライバシー上の懸念として提示したが、ユーザー判断は「本登録の通知は必須、公開PR作成時も別途通知する」で、配信済みの1件も残す方針。両方の通知を出す形に実装し、本登録側は空振りするリンクを外して文面で補足した。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 156,661 / cost: $38.26"
+        },
+        {
+          "date": "2026-07-29",
           "title": "通知への意見返信の往復導線＋プッシュ通知エラーの防御 0.3時間",
           "category": "実装",
           "outputs": [
