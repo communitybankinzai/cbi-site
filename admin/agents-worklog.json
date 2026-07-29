@@ -39,7 +39,7 @@
         },
         {
           "date": "2026-07-29",
-          "title": "ガイド表現の見直し＋CiDAO団体数の統一・団体候補管理画面・説明文の整理 1.1時間",
+          "title": "ガイド表現の見直し＋CiDAO団体数の統一・団体候補管理画面・ヒーロー右下矩形の原因特定 1.8時間",
           "category": "実装",
           "outputs": [
             "site/guide/propose/index.html:81, site/guide/vote/index.html:47（断定表現の緩和→有志スタート明記へ2段階で改訂）",
@@ -50,11 +50,13 @@
             "cidao: supabase/migrations/20260729130000_org_candidates.sql, 20260729140000_mask_source_reference.sql（新規・適用済み）",
             "cidao: scripts/seed-orgs.mjs, enrich-organizations.mjs, seed-orgs-data.json, migrations 3件（出典表記の置換）",
             "cidao: supabase/migrations/20260729150000_remove_duplicate_org_notice.sql（新規・適用済み）、admin/org-candidates/actions.ts（登録時のdescriptionを廃止）",
-            "site/admin/changelog.json（5件追記）"
+            "site/style.css（.hero::after 削除＝矩形の原因）、site/script.js（?hand=off 追加・?deco=nophoto/plain の不具合修正）、site/index.html（キャッシュバスター）",
+            "codex-依頼_ヒーロー右下の矩形.md（結論・教訓・否定済み仮説11を追記し解決済みに）",
+            "site/admin/changelog.json（6件追記）"
           ],
-          "hours": 1.1,
+          "hours": 1.8,
           "partnerApproved": false,
-          "note": "団体数がホーム225・マッチング219と矛盾していた件から派生した一連の作業。実測で organizations は civic_group 223／business 1（サンプル）／government 1（サンプル）、イベント主催名32件中29件が未登録、代表者欄は224件がプレースホルダーと判明。(1)表示を223に統一し / と /match のSSR出力で実測確認、(2)「代表者による更新待ち」バナーの判定を修正し1件→223件で表示、スクショで確認、(3)団体候補の管理画面を新設（人が1件ずつ登録/除外を判断）、(4)個人サイトのドメイン名を「WEB公開情報」に置換。tsc exit 0。DDL/DML 2本はユーザーがSQL Editorで実行済み、適用後に検証：org_name_exclusions作成済み／旧ドメイン表記0件・新表記219件／団体候補29件を集計／管理画面は307（未ログインリダイレクト＝コンパイル成功）／本番 cidao.vercel.app/match で223表示。その後ユーザーが管理画面で29件を仕分け（14件を団体登録・15件を除外）し、結果を検証：新規14件はすべて civic_group／公開／代表者なし＝更新待ち表示あり、団体数223→237、本番 cidao.vercel.app/match と /orgs で反映を確認。除外リストはRLSで管理者のみ参照可のためanonからは検証不可（設計どおり）。最後にガイド文言を「有志で始められる／CBIは必要に応じて支える」へ改訂（会長案を口調調整のうえ採用、投票ページも整合）、団体説明233件からバナーと重複する案内文を削除（既存219件は案内行のみ除去、新規14件はdescriptionをnull化）。検証：案内文0件・空文字残存0件、本番 cidao.vercel.app の団体ページ2種とCBIサイトのガイド2ページで表示確認。session: 28e39780-511c-4c99-baca-705c12027b46 / output: 112,292 / cost: $28.60"
+          "note": "団体数がホーム225・マッチング219と矛盾していた件から派生した一連の作業。実測で organizations は civic_group 223／business 1（サンプル）／government 1（サンプル）、イベント主催名32件中29件が未登録、代表者欄は224件がプレースホルダーと判明。(1)表示を223に統一し / と /match のSSR出力で実測確認、(2)「代表者による更新待ち」バナーの判定を修正し1件→223件で表示、スクショで確認、(3)団体候補の管理画面を新設（人が1件ずつ登録/除外を判断）、(4)個人サイトのドメイン名を「WEB公開情報」に置換。tsc exit 0。DDL/DML 2本はユーザーがSQL Editorで実行済み、適用後に検証：org_name_exclusions作成済み／旧ドメイン表記0件・新表記219件／団体候補29件を集計／管理画面は307（未ログインリダイレクト＝コンパイル成功）／本番 cidao.vercel.app/match で223表示。その後ユーザーが管理画面で29件を仕分け（14件を団体登録・15件を除外）し、結果を検証：新規14件はすべて civic_group／公開／代表者なし＝更新待ち表示あり、団体数223→237、本番 cidao.vercel.app/match と /orgs で反映を確認。除外リストはRLSで管理者のみ参照可のためanonからは検証不可（設計どおり）。最後にガイド文言を「有志で始められる／CBIは必要に応じて支える」へ改訂（会長案を口調調整のうえ採用、投票ページも整合）、団体説明233件からバナーと重複する案内文を削除（既存219件は案内行のみ除去、新規14件はdescriptionをnull化）。検証：案内文0件・空文字残存0件、本番 cidao.vercel.app の団体ページ2種とCBIサイトのガイド2ページで表示確認。最後にCBIサイト ヒーロー右下の暗い矩形（長期未解決）の原因を特定：正体は .hero::after（動画時代に透かしを隠す目的で置いた280×100pxの板、3e04071）で、静止画化後も残っていた。疑似要素のため ?debug=outline の * セレクタにも elementFromPoint にも出ず「DOM要素ではない」と誤判定されていた。57794e9 で削除し本番CSSからの消失を実測、ユーザー確認済み。途中で否定済み仮説（レイヤー昇格）を追試して指摘を受けたため、調査前に保管庫を検索する運用をメモリに記録。副産物として ?deco=nophoto/plain が存在しない .hero-photo を消していた不具合も修正。session: 28e39780-511c-4c99-baca-705c12027b46 / output: 175,654 / cost: $49.30"
         },
         {
           "date": "2026-07-27",
