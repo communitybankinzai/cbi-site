@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-07-30",
+          "title": "Webプッシュ通知の本番開通（VAPID設定支援と疎通確認）0.1時間",
+          "category": "保守",
+          "outputs": [
+            "Vercel環境変数の設定手順を案内（NEXT_PUBLIC_VAPID_PUBLIC_KEY 87文字／VAPID_PRIVATE_KEY 43文字はSensitive推奨）。鍵はクリップボード経由で受け渡し、秘密鍵は画面に出さず文字数と形式のみ検証",
+            "Redeploy後の疎通確認：push_subscriptions に新規1件（2026-07-30 07:58 JST・WNS）が追加されたことをservice_role経由で確認",
+            "web-push でユーザー本人の2端末へテスト送信し statusCode=201 を確認。ユーザー側でベルとPC通知の両方の到達を目視確認",
+            "cidao/proposals/2026-07-29_全体通知と一斉お知らせの設計.md（『Webプッシュは本番の環境変数が要る』節を追記）",
+            "コード変更なし（設定作業）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "マイページの「通知を受け取る」が Failed to execute 'atob' on 'Window' で落ちていた件の決着。原因は本番の NEXT_PUBLIC_VAPID_PUBLIC_KEY が未設定または不正値だったこと（空文字ではこのエラーは出ないため値の破損と推定していた）。旧購読（7/25作成）にも同じ鍵で送信できたことから、鍵ペア自体はローカルと同一で、本番環境変数側だけの問題だったと確定。NEXT_PUBLIC_ はビルド時に焼き込まれるため Redeploy が必須である点と、ブラウザ側のハードリロードが要る点が詰まりどころ。設計ノートに再発防止として手順を残した。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 177,659 / cost: $46.97"
+        },
+        {
+          "date": "2026-07-30",
           "title": "声がけ送信後の文言修正（届いていないと誤解される表示）0.1時間",
           "category": "保守",
           "outputs": [
