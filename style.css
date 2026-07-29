@@ -194,6 +194,12 @@ h1, h2, h3 {
   color: #ffffff;
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
 }
+/* タイトルの改行はスマホ・タブレットだけ。
+   46px 時の必要幅は実測 866px（テキスト805 + アイコン50 + gap10）。
+   960px でも1行に収まるが余裕が31pxしかないため、フォント差で崩れないよう1000pxを閾値にする */
+@media (min-width: 1000px) {
+  .hero-title-br { display: none; }
+}
 .hero-title-icon {
   height: 1.5em;
   width: auto;
