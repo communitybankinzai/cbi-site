@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-07-29",
+          "title": "通知一覧ページ・ベル表示修正・使い方ヘルプ（/help）の新設 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/notifications/page.tsx（新規／自分宛100件を全文表示・種別ラベル・未読バッジ・リンクがあれば「開く」）",
+            "cidao: src/app/notifications/_components/MarkAllRead.tsx（新規／一覧を開いたら既読化）",
+            "cidao: src/components/NotificationBell.tsx（本文 truncate→line-clamp-3 で3行表示、link_url が無い通知は a タグにせず '#' へ飛ばさない、下部に「すべての通知を見る」を追加）",
+            "cidao: src/lib/notification-kinds.ts（新規／KIND_ICON・KIND_LABEL をベルと一覧で共有。freefree/event/member/org のアイコン追加）",
+            "cidao: src/app/help/page.tsx（新規／使い方ヘルプ。もくじ＋「通知について」：届く条件・読む場所・スマホ通知の設定手順・種類別の止め方・iPhoneはホーム画面追加が先）",
+            "cidao: src/app/page.tsx（トップに「📖 使い方ヘルプ」導線を追加）",
+            "site/admin/changelog.json（1件追記）",
+            "検証: npx tsc --noEmit エラー0件／npx eslint 指摘0件／npm run build 成功／dev(3001)起動し /help は HTTP 200 で10項目（見出し・もくじ・各リンク先パス）の存在を確認、トップに導線が出ることを確認、/notifications は未ログインで 307 → /login?next=/notifications を確認"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "一斉お知らせのテスト送信をユーザーが実施したところ「届いたメッセージが読めない」と判明。原因はベルの本文に truncate が掛かっていたことと、通知一覧ページが存在しなかったこと（/notifications には actions.ts しか無かった）。直し方は3択で確認し「両方やる」を選択。さらに通知のON/OFFを案内する先が無いことが分かり、ヘルプ機能の有無を調査（src/app 配下に help/guide/manual 系は0件、近いのはトップの『くわしく見る』と /install のみ）。規模を3択で確認し /help をハブとして新設する方針に決定。ブラウザペインが表示できずスクリーンショットは取得不可だったため、Invoke-WebRequest でHTMLを取得して内容を検証した（レイアウト崩れの目視は未実施）。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 114,522 / cost: $23.71"
+        },
+        {
+          "date": "2026-07-29",
           "title": "CiDAO管理者権限の付与（須田翔・小林康子）0.1時間",
           "category": "保守",
           "outputs": [
