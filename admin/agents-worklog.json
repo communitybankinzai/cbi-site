@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-07-29",
+          "title": "全体通知の種類別オプトアウト（イベント／FreeFree）を /me/edit に追加 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/notify.ts（notifyAllMembers に prefKey オプション追加／members の select に contact_preferences を足し、contact_preferences[prefKey] === false の人を宛先から除外。未設定は受け取る扱い）",
+            "cidao: src/app/me/actions.ts（ProfileUpdate に notify_event / notify_freefree を追加し contact_preferences へマージ）",
+            "cidao: src/app/me/edit/page.tsx（「同意・設定」にチェック2つ追加、handleSubmit で受け取り）",
+            "cidao: src/app/events/actions.ts・src/app/freefree/actions.ts（prefKey 指定）",
+            "site/admin/changelog.json（1件追記）",
+            "検証: npx tsc --noEmit エラー0件／npx eslint 変更5ファイル 指摘0件／npm run build 成功（Compiled successfully / 47ページ生成）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "前段の全体通知実装に対して自分から挙げた懸念（通知疲れで結局ベルを見なくなる）をユーザーが採用して指示。contact_preferences が jsonb のため**マイグレーション不要**で、既存メンバーはキー未設定＝受け取る扱いになり移行作業もない。対象はユーザー指示どおりイベントとFreeFreeの2種のみとし、提案・メンバー・団体・一斉お知らせは常に届く設計を維持した（notifyAllMembers 側は prefKey 汎用なので後から増やせる）。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 59,287 / cost: $10.01"
+        },
+        {
+          "date": "2026-07-29",
           "title": "CiDAO全体通知の実装（自動配信5種＋管理者の一斉お知らせ画面）＋migration作成 0.4時間",
           "category": "実装",
           "outputs": [
