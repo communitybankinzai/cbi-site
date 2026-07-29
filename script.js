@@ -72,6 +72,14 @@
         + '*, *::before, *::after { animation: none !important; }';
       document.head.appendChild(s);
     }
+    // ?hand=off : 手の写真（.hero-hand）とその影を消す。
+    // この img は inset:0 の全面要素で object-fit:cover のため単独の合成レイヤーになりやすい。
+    // ?fx=off でも ?deco=plain でも消えない唯一の全面レイヤーなので、切り分けのために単独で外せるようにした
+    if (new URLSearchParams(location.search).get('hand') === 'off') {
+      const s = document.createElement('style');
+      s.textContent = '.hero-hand, .hero-hand-shade { display: none !important; }';
+      document.head.appendChild(s);
+    }
     // ?debug=outline : 全要素に赤枠を引く。画面上の謎の矩形が
     // DOM要素ならば、その輪郭が赤枠として見えるはず（見えなければDOM外＝ブラウザ/OS側）
     if (new URLSearchParams(location.search).get('debug') === 'outline') {
