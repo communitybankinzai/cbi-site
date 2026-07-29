@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-07-29",
+          "title": "CiDAO管理者権限の付与（須田翔・小林康子）0.1時間",
+          "category": "保守",
+          "outputs": [
+            "Supabase members.admin_role を 'committee' に更新（2件・service_role経由のPATCH、HTTP 200）",
+            "付与後の管理者は5名：super 1（communitybankinzai）／committee 4（ゆうさん・らいさん・カケル＝須田翔・小林康子）",
+            "site/ の変更なし（DBデータの更新のみ）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "管理画面への導線（⚙）追加の流れで、須田翔さん・小林康子さんも管理メンバーである旨の申告があり付与。表示名が本名と異なる（須田翔さん→「カケル」、小林康子さん→「私、小林康子のようです。」）ため、member_private.real_name で照合してから実行し、対象者をユーザーに提示して確認を取った。権限レベルは staff / committee / super の3択で確認し、既存運営2名と同じ committee を選択（staffだと管理画面には入れるがis_committee_or_superを要するRLS操作—団体承認・イベント編集削除など—が弾かれるため）。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 91,667 / cost: $19.01"
+        },
+        {
+          "date": "2026-07-29",
           "title": "管理画面への導線（全ページ右上の⚙）を追加 0.2時間",
           "category": "実装",
           "outputs": [
