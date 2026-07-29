@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-07-29",
+          "title": "FreeFree掲示板のSNS投稿頻度・掲載期間の仕様確認、投稿文とAIチラシ読取の実装状況調査＋ホームボタン改名 0.1時間",
+          "category": "調査",
+          "outputs": [
+            "cidao: src/app/page.tsx（NavCardラベル「FreeFree」→「FreeFree掲示板」）",
+            "site/admin/changelog.json（1件追記）",
+            "調査結果: SNS本文は src/lib/sns-template.ts の固定テンプレートで、CBI名の応援表明なし・結びは個別掲載への直リンクのみ（掲示板トップへの誘導なし）",
+            "調査結果: AIチラシ読取は src/app/api/events/scan/route.ts にイベント用のみ実装済み（Claude Vision）。FreeFree掲載フォームは画像アップロードのみでAI読取なし",
+            "調査結果: src/app/admin/sns/page.tsx は予定7件＋過去30日ログの閲覧専用で、投稿文の編集・承認欄が未実装（仕様書v2.1 3.11.4 未達）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "翔さん・新井氏からのSNS投稿頻度に関する問い合わせ対応。頻度は仕様書v2.1どおり1掲載あたり月1回程度・掲載期間は1週間/1ヶ月/3ヶ月の選択制であることを確認。応援文面の強化とFreeFree側AI読取は3択提示のうえ未着手。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 14,894 / cost: $3.23"
+        },
+        {
+          "date": "2026-07-29",
           "title": "CiDAO投票の選択肢統一・四半期締切・大賛成の名乗り出しとメッセージ実装＋集計不具合修正 1.4時間",
           "category": "実装",
           "outputs": [
