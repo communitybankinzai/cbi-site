@@ -33,7 +33,7 @@
         },
         {
           "date": "2026-07-29",
-          "title": "CiDAO投票の選択肢統一・四半期締切・大賛成の名乗り出しとメッセージ実装＋集計不具合修正 1.4時間",
+          "title": "CiDAO投票の選択肢統一・四半期締切・大賛成の名乗り出しとメッセージ実装＋本番適用と不具合修正 2.2時間",
           "category": "実装",
           "outputs": [
             "cidao: supabase/migrations/20260729120000_quarterly_voting_and_vote_choices.sql（新規・未適用／quarter_end_at追加・start_voting_if_due（3日ガード込み）/finalize_voting改修・proposals.voting_deadline_override追加）",
@@ -46,11 +46,14 @@
             "cidao: src/app/proposals/[id]/_components/CommentSection.tsx（質問促進を保留票・未投票者向けに変更）",
             "cidao: src/app/proposals/[id]/page.tsx, page.tsx, _components/ProposalsBrowser.tsx, _components/LiveLayerBars.tsx, new/page.tsx",
             "cidao: src/app/api/cron/notify/route.ts, src/lib/supabase/database.types.ts, scripts/seed-proposals.mjs, scripts/migrate-old-vote-choices.sql",
+            "cidao: supabase/migrations/20260729160000_fix_sync_vote_aggregate_old_ref.sql（新規・適用済／INSERT時のOLD参照エラー修正）",
+            "cidao: src/lib/honorific.ts（新規・nameWithSan/nameWithSama）＋敬称重複の是正21箇所（proposals/talent/orgs actions・VoteSection・CommentSection・ReplyForm・ReceptionClient・ContactForm・talent/[id]/page）",
+            "cidao: src/app/me/inbox/page.tsx（提案起点スレッドに提案タイトル表示）",
             "cidao文書: docs/01_開発仕様書_v2.2.md（v2.1からリネーム・§3.2.2/3.2.4/3.2.5/3.2.6新設/3.3.4改訂）, README.md, MOC_CiDAO.md, cidao/proposals/2026-07-29_投票4択と四半期締切の決定.md"
           ],
-          "hours": 1.4,
+          "hours": 2.2,
           "partnerApproved": false,
-          "note": "会長依頼を3段階で実装。(1)4択＋四半期締切、(2)「無理」への疑義から一旦3択化、(3)中立を残す判断で「保留：もっと知りたい」を採用し4択に確定。適用範囲・可決判定・締切定義・名前の開示範囲・中立の文言は都度3択で確認。あわせて既存不具合3件を修正（投票変更/撤回が集計に反映されない、投票やり直しでweightが0になる、本人が自分の票を読めず選択中表示が出ない）。検証：tsc --noEmit exit 0／next build exit 0／eslint新規エラーなし（既存3件のみ）／四半期末計算を年跨ぎ含む6ケースで確認／dev(3001)で提案一覧の4択ラベル表示を目視。未実施：マイグレーション2本は本番未適用（適用用SQLをユーザーへ添付・クリップボード投入済み）、投票ボタン・名乗りチェック・メッセージ欄・支援者一覧はログイン必須のため未目視、RLSポリシーは未実行検証。session: 6ed50179-95bc-45b6-b54e-ae314dd0d8b6 / output: 143,015 / cost: $26.50"
+          "note": "会長依頼を3段階で実装。(1)4択＋四半期締切、(2)「無理」への疑義から一旦3択化、(3)中立を残す判断で「保留：もっと知りたい」を採用し4択に確定。適用範囲・可決判定・締切定義・名前の開示範囲・中立の文言は都度3択で確認。あわせて既存不具合3件を修正（投票変更/撤回が集計に反映されない、投票やり直しでweightが0になる、本人が自分の票を読めず選択中表示が出ない）。本番適用時に2つ躓いた：(a)SQL未実行のまま『Success』と誤認→適用状況を判定する診断SQLを渡して切り分け、(b)自作トリガーがINSERTで落ちる（plpgsqlはtg_op判定より先にOLDを解決するため短絡評価が効かない）→160000で修正。本番で例外本文が見えず原因不明になったため、castVote/retractVote/メッセージ送信を戻り値エラー方式に変更。UI改善（合算バー・登録区分別への改称・投票完了の明示・敬称重複解消）も実施。検証：tsc exit 0／next build exit 0／eslint新規エラーなし／四半期末計算を年跨ぎ含む6ケース＋敬称ヘルパーを境界値で実行確認／dev(3001)で合算バーの実データ表示を確認／本番で投票・名乗り・メッセージ送信が通ることをユーザー操作で確認／SQL適用状況を14行の診断クエリで確認。未実施：提案フォームの締切指定と支援者一覧はログイン/提案者権限が要るため未目視。session: 6ed50179-95bc-45b6-b54e-ae314dd0d8b6 / output: 223,673 / cost: $71.57"
         },
         {
           "date": "2026-07-29",
