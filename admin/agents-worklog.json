@@ -21,7 +21,7 @@
           "title": "通知への意見返信の往復導線＋プッシュ通知エラーの防御 0.3時間",
           "category": "実装",
           "outputs": [
-            "cidao: supabase/migrations/20260729200000_bug_report_reply.sql（新規・未適用／bug_reports に reply_text・replied_at・replied_by を追加。末尾に適用確認クエリ同梱）",
+            "cidao: supabase/migrations/20260729200000_bug_report_reply.sql（新規・適用済／bug_reports に reply_text・replied_at・replied_by を追加。末尾に適用確認クエリ同梱）",
             "cidao: src/app/admin/bug-reports/actions.ts（replyToBugReport 新規／管理者判定・2000字制限・reply保存後に報告者へ insertNotification）",
             "cidao: src/app/admin/bug-reports/page.tsx（返信フォーム追加・返信済み表示・未ログイン報告には返信不可の説明）",
             "cidao: src/app/bug-report/page.tsx（?ref=<通知id> を受けて notifications からタイトルを取得。RLSにより他人の通知は引けない）",
@@ -34,7 +34,7 @@
           ],
           "hours": 0.3,
           "partnerApproved": false,
-          "note": "「一斉通知に意見や不具合があったら返信できるようにできますか」という依頼。既存の bug_reports（フォーム・管理画面・page_url列）が受け皿として使えたため新テーブルは作らず、不足していた『通知からの導線』と『返答が本人に返る経路』だけを足す方針を3択で確認して実装。返信は admin_note（内部メモ）と別列にした—内部メモをそのまま送ると本人に見せる前提でない文章が流出するため。作業中にユーザーから『通知を受け取るボタンでエラー』の報告があり並行対応：エラーは atob の InvalidCharacterError で、空文字なら発生しない性質から本番の NEXT_PUBLIC_VAPID_PUBLIC_KEY に引用符・改行等が混入していると推定（ローカル .env.local の鍵は87文字で正常）。本番バンドルからの値確認は PushToggle が /me 専用チャンクのため未達。コード側の防御は入れたが、Vercel環境変数の確認と再デプロイ（NEXT_PUBLIC_はビルド時に埋め込まれるため）がユーザー側で必要。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 140,467 / cost: $31.58"
+          "note": "「一斉通知に意見や不具合があったら返信できるようにできますか」という依頼。既存の bug_reports（フォーム・管理画面・page_url列）が受け皿として使えたため新テーブルは作らず、不足していた『通知からの導線』と『返答が本人に返る経路』だけを足す方針を3択で確認して実装。返信は admin_note（内部メモ）と別列にした—内部メモをそのまま送ると本人に見せる前提でない文章が流出するため。作業中にユーザーから『通知を受け取るボタンでエラー』の報告があり並行対応：エラーは atob の InvalidCharacterError で、空文字なら発生しない性質から本番の NEXT_PUBLIC_VAPID_PUBLIC_KEY に引用符・改行等が混入していると推定（ローカル .env.local の鍵は87文字で正常）。本番バンドルからの値確認は PushToggle が /me 専用チャンクのため未達。コード側の防御は入れたが、Vercel環境変数の確認と再デプロイ（NEXT_PUBLIC_はビルド時に埋め込まれるため）がユーザー側で必要。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 140,467 / cost: $31.58 migrationは2026-07-29にSQL Editorで適用完了（has_reply_text / has_replied_at / has_replied_by の3列すべてtrueを確認）。"
         },
         {
           "date": "2026-07-29",
