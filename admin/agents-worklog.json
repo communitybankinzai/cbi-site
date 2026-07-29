@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-07-29",
+          "title": "管理画面への導線（全ページ右上の⚙）を追加 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/components/AdminLink.tsx（新規／async Server Componentでis_admin判定、管理者以外はnullを返す。通知ベル right-3・幅40px の左隣 right-[60px] に同一スタイルで配置）",
+            "cidao: src/app/layout.tsx（HomeButtonとNotificationBellの間にAdminLinkを配置）",
+            "site/admin/changelog.json（1件追記）",
+            "検証: npx tsc --noEmit エラー0件／npx eslint 指摘0件／npm run build 成功",
+            "副作用の確認: prerender-manifest.json の静的ルートが /install・/login を含む5件から3件（_global-error・favicon.ico・manifest.webmanifest）に減少。layoutでcookiesを読むため両ページが動的レンダリングになった。機能影響なし・TTFBがわずかに増えるのみ"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "「管理画面のアクセスはURLしらないとできないのですか？」という指摘が発端。src全体を検索したところ /admin へのリンクは1本も無く、URL直打ち以外の導線が存在しないことを確認した。処置案3つ（A:全ページ右上の常時リンク／B:マイページ内の入口／C:現状維持）を提示しユーザーがAを選択。ベルとPushToggleが既にlayout.tsxで全ページ共通配置されていたため、同じ場所に1つ足すだけで済んだ。session: b53f150e-4e07-4d88-a672-d5e003985447 / output: 80,289 / cost: $15.40"
+        },
+        {
+          "date": "2026-07-29",
           "title": "全体通知の種類別オプトアウト（イベント／FreeFree）を /me/edit に追加 0.2時間",
           "category": "実装",
           "outputs": [
