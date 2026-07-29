@@ -194,11 +194,26 @@ h1, h2, h3 {
   color: #ffffff;
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
 }
-/* タイトルの改行はスマホ・タブレットだけ（印西／「このゆびとまれ」／プロジェクト の3行）。
+/* 1000px 以上：ゆびロゴ＋「印西「このゆびとまれ」プロジェクト」を横1行に。
    46px 時の必要幅は実測 866px（テキスト805 + アイコン50 + gap10）。
-   960px でも1行に収まるが余裕が31pxしかないため、フォント差で崩れないよう1000pxを閾値にする */
+   960px でも収まるが余裕が31pxしかないため、フォント差で崩れないよう1000pxを閾値にする */
 @media (min-width: 1000px) {
   .hero-title-br { display: none; }
+}
+/* 1000px 未満：縦積みにして
+   1行目 ゆびロゴ（中央）／2行目「印西「このゆびとまれ」」／3行目「プロジェクト」 */
+@media (max-width: 999px) {
+  .hero-title {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+/* 狭い端末では 28px のままだと「印西「このゆびとまれ」」が語の途中で折り返す
+   （320px 幅で必要 317px > 使える 272px）。1行に収まる範囲まで縮める */
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: clamp(22px, 7vw, 28px);
+  }
 }
 .hero-title-icon {
   height: 1.5em;
