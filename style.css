@@ -143,16 +143,6 @@ h1, h2, h3 {
      大きな画像だと右下のタイルが描き残される事象があったため） */
   background: var(--c-navy-dark) url('assets/hero/hero-photo-1600.jpg') center / cover no-repeat;
   overflow: hidden;
-  /* 右下に暗い矩形が残る事象への対策。ヒーローは全幅かつ子が z-index を持つため
-     複数タイルに分割され、その一部が再描画されないことがある。
-     単一の合成レイヤーへ昇格させ、タイル境界そのものをなくす。
-     ?tile=split を付けるとこの昇格を無効化して比較できる（script.js）。 */
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-html[data-tile='split'] .hero {
-  transform: none;
-  backface-visibility: visible;
 }
 .hero-video {
   position: absolute;
