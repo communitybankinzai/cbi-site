@@ -252,17 +252,6 @@ h1, h2, h3 {
   margin: -18px 0 24px;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 }
-.hero-meta {
-  display: inline-block;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.88);
-  padding: 8px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(4px);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .hero-video { display: none; }
 }
@@ -464,9 +453,10 @@ h1, h2, h3 {
 }
 .join-card .talent-bank-counter strong {
   color: var(--c-green);
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 700;
-  margin: 0 2px;
+  line-height: 1;
+  margin: 0 3px;
 }
 
 /* ---------- Report / News ---------- */
@@ -726,6 +716,14 @@ h1, h2, h3 {
   left: 0;
   transform: none;
 }
+/* 吹き出しを出している間はそのカードを前面へ（隣のカードに隠れないように） */
+.join-card {
+  position: relative;
+}
+.join-card:hover,
+.join-card:focus-within {
+  z-index: 5;
+}
 
 /* ---------- 動きの演出（スクロール出現・ヒーローズーム） ---------- */
 .reveal {
@@ -737,6 +735,9 @@ h1, h2, h3 {
 .reveal.is-visible {
   opacity: 1;
   transform: none;
+  /* 出現後は will-change を外す。残すとカードがスタッキングコンテキストになり、
+     中の吹き出し（.tip::after / z-index:60）が隣のカードに隠れて切れる */
+  will-change: auto;
 }
 /* グリッド内カードは少しずつ遅らせて順に出す */
 .grid-3 > .reveal:nth-child(2) { transition-delay: .12s; }
@@ -1336,8 +1337,7 @@ h1, h2, h3 {
 
 
 /* 雲海と重なっても読めるよう、ヒーロー下部の文字に影を付ける */
-.hero-cta-note,
-.hero-meta {
+.hero-cta-note {
   text-shadow: 0 1px 6px rgba(20, 40, 63, 0.55), 0 0 18px rgba(20, 40, 63, 0.35);
 }
 
