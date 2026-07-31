@@ -17,6 +17,22 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-07-31",
+          "title": "CiDAOアクセス分析ダッシュボード実装（全公開ページPV/VV計測＋AI増減分析）0.4時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260731090000_page_views.sql（page_viewsテーブル＋admin専用RPC 2本。event_viewsと同じプライバシー設計）",
+            "cidao: src/components/PageViewTracker.tsx（layout常駐トラッカー。/admin・/me系・/notifications除外、動的ルートを[id]に正規化）",
+            "cidao: src/app/api/track/view/route.ts（service role記録API。サーバ側でも再正規化）",
+            "cidao: src/app/admin/analytics/page.tsx（今日/直近7日vs前7日カード・30日推移折れ線・ページ別前週比テーブル）",
+            "cidao: src/app/api/admin/analytics/analyze/route.ts＋_components/AnalyzeButton.tsx（Claudeによる増減要因分析）",
+            "cidao: src/app/layout.tsx・src/app/admin/page.tsx（トラッカー設置・メニューカード追加）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "マイグレーション本番適用済み・localhost でトラッカー動作検証後テスト行削除・commit a7ff247 push済み（Vercel自動デプロイ）。/admin/analytics の画面表示は要admin ログイン確認。session: 61e733c7-7ce2-4d96-8582-317c3826444e / output: 35,672 / cost: $7.49"
+        },
+        {
           "date": "2026-07-30",
           "title": "配信履歴に既読者・未読者の名前表示を追加 0.1時間",
           "category": "実装",
@@ -2724,6 +2740,13 @@
           "category": "分析",
           "priority": "中",
           "note": "2026-07-02 両サイト総点検で確認：ログイン前に提案・投票プロセスや貢献度の仕組みの説明がなく、初見の市民が参加までたどり着けない。『提案→議論48時間→投票（3〜14日）→結果』の流れと投票重み・貢献度を1ページで説明するガイド原稿を作成し、A1 が実装する。"
+        },
+        {
+          "due": "2026-08-07",
+          "title": "📊 週次アクセス増減分析レポート（初回。以後毎週金曜に実施）",
+          "category": "分析",
+          "priority": "高",
+          "note": "CiDAO /admin/analytics を開き、AI分析ボタンの結果と前週比データをもとに増減要因と推奨アクションをレポート化。イベント開催日・SNS投稿（/admin/sns ログ）との突合も行う。レポートは保管庫ノートに保存しMOC_エージェントへ登録"
         }
       ]
     },
