@@ -17,6 +17,31 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-02",
+          "title": "拡充パイプライン Sonnet 4.6 ハルシネート率比較試走（3件・$0.54）0.2時間",
+          "category": "調査",
+          "outputs": [
+            "cidao: scripts/enrich-organizations.mjs（--modelオプション＋DRY-RUN時の全URL実fetch検証を追加、commit eb29718）",
+            "docs/api-cost-log.md（実測 $0.180/件・全220件想定$39.66 を追記）",
+            "MOC_エージェント.md（リンク追記）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "結論: machijuku.info の罠は Sonnet でも回避できず（isUrlAlive検証が必須の防衛線）。ただし本物の公式サイト machijuku.wixsite.com を発見、出典の実在性・activity_detail の質は明確に向上。実コストはHaikuの1.57倍。220件バッチは Sonnet+isUrlAlive+候補提示式を推奨。session: 61e733c7-7ce2-4d96-8582-317c3826444e / output: 69,114 / cost: $25.58"
+        },
+        {
+          "date": "2026-08-02",
+          "title": "GitHub Actions スケジュール実行の稼働率レポート作成（cocola-site）0.1時間",
+          "category": "保守",
+          "outputs": [
+            "agents/a1-core/knowledge/ops-report-github-actions-2026-08-02.md（初回稼働率レポート。cron失敗ゼロ、7/29に運用停止で意図的にschedule全削除を確認。5分間隔dispatchの空コミット連打576件/日を発見し対処3案を提示）",
+            "MOC_エージェント.md（レポートへのリンク追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "gh CLI で8ワークフロー×直近40実行を集計。監視対象は今後CiDAOのVercel cronへ移行が妥当。session: 61e733c7-7ce2-4d96-8582-317c3826444e / output: 69,114 / cost: $25.58"
+        },
+        {
           "date": "2026-07-31",
           "title": "CiDAOアクセス分析ダッシュボード実装（全公開ページPV/VV計測＋AI増減分析）0.4時間",
           "category": "実装",
@@ -2690,13 +2715,6 @@
           "note": "現在は /orgs/[id]/edit から代表者が手動 upload のみ。SNS/公式サイトからの自動取得を以下で実装：(1) website_url や sns_links に URL が入っていたら、公式サイト og:image / link rel='apple-touch-icon' / favicon を fetch して候補画像化、(2) note URL なら note の og:image、(3) YouTube URL なら YouTube Data API v3 (channels.list snippet.thumbnails.default) で公式サムネ取得、(4) machijuku.info ハルシネート事件の教訓により、自動取得した画像は edit 画面に『候補ロゴ』として並べて表示 → 代表者がチェックして『これを採用』ボタンで保存（自動 DB 書込みはしない）。X/FB/Instagram のプロフ画像は API 有料化・規約制約により実装しない。実装時は scripts/auto-fetch-logo.mjs として独立、website_url 有のorgs限定でバッチ実行→Storage 別バケット `org-logos-candidates` に候補保存→edit ページで一覧提示。"
         },
         {
-          "due": "2026-07-31",
-          "title": "🧪 拡充パイプライン：Sonnet 4.6 でハルシネート率比較（3件試走、約 $1）",
-          "category": "調査",
-          "priority": "高",
-          "note": "Haiku 4.5 で URL 捏造 1/12（約 8%）が発覚した教訓。Sonnet 4.6 はコスト 3 倍だが品質向上で捏造率がどれだけ下がるか実測。同じ 3 件（木下まち育て塾・木下夢探訪・船穂中…）で再試走、isUrlAlive 検証ログから拒否数を集計、activity_detail も目視で比較。$1 程度で検証可。Sonnet で十分品質出るなら 220 件バッチも Sonnet 採用（$75 程度）で事業化請求の信頼性確保。enrich-organizations.mjs の model 行を 1 箇所変更するだけで試せる。"
-        },
-        {
           "due": "2026-08-15",
           "title": "🔎 団体情報の自動拡充：220件バッチ実行（Anthropic クレジット追加後）",
           "category": "実装",
@@ -2704,17 +2722,17 @@
           "note": "2026-06-27 にコード一式（migration＋scripts/enrich-organizations.mjs＋/orgs/[id] 表示＋edit ページ＋can_edit_org RLS）完成して 3 件で動作確認済み。残り 217 件は実測 $0.12/件 × 217件 = $26 で残高 $4.61 を超過するため見送り。Anthropic Console にクレジット追加（最低 $30 推奨）後に：(1) civic 32件のみ先行（重要度高、~$3.8）→ サンプル目視で品質チェック、(2) voluntary 残り 185 件をバッチ実行（~$22）。実行コマンド：node scripts/enrich-organizations.mjs --all（civic 先行は --org UUID 個別指定 or 一時的に SQL で type=civic 絞り込みクエリへ修正）。途中で API 失敗しても enriched_at で再開できる設計済み（未拡充だけ拾う）。コスト削減オプション：scripts 内の WEB_SEARCH_TOOL.max_uses を 5→2 にすれば in tokens 半減で $13 程度まで下げられるが精度低下リスクあり、--limit 5 で試走して判断。"
         },
         {
-          "due": "2026-07-31",
-          "title": "GitHub Actions スケジュール実行の安定化監視",
-          "category": "保守",
-          "priority": "高",
-          "note": "data.json 自動更新パイプラインの稼働率レポート開始。"
-        },
-        {
           "due": "2026-08-31",
           "title": "週次稼働レポートの自動生成スクリプト整備",
           "category": "レポート",
           "priority": "中"
+        },
+        {
+          "due": "2026-08-15",
+          "title": "🧹 cocola-site 5分間隔dispatch空コミット連打の対処方針決定（GASトリガー確認）",
+          "category": "保守",
+          "priority": "中",
+          "note": "Update DAO/members data が5分毎に generatedAt のみの空コミットを約576件/日積んでいる（7/29運用停止後も継続）。推奨案A: 発火元GASトリガーを間引き＋workflow側に差分ガード追加。詳細は agents/a1-core/knowledge/ops-report-github-actions-2026-08-02.md"
         }
       ]
     },
