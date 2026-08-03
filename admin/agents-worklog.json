@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-08-03",
+          "title": "提案通知の未達調査（メール全件送信失敗を特定）0.1時間",
+          "category": "調査",
+          "outputs": [
+            "調査のみ（コード変更なし）。Supabase notifications / notification_log / push_subscriptions を読み取り、Resend API のキー状態を確認"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "結論：①提案投稿時のベル通知は正常（8/3の井戸事業提案で13人分挿入成功）②Webプッシュ購読者は1人2端末のみ③メール通知（投票開始/締切前/結果）はnotification_log全行がsent 0・errors 1〜2で全件失敗。原因はMAIL_FROMがResendサンドボックス差出人onboarding@resend.dev（アカウント所有者宛にしか送れない）のため。独自ドメイン認証が必要。提案投稿時にメールを送る設計は元々ない（投票開始時のみ）。工数はセッション累計58,654から前5件分44,205を差し引いた14,449 tokensで算出。session: a1187ca8-7a02-4d3f-8905-5a286bd5a57f / output: 58,654 / cost: $24.35"
+        },
+        {
+          "date": "2026-08-03",
           "title": "運営による投票期間延長・諮問再開機能の実装 0.2時間",
           "category": "実装",
           "outputs": [
