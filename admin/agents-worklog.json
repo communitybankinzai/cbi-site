@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-08-03",
+          "title": "市窓口案内を折りたたみ表示に変更 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/proposals/new/page.tsx（案内枠をdetails/summaryで折りたたみ化、commit 5033da9）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "3項目化でフォーム冒頭が縦長になったため代表指示で折りたたみに。tsc --noEmit exit 0。工数はセッション累計21,739から前2件分15,742を差し引いた5,997 tokensで算出。session: a1187ca8-7a02-4d3f-8905-5a286bd5a57f / output: 21,739 / cost: $8.26"
+        },
+        {
+          "date": "2026-08-03",
           "title": "市窓口案内をパブコメ・市民活動推進課へ拡張 0.1時間",
           "category": "実装",
           "outputs": [
