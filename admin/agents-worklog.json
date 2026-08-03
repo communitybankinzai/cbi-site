@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-08-03",
+          "title": "投票延長・再開の全員通知を実装 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/proposals/actions.ts（extendVoting成功時にnotifyAllMembersでベル＋プッシュ通知、再開/延長で文言分岐、commit 6354004）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "8/3の未来チケット再開（20:42、audit_logsで確認）は本実装前のため通知なし。管理画面「お知らせ配信」からの手動送信を代表に案内。tsc --noEmit exit 0。工数はセッション累計73,518から前7件分65,337を差し引いた8,181 tokensで算出。session: a1187ca8-7a02-4d3f-8905-5a286bd5a57f / output: 73,518 / cost: $33.31"
+        },
+        {
+          "date": "2026-08-03",
           "title": "ホームにプッシュ購読ナッジを実装 0.1時間",
           "category": "実装",
           "outputs": [
