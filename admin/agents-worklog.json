@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-26",
+  "updatedAt": "2026-08-03",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
@@ -16,6 +16,17 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-08-03",
+          "title": "提案作成画面に市「Iレポ」への案内枠を実装 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/proposals/new/page.tsx（フォーム冒頭に修繕案件の市窓口誘導枠を追加、commit 67eed48）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "道路損傷・公園施設破損・照明不点灯など市が修繕対応する案件は、CiDAOの投票を待たず印西市の市民協働投稿サービス「I（アイ）レポ」（MyCityReport）へ直接報告するよう提案フォーム冒頭で誘導。tsc --noEmit で検証（exit 0）。Iレポ以外の市サービス（パブコメ等）への展開は未着手。session: a1187ca8-7a02-4d3f-8905-5a286bd5a57f / output: 6,789 / cost: $2.33"
+        },
         {
           "date": "2026-08-02",
           "title": "拡充パイプライン Sonnet 4.6 ハルシネート率比較試走（3件・$0.54）0.2時間",
