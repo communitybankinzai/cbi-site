@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-08-03",
+          "title": "運営による投票期間延長・諮問再開機能の実装 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260803120000_extend_voting.sql（extend_voting関数・is_admin必須・audit_logs記録、新規）",
+            "cidao: src/app/proposals/actions.ts（extendVoting server action追加）",
+            "cidao: src/app/proposals/[id]/_components/ExtendVotingForm.tsx（管理者用フォーム、新規）",
+            "cidao: src/app/proposals/[id]/page.tsx（管理者のみ表示の組み込み）",
+            "commit c048ae5"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "対象範囲は3択確認の上「投票中の延長＋諮問(external)集計済の再開」を採用（可決・否決は覆さない）。tsc --noEmit exit 0。DDLはSupabase SQL Editorでのユーザー実行待ち（適用までUI操作はerror:not_foundならぬRPC未定義エラーになる）。工数はセッション累計44,205から前4件分27,737を差し引いた16,468 tokensで算出。session: a1187ca8-7a02-4d3f-8905-5a286bd5a57f / output: 44,205 / cost: $17.70"
+        },
+        {
+          "date": "2026-08-03",
           "title": "市制度との使い分けコピーを提案フォームに追加 0.1時間",
           "category": "保守",
           "outputs": [
