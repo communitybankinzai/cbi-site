@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-03",
+          "title": "ホームにプッシュ購読ナッジを実装 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/components/PushNudge.tsx（未購読者だけに出す購読案内、30日スヌーズ付き、新規）",
+            "cidao: src/app/page.tsx（会員証カード下に組み込み）",
+            "commit 1925493"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "通知未達調査の対処3案から③最小案を代表が選択（①独自ドメイン+Resend認証、②LINE配信は未着手）。既存PushToggleを再利用しiOS対応も引き継ぎ。tsc --noEmit exit 0。工数はセッション累計65,337から前6件分58,654を差し引いた6,683 tokensで算出。session: a1187ca8-7a02-4d3f-8905-5a286bd5a57f / output: 65,337 / cost: $27.04"
+        },
+        {
+          "date": "2026-08-03",
           "title": "提案通知の未達調査（メール全件送信失敗を特定）0.1時間",
           "category": "調査",
           "outputs": [
