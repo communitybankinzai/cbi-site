@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-08-03",
+          "title": "市制度との使い分けコピーを提案フォームに追加 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/proposals/new/page.tsx（折りたたみ見出しを「市の制度との使い分け」に変更、CiDAOの位置づけ一文を追加、commit b166621）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "PR方針3案のうち③マイクロコピー改善（最小）を代表が選択（①トップページ掲載は着手直前に中止指示→③へ変更）。tsc --noEmit exit 0。工数はセッション累計27,737から前3件分21,739を差し引いた5,998 tokensで算出。session: a1187ca8-7a02-4d3f-8905-5a286bd5a57f / output: 27,737 / cost: $11.13"
+        },
+        {
+          "date": "2026-08-03",
           "title": "市窓口案内を折りたたみ表示に変更 0.1時間",
           "category": "保守",
           "outputs": [
