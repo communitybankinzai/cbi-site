@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>参加のお約束・よくある質問｜Community Bank INZAI（CBI）</title>
+<meta name="description" content="CBI「このゆびとまれ」プロジェクトの参加ルール（利用規約）とよくある質問。参加は無料、公開される情報はご自身で選べます。">
+<meta property="og:title" content="参加のお約束・よくある質問｜Community Bank INZAI（CBI）">
+<meta property="og:description" content="安心して参加していただくための最低限のお約束と、よくある質問をまとめました。">
+<meta property="og:image" content="../assets/cbi-logo.png">
+<meta property="og:type" content="article">
+<link rel="icon" type="image/png" href="../assets/cbi-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+  /* ===== Terms page only ===== */
+  .tm-hero {
+    background:
+      radial-gradient(ellipse at top, rgba(201,165,92,0.18), transparent 60%),
+      linear-gradient(180deg, var(--c-navy-dark) 0%, var(--c-navy) 100%);
+    color: #fff;
+    padding: 100px 0 64px;
+    text-align: center;
+  }
+  .tm-hero h1 { color: #fff; font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 10px; }
+  .tm-hero p { color: rgba(255,255,255,0.85); max-width: 620px; margin: 0 auto; }
+  .tm-eyebrow { color: var(--c-gold-soft); letter-spacing: .25em; font-size: .8rem; font-weight: 700; margin-bottom: 12px; }
+
+  .tm-section { padding: 48px 0; }
+  .tm-section + .tm-section { border-top: 1px solid var(--c-line); }
+  .tm-section h2 { color: var(--c-navy); font-size: 1.35rem; margin: 0 0 18px; }
+
+  /* ① 参加のお約束 */
+  .tm-promise {
+    background: var(--c-paper);
+    border: 2px solid var(--c-gold);
+    border-radius: 14px;
+    padding: 26px 26px 20px;
+    max-width: 760px;
+    margin: -40px auto 0;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(20,40,63,0.10);
+  }
+  .tm-promise h2 { text-align: center; font-size: 1.2rem; }
+  .tm-promise ol { margin: 0; padding-left: 1.4em; }
+  .tm-promise li { margin: 10px 0; line-height: 1.75; }
+  .tm-promise li strong { color: var(--c-navy); }
+
+  /* ② 検索 */
+  .tm-search-wrap { max-width: 640px; margin: 0 auto; }
+  .tm-search {
+    width: 100%;
+    font: inherit;
+    padding: 13px 18px;
+    border: 2px solid var(--c-line);
+    border-radius: 999px;
+    background: var(--c-paper);
+    color: var(--c-ink);
+    transition: border-color .2s;
+  }
+  .tm-search:focus { outline: none; border-color: var(--c-gold); }
+  .tm-search-note { font-size: .8rem; color: var(--c-ink-sub); text-align: center; margin-top: 8px; }
+  .tm-search-empty {
+    display: none;
+    text-align: center;
+    color: var(--c-ink-sub);
+    background: var(--c-bg-alt);
+    border-radius: 10px;
+    padding: 18px;
+    margin-top: 16px;
+  }
+
+  /* ③ FAQ */
+  .tm-faq { max-width: 760px; margin: 0 auto; }
+  .tm-faq details {
+    background: var(--c-paper);
+    border: 1px solid var(--c-line);
+    border-radius: 12px;
+    margin: 10px 0;
+    overflow: hidden;
+  }
+  .tm-faq summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 15px 44px 15px 18px;
+    font-weight: 700;
+    color: var(--c-navy);
+    position: relative;
+    line-height: 1.6;
+  }
+  .tm-faq summary::-webkit-details-marker { display: none; }
+  .tm-faq summary::after {
+    content: "＋";
+    position: absolute; right: 16px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--c-gold);
+    font-weight: 900;
+  }
+  .tm-faq details[open] summary::after { content: "－"; }
+  .tm-faq .faq-a { padding: 0 18px 16px; line-height: 1.85; }
+  .tm-faq .faq-a ul { margin: 8px 0; padding-left: 1.4em; }
+  .tm-faq .faq-a li { margin: 4px 0; }
+  .tm-faq .faq-a p { margin: 8px 0; }
+  .tm-faq mark { background: #ffe9a8; border-radius: 3px; padding: 0 2px; }
+
+  /* ④ 規約全文 */
+  .tm-full { max-width: 760px; margin: 0 auto; }
+  .tm-full-lead { color: var(--c-ink-sub); font-size: .9rem; margin-bottom: 20px; }
+  .tm-full article {
+    background: var(--c-paper);
+    border: 1px solid var(--c-line);
+    border-radius: 12px;
+    padding: 28px clamp(18px, 4vw, 34px);
+  }
+  .tm-full h3 { color: var(--c-navy); font-size: 1.02rem; margin: 26px 0 8px; }
+  .tm-full h3:first-child { margin-top: 0; }
+  .tm-full p, .tm-full li { line-height: 1.9; font-size: .95rem; }
+  .tm-full ol.clauses { padding-left: 1.6em; margin: 6px 0; }
+  .tm-full .tm-date { color: var(--c-ink-sub); font-size: .85rem; margin-top: 26px; text-align: right; }
+
+  .tm-backtop { text-align: center; padding: 30px 0 50px; }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="site-header">
+  <div class="container header-inner">
+    <a href="../index.html" class="brand">
+      <img src="../assets/cbi-logo.png" alt="CBI ロゴ" class="brand-logo">
+      <span class="brand-text">Community Bank INZAI</span>
+    </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開く" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="site-nav">
+      <a href="../index.html#about">事業概要</a>
+      <a href="../index.html#join">参加方法</a>
+      <a href="../index.html#report">活動報告</a>
+      <a href="./index.html">参加のお約束</a>
+      <a href="https://cidao.vercel.app/" target="_blank" rel="noopener" class="nav-external">CiDAO ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== HERO ===== -->
+  <section class="tm-hero">
+    <div class="container">
+      <p class="tm-eyebrow">TERMS &amp; FAQ</p>
+      <h1>参加のお約束・よくある質問</h1>
+      <p>みなさんが安心して関われる場であり続けるために、最低限のお約束を言葉にしました。新しく何かを制限するものではなく、これまで大切にしてきたことを書き出したものです。</p>
+    </div>
+  </section>
+
+  <!-- ===== ① 参加のお約束（3行要約） ===== -->
+  <section class="tm-section" id="promise" style="padding-top:0;">
+    <div class="container">
+      <div class="tm-promise">
+        <h2>参加のお約束（この3つだけ）</h2>
+        <ol>
+          <li><strong>他の方を不快にさせないこと。</strong>誹謗中傷・ハラスメント・社会通念上不適切な言動は禁止です。</li>
+          <li><strong>宗教活動・政治活動、しつこい勧誘や強引な販売は禁止です。</strong>これらを目的としたご提案もお断りしています。</li>
+          <li><strong>事務局からのお願いには、真摯にご対応ください。</strong></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ② 検索 ===== -->
+  <section class="tm-section" id="search" style="padding-top:28px; padding-bottom:0; border-top:none;">
+    <div class="container tm-search-wrap">
+      <input type="search" class="tm-search" id="faq-search"
+             placeholder="🔍 気になる言葉で検索（例：退会、無料、個人情報）"
+             aria-label="よくある質問を検索" autocomplete="off" readonly
+             onfocus="this.removeAttribute('readonly')">
+      <p class="tm-search-note">入力すると、あてはまる質問だけが開いて表示されます。</p>
+    </div>
+  </section>
+
+  <!-- ===== ③ FAQ ===== -->
+  <section class="tm-section" id="faq" style="border-top:none;">
+    <div class="container tm-faq" id="faq-list">
+      <h2>よくある質問</h2>
+
+      <details>
+        <summary>Q1. 参加に料金はかかりますか？</summary>
+        <div class="faq-a">
+          <p>無料です。入会金・年会費・月会費はいただいていません。登録に使うアプリ「CiDAO」も無料です。</p>
+          <p>イベントによっては、材料費や会場費などの実費をお願いする場合があります（その場合は募集ページに明記します）。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q2. 禁止されていることは何ですか？</summary>
+        <div class="faq-a">
+          <p>次の行為を禁止しています。</p>
+          <ul>
+            <li>誹謗中傷、差別的な発言、ハラスメント（対面・CiDAO内・LINEグループ・SNSなど場所を問いません）</li>
+            <li>宗教活動・政治活動</li>
+            <li>しつこい勧誘、強引な販売、マルチ商法（ネットワークビジネス）</li>
+            <li>その他、社会通念上不適切と考えられる発言・行動</li>
+          </ul>
+          <p>これらを目的としたご提案・企画の持ち込みも、同様にお断りしています。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q3. 仕事の紹介や、自分の商品のPRはしてもいいですか？</summary>
+        <div class="faq-a">
+          <p>はい、問題ありません。メンバー同士の自然な仕事の紹介や、活動としての出店・PRは禁止にあたりません。</p>
+          <p>禁止しているのは、断りにくい状況での売り込みや、何度も繰り返される勧誘です。判断に迷う場合は事務局にご相談ください。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q4. 登録した情報は、どこまで公開されますか？</summary>
+        <div class="faq-a">
+          <p><strong>公開されます：</strong></p>
+          <ul>
+            <li>表示名（ニックネームで構いません）／興味分野／自己紹介／できること</li>
+            <li>『あなたのPR』（保有資格・貢献できること等）— ご自身が公開した場合のみ。公開範囲（一般公開／登録者のみ／同意した相手のみ）も選べます</li>
+            <li>貢献度ランキング — ご自身が「掲載する」を選んだ場合のみ</li>
+          </ul>
+          <p><strong>公開されません：</strong></p>
+          <ul>
+            <li>実名（本人と、イベント受付の担当者だけが確認できます）</li>
+            <li>メールアドレス・LINEアカウント情報</li>
+          </ul>
+          <p><strong>そもそもお預かりしません：</strong>住所・電話番号は登録項目にありません。</p>
+          <p>公開したくない項目は、CiDAOのマイページ「登録情報の変更」からいつでも変更・削除できます。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q5. 個人情報は何に使われますか？</summary>
+        <div class="faq-a">
+          <p>次の3つにのみ使用します。</p>
+          <ul>
+            <li>人材バンク（『あなたのPR』）での紹介と、団体とのマッチング提案</li>
+            <li>運営からのご連絡・お知らせ</li>
+            <li>人数や興味分野の分布などの匿名の統計データ</li>
+          </ul>
+          <p>これ以外の目的には使用しません。外部への提供・販売は一切行いません。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q6. 活動中の写真は、どこかに使われますか？</summary>
+        <div class="faq-a">
+          <p>イベントや活動の様子を撮影した写真を、活動報告やウェブサイト・SNSでの広報に使うことがあります。</p>
+          <p>掲載を望まない方は、撮影時にスタッフへお申し出ください。掲載後に気づいた場合も、事務局にご連絡いただければ速やかに削除します。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q7. 貢献度ポイントとは何ですか？お金になりますか？</summary>
+        <div class="faq-a">
+          <p>提案・投票・イベント参加などの活動に応じて付与される、活動の見える化のための仕組みです。</p>
+          <p>金銭的な価値はなく、換金・譲渡・売買はできません。ランキングへの掲載も、ご自身が「掲載する」を選んだ場合のみです。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q8. 通知（メール・プッシュ通知）を止めたいのですが。</summary>
+        <div class="faq-a">
+          <p>CiDAOのマイページで、いつでもご自身で変更できます。</p>
+          <ul>
+            <li>メールでのお知らせ → 「登録情報の変更」で該当のチェックを外す</li>
+            <li>スマホ・PCへのプッシュ通知 → マイページの「プッシュ通知」でオフにする</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q9. 退会したいときは？</summary>
+        <div class="faq-a">
+          <p>CiDAOのマイページ下部にある「アカウントを退会する」からお手続きください。プロフィールは非公開になり、人材バンクからも削除されます。</p>
+          <p>退会後30日以内であれば、LINEで再ログインするだけでアカウントを復元できます。30日を過ぎると復元できませんので、その後は新規登録からお願いします。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q10. 万一、登録した情報が外部に漏れた場合、補償はありますか？</summary>
+        <div class="faq-a">
+          <p>当団体は有志による任意のコミュニティ団体であり、専門的な情報管理体制を備えた事業者ではありません。そのため、お預かりする情報は必要最小限にとどめ（住所・電話番号はお預かりしません）、公開される項目はご自身で選び、いつでも変更・削除できる形にしています。</p>
+          <p>万一、漏えい等が判明した場合は、法令に従い、速やかにご本人へお知らせするなどの対応を行います。</p>
+          <p>その上で、<strong>当団体の故意または重大な過失による場合を除き、情報の漏えい・滅失によって生じた損害について、金銭その他の補償は行いません。</strong>この点にご了承いただける方のみ、ご登録をお願いいたします。</p>
+          <p>公開したくない情報は、最初から登録しないでいただくか、マイページからいつでも削除することができます。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q11. このルール（規約）はいつ変わりますか？</summary>
+        <div class="faq-a">
+          <p>不定期に更新します。更新したときは、CiDAOのお知らせ（ベル通知）やメールでご案内しますので、通知設定はONにしておくことをおすすめします。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q12. 活動中にケガをしたら？</summary>
+        <div class="faq-a">
+          <p>活動へのご参加は自己責任でお願いしています。当団体に故意または重大な過失がある場合を除き、活動中の事故・傷病について当団体は責任を負いかねます。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q13. メンバー同士でトラブルになったら？</summary>
+        <div class="faq-a">
+          <p>メンバー間の取引・金銭のやり取りは、当事者間の責任でお願いします。当団体は補償や仲裁の責任を負いかねますが、ご相談は事務局でお受けします。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q14. ルールを守らない人がいたら？</summary>
+        <div class="faq-a">
+          <p>事務局までご連絡ください。事務局から本人に改善をお願いし、それでも改善が見られない場合は、事務局の判断で退会（登録削除）とさせていただくことがあります。悪質なケースでは、事前の通知なく登録を削除することがあります。</p>
+        </div>
+      </details>
+
+      <p class="tm-search-empty" id="faq-empty">この言葉にあてはまる質問は見つかりませんでした。下の規約全文もあわせてご確認いただくか、事務局（<a href="mailto:communitybankinzai@gmail.com">communitybankinzai@gmail.com</a>）までお問い合わせください。</p>
+    </div>
+  </section>
+
+  <!-- ===== ④ 利用規約 全文 ===== -->
+  <section class="tm-section" id="terms" style="background: var(--c-bg-alt);">
+    <div class="container tm-full">
+      <h2>利用規約（全文）</h2>
+      <p class="tm-full-lead">上のFAQの内容を、規約の形式で正確に定めたものです。FAQと本規約の内容に相違がある場合は、本規約が優先されます。</p>
+      <article>
+        <h3>第1条（目的・適用）</h3>
+        <p>本規約は、Community Bank INZAI（以下「当団体」といいます）が運営する印西「このゆびとまれ」プロジェクトおよび市民参加サービス「CiDAO」（以下あわせて「本活動」といいます）への参加に関する条件を定めるものです。本活動に参加するすべての方（以下「参加者」といいます）に適用されます。</p>
+
+        <h3>第2条（入会・登録）</h3>
+        <ol class="clauses">
+          <li>本活動への参加を希望する方は、CiDAOへの登録により入会するものとします。</li>
+          <li>登録の際、本規約に同意したものとみなします。</li>
+          <li>未成年の方は、保護者（親権者）の同意を得た上で登録するものとします。</li>
+        </ol>
+
+        <h3>第3条（費用）</h3>
+        <ol class="clauses">
+          <li>入会金・年会費・月会費は無料とします。</li>
+          <li>イベント等において材料費・会場費などの実費が生じる場合は、事前に告知の上、参加者に負担を求めることがあります。</li>
+        </ol>
+
+        <h3>第4条（貢献度ポイント）</h3>
+        <ol class="clauses">
+          <li>当団体は、参加者の活動に応じて貢献度ポイントを付与することがあります。</li>
+          <li>貢献度ポイントは活動の記録・見える化を目的とするものであり、金銭的価値を持たず、換金・譲渡・売買はできません。</li>
+          <li>当団体は、必要に応じてポイント制度の内容を変更し、または終了することができます。</li>
+        </ol>
+
+        <h3>第5条（禁止事項）</h3>
+        <p>参加者は、活動の場所（対面・オンライン・SNS等）を問わず、次の行為をしてはなりません。</p>
+        <ol class="clauses">
+          <li>誹謗中傷、差別的言動、ハラスメント行為</li>
+          <li>宗教活動および政治活動</li>
+          <li>執拗な勧誘、強引な販売行為、連鎖販売取引（マルチ商法）への勧誘</li>
+          <li>前各号を目的とした提案・企画の持ち込み</li>
+          <li>その他、社会通念上不適切と当団体が判断する行為</li>
+        </ol>
+
+        <h3>第6条（個人情報の取扱い）</h3>
+        <ol class="clauses">
+          <li>当団体は、参加者の登録情報を、①人材バンクにおける紹介および団体とのマッチング提案、②運営からの連絡、③匿名化した統計データの作成、の目的にのみ使用します。</li>
+          <li>当団体は、参加者の個人情報を第三者に提供または販売しません。ただし、参加者本人が公開に同意した情報を、本人が設定した公開範囲の中で紹介・提案する場合、および法令に基づく場合を除きます。</li>
+          <li>実名・メールアドレス・LINEアカウント情報は公開しません。住所・電話番号は登録項目として収集しません。</li>
+          <li>参加者は、公開される項目をマイページからいつでも変更・削除できます。</li>
+          <li>参加者は、ご自身の個人情報の開示・訂正・利用停止を、いつでも事務局に請求できます。</li>
+          <li>当団体は、個人情報の漏えい等が発生した場合、法令に従い、速やかに本人への通知等の必要な対応を行います。</li>
+        </ol>
+
+        <h3>第7条（写真・肖像）</h3>
+        <ol class="clauses">
+          <li>当団体は、イベント等の活動の様子を撮影し、活動報告・ウェブサイト・SNS等の広報に使用することがあります。</li>
+          <li>写真の掲載を望まない参加者は、撮影時にその旨を申し出ることができます。掲載後であっても、事務局への連絡により削除を求めることができます。</li>
+        </ol>
+
+        <h3>第8条（退会）</h3>
+        <ol class="clauses">
+          <li>参加者は、CiDAOのマイページからいつでも退会できます。退会によりプロフィールは非公開となります。</li>
+          <li>退会後30日以内は、再ログインによりアカウントを復元できます。30日を経過した場合、復元はできません。</li>
+        </ol>
+
+        <h3>第9条（登録の削除）</h3>
+        <p>参加者が本規約に違反し、当団体の改善のお願いにもかかわらず改善が見られない場合、当団体は当該参加者の登録を削除することができます。ただし、違反の態様が重大で緊急を要する場合は、事前の通知なく登録を削除することがあります。</p>
+
+        <h3>第10条（免責）</h3>
+        <ol class="clauses">
+          <li>本活動への参加は、参加者自身の責任において行うものとします。当団体に故意または重大な過失がある場合を除き、活動中の事故・傷病について当団体は責任を負いません。</li>
+          <li>参加者間の取引・金銭の授受その他のトラブルについては、当事者間で解決するものとし、当団体に故意または重大な過失がある場合を除き、当団体は補償および仲裁の責任を負いません。</li>
+          <li>当団体の故意または重大な過失による場合を除き、登録情報の漏えい・滅失によって生じた損害について、当団体は金銭その他の補償を行いません。</li>
+        </ol>
+
+        <h3>第11条（規約の変更）</h3>
+        <p>当団体は、必要に応じて本規約を変更することができます。変更した場合は、CiDAOのお知らせまたはメールにより参加者に通知します。</p>
+
+        <h3>第12条（お問い合わせ）</h3>
+        <p>本規約に関するお問い合わせは、事務局（<a href="mailto:communitybankinzai@gmail.com">communitybankinzai@gmail.com</a>）までご連絡ください。</p>
+
+        <h3>附則</h3>
+        <p>本規約は2026年8月4日に制定し、同日以降にご登録いただいた方に適用します。制定日より前にご登録いただいた方には、CiDAOのお知らせにより本規約をご案内し、ご案内の後も参加を継続された場合に、本規約に同意いただいたものとみなします。同意いただけない場合は、マイページからいつでも退会いただけます。</p>
+
+        <p class="tm-date">制定：2026年8月4日<br>Community Bank INZAI</p>
+      </article>
+    </div>
+  </section>
+
+  <div class="tm-backtop">
+    <a class="btn btn-ghost" href="../index.html">← トップページへ戻る</a>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/cbi-logo.png" alt="" class="footer-logo">
+      <div>
+        <p class="footer-name">Community Bank INZAI</p>
+        <p class="footer-tagline">印西「このゆびとまれ」プロジェクト</p>
+      </div>
+    </div>
+    <p class="footer-copy">
+      © 2026 Community Bank INZAI. All rights reserved.
+      <span class="footer-sep" aria-hidden="true">｜</span>
+      <a href="./index.html" class="footer-admin-link">参加のお約束・FAQ</a>
+      <span class="footer-sep" aria-hidden="true">｜</span>
+      <a href="../admin/" class="footer-admin-link" rel="nofollow">運営者ログイン →</a>
+    </p>
+  </div>
+</footer>
+
+<script src="../script.js"></script>
+<script>
+(function () {
+  var input = document.getElementById('faq-search');
+  var items = Array.prototype.slice.call(document.querySelectorAll('#faq-list details'));
+  var empty = document.getElementById('faq-empty');
+
+  // 検索用に各項目のプレーンテキストを保持
+  var texts = items.map(function (d) { return d.textContent.toLowerCase(); });
+
+  function filter() {
+    var q = input.value.trim().toLowerCase();
+    var hit = 0;
+    items.forEach(function (d, i) {
+      if (!q) {
+        d.hidden = false;
+        d.open = false;
+        return;
+      }
+      var match = texts[i].indexOf(q) !== -1;
+      d.hidden = !match;
+      d.open = match; // 折りたたみ内もヒットさせるため、該当項目は開いて表示
+      if (match) hit++;
+    });
+    empty.style.display = (q && hit === 0) ? 'block' : 'none';
+  }
+
+  input.addEventListener('input', filter);
+  // Chrome のフォーム復元で前回の検索語が残った場合に備え、読み込み時にも一度実行
+  window.addEventListener('pageshow', function () {
+    if (input.value) filter();
+  });
+})();
+</script>
+</body>
+</html>

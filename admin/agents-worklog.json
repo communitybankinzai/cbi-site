@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-04",
+          "title": "利用規約・FAQページ新設＋CiDAO同意チェック実装＋Fable 5法務検証 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "site/terms/index.html（新設：お約束3行・検索付きFAQ14項目・規約12条＋附則）",
+            "site/index.html（hero・join-card・フッターの3箇所にterms/リンク追加）",
+            "cidao: src/app/login/page.tsx（同意チェックボックス、未チェック時はログインボタン無効）",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "CiDAO実装（Supabaseスキーマ・退会/通知/PR公開範囲）と規約記載の整合を照合。Fable 5サブエージェントで法務レビューを実施し、免責の故意重過失除外（第10条1・2項）、第三者提供の例外文言、開示請求・漏えい時通知、附則（既存会員への適用）、写真・ポイント・未成年条項を反映。ローカルサーバで検索欄・同意チェック動作を検証済み。残タスク：既存会員への周知（ベル通知）。session: 39ac62dd-3a3f-430b-bdff-8c60289347d1 / output: 52,024 / cost: $16.60"
+        },
+        {
           "date": "2026-08-03",
           "title": "投票延長・再開の全員通知を実装 0.1時間",
           "category": "実装",
