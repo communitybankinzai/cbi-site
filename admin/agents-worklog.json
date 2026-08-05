@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-06",
+          "title": "CiDAO提案のSNS告知機能実装（下書き自動生成・承認配信・全自動切替・登録CTA） 0.6時間",
+          "category": "実装",
+          "outputs": "cidao: src/lib/sns-announce.ts, sns-dispatch.ts, sns-template.ts, sns-target.ts, src/app/proposals/actions.ts, src/app/proposals/[id]/page.tsx, CommentSection.tsx, src/app/admin/sns/(page.tsx, actions.ts, AutoPostToggle.tsx), api/sns/dispatch/route.ts, layout.tsx, migrations/20260806100000_sns_proposal_announce.sql",
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "提案作成時にThreads/FB/Instagram向け告知文を自動生成し既存の承認フローに接続。半自動時は管理者へベル+プッシュ+メール通知、全自動は管理画面トグルで切替。Threads API実装、Instagramは画像必須のため枠のみ。migration適用済み。session: 4c86305c-8dbf-4b0e-be8e-c362dfbb3ccd / output: 55,415 / cost: $14.44"
+        },
+        {
           "date": "2026-08-04",
           "title": "利用規約・FAQページ新設＋CiDAO同意チェック実装＋Fable 5法務検証 0.6時間",
           "category": "実装",
