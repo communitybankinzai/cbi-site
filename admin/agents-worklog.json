@@ -18,12 +18,12 @@
       "actuals": [
         {
           "date": "2026-08-06",
-          "title": "CiDAO提案のSNS告知機能実装〜Threads/Instagram接続完了（実投稿テスト成功） 1.6時間",
+          "title": "CiDAO提案SNS告知の実装〜Threads/IG接続完了・IG文面最適化・承認待ち整理 1.9時間",
           "category": "実装",
-          "outputs": "cidao: src/lib/sns-announce.ts, sns-dispatch.ts, sns-template.ts, sns-target.ts, src/app/proposals/actions.ts, src/app/proposals/[id]/page.tsx, CommentSection.tsx, src/app/admin/sns/(page.tsx, actions.ts, AutoPostToggle.tsx), api/sns/dispatch/route.ts, layout.tsx, migrations/20260806100000_sns_proposal_announce.sql, SnsAuthSettings.tsx, api/cron/threads-refresh/route.ts, vercel.json, 手順書ノート(cidao/2026-08-06_Meta開発者アプリとSNSトークン取得手順.md), api/og/proposal/[id]/route.ts, next.config.ts, テスト投稿(Threads実投稿成功), 未適用migration2件の発見・適用",
-          "hours": 1.6,
+          "outputs": "cidao: src/lib/sns-announce.ts, sns-dispatch.ts, sns-template.ts, sns-target.ts, src/app/proposals/actions.ts, src/app/proposals/[id]/page.tsx, CommentSection.tsx, src/app/admin/sns/(page.tsx, actions.ts, AutoPostToggle.tsx), api/sns/dispatch/route.ts, layout.tsx, migrations/20260806100000_sns_proposal_announce.sql, SnsAuthSettings.tsx, api/cron/threads-refresh/route.ts, vercel.json, 手順書ノート(cidao/2026-08-06_Meta開発者アプリとSNSトークン取得手順.md), api/og/proposal/[id]/route.ts, next.config.ts, テスト投稿(Threads実投稿成功), 未適用migration2件の発見・適用, AwaitingList.tsx(承認待ちフィルタ), migrations/20260806110000(ローテ媒体threads限定+自動掃除)",
+          "hours": 1.9,
           "partnerApproved": false,
-          "note": "Threads接続完了(@communitybankinzai)・実投稿テスト成功。テストの副産物で本番DB未適用migration2件を発見し適用（放置なら下書き生成が全件失敗）。Instagram対応：satori→resvg→sharpで提案タイトル入り告知カードJPEGを自動生成し3ステップ投稿を実装。トークンは管理画面保存+週次自動リフレッシュ。Instagramも接続完了・カード画像付き実投稿テスト成功。残りはFBページ確認のみ。session: 4c86305c-8dbf-4b0e-be8e-c362dfbb3ccd / output: 163,277 / cost: $72.66"
+          "note": "Threads接続完了(@communitybankinzai)・実投稿テスト成功。テストの副産物で本番DB未適用migration2件を発見し適用（放置なら下書き生成が全件失敗）。Instagram対応：satori→resvg→sharpで提案タイトル入り告知カードJPEGを自動生成し3ステップ投稿を実装。トークンは管理画面保存+週次自動リフレッシュ。Instagramも接続完了・カード画像付き実投稿テスト成功。FBページは未開設と確定し見送り。IG文面をプロフィールリンク誘導に変更、承認待ち98件は根本対策込みで0件に整理。session: 4c86305c-8dbf-4b0e-be8e-c362dfbb3ccd / output: 186,467 / cost: $88.36"
         },
         {
           "date": "2026-08-04",
