@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-08-08",
+          "title": "不適切画像の運営削除（3バケットRLS追加）＋悪質投稿の証拠保全・提出用エクスポート実装 0.35時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260808130000_storage_admin_delete.sql（新規・未適用／freefree-images・event-flyers・org-logos に committee/super のDELETEポリシー）",
+            "cidao: supabase/migrations/20260808140000_moderation_records.sql（新規・未適用／moderation_records テーブル・非公開バケット moderation-evidence・UPDATE/DELETEポリシーは意図的に未作成）",
+            "cidao: scripts/apply-20260808-storage-admin-delete.sql・apply-20260808-moderation-records.sql（SQL Editor貼付用）",
+            "cidao: src/lib/storage-path.ts（新規／公開URL→バケット・パス復元。署名付きURL・外部URL・ディレクトリ遡上は null を返す）",
+            "cidao: src/app/admin/freefree/actions.ts（preserveEvidence・deleteFreefreeImages・exportModerationRecord 追加、既存3操作に保全を前置）",
+            "cidao: src/app/admin/freefree/_components/ModerationRecordRow.tsx（新規）、FreefreeModerationRow.tsx（画像削除ボタン）、page.tsx（対応記録セクション）",
+            "検証: npx tsc --noEmit エラー0件／npx next build 成功／storage-path パーサを9ケース（正常2・日本語・クエリ付・別バケット・署名付URL・外部URL・遡上細工・パス欠落）で実行し全て期待どおりを確認"
+          ],
+          "hours": 0.35,
+          "partnerApproved": false,
+          "note": "翔さんからの指摘（不適切画像への対処）と追加要望（警察へ提出できる事項の記録）への対応。前段で入れた削除機能が証拠まで消してしまう問題を自覚し、保全に失敗したら削除処理ごと中断する設計にした。⚠IPアドレス・User-Agentは現在アプリのどこでも取得しておらず未記録。新規収集はプライバシーポリシー改定と法務確認が要るためCBI側の判断待ち。audit_logs テーブルが ip_hash 列付きで存在するが未使用であることも確認済み。⚠第三者提供の運用ルール（警察への任意提出の可否・保存期間）は要法務監修で未策定。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 139,505 / cost: $30.96"
+        },
+        {
+          "date": "2026-08-08",
           "title": "イベント登録のサイトURL読み取り機能（複数イベント選択・複数日程対応）実装 0.5時間",
           "category": "実装",
           "outputs": [
