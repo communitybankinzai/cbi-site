@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-08",
+          "title": "提出用データへのIPアドレス・書き込み履歴の組み込みと古い注記の修正 0.09時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/admin/freefree/actions.ts（exportModerationRecord に「投稿時の書き込み記録」＝audit_logs を target_id で引く／「投稿者の書き込み履歴」＝同一 actor_id の直近50件 を追加。IP_LOGGING_STARTED_AT 定数を新設し、記録が無い理由を『記録開始前の投稿』『90日経過で削除』で出し分け。注記4件を実態に合わせて全面差し替え）",
+            "cidao: src/app/admin/freefree/page.tsx（対応記録セクションの警告文を差し替え、書き込み記録画面への導線を追加）",
+            "検証: npx tsc --noEmit エラー0件／npx next build 成功"
+          ],
+          "hours": 0.09,
+          "partnerApproved": false,
+          "note": "翔さんの指摘（ダウンロードしたJSONに『IPアドレスは記録していません』と出ていた）への対応。IP記録を実装した際にエクスポート側の更新が漏れており、証拠として最も重要なIPが出力に入っていなかった。指摘がなければ、いざ提出という場面で気づく事故になっていた。⚠実データでの出力確認は未実施（committee権限でのログインと、記録開始後の書き込みが必要）。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 198,278 / cost: $60.39"
+        },
+        {
+          "date": "2026-08-08",
           "title": "参加のお約束（利用規約）の改定：IP記録・違反投稿の保全を第6条へ追加、TERMS_VERSION更新 0.14時間",
           "category": "事務",
           "outputs": [
@@ -3017,6 +3030,23 @@
     },
     "A4": {
       "actuals": [
+        {
+          "date": "2026-08-08",
+          "title": "🖼️ A0告知ポスター（サイトLP圧縮版＋サイトQR）を新規制作 0.6時間",
+          "category": "広報",
+          "outputs": [
+            "site/poster/cbi-poster-a0.html — A0縦841×1189mm版ポスター。site/index.html のHero／ABOUT／JOIN／REPORT／CONTACT／フッターを1枚に再配置。配色・書体・雲海グラデはstyle.cssから移植し、@page size でA0指定",
+            "site/poster/qr-site.svg — 公式サイトTOP（communitybankinzai.github.io/cbi-site/）のQR。誤り訂正レベルH・ベクター",
+            "site/poster/make_qr.py — QR再生成スクリプト（segno使用）",
+            "site/poster/build.ps1 — Chrome headless --print-to-pdf でA0 PDFを出力（BOM付きUTF-8）",
+            "site/poster/cbi-poster-a0.pdf — 入稿用PDF 3.33MB",
+            "site/admin/changelog.json — 1件追記"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "きっかけ：ユーザー依頼「CBIサイトのLPをA0比率に圧縮したイメージの告知ポスター、右上にサイトQR」。検証：生成PDFは841.0×1188.9mm・1ページ、Zen Maru Gothic埋め込み済み、QRはOpenCVでデコードしURL一致を確認。既知の制約＝Hero背景写真は原寸2340px（A0幅で約71dpi）、手のイラストは1600px（約48dpi）で、掲示距離では実用範囲だが至近では甘い。差し替え素材があれば要更新。\nsession: f0e82883-f4ce-4480-b9bc-881d0aa68d90 / output: 58,896 / cost: $7.47",
+          "session": "f0e82883-f4ce-4480-b9bc-881d0aa68d90"
+        },
         {
           "date": "2026-07-20",
           "title": "🔐 LINEログイン一本化（仕様書v2.1）に合わせ広報HTML・管理画面を修正 0.25時間",
