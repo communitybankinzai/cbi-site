@@ -11,7 +11,8 @@ cidao `/api/og/news` で自動生成）／候補の入口は**手動＋changelog
 
 ```
 候補メール送信（手動: sendNewsCandidate ／ 自動: checkChangelogForNews 日次）
-  → 承認者がメールに返信（1行目: 掲載 / 告知 / 不要）
+  → 承認者がメールに返信（1行目: 掲載 / 告知 / 不要 / 削除）
+     ※「削除」は掲載後のスレッドに追加返信しても効く（掲載成功の返信に案内が入る）
   → 10分おきトリガー checkNewsReplies が返信を拾う
   → postNewsToSite: GitHub repository_dispatch（news-publish）
   → cbi-site の Actions → tools/add_news.js が news-data.json に追記（冪等）
@@ -27,7 +28,9 @@ cidao `/api/og/news` で自動生成）／候補の入口は**手動＋changelog
 | --- | --- |
 | `news-data.json` | 更新履歴データ（`items` 配列・日付降順） |
 | `tools/add_news.js` | 冪等な追記スクリプト。同じ id / 同じ日付+本文+リンク なら何もせず exit 0 |
+| `tools/remove_news.js` | 冪等な削除スクリプト。id または 日付+本文 で特定、無ければ何もせず exit 0 |
 | `.github/workflows/news-publish.yml` | `repository_dispatch`（news-publish）と手動実行の受け口 |
+| `.github/workflows/news-delete.yml` | `repository_dispatch`（news-delete）と手動実行の受け口（追記側と同じ concurrency group） |
 | `script.js` | JSON を**足し込み**描画。既存の `<li>` は残し、同じ本文は1件に畳む |
 
 - 年グループはそのまま持たない（フラットなリスト・日付降順）。年のベタ書きは無い。
@@ -75,8 +78,9 @@ docs にコードを複製しない（二重管理でずれるため）。
 | --- | --- |
 | `sendNewsCandidate(line)` | 候補メール送信（手動の入口。日付省略時は今日を前置） |
 | `checkChangelogForNews()` | changelog.json の日次検知（自動の入口。feature/content のみ・初回は記録だけ・1回3件まで） |
-| `checkNewsReplies()` | 返信処理（10分毎。掲載→告知→結果返信。ラベルで冪等管理） |
+| `checkNewsReplies()` | 返信処理（10分毎。掲載→告知→結果返信。ラベルで冪等管理。処理済みスレッドの追加返信「削除」も拾う—スレッド最後のメッセージが自分の返信なら未処理なしと判定） |
 | `postNewsToSite(line)` | repository_dispatch 送信（id は本文MD5） |
+| `postNewsDeleteToSite(line)` | 削除の repository_dispatch（news-delete）。同じ line からは掲載時と同じ id が計算されるため id 一致で確実に消える |
 | `announceNewsOnSns_(line)` | Threads＋IG 告知（CacheService 6hで二重抑止・シートに成否記録・全滅時のみ throw） |
 | `setupNewsTriggers()` | トリガー2件作成（何回実行しても増えない） |
 
