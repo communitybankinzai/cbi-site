@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-08-08",
+          "title": "書き込み操作のIPアドレス記録開始（生IP・90日・書込のみ）と管理画面の記録閲覧実装 0.36時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260808150000_audit_ip_logging.sql（新規・未適用／audit_logs に ip(inet)・user_agent 追加、cleanup_old_audit_logs 関数、pg_cron ジョブ cidao_audit_cleanup を毎日1:00UTCで登録）",
+            "cidao: src/lib/audit.ts（新規／recordWrite ヘルパー。x-real-ip→x-forwarded-for先頭でIP解決、service_role でINSERT、失敗しても本処理を止めない）",
+            "cidao: src/app/admin/audit/page.tsx（新規／記録一覧・IP絞り込み・未適用時の警告表示）、src/app/admin/page.tsx（導線追加）",
+            "cidao: 組み込み先 — freefree/actions.ts（掲載・コメント・応援）、events/actions.ts（createEvent・createEventBulk）、proposals/actions.ts（createProposal）、talent/actions.ts（sendTalentInquiry・replyTalentInquiry）、orgs/actions.ts（createOrganization）",
+            "検証: npx tsc --noEmit エラー0件／npx next build 成功・/admin/audit のルート登録を確認",
+            "調査結果: 利用規約 第6条は利用目的を「①マッチング②運営からの連絡③匿名化統計」の限定列挙にしており、IP取得は含まれない。site/terms/index.html の改定と login/page.tsx の TERMS_VERSION 更新が必要",
+            "設計判断: 投票（castVote）と提案支援メッセージは記録対象から除外。audit_logs は運営が閲覧可能なため、記録すると投票の秘密（votes は本人にも非表示・通知にも投票者を残さない設計）が崩れる"
+          ],
+          "hours": 0.36,
+          "partnerApproved": false,
+          "note": "翔さんの判断（生IP保存／90日／書き込み操作すべて）に基づき実装。3択で確認のうえ着手した。⚠規約改定が未実施のため、このまま記録を始めると規約上の根拠がない状態になる。マイグレーション適用前に site/terms/index.html 第6条へIP取得の目的を追記し、TERMS_VERSION を上げて再同意を取る必要がある。⚠第三者提供の運用ルールは引き続き要法務監修。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 175,719 / cost: $45.72"
+        },
+        {
+          "date": "2026-08-08",
           "title": "不適切画像の運営削除（3バケットRLS追加）＋悪質投稿の証拠保全・提出用エクスポート実装 0.35時間",
           "category": "実装",
           "outputs": [
