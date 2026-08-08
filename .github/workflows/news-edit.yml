@@ -1,0 +1,70 @@
+name: 更新履歴の編集
+
+# 管理画面の「文面を編集」から呼ばれる受け口。
+# GAS が repository_dispatch（event_type: news-edit）を投げると、
+# tools/edit_news.js が news-data.json の該当項目を差し替えてコミットする。
+# 冪等（id が無い・内容に変化が無ければ何もしない）。
+
+on:
+  repository_dispatch:
+    types: [news-edit]
+  workflow_dispatch:
+    inputs:
+      id:
+        description: "編集対象の id（news-data.json の実 id）"
+        required: true
+      text:
+        description: "新しい本文（任意・200字まで）"
+        required: false
+      tag:
+        description: "新しいタグ（任意・10字まで）"
+        required: false
+      date:
+        description: "新しい日付 YYYY-MM-DD（任意）"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: news-publish   # 追記・削除と同じグループにして news-data.json の競合を防ぐ
+  cancel-in-progress: false
+
+jobs:
+  edit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # 受け取った値は env 経由でのみ渡す（run: に直接展開しない）
+      - name: Edit news item
+        env:
+          NEWS_ID: ${{ github.event.client_payload.id || inputs.id }}
+          NEWS_TEXT: ${{ github.event.client_payload.text || inputs.text }}
+          NEWS_TAG: ${{ github.event.client_payload.tag || inputs.tag }}
+          NEWS_DATE: ${{ github.event.client_payload.date || inputs.date }}
+        run: node tools/edit_news.js
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- news-data.json; then
+            echo "変更なし（対象なし・内容同一のため）。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add news-data.json
+          git commit -m "auto: 更新履歴の1件を編集"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 10
+          done
+          echo "::error::pushに3回失敗しました"
+          exit 1

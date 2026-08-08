@@ -1549,8 +1549,44 @@ const UNREAD_POLL_MS = 30000;
       '</div>' +
       '<div class="cl-main">' +
         '<div class="cl-title">' + escape(fullText) + '</div>' +
-        '<div class="cl-author"><button type="button" class="btn btn-sm news-del-btn">🗑 サイトから削除</button></div>' +
+        '<div class="cl-author">' +
+          (item.link ? '' : '<button type="button" class="btn btn-sm news-edit-btn">✏ 文面を編集</button> ') +
+          '<button type="button" class="btn btn-sm news-del-btn">🗑 サイトから削除</button>' +
+        '</div>' +
       '</div>';
+    const editBtn = row.querySelector('.news-edit-btn');
+    if (editBtn) editBtn.addEventListener('click', async (ev) => {
+      const btn = ev.currentTarget;
+      const newText = prompt('新しい文面を入力してください（200字まで・< > は使えません）', item.text || '');
+      if (newText === null) return;                      // キャンセル
+      const trimmed = newText.trim();
+      if (!trimmed) { toast('文面が空です', 'err'); return; }
+      if (trimmed === item.text) { toast('変更がありません', 'err'); return; }
+      if (trimmed.length > 200 || /[<>]/.test(trimmed)) { toast('200字以内・< > 不可です', 'err'); return; }
+      btn.disabled = true;
+      btn.textContent = '送信中…';
+      try {
+        const r = await gasCall({
+          action: 'newsEdit',
+          password: state.password,
+          id: item.id || '',
+          text: trimmed,
+        });
+        if (r.ok) {
+          btn.textContent = '編集受付済み（数分で反映）';
+          row.querySelector('.cl-title').textContent = trimmed + '（反映待ち）';
+          toast('編集を受け付けました。数分でサイトに反映されます', 'ok');
+        } else {
+          btn.disabled = false;
+          btn.textContent = '✏ 文面を編集';
+          toast('編集に失敗: ' + (r.error || '不明なエラー'), 'err');
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '✏ 文面を編集';
+        toast('編集に失敗: ' + err.message, 'err');
+      }
+    });
     row.querySelector('.news-del-btn').addEventListener('click', async (ev) => {
       const btn = ev.currentTarget;
       if (!confirm('「' + fullText + '」をサイトから削除しますか？\n（反映まで数分かかります）')) return;
