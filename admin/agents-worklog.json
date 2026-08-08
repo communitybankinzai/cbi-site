@@ -17,6 +17,22 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-08",
+          "title": "サイト更新履歴の承認掲載基盤（冪等追記＋Actions受け口＋足し込み描画）実装・通しテスト 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "site/news-data.json（新規：更新履歴データ）",
+            "site/tools/add_news.js（新規：冪等追記スクリプト。12シナリオ実測）",
+            "site/.github/workflows/news-publish.yml（新規：repository_dispatch＋手動実行の受け口。本番Actionsで掲載・冪等再送を実測）",
+            "site/script.js（お知らせ欄の足し込み描画：既存li維持・同本文畳み・textContent挿入・href検査。Chromiumで通常/畳み/フォールバックを実測）",
+            "site/docs/news-publish-setup.md（新規：GAS側 NewsPublish.gs 全文＋手順。解析ロジック19ケースをnodeで検証）",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "ns-factory で運用中のメール返信承認方式のCBI版・リポジトリ側を完成。調査で判明：cbi-admin-gas は Threads/IG 接続済みで頻度ガード・KillSwitch が無いため ns-factory の専用呼び口問題は該当せず。GAS実装は§0確認（告知範囲・宛先・候補源）待ち。PATは cbi-site 専用の Fine-grained を新規作成要。session: af89ec89-850c-4bf1-ab89-ff6db279e54f / output: 52,833 / cost: $11.95"
+        },
+        {
           "date": "2026-08-06",
           "title": "CiDAO提案SNS告知の実装〜Threads/IG接続完了・IG文面最適化・承認待ち整理 1.9時間",
           "category": "実装",

@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-08-03",
+  "updatedAt": "2026-08-08",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-08-08",
+      "type": "feature",
+      "target": "CBIサイト",
+      "title": "「活動報告・お知らせ」が承認制の自動掲載に対応した",
+      "detail": "news-data.json に追記するとトップページのお知らせ欄へ自動反映されるようになった（既存のHTML直書き分も引き続き表示され、同じ本文は1件にまとまる）。追記は tools/add_news.js が行い、同じ内容を2回受け取っても二重掲載しない（冪等）。GitHub Actions の news-publish ワークフロー（repository_dispatch／手動実行）が受け口で、今後 GAS のメール返信承認（候補メールに「掲載」「告知」「不要」と返信するだけ・スマホ完結）から呼ばれる。GAS側の手順とコードは docs/news-publish-setup.md に掲載。本文は textContent 挿入・リンクは href 検査つきで XSS を防止。",
+      "author": "Claude Code"
+    },
     {
       "date": "2026-08-04",
       "type": "fix",
