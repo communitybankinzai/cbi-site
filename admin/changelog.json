@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-08-08",
+      "type": "fix",
+      "target": "CiDAO: ログイン",
+      "title": "「LINEでログイン」ボタンが大きく目立つようになった",
+      "detail": "参加のお約束3か条の表示でカード内の情報が増えたぶん、ログインボタンが埋もれていたため、高さを48pxに拡大し文字を太字16px・影付きに変更。押すべきボタンがひと目で分かるようになった。",
+      "author": "Claude Code"
+    },
+    {
       "date": "2026-08-04",
       "type": "feature",
       "target": "CiDAO: ログイン",
