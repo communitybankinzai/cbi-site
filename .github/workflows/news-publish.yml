@@ -1,0 +1,84 @@
+name: 更新履歴の掲載
+
+# GAS のメール返信承認から呼ばれる受け口。
+# GAS が repository_dispatch（event_type: news-publish）を投げると、
+# tools/add_news.js が news-data.json に1件追加してコミットする。
+# 設定手順と GAS 側のコードは docs/news-publish-setup.md を参照。
+#
+# GAS は応答だけ失われて再送されることがあるため、add_news.js 側で
+# 冪等にしてある（同じ id / 同じ日付+本文なら何もしない）。
+
+on:
+  repository_dispatch:
+    types: [news-publish]
+  workflow_dispatch:
+    inputs:
+      line:
+        description: "1行まるごと（例: 2026-08-08 【お知らせ】 本文）※これを使う場合は date/text は空でよい"
+        required: false
+      date:
+        description: "日付（例: 2026-08-08）"
+        required: false
+      tag:
+        description: "表示タグ（例: お知らせ / 紹介 / 構想。省略時「お知らせ」）"
+        required: false
+      text:
+        description: "本文（HTMLタグ不可・200字まで）"
+        required: false
+      link_href:
+        description: "リンク先（任意。# / 相対パス / http(s)）"
+        required: false
+      link_label:
+        description: "リンクの表示文字（任意）"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: news-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # 受け取った値は env 経由でのみ渡す（run: に直接展開しない）
+      - name: Add news item
+        env:
+          NEWS_LINE: ${{ github.event.client_payload.line || inputs.line }}
+          NEWS_DATE: ${{ github.event.client_payload.date || inputs.date }}
+          NEWS_TAG: ${{ github.event.client_payload.tag || inputs.tag }}
+          NEWS_TEXT: ${{ github.event.client_payload.text || inputs.text }}
+          NEWS_ID: ${{ github.event.client_payload.id }}
+          NEWS_LINK_HREF: ${{ github.event.client_payload.link_href || inputs.link_href }}
+          NEWS_LINK_LABEL: ${{ github.event.client_payload.link_label || inputs.link_label }}
+          NEWS_TEXT_AFTER: ${{ github.event.client_payload.text_after }}
+        run: node tools/add_news.js
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- news-data.json; then
+            echo "変更なし（掲載済みのため）。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add news-data.json
+          git commit -m "auto: 更新履歴に1件掲載"
+          # 他の自動更新と競合することがあるため rebase してから push（最大3回再試行）
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 10
+          done
+          echo "::error::pushに3回失敗しました"
+          exit 1

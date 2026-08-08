@@ -319,6 +319,81 @@
       .catch(() => { /* 取得失敗時は表示しない（hidden のまま） */ });
   }
 
+  // 活動報告・お知らせ: news-data.json を「足し込み」で描画する。
+  // ⛔ 置き換えにしないこと。HTML の <li> はフォールバック（JSON や Pages が
+  // 落ちてもお知らせ欄が空にならない）であり、書き込み経路が複数になっても
+  // どの経路で書かれた項目も表示されるようにするため。同じ本文は1件に畳む。
+  const newsList = document.querySelector('.section-report .news-list');
+  if (newsList) {
+    const TAG_CLASS = {
+      'お知らせ': 'tag-info',
+      'イベント': 'tag-event',
+      '資料': 'tag-doc',
+      '紹介': 'tag-soon',
+      '構想': 'tag-soon',
+      '予定': 'tag-soon'
+    };
+    const keyOf = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+    const isDateLabel = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s);
+
+    // 日付の新しい順を保って挿入する。日付形式でない行（「準備中」の
+    // プレースホルダ等）は末尾固定として、その手前に入れる。
+    const insertByDate = (li, date) => {
+      for (const existing of Array.from(newsList.children)) {
+        const dEl = existing.querySelector('.news-date');
+        const d = dEl ? dEl.textContent.trim() : '';
+        if (!isDateLabel(d) || d < date) {
+          newsList.insertBefore(li, existing);
+          return;
+        }
+      }
+      newsList.appendChild(li);
+    };
+
+    fetch('news-data.json', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data || !Array.isArray(data.items)) return;
+        const seen = new Set();
+        newsList.querySelectorAll('.news-text').forEach(el => seen.add(keyOf(el.textContent)));
+        data.items.forEach(item => {
+          if (!item || !isDateLabel(String(item.date || ''))) return;
+          const hasLink = item.link && item.link.href && item.link.label;
+          if (!item.text && !hasLink) return; // 本文もリンクも無い項目は表示しない
+          const fullText = (item.text || '') +
+            (item.link && item.link.label ? item.link.label : '') +
+            (item.text_after || '');
+          const key = keyOf(fullText);
+          if (seen.has(key)) return; // 同じ本文は畳む（二重掲載を表示しない）
+          seen.add(key);
+
+          const li = document.createElement('li');
+          const dateEl = document.createElement('span');
+          dateEl.className = 'news-date';
+          dateEl.textContent = item.date;
+          const tagEl = document.createElement('span');
+          tagEl.className = 'news-tag ' + (TAG_CLASS[item.tag] || 'tag-info');
+          tagEl.textContent = item.tag || 'お知らせ';
+          const textEl = document.createElement('span');
+          textEl.className = 'news-text';
+          // 本文は textContent で入れる（HTML として流し込まない）
+          textEl.textContent = item.text || '';
+          // href は # / 相対パス / http(s) のみ（javascript: 等のスキームを弾く）
+          if (hasLink &&
+              (/^(#|\.{0,2}\/|https?:\/\/)/.test(item.link.href) || !item.link.href.includes(':'))) {
+            const a = document.createElement('a');
+            a.href = item.link.href;
+            a.textContent = item.link.label;
+            textEl.appendChild(a);
+            if (item.text_after) textEl.appendChild(document.createTextNode(item.text_after));
+          }
+          li.append(dateEl, tagEl, textEl);
+          insertByDate(li, item.date);
+        });
+      })
+      .catch(() => { /* 読めなければ HTML のベタ書きのまま */ });
+  }
+
   // スクロール出現アニメーション（JS無効時は何も付与されず常時表示のまま）
   if (!prefersReduced && 'IntersectionObserver' in window) {
     const targets = document.querySelectorAll(
