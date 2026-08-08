@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-08-08",
+          "title": "共有メールの返信・新規送信機能の実装（GAS API拡張＋作成モーダル）0.4時間",
+          "category": "実装",
+          "outputs": [
+            "gas-mail-share/コード.gs（action に send / reply を追加。draft フラグで下書き保存、replyAll で全員返信、attachments を base64 で受けて Blob 化、SENDER_NAME『CBI事務局』と SIGNATURE を定数化、MailApp.getRemainingDailyQuota で送信上限チェック、添付合計8MB上限）",
+            "gas-mail-share/appsscript.json（oauthScopes に gmail.send / gmail.compose を追加）",
+            "gas-mail-share/README.md（再デプロイ手順＝「デプロイを管理」からURL維持で更新・権限再承認、権限エラー時の mail.google.com への差し替え、API表とエラーコード表を追記）",
+            "site/admin/index.html（ツールバーに「✏️ 新規メール」、作成／返信モーダル一式を追加、admin.js のキャッシュバスターを v=20260808mailsend に更新）",
+            "site/admin/admin.js（openCompose / submitCompose / addAttachments / renderAttachList / mailErrorText 等を追加、詳細ヘッダに返信・全員に返信ボタン、送信前 confirm、書きかけ破棄の確認、Ctrl+Enter送信、アドレス形式バリデーション）",
+            "site/admin/admin.css（作成モーダル・添付リスト・返信ボタンのスタイル。カードに max-height:90vh + overflow-y:auto）",
+            "検証: node --check（admin.js / コード.gs とも構文OK）、localhost:8765 で 1280x800・375x812 のレイアウト実測（横スクロールなし・送信ボタン到達可）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "祐樹さんの依頼「メール機能：返信、新規メール作成送信機能が欲しい」。仕様は3択で確認し、送信＋下書き保存の両方／添付あり／署名自動付与を採用。レイアウト検証中に、作成モーダルの高さが887pxとなり縦720pxの画面で送信ボタンが画面外に出てスクロールもできない不具合を見つけて修正した。⚠実送信・実返信の動作確認は未実施（GASのスコープが増えたため communitybankinzai@gmail.com での再デプロイと権限再承認が先に必要）。⚠管理画面へのログインを伴う操作確認も未実施（パスワード入力を行わない方針のため、DOM直接操作でのレイアウト検証に留めた）。session: b9a2fcb6-3d3f-4b83-b5cb-e4a26bd2850d / output: 43,547 / cost: $5.59"
+        },
+        {
+          "date": "2026-08-08",
           "title": "提出用データへのIPアドレス・書き込み履歴の組み込みと古い注記の修正 0.09時間",
           "category": "保守",
           "outputs": [

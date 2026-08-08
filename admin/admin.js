@@ -50,6 +50,14 @@ const UNREAD_POLL_MS = 30000;
       labelsLoaded: false,
       loading: false,
       mobileView: 'list', // 'labels' | 'list' | 'detail'
+      currentThread: null,
+      compose: {
+        mode: 'new',      // 'new' | 'reply'
+        threadId: '',
+        attachments: [],  // [{ name, type, size, data(base64) }]
+        sending: false,
+        initialBody: '',  // 引用文など、開いた直後の本文（破棄確認の判定に使う）
+      },
     },
   };
 
@@ -2629,6 +2637,10 @@ const UNREAD_POLL_MS = 30000;
     const refresh = $('mail-refresh');
     if (refresh) refresh.addEventListener('click', loadMailList);
 
+    const compose = $('mail-compose');
+    if (compose) compose.addEventListener('click', () => openCompose('new'));
+    bindComposeUI();
+
     const menuBtn = $('mail-mobile-menu');
     if (menuBtn) menuBtn.addEventListener('click', () => {
       setMobileView(state.mail.mobileView === 'labels' ? 'list' : 'labels');
@@ -2775,6 +2787,7 @@ const UNREAD_POLL_MS = 30000;
   function renderMailDetail(data) {
     const det = $('mail-detail');
     if (!det) return;
+    state.mail.currentThread = data || null;
     if (!data) {
       det.innerHTML = '<p class="empty mail-detail-empty">← 左の一覧からメールを選択してください</p>';
       return;
@@ -2784,6 +2797,10 @@ const UNREAD_POLL_MS = 30000;
       '<div class="mail-detail-head">' +
         '<h3 class="mail-detail-subject">' + escapeHtml(data.subject || '(件名なし)') + '</h3>' +
         '<div class="mail-detail-count">' + msgs.length + ' 通</div>' +
+        '<div class="mail-detail-actions">' +
+          '<button type="button" class="btn btn-primary btn-sm" id="mail-reply">↩ 返信</button>' +
+          '<button type="button" class="btn btn-ghost btn-sm" id="mail-reply-all">↩↩ 全員に返信</button>' +
+        '</div>' +
       '</div>' +
       '<div class="mail-detail-msgs">' +
         msgs.map(m =>
@@ -2803,6 +2820,281 @@ const UNREAD_POLL_MS = 30000;
           '</article>'
         ).join('') +
       '</div>';
+
+    const rep = $('mail-reply');
+    const repAll = $('mail-reply-all');
+    if (rep)    rep.addEventListener('click', () => openCompose('reply', { replyAll: false }));
+    if (repAll) repAll.addEventListener('click', () => openCompose('reply', { replyAll: true }));
+  }
+
+  // ---------- メール作成／返信モーダル ----------
+  const MAX_ATTACH_TOTAL = 8 * 1024 * 1024;
+
+  function bindComposeUI() {
+    const modal = $('mail-compose-modal');
+    if (!modal) return;
+
+    ['mail-compose-close', 'mail-compose-cancel'].forEach(id => {
+      const el = $(id);
+      if (el) el.addEventListener('click', closeCompose);
+    });
+    const backdrop = modal.querySelector('.modal-backdrop');
+    if (backdrop) backdrop.addEventListener('click', closeCompose);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !modal.hidden) closeCompose();
+    });
+
+    const ccToggle = $('mail-compose-cc-toggle');
+    if (ccToggle) ccToggle.addEventListener('change', () => {
+      $('mail-compose-cc-row').hidden  = !ccToggle.checked;
+      $('mail-compose-bcc-row').hidden = !ccToggle.checked;
+    });
+
+    const files = $('mail-compose-files');
+    if (files) files.addEventListener('change', () => {
+      addAttachments(Array.from(files.files || []));
+      files.value = '';
+    });
+
+    const sendBtn  = $('mail-compose-send');
+    const draftBtn = $('mail-compose-draft');
+    if (sendBtn)  sendBtn.addEventListener('click',  () => submitCompose(false));
+    if (draftBtn) draftBtn.addEventListener('click', () => submitCompose(true));
+
+    const body = $('mail-compose-body');
+    if (body) body.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') submitCompose(false);
+    });
+  }
+
+  function openCompose(mode, opts) {
+    const modal = $('mail-compose-modal');
+    if (!modal) return;
+    opts = opts || {};
+    const c = state.mail.compose;
+
+    if (mode === 'reply' && !state.mail.currentThread) {
+      toast('返信するメールを先に選択してください', 'err');
+      return;
+    }
+
+    c.mode = mode;
+    c.threadId = '';
+    c.attachments = [];
+    c.sending = false;
+
+    $('mail-compose-to').value = '';
+    $('mail-compose-cc').value = '';
+    $('mail-compose-bcc').value = '';
+    $('mail-compose-subject').value = '';
+    $('mail-compose-body').value = '';
+    $('mail-compose-sign').checked = true;
+    $('mail-compose-cc-toggle').checked = false;
+    $('mail-compose-cc-row').hidden = true;
+    $('mail-compose-bcc-row').hidden = true;
+    setComposeStatus('');
+    renderAttachList();
+
+    if (mode === 'reply') {
+      const thread = state.mail.currentThread;
+      const msgs = thread.messages || [];
+      const last = msgs[msgs.length - 1] || {};
+      c.threadId = thread.id || state.mail.selectedId;
+      $('mail-compose-title').textContent = opts.replyAll ? '↩↩ 全員に返信' : '↩ 返信';
+      const th = $('mail-compose-thread');
+      th.hidden = false;
+      th.innerHTML = '返信先: <strong>' + escapeHtml(last.from || '') + '</strong>' +
+                     '　件名: ' + escapeHtml(thread.subject || '(件名なし)');
+      $('mail-compose-to-row').hidden = true;
+      $('mail-compose-subject-row').hidden = true;
+      $('mail-compose-replyall-row').hidden = false;
+      $('mail-compose-replyall').checked = !!opts.replyAll;
+      $('mail-compose-body').value = '\n\n' + quoteBody(last);
+      c.initialBody = $('mail-compose-body').value;
+    } else {
+      $('mail-compose-title').textContent = '✏️ 新規メール';
+      $('mail-compose-thread').hidden = true;
+      $('mail-compose-to-row').hidden = false;
+      $('mail-compose-subject-row').hidden = false;
+      $('mail-compose-replyall-row').hidden = true;
+      $('mail-compose-replyall').checked = false;
+      c.initialBody = '';
+    }
+
+    modal.hidden = false;
+    setTimeout(() => {
+      if (mode === 'reply') {
+        const b = $('mail-compose-body');
+        if (b) { b.focus(); b.setSelectionRange(0, 0); }
+      } else {
+        const t = $('mail-compose-to');
+        if (t) t.focus();
+      }
+    }, 30);
+  }
+
+  // force=true（送信成功後）以外は、書きかけの本文があれば確認する
+  function closeCompose(force) {
+    const c = state.mail.compose;
+    if (c.sending) return;   // 送信中は閉じさせない
+    const modal = $('mail-compose-modal');
+    if (!modal || modal.hidden) return;
+    if (force !== true) {
+      const body = ($('mail-compose-body').value || '').trim();
+      const dirty = body && body !== (c.initialBody || '').trim();
+      if (dirty && !confirm('書きかけの内容は破棄されます。閉じてよろしいですか？')) return;
+    }
+    modal.hidden = true;
+  }
+
+  function quoteBody(m) {
+    const when = m.date ? formatDate(m.date) : '';
+    const lines = String(m.body || '').split('\n').map(l => '> ' + l).join('\n');
+    return when + ' ' + (m.from || '') + ' さんは書きました:\n' + lines + '\n';
+  }
+
+  function addAttachments(files) {
+    const c = state.mail.compose;
+    let total = c.attachments.reduce((s, a) => s + a.size, 0);
+    const accepted = [];
+    files.forEach(f => {
+      if (total + f.size > MAX_ATTACH_TOTAL) {
+        toast('「' + f.name + '」は合計8MBを超えるため添付できません', 'err');
+        return;
+      }
+      total += f.size;
+      accepted.push(f);
+    });
+    accepted.forEach(f => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const s = String(reader.result || '');
+        c.attachments.push({
+          name: f.name,
+          type: f.type || 'application/octet-stream',
+          size: f.size,
+          data: s.slice(s.indexOf(',') + 1),
+        });
+        renderAttachList();
+      };
+      reader.onerror = () => toast('「' + f.name + '」の読み込みに失敗しました', 'err');
+      reader.readAsDataURL(f);
+    });
+  }
+
+  function renderAttachList() {
+    const ul = $('mail-compose-attach-list');
+    if (!ul) return;
+    const list = state.mail.compose.attachments;
+    if (!list.length) { ul.innerHTML = ''; return; }
+    ul.innerHTML = list.map((a, i) =>
+      '<li class="mail-attach-row">📎 ' + escapeHtml(a.name) +
+      ' <small>(' + formatSize(a.size) + ')</small>' +
+      ' <button type="button" class="mail-attach-del" data-i="' + i + '" aria-label="添付を削除">×</button></li>'
+    ).join('');
+    ul.querySelectorAll('.mail-attach-del').forEach(b => {
+      b.addEventListener('click', () => {
+        state.mail.compose.attachments.splice(parseInt(b.dataset.i, 10), 1);
+        renderAttachList();
+      });
+    });
+  }
+
+  function setComposeStatus(text) {
+    const el = $('mail-compose-status');
+    if (el) el.textContent = text || '';
+  }
+
+  function setComposeBusy(busy) {
+    ['mail-compose-send', 'mail-compose-draft', 'mail-compose-cancel', 'mail-compose-close'].forEach(id => {
+      const el = $(id);
+      if (el) el.disabled = busy;
+    });
+  }
+
+  function isValidAddressList(s) {
+    const list = String(s).split(',').map(x => x.trim()).filter(Boolean);
+    if (!list.length) return false;
+    return list.every(x => /^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/.test(x));
+  }
+
+  function mailErrorText(code) {
+    const map = {
+      auth_failed:      'パスワードが違います',
+      to_required:      '宛先が空です',
+      thread_not_found: '返信先のスレッドが見つかりません（削除済みの可能性）',
+      quota_exceeded:   '本日の送信上限（100通）に達しました。明日以降に再送してください',
+      unknown_action:   'GAS側が古いバージョンです。gas-mail-share/README.md の手順で再デプロイしてください',
+    };
+    return map[code] || code || 'unknown';
+  }
+
+  async function submitCompose(asDraft) {
+    const c = state.mail.compose;
+    if (c.sending) return;
+
+    const body = $('mail-compose-body').value;
+    const cc   = $('mail-compose-cc').value.trim();
+    const bcc  = $('mail-compose-bcc').value.trim();
+
+    let payload;
+    let destLabel;
+
+    if (c.mode === 'reply') {
+      if (!c.threadId) { toast('返信先が不明です', 'err'); return; }
+      if (!body.trim()) { toast('本文を入力してください', 'err'); return; }
+      payload = { action: 'reply', id: c.threadId, replyAll: $('mail-compose-replyall').checked };
+      destLabel = ($('mail-compose-replyall').checked ? '全員（このスレッド）' : 'このスレッドの差出人');
+    } else {
+      const to = $('mail-compose-to').value.trim();
+      if (!to) { toast('宛先を入力してください', 'err'); $('mail-compose-to').focus(); return; }
+      if (!isValidAddressList(to)) { toast('宛先のアドレス形式が正しくありません', 'err'); return; }
+      if (cc && !isValidAddressList(cc))   { toast('CCのアドレス形式が正しくありません', 'err'); return; }
+      if (bcc && !isValidAddressList(bcc)) { toast('BCCのアドレス形式が正しくありません', 'err'); return; }
+      const subject = $('mail-compose-subject').value.trim();
+      if (!asDraft && !subject && !confirm('件名が空です。このまま送信しますか？')) return;
+      payload = { action: 'send', to, subject };
+      destLabel = to;
+    }
+
+    if (cc)  payload.cc  = cc;
+    if (bcc) payload.bcc = bcc;
+    payload.body      = body;
+    payload.signature = $('mail-compose-sign').checked;
+    payload.draft     = !!asDraft;
+    if (c.attachments.length) {
+      payload.attachments = c.attachments.map(a => ({ name: a.name, type: a.type, data: a.data }));
+    }
+
+    // 送信は取り消せないため最終確認
+    if (!asDraft) {
+      const msg = 'communitybankinzai@gmail.com から送信します。\n\n宛先: ' + destLabel +
+                  (c.attachments.length ? '\n添付: ' + c.attachments.length + '件' : '') +
+                  '\n\n送信は取り消せません。よろしいですか？';
+      if (!confirm(msg)) return;
+    }
+
+    c.sending = true;
+    setComposeBusy(true);
+    setComposeStatus(asDraft ? '下書き保存中…' : '送信中…');
+    try {
+      const r = await mailCall(payload);
+      if (!r.ok) throw new Error(mailErrorText(r.error));
+      c.sending = false;
+      setComposeBusy(false);
+      toast(asDraft ? 'Gmailの下書きに保存しました' : 'メールを送信しました', 'ok');
+      closeCompose(true);
+      if (!asDraft) {
+        if (c.mode === 'reply' && state.mail.selectedId) openMailDetail(state.mail.selectedId);
+        loadMailList();
+      }
+    } catch (err) {
+      setComposeStatus('失敗: ' + err.message);
+      toast((asDraft ? '下書き保存' : '送信') + 'に失敗しました：' + err.message, 'err');
+    } finally {
+      c.sending = false;
+      setComposeBusy(false);
+    }
   }
 
   function formatMailDate(s) {

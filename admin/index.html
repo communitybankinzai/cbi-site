@@ -181,6 +181,7 @@
             <input type="search" id="mail-search" placeholder="検索（差出人・件名・本文）" class="search-input mail-search">
             <span class="meta-note" id="mail-updated">—</span>
             <button type="button" class="btn btn-ghost btn-sm" id="mail-refresh">更新</button>
+            <button type="button" class="btn btn-primary btn-sm" id="mail-compose">✏️ 新規メール</button>
           </div>
         </div>
 
@@ -818,10 +819,72 @@
     </div>
   </div>
 
+  <!-- メール作成／返信モーダル -->
+  <div id="mail-compose-modal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-card modal-card-wide mail-compose-card">
+      <div class="modal-head">
+        <h2 class="modal-title" id="mail-compose-title">✏️ 新規メール</h2>
+        <button type="button" class="modal-close" id="mail-compose-close">×</button>
+      </div>
+
+      <p class="mail-compose-from">差出人: <strong>CBI事務局</strong> &lt;communitybankinzai@gmail.com&gt;</p>
+
+      <!-- 返信時のみ：返信先スレッド表示 -->
+      <p class="mail-compose-thread" id="mail-compose-thread" hidden></p>
+
+      <div class="mail-compose-fields">
+        <!-- 新規時のみ：宛先 -->
+        <label class="mail-compose-row" id="mail-compose-to-row">
+          <span class="mail-compose-label">宛先</span>
+          <input type="text" id="mail-compose-to" placeholder="taro@example.com（カンマ区切りで複数可）" autocomplete="off">
+        </label>
+
+        <div class="mail-compose-row" id="mail-compose-cc-row" hidden>
+          <span class="mail-compose-label">CC</span>
+          <input type="text" id="mail-compose-cc" placeholder="カンマ区切りで複数可" autocomplete="off">
+        </div>
+        <div class="mail-compose-row" id="mail-compose-bcc-row" hidden>
+          <span class="mail-compose-label">BCC</span>
+          <input type="text" id="mail-compose-bcc" placeholder="カンマ区切りで複数可" autocomplete="off">
+        </div>
+
+        <label class="mail-compose-row" id="mail-compose-subject-row">
+          <span class="mail-compose-label">件名</span>
+          <input type="text" id="mail-compose-subject" placeholder="件名" autocomplete="off">
+        </label>
+
+        <textarea id="mail-compose-body" class="mail-compose-body" rows="12" placeholder="本文を入力…"></textarea>
+
+        <div class="mail-compose-attach">
+          <label class="btn btn-ghost btn-sm mail-attach-btn">
+            📎 ファイルを添付
+            <input type="file" id="mail-compose-files" multiple hidden>
+          </label>
+          <span class="meta-note">合計8MBまで</span>
+          <ul class="mail-attach-list" id="mail-compose-attach-list"></ul>
+        </div>
+      </div>
+
+      <div class="mail-compose-opts">
+        <label class="field-check"><input type="checkbox" id="mail-compose-cc-toggle"> CC / BCC を表示</label>
+        <label class="field-check"><input type="checkbox" id="mail-compose-sign" checked> 署名を付ける</label>
+        <label class="field-check" id="mail-compose-replyall-row" hidden><input type="checkbox" id="mail-compose-replyall"> 全員に返信</label>
+      </div>
+
+      <div class="modal-actions">
+        <span class="mail-compose-status" id="mail-compose-status"></span>
+        <button type="button" class="btn btn-ghost" id="mail-compose-cancel">キャンセル</button>
+        <button type="button" class="btn btn-ghost" id="mail-compose-draft">💾 下書き保存</button>
+        <button type="button" class="btn btn-primary" id="mail-compose-send">📤 送信</button>
+      </div>
+    </div>
+  </div>
+
   <!-- トースト -->
   <div id="toast" class="toast" hidden></div>
 </section>
 
-<script src="admin.js?v=20260623reflectmark"></script>
+<script src="admin.js?v=20260808mailsend"></script>
 </body>
 </html>
