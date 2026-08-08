@@ -187,6 +187,7 @@
             "cidao: src/app/login/page.tsx（ログインカードに参加のお約束3か条を表示、commit edd11d0）",
             "cidao: src/app/login/page.tsx（LINEログインボタン拡大 h-12・太字・影、commit c4453e8）",
             "cidao: src/app/login/page.tsx（無料表記を1回に集約し緑太字で強調、commit 838c01b）",
+            "cidao: next.config.ts（/terms→CBI規約ページの307リダイレクト新設、commit 406c71e）",
             "site/admin/changelog.json / agents-worklog.json"
           ],
           "hours": 0.7,
