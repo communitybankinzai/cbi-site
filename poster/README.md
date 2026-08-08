@@ -21,17 +21,19 @@ status: 運用中
 **LPにあって載せていないもの**
 
 - 活動報告・お知らせ、団体情報・お問い合わせ … 掲示している間に内容が変わるため（2026-08-08 ユーザー判断）
-- HeroのCBIロゴ円、HeroのCTAボタン2つ … 紙面では押せないボタンは不要（同上）
+- HeroのCBIロゴ円、HeroのCTAボタン2つ、JOINカード内の擬似ボタン3つ … 紙面では押せないボタンは不要（同上）
 
 ## ファイル
 
 | ファイル | 役割 |
 |---|---|
+| `index.html` | 配布ページ。PDF・HTML・画像のダウンロードとCanva取り込み手順（`/poster/` で公開） |
 | `cbi-poster-a0.html` | ポスター本体。ここを編集する |
 | `cbi-poster-a0.pdf` | 入稿用PDF（841.0×1188.9mm・1ページ・書体埋め込み済み） |
 | `build.ps1` | HTML → PDF 変換（Chrome headless の `--print-to-pdf`） |
 | `make_qr.py` | QRコード `qr-site.svg` の再生成（segno） |
 | `qr-site.svg` | サイトTOPのQR。誤り訂正レベルH・ベクター |
+| `preview.png` | 配布ページ用のプレビュー画像（1240×1753px）。PDF更新時は下記で作り直す |
 
 ## 作り直す手順
 
@@ -41,6 +43,13 @@ powershell -ExecutionPolicy Bypass -File site\poster\build.ps1
 
 - **オンラインで実行すること**。書体（Zen Maru Gothic）を Google Fonts から取得するため、オフラインだと代替書体に置き換わる。
 - QRのリンク先を変える場合は `make_qr.py` の `URL` を書き換えて `python site/poster/make_qr.py` を先に実行する。
+- PDFを更新したら配布ページのプレビュー画像も作り直す。
+
+  ```python
+  import fitz
+  p = fitz.open('cbi-poster-a0.pdf')[0]
+  p.get_pixmap(matrix=fitz.Matrix(1240/p.rect.width, 1240/p.rect.width)).save('preview.png')
+  ```
 
 ## 設計メモ
 
