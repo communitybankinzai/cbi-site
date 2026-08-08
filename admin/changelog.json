@@ -4,6 +4,22 @@
   "entries": [
     {
       "date": "2026-08-09",
+      "type": "fix",
+      "target": "CBIサイト / CiDAO: ログイン",
+      "title": "お約束の見出しが「参加のお約束（基本はこの3つ）」に変わった",
+      "detail": "規約ページとCiDAOログイン画面の見出し「（この3つだけ）」を「（基本はこの3つ）」に変更。規約には3か条以外の定めもあるため、「だけ」と言い切らない表現に揃えた。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-08-09",
+      "type": "content",
+      "target": "CBIサイト",
+      "title": "「CiDAO × まちのコイン 連携構想」ページの公開を終了",
+      "detail": "proposals/machino-coin/ を削除し、URL 直打ちでも 404 になることを確認した（お知らせ欄からのリンクは前回の整理で削除済み）。CiDAO 機能紹介スライド（proposals/cidao-intro/）は引き続き公開。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-08-09",
       "type": "feature",
       "target": "管理画面",
       "title": "サイトのお知らせの文面を管理画面から修正できるようになった",

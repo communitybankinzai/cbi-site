@@ -26,6 +26,7 @@
             "site/tools/edit_news.js＋site/.github/workflows/news-edit.yml（新規：文面差し替えの冪等受け口。6シナリオ＋Actions受け渡し実測）",
             "site/admin/admin.js＋cbi-admin-gas/Code.gs・NewsPublish.gs（管理画面「✏ 文面を編集」ボタン＋newsEditアクション。clasp push済・要WebApp再デプロイ）",
             "メモリ cbi-collaboration-status.md（取り下げ事実の公開方針転換 2026-08-09 を記録。経緯は引き続き非公開）",
+            "site/proposals/machino-coin/（ページ削除・公開終了。404を実測確認。cidao-intro は存続）",
             "site/admin/changelog.json / agents-worklog.json"
           ],
           "hours": 0.3,
@@ -204,6 +205,7 @@
             "cidao: src/app/login/page.tsx（LINEログインボタン拡大 h-12・太字・影、commit c4453e8）",
             "cidao: src/app/login/page.tsx（無料表記を1回に集約し緑太字で強調、commit 838c01b）",
             "cidao: next.config.ts（/terms→CBI規約ページの307リダイレクト新設、commit 406c71e）",
+            "site/terms/index.html・cidao: login/page.tsx（見出しを「基本はこの3つ」に変更、commit dcce61a / b0a9a6b）",
             "site/admin/changelog.json / agents-worklog.json"
           ],
           "hours": 0.7,
