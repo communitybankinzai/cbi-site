@@ -17,6 +17,22 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-09",
+          "title": "お知らせ欄リセット・団体登録/協働事業取り下げ2件掲載（公開方針転換）＋管理画面からの文面編集機能 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/index.html（お知らせ欄のHTML直書き2件と「準備中」表示を削除。以後は news-data.json 経由のみ）",
+            "site/news-data.json（団体登録 2026-06-04・協働事業提案取り下げ 2026-06-18 の2件構成に）",
+            "site/tools/edit_news.js＋site/.github/workflows/news-edit.yml（新規：文面差し替えの冪等受け口。6シナリオ＋Actions受け渡し実測）",
+            "site/admin/admin.js＋cbi-admin-gas/Code.gs・NewsPublish.gs（管理画面「✏ 文面を編集」ボタン＋newsEditアクション。clasp push済・要WebApp再デプロイ）",
+            "メモリ cbi-collaboration-status.md（取り下げ事実の公開方針転換 2026-08-09 を記録。経緯は引き続き非公開）",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "取り下げ掲載は「外部公開しない」方針（2026-07-25）からの転換をユーザーに確認のうえ実施。文面は経緯に触れず事実＋自主事業継続の前向き併記。取り下げ日はユーザー指定 6/18（当初6/15と案内→訂正）。工数は累計207,005から前回記録177,745の差分29,260 tokensで算出。session: af89ec89-850c-4bf1-ab89-ff6db279e54f / output: 207,005 / cost: $104.14"
+        },
+        {
           "date": "2026-08-08",
           "title": "共有メールの返信・新規送信機能の実装（GAS API拡張＋作成モーダル）0.4時間",
           "category": "実装",
