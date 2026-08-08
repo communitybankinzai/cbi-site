@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-03",
+  "updatedAt": "2026-08-08",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
@@ -16,6 +16,19 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-08-08",
+          "title": "CiDAOイベントカレンダーの日付タップ時パネル自動スクロール＋出現フラッシュ実装 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/events/_components/EventsBrowser.tsx（selectDate＋scrollIntoView＋パネル再マウント）",
+            "cidao: src/app/globals.css（cidao-panel-flash アニメーション。reduced-motion対応）",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "対策3案（自動スクロール/モーダル/週直下展開）を提示し案A採用。tsc・eslintで静的検証（新規指摘なし）。別チャットのdevサーバーがプレビュー用ポートを占有していたためブラウザ実機確認は未実施（要ユーザー目視）。session: a9c4a1fa-063e-440d-ad58-d9e76b23b7ab / output: 14,413 / cost: $3.86"
+        },
         {
           "date": "2026-08-08",
           "title": "サイト更新履歴の承認掲載基盤（冪等追記＋Actions受け口＋足し込み描画）実装・通しテスト 0.5時間",
