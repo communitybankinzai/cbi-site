@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-08-08",
+          "title": "FreeFree掲示板の運営モデレーション機能（非公開化・復元・完全削除）実装 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260808120000_freefree_admin_moderation.sql（新規・未適用／freefree_update_admin ポリシー・moderated_at/by・moderation_note）",
+            "cidao: scripts/apply-20260808-freefree-moderation.sql（SQL Editor貼付用。7月29日分の適用確認クエリ同梱）",
+            "cidao: src/app/admin/freefree/page.tsx・actions.ts・_components/FreefreeModerationRow.tsx（新規）",
+            "cidao: src/app/admin/page.tsx（管理画面トップに導線追加）",
+            "検証: npx tsc --noEmit エラー0件／npx next build 成功・/admin/freefree のルート登録を確認",
+            "調査結果: freefree_delete_poster には is_committee_or_super() があり運営の物理削除は元から可能だったが、freefree_update_poster に管理者条件が無く status='removed' への変更ができなかった",
+            "調査結果: pick_next_sns_targets() は p.status='active' で絞っているため、非公開にすればSNS紹介候補からも自動で外れる（追加対応不要）",
+            "調査結果: coupons / supports は freefree_posts へ on delete cascade。完全削除時に道連れで消える"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "翔さんからの「サンプルや迷惑掲示を運営側で削除できる機能が欲しい」への対応。誤操作の巻き戻しと監査を優先し、既定の手段を物理削除ではなく非公開（status='removed'＋理由メモ）にした。⚠マイグレーション未適用のため /admin/freefree はまだ一覧を読めない（未適用時は警告を出す実装にしてある）。画面の動作確認はcommittee/super権限でのログインが必要なため未実施。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 104,378 / cost: $21.38"
+        },
+        {
+          "date": "2026-08-08",
           "title": "CiDAOイベントカレンダーの日付タップ時パネル自動スクロール＋出現フラッシュ実装 0.1時間",
           "category": "実装",
           "outputs": [
