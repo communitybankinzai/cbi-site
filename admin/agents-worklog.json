@@ -145,7 +145,7 @@
         },
         {
           "date": "2026-08-08",
-          "title": "サイト更新履歴の承認掲載＋SNS告知の一式実装（冪等追記・Actions・足し込み描画・IG告知カードAPI・GAS返信承認） 1.0時間",
+          "title": "サイト更新履歴の承認掲載＋SNS告知＋削除の一式実装（冪等追記/削除・Actions・足し込み描画・IG告知カードAPI・GAS返信承認）・GAS本番セットアップ支援 1.6時間",
           "category": "実装",
           "outputs": [
             "site/news-data.json（新規：更新履歴データ）",
@@ -154,14 +154,16 @@
             "site/script.js＋index.html（お知らせ欄の足し込み描画：既存li維持・同本文畳み・textContent挿入・href検査・キャッシュバスター更新。Chromiumで通常/畳み/フォールバックを実測）",
             "cidao: src/app/api/og/news/route.ts（新規：IG告知カード画像API・HMAC署名付き。ローカルで200/403/400と画像目視を実測、本番503(未設定時セーフ)確認、commit 9b0df91）",
             "cbi-admin-gas/NewsPublish.gs（新規・ローカル正本：候補メール送信・changelog日次検知・返信処理・dispatch・Threads/IG告知。ロジック30ケースをnodeスタブで実測。GASエディタへの貼り付けは未実施）",
-            "site/docs/news-publish-setup.md（新規：セットアップ手順）",
+            "site/tools/remove_news.js＋site/.github/workflows/news-delete.yml（新規：メール返信「削除」の受け口。ローカル8シナリオ＋本番Actionsで掲載→削除を実測）",
+            "cbi-admin-gas/NewsPublish.gs（削除コマンド追加：処理済みスレッドの追加返信対応・getEmail空文字フォールバック。clasp pushで本番反映）",
+            "GAS本番セットアップ支援（スプレッドシート共有経由でclasp権限取得、push全置換でSnsQueue/ThreadsDailyPostが約1分消失→即復元、.claspignoreを全ファイル許可制に修正、Gmailスコープ追加、GitHub sudo/PAT発行ガイド、メール返信「不要」「掲載」通しテスト成功）",
             "agents/a1-core/credentials.md（NEWS_OG_SECRET生成・GITHUB_PAT_CBI_SITE起票）",
             "agents/a1-core/knowledge/runbooks/news-publish-approval.md（新規）＋MOC_エージェント登録",
             "site/admin/changelog.json / agents-worklog.json"
           ],
-          "hours": 1.0,
+          "hours": 1.6,
           "partnerApproved": false,
-          "note": "ns-factory で運用に乗ったメール返信承認方式のCBI版。§0確認の結果：告知先Threads+IG／候補は手動+changelog検知の両方／宛先communitybankinzai@gmail.com。調査で判明：cbi-admin-gas は Threads/IG 接続済み・頻度ガード/KillSwitch無し。clasp は you0810 アカウントに cbi-admin-gas のアクセス権が無く push 不可→エディタ貼り付け運用。残り：PAT発行・NEWS_OG_SECRET設定（Vercel/GAS）・貼り付け・初回認証・トリガー・通しテスト（ユーザー操作）。session: af89ec89-850c-4bf1-ab89-ff6db279e54f / output: 99,951 / cost: $25.15"
+          "note": "ns-factory で運用に乗ったメール返信承認方式のCBI版。§0確認の結果：告知先Threads+IG／候補は手動+changelog検知の両方／宛先communitybankinzai@gmail.com。cbi-admin-gas は Threads/IG 接続済み・頻度ガード/KillSwitch無し。GAS本番反映まで完了しメール返信の通し（不要・掲載・削除ラインの本番Actions実測）成功。教訓：clasp pushは全置換（.claspignoreは全ファイル許可制必須）／スコープ明示時はGmailに mail.google.com が必要。残り：スコープ追加後の再認可1回・「告知」実投稿テスト・Vercel NEWS_OG_SECRET設定。session: af89ec89-850c-4bf1-ab89-ff6db279e54f / output: 160,670 / cost: $61.95"
         },
         {
           "date": "2026-08-06",
@@ -174,18 +176,19 @@
         },
         {
           "date": "2026-08-04",
-          "title": "利用規約・FAQページ新設＋CiDAO同意チェック実装＋Fable 5法務検証 0.6時間",
+          "title": "利用規約・FAQページ新設＋CiDAO同意チェック・3か条表示＋Fable 5法務検証 0.7時間",
           "category": "実装",
           "outputs": [
             "site/terms/index.html（新設：お約束3行・検索付きFAQ14項目・規約12条＋附則）",
             "site/index.html（hero・join-card・フッターの3箇所にterms/リンク追加）",
             "cidao: src/app/login/page.tsx（同意チェックボックス、未チェック時はログインボタン無効）",
             "cidao: src/app/login/page.tsx（同意を端末ごとに記憶、規約バージョン照合で再同意要求、commit 8cc59f1）",
+            "cidao: src/app/login/page.tsx（ログインカードに参加のお約束3か条を表示、commit edd11d0）",
             "site/admin/changelog.json / agents-worklog.json"
           ],
-          "hours": 0.6,
+          "hours": 0.7,
           "partnerApproved": false,
-          "note": "CiDAO実装（Supabaseスキーマ・退会/通知/PR公開範囲）と規約記載の整合を照合。Fable 5サブエージェントで法務レビューを実施し、免責の故意重過失除外（第10条1・2項）、第三者提供の例外文言、開示請求・漏えい時通知、附則（既存会員への適用）、写真・ポイント・未成年条項を反映。ローカルサーバで検索欄・同意チェック動作を検証済み。残タスク：既存会員への周知（ベル通知）。同意チェックのlocalStorage記憶（初回のみチェック、規約改定時は再同意）を追加実装し、初回・リロード・旧バージョンの3ケースをブラウザ検証。session: 39ac62dd-3a3f-430b-bdff-8c60289347d1 / output: 63,255 / cost: $24.11"
+          "note": "CiDAO実装（Supabaseスキーマ・退会/通知/PR公開範囲）と規約記載の整合を照合。Fable 5サブエージェントで法務レビューを実施し、免責の故意重過失除外（第10条1・2項）、第三者提供の例外文言、開示請求・漏えい時通知、附則（既存会員への適用）、写真・ポイント・未成年条項を反映。ローカルサーバで検索欄・同意チェック動作を検証済み。残タスク：既存会員への周知（ベル通知）。同意チェックのlocalStorage記憶（初回のみチェック、規約改定時は再同意）を追加実装し、初回・リロード・旧バージョンの3ケースをブラウザ検証。運営・メンバー向け周知文面2種を起草（配信は運営同意後）。session: 39ac62dd-3a3f-430b-bdff-8c60289347d1 / output: 74,740 / cost: $34.46"
         },
         {
           "date": "2026-08-03",
