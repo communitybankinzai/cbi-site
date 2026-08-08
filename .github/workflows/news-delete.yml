@@ -1,0 +1,67 @@
+name: 更新履歴の削除
+
+# メール返信「削除」から呼ばれる受け口。
+# GAS が repository_dispatch（event_type: news-delete）を投げると、
+# tools/remove_news.js が news-data.json から1件削除してコミットする。
+# 追記側と同じく冪等（一致する項目が無ければ何もしない）。
+
+on:
+  repository_dispatch:
+    types: [news-delete]
+  workflow_dispatch:
+    inputs:
+      line:
+        description: "1行まるごと（例: 2026-08-08 【お知らせ】 本文）※タグは無視して日付+本文で特定"
+        required: false
+      date:
+        description: "日付（例: 2026-08-08）"
+        required: false
+      text:
+        description: "本文（完全一致で特定）"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: news-publish   # 追記側と同じグループにして news-data.json の競合を防ぐ
+  cancel-in-progress: false
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # 受け取った値は env 経由でのみ渡す（run: に直接展開しない）
+      - name: Remove news item
+        env:
+          NEWS_LINE: ${{ github.event.client_payload.line || inputs.line }}
+          NEWS_DATE: ${{ github.event.client_payload.date || inputs.date }}
+          NEWS_TEXT: ${{ github.event.client_payload.text || inputs.text }}
+          NEWS_ID: ${{ github.event.client_payload.id }}
+        run: node tools/remove_news.js
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- news-data.json; then
+            echo "変更なし（一致する項目が無いため）。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add news-data.json
+          git commit -m "auto: 更新履歴から1件削除"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 10
+          done
+          echo "::error::pushに3回失敗しました"
+          exit 1
