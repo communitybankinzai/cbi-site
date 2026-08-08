@@ -45,6 +45,14 @@
     {
       "date": "2026-08-08",
       "type": "feature",
+      "target": "CiDAO",
+      "title": "サイト更新のSNS告知カード画像が自動生成できるようになった",
+      "detail": "cidao に /api/og/news を新設。更新履歴の本文を渡すと CBI ブランドの 1080x1080 告知カード（JPEG）を動的生成して返す。Instagram の投稿API は画像の公開URLが必須のため、GAS の「告知」承認からこのURLを渡して画像付き投稿ができるようになる。第三者がCBIブランドの偽画像を作れないよう HMAC 署名（NEWS_OG_SECRET）で保護。署名キー未設定の間は安全側（503）で応答する。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-08-08",
+      "type": "feature",
       "target": "CBIサイト",
       "title": "「活動報告・お知らせ」が承認制の自動掲載に対応した",
       "detail": "news-data.json に追記するとトップページのお知らせ欄へ自動反映されるようになった（既存のHTML直書き分も引き続き表示され、同じ本文は1件にまとまる）。追記は tools/add_news.js が行い、同じ内容を2回受け取っても二重掲載しない（冪等）。GitHub Actions の news-publish ワークフロー（repository_dispatch／手動実行）が受け口で、今後 GAS のメール返信承認（候補メールに「掲載」「告知」「不要」と返信するだけ・スマホ完結）から呼ばれる。GAS側の手順とコードは docs/news-publish-setup.md に掲載。本文は textContent 挿入・リンクは href 検査つきで XSS を防止。",
