@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-08-08",
+          "title": "イベント登録のサイトURL読み取り機能（複数イベント選択・複数日程対応）実装 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/event-scan.ts（新規：AIエラー分類の共通化）",
+            "cidao: src/app/api/events/scan-url/route.ts（新規：SSRF対策付きURL取得→HTML本文化→Claudeで複数イベント構造化抽出）",
+            "cidao: src/app/api/events/scan/route.ts（エラー分類を共通libへ移動）",
+            "cidao: src/app/events/new/_components/ImageScanField.tsx（URL入力欄＋複数イベント選択リスト＋反映処理の共通化）",
+            "検証: tsc・eslint 指摘0件／isBlockedHost 13ケース・htmlToText 3ケース全PASS／実API抽出E2E（3イベント抽出・過去除外・複数日程・onlineフラグ全PASS、$0.05）／未ログイン401実測／/events/new ログインリダイレクト正常",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "要望「サイトURLからイベント抽出→選択→登録」への対応。設計は2択×2問で確認し「複数イベント一覧ページ対応＋1件ずつフォーム確認」に決定。ログイン後のUI実操作（URL入力→選択→反映）はLINE認証が必要なため未実施（ロジックは単体検証済み）。hours はセッション累計0.6からカレンダー改善分0.1を差し引いた差分。本タスク分コストは約 $10.73（累計14.59−前タスク3.86）。session: a9c4a1fa-063e-440d-ad58-d9e76b23b7ab / output: 56,776 / cost: $14.59（累計）"
+        },
+        {
+          "date": "2026-08-08",
           "title": "FreeFree掲示板の運営モデレーション機能（非公開化・復元・完全削除）実装 0.2時間",
           "category": "実装",
           "outputs": [
