@@ -145,7 +145,7 @@
         },
         {
           "date": "2026-08-08",
-          "title": "サイト更新履歴の承認掲載＋SNS告知＋削除の一式実装（冪等追記/削除・Actions・足し込み描画・IG告知カードAPI・GAS返信承認）・GAS本番セットアップ支援 1.6時間",
+          "title": "サイト更新履歴の承認掲載＋SNS告知＋削除（メール返信/管理画面）の一式実装・GAS本番セットアップ支援 1.8時間",
           "category": "実装",
           "outputs": [
             "site/news-data.json（新規：更新履歴データ）",
@@ -156,14 +156,15 @@
             "cbi-admin-gas/NewsPublish.gs（新規・ローカル正本：候補メール送信・changelog日次検知・返信処理・dispatch・Threads/IG告知。ロジック30ケースをnodeスタブで実測。GASエディタへの貼り付けは未実施）",
             "site/tools/remove_news.js＋site/.github/workflows/news-delete.yml（新規：メール返信「削除」の受け口。ローカル8シナリオ＋本番Actionsで掲載→削除を実測）",
             "cbi-admin-gas/NewsPublish.gs（削除コマンド追加：処理済みスレッドの追加返信対応・getEmail空文字フォールバック。clasp pushで本番反映）",
+            "site/admin/index.html＋admin.js＋cbi-admin-gas/Code.gs（管理画面「更新履歴」タブに掲載中お知らせ一覧＋削除ボタン、GASにnewsDeleteアクション。要WebApp再デプロイ）",
             "GAS本番セットアップ支援（スプレッドシート共有経由でclasp権限取得、push全置換でSnsQueue/ThreadsDailyPostが約1分消失→即復元、.claspignoreを全ファイル許可制に修正、Gmailスコープ追加、GitHub sudo/PAT発行ガイド、メール返信「不要」「掲載」通しテスト成功）",
             "agents/a1-core/credentials.md（NEWS_OG_SECRET生成・GITHUB_PAT_CBI_SITE起票）",
             "agents/a1-core/knowledge/runbooks/news-publish-approval.md（新規）＋MOC_エージェント登録",
             "site/admin/changelog.json / agents-worklog.json"
           ],
-          "hours": 1.6,
+          "hours": 1.8,
           "partnerApproved": false,
-          "note": "ns-factory で運用に乗ったメール返信承認方式のCBI版。§0確認の結果：告知先Threads+IG／候補は手動+changelog検知の両方／宛先communitybankinzai@gmail.com。cbi-admin-gas は Threads/IG 接続済み・頻度ガード/KillSwitch無し。GAS本番反映まで完了しメール返信の通し（不要・掲載・削除ラインの本番Actions実測）成功。教訓：clasp pushは全置換（.claspignoreは全ファイル許可制必須）／スコープ明示時はGmailに mail.google.com が必要。残り：スコープ追加後の再認可1回・「告知」実投稿テスト・Vercel NEWS_OG_SECRET設定。session: af89ec89-850c-4bf1-ab89-ff6db279e54f / output: 160,670 / cost: $61.95"
+          "note": "ns-factory で運用に乗ったメール返信承認方式のCBI版。§0確認の結果：告知先Threads+IG／候補は手動+changelog検知の両方／宛先communitybankinzai@gmail.com。cbi-admin-gas は Threads/IG 接続済み・頻度ガード/KillSwitch無し。GAS本番反映まで完了しメール返信の通し（不要・掲載・削除ラインの本番Actions実測）成功。教訓：clasp pushは全置換（.claspignoreは全ファイル許可制必須）／スコープ明示時はGmailに mail.google.com が必要。残り：スコープ追加後の再認可1回・「告知」実投稿テスト・Vercel NEWS_OG_SECRET設定。session: af89ec89-850c-4bf1-ab89-ff6db279e54f / output: 177,745 / cost: $76.01"
         },
         {
           "date": "2026-08-06",

@@ -246,6 +246,7 @@ const UNREAD_POLL_MS = 30000;
     }
     if (name === 'agents' && !state.agentsLoaded) loadAgents();
     if (name === 'changelog' && !state.changelogLoaded) loadChangelog();
+    if (name === 'changelog') loadNewsAdmin();
     if (name === 'mail') openMailTab();
     if (name === 'doc-comments' && !state.documentsLoaded) initDocComments();
     if (name === 'sns' && !state.snsLoaded) { loadSnsConfig(); loadSnsQueue(); loadFreefreeSnsConfig(); }
@@ -1515,6 +1516,72 @@ const UNREAD_POLL_MS = 30000;
   // =========================================================
   // 更新履歴（changelog.json）
   // =========================================================
+  // サイト掲載中のお知らせ（news-data.json）一覧＋削除。
+  // 削除は GAS 経由で repository_dispatch（news-delete）→ Actions が反映（数分かかる）。
+  async function loadNewsAdmin() {
+    const list = $('news-admin-list');
+    try {
+      const res = await fetch('../news-data.json', { cache: 'no-store' });
+      const data = await res.json();
+      const items = data.items || [];
+      $('news-admin-updated').textContent = data.updated ? ('更新: ' + data.updated) : '';
+      list.innerHTML = '';
+      if (!items.length) {
+        list.innerHTML = '<p class="empty">自動掲載されたお知らせはまだありません</p>';
+        return;
+      }
+      items.forEach(item => list.appendChild(renderNewsAdminItem(item)));
+    } catch (err) {
+      list.innerHTML = '<p class="empty">お知らせを読み込めませんでした（' + escape(err.message) + '）</p>';
+    }
+  }
+
+  function renderNewsAdminItem(item) {
+    const fullText = (item.text || '') +
+      (item.link && item.link.label ? item.link.label : '') +
+      (item.text_after || '');
+    const row = document.createElement('div');
+    row.className = 'cl-item t-content';
+    row.innerHTML =
+      '<div class="cl-side">' +
+        '<span class="cl-date">' + escape(item.date || '') + '</span>' +
+        '<span class="cl-type">' + escape(item.tag || 'お知らせ') + '</span>' +
+      '</div>' +
+      '<div class="cl-main">' +
+        '<div class="cl-title">' + escape(fullText) + '</div>' +
+        '<div class="cl-author"><button type="button" class="btn btn-sm news-del-btn">🗑 サイトから削除</button></div>' +
+      '</div>';
+    row.querySelector('.news-del-btn').addEventListener('click', async (ev) => {
+      const btn = ev.currentTarget;
+      if (!confirm('「' + fullText + '」をサイトから削除しますか？\n（反映まで数分かかります）')) return;
+      btn.disabled = true;
+      btn.textContent = '送信中…';
+      try {
+        const r = await gasCall({
+          action: 'newsDelete',
+          password: state.password,
+          id: item.id || '',
+          date: item.date || '',
+          text: item.text || '',
+        });
+        if (r.ok) {
+          btn.textContent = '削除受付済み（数分で反映）';
+          row.style.opacity = '0.45';
+          toast('削除を受け付けました。数分でサイトと一覧から消えます', 'ok');
+        } else {
+          btn.disabled = false;
+          btn.textContent = '🗑 サイトから削除';
+          toast('削除に失敗: ' + (r.error || '不明なエラー'), 'err');
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '🗑 サイトから削除';
+        toast('削除に失敗: ' + err.message, 'err');
+      }
+    });
+    return row;
+  }
+
   async function loadChangelog() {
     try {
       const res = await fetch('changelog.json', { cache: 'no-store' });
