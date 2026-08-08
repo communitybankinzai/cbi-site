@@ -85,7 +85,15 @@ IG カード API はローカル dev サーバで 200(JPEG)/403(不正署名)/40
 
 ### セットアップ手順
 
-（communitybankinzai@gmail.com でログインした PC ブラウザで行う）
+⚠️ **手順4〜7は必ず communitybankinzai@gmail.com のアカウントで実行すること。**
+`GmailApp` は「実行したアカウント」のメールボックスを読み書きする。候補メールの宛先は
+communitybankinzai@gmail.com なので、別アカウント（you0810 等）で初回実行・トリガー作成をすると
+**別人の Gmail を監視してしまい、返信を永遠に拾えない**。トリガーの所有者＝作成したアカウント。
+
+**clasp push を有効にする（任意・推奨）**: communitybankinzai でスクリプトを開き、
+「共有」から you0810jmsdf@gmail.com を**編集者**に追加すると、以後のコード反映は
+ローカルから `clasp push` で行える（you0810 の clasp ログインをそのまま使える）。
+共有されるのはコード編集権のみで、トリガー・Gmail は上記のとおり実行アカウントに紐づく。
 
 1. GitHub で Fine-grained PAT を作成（`communitybankinzai` / `cbi-site` のみ /
    Contents: Read and write）→ スクリプトプロパティ `GITHUB_PAT_CBI_SITE` に登録
