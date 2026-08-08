@@ -186,6 +186,7 @@
             "cidao: src/app/login/page.tsx（同意を端末ごとに記憶、規約バージョン照合で再同意要求、commit 8cc59f1）",
             "cidao: src/app/login/page.tsx（ログインカードに参加のお約束3か条を表示、commit edd11d0）",
             "cidao: src/app/login/page.tsx（LINEログインボタン拡大 h-12・太字・影、commit c4453e8）",
+            "cidao: src/app/login/page.tsx（無料表記を1回に集約し緑太字で強調、commit 838c01b）",
             "site/admin/changelog.json / agents-worklog.json"
           ],
           "hours": 0.7,
