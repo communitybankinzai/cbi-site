@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-"""ポスター用QRコード生成（CBIサイトTOP）
+"""CBIサイトTOPのQRコード生成（サイトのフッターとA0ポスターで共用）
 
 使い方: python site/poster/make_qr.py
-出力  : site/poster/qr-site.svg
+出力  : site/assets/qr-site.svg
 """
 import pathlib
 
 import segno
 
 URL = "https://communitybankinzai.github.io/cbi-site/"
-OUT = pathlib.Path(__file__).parent / "qr-site.svg"
+OUT = pathlib.Path(__file__).resolve().parent.parent / "assets" / "qr-site.svg"
 
 # error='h' = 30%冗長。A0で屋外掲示しても読み取りやすくする
 # 白地・紺モジュール。濃紺地に白モジュールの「反転QR」は Android / LINE のリーダーで

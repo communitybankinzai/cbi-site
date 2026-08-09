@@ -621,6 +621,36 @@ h1, h2, h3 {
   margin: 0 6px;
   color: rgba(255, 255, 255, 0.25);
 }
+/* フッターのQR。PCで見ている人がスマホに持ち替えるとき／画面を見せて読み取ってもらうとき用。
+   SVG は A0ポスター（poster/cbi-poster-a0.html）と同じ assets/qr-site.svg を共用する */
+.footer-qr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.footer-qr-img {
+  width: 96px;
+  height: 96px;
+  background: #fff;
+  padding: 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.footer-qr-text {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.5;
+}
+.footer-qr-text span {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+  word-break: break-all;
+}
 .footer-admin-link {
   color: rgba(255, 255, 255, 0.4);
   text-decoration: none;

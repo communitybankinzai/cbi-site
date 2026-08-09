@@ -3076,7 +3076,7 @@
       "actuals": [
         {
           "date": "2026-08-08",
-          "title": "🖼️ A0告知ポスター（サイトLP圧縮版）と配布ページを新規制作 1.2時間",
+          "title": "🖼️ A0告知ポスター・配布ページ・LPフッターQRを新規制作 1.4時間",
           "category": "広報",
           "outputs": [
             "site/poster/cbi-poster-a0.html — A0縦841×1189mm版ポスター。Hero（紙面1/3の400mm）／ABOUT／JOIN／フッターの4ブロック構成。配色・書体・雲海グラデは site/style.css から移植し、@page size でA0指定",
@@ -3087,12 +3087,15 @@
             "site/poster/build.ps1 — Chrome headless --print-to-pdf でA0 PDFを出力（BOM付きUTF-8）",
             "site/poster/README.md — 構成・再生成手順・設計メモ・高さ計測テクニック",
             "site/poster/cbi-poster-a0.pdf — 入稿用PDF 3.17MB",
-            "site/admin/changelog.json — 2件追記",
+            "site/index.html — フッターにQRブロックを追加",
+            "site/style.css — .footer-qr 系スタイルを追加（PC横並び／スマホ折返し）",
+            "site/assets/qr-site.svg — QRをサイトとポスターで共用する場所へ一元化（poster/qr-site.svg は削除）",
+            "site/admin/changelog.json — 3件追記",
             "HOME.md — 保管庫トップの「よく使うノート」へ1行追記"
           ],
-          "hours": 1.2,
+          "hours": 1.4,
           "partnerApproved": false,
-          "note": "きっかけ：ユーザー依頼「CBIサイトのLPをA0比率に圧縮したイメージの告知ポスター、サイトQR付き」。初稿（LP全セクション＋右上QR）から4回の指示で改稿＝(1)活動報告・団体情報は掲示中に内容が変わるため除外 (2)QRはフッターへ移動 (3)HeroのCBIロゴ円を削除 (4)Hero・JOINの押せないボタン表示を全削除。青の面積は「紙面1/3」というユーザー提案を採用し400mmで確定。最後に配布ページを追加。検証：生成PDFは841.0×1188.9mm・1ページ、Zen Maru Gothic埋め込み済み、QRはOpenCVでデコードしURL一致を確認。紙面の実高さはピクセル計測で1189mmに合わせ込み（目視では切れを見落とす）。知見：濃紺地に白モジュールの反転QRはOpenCVでデコード失敗（白黒反転後なら成功）→ Android/LINEで読めない端末が出るため白地に戻した。既知の制約＝Hero背景写真は原寸2340px（A0幅で約71dpi）、手のイラストは1600px（約48dpi）。掲示距離では実用範囲だが至近では甘い。\nsession: f0e82883-f4ce-4480-b9bc-881d0aa68d90 / output: 124,442 / cost: $20.19",
+          "note": "きっかけ：ユーザー依頼「CBIサイトのLPをA0比率に圧縮したイメージの告知ポスター、サイトQR付き」。初稿（LP全セクション＋右上QR）から4回の指示で改稿＝(1)活動報告・団体情報は掲示中に内容が変わるため除外 (2)QRはフッターへ移動 (3)HeroのCBIロゴ円を削除 (4)Hero・JOINの押せないボタン表示を全削除。青の面積は「紙面1/3」というユーザー提案を採用し400mmで確定。配布ページ（/poster/）を追加し、さらにサイトLPのフッターにもQRを掲載（ユーザーの当初依頼「実際のサイトに反映」を配布ページ新設と誤解し、再依頼で対応）。検証：生成PDFは841.0×1188.9mm・1ページ、Zen Maru Gothic埋め込み済み、QRはOpenCVでデコードしURL一致を確認。紙面の実高さはピクセル計測で1189mmに合わせ込み（目視では切れを見落とす）。知見：濃紺地に白モジュールの反転QRはOpenCVでデコード失敗（白黒反転後なら成功）→ Android/LINEで読めない端末が出るため白地に戻した。既知の制約＝Hero背景写真は原寸2340px（A0幅で約71dpi）、手のイラストは1600px（約48dpi）。掲示距離では実用範囲だが至近では甘い。\nsession: f0e82883-f4ce-4480-b9bc-881d0aa68d90 / output: 143,598 / cost: $29.16",
           "session": "f0e82883-f4ce-4480-b9bc-881d0aa68d90"
         },
         {
