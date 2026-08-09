@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-08-09",
+          "title": "🔗 Shake Hands Japan の団体重複を統合し、活動実績の紐づけを修復 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "organizations: bc98781e… を name=「Shake Hands Japan」/ legal_form=npo_corp に更新",
+            "organizations: 22951880…（8/9 11:45 作成の空レコード）を削除。紐づくデータ0件を確認のうえ実行",
+            "events: a08fc7e7…（7/19 映画上映会）と f544f5a9…（8/9 #私たちの保健室）の organizer_name_text を「Shake Hands Japan」に統一",
+            "site/admin/changelog.json — 1件追記"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "きっかけ：ユーザーが /orgs 画面で重複を発見し削除を依頼。調査の結果、単なる重複ではなく、団体ページの活動カレンダーが「proxy_registration=true かつ organizer_name_text = 団体名の完全一致」でイベントを引く実装（src/app/orgs/[id]/page.tsx:52）のため、チラシ画像取込（cocola-image-scan）時の主催者名の表記ゆれで実績が2レコードに分裂していたと判明。8/9のイベントは未登録ではなく既に存在していた。手順：バックアップJSON取得 → 改名・法人格訂正 → イベント2件の主催者名統一 → 紐づき0件を再確認してから削除。実行後に団体ページを開いて『過去3ヶ月の活動（2件）』表示を確認済み。残課題：代理登録イベント100件のうち32種類の主催者名がどの団体名とも一致していない（多くは団体未登録の主催者だが、将来その主催者が団体登録した際に実績が繋がらない）。また団体名を改名すると過去イベントの紐づきが切れる設計上の弱点がある。\nsession: f0e82883-f4ce-4480-b9bc-881d0aa68d90 / output: 212,633 / cost: $44.63（うちポスター制作分はA4に計上）",
+          "session": "f0e82883-f4ce-4480-b9bc-881d0aa68d90"
+        },
+        {
+          "date": "2026-08-09",
           "title": "お知らせ欄リセット・2件掲載（公開方針転換）＋管理画面の文面編集/手動追加/まちのコイン構想ページ公開終了 0.5時間",
           "category": "実装",
           "outputs": [
