@@ -4,39 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A0告知ポスター｜Community Bank INZAI（CBI）</title>
-<meta name="description" content="印西「このゆびとまれ」プロジェクトのA0告知ポスター。PDF・HTML・画像の各形式をダウンロードできます。">
+<meta name="description" content="印西「このゆびとまれ」プロジェクトのA0告知ポスター。2案のPDF・HTML・画像をダウンロードできます。">
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=20260808a">
+<link rel="stylesheet" href="../style.css?v=20260809a">
 <style>
   .poster-page { max-width: 1080px; margin: 0 auto; padding: 48px 24px 96px; }
   .poster-head { margin-bottom: 40px; }
   .poster-head h1 { font-size: clamp(24px, 3.2vw, 34px); margin: 0 0 12px; }
   .poster-head .lead { color: var(--c-ink-sub); margin: 0; }
-  .poster-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 40px; align-items: start; }
-  @media (max-width: 860px) { .poster-layout { grid-template-columns: 1fr; } }
 
-  .poster-preview {
-    background: var(--c-bg-alt); border: 1px solid var(--c-line); border-radius: var(--radius);
-    padding: 20px; box-shadow: var(--shadow-sm);
-  }
-  .poster-preview img { width: 100%; height: auto; border-radius: 4px; box-shadow: var(--shadow-md); }
-  .poster-preview figcaption { margin-top: 12px; font-size: 13px; color: var(--c-ink-sub); text-align: center; }
+  /* 2案の並列 */
+  .pattern-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+  @media (max-width: 860px) { .pattern-grid { grid-template-columns: 1fr; } }
 
-  .dl-card {
-    background: var(--c-paper); border: 1px solid var(--c-line); border-radius: var(--radius);
-    padding: 24px; box-shadow: var(--shadow-sm); position: sticky; top: 88px;
+  .pattern {
+    background: var(--c-paper); border: 1px solid var(--c-line);
+    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm);
+    display: flex; flex-direction: column;
   }
-  .dl-card h2 { font-size: 18px; margin: 0 0 4px; }
-  .dl-card .spec { font-size: 13px; color: var(--c-ink-sub); margin: 0 0 20px; }
+  .pattern-label {
+    background: var(--c-navy); color: #fff;
+    padding: 12px 20px; font-weight: 700; font-size: 15px;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .pattern-label span { font-size: 12px; font-weight: 400; color: rgba(255,255,255,.75); }
+  .pattern-fig { margin: 0; padding: 20px; background: var(--c-bg-alt); }
+  .pattern-fig img {
+    width: 100%; height: auto; display: block;
+    border-radius: 4px; box-shadow: var(--shadow-md); background: #fff;
+  }
+  .pattern-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+  .pattern-desc { font-size: 14px; color: var(--c-ink-sub); line-height: 1.8; margin: 0 0 16px; flex: 1; }
   .dl-list { list-style: none; padding: 0; margin: 0; }
-  .dl-list li { border-top: 1px solid var(--c-line); padding: 14px 0; }
+  .dl-list li { border-top: 1px solid var(--c-line); padding: 12px 0; }
   .dl-list li:last-child { border-bottom: 1px solid var(--c-line); }
-  .dl-list a { font-weight: 700; font-size: 15px; }
-  .dl-list .fmt { display: block; font-size: 12px; color: var(--c-ink-sub); margin-top: 4px; line-height: 1.6; }
+  .dl-list a { font-weight: 700; font-size: 14px; }
+  .dl-list .fmt { display: block; font-size: 12px; color: var(--c-ink-sub); margin-top: 3px; line-height: 1.6; }
 
   .howto { margin-top: 56px; }
   .howto h2 { font-size: 22px; margin: 0 0 8px; }
@@ -79,38 +86,71 @@
 
   <div class="poster-head">
     <p class="section-eyebrow">POSTER</p>
-    <h1>A0告知ポスター</h1>
+    <h1>A0告知ポスター（2案）</h1>
     <p class="lead">
-      印西「このゆびとまれ」プロジェクトの掲示用ポスターです。サイトのトップページをそのまま1枚に圧縮しました。
+      印西「このゆびとまれ」プロジェクトの掲示用ポスターです。仕上がりはどちらも A0縦（841 × 1189mm）。
       印刷用のPDF、編集用のHTML、共有用の画像をそれぞれダウンロードできます。
     </p>
   </div>
 
-  <div class="poster-layout">
+  <div class="pattern-grid">
 
-    <figure class="poster-preview" style="margin:0;">
-      <img src="preview.png" alt="A0告知ポスターの全体像">
-      <figcaption>A0縦（841 × 1189mm）／実寸の約1/7で表示しています</figcaption>
-    </figure>
+    <!-- パターン1 -->
+    <section class="pattern">
+      <p class="pattern-label">パターン1 <span>サイト連動版</span></p>
+      <figure class="pattern-fig">
+        <img src="preview.png" alt="パターン1（サイト連動版）の全体像">
+      </figure>
+      <div class="pattern-body">
+        <p class="pattern-desc">
+          サイトのトップページをそのまま1枚に圧縮した落ち着いた構成。上1/3が写真のメインビジュアル、
+          下に「目指す3つのこと」「参加方法」が入ります。行政・施設への掲示や、事業説明を兼ねた掲示に向きます。
+        </p>
+        <ul class="dl-list">
+          <li>
+            <a href="cbi-poster-a0.pdf" download>印刷用PDF ↓</a>
+            <span class="fmt">約3.2MB／1ページ／書体埋め込み済み</span>
+          </li>
+          <li>
+            <a href="cbi-poster-a0.html" target="_blank" rel="noopener">HTML版を開く ↗</a>
+            <span class="fmt">文面を直すときはこちら</span>
+          </li>
+          <li>
+            <a href="preview.png" download>画像（PNG）↓</a>
+            <span class="fmt">1240 × 1753px。共有・資料への貼り付け用</span>
+          </li>
+        </ul>
+      </div>
+    </section>
 
-    <aside class="dl-card">
-      <h2>ダウンロード</h2>
-      <p class="spec">A0縦 841 × 1189mm</p>
-      <ul class="dl-list">
-        <li>
-          <a href="cbi-poster-a0.pdf" download>印刷用PDF ↓</a>
-          <span class="fmt">約3.2MB／1ページ／書体埋め込み済み。<strong>印刷所にはこれをそのまま入稿できます。</strong>Canvaに読み込んで編集する場合もこれを使います。</span>
-        </li>
-        <li>
-          <a href="cbi-poster-a0.html" target="_blank" rel="noopener">HTML版を開く ↗</a>
-          <span class="fmt">文面を直したいときはこちら。ブラウザの印刷（Ctrl+P）から用紙サイズ「A0」でPDFにできます。</span>
-        </li>
-        <li>
-          <a href="preview.png" download>画像（PNG）↓</a>
-          <span class="fmt">約1MB／1240 × 1753px。LINEやメールで見せるとき、資料に貼るとき用。<strong>印刷には向きません。</strong></span>
-        </li>
-      </ul>
-    </aside>
+    <!-- パターン2 -->
+    <section class="pattern">
+      <p class="pattern-label">パターン2 <span>ポップ版</span></p>
+      <figure class="pattern-fig">
+        <img src="preview-b.png" alt="パターン2（ポップ版）の全体像">
+      </figure>
+      <div class="pattern-body">
+        <p class="pattern-desc">
+          白地に大きな指のイラストを置いた、遠くからでも目を引く構成。
+          「印西をみんなでもっと面白く！」を主役に、3つの取り組みを短く伝えます。
+          商業施設・掲示板・イベント会場など、通りすがりに見てもらう場所に向きます。
+        </p>
+        <ul class="dl-list">
+          <li>
+            <a href="cbi-poster-a0-b.pdf" download>印刷用PDF ↓</a>
+            <span class="fmt">約3.6MB／1ページ／書体埋め込み済み</span>
+          </li>
+          <li>
+            <a href="cbi-poster-a0-b.html" target="_blank" rel="noopener">HTML版を開く ↗</a>
+            <span class="fmt">文面を直すときはこちら</span>
+          </li>
+          <li>
+            <a href="preview-b.png" download>画像（PNG）↓</a>
+            <span class="fmt">1240 × 1753px。共有・資料への貼り付け用</span>
+          </li>
+        </ul>
+      </div>
+    </section>
 
   </div>
 
@@ -126,38 +166,39 @@
 
     <h3>Canvaで編集する</h3>
     <ol>
-      <li>Canvaを開き、右上の<strong>「デザインを作成」→「ファイルをインポート」</strong>を選ぶ</li>
-      <li>ダウンロードした <code>cbi-poster-a0.pdf</code> をアップロードする</li>
+      <li>Canvaを開き、<strong>「デザインを作成」→「ファイルをインポート」</strong>を選ぶ</li>
+      <li>ダウンロードしたPDFをアップロードする</li>
       <li>読み込まれたページを開くと、文字・画像それぞれを選んで編集できます</li>
     </ol>
     <div class="callout">
       <p>
-        <strong>書体について：</strong>このポスターは Zen Maru Gothic（丸ゴシック）で組んでいます。
-        Canvaにも同名のフォントがあるので、読み込み後に置き換わってしまった場合は
-        テキストを選んでフォント一覧から「Zen Maru Gothic」を選び直してください。
+        <strong>書体について：</strong>パターン1は Zen Maru Gothic、パターン2は M PLUS Rounded 1c で組んでいます。
+        どちらもCanvaに同名のフォントがあるので、読み込み後に置き換わってしまった場合は
+        テキストを選んでフォント一覧から選び直してください。
       </p>
     </div>
 
     <h3>文面を直してPDFを作り直す</h3>
-    <p><code>site/poster/</code> のファイルを編集し、次のコマンドを実行するとPDFが再生成されます（Google Chrome が必要です）。</p>
-    <pre>powershell -ExecutionPolicy Bypass -File site\poster\build.ps1</pre>
+    <p><code>site/poster/</code> のHTMLを編集し、次のコマンドを実行するとPDFが再生成されます（Google Chrome が必要です）。</p>
+    <pre>powershell -ExecutionPolicy Bypass -File site\poster\build.ps1
+powershell -ExecutionPolicy Bypass -File site\poster\build.ps1 -Name cbi-poster-a0-b</pre>
     <p>
+      上がパターン1、下がパターン2です。
       QRコードのリンク先を変えるときは <code>make_qr.py</code> の <code>URL</code> を書き換えて
-      <code>python site/poster/make_qr.py</code> を先に実行してください。
+      <code>python site/poster/make_qr.py</code> を先に実行してください（サイトのフッターのQRも同じファイルです）。
       詳しい設計メモは同フォルダの <code>README.md</code> にあります。
     </p>
 
-    <h2 style="margin-top:48px;">仕様</h2>
+    <h2 style="margin-top:48px;">仕様（2案共通）</h2>
     <table class="spec-table">
       <tr><th>仕上がりサイズ</th><td>A0縦 841 × 1189mm</td></tr>
       <tr><th>色</th><td>RGB（ネット印刷はRGB入稿に対応。オフセット印刷でCMYK指定がある場合は要変換）</td></tr>
       <tr><th>塗り足し</th><td>なし（フチなし印刷を指定する場合は印刷所に相談してください）</td></tr>
-      <tr><th>書体</th><td>Zen Maru Gothic（PDFに埋め込み済み）</td></tr>
-      <tr><th>QRコード</th><td>86mm角／誤り訂正レベルH／リンク先はCBI公式サイト</td></tr>
+      <tr><th>QRコード</th><td>誤り訂正レベルH／リンク先はCBI公式サイト／生成PDFから読み取り確認済み</td></tr>
       <tr><th>掲載していない情報</th><td>活動報告・お知らせ、団体情報・お問い合わせ（掲示中に内容が変わるため）</td></tr>
     </table>
     <p style="margin-top:16px; font-size:13px;">
-      ※ 背景写真と手のイラストは元データの解像度の都合で、A0では約50〜70dpi相当です。
+      ※ パターン1の背景写真と手のイラストは元データの解像度の都合で、A0では約50〜70dpi相当です。
       1〜2m離れて見る掲示物としては問題ありませんが、間近で見るとやや粗く見えます。
     </p>
   </section>

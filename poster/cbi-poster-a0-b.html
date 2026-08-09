@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>CBI 告知ポスター A0 パターン2（841×1189mm）</title>
+<!--
+  印西「このゆびとまれ」プロジェクト 告知ポスター A0縦・パターン2（ポップ版）
+  ・PDF生成： site/poster/build-b.ps1
+  ・素材    ： ../assets/hero/hero-icon.png（指）／../assets/qr-site.svg／../assets/cbi-logo.png
+  ・書体    ： M PLUS Rounded 1c（Google Fonts）
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+@page { size: 841mm 1189mm; margin: 0; }
+
+:root {
+  --brown:       #8a5a2a;
+  --brown-dark:  #6f4720;
+  --orange:      #d9772f;
+  --orange-dark: #bc5f22;
+  --yellow:      #ffcc33;
+  --red:         #bc1f2c;
+  --ink:         #1a1a1a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 841mm; height: 1189mm; }
+body {
+  font-family: "M PLUS Rounded 1c", "Zen Maru Gothic", sans-serif;
+  background: #fff; color: var(--ink);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+img { display: block; }
+
+.poster { position: relative; width: 841mm; height: 1189mm; overflow: hidden; background: #fff; }
+
+/* ============ 袋文字（白い外縁 → 黒い内縁 → 塗り の3層） ============ */
+.ot { position: relative; display: inline-block; white-space: nowrap; }
+.ot::before, .ot::after {
+  content: attr(data-t);
+  position: absolute; left: 0; top: 0;
+  -webkit-text-fill-color: transparent;
+}
+.ot::before { -webkit-text-stroke: var(--sw-out, 16mm) #fff; z-index: -2; }
+.ot::after  { -webkit-text-stroke: var(--sw-in, 9mm) #000;  z-index: -1; }
+
+/* ============ ① 上部の見出し ============ */
+.headline {
+  position: absolute; top: 20mm; left: 0; right: 0;
+  text-align: center; z-index: 5;
+}
+.headline .ot {
+  --sw-out: 13mm; --sw-in: 7.5mm;
+  font-size: 54mm; font-weight: 900; line-height: 1;
+  letter-spacing: -0.02em;
+  background: linear-gradient(100deg, #ffd42e 0%, #ffb515 22%, #ff8c2b 42%, #a8d13a 62%, #ffc32a 82%, #ffd42e 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ============ ② アーチの「このゆびとまれ」 ============ */
+.arch { position: absolute; top: 62mm; left: 0; width: 841mm; height: 302mm; z-index: 4; }
+.arch svg { width: 100%; height: 100%; overflow: visible; }
+.arch text {
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-weight: 900; font-size: 165px; letter-spacing: 0.2em;
+}
+
+/* ============ ③ プロジェクト ============ */
+.proj {
+  position: absolute; top: 244mm; left: 0; right: 0; text-align: center; z-index: 6;
+}
+.proj .ot {
+  --sw-out: 7.5mm; --sw-in: 4.2mm;
+  font-size: 38mm; font-weight: 900; letter-spacing: 0.02em;
+  color: #111; -webkit-text-fill-color: #111;
+}
+
+/* ============ ④ 指イラスト ============ */
+.hand { position: absolute; z-index: 3; }
+.hand-main  { top: 276mm; left: 50%; transform: translateX(-50%); width: 326mm; }
+.hand-s1 { top: 360mm; left: 150mm; width: 104mm; transform: rotate(-6deg);  filter: hue-rotate(-18deg) saturate(2.3) brightness(1.0); }
+.hand-s2 { top: 356mm; right: 156mm; width: 96mm;  transform: rotate(6deg);   filter: saturate(0.3) brightness(1.13); }
+.hand-s3 { top: 470mm; left: 36mm;  width: 102mm; transform: rotate(-11deg); filter: hue-rotate(2deg) saturate(2.0) brightness(1.04); }
+.hand-s4 { top: 424mm; right: 28mm; width: 104mm; transform: rotate(11deg);  filter: hue-rotate(-20deg) saturate(2.1) brightness(0.97); }
+
+/* ============ ⑤ QRコード ============ */
+.qr { position: absolute; top: 576mm; right: 40mm; width: 66mm; z-index: 7; }
+.qr img { width: 66mm; height: 66mm; }
+
+/* ============ ⑥ オレンジ帯 ============ */
+.banner {
+  position: absolute; top: 660mm; right: 26mm; width: 282mm; z-index: 7;
+  background: linear-gradient(180deg, #dd8241 0%, #c1652a 100%);
+  border-radius: 9mm;
+  padding: 9mm 10mm;
+  text-align: center;
+  color: #fff; font-weight: 800; font-size: 17mm; line-height: 1.4;
+  box-shadow: 0 2mm 6mm rgba(0,0,0,.18);
+}
+
+/* ============ ⑦ 3つの取り組み ============ */
+.three { position: absolute; top: 698mm; left: 30mm; z-index: 6; display: flex; align-items: flex-end; gap: 3mm; }
+.three .num3 {
+  --sw-out: 9mm; --sw-in: 5mm;
+  font-size: 78mm; font-weight: 900; line-height: .92;
+  color: var(--red); -webkit-text-fill-color: var(--red);
+}
+.three .num3::before { -webkit-text-stroke: 11mm #e8c98a; }
+.three .num3::after  { -webkit-text-stroke: 5.5mm #fff; }
+.three .label { font-size: 30mm; font-weight: 900; letter-spacing: .02em; padding-bottom: 6mm; }
+
+/* ============ ⑧ カード3枚 ============ */
+.cards {
+  position: absolute; top: 794mm; left: 28mm; right: 28mm; z-index: 6;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14mm;
+}
+.card { position: relative; }
+.card-num {
+  position: absolute; top: -34mm; left: 50%; transform: translateX(-50%);
+  font-size: 46mm; font-weight: 900; line-height: 1; z-index: 2;
+  color: var(--yellow); -webkit-text-fill-color: var(--yellow);
+  --sw-out: 8mm; --sw-in: 4.2mm;
+}
+.card-body {
+  background: var(--brown); border-radius: 11mm;
+  padding: 18mm 10mm 15mm; text-align: center; color: #fff;
+  min-height: 238mm;
+}
+.card-title { font-size: 17mm; font-weight: 900; line-height: 1.35; margin-bottom: 7mm; }
+.card-text  { font-size: 13mm; font-weight: 500; line-height: 1.5; }
+.card-note  { font-size: 9mm; font-weight: 500; line-height: 1.45; margin-top: 2mm; color: rgba(255,255,255,.86); }
+
+/* ============ ⑨ フッター ============ */
+.footer { position: absolute; left: 28mm; right: 28mm; bottom: 20mm; z-index: 6; }
+.footer-row { display: flex; align-items: center; gap: 8mm; }
+.footer-logo { width: 66mm; height: 66mm; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.footer-en { font-size: 36mm; font-weight: 900; letter-spacing: -0.01em; line-height: 1.05; }
+.footer-ja { font-size: 13mm; font-weight: 700; letter-spacing: .1em; margin-top: 1mm; }
+.footer-desc { font-size: 9.6mm; font-weight: 500; margin-top: 4mm; letter-spacing: .01em; }
+</style>
+</head>
+<body>
+
+<div class="poster">
+
+  <!-- ① 見出し -->
+  <div class="headline">
+    <span class="ot" data-t="印西をみんなでもっと面白く！">印西をみんなでもっと面白く！</span>
+  </div>
+
+  <!-- ② アーチ -->
+  <div class="arch">
+    <svg viewBox="0 -190 1590 570" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <path id="archPath" d="M 60 340 C 380 60, 1210 60, 1530 340" fill="none"/>
+      </defs>
+      <text text-anchor="middle" stroke="#fff" stroke-width="48" paint-order="stroke" fill="#111">
+        <textPath href="#archPath" startOffset="50%">このゆびとまれ</textPath>
+      </text>
+      <text text-anchor="middle" stroke="#111" stroke-width="22" paint-order="stroke" fill="#111">
+        <textPath href="#archPath" startOffset="50%">このゆびとまれ</textPath>
+      </text>
+    </svg>
+  </div>
+
+  <!-- ③ プロジェクト -->
+  <div class="proj">
+    <span class="ot" data-t="プロジェクト">プロジェクト</span>
+  </div>
+
+  <!-- ④ 指 -->
+  <img class="hand hand-s1" src="../assets/hero/hero-icon.png" alt="">
+  <img class="hand hand-s2" src="../assets/hero/hero-icon.png" alt="">
+  <img class="hand hand-s3" src="../assets/hero/hero-icon.png" alt="">
+  <img class="hand hand-s4" src="../assets/hero/hero-icon.png" alt="">
+  <img class="hand hand-main" src="../assets/hero/hero-icon.png" alt="このゆびとまれ">
+
+  <!-- ⑤ QR -->
+  <div class="qr"><img src="../assets/qr-site.svg" alt="CBI公式サイトのQRコード"></div>
+
+  <!-- ⑥ オレンジ帯 -->
+  <div class="banner">便利な機能がてんこ盛り！<br>ぜひお試しください！</div>
+
+  <!-- ⑦ 3つの取り組み -->
+  <div class="three">
+    <span class="ot num3" data-t="3">3</span>
+    <span class="label">つの取り組み</span>
+  </div>
+
+  <!-- ⑧ カード -->
+  <div class="cards">
+    <div class="card">
+      <span class="ot card-num" data-t="1">1</span>
+      <div class="card-body">
+        <p class="card-title">市内200超団体を<br>見える化して<br>個人と繋ぐ</p>
+        <p class="card-text">印西の市民活動団体など200以上の団体活動（内容や状況）を分かり易く整理して参加しやすくします。</p>
+      </div>
+    </div>
+    <div class="card">
+      <span class="ot card-num" data-t="2">2</span>
+      <div class="card-body">
+        <p class="card-title">これやってみたい！<br>それいいね！<br>のプラットフォーム</p>
+        <p class="card-text">街のため、誰かのためにやってみたい事を提案し、賛同者を集められます。内容によっては行政にもお繋ぎします。</p>
+      </div>
+    </div>
+    <div class="card">
+      <span class="ot card-num" data-t="3">3</span>
+      <div class="card-body">
+        <p class="card-title">みんなの活動を<br>デジタルで支援</p>
+        <p class="card-text">皆さんの活動をサイト内のカレンダーに自動表示。更にSNSでの投稿も無料で代行します。</p>
+        <p class="card-note">（当団体サイトへの投稿や貴団体のSNS投稿を自動で反映）</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑨ フッター -->
+  <div class="footer">
+    <div class="footer-row">
+      <img class="footer-logo" src="../assets/cbi-logo.png" alt="">
+      <div>
+        <p class="footer-en">Community Bank Inzai (CBI)</p>
+        <p class="footer-ja">コミュニティ バンク 印西</p>
+      </div>
+    </div>
+    <p class="footer-desc">印西市の市民活動団体として、「やってみたい」市民と「お願いしたい」団体をつなぐ仕組みづくりに取り組みます</p>
+  </div>
+
+</div>
+
+</body>
+</html>
