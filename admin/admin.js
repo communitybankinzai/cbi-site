@@ -58,6 +58,7 @@ const UNREAD_POLL_MS = 30000;
         sending: false,
         initialBody: '',  // 引用文など、開いた直後の本文（破棄確認の判定に使う）
       },
+      signature: null,    // GASから取得した署名。null=未取得 / ''=取得失敗
     },
   };
 
@@ -2667,6 +2668,7 @@ const UNREAD_POLL_MS = 30000;
     applyMailListWidth();        // 保存幅を復元
     loadMailList();              // 開くたびに最新化
     if (!state.mail.labelsLoaded) loadMailLabels();
+    if (state.mail.signature === null) loadSignature();
   }
 
   function applyMailListWidth() {
@@ -2973,6 +2975,16 @@ const UNREAD_POLL_MS = 30000;
   // ---------- メール作成／返信モーダル ----------
   const MAX_ATTACH_TOTAL = 8 * 1024 * 1024;
 
+  // 署名は GAS の SIGNATURE 定数が唯一の出どころ（二重管理を避けるため取得して使う）
+  async function loadSignature() {
+    try {
+      const r = await mailCall({ action: 'signature' });
+      state.mail.signature = (r.ok && r.signature) ? String(r.signature) : '';
+    } catch (err) {
+      state.mail.signature = '';
+    }
+  }
+
   function bindComposeUI() {
     const modal = $('mail-compose-modal');
     if (!modal) return;
@@ -2999,6 +3011,9 @@ const UNREAD_POLL_MS = 30000;
       files.value = '';
     });
 
+    const signBox = $('mail-compose-sign');
+    if (signBox) signBox.addEventListener('change', () => toggleSignatureInBody(signBox.checked));
+
     const sendBtn  = $('mail-compose-send');
     const draftBtn = $('mail-compose-draft');
     if (sendBtn)  sendBtn.addEventListener('click',  () => submitCompose(false));
@@ -3010,11 +3025,14 @@ const UNREAD_POLL_MS = 30000;
     });
   }
 
-  function openCompose(mode, opts) {
+  async function openCompose(mode, opts) {
     const modal = $('mail-compose-modal');
     if (!modal) return;
     opts = opts || {};
     const c = state.mail.compose;
+
+    // タブを開いた直後など、署名の先読みが終わっていなければ待つ
+    if (state.mail.signature === null) await loadSignature();
 
     if (mode === 'reply' && !state.mail.currentThread) {
       toast('返信するメールを先に選択してください', 'err');
@@ -3025,6 +3043,7 @@ const UNREAD_POLL_MS = 30000;
     c.threadId = '';
     c.attachments = [];
     c.sending = false;
+    let quote = '';
 
     $('mail-compose-to').value = '';
     $('mail-compose-cc').value = '';
@@ -3052,8 +3071,7 @@ const UNREAD_POLL_MS = 30000;
       $('mail-compose-subject-row').hidden = true;
       $('mail-compose-replyall-row').hidden = false;
       $('mail-compose-replyall').checked = !!opts.replyAll;
-      $('mail-compose-body').value = '\n\n' + quoteBody(last);
-      c.initialBody = $('mail-compose-body').value;
+      quote = quoteBody(last);
     } else {
       $('mail-compose-title').textContent = '✏️ 新規メール';
       $('mail-compose-thread').hidden = true;
@@ -3061,7 +3079,21 @@ const UNREAD_POLL_MS = 30000;
       $('mail-compose-subject-row').hidden = false;
       $('mail-compose-replyall-row').hidden = true;
       $('mail-compose-replyall').checked = false;
-      c.initialBody = '';
+    }
+
+    // 本文を組み立てる：（空行）＋署名＋（返信なら引用）
+    const sig = state.mail.signature || '';
+    let body = '\n\n';
+    if (sig) body += sig + '\n';
+    if (quote) body += '\n' + quote;
+    $('mail-compose-body').value = body;
+    c.initialBody = body;
+
+    if (!sig) {
+      $('mail-compose-sign').checked = false;
+      setComposeStatus(state.mail.signature === null
+        ? '署名を取得中…'
+        : '署名を取得できませんでした（GASの再デプロイが必要です）');
     }
 
     modal.hidden = false;
@@ -3077,6 +3109,33 @@ const UNREAD_POLL_MS = 30000;
   }
 
   // force=true（送信成功後）以外は、書きかけの本文があれば確認する
+  // 「署名を付ける」チェックに合わせて本文中の署名ブロックを出し入れする
+  function toggleSignatureInBody(on) {
+    const sig = state.mail.signature || '';
+    const ta = $('mail-compose-body');
+    if (!ta) return;
+    if (!sig) {
+      if (on) toast('署名をまだ取得できていません', 'err');
+      return;
+    }
+    const cur = ta.value;
+    if (on) {
+      if (cur.indexOf(sig) !== -1) return;          // すでに入っている
+      const qi = cur.search(/^> /m);                // 引用の直前に置く（無ければ末尾）
+      ta.value = qi === -1
+        ? cur.replace(/\s+$/, '') + '\n\n' + sig + '\n'
+        : cur.slice(0, qi).replace(/\s+$/, '') + '\n\n' + sig + '\n\n' + cur.slice(qi);
+    } else {
+      const i = cur.indexOf(sig);
+      if (i === -1) {
+        toast('署名が編集されているため、自動では外せません（手で消してください）', 'err');
+        $('mail-compose-sign').checked = true;
+        return;
+      }
+      ta.value = (cur.slice(0, i) + cur.slice(i + sig.length)).replace(/\n{3,}/g, '\n\n');
+    }
+  }
+
   function closeCompose(force) {
     const c = state.mail.compose;
     if (c.sending) return;   // 送信中は閉じさせない
@@ -3203,7 +3262,7 @@ const UNREAD_POLL_MS = 30000;
     if (cc)  payload.cc  = cc;
     if (bcc) payload.bcc = bcc;
     payload.body      = body;
-    payload.signature = $('mail-compose-sign').checked;
+    payload.signature = false;   // 署名は本文欄に差し込み済み。GAS側で二重に付けさせない
     payload.draft     = !!asDraft;
     if (c.attachments.length) {
       payload.attachments = c.attachments.map(a => ({ name: a.name, type: a.type, data: a.data }));

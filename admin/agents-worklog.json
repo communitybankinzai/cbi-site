@@ -18,6 +18,28 @@
       "actuals": [
         {
           "date": "2026-08-09",
+          "title": "共有メールの返信・新規送信機能の実装＋権限エラー修正・署名の可視化 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "gas-mail-share/コード.gs（action に send / reply を追加。draft フラグで下書き保存、replyAll で全員返信、attachments を base64 で受けて Blob 化、SENDER_NAME『CBI事務局』と SIGNATURE を定数化、MailApp.getRemainingDailyQuota で送信上限チェック、添付合計8MB上限）",
+            "gas-mail-share/appsscript.json（oauthScopes に gmail.send / gmail.compose を追加）",
+            "gas-mail-share/README.md（再デプロイ手順＝「デプロイを管理」からURL維持で更新・権限再承認、権限エラー時の mail.google.com への差し替え、API表とエラーコード表を追記）",
+            "site/admin/index.html（ツールバーに「✏️ 新規メール」、作成／返信モーダル一式を追加、admin.js のキャッシュバスターを v=20260808mailsend に更新）",
+            "site/admin/admin.js（openCompose / submitCompose / addAttachments / renderAttachList / mailErrorText 等を追加、詳細ヘッダに返信・全員に返信ボタン、送信前 confirm、書きかけ破棄の確認、Ctrl+Enter送信、アドレス形式バリデーション）",
+            "site/admin/admin.css（作成モーダル・添付リスト・返信ボタンのスタイル。カードに max-height:90vh + overflow-y:auto）",
+            "検証: node --check（admin.js / コード.gs とも構文OK）、localhost:8765 で 1280x800・375x812 のレイアウト実測（横スクロールなし・送信ボタン到達可）",
+            "gas-mail-share/コード.gs（追加修正: MailApp.getRemainingDailyQuota が script.send_mail スコープを要求して送信が失敗したため safeQuota_() で try/catch し上限チェックを任意化。signature アクションを追加し SIGNATURE を単一の出どころに。署名文面へ「印西市市民活動団体登録番号 ０８－００１」を追加）",
+            "site/admin/admin.js（追加修正: loadSignature / toggleSignatureInBody を新設。作成欄を開いた時点で本文に署名を差し込み、送信時は signature:false を送って二重付与を防止。返信時は「空行→署名→引用」の順で組み立て）",
+            "site/admin/index.html（キャッシュバスターを v=20260809mailsig に更新）",
+            "gas-mail-share/README.md（signature アクション、safeQuota_ の経緯、署名の単一管理を追記）",
+            "検証: fetch をモックして実UIを操作。新規/返信の本文組み立て、署名ON/OFF往復、宛先バリデーション2種、添付のbase64往復（aGVsbG8gd29ybGQ=→hello world）、下書き保存、送信後のスレッド再取得までブラウザ実行で確認。コンソールエラー0件"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "祐樹さんの依頼「メール機能：返信、新規メール作成送信機能が欲しい」。仕様は3択で確認し、送信＋下書き保存の両方／添付あり／署名自動付与を採用。初回デプロイ後の実送信で「MailApp.getRemainingDailyQuota を呼び出すことができません（必要な権限: script.send_mail）」が発生。送信上限の残数取得だけが別スコープを要求していたため、権限を増やさず try/catch で任意化する方針を取った（送信本体は gmail.send で動く）。あわせて「署名の中身がわからない」との指摘を受け、送信時の裏側付与から作成欄への差し込み方式へ変更し、その場で編集できるようにした。レイアウト検証時には、作成モーダルの高さ887pxが縦720pxの画面に収まらず送信ボタンへ到達できない不具合も発見・修正している。⚠実アカウントでの送信確認は未実施（再デプロイ後のテスト送信は祐樹さんに依頼中）。session: b9a2fcb6-3d3f-4b83-b5cb-e4a26bd2850d / output: 78,287 / cost: $13.64"
+        },
+        {
+          "date": "2026-08-09",
           "title": "未来チケット提案の本番初SNS告知＋utm_source流入計測の実装 0.2時間",
           "category": "実装",
           "outputs": "cidao: migrations/20260806120000_page_views_source.sql, PageViewTracker.tsx, api/track/view/route.ts, admin/analytics/page.tsx(SNS流入元別), Threads/IG本番告知2件",
@@ -57,23 +79,6 @@
           "hours": 0.5,
           "partnerApproved": false,
           "note": "取り下げ掲載は「外部公開しない」方針（2026-07-25）からの転換をユーザーに確認のうえ実施。文面は経緯に触れず事実＋自主事業継続の前向き併記。取り下げ日はユーザー指定 6/18（当初6/15と案内→訂正）。工数は累計207,005から前回記録177,745の差分29,260 tokensで算出。session: af89ec89-850c-4bf1-ab89-ff6db279e54f / output: 223,649 / cost: $120.35"
-        },
-        {
-          "date": "2026-08-08",
-          "title": "共有メールの返信・新規送信機能の実装（GAS API拡張＋作成モーダル）0.4時間",
-          "category": "実装",
-          "outputs": [
-            "gas-mail-share/コード.gs（action に send / reply を追加。draft フラグで下書き保存、replyAll で全員返信、attachments を base64 で受けて Blob 化、SENDER_NAME『CBI事務局』と SIGNATURE を定数化、MailApp.getRemainingDailyQuota で送信上限チェック、添付合計8MB上限）",
-            "gas-mail-share/appsscript.json（oauthScopes に gmail.send / gmail.compose を追加）",
-            "gas-mail-share/README.md（再デプロイ手順＝「デプロイを管理」からURL維持で更新・権限再承認、権限エラー時の mail.google.com への差し替え、API表とエラーコード表を追記）",
-            "site/admin/index.html（ツールバーに「✏️ 新規メール」、作成／返信モーダル一式を追加、admin.js のキャッシュバスターを v=20260808mailsend に更新）",
-            "site/admin/admin.js（openCompose / submitCompose / addAttachments / renderAttachList / mailErrorText 等を追加、詳細ヘッダに返信・全員に返信ボタン、送信前 confirm、書きかけ破棄の確認、Ctrl+Enter送信、アドレス形式バリデーション）",
-            "site/admin/admin.css（作成モーダル・添付リスト・返信ボタンのスタイル。カードに max-height:90vh + overflow-y:auto）",
-            "検証: node --check（admin.js / コード.gs とも構文OK）、localhost:8765 で 1280x800・375x812 のレイアウト実測（横スクロールなし・送信ボタン到達可）"
-          ],
-          "hours": 0.4,
-          "partnerApproved": false,
-          "note": "祐樹さんの依頼「メール機能：返信、新規メール作成送信機能が欲しい」。仕様は3択で確認し、送信＋下書き保存の両方／添付あり／署名自動付与を採用。レイアウト検証中に、作成モーダルの高さが887pxとなり縦720pxの画面で送信ボタンが画面外に出てスクロールもできない不具合を見つけて修正した。⚠実送信・実返信の動作確認は未実施（GASのスコープが増えたため communitybankinzai@gmail.com での再デプロイと権限再承認が先に必要）。⚠管理画面へのログインを伴う操作確認も未実施（パスワード入力を行わない方針のため、DOM直接操作でのレイアウト検証に留めた）。session: b9a2fcb6-3d3f-4b83-b5cb-e4a26bd2850d / output: 43,547 / cost: $5.59"
         },
         {
           "date": "2026-08-08",
