@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-08-09",
+          "title": "未来チケット提案の本番初SNS告知＋utm_source流入計測の実装 0.2時間",
+          "category": "実装",
+          "outputs": "cidao: migrations/20260806120000_page_views_source.sql, PageViewTracker.tsx, api/track/view/route.ts, admin/analytics/page.tsx(SNS流入元別), Threads/IG本番告知2件",
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "既存提案「未来チケット」をThreads/IGへ本番初告知（中司氏指示）。utm_sourceをホワイトリスト検証で記録し分析ページに媒体別流入を追加、E2E検証済み。8/6実装分(1.9h)との同一セッション累計2.1h。session: 4c86305c-8dbf-4b0e-be8e-c362dfbb3ccd / output: 207,303 / cost: $115.11"
+        },
+        {
+          "date": "2026-08-09",
           "title": "🔗 Shake Hands Japan の団体重複を統合し、活動実績の紐づけを修復 0.3時間",
           "category": "保守",
           "outputs": [
