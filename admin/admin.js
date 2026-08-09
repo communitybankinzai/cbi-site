@@ -1516,9 +1516,49 @@ const UNREAD_POLL_MS = 30000;
   // =========================================================
   // 更新履歴（changelog.json）
   // =========================================================
+  // サイト掲載中のお知らせ：手動追加。GAS 経由で repository_dispatch（news-publish）。
+  // 重複掲載の防止（同じ日付+本文は二重に載らない）はリポジトリ側 add_news.js が行う。
+  function initNewsAddForm() {
+    const btn = $('news-add-btn');
+    if (!btn || btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    const dateEl = $('news-add-date');
+    if (dateEl && !dateEl.value) {
+      const d = new Date();
+      dateEl.value = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+    }
+    btn.addEventListener('click', async () => {
+      const date = $('news-add-date').value;
+      const tag = $('news-add-tag').value;
+      const text = $('news-add-text').value.trim();
+      if (!date) { toast('日付を入力してください', 'err'); return; }
+      if (!text) { toast('本文を入力してください', 'err'); return; }
+      if (text.length > 200 || /[<>]/.test(text)) { toast('200字以内・< > 不可です', 'err'); return; }
+      if (!confirm('「' + date + '【' + tag + '】' + text + '」をサイトに掲載しますか？\n（反映まで数分かかります）')) return;
+      btn.disabled = true;
+      btn.textContent = '送信中…';
+      try {
+        const r = await gasCall({ action: 'newsAdd', password: state.password, date, tag, text });
+        if (r.ok) {
+          $('news-add-text').value = '';
+          toast('掲載を受け付けました。数分でサイトとこの一覧に反映されます', 'ok');
+        } else {
+          toast('掲載に失敗: ' + (r.error || '不明なエラー'), 'err');
+        }
+      } catch (err) {
+        toast('掲載に失敗: ' + err.message, 'err');
+      }
+      btn.disabled = false;
+      btn.textContent = '＋ 掲載する';
+    });
+  }
+
   // サイト掲載中のお知らせ（news-data.json）一覧＋削除。
   // 削除は GAS 経由で repository_dispatch（news-delete）→ Actions が反映（数分かかる）。
   async function loadNewsAdmin() {
+    initNewsAddForm();
     const list = $('news-admin-list');
     try {
       const res = await fetch('../news-data.json', { cache: 'no-store' });

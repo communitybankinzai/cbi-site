@@ -262,6 +262,25 @@
           <span class="meta-note" id="news-admin-updated"></span>
         </div>
         <p class="panel-desc">トップページ「活動報告・お知らせ」の自動掲載分。削除するとサイトから消えます（反映まで数分）。メール返信の「掲載」「削除」と同じ仕組みです。トップページに直接書かれている過去の項目はここには出ません。</p>
+        <div class="news-add-form" id="news-add-form" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-bottom:14px;padding:12px;border:1px solid var(--border,#ddd);border-radius:8px">
+          <label style="display:flex;flex-direction:column;font-size:12px;gap:4px">日付
+            <input type="date" id="news-add-date">
+          </label>
+          <label style="display:flex;flex-direction:column;font-size:12px;gap:4px">タグ
+            <select id="news-add-tag">
+              <option value="お知らせ" selected>お知らせ</option>
+              <option value="イベント">イベント</option>
+              <option value="紹介">紹介</option>
+              <option value="資料">資料</option>
+              <option value="構想">構想</option>
+              <option value="予定">予定</option>
+            </select>
+          </label>
+          <label style="display:flex;flex-direction:column;font-size:12px;gap:4px;flex:1;min-width:240px">本文（200字まで・&lt; &gt; 不可）
+            <input type="text" id="news-add-text" maxlength="200" placeholder="例: ○○まつりに出展します">
+          </label>
+          <button type="button" class="btn btn-sm" id="news-add-btn">＋ 掲載する</button>
+        </div>
         <div id="news-admin-list"><p class="empty">読み込み中…</p></div>
       </section>
       <section class="panel">
