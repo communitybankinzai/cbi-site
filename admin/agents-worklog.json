@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-08",
+  "updatedAt": "2026-08-09",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
@@ -16,6 +16,21 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-08-09",
+          "title": "CiDAO 団体削除機能のデプロイ＋削除手順の特定 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/orgs/[id]/_components/DeleteOrgSection.tsx（新規。団体名の再入力を求める確認UI、主催イベント残存時は理由を表示してボタンを無効化）",
+            "C:/Repos/cidao src/app/orgs/actions.ts（deleteOrganization を追加。is_admin チェック、団体名突き合わせ、主催イベント残存ガード、audit_logs 記録、/orgs?deleted=1 へリダイレクト）",
+            "C:/Repos/cidao src/app/orgs/[id]/edit/page.tsx（管理者のみ削除セクションを表示、主催イベント件数を取得して渡す）",
+            "C:/Repos/cidao src/lib/audit.ts（AuditAction に org.delete を追加）",
+            "検証: npm run build 成功（/orgs/[id]/edit 含む全ルート生成、エラー0件）／commit f00c8e7 を push（603fb7c..f00c8e7）／gh api で Vercel デプロイ status=success を確認／祐樹さんの実環境で対象団体の削除完了を確認"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "祐樹さんから「管理者権限あるが団体情報の削除の仕方がわからない」との相談。調査の結果、削除UI・server action はローカルに実装済みだが未コミット・未デプロイで、本番に存在しないことが原因と判明（DB側の RLS orgs_delete_admin は 2026-06-24 時点で既に本番にあった）。3択で確認のうえ A（コミット→push→デプロイ）を選択。デプロイ後に実環境で削除成功を確認済み。なお削除ボタンは誤操作防止のため団体詳細ページではなく編集ページ末尾に隔離されている設計。⚠反省点として、コミットメッセージ1行目の先頭に @ が混入した（Bash ツールで PowerShell の here-string 構文を使ったため）。CiDAO の管理画面「更新履歴」は GitHub コミットの1行目をそのまま表示するため、表示上のノイズになっている。修正には force push が必要なため未対応。session: 23653407-0429-4012-aa42-a2cac2e63133 / output: 10,638 / cost: $1.59"
+        },
         {
           "date": "2026-08-09",
           "title": "共有メールの返信・新規送信機能の実装＋権限エラー修正・署名の可視化 0.8時間",
