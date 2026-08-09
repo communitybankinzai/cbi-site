@@ -43,7 +43,8 @@
     position: relative;
     box-shadow: 0 8px 24px rgba(20,40,63,0.10);
   }
-  .tm-promise h2 { text-align: center; font-size: 1.2rem; }
+  .tm-promise h2 { text-align: center; font-size: clamp(0.95rem, 4.3vw, 1.2rem); }
+  .tm-promise h2 .nobr { white-space: nowrap; }
   .tm-promise ol { margin: 0; padding-left: 1.4em; }
   .tm-promise li { margin: 10px 0; line-height: 1.75; }
   .tm-promise li strong { color: var(--c-navy); }
@@ -159,7 +160,7 @@
   <section class="tm-section" id="promise" style="padding-top:0;">
     <div class="container">
       <div class="tm-promise">
-        <h2>参加のお約束（基本はこの3つ）</h2>
+        <h2><span class="nobr">参加のお約束（基本はこの3つ）</span></h2>
         <ol>
           <li><strong>他の方を不快にさせないこと。</strong>誹謗中傷・ハラスメント・社会通念上不適切な言動は禁止です。</li>
           <li><strong>宗教活動・政治活動、しつこい勧誘や強引な販売は禁止です。</strong>これらを目的としたご提案もお断りしています。</li>
