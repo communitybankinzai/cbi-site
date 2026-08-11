@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=20260811ledger2">
+<link rel="stylesheet" href="admin.css?v=20260811ledger3">
 </head>
 <body>
 
@@ -840,9 +840,41 @@
               <span>事業区分</span>
               <select id="ledger-project"></select>
             </label>
-            <label class="field ledger-field-wide">
+            <label class="field">
+              <span>立替者（誰が支払ったか）</span>
+              <select id="ledger-paidby">
+                <option value="">団体資金（立替なし）</option>
+                <option value="新井 則夫">新井 則夫</option>
+                <option value="小林 康子">小林 康子</option>
+                <option value="中司 祐樹">中司 祐樹</option>
+                <option value="須田 翔">須田 翔</option>
+                <option value="__custom__">その他（自由入力）</option>
+              </select>
+              <input type="text" id="ledger-paidby-custom" placeholder="立替者名を入力" hidden>
+            </label>
+            <label class="field">
               <span>摘要（内容メモ）</span>
               <input type="text" id="ledger-description" maxlength="200" placeholder="例: 朝カフェ用 紙コップ・コーヒー豆">
+            </label>
+          </div>
+          <div class="grid-3" id="ledger-fee-row" hidden>
+            <label class="field">
+              <span>会費の対象者 <em class="req">*</em></span>
+              <select id="ledger-fee-member">
+                <option value="">選択</option>
+                <option value="新井 則夫">新井 則夫</option>
+                <option value="小林 康子">小林 康子</option>
+                <option value="中司 祐樹">中司 祐樹</option>
+                <option value="須田 翔">須田 翔</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>対象月（開始）</span>
+              <input type="month" id="ledger-fee-start">
+            </label>
+            <label class="field">
+              <span>月数（1,000円/月）</span>
+              <input type="number" id="ledger-fee-count" min="1" max="24" step="1" value="1">
             </label>
           </div>
           <label class="field">
@@ -861,6 +893,20 @@
             <button type="submit" class="btn btn-primary" id="ledger-submit">登録する</button>
           </div>
         </form>
+      </section>
+
+      <!-- 会費納入状況 -->
+      <section class="panel">
+        <h2 class="panel-title">📅 会費納入状況（月額 ¥1,000）</h2>
+        <div class="ledger-table-wrap">
+          <table class="ledger-table ledger-fee-table">
+            <thead id="ledger-fee-thead"></thead>
+            <tbody id="ledger-fee-tbody">
+              <tr><td class="empty">読み込み中…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="meta-note">科目「会費収入」で登録された記録の「会費の対象者・対象月」から自動集計しています。まとめ払いは月数を指定して登録してください。</p>
       </section>
 
       <!-- フィルタ -->
@@ -892,11 +938,11 @@
             <thead>
               <tr>
                 <th>取引日</th><th>収支</th><th>科目</th><th class="ledger-th-amount">金額</th>
-                <th>取引先</th><th>摘要</th><th>事業区分</th><th>証憑</th><th></th>
+                <th>取引先</th><th>立替者</th><th>摘要</th><th>事業区分</th><th>証憑</th><th></th>
               </tr>
             </thead>
             <tbody id="ledger-tbody">
-              <tr><td colspan="9" class="empty">読み込み中…</td></tr>
+              <tr><td colspan="10" class="empty">読み込み中…</td></tr>
             </tbody>
           </table>
         </div>
@@ -1039,6 +1085,6 @@
   <div id="toast" class="toast" hidden></div>
 </section>
 
-<script src="admin.js?v=20260811ledger2"></script>
+<script src="admin.js?v=20260811ledger3"></script>
 </body>
 </html>

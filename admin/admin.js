@@ -3737,6 +3737,9 @@ const UNREAD_POLL_MS = 30000;
   // 💰 収支管理（台帳・証憑・訂正履歴）
   // =========================================================
   const LEDGER_TYPE_LABEL = { income: '収入', expense: '支出' };
+  const LEDGER_MEMBERS = ['新井 則夫', '小林 康子', '中司 祐樹', '須田 翔'];
+  const LEDGER_MONTHLY_FEE = 1000;
+  const LEDGER_FEE_ACCOUNT = '会費収入';
 
   // GAS不通時のフォールバック（正は cbi-admin-gas/Ledger.gs の LEDGER_CONST。変更時は両方更新）
   const LEDGER_FALLBACK_META = {
@@ -3771,7 +3774,8 @@ const UNREAD_POLL_MS = 30000;
       setStatus('');
     } catch (e) {
       setStatus('収支データの読み込みに失敗: ' + e.message, 'err');
-      $('ledger-tbody').innerHTML = '<tr><td colspan="9" class="empty">通信エラーのため台帳を読み込めません（科目等は入力できます）</td></tr>';
+      $('ledger-tbody').innerHTML = '<tr><td colspan="10" class="empty">通信エラーのため台帳を読み込めません（科目等は入力できます）</td></tr>';
+      $('ledger-fee-tbody').innerHTML = '<tr><td class="empty">通信エラーのため納入状況を表示できません</td></tr>';
     }
   }
 
@@ -3785,8 +3789,18 @@ const UNREAD_POLL_MS = 30000;
       $('ledger-ocr-row').hidden = $('ledger-files').files.length === 0;
     });
     $('ledger-ocr-btn').addEventListener('click', onLedgerOcr);
+    $('ledger-paidby').addEventListener('change', () => {
+      $('ledger-paidby-custom').hidden = $('ledger-paidby').value !== '__custom__';
+    });
+    $('ledger-account').addEventListener('change', updateLedgerFeeRow);
+    ['ledger-fee-member', 'ledger-fee-start', 'ledger-fee-count'].forEach(id => {
+      $(id).addEventListener('change', () => {
+        const n = Math.max(1, Number($('ledger-fee-count').value) || 1);
+        if ($('ledger-fee-member').value) $('ledger-amount').value = LEDGER_MONTHLY_FEE * n;
+      });
+    });
     $('ledger-type').addEventListener('change', () => buildLedgerAccountOptions($('ledger-type').value));
-    $('ledger-fy').addEventListener('change', renderLedgerSummary);
+    $('ledger-fy').addEventListener('change', () => { renderLedgerSummary(); renderLedgerFeeTable(); });
     $('ledger-csv').addEventListener('click', exportLedgerCsv);
     ['ledger-search', 'ledger-filter-from', 'ledger-filter-to', 'ledger-filter-type',
      'ledger-filter-account', 'ledger-filter-project', 'ledger-show-void'].forEach(id => {
@@ -3821,6 +3835,26 @@ const UNREAD_POLL_MS = 30000;
     if (list.includes(current)) $('ledger-account').value = current;
   }
 
+  function updateLedgerFeeRow() {
+    const isFee = $('ledger-type').value === 'income' && $('ledger-account').value === LEDGER_FEE_ACCOUNT;
+    $('ledger-fee-row').hidden = !isFee;
+    if (isFee && !$('ledger-fee-start').value) {
+      $('ledger-fee-start').value = new Date().toISOString().slice(0, 7);
+    }
+  }
+
+  // "2026-04" + 3ヶ月 → "2026-04,2026-05,2026-06"
+  function ledgerFeeMonths(startYm, count) {
+    if (!/^\d{4}-\d{2}$/.test(startYm)) return '';
+    let [y, m] = startYm.split('-').map(Number);
+    const list = [];
+    for (let i = 0; i < count; i++) {
+      list.push(`${y}-${String(m).padStart(2, '0')}`);
+      m++; if (m > 12) { m = 1; y++; }
+    }
+    return list.join(',');
+  }
+
   // 会計年度（4月始まり）。"2026" = 2026-04-01〜2027-03-31（R8年度）
   function fiscalYearOf(dateStr) {
     const y = Number(String(dateStr).slice(0, 4));
@@ -3844,7 +3878,49 @@ const UNREAD_POLL_MS = 30000;
 
   function renderLedger() {
     renderLedgerSummary();
+    renderLedgerFeeTable();
     renderLedgerList();
+  }
+
+  // 会費納入状況: 年度のメンバー×12ヶ月マトリクス
+  function renderLedgerFeeTable() {
+    const fySel = $('ledger-fy').value;
+    const fy = fySel ? Number(fySel) : fiscalYearOf(new Date().toISOString().slice(0, 10));
+    // 年度の12ヶ月（4月〜翌3月）
+    const months = [];
+    for (let i = 0; i < 12; i++) {
+      const m = 4 + i;
+      months.push(m <= 12 ? `${fy}-${String(m).padStart(2, '0')}` : `${fy + 1}-${String(m - 12).padStart(2, '0')}`);
+    }
+    // 納入済みマップ: member -> Set(月)
+    const paid = {};
+    state.ledger.entries.forEach(e => {
+      if (e.status !== 'active' || e.type !== 'income' || e.account !== LEDGER_FEE_ACCOUNT || !e.feeMember) return;
+      if (!paid[e.feeMember]) paid[e.feeMember] = new Set();
+      String(e.feeMonths || '').split(',').filter(Boolean).forEach(m => paid[e.feeMember].add(m.trim()));
+    });
+    // 行: 固定メンバー + 台帳に登場するその他の対象者
+    const members = [...LEDGER_MEMBERS];
+    Object.keys(paid).forEach(m => { if (!members.includes(m)) members.push(m); });
+
+    const nowYm = new Date().toISOString().slice(0, 7);
+    $('ledger-fee-thead').innerHTML = '<tr><th>メンバー</th>' +
+      months.map(m => `<th class="ledger-fee-th">${Number(m.slice(5))}月</th>`).join('') +
+      '<th class="ledger-fee-th">未納</th></tr>';
+    $('ledger-fee-tbody').innerHTML = members.map(name => {
+      let unpaid = 0;
+      const cells = months.map(m => {
+        const isPaid = paid[name] && paid[name].has(m);
+        if (isPaid) return '<td class="ledger-fee-cell is-paid">✔</td>';
+        if (m > nowYm) return '<td class="ledger-fee-cell is-future">—</td>';
+        unpaid++;
+        return '<td class="ledger-fee-cell is-unpaid">未</td>';
+      }).join('');
+      const unpaidLabel = unpaid > 0
+        ? `<td class="ledger-fee-cell is-unpaid-total">${unpaid}ヶ月<br>¥${(unpaid * LEDGER_MONTHLY_FEE).toLocaleString()}</td>`
+        : '<td class="ledger-fee-cell is-paid">0</td>';
+      return `<tr><td>${escapeHtml(name)}</td>${cells}${unpaidLabel}</tr>`;
+    }).join('');
   }
 
   function renderLedgerSummary() {
@@ -3891,7 +3967,7 @@ const UNREAD_POLL_MS = 30000;
     $('ledger-count').textContent = rows.length + '件';
     const tbody = $('ledger-tbody');
     if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" class="empty">該当する記録がありません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" class="empty">該当する記録がありません</td></tr>';
       return;
     }
     tbody.innerHTML = rows.map(e => {
@@ -3907,6 +3983,7 @@ const UNREAD_POLL_MS = 30000;
         <td>${escapeHtml(e.account)}</td>
         <td class="ledger-td-amount">¥${(Number(e.amount) || 0).toLocaleString()}</td>
         <td>${escapeHtml(e.counterparty)}</td>
+        <td>${escapeHtml(e.paidBy || '')}</td>
         <td class="ledger-td-desc">${escapeHtml(e.description)}</td>
         <td>${escapeHtml(e.project)}</td>
         <td>${evCell}</td>
@@ -3915,7 +3992,7 @@ const UNREAD_POLL_MS = 30000;
           <button type="button" class="btn-link" data-ledger-act="edit" data-id="${escapeAttr(e.id)}" ${voided ? 'disabled' : ''}>訂正</button>
         </td>
       </tr>
-      <tr class="ledger-detail-row" data-detail-for="${escapeAttr(e.id)}" hidden><td colspan="9"></td></tr>`;
+      <tr class="ledger-detail-row" data-detail-for="${escapeAttr(e.id)}" hidden><td colspan="10"></td></tr>`;
     }).join('');
     tbody.querySelectorAll('[data-ledger-act]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -3963,7 +4040,7 @@ const UNREAD_POLL_MS = 30000;
       ? '<ul class="ledger-history-list">' + history.slice().reverse().map(h => {
           let changes = [];
           try { changes = JSON.parse(h.changes || '[]'); } catch (_) {}
-          const fieldLabel = { date: '取引日', type: '収支', account: '科目', amount: '金額', counterparty: '取引先', description: '摘要', project: '事業区分', paymentMethod: '支払方法', status: '状態', evidence: '証憑' };
+          const fieldLabel = { date: '取引日', type: '収支', account: '科目', amount: '金額', counterparty: '取引先', description: '摘要', project: '事業区分', paymentMethod: '支払方法', paidBy: '立替者', feeMember: '会費対象者', feeMonths: '会費対象月', status: '状態', evidence: '証憑' };
           const actLabel = { create: '登録', update: '訂正', void: '無効化', restore: '復元', evidence_add: '証憑追加', evidence_remove: '証憑解除' };
           const detail = changes.map(c => `${fieldLabel[c.field] || c.field}: ${escapeHtml(String(c.before))} → ${escapeHtml(String(c.after))}`).join('、');
           return `<li><span class="ledger-history-time">${escapeHtml(String(h.createdAt).replace('T', ' ').slice(0, 16))}</span>
@@ -4005,6 +4082,23 @@ const UNREAD_POLL_MS = 30000;
     $('ledger-description').value = e.description;
     $('ledger-project').value = e.project;
     $('ledger-payment').value = e.paymentMethod;
+    const pb = String(e.paidBy || '');
+    const pbOptions = [...$('ledger-paidby').options].map(o => o.value);
+    if (pbOptions.includes(pb)) {
+      $('ledger-paidby').value = pb;
+      $('ledger-paidby-custom').hidden = true;
+    } else {
+      $('ledger-paidby').value = '__custom__';
+      $('ledger-paidby-custom').hidden = false;
+      $('ledger-paidby-custom').value = pb;
+    }
+    updateLedgerFeeRow();
+    const months = String(e.feeMonths || '').split(',').filter(Boolean);
+    $('ledger-fee-member').value = String(e.feeMember || '');
+    if (months.length) {
+      $('ledger-fee-start').value = months[0];
+      $('ledger-fee-count').value = months.length;
+    }
     $('ledger-reason-wrap').hidden = false;
     $('ledger-reason').value = '';
     $('ledger-form-title').textContent = '記録の訂正（履歴が残ります）';
@@ -4019,6 +4113,10 @@ const UNREAD_POLL_MS = 30000;
     $('ledger-entry-id').value = '';
     $('ledger-date').value = new Date().toISOString().slice(0, 10);
     buildLedgerAccountOptions($('ledger-type').value);
+    $('ledger-paidby-custom').hidden = true;
+    $('ledger-fee-row').hidden = true;
+    $('ledger-fee-count').value = 1;
+    $('ledger-ocr-row').hidden = true;
     $('ledger-reason-wrap').hidden = true;
     $('ledger-form-title').textContent = '新規登録';
     $('ledger-form-cancel').hidden = true;
@@ -4048,10 +4146,21 @@ const UNREAD_POLL_MS = 30000;
       if (x.date && /^\d{4}-\d{2}-\d{2}$/.test(x.date)) $('ledger-date').value = x.date;
       if (x.amount != null && isFinite(Number(x.amount))) $('ledger-amount').value = Math.round(Number(x.amount));
       if (x.counterparty) $('ledger-counterparty').value = String(x.counterparty);
-      if (x.description) $('ledger-description').value = String(x.description);
+      let desc = x.description ? String(x.description) : '';
+      // 外貨建ては円換算の根拠（額面・レート・レート日）を摘要に残す（税務対応）
+      if (x.originalAmount != null && x.exchangeRate) {
+        const sym = { USD: '$', EUR: '€', GBP: '£' }[x.currency] || (x.currency + ' ');
+        desc += `（${sym}${x.originalAmount} → ¥${Math.round(Number(x.amount)).toLocaleString()}、レート${x.exchangeRate} ${x.rateDate}）`;
+      }
+      if (desc) $('ledger-description').value = desc;
       if (x.account) $('ledger-account').value = String(x.account);
       const confLabel = { high: '高', medium: '中', low: '低' };
-      toast(`読み取りました（確信度: ${confLabel[x.confidence] || '不明'}）。内容を確認してから登録してください`, 'ok', 5000);
+      if (x.fxWarning) {
+        $('ledger-amount').value = '';
+        toast(x.fxWarning, 'err', 8000);
+      } else {
+        toast(`読み取りました（確信度: ${confLabel[x.confidence] || '不明'}）。内容を確認してから登録してください`, 'ok', 5000);
+      }
     } catch (e) {
       toast('AI読み取りに失敗: ' + e.message, 'err');
     } finally {
@@ -4076,6 +4185,8 @@ const UNREAD_POLL_MS = 30000;
     const oversize = files.find(f => f.size > 10 * 1024 * 1024);
     if (oversize) { toast(`${oversize.name} は10MBを超えています`, 'err'); return; }
 
+    const paidBySel = $('ledger-paidby').value;
+    const isFee = $('ledger-type').value === 'income' && $('ledger-account').value === LEDGER_FEE_ACCOUNT;
     const entry = {
       date: $('ledger-date').value,
       type: $('ledger-type').value,
@@ -4085,9 +4196,14 @@ const UNREAD_POLL_MS = 30000;
       description: $('ledger-description').value.trim(),
       project: $('ledger-project').value,
       paymentMethod: $('ledger-payment').value,
+      paidBy: paidBySel === '__custom__' ? $('ledger-paidby-custom').value.trim() : paidBySel,
+      feeMember: isFee ? $('ledger-fee-member').value : '',
+      feeMonths: isFee ? ledgerFeeMonths($('ledger-fee-start').value, Math.max(1, Number($('ledger-fee-count').value) || 1)) : '',
       reason: $('ledger-reason').value.trim(),
     };
     if (!entry.account) { toast('勘定科目を選択してください', 'err'); return; }
+    if (isFee && !entry.feeMember) { toast('会費収入は「会費の対象者」を選択してください', 'err'); return; }
+    if (isFee && !entry.feeMonths) { toast('会費収入は「対象月」を入力してください', 'err'); return; }
 
     btn.disabled = true;
     try {
@@ -4170,13 +4286,14 @@ const UNREAD_POLL_MS = 30000;
 
   function exportLedgerCsv() {
     const rows = ledgerFilteredEntries();
-    const header = ['取引日', '収支', '勘定科目', '金額', '取引先', '摘要', '事業区分', '支払方法', '証憑数', '状態', '登録者', 'ID'];
+    const header = ['取引日', '収支', '勘定科目', '金額', '取引先', '立替者', '摘要', '事業区分', '支払方法', '会費対象者', '会費対象月', '証憑数', '状態', '登録者', 'ID'];
     const csvEscape = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
     const lines = [header.map(csvEscape).join(',')];
     rows.forEach(e => {
       lines.push([
         e.date, LEDGER_TYPE_LABEL[e.type] || e.type, e.account, e.amount,
-        e.counterparty, e.description, e.project, e.paymentMethod,
+        e.counterparty, e.paidBy, e.description, e.project, e.paymentMethod,
+        e.feeMember, e.feeMonths,
         ledgerEvidencesOf(e.id).length, e.status === 'active' ? '有効' : '無効',
         e.registeredBy, e.id,
       ].map(csvEscape).join(','));
