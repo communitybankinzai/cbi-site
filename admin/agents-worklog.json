@@ -3317,20 +3317,20 @@
       "actuals": [
         {
           "date": "2026-08-11",
-          "title": "収支管理ツール実装（GAS台帳API＋管理画面タブ＋claspデプロイ）0.5時間",
+          "title": "収支管理ツール実装（GAS台帳API＋管理画面タブ＋証憑AI読み取り）0.8時間",
           "category": "実装",
           "outputs": [
-            "cbi-admin-gas/Ledger.gs（新規: 台帳・証憑・訂正履歴API）",
-            "cbi-admin-gas/Code.gs（シート定義3件・ディスパッチ9アクション追加）",
+            "cbi-admin-gas/Ledger.gs（新規: 台帳・証憑・訂正履歴・AI読み取りAPI）",
+            "cbi-admin-gas/Code.gs（シート定義3件・ディスパッチ10アクション追加）",
             "cbi-admin-gas/appsscript.json（Driveスコープ追加）",
             "cbi-admin-gas/.claspignore（Ledger.gs追加）",
-            "site/admin/index.html（収支管理タブ・パネル）",
-            "site/admin/admin.js（収支管理UI一式）",
+            "site/admin/index.html（収支管理タブ・パネル・AI読み取りボタン）",
+            "site/admin/admin.js（収支管理UI一式・科目フォールバック・AI自動入力）",
             "site/admin/admin.css（収支管理スタイル）"
           ],
-          "hours": 0.5,
+          "hours": 0.8,
           "partnerApproved": false,
-          "note": "運営者向け収支管理ツールの新規実装。保存先3択・対象範囲3択・訂正履歴方式3択をユーザー確認のうえ、GAS＋Googleドライブ／団体会計全体／訂正履歴自動記録で確定。検証: JS構文チェック3ファイルOK、ローカルプレビューでタブ表示・エラーハンドリング動作確認、clasp push＋既存デプロイID上書き（@35、URL維持）。Driveスコープ追加に伴うGAS再承認が未完了（ユーザー操作待ち）のため、承認後の実登録テストは次セッション。session: 3782901c-0fc6-49b9-890d-119b53011012 / output: 48,647 / cost: $13.05"
+          "note": "運営者向け収支管理ツールの新規実装。保存先3択・対象範囲3択・訂正履歴方式3択をユーザー確認のうえ、GAS＋Googleドライブ／団体会計全体／訂正履歴自動記録で確定。追加要望により証憑AI読み取り（Gemini 2.5 Flash、取引日・金額・取引先・科目の自動入力）とGAS不通時の科目フォールバックも実装。検証: JS構文チェックOK、ローカルプレビューでタブ表示・科目フォールバック・エラーハンドリング動作確認、clasp push＋既存デプロイID上書き（@38、URL維持）。Driveスコープ追加に伴うGAS 403（承認問題）が未解消のため、実登録・AI読み取りの実地テストは403解消後。session: 3782901c-0fc6-49b9-890d-119b53011012 / output: 81,758 / cost: $24.60"
         },
         {
           "date": "2026-07-27",

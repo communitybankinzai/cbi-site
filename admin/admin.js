@@ -3738,8 +3738,22 @@ const UNREAD_POLL_MS = 30000;
   // =========================================================
   const LEDGER_TYPE_LABEL = { income: '収入', expense: '支出' };
 
+  // GAS不通時のフォールバック（正は cbi-admin-gas/Ledger.gs の LEDGER_CONST。変更時は両方更新）
+  const LEDGER_FALLBACK_META = {
+    accounts: {
+      income: ['会費収入', '寄付金収入', '助成金・補助金収入', '委託事業収入', '事業収益', '雑収入'],
+      expense: ['謝金', '人件費', '旅費交通費', '消耗品費', '印刷製本費', '通信運搬費', '会場費', '賃借料', '委託費', 'AI関連費', '広告宣伝費', '保険料', '手数料', '租税公課', '雑費'],
+    },
+    projects: ['市委託事業（このゆびとまれ）', 'CiDAO運営', '団体運営（共通）', 'その他'],
+    paymentMethods: ['現金', '銀行振込', 'クレジットカード', '電子マネー・QR', '口座引落', 'その他'],
+  };
+
   async function initLedger() {
     bindLedgerEvents();
+    // 科目等のマスタは即座にフォールバックで構築（GAS不通でもフォームを使えるように）
+    state.ledger.meta = LEDGER_FALLBACK_META;
+    buildLedgerSelects();
+    $('ledger-date').value = new Date().toISOString().slice(0, 10);
     setStatus('収支データを読み込み中…');
     try {
       const [meta, list] = await Promise.all([
@@ -3753,11 +3767,11 @@ const UNREAD_POLL_MS = 30000;
       state.ledger.loaded = true;
       buildLedgerSelects();
       buildLedgerFySelect();
-      $('ledger-date').value = new Date().toISOString().slice(0, 10);
       renderLedger();
       setStatus('');
     } catch (e) {
       setStatus('収支データの読み込みに失敗: ' + e.message, 'err');
+      $('ledger-tbody').innerHTML = '<tr><td colspan="9" class="empty">通信エラーのため台帳を読み込めません（科目等は入力できます）</td></tr>';
     }
   }
 
@@ -3767,6 +3781,10 @@ const UNREAD_POLL_MS = 30000;
     ledgerEventsBound = true;
     $('ledger-form').addEventListener('submit', onLedgerSubmit);
     $('ledger-form-cancel').addEventListener('click', resetLedgerForm);
+    $('ledger-files').addEventListener('change', () => {
+      $('ledger-ocr-row').hidden = $('ledger-files').files.length === 0;
+    });
+    $('ledger-ocr-btn').addEventListener('click', onLedgerOcr);
     $('ledger-type').addEventListener('change', () => buildLedgerAccountOptions($('ledger-type').value));
     $('ledger-fy').addEventListener('change', renderLedgerSummary);
     $('ledger-csv').addEventListener('click', exportLedgerCsv);
@@ -4005,6 +4023,41 @@ const UNREAD_POLL_MS = 30000;
     $('ledger-form-title').textContent = '新規登録';
     $('ledger-form-cancel').hidden = true;
     $('ledger-submit').textContent = '登録する';
+  }
+
+  async function onLedgerOcr() {
+    const files = $('ledger-files').files;
+    if (!files.length) { toast('先に証憑ファイルを選択してください', 'err'); return; }
+    const file = files[0];
+    if (file.size > 10 * 1024 * 1024) { toast(`${file.name} は10MBを超えています`, 'err'); return; }
+    const btn = $('ledger-ocr-btn');
+    btn.disabled = true;
+    btn.textContent = '🤖 読み取り中…（10秒ほどかかります）';
+    try {
+      const base64 = await readFileAsBase64(file);
+      const res = await gasCall({
+        action: 'ledgerOcr', password: state.password, actor: state.me,
+        file: { filename: file.name, mimeType: file.type || 'application/octet-stream', base64 },
+      });
+      if (!res.ok) throw new Error(res.error);
+      const x = res.extracted || {};
+      if (x.type === 'income' || x.type === 'expense') {
+        $('ledger-type').value = x.type;
+        buildLedgerAccountOptions(x.type);
+      }
+      if (x.date && /^\d{4}-\d{2}-\d{2}$/.test(x.date)) $('ledger-date').value = x.date;
+      if (x.amount != null && isFinite(Number(x.amount))) $('ledger-amount').value = Math.round(Number(x.amount));
+      if (x.counterparty) $('ledger-counterparty').value = String(x.counterparty);
+      if (x.description) $('ledger-description').value = String(x.description);
+      if (x.account) $('ledger-account').value = String(x.account);
+      const confLabel = { high: '高', medium: '中', low: '低' };
+      toast(`読み取りました（確信度: ${confLabel[x.confidence] || '不明'}）。内容を確認してから登録してください`, 'ok', 5000);
+    } catch (e) {
+      toast('AI読み取りに失敗: ' + e.message, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🤖 AIで読み取って自動入力';
+    }
   }
 
   function readFileAsBase64(file) {

@@ -2413,3 +2413,5 @@ body.mail-splitting { cursor: col-resize; user-select: none; }
   .ledger-summary { grid-template-columns: repeat(2, 1fr); }
   .ledger-field-wide { grid-column: auto; }
 }
+
+.ledger-ocr-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 8px; }
