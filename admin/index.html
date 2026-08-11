@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=20260620mail4">
+<link rel="stylesheet" href="admin.css?v=20260811ledger">
 </head>
 <body>
 
@@ -74,6 +74,7 @@
       <button type="button" class="tab-btn" data-tab="doc-comments" role="tab" aria-selected="false">💬 資料コメント</button>
       <button type="button" class="tab-btn" data-tab="sns" role="tab" aria-selected="false">📣 自動投稿</button>
       <button type="button" class="tab-btn" data-tab="bug-reports" role="tab" aria-selected="false">🐛 不具合レポート</button>
+      <button type="button" class="tab-btn" data-tab="ledger" role="tab" aria-selected="false">💰 収支管理</button>
     </nav>
 
     <!-- ===== タブ: アイデア ===== -->
@@ -777,6 +778,128 @@
       </section>
     </div><!-- /tab-bug-reports -->
 
+    <!-- ===== タブ: 収支管理 ===== -->
+    <div class="tab-panel" id="tab-ledger" role="tabpanel" hidden>
+
+      <!-- サマリー -->
+      <section class="panel">
+        <h2 class="panel-title">
+          💰 収支サマリー
+          <select id="ledger-fy" class="ledger-fy-select" title="会計年度（4月〜翌3月）"></select>
+        </h2>
+        <div class="ledger-summary" id="ledger-summary">
+          <div class="ledger-sum-card"><span class="ledger-sum-label">収入</span><span class="ledger-sum-value" id="ledger-sum-income">—</span></div>
+          <div class="ledger-sum-card"><span class="ledger-sum-label">支出</span><span class="ledger-sum-value" id="ledger-sum-expense">—</span></div>
+          <div class="ledger-sum-card"><span class="ledger-sum-label">差引</span><span class="ledger-sum-value" id="ledger-sum-balance">—</span></div>
+          <div class="ledger-sum-card"><span class="ledger-sum-label">登録件数</span><span class="ledger-sum-value" id="ledger-sum-count">—</span></div>
+        </div>
+        <p class="meta-note">証憑（レシート・領収書・電子メモ等）は Google Drive「CBI_収支証憑」に年度別保存。訂正・無効化はすべて履歴に自動記録され、物理削除はできません（税務調査対応）。</p>
+      </section>
+
+      <!-- 登録・訂正フォーム -->
+      <section class="panel panel-form">
+        <h2 class="panel-title">
+          <span id="ledger-form-title">新規登録</span>
+          <button type="button" class="btn-link" id="ledger-form-cancel" hidden>キャンセル</button>
+        </h2>
+        <form id="ledger-form" class="idea-form">
+          <input type="hidden" id="ledger-entry-id">
+          <div class="grid-3">
+            <label class="field">
+              <span>取引日 <em class="req">*</em></span>
+              <input type="date" id="ledger-date" required>
+            </label>
+            <label class="field">
+              <span>収支 <em class="req">*</em></span>
+              <select id="ledger-type" required>
+                <option value="expense">支出</option>
+                <option value="income">収入</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>勘定科目 <em class="req">*</em></span>
+              <select id="ledger-account" required></select>
+            </label>
+          </div>
+          <div class="grid-3">
+            <label class="field">
+              <span>金額（円） <em class="req">*</em></span>
+              <input type="number" id="ledger-amount" required min="1" step="1" inputmode="numeric" placeholder="例: 1980">
+            </label>
+            <label class="field">
+              <span>取引先 <em class="req">*</em></span>
+              <input type="text" id="ledger-counterparty" required maxlength="100" placeholder="例: カインズ印西店">
+            </label>
+            <label class="field">
+              <span>支払方法</span>
+              <select id="ledger-payment"></select>
+            </label>
+          </div>
+          <div class="grid-3">
+            <label class="field">
+              <span>事業区分</span>
+              <select id="ledger-project"></select>
+            </label>
+            <label class="field ledger-field-wide">
+              <span>摘要（内容メモ）</span>
+              <input type="text" id="ledger-description" maxlength="200" placeholder="例: 朝カフェ用 紙コップ・コーヒー豆">
+            </label>
+          </div>
+          <label class="field">
+            <span>証憑ファイル（レシート写真・PDF・スクリーンショット等。複数可、1ファイル10MBまで）</span>
+            <input type="file" id="ledger-files" multiple accept="image/*,application/pdf">
+          </label>
+          <label class="field" id="ledger-reason-wrap" hidden>
+            <span>訂正理由（履歴に記録されます）</span>
+            <input type="text" id="ledger-reason" maxlength="200" placeholder="例: 金額の入力ミスを修正">
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="ledger-submit">登録する</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- フィルタ -->
+      <section class="panel panel-filter">
+        <div class="filter-row">
+          <input type="search" id="ledger-search" placeholder="検索（取引先・摘要・金額）" class="search-input">
+          <input type="date" id="ledger-filter-from" title="開始日">
+          <input type="date" id="ledger-filter-to" title="終了日">
+          <select id="ledger-filter-type">
+            <option value="">収支：すべて</option>
+            <option value="income">収入</option>
+            <option value="expense">支出</option>
+          </select>
+          <select id="ledger-filter-account"><option value="">科目：すべて</option></select>
+          <select id="ledger-filter-project"><option value="">事業区分：すべて</option></select>
+          <label class="field-check ledger-void-check"><input type="checkbox" id="ledger-show-void"><span>無効分も表示</span></label>
+          <span class="filter-count" id="ledger-count">0件</span>
+        </div>
+      </section>
+
+      <!-- 一覧 -->
+      <section class="panel panel-list">
+        <h2 class="panel-title">
+          収支台帳
+          <button type="button" class="btn btn-ghost btn-sm" id="ledger-csv">CSV出力</button>
+        </h2>
+        <div class="ledger-table-wrap">
+          <table class="ledger-table">
+            <thead>
+              <tr>
+                <th>取引日</th><th>収支</th><th>科目</th><th class="ledger-th-amount">金額</th>
+                <th>取引先</th><th>摘要</th><th>事業区分</th><th>証憑</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="ledger-tbody">
+              <tr><td colspan="9" class="empty">読み込み中…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div><!-- /tab-ledger -->
+
   </main>
 
   <!-- ユーザー選択モーダル -->
@@ -912,6 +1035,6 @@
   <div id="toast" class="toast" hidden></div>
 </section>
 
-<script src="admin.js?v=20260809mailsig"></script>
+<script src="admin.js?v=20260811ledger"></script>
 </body>
 </html>

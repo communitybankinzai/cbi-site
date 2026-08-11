@@ -42,6 +42,15 @@ const UNREAD_POLL_MS = 30000;
     actualsDynamic: [],
     plansDynamic: [],
     bugReports: [],
+    ledger: {
+      loaded: false,
+      entries: [],
+      evidences: [],
+      meta: null,       // { accounts: {income:[], expense:[]}, projects: [], paymentMethods: [] }
+      editingId: null,
+      openHistoryId: null,
+      historyCache: {},  // entryId -> history rows
+    },
     mail: {
       label: 'inbox',
       query: '',
@@ -238,7 +247,7 @@ const UNREAD_POLL_MS = 30000;
       b.classList.toggle('active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports'].forEach(t => {
+    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports', 'ledger'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
     document.body.classList.toggle('mail-fullwidth', name === 'mail');
@@ -252,6 +261,7 @@ const UNREAD_POLL_MS = 30000;
     if (name === 'doc-comments' && !state.documentsLoaded) initDocComments();
     if (name === 'sns' && !state.snsLoaded) { loadSnsConfig(); loadSnsQueue(); loadFreefreeSnsConfig(); }
     if (name === 'bug-reports') loadBugReports();
+    if (name === 'ledger' && !state.ledger.loaded) initLedger();
   }
 
   // =========================================================
@@ -3722,5 +3732,409 @@ const UNREAD_POLL_MS = 30000;
       console.warn('[openDocComments] docId not found:', docId);
     }
   };
+
+  // =========================================================
+  // 💰 収支管理（台帳・証憑・訂正履歴）
+  // =========================================================
+  const LEDGER_TYPE_LABEL = { income: '収入', expense: '支出' };
+
+  async function initLedger() {
+    bindLedgerEvents();
+    setStatus('収支データを読み込み中…');
+    try {
+      const [meta, list] = await Promise.all([
+        gasCall({ action: 'ledgerMeta', password: state.password }),
+        gasCall({ action: 'ledgerList', password: state.password }),
+      ]);
+      if (!meta.ok || !list.ok) throw new Error(meta.error || list.error || 'load_failed');
+      state.ledger.meta = meta;
+      state.ledger.entries = list.entries || [];
+      state.ledger.evidences = list.evidences || [];
+      state.ledger.loaded = true;
+      buildLedgerSelects();
+      buildLedgerFySelect();
+      $('ledger-date').value = new Date().toISOString().slice(0, 10);
+      renderLedger();
+      setStatus('');
+    } catch (e) {
+      setStatus('収支データの読み込みに失敗: ' + e.message, 'err');
+    }
+  }
+
+  let ledgerEventsBound = false;
+  function bindLedgerEvents() {
+    if (ledgerEventsBound) return;
+    ledgerEventsBound = true;
+    $('ledger-form').addEventListener('submit', onLedgerSubmit);
+    $('ledger-form-cancel').addEventListener('click', resetLedgerForm);
+    $('ledger-type').addEventListener('change', () => buildLedgerAccountOptions($('ledger-type').value));
+    $('ledger-fy').addEventListener('change', renderLedgerSummary);
+    $('ledger-csv').addEventListener('click', exportLedgerCsv);
+    ['ledger-search', 'ledger-filter-from', 'ledger-filter-to', 'ledger-filter-type',
+     'ledger-filter-account', 'ledger-filter-project', 'ledger-show-void'].forEach(id => {
+      $(id).addEventListener('input', renderLedgerList);
+      $(id).addEventListener('change', renderLedgerList);
+    });
+  }
+
+  function buildLedgerSelects() {
+    const m = state.ledger.meta;
+    buildLedgerAccountOptions($('ledger-type').value);
+    const fill = (el, items, withEmpty) => {
+      el.innerHTML = (withEmpty ? '<option value="">選択</option>' : '') +
+        items.map(v => `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join('');
+    };
+    fill($('ledger-project'), m.projects, true);
+    fill($('ledger-payment'), m.paymentMethods, true);
+    const allAccounts = [...m.accounts.income, ...m.accounts.expense];
+    $('ledger-filter-account').innerHTML = '<option value="">科目：すべて</option>' +
+      allAccounts.map(v => `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join('');
+    $('ledger-filter-project').innerHTML = '<option value="">事業区分：すべて</option>' +
+      m.projects.map(v => `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join('');
+  }
+
+  function buildLedgerAccountOptions(type) {
+    const m = state.ledger.meta;
+    if (!m) return;
+    const list = type === 'income' ? m.accounts.income : m.accounts.expense;
+    const current = $('ledger-account').value;
+    $('ledger-account').innerHTML = '<option value="">選択</option>' +
+      list.map(v => `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join('');
+    if (list.includes(current)) $('ledger-account').value = current;
+  }
+
+  // 会計年度（4月始まり）。"2026" = 2026-04-01〜2027-03-31（R8年度）
+  function fiscalYearOf(dateStr) {
+    const y = Number(String(dateStr).slice(0, 4));
+    const mth = Number(String(dateStr).slice(5, 7));
+    return mth >= 4 ? y : y - 1;
+  }
+
+  function buildLedgerFySelect() {
+    const nowFy = fiscalYearOf(new Date().toISOString().slice(0, 10));
+    const fys = new Set([nowFy]);
+    state.ledger.entries.forEach(e => { if (e.date) fys.add(fiscalYearOf(e.date)); });
+    const sorted = [...fys].sort((a, b) => b - a);
+    $('ledger-fy').innerHTML = '<option value="">全期間</option>' +
+      sorted.map(fy => `<option value="${fy}">${fy}年度（R${fy - 2018}）</option>`).join('');
+    $('ledger-fy').value = String(nowFy);
+  }
+
+  function ledgerEvidencesOf(entryId) {
+    return state.ledger.evidences.filter(ev => String(ev.entryId) === String(entryId) && ev.status !== 'removed');
+  }
+
+  function renderLedger() {
+    renderLedgerSummary();
+    renderLedgerList();
+  }
+
+  function renderLedgerSummary() {
+    const fy = $('ledger-fy').value;
+    const target = state.ledger.entries.filter(e =>
+      e.status === 'active' && (!fy || fiscalYearOf(e.date) === Number(fy)));
+    let inc = 0, exp = 0;
+    target.forEach(e => {
+      const amt = Number(e.amount) || 0;
+      if (e.type === 'income') inc += amt; else exp += amt;
+    });
+    $('ledger-sum-income').textContent = '¥' + inc.toLocaleString();
+    $('ledger-sum-expense').textContent = '¥' + exp.toLocaleString();
+    $('ledger-sum-balance').textContent = '¥' + (inc - exp).toLocaleString();
+    $('ledger-sum-balance').classList.toggle('is-minus', inc - exp < 0);
+    $('ledger-sum-count').textContent = target.length + '件';
+  }
+
+  function ledgerFilteredEntries() {
+    const q = $('ledger-search').value.trim().toLowerCase();
+    const from = $('ledger-filter-from').value;
+    const to = $('ledger-filter-to').value;
+    const type = $('ledger-filter-type').value;
+    const account = $('ledger-filter-account').value;
+    const project = $('ledger-filter-project').value;
+    const showVoid = $('ledger-show-void').checked;
+    return state.ledger.entries.filter(e => {
+      if (!showVoid && e.status !== 'active') return false;
+      if (from && String(e.date) < from) return false;
+      if (to && String(e.date) > to) return false;
+      if (type && e.type !== type) return false;
+      if (account && e.account !== account) return false;
+      if (project && e.project !== project) return false;
+      if (q) {
+        const hay = [e.counterparty, e.description, String(e.amount), e.account].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    }).sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt)));
+  }
+
+  function renderLedgerList() {
+    const rows = ledgerFilteredEntries();
+    $('ledger-count').textContent = rows.length + '件';
+    const tbody = $('ledger-tbody');
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" class="empty">該当する記録がありません</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(e => {
+      const evs = ledgerEvidencesOf(e.id);
+      const voided = e.status !== 'active';
+      const evCell = evs.length
+        ? `<span class="ledger-ev-count" title="${escapeAttr(evs.map(v => v.filename).join('\n'))}">📎${evs.length}</span>`
+        : '<span class="ledger-ev-none" title="証憑未登録">—</span>';
+      return `
+      <tr class="ledger-row${voided ? ' is-void' : ''}" data-id="${escapeAttr(e.id)}">
+        <td>${escapeHtml(e.date)}</td>
+        <td><span class="ledger-badge ledger-badge-${e.type}">${LEDGER_TYPE_LABEL[e.type] || e.type}</span></td>
+        <td>${escapeHtml(e.account)}</td>
+        <td class="ledger-td-amount">¥${(Number(e.amount) || 0).toLocaleString()}</td>
+        <td>${escapeHtml(e.counterparty)}</td>
+        <td class="ledger-td-desc">${escapeHtml(e.description)}</td>
+        <td>${escapeHtml(e.project)}</td>
+        <td>${evCell}</td>
+        <td class="ledger-td-actions">
+          <button type="button" class="btn-link" data-ledger-act="detail" data-id="${escapeAttr(e.id)}">詳細</button>
+          <button type="button" class="btn-link" data-ledger-act="edit" data-id="${escapeAttr(e.id)}" ${voided ? 'disabled' : ''}>訂正</button>
+        </td>
+      </tr>
+      <tr class="ledger-detail-row" data-detail-for="${escapeAttr(e.id)}" hidden><td colspan="9"></td></tr>`;
+    }).join('');
+    tbody.querySelectorAll('[data-ledger-act]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        if (btn.dataset.ledgerAct === 'edit') editLedgerEntry(id);
+        else toggleLedgerDetail(id);
+      });
+    });
+  }
+
+  async function toggleLedgerDetail(id) {
+    const row = document.querySelector(`.ledger-detail-row[data-detail-for="${CSS.escape(id)}"]`);
+    if (!row) return;
+    if (!row.hidden) { row.hidden = true; return; }
+    document.querySelectorAll('.ledger-detail-row').forEach(r => { r.hidden = true; });
+    const cell = row.firstElementChild;
+    cell.innerHTML = '<p class="meta-note">履歴を読み込み中…</p>';
+    row.hidden = false;
+
+    const e = state.ledger.entries.find(x => String(x.id) === String(id));
+    if (!e) return;
+    let history = state.ledger.historyCache[id];
+    if (!history) {
+      try {
+        const res = await gasCall({ action: 'ledgerHistory', password: state.password, entryId: id });
+        history = res.ok ? (res.history || []) : [];
+        state.ledger.historyCache[id] = history;
+      } catch (_) { history = []; }
+    }
+    const evs = state.ledger.evidences.filter(ev => String(ev.entryId) === String(id));
+    const voided = e.status !== 'active';
+
+    const evHtml = evs.length
+      ? '<ul class="ledger-ev-list">' + evs.map(ev => `
+          <li class="${ev.status === 'removed' ? 'is-removed' : ''}">
+            <a href="${escapeAttr(ev.driveUrl)}" target="_blank" rel="noopener noreferrer">📎 ${escapeHtml(ev.filename)}</a>
+            <span class="meta-note">（${Math.round((Number(ev.size) || 0) / 1024)}KB / ${escapeHtml(String(ev.createdAt).slice(0, 10))}）</span>
+            ${ev.status === 'removed'
+              ? '<span class="ledger-badge-removed">解除済み</span>'
+              : `<button type="button" class="btn-link" data-ev-remove="${escapeAttr(ev.id)}">リンク解除</button>`}
+          </li>`).join('') + '</ul>'
+      : '<p class="meta-note">証憑は登録されていません。「訂正」からファイルを追加できます。</p>';
+
+    const historyHtml = history.length
+      ? '<ul class="ledger-history-list">' + history.slice().reverse().map(h => {
+          let changes = [];
+          try { changes = JSON.parse(h.changes || '[]'); } catch (_) {}
+          const fieldLabel = { date: '取引日', type: '収支', account: '科目', amount: '金額', counterparty: '取引先', description: '摘要', project: '事業区分', paymentMethod: '支払方法', status: '状態', evidence: '証憑' };
+          const actLabel = { create: '登録', update: '訂正', void: '無効化', restore: '復元', evidence_add: '証憑追加', evidence_remove: '証憑解除' };
+          const detail = changes.map(c => `${fieldLabel[c.field] || c.field}: ${escapeHtml(String(c.before))} → ${escapeHtml(String(c.after))}`).join('、');
+          return `<li><span class="ledger-history-time">${escapeHtml(String(h.createdAt).replace('T', ' ').slice(0, 16))}</span>
+            <strong>${actLabel[h.action] || escapeHtml(h.action)}</strong>（${escapeHtml(h.operator || '不明')}）
+            ${detail ? '｜' + detail : ''}${h.reason ? `｜理由: ${escapeHtml(h.reason)}` : ''}</li>`;
+        }).join('') + '</ul>'
+      : '<p class="meta-note">履歴はありません</p>';
+
+    cell.innerHTML = `
+      <div class="ledger-detail">
+        <h4>証憑</h4>${evHtml}
+        <h4>訂正・変更履歴</h4>${historyHtml}
+        <div class="ledger-detail-actions">
+          ${voided
+            ? `<button type="button" class="btn btn-ghost btn-sm" data-ledger-restore="${escapeAttr(id)}">復元する</button>`
+            : `<button type="button" class="btn btn-ghost btn-sm ledger-btn-void" data-ledger-void="${escapeAttr(id)}">この記録を無効にする</button>`}
+          <span class="meta-note">無効化しても記録と証憑は残ります（税務対応のため物理削除はできません）</span>
+        </div>
+      </div>`;
+
+    cell.querySelectorAll('[data-ev-remove]').forEach(b => b.addEventListener('click', () => removeLedgerEvidence(b.dataset.evRemove, id)));
+    const voidBtn = cell.querySelector('[data-ledger-void]');
+    if (voidBtn) voidBtn.addEventListener('click', () => voidLedgerEntry(id, true));
+    const restoreBtn = cell.querySelector('[data-ledger-restore]');
+    if (restoreBtn) restoreBtn.addEventListener('click', () => voidLedgerEntry(id, false));
+  }
+
+  function editLedgerEntry(id) {
+    const e = state.ledger.entries.find(x => String(x.id) === String(id));
+    if (!e) return;
+    state.ledger.editingId = id;
+    $('ledger-entry-id').value = id;
+    $('ledger-date').value = e.date;
+    $('ledger-type').value = e.type;
+    buildLedgerAccountOptions(e.type);
+    $('ledger-account').value = e.account;
+    $('ledger-amount').value = e.amount;
+    $('ledger-counterparty').value = e.counterparty;
+    $('ledger-description').value = e.description;
+    $('ledger-project').value = e.project;
+    $('ledger-payment').value = e.paymentMethod;
+    $('ledger-reason-wrap').hidden = false;
+    $('ledger-reason').value = '';
+    $('ledger-form-title').textContent = '記録の訂正（履歴が残ります）';
+    $('ledger-form-cancel').hidden = false;
+    $('ledger-submit').textContent = '訂正を保存する';
+    $('ledger-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function resetLedgerForm() {
+    state.ledger.editingId = null;
+    $('ledger-form').reset();
+    $('ledger-entry-id').value = '';
+    $('ledger-date').value = new Date().toISOString().slice(0, 10);
+    buildLedgerAccountOptions($('ledger-type').value);
+    $('ledger-reason-wrap').hidden = true;
+    $('ledger-form-title').textContent = '新規登録';
+    $('ledger-form-cancel').hidden = true;
+    $('ledger-submit').textContent = '登録する';
+  }
+
+  function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result).split(',')[1] || '');
+      r.onerror = () => reject(new Error('ファイル読み込み失敗: ' + file.name));
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function onLedgerSubmit(ev) {
+    ev.preventDefault();
+    const btn = $('ledger-submit');
+    const files = [...$('ledger-files').files];
+    const oversize = files.find(f => f.size > 10 * 1024 * 1024);
+    if (oversize) { toast(`${oversize.name} は10MBを超えています`, 'err'); return; }
+
+    const entry = {
+      date: $('ledger-date').value,
+      type: $('ledger-type').value,
+      account: $('ledger-account').value,
+      amount: Number($('ledger-amount').value),
+      counterparty: $('ledger-counterparty').value.trim(),
+      description: $('ledger-description').value.trim(),
+      project: $('ledger-project').value,
+      paymentMethod: $('ledger-payment').value,
+      reason: $('ledger-reason').value.trim(),
+    };
+    if (!entry.account) { toast('勘定科目を選択してください', 'err'); return; }
+
+    btn.disabled = true;
+    try {
+      let entryId = state.ledger.editingId;
+      if (entryId) {
+        entry.id = entryId;
+        btn.textContent = '訂正を保存中…';
+        const res = await gasCall({ action: 'ledgerUpdate', password: state.password, entry, actor: state.me });
+        if (!res.ok) throw new Error(res.error);
+        delete state.ledger.historyCache[entryId];
+      } else {
+        btn.textContent = '登録中…';
+        const res = await gasCall({ action: 'ledgerAdd', password: state.password, entry, actor: state.me });
+        if (!res.ok) throw new Error(res.error);
+        entryId = res.entry.id;
+      }
+      // 証憑を1ファイルずつアップロード
+      for (let i = 0; i < files.length; i++) {
+        btn.textContent = `証憑アップロード中… (${i + 1}/${files.length})`;
+        const base64 = await readFileAsBase64(files[i]);
+        const res = await gasCall({
+          action: 'ledgerAddEvidence', password: state.password, actor: state.me,
+          entryId, file: { filename: files[i].name, mimeType: files[i].type || 'application/octet-stream', base64 },
+        });
+        if (!res.ok) throw new Error(`証憑 ${files[i].name} の保存失敗: ${res.error}`);
+      }
+      toast(state.ledger.editingId ? '訂正を保存しました' : '登録しました', 'ok');
+      resetLedgerForm();
+      await reloadLedger();
+    } catch (e) {
+      toast('保存に失敗: ' + e.message, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = state.ledger.editingId ? '訂正を保存する' : '登録する';
+    }
+  }
+
+  async function voidLedgerEntry(id, toVoid) {
+    const reason = prompt(toVoid
+      ? 'この記録を無効にします。理由を入力してください（履歴に記録されます）'
+      : 'この記録を復元します。理由を入力してください（履歴に記録されます）');
+    if (reason === null) return;
+    try {
+      const res = await gasCall({
+        action: toVoid ? 'ledgerVoid' : 'ledgerRestore',
+        password: state.password, id, reason: reason.trim(), actor: state.me,
+      });
+      if (!res.ok) throw new Error(res.error);
+      delete state.ledger.historyCache[id];
+      toast(toVoid ? '無効にしました' : '復元しました', 'ok');
+      await reloadLedger();
+    } catch (e) {
+      toast('操作に失敗: ' + e.message, 'err');
+    }
+  }
+
+  async function removeLedgerEvidence(evidenceId, entryId) {
+    const reason = prompt('この証憑のリンクを解除します。理由を入力してください（Drive上のファイルは削除されません）');
+    if (reason === null) return;
+    try {
+      const res = await gasCall({ action: 'ledgerRemoveEvidence', password: state.password, id: evidenceId, reason: reason.trim(), actor: state.me });
+      if (!res.ok) throw new Error(res.error);
+      delete state.ledger.historyCache[entryId];
+      toast('証憑リンクを解除しました', 'ok');
+      await reloadLedger();
+    } catch (e) {
+      toast('解除に失敗: ' + e.message, 'err');
+    }
+  }
+
+  async function reloadLedger() {
+    const res = await gasCall({ action: 'ledgerList', password: state.password });
+    if (res.ok) {
+      state.ledger.entries = res.entries || [];
+      state.ledger.evidences = res.evidences || [];
+      buildLedgerFySelect();
+      renderLedger();
+    }
+  }
+
+  function exportLedgerCsv() {
+    const rows = ledgerFilteredEntries();
+    const header = ['取引日', '収支', '勘定科目', '金額', '取引先', '摘要', '事業区分', '支払方法', '証憑数', '状態', '登録者', 'ID'];
+    const csvEscape = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+    const lines = [header.map(csvEscape).join(',')];
+    rows.forEach(e => {
+      lines.push([
+        e.date, LEDGER_TYPE_LABEL[e.type] || e.type, e.account, e.amount,
+        e.counterparty, e.description, e.project, e.paymentMethod,
+        ledgerEvidencesOf(e.id).length, e.status === 'active' ? '有効' : '無効',
+        e.registeredBy, e.id,
+      ].map(csvEscape).join(','));
+    });
+    // BOM付きUTF-8（Excelで文字化けさせない）
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'CBI収支台帳_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
 
 })();

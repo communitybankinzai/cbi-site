@@ -2329,3 +2329,87 @@ body.mail-splitting { cursor: col-resize; user-select: none; }
   .mail-detail-head { flex-wrap: wrap; }
   .mail-detail-subject { font-size: 1.05rem; line-height: 1.4; }
 }
+
+/* =========================================================
+   💰 収支管理タブ
+   ========================================================= */
+.ledger-fy-select {
+  margin-left: auto;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  background: var(--c-paper);
+}
+
+.ledger-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 10px 0 4px;
+}
+.ledger-sum-card {
+  background: var(--c-bg-alt);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ledger-sum-label { font-size: 0.78rem; color: var(--c-ink-sub); }
+.ledger-sum-value { font-size: 1.25rem; font-weight: 700; color: var(--c-navy); font-variant-numeric: tabular-nums; }
+.ledger-sum-value.is-minus { color: var(--c-danger); }
+
+.ledger-field-wide { grid-column: span 2; }
+.field .req { color: var(--c-danger); font-style: normal; }
+.ledger-void-check { white-space: nowrap; font-size: 0.82rem; }
+
+.ledger-table-wrap { overflow-x: auto; }
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+.ledger-table th {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--c-line);
+  color: var(--c-ink-sub);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ledger-table td { padding: 8px 10px; border-bottom: 1px solid var(--c-line); vertical-align: top; }
+.ledger-th-amount, .ledger-td-amount { text-align: right; }
+.ledger-td-amount { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.ledger-td-desc { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ledger-td-actions { white-space: nowrap; }
+.ledger-row.is-void td { opacity: 0.45; text-decoration: line-through; }
+.ledger-row.is-void .ledger-td-actions { text-decoration: none; }
+
+.ledger-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ledger-badge-income { background: rgba(45, 90, 61, 0.12); color: var(--c-green); }
+.ledger-badge-expense { background: rgba(181, 58, 58, 0.10); color: var(--c-danger); }
+.ledger-ev-count { cursor: help; }
+.ledger-ev-none { color: var(--c-ink-sub); }
+
+.ledger-detail-row > td { background: var(--c-bg); padding: 12px 16px; }
+.ledger-detail h4 { margin: 8px 0 4px; font-size: 0.85rem; color: var(--c-navy); }
+.ledger-ev-list, .ledger-history-list { margin: 4px 0; padding-left: 18px; }
+.ledger-ev-list li, .ledger-history-list li { margin: 3px 0; font-size: 0.84rem; }
+.ledger-ev-list li.is-removed a { text-decoration: line-through; opacity: 0.5; }
+.ledger-badge-removed { font-size: 0.75rem; color: var(--c-ink-sub); margin-left: 6px; }
+.ledger-history-time { color: var(--c-ink-sub); font-variant-numeric: tabular-nums; margin-right: 6px; }
+.ledger-detail-actions { margin-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ledger-btn-void { color: var(--c-danger); border-color: var(--c-danger); }
+
+@media (max-width: 720px) {
+  .ledger-summary { grid-template-columns: repeat(2, 1fr); }
+  .ledger-field-wide { grid-column: auto; }
+}
