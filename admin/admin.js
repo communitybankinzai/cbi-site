@@ -3803,6 +3803,7 @@ const UNREAD_POLL_MS = 30000;
     $('ledger-type').addEventListener('change', () => buildLedgerAccountOptions($('ledger-type').value));
     $('ledger-fy').addEventListener('change', () => { renderLedgerSummary(); renderLedgerFeeTable(); });
     $('ledger-csv').addEventListener('click', exportLedgerCsv);
+    $('ledger-report').addEventListener('click', openLedgerReport);
     ['ledger-search', 'ledger-filter-from', 'ledger-filter-to', 'ledger-filter-type',
      'ledger-filter-account', 'ledger-filter-project', 'ledger-filter-paidby', 'ledger-show-void'].forEach(id => {
       $(id).addEventListener('input', renderLedgerList);
@@ -4399,6 +4400,105 @@ const UNREAD_POLL_MS = 30000;
       buildLedgerFySelect();
       renderLedger();
     }
+  }
+
+  // 決算資料（収支計算書）を印刷用ウィンドウで生成
+  function openLedgerReport() {
+    const fySel = $('ledger-fy').value;
+    const fy = fySel ? Number(fySel) : fiscalYearOf(new Date().toISOString().slice(0, 10));
+    const fyStart = `${fy}-04-01`;
+    const fyEnd = `${fy + 1}-03-31`;
+    const active = state.ledger.entries.filter(e => e.status === 'active');
+    const inFy = e => { const d = ledgerDateStr(e.date); return d >= fyStart && d <= fyEnd; };
+
+    // 前期繰越金 = 年度開始日より前の全収支累計（台帳運用開始前の繰越は「雑収入」等での登録が必要）
+    let carryOver = 0;
+    active.forEach(e => {
+      if (ledgerDateStr(e.date) < fyStart) carryOver += (e.type === 'income' ? 1 : -1) * (Number(e.amount) || 0);
+    });
+
+    // 科目別・事業区分別集計
+    const m = state.ledger.meta || LEDGER_FALLBACK_META;
+    const sumBy = (list, key) => {
+      const map = {};
+      list.forEach(e => { const k = e[key] || '（未設定）'; map[k] = (map[k] || 0) + (Number(e.amount) || 0); });
+      return map;
+    };
+    const fyEntries = active.filter(inFy);
+    const incomes = fyEntries.filter(e => e.type === 'income');
+    const expenses = fyEntries.filter(e => e.type === 'expense');
+    const incByAcc = sumBy(incomes, 'account');
+    const expByAcc = sumBy(expenses, 'account');
+    const incTotal = incomes.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const expTotal = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const yen = v => '¥' + v.toLocaleString();
+
+    const accRows = (defined, byAcc) => {
+      const names = [...defined.filter(a => byAcc[a]), ...Object.keys(byAcc).filter(a => !defined.includes(a))];
+      return names.map(a => `<tr><td>${escapeHtml(a)}</td><td class="num">${yen(byAcc[a])}</td></tr>`).join('');
+    };
+    const projRows = () => {
+      const projs = [...new Set(fyEntries.map(e => e.project || '（未設定）'))];
+      return projs.map(p => {
+        const pi = incomes.filter(e => (e.project || '（未設定）') === p).reduce((s, e) => s + Number(e.amount || 0), 0);
+        const pe = expenses.filter(e => (e.project || '（未設定）') === p).reduce((s, e) => s + Number(e.amount || 0), 0);
+        return `<tr><td>${escapeHtml(p)}</td><td class="num">${yen(pi)}</td><td class="num">${yen(pe)}</td><td class="num">${yen(pi - pe)}</td></tr>`;
+      }).join('');
+    };
+
+    const reiwa = fy - 2018;
+    const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>収支計算書 ${fy}年度（R${reiwa}）</title>
+<style>
+  body { font-family: "Noto Sans JP", "Yu Gothic", sans-serif; color: #1a2330; margin: 40px; font-size: 13px; }
+  h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
+  .sub { text-align: center; color: #4a5663; margin-bottom: 24px; }
+  h2 { font-size: 15px; border-bottom: 2px solid #1e3a5f; padding-bottom: 4px; margin: 24px 0 8px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
+  th, td { border: 1px solid #999; padding: 6px 10px; text-align: left; }
+  th { background: #f1ece0; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .total td { font-weight: 700; background: #faf8f3; }
+  .grand td { font-weight: 700; background: #e8effa; }
+  .note { color: #4a5663; font-size: 11px; margin-top: 16px; }
+  .print-btn { position: fixed; top: 10px; right: 10px; padding: 8px 16px; }
+  @media print { .print-btn { display: none; } body { margin: 10mm; } }
+</style></head><body>
+<button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
+<h1>収支計算書</h1>
+<p class="sub">Community Bank INZAI（CBI）<br>${fy}年度（令和${reiwa}年度）：${fy}年4月1日〜${fy + 1}年3月31日<br>作成日: ${new Date().toISOString().slice(0, 10)}</p>
+<h2>Ⅰ 収入の部</h2>
+<table><tr><th>科目</th><th class="num">金額</th></tr>
+${accRows(m.accounts.income, incByAcc) || '<tr><td colspan="2">（収入なし）</td></tr>'}
+<tr class="total"><td>収入合計</td><td class="num">${yen(incTotal)}</td></tr></table>
+<h2>Ⅱ 支出の部</h2>
+<table><tr><th>科目</th><th class="num">金額</th></tr>
+${accRows(m.accounts.expense, expByAcc) || '<tr><td colspan="2">（支出なし）</td></tr>'}
+<tr class="total"><td>支出合計</td><td class="num">${yen(expTotal)}</td></tr></table>
+<h2>Ⅲ 収支</h2>
+<table>
+<tr><td>当期収支差額（収入合計 − 支出合計）</td><td class="num">${yen(incTotal - expTotal)}</td></tr>
+<tr><td>前期繰越金</td><td class="num">${yen(carryOver)}</td></tr>
+<tr class="grand"><td>次期繰越金</td><td class="num">${yen(carryOver + incTotal - expTotal)}</td></tr></table>
+<h2>Ⅳ 事業区分別内訳</h2>
+<table><tr><th>事業区分</th><th class="num">収入</th><th class="num">支出</th><th class="num">差引</th></tr>
+${projRows() || '<tr><td colspan="4">（記録なし）</td></tr>'}</table>
+<p class="note">※ 本資料は収支管理台帳（証憑・訂正履歴つき）から自動生成。対象は有効な記録のみ（無効化された記録は含まない）。前期繰越金は台帳上の${fy}年3月31日以前の収支累計。金額単位: 円。</p>
+</body></html>`;
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, '_blank');
+    if (!w) {
+      // ポップアップを開けない環境ではHTMLファイルとしてダウンロード
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `CBI収支計算書_${fy}年度.html`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast('新しいタブを開けないため、ファイルとして保存しました。開いて「印刷/PDF保存」してください', 'ok', 6000);
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
   function exportLedgerCsv() {
