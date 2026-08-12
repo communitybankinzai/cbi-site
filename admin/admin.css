@@ -2442,3 +2442,15 @@ body.mail-splitting { cursor: col-resize; user-select: none; }
 
 .ledger-report-btn { margin-left: auto; }
 .panel-title .ledger-report-btn + .ledger-fy-select { margin-left: 8px; }
+
+/* 収支予定メモ（掲示板） */
+.ledger-note-form textarea { width: 100%; border: 1px solid var(--c-line); border-radius: 8px; padding: 8px 10px; font: inherit; resize: vertical; }
+.ledger-note-form-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; align-items: center; }
+.ledger-note-form-row input[type="number"] { width: 140px; }
+.ledger-note-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.ledger-note-card { background: var(--c-bg-alt); border-radius: 8px; padding: 10px 12px; }
+.ledger-note-card.is-done { opacity: 0.55; }
+.ledger-note-card.is-done .ledger-note-body { text-decoration: line-through; }
+.ledger-note-body { font-size: 0.9rem; white-space: pre-wrap; word-break: break-word; }
+.ledger-note-meta { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 6px; font-size: 0.78rem; color: var(--c-ink-sub); }
+.ledger-note-actions { display: flex; gap: 10px; white-space: nowrap; }

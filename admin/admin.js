@@ -46,6 +46,7 @@ const UNREAD_POLL_MS = 30000;
       loaded: false,
       entries: [],
       evidences: [],
+      notes: [],
       meta: null,       // { accounts: {income:[], expense:[]}, projects: [], paymentMethods: [] }
       editingId: null,
       openHistoryId: null,
@@ -3768,6 +3769,7 @@ const UNREAD_POLL_MS = 30000;
       state.ledger.meta = meta;
       state.ledger.entries = list.entries || [];
       state.ledger.evidences = list.evidences || [];
+      state.ledger.notes = list.notes || [];
       state.ledger.loaded = true;
       buildLedgerSelects();
       buildLedgerFySelect();
@@ -3777,6 +3779,7 @@ const UNREAD_POLL_MS = 30000;
       setStatus('収支データの読み込みに失敗: ' + e.message, 'err');
       $('ledger-tbody').innerHTML = '<tr><td colspan="10" class="empty">通信エラーのため台帳を読み込めません（科目等は入力できます）</td></tr>';
       $('ledger-fee-tbody').innerHTML = '<tr><td class="empty">通信エラーのため納入状況を表示できません</td></tr>';
+      $('ledger-note-list').innerHTML = '<p class="meta-note">通信エラーのためメモを読み込めません。「更新」ボタンかページ再読み込みをお試しください</p>';
     }
   }
 
@@ -3804,6 +3807,8 @@ const UNREAD_POLL_MS = 30000;
     $('ledger-fy').addEventListener('change', () => { renderLedgerSummary(); renderLedgerFeeTable(); });
     $('ledger-csv').addEventListener('click', exportLedgerCsv);
     $('ledger-report').addEventListener('click', openLedgerReport);
+    $('ledger-note-form').addEventListener('submit', onLedgerNoteSubmit);
+    $('ledger-note-show-done').addEventListener('change', renderLedgerNotes);
     ['ledger-search', 'ledger-filter-from', 'ledger-filter-to', 'ledger-filter-type',
      'ledger-filter-account', 'ledger-filter-project', 'ledger-filter-paidby', 'ledger-show-void'].forEach(id => {
       $(id).addEventListener('input', renderLedgerList);
@@ -3896,6 +3901,7 @@ const UNREAD_POLL_MS = 30000;
     renderLedgerAdvances();
     renderLedgerFeeTable();
     renderLedgerList();
+    renderLedgerNotes();
   }
 
   // メンバー立替状況: 立替者ごとの件数・合計・精算済み・未精算残高（全期間、有効な支出のみ）
@@ -4397,9 +4403,114 @@ const UNREAD_POLL_MS = 30000;
     if (res.ok) {
       state.ledger.entries = res.entries || [];
       state.ledger.evidences = res.evidences || [];
+      state.ledger.notes = res.notes || [];
       buildLedgerFySelect();
       renderLedger();
     }
+  }
+
+  // =========================================================
+  // 収支予定メモ（掲示板）
+  // =========================================================
+  function renderLedgerNotes() {
+    const showDone = $('ledger-note-show-done').checked;
+    const notes = state.ledger.notes
+      .filter(n => showDone || n.status !== 'done')
+      .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    const list = $('ledger-note-list');
+    if (notes.length === 0) {
+      list.innerHTML = '<p class="meta-note">メモはありません。将来の収支の予定を気楽に書き込んでください。</p>';
+      return;
+    }
+    const typeLabel = { income: '💰収入見込み', expense: '💸支出予定' };
+    list.innerHTML = notes.map(n => {
+      const done = n.status === 'done';
+      const metaBits = [
+        typeLabel[n.type] || '',
+        n.due ? `時期: ${escapeHtml(n.due)}` : '',
+        n.estAmount ? `概算: ¥${Number(n.estAmount).toLocaleString()}` : '',
+      ].filter(Boolean).join('　');
+      return `<div class="ledger-note-card${done ? ' is-done' : ''}">
+        <div class="ledger-note-body">${linkify(escapeHtml(n.body))}</div>
+        <div class="ledger-note-meta">
+          <span>${escapeHtml(n.author || '匿名')}｜${escapeHtml(String(n.createdAt).replace('T', ' ').slice(0, 16))}${metaBits ? '｜' + metaBits : ''}</span>
+          <span class="ledger-note-actions">
+            ${!done ? `<button type="button" class="btn-link" data-note-tolodger="${escapeAttr(n.id)}">台帳へ</button>` : ''}
+            <button type="button" class="btn-link" data-note-toggle="${escapeAttr(n.id)}">${done ? '未済に戻す' : '済み'}</button>
+            <button type="button" class="btn-link" data-note-delete="${escapeAttr(n.id)}">削除</button>
+          </span>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('[data-note-toggle]').forEach(b => b.addEventListener('click', () => toggleLedgerNote(b.dataset.noteToggle)));
+    list.querySelectorAll('[data-note-delete]').forEach(b => b.addEventListener('click', () => deleteLedgerNote(b.dataset.noteDelete)));
+    list.querySelectorAll('[data-note-tolodger]').forEach(b => b.addEventListener('click', () => noteToLedgerForm(b.dataset.noteTolodger)));
+  }
+
+  async function onLedgerNoteSubmit(ev) {
+    ev.preventDefault();
+    const body = $('ledger-note-body').value.trim();
+    if (!body) return;
+    try {
+      const res = await gasCall({
+        action: 'ledgerNoteAdd', password: state.password, actor: state.me,
+        note: {
+          body,
+          type: $('ledger-note-type').value,
+          due: $('ledger-note-due').value,
+          estAmount: $('ledger-note-amount').value ? Number($('ledger-note-amount').value) : '',
+        },
+      });
+      if (!res.ok) throw new Error(res.error);
+      state.ledger.notes.unshift(res.note);
+      $('ledger-note-form').reset();
+      renderLedgerNotes();
+      toast('メモを投稿しました', 'ok');
+    } catch (e) {
+      toast('投稿に失敗: ' + e.message, 'err');
+    }
+  }
+
+  async function toggleLedgerNote(id) {
+    const n = state.ledger.notes.find(x => String(x.id) === String(id));
+    if (!n) return;
+    const newStatus = n.status === 'done' ? 'open' : 'done';
+    try {
+      const res = await gasCall({ action: 'ledgerNoteUpdate', password: state.password, actor: state.me, note: { id, status: newStatus } });
+      if (!res.ok) throw new Error(res.error);
+      n.status = newStatus;
+      renderLedgerNotes();
+    } catch (e) {
+      toast('更新に失敗: ' + e.message, 'err');
+    }
+  }
+
+  async function deleteLedgerNote(id) {
+    if (!confirm('このメモを削除しますか？')) return;
+    try {
+      const res = await gasCall({ action: 'ledgerNoteDelete', password: state.password, id });
+      if (!res.ok) throw new Error(res.error);
+      state.ledger.notes = state.ledger.notes.filter(x => String(x.id) !== String(id));
+      renderLedgerNotes();
+      toast('メモを削除しました', 'ok');
+    } catch (e) {
+      toast('削除に失敗: ' + e.message, 'err');
+    }
+  }
+
+  // メモの内容を登録フォームへ転記（登録後は手動で「済み」にしてもらう）
+  function noteToLedgerForm(id) {
+    const n = state.ledger.notes.find(x => String(x.id) === String(id));
+    if (!n) return;
+    resetLedgerForm();
+    if (n.type === 'income' || n.type === 'expense') {
+      $('ledger-type').value = n.type;
+      buildLedgerAccountOptions(n.type);
+    }
+    if (n.estAmount) $('ledger-amount').value = Number(n.estAmount);
+    $('ledger-description').value = String(n.body).slice(0, 200);
+    $('ledger-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast('メモの内容をフォームに転記しました。登録後、メモを「済み」にしてください', 'ok', 5000);
   }
 
   // 決算資料（収支計算書）を印刷用ウィンドウで生成
