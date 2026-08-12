@@ -4106,7 +4106,8 @@ const UNREAD_POLL_MS = 30000;
           ${voided
             ? `<button type="button" class="btn btn-ghost btn-sm" data-ledger-restore="${escapeAttr(id)}">復元する</button>`
             : `<button type="button" class="btn btn-ghost btn-sm ledger-btn-void" data-ledger-void="${escapeAttr(id)}">この記録を無効にする</button>`}
-          <span class="meta-note">無効化しても記録と証憑は残ります（税務対応のため物理削除はできません）</span>
+          <button type="button" class="btn btn-ghost btn-sm ledger-btn-void" data-ledger-delete="${escapeAttr(id)}">🗑 完全に削除する</button>
+          <span class="meta-note">通常は「無効化」を使ってください（記録が残り集計から除外）。完全削除は誤登録用で、削除理由と記録の写しが履歴シートに保存されます</span>
         </div>
       </div>`;
 
@@ -4119,6 +4120,8 @@ const UNREAD_POLL_MS = 30000;
     if (settleBtn) settleBtn.addEventListener('click', () => settleLedgerEntry(id, true));
     const unsettleBtn = cell.querySelector('[data-ledger-unsettle]');
     if (unsettleBtn) unsettleBtn.addEventListener('click', () => settleLedgerEntry(id, false));
+    const deleteBtn = cell.querySelector('[data-ledger-delete]');
+    if (deleteBtn) deleteBtn.addEventListener('click', () => deleteLedgerEntry(id));
   }
 
   function editLedgerEntry(id) {
@@ -4336,6 +4339,25 @@ const UNREAD_POLL_MS = 30000;
       await reloadLedger();
     } catch (e) {
       toast('操作に失敗: ' + e.message, 'err');
+    }
+  }
+
+  async function deleteLedgerEntry(id) {
+    const e = state.ledger.entries.find(x => String(x.id) === String(id));
+    if (!e) return;
+    const reason = prompt('この記録を完全に削除します。削除理由を入力してください（必須・履歴シートに記録の写しと共に保存されます）\n例: テストデータのため／二重登録のため');
+    if (reason === null) return;
+    if (!reason.trim()) { toast('削除理由は必須です', 'err'); return; }
+    const label = `${ledgerDateStr(e.date)} ${e.account} ¥${(Number(e.amount) || 0).toLocaleString()}（${e.counterparty}）`;
+    if (!confirm(`本当に削除しますか？ 元に戻せません。\n\n${label}\n\n※Drive上の証憑ファイルは削除されず残ります`)) return;
+    try {
+      const res = await gasCall({ action: 'ledgerDelete', password: state.password, id, reason: reason.trim(), actor: state.me });
+      if (!res.ok) throw new Error(res.error);
+      delete state.ledger.historyCache[id];
+      toast('削除しました（理由と記録の写しは履歴シートに保存済み）', 'ok');
+      await reloadLedger();
+    } catch (err) {
+      toast('削除に失敗: ' + err.message, 'err');
     }
   }
 
