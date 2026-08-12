@@ -3740,6 +3740,7 @@ const UNREAD_POLL_MS = 30000;
   const LEDGER_MEMBERS = ['新井 則夫', '小林 康子', '中司 祐樹', '須田 翔'];
   const LEDGER_MONTHLY_FEE = 1000;
   const LEDGER_FEE_ACCOUNT = '会費収入';
+  const LEDGER_FEE_FROM = '2026-06'; // 会費徴収開始月（これより前は対象外）
 
   // GAS不通時のフォールバック（正は cbi-admin-gas/Ledger.gs の LEDGER_CONST。変更時は両方更新）
   const LEDGER_FALLBACK_META = {
@@ -3912,6 +3913,7 @@ const UNREAD_POLL_MS = 30000;
       const cells = months.map(m => {
         const isPaid = paid[name] && paid[name].has(m);
         if (isPaid) return '<td class="ledger-fee-cell is-paid">✔</td>';
+        if (m < LEDGER_FEE_FROM) return '<td class="ledger-fee-cell is-future">—</td>';
         if (m > nowYm) return '<td class="ledger-fee-cell is-future">—</td>';
         unpaid++;
         return '<td class="ledger-fee-cell is-unpaid">未</td>';
