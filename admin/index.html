@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=20260812ledger4">
+<link rel="stylesheet" href="admin.css?v=20260812ledger7">
 </head>
 <body>
 
@@ -793,6 +793,10 @@
           <div class="ledger-sum-card"><span class="ledger-sum-label">差引</span><span class="ledger-sum-value" id="ledger-sum-balance">—</span></div>
           <div class="ledger-sum-card"><span class="ledger-sum-label">登録件数</span><span class="ledger-sum-value" id="ledger-sum-count">—</span></div>
         </div>
+        <div id="ledger-advance-block" hidden>
+          <h3 class="ledger-advance-title">💸 未精算の立替</h3>
+          <div id="ledger-advance-list" class="ledger-advance-list"></div>
+        </div>
         <p class="meta-note">証憑（レシート・領収書・電子メモ等）は Google Drive「CBI_収支証憑」に年度別保存。訂正・無効化はすべて履歴に自動記録され、物理削除はできません（税務調査対応）。</p>
       </section>
 
@@ -1085,6 +1089,6 @@
   <div id="toast" class="toast" hidden></div>
 </section>
 
-<script src="admin.js?v=20260812ledger4"></script>
+<script src="admin.js?v=20260812ledger7"></script>
 </body>
 </html>

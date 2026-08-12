@@ -3856,10 +3856,20 @@ const UNREAD_POLL_MS = 30000;
     return list.join(',');
   }
 
+  // 日付の表示用正規化。シート側でDate型に変換されISO文字列で届いた場合もJSTのYYYY-MM-DDに直す
+  function ledgerDateStr(v) {
+    const s = String(v || '');
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    const d = new Date(s);
+    if (isNaN(d)) return s;
+    return new Date(d.getTime() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  }
+
   // 会計年度（4月始まり）。"2026" = 2026-04-01〜2027-03-31（R8年度）
   function fiscalYearOf(dateStr) {
-    const y = Number(String(dateStr).slice(0, 4));
-    const mth = Number(String(dateStr).slice(5, 7));
+    const s = ledgerDateStr(dateStr);
+    const y = Number(s.slice(0, 4));
+    const mth = Number(s.slice(5, 7));
     return mth >= 4 ? y : y - 1;
   }
 
@@ -3879,19 +3889,35 @@ const UNREAD_POLL_MS = 30000;
 
   function renderLedger() {
     renderLedgerSummary();
+    renderLedgerAdvances();
     renderLedgerFeeTable();
     renderLedgerList();
+  }
+
+  // 未精算の立替: 立替者ごとの残額（全期間、有効な支出のみ）
+  function renderLedgerAdvances() {
+    const open = {};
+    state.ledger.entries.forEach(e => {
+      if (e.status !== 'active' || e.type !== 'expense' || !e.paidBy || String(e.settledDate || '')) return;
+      open[e.paidBy] = (open[e.paidBy] || 0) + (Number(e.amount) || 0);
+    });
+    const names = Object.keys(open);
+    $('ledger-advance-block').hidden = names.length === 0;
+    $('ledger-advance-list').innerHTML = names.map(n =>
+      `<span class="ledger-advance-item">${escapeHtml(n)}：<strong>¥${open[n].toLocaleString()}</strong></span>`
+    ).join('');
   }
 
   // 会費納入状況: 年度のメンバー×12ヶ月マトリクス
   function renderLedgerFeeTable() {
     const fySel = $('ledger-fy').value;
     const fy = fySel ? Number(fySel) : fiscalYearOf(new Date().toISOString().slice(0, 10));
-    // 年度の12ヶ月（4月〜翌3月）
+    // 年度の12ヶ月（4月〜翌3月）。徴収開始前の月は列ごと表示しない
     const months = [];
     for (let i = 0; i < 12; i++) {
       const m = 4 + i;
-      months.push(m <= 12 ? `${fy}-${String(m).padStart(2, '0')}` : `${fy + 1}-${String(m - 12).padStart(2, '0')}`);
+      const ym = m <= 12 ? `${fy}-${String(m).padStart(2, '0')}` : `${fy + 1}-${String(m - 12).padStart(2, '0')}`;
+      if (ym >= LEDGER_FEE_FROM) months.push(ym);
     }
     // 納入済みマップ: member -> Set(月)
     const paid = {};
@@ -3913,7 +3939,6 @@ const UNREAD_POLL_MS = 30000;
       const cells = months.map(m => {
         const isPaid = paid[name] && paid[name].has(m);
         if (isPaid) return '<td class="ledger-fee-cell is-paid">✔</td>';
-        if (m < LEDGER_FEE_FROM) return '<td class="ledger-fee-cell is-future">—</td>';
         if (m > nowYm) return '<td class="ledger-fee-cell is-future">—</td>';
         unpaid++;
         return '<td class="ledger-fee-cell is-unpaid">未</td>';
@@ -3980,12 +4005,12 @@ const UNREAD_POLL_MS = 30000;
         : '<span class="ledger-ev-none" title="証憑未登録">—</span>';
       return `
       <tr class="ledger-row${voided ? ' is-void' : ''}" data-id="${escapeAttr(e.id)}">
-        <td>${escapeHtml(e.date)}</td>
+        <td>${escapeHtml(ledgerDateStr(e.date))}</td>
         <td><span class="ledger-badge ledger-badge-${e.type}">${LEDGER_TYPE_LABEL[e.type] || e.type}</span></td>
         <td>${escapeHtml(e.account)}</td>
         <td class="ledger-td-amount">¥${(Number(e.amount) || 0).toLocaleString()}</td>
         <td>${escapeHtml(e.counterparty)}</td>
-        <td>${escapeHtml(e.paidBy || '')}</td>
+        <td>${escapeHtml(e.paidBy || '')}${e.paidBy && e.type === 'expense' && e.status === 'active' && !String(e.settledDate || '') ? ' <span class="ledger-badge-unsettled">未精算</span>' : ''}</td>
         <td class="ledger-td-desc">${escapeHtml(e.description)}</td>
         <td>${escapeHtml(e.project)}</td>
         <td>${evCell}</td>
@@ -4043,7 +4068,7 @@ const UNREAD_POLL_MS = 30000;
           let changes = [];
           try { changes = JSON.parse(h.changes || '[]'); } catch (_) {}
           const fieldLabel = { date: '取引日', type: '収支', account: '科目', amount: '金額', counterparty: '取引先', description: '摘要', project: '事業区分', paymentMethod: '支払方法', paidBy: '立替者', feeMember: '会費対象者', feeMonths: '会費対象月', status: '状態', evidence: '証憑' };
-          const actLabel = { create: '登録', update: '訂正', void: '無効化', restore: '復元', evidence_add: '証憑追加', evidence_remove: '証憑解除' };
+          const actLabel = { create: '登録', update: '訂正', void: '無効化', restore: '復元', evidence_add: '証憑追加', evidence_remove: '証憑解除', settle: '立替精算', unsettle: '精算取消' };
           const detail = changes.map(c => `${fieldLabel[c.field] || c.field}: ${escapeHtml(String(c.before))} → ${escapeHtml(String(c.after))}`).join('、');
           return `<li><span class="ledger-history-time">${escapeHtml(String(h.createdAt).replace('T', ' ').slice(0, 16))}</span>
             <strong>${actLabel[h.action] || escapeHtml(h.action)}</strong>（${escapeHtml(h.operator || '不明')}）
@@ -4051,11 +4076,33 @@ const UNREAD_POLL_MS = 30000;
         }).join('') + '</ul>'
       : '<p class="meta-note">履歴はありません</p>';
 
+    const infoRows = [
+      ['取引日', ledgerDateStr(e.date)],
+      ['収支／科目', `${LEDGER_TYPE_LABEL[e.type] || e.type}／${e.account}`],
+      ['金額', '¥' + (Number(e.amount) || 0).toLocaleString()],
+      ['取引先', e.counterparty],
+      ['立替者', e.paidBy || '（団体資金）'],
+      ['立替精算', e.paidBy && e.type === 'expense' ? (String(e.settledDate || '') ? `精算済み（${ledgerDateStr(e.settledDate)}）` : '未精算') : ''],
+      ['摘要', e.description || '（未記入）'],
+      ['事業区分', e.project || '—'],
+      ['支払方法', e.paymentMethod || '—'],
+      ['会費対象', e.feeMember ? `${e.feeMember}（${e.feeMonths}）` : ''],
+      ['登録', `${e.registeredBy || '不明'}／${String(e.createdAt).replace('T', ' ').slice(0, 16)}`],
+      ['ID', e.id],
+    ].filter(([, v]) => v !== '');
+    const infoHtml = '<table class="ledger-info-table">' +
+      infoRows.map(([k, v]) => `<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(String(v))}</td></tr>`).join('') +
+      '</table>';
+
     cell.innerHTML = `
       <div class="ledger-detail">
+        <h4>取引内容</h4>${infoHtml}
         <h4>証憑</h4>${evHtml}
         <h4>訂正・変更履歴</h4>${historyHtml}
         <div class="ledger-detail-actions">
+          ${!voided && e.paidBy && e.type === 'expense' ? (String(e.settledDate || '')
+            ? `<button type="button" class="btn btn-ghost btn-sm" data-ledger-unsettle="${escapeAttr(id)}">精算を取り消す</button>`
+            : `<button type="button" class="btn btn-primary btn-sm" data-ledger-settle="${escapeAttr(id)}">💸 精算済みにする</button>`) : ''}
           ${voided
             ? `<button type="button" class="btn btn-ghost btn-sm" data-ledger-restore="${escapeAttr(id)}">復元する</button>`
             : `<button type="button" class="btn btn-ghost btn-sm ledger-btn-void" data-ledger-void="${escapeAttr(id)}">この記録を無効にする</button>`}
@@ -4068,6 +4115,10 @@ const UNREAD_POLL_MS = 30000;
     if (voidBtn) voidBtn.addEventListener('click', () => voidLedgerEntry(id, true));
     const restoreBtn = cell.querySelector('[data-ledger-restore]');
     if (restoreBtn) restoreBtn.addEventListener('click', () => voidLedgerEntry(id, false));
+    const settleBtn = cell.querySelector('[data-ledger-settle]');
+    if (settleBtn) settleBtn.addEventListener('click', () => settleLedgerEntry(id, true));
+    const unsettleBtn = cell.querySelector('[data-ledger-unsettle]');
+    if (unsettleBtn) unsettleBtn.addEventListener('click', () => settleLedgerEntry(id, false));
   }
 
   function editLedgerEntry(id) {
@@ -4256,6 +4307,32 @@ const UNREAD_POLL_MS = 30000;
       if (!res.ok) throw new Error(res.error);
       delete state.ledger.historyCache[id];
       toast(toVoid ? '無効にしました' : '復元しました', 'ok');
+      await reloadLedger();
+    } catch (e) {
+      toast('操作に失敗: ' + e.message, 'err');
+    }
+  }
+
+  async function settleLedgerEntry(id, toSettle) {
+    let payload;
+    if (toSettle) {
+      const today = new Date().toISOString().slice(0, 10);
+      const date = prompt('精算した日付を入力してください（YYYY-MM-DD）', today);
+      if (date === null) return;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) { toast('日付は YYYY-MM-DD 形式で入力してください', 'err'); return; }
+      const note = prompt('精算方法のメモ（例: 現金で手渡し、〇〇銀行から振込）※履歴に記録されます', '現金で支払い');
+      if (note === null) return;
+      payload = { action: 'ledgerSettle', id, date: date.trim(), note: note.trim() };
+    } else {
+      const reason = prompt('精算の記録を取り消します。理由を入力してください（履歴に記録されます）');
+      if (reason === null) return;
+      payload = { action: 'ledgerUnsettle', id, reason: reason.trim() };
+    }
+    try {
+      const res = await gasCall({ ...payload, password: state.password, actor: state.me });
+      if (!res.ok) throw new Error(res.error);
+      delete state.ledger.historyCache[id];
+      toast(toSettle ? '精算を記録しました' : '精算記録を取り消しました', 'ok');
       await reloadLedger();
     } catch (e) {
       toast('操作に失敗: ' + e.message, 'err');
