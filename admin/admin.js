@@ -3738,6 +3738,33 @@ const UNREAD_POLL_MS = 30000;
   // 💰 収支管理（台帳・証憑・訂正履歴）
   // =========================================================
   const LEDGER_TYPE_LABEL = { income: '収入', expense: '支出' };
+
+  // 収支管理専用の通信。GASは稀に成功時でもHTMLを返すため、応答不正時は自動リトライする。
+  // 登録系はクライアント採番IDでサーバ側が重複排除するため、リトライしても二重登録にならない。
+  function ledgerNewId(prefix) {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return prefix + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + '-' + Math.floor(Math.random() * 100000);
+  }
+  async function ledgerCall(body) {
+    let lastErr;
+    for (let i = 0; i < 3; i++) {
+      try {
+        const res = await fetch(GAS_WEBAPP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(body),
+          redirect: 'follow',
+        });
+        const text = await res.text();
+        try { return JSON.parse(text); } catch (_) { throw new Error('サーバ応答不正'); }
+      } catch (e) {
+        lastErr = e;
+        if (i < 2) await new Promise(r => setTimeout(r, 700 * (i + 1)));
+      }
+    }
+    throw new Error('通信が不安定です。ページを再読み込みして確認してください（' + (lastErr && lastErr.message) + '）');
+  }
   const LEDGER_MEMBERS = ['新井 則夫', '小林 康子', '中司 祐樹', '須田 翔'];
   const LEDGER_MONTHLY_FEE = 1000;
   const LEDGER_FEE_ACCOUNT = '会費収入';
@@ -3762,8 +3789,8 @@ const UNREAD_POLL_MS = 30000;
     setStatus('収支データを読み込み中…');
     try {
       const [meta, list] = await Promise.all([
-        gasCall({ action: 'ledgerMeta', password: state.password }),
-        gasCall({ action: 'ledgerList', password: state.password }),
+        ledgerCall({ action: 'ledgerMeta', password: state.password }),
+        ledgerCall({ action: 'ledgerList', password: state.password }),
       ]);
       if (!meta.ok || !list.ok) throw new Error(meta.error || list.error || 'load_failed');
       state.ledger.meta = meta;
@@ -4067,7 +4094,7 @@ const UNREAD_POLL_MS = 30000;
     let history = state.ledger.historyCache[id];
     if (!history) {
       try {
-        const res = await gasCall({ action: 'ledgerHistory', password: state.password, entryId: id });
+        const res = await ledgerCall({ action: 'ledgerHistory', password: state.password, entryId: id });
         history = res.ok ? (res.history || []) : [];
         state.ledger.historyCache[id] = history;
       } catch (_) { history = []; }
@@ -4290,22 +4317,23 @@ const UNREAD_POLL_MS = 30000;
       if (entryId) {
         entry.id = entryId;
         btn.textContent = '訂正を保存中…';
-        const res = await gasCall({ action: 'ledgerUpdate', password: state.password, entry, actor: state.me });
+        const res = await ledgerCall({ action: 'ledgerUpdate', password: state.password, entry, actor: state.me });
         if (!res.ok) throw new Error(res.error);
         delete state.ledger.historyCache[entryId];
       } else {
         btn.textContent = '登録中…';
-        const res = await gasCall({ action: 'ledgerAdd', password: state.password, entry, actor: state.me });
+        entry.id = ledgerNewId('L'); // クライアント採番＝リトライしても二重登録されない
+        const res = await ledgerCall({ action: 'ledgerAdd', password: state.password, entry, actor: state.me });
         if (!res.ok) throw new Error(res.error);
-        entryId = res.entry.id;
+        entryId = (res.entry && res.entry.id) || entry.id;
       }
       // 証憑を1ファイルずつアップロード
       for (let i = 0; i < files.length; i++) {
         btn.textContent = `証憑アップロード中… (${i + 1}/${files.length})`;
         const base64 = await readFileAsBase64(files[i]);
-        const res = await gasCall({
+        const res = await ledgerCall({
           action: 'ledgerAddEvidence', password: state.password, actor: state.me,
-          entryId, file: { filename: files[i].name, mimeType: files[i].type || 'application/octet-stream', base64 },
+          entryId, file: { id: ledgerNewId('EV'), filename: files[i].name, mimeType: files[i].type || 'application/octet-stream', base64 },
         });
         if (!res.ok) throw new Error(`証憑 ${files[i].name} の保存失敗: ${res.error}`);
       }
@@ -4355,7 +4383,7 @@ const UNREAD_POLL_MS = 30000;
       payload = { action: 'ledgerUnsettle', id, reason: reason.trim() };
     }
     try {
-      const res = await gasCall({ ...payload, password: state.password, actor: state.me });
+      const res = await ledgerCall({ ...payload, password: state.password, actor: state.me });
       if (!res.ok) throw new Error(res.error);
       delete state.ledger.historyCache[id];
       toast(toSettle ? '精算を記録しました' : '精算記録を取り消しました', 'ok');
@@ -4374,7 +4402,7 @@ const UNREAD_POLL_MS = 30000;
     const label = `${ledgerDateStr(e.date)} ${e.account} ¥${(Number(e.amount) || 0).toLocaleString()}（${e.counterparty}）`;
     if (!confirm(`本当に削除しますか？ 元に戻せません。\n\n${label}\n\n※Drive上の証憑ファイルは削除されず残ります`)) return;
     try {
-      const res = await gasCall({ action: 'ledgerDelete', password: state.password, id, reason: reason.trim(), actor: state.me });
+      const res = await ledgerCall({ action: 'ledgerDelete', password: state.password, id, reason: reason.trim(), actor: state.me });
       if (!res.ok) throw new Error(res.error);
       delete state.ledger.historyCache[id];
       toast('削除しました（理由と記録の写しは履歴シートに保存済み）', 'ok');
@@ -4388,7 +4416,7 @@ const UNREAD_POLL_MS = 30000;
     const reason = prompt('この証憑のリンクを解除します。理由を入力してください（Drive上のファイルは削除されません）');
     if (reason === null) return;
     try {
-      const res = await gasCall({ action: 'ledgerRemoveEvidence', password: state.password, id: evidenceId, reason: reason.trim(), actor: state.me });
+      const res = await ledgerCall({ action: 'ledgerRemoveEvidence', password: state.password, id: evidenceId, reason: reason.trim(), actor: state.me });
       if (!res.ok) throw new Error(res.error);
       delete state.ledger.historyCache[entryId];
       toast('証憑リンクを解除しました', 'ok');
@@ -4399,7 +4427,7 @@ const UNREAD_POLL_MS = 30000;
   }
 
   async function reloadLedger() {
-    const res = await gasCall({ action: 'ledgerList', password: state.password });
+    const res = await ledgerCall({ action: 'ledgerList', password: state.password });
     if (res.ok) {
       state.ledger.entries = res.entries || [];
       state.ledger.evidences = res.evidences || [];
@@ -4415,7 +4443,7 @@ const UNREAD_POLL_MS = 30000;
   function renderLedgerNotes() {
     const showDone = $('ledger-note-show-done').checked;
     const notes = state.ledger.notes
-      .filter(n => showDone || n.status !== 'done')
+      .filter(n => n && (showDone || n.status !== 'done'))
       .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
     const list = $('ledger-note-list');
     if (notes.length === 0) {
@@ -4452,9 +4480,10 @@ const UNREAD_POLL_MS = 30000;
     const body = $('ledger-note-body').value.trim();
     if (!body) return;
     try {
-      const res = await gasCall({
+      const res = await ledgerCall({
         action: 'ledgerNoteAdd', password: state.password, actor: state.me,
         note: {
+          id: ledgerNewId('LN'),
           body,
           type: $('ledger-note-type').value,
           due: $('ledger-note-due').value,
@@ -4462,10 +4491,11 @@ const UNREAD_POLL_MS = 30000;
         },
       });
       if (!res.ok) throw new Error(res.error);
-      state.ledger.notes.unshift(res.note);
+      if (res.note) state.ledger.notes.unshift(res.note);
       $('ledger-note-form').reset();
       renderLedgerNotes();
       toast('メモを投稿しました', 'ok');
+      if (!res.note) await reloadLedger();
     } catch (e) {
       toast('投稿に失敗: ' + e.message, 'err');
     }
@@ -4476,7 +4506,7 @@ const UNREAD_POLL_MS = 30000;
     if (!n) return;
     const newStatus = n.status === 'done' ? 'open' : 'done';
     try {
-      const res = await gasCall({ action: 'ledgerNoteUpdate', password: state.password, actor: state.me, note: { id, status: newStatus } });
+      const res = await ledgerCall({ action: 'ledgerNoteUpdate', password: state.password, actor: state.me, note: { id, status: newStatus } });
       if (!res.ok) throw new Error(res.error);
       n.status = newStatus;
       renderLedgerNotes();
@@ -4488,7 +4518,7 @@ const UNREAD_POLL_MS = 30000;
   async function deleteLedgerNote(id) {
     if (!confirm('このメモを削除しますか？')) return;
     try {
-      const res = await gasCall({ action: 'ledgerNoteDelete', password: state.password, id });
+      const res = await ledgerCall({ action: 'ledgerNoteDelete', password: state.password, id });
       if (!res.ok) throw new Error(res.error);
       state.ledger.notes = state.ledger.notes.filter(x => String(x.id) !== String(id));
       renderLedgerNotes();
