@@ -2437,3 +2437,5 @@ body.mail-splitting { cursor: col-resize; user-select: none; }
 
 /* hidden属性を.grid-3等のdisplay指定より優先させる（訂正理由・会費欄の表示制御） */
 #tab-ledger [hidden] { display: none !important; }
+
+.ledger-open-amount { color: var(--c-danger); }

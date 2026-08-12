@@ -3804,7 +3804,7 @@ const UNREAD_POLL_MS = 30000;
     $('ledger-fy').addEventListener('change', () => { renderLedgerSummary(); renderLedgerFeeTable(); });
     $('ledger-csv').addEventListener('click', exportLedgerCsv);
     ['ledger-search', 'ledger-filter-from', 'ledger-filter-to', 'ledger-filter-type',
-     'ledger-filter-account', 'ledger-filter-project', 'ledger-show-void'].forEach(id => {
+     'ledger-filter-account', 'ledger-filter-project', 'ledger-filter-paidby', 'ledger-show-void'].forEach(id => {
       $(id).addEventListener('input', renderLedgerList);
       $(id).addEventListener('change', renderLedgerList);
     });
@@ -3824,6 +3824,9 @@ const UNREAD_POLL_MS = 30000;
       allAccounts.map(v => `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join('');
     $('ledger-filter-project').innerHTML = '<option value="">事業区分：すべて</option>' +
       m.projects.map(v => `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join('');
+    const paidByNames = [...new Set([...LEDGER_MEMBERS, ...state.ledger.entries.map(e => e.paidBy).filter(Boolean)])];
+    $('ledger-filter-paidby').innerHTML = '<option value="">立替者：すべて</option>' +
+      paidByNames.map(v => `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join('');
   }
 
   function buildLedgerAccountOptions(type) {
@@ -3894,18 +3897,29 @@ const UNREAD_POLL_MS = 30000;
     renderLedgerList();
   }
 
-  // 未精算の立替: 立替者ごとの残額（全期間、有効な支出のみ）
+  // メンバー立替状況: 立替者ごとの件数・合計・精算済み・未精算残高（全期間、有効な支出のみ）
   function renderLedgerAdvances() {
-    const open = {};
+    const stats = {};
     state.ledger.entries.forEach(e => {
-      if (e.status !== 'active' || e.type !== 'expense' || !e.paidBy || String(e.settledDate || '')) return;
-      open[e.paidBy] = (open[e.paidBy] || 0) + (Number(e.amount) || 0);
+      if (e.status !== 'active' || e.type !== 'expense' || !e.paidBy) return;
+      const s = stats[e.paidBy] || (stats[e.paidBy] = { count: 0, total: 0, settled: 0, open: 0 });
+      const amt = Number(e.amount) || 0;
+      s.count++;
+      s.total += amt;
+      if (String(e.settledDate || '')) s.settled += amt; else s.open += amt;
     });
-    const names = Object.keys(open);
+    const names = Object.keys(stats).sort((a, b) => stats[b].open - stats[a].open);
     $('ledger-advance-block').hidden = names.length === 0;
-    $('ledger-advance-list').innerHTML = names.map(n =>
-      `<span class="ledger-advance-item">${escapeHtml(n)}：<strong>¥${open[n].toLocaleString()}</strong></span>`
-    ).join('');
+    $('ledger-advance-tbody').innerHTML = names.map(n => {
+      const s = stats[n];
+      return `<tr>
+        <td>${escapeHtml(n)}</td>
+        <td class="ledger-td-amount">${s.count}件</td>
+        <td class="ledger-td-amount">¥${s.total.toLocaleString()}</td>
+        <td class="ledger-td-amount">¥${s.settled.toLocaleString()}</td>
+        <td class="ledger-td-amount">${s.open > 0 ? `<strong class="ledger-open-amount">¥${s.open.toLocaleString()}</strong>` : '¥0'}</td>
+      </tr>`;
+    }).join('');
   }
 
   // 会費納入状況: 年度のメンバー×12ヶ月マトリクス
@@ -3973,14 +3987,16 @@ const UNREAD_POLL_MS = 30000;
     const type = $('ledger-filter-type').value;
     const account = $('ledger-filter-account').value;
     const project = $('ledger-filter-project').value;
+    const paidBy = $('ledger-filter-paidby').value;
     const showVoid = $('ledger-show-void').checked;
     return state.ledger.entries.filter(e => {
       if (!showVoid && e.status !== 'active') return false;
-      if (from && String(e.date) < from) return false;
-      if (to && String(e.date) > to) return false;
+      if (from && ledgerDateStr(e.date) < from) return false;
+      if (to && ledgerDateStr(e.date) > to) return false;
       if (type && e.type !== type) return false;
       if (account && e.account !== account) return false;
       if (project && e.project !== project) return false;
+      if (paidBy && e.paidBy !== paidBy) return false;
       if (q) {
         const hay = [e.counterparty, e.description, String(e.amount), e.account].join(' ').toLowerCase();
         if (!hay.includes(q)) return false;
