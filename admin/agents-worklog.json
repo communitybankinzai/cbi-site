@@ -17,6 +17,25 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-13",
+          "title": "SNS承認まわりの不具合2件修正＋承認済みの自動配信（毎日18時JST）実装 0.32時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260808160000_spotlight_on_post_success.sql（新規・未適用／mark_sns_spotlighted 新設・pick_next_sns_targets に未送信下書きの除外・run_sns_rotation_cycle から last_spotlighted_at 更新を削除・誤って付いた紹介済みの一括取り消し）",
+            "cidao: scripts→_workspace/apply-cidao-sql-20260808-spotlight.sql（SQL Editor貼付用・確認クエリ2種同梱）",
+            "cidao: src/app/admin/sns/actions.ts（regenerateDraft が生成本文を返すよう変更）、_components/SnsDraftEditor.tsx（setText('') を戻り値反映に修正・nextDispatchLabel 追加・承認ボタン文言変更）",
+            "cidao: src/lib/sns-dispatch.ts（MinimalSupabase に rpc 追加・配信成功時に mark_sns_spotlighted を呼ぶ）",
+            "cidao: src/app/api/cron/sns-dispatch/route.ts（新規／CRON_SECRET＋service_role・承認済みのみ・1回5件上限）、vercel.json（0 9 * * * = JST18:00 を追加）、src/app/admin/sns/page.tsx（説明文更新）",
+            "検証: npx tsc --noEmit エラー0件／npx next build 成功・/api/cron/sns-dispatch のルート登録を確認／時刻計算を6ケース（未明・朝・1分前・ちょうど・直後・深夜）で実行し表示とvercel.jsonのUTC時刻の一致をプログラムで突合",
+            "原因: 下書きが出ないのは regenerateDraft 後の setText('') が原因。textareaは制御コンポーネントで revalidatePath の再描画では useState 初期値が読み直されない。DBには保存されていた（ボタン表示が「作り直す」になっていたのが証拠）",
+            "原因: run_sns_rotation_cycle が下書き挿入直後に last_spotlighted_at=now() を書いていたため、未配信でも紹介済み扱いになりローテーション後方へ回っていた。承認待ち21件の滞留もこれが一因",
+            "調査結果: 配信の自動実行はpg_cron・Vercel cronのどちらにも存在せず、管理画面の手動ボタンのみだった"
+          ],
+          "hours": 0.32,
+          "partnerApproved": false,
+          "note": "翔さんからの指摘3件（下書きボタンが効かない／未投稿なのに投稿済み／配信タイミングが不明）への対応。前2件は私が作り込んだ不具合で、承認機能の実装時に画面で一度も動かさずビルドのみで済ませたのが原因。配信時刻はご指定により18時。1回の配信件数は20→5件へ変更依頼を受けて対応。⚠マイグレーション20260808160000が未適用。⚠自動配信はVercelのCRON_SECRET設定が前提（未設定なら何も送らず503を返す）。⚠本番での実配信は未確認。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 230,006 / cost: $87.27"
+        },
+        {
           "date": "2026-08-09",
           "title": "CiDAO 団体削除機能のデプロイ＋削除手順の特定 0.1時間",
           "category": "実装",
