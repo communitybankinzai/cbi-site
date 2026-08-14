@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260814a">
+    <link rel="stylesheet" href="./styles.css?v=20260814b">
   </head>
   <body>
     <div class="app-shell">
@@ -28,6 +28,7 @@
           </label>
           <span class="connection-status" id="api-status">SNS API未接続</span>
           <button class="tool-button primary" id="sns-collector-button" type="button">SNS収集</button>
+          <button class="tool-button" id="help-button" type="button">使い方</button>
           <button class="tool-button primary" id="add-point-button" type="button">地点追加</button>
           <button class="tool-button" id="map-click-button" type="button" aria-pressed="false">地図クリック追加</button>
           <button class="tool-button" id="screenshot-button" type="button">スクショ証跡</button>
@@ -61,7 +62,7 @@
               <label><input type="checkbox" data-overlay="floodPlan"> 洪水浸水想定 計画規模</label>
               <label><input type="checkbox" data-overlay="inland" checked> 内水浸水想定</label>
               <label><input type="checkbox" data-overlay="landslide"> 土砂災害警戒区域</label>
-              <label><input type="checkbox" data-overlay="roadFlood" checked> 道路冠水注意箇所</label>
+              <label><input type="checkbox" data-overlay="roadFlood"> 参考: 道路冠水注意箇所（平常時）</label>
               <label><input type="checkbox" data-overlay="records" checked> 被害・確認候補</label>
             </div>
 
@@ -119,6 +120,13 @@
 
         <section class="map-pane" aria-label="印西市地図">
           <div id="map"></div>
+          <div class="location-pick-banner" id="location-pick-banner" hidden>
+            <div>
+              <strong>3. 投稿の場所を地図上でクリック</strong>
+              <span>おおよその場所で構いません。クリック後に詳細を確認できます。</span>
+            </div>
+            <button class="tool-button" id="cancel-location-pick-button" type="button">あとで設定</button>
+          </div>
           <div class="map-status" id="map-status">地図を読み込み中です</div>
           <div class="map-disclaimer">
             被害地点は確認候補を含みます。SNS・Web情報は根拠確認前に公開判断へ使わないでください。
@@ -145,6 +153,11 @@
           </section>
 
           <section class="panel-section">
+            <h2>場所確認待ち</h2>
+            <div class="location-queue" id="location-queue"></div>
+          </section>
+
+          <section class="panel-section">
             <div class="section-title">
               <h2>SNS収集履歴</h2>
               <button class="text-button" id="clear-search-log-button" type="button">履歴消去</button>
@@ -162,6 +175,7 @@
           <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
         </div>
         <input type="hidden" id="record-id">
+        <p class="workflow-callout" id="record-form-help" hidden></p>
 
         <div class="form-grid">
           <label>
@@ -220,14 +234,49 @@
         <div class="form-grid coords-grid">
           <label>
             緯度
-            <input id="record-lat" type="number" step="0.000001" required>
+            <input id="record-lat" type="number" step="0.000001" placeholder="場所未特定なら空欄">
           </label>
           <label>
             経度
-            <input id="record-lng" type="number" step="0.000001" required>
+            <input id="record-lng" type="number" step="0.000001" placeholder="場所未特定なら空欄">
           </label>
           <button type="button" class="tool-button" id="use-map-center-button">地図中心を入れる</button>
         </div>
+
+        <label>
+          場所確認の状態
+          <select id="record-location-status">
+            <option value="unknown">場所未特定</option>
+            <option value="asked">投稿者へ確認中</option>
+            <option value="identified">場所判明・ピン未設定</option>
+            <option value="pinned">ピン設定済</option>
+          </select>
+        </label>
+
+        <fieldset class="field-box">
+          <legend>場所確認の記録</legend>
+          <div class="form-grid">
+            <label>
+              確認手段
+              <select id="record-location-contact-method">
+                <option value="">未記録</option>
+                <option value="comment">投稿コメント</option>
+                <option value="dm">DM</option>
+                <option value="phone">電話・通報</option>
+                <option value="onsite">現地確認</option>
+                <option value="other">その他</option>
+              </select>
+            </label>
+            <label>
+              回答・確認日時
+              <input id="record-location-answered-at" type="datetime-local">
+            </label>
+          </div>
+          <label>
+            回答メモ
+            <textarea id="record-location-answer-note" rows="2" placeholder="例：木下駅北口から東へ約100m、県道沿い"></textarea>
+          </label>
+        </fieldset>
 
         <div class="form-grid">
           <label>
@@ -298,6 +347,30 @@
       </form>
     </dialog>
 
+    <dialog id="location-contact-dialog" class="modal contact-modal">
+      <form method="dialog">
+        <div class="modal-header">
+          <h2>投稿者へ場所を確認</h2>
+          <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
+        </div>
+        <p class="modal-help">質問文をコピーして元投稿を開きます。公開コメントでは個人宅の詳細住所を求めず、町名や目印までを確認します。</p>
+        <div class="contact-choices">
+          <button class="contact-choice" id="ask-comment-button" type="button">
+            <strong>コメントで質問</strong>
+            <span>投稿のコメント欄へ質問文を貼り付けます。</span>
+          </button>
+          <button class="contact-choice" id="ask-dm-button" type="button">
+            <strong>DMで質問</strong>
+            <span>公開回答を避けたい場合に使います。</span>
+          </button>
+        </div>
+        <div class="modal-actions">
+          <span></span><span></span>
+          <button class="tool-button" type="button" data-close-dialog>キャンセル</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog id="import-dialog" class="modal import-modal">
       <form method="dialog" id="import-form">
         <div class="modal-header">
@@ -305,7 +378,7 @@
           <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
         </div>
         <p class="modal-help">
-          1行目にヘッダーを置いてください。最低限、title, lat, lng があれば登録できます。
+          1行目にヘッダーを置いてください。title は必須です。場所未特定なら lat, lng は両方空欄にできます。
         </p>
         <textarea id="csv-input" rows="12" spellcheck="false" placeholder="title,category,lat,lng,status,sourceType,photoStatus,notes"></textarea>
         <div class="modal-actions">
@@ -320,57 +393,25 @@
     <dialog id="screenshot-dialog" class="modal screenshot-modal">
       <form method="dialog" id="screenshot-form">
         <div class="modal-header">
-          <h2>検索画面スクショ証跡</h2>
+          <div>
+            <p class="step-kicker">ステップ 2 / 4</p>
+            <h2>見つけた投稿を画像で残す</h2>
+          </div>
           <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
         </div>
-        <p class="modal-help">
-          InstagramやThreadsの検索画面を手動で開き、スクリーンショットを貼り付けまたは選択してください。ドラッグで必要範囲を切り出し、被害候補として台帳化します。
-        </p>
 
-        <div class="form-grid">
-          <label>
-            プラットフォーム
-            <select id="evidence-platform">
-              <option value="instagram">Instagram</option>
-              <option value="threads">Threads</option>
-              <option value="x">X</option>
-              <option value="yahoo-realtime">Yahoo!リアルタイム検索</option>
-              <option value="web">Web検索</option>
-              <option value="other">その他</option>
-            </select>
-          </label>
-          <label>
-            確認者
-            <input id="evidence-operator" type="text" placeholder="氏名・担当名">
-          </label>
+        <div class="capture-guide">
+          <strong>次のどちらかで画像を用意します</strong>
+          <span>通常は自動で画面選択が開きます。Instagramのタブを1回選ぶだけです。</span>
+          <span>画像ファイルとして保存する必要はありません。</span>
         </div>
-
-        <div class="form-grid">
-          <label>
-            投稿・発生時刻
-            <input id="evidence-observed-at" type="datetime-local">
-          </label>
-          <label>
-            検索・確認時刻
-            <input id="evidence-checked-at" type="datetime-local">
-          </label>
-        </div>
-
-        <label>
-          検索語
-          <input id="evidence-query" type="text" placeholder="例：印西市 冠水 / #印西市 大雨 / 木下駅 浸水">
-        </label>
-        <label>
-          検索結果URL・投稿URL
-          <input id="evidence-url" type="url" placeholder="https://...">
-        </label>
 
         <div class="screenshot-tools">
           <label class="file-label">
             スクショ画像
             <input id="screenshot-file" type="file" accept="image/*">
           </label>
-          <button class="tool-button" type="button" id="capture-screen-button">画面キャプチャ</button>
+          <button class="tool-button primary" type="button" id="capture-screen-button">画面キャプチャ</button>
           <button class="tool-button" type="button" id="reset-crop-button">範囲リセット</button>
           <button class="tool-button" type="button" id="download-crop-button">切り出しDL</button>
           <button class="tool-button" type="button" id="run-ocr-button">OCR文字抽出</button>
@@ -379,21 +420,60 @@
         <p class="ocr-status" id="ocr-status" aria-live="polite">OCR未実行</p>
 
         <div class="paste-zone" id="paste-zone">
-          ここにスクリーンショットを貼り付けできます。画像を読み込むと切り出し範囲をドラッグできます。
+          この枠をクリックして Ctrl + V で貼り付けできます。画像を読み込んだら、投稿部分をドラッグで囲みます。
         </div>
         <div class="canvas-wrap">
           <canvas id="screenshot-canvas" width="720" height="420" aria-label="スクリーンショット切り出し範囲"></canvas>
         </div>
 
-        <label>
-          証跡メモ
-          <textarea id="evidence-notes" rows="3" placeholder="例：検索結果の上位に冠水投稿あり。投稿本文に場所名があるが座標未確認。"></textarea>
-        </label>
-
-        <label>
-          OCR抽出文字
-          <textarea id="evidence-ocr-text" rows="5" placeholder="切り出し範囲に対してOCRを実行すると、ここへ文字が入ります。"></textarea>
-        </label>
+        <details class="advanced-options">
+          <summary>投稿URL・時刻・メモを入力する</summary>
+          <div class="advanced-options-body">
+            <div class="form-grid">
+              <label>
+                プラットフォーム
+                <select id="evidence-platform">
+                  <option value="instagram">Instagram</option>
+                  <option value="threads">Threads</option>
+                  <option value="x">X</option>
+                  <option value="yahoo-realtime">Yahoo!リアルタイム検索</option>
+                  <option value="web">Web検索</option>
+                  <option value="other">その他</option>
+                </select>
+              </label>
+              <label>
+                確認者
+                <input id="evidence-operator" type="text" placeholder="氏名・担当名">
+              </label>
+            </div>
+            <div class="form-grid">
+              <label>
+                投稿・発生時刻
+                <input id="evidence-observed-at" type="datetime-local">
+              </label>
+              <label>
+                検索・確認時刻
+                <input id="evidence-checked-at" type="datetime-local">
+              </label>
+            </div>
+            <label>
+              検索語
+              <input id="evidence-query" type="text" placeholder="例：印西市 冠水">
+            </label>
+            <label>
+              投稿URL
+              <input id="evidence-url" type="url" placeholder="https://...">
+            </label>
+            <label>
+              証跡メモ
+              <textarea id="evidence-notes" rows="3" placeholder="場所名や未確認事項など"></textarea>
+            </label>
+            <label>
+              OCR抽出文字
+              <textarea id="evidence-ocr-text" rows="5" placeholder="OCRを実行すると文字が入ります"></textarea>
+            </label>
+          </div>
+        </details>
 
         <div id="evidence-duplicate-warning" class="duplicate-warning" hidden></div>
 
@@ -401,7 +481,7 @@
           <button class="tool-button" type="button" id="clear-screenshot-button">画像クリア</button>
           <span></span>
           <button class="tool-button" type="button" data-close-dialog>キャンセル</button>
-          <button class="tool-button primary" type="submit">台帳化して地点編集</button>
+          <button class="tool-button primary" type="submit">画像を保存して、地図で場所を決める</button>
         </div>
       </form>
     </dialog>
@@ -409,12 +489,33 @@
     <dialog id="sns-collector-dialog" class="modal collector-modal">
       <form method="dialog" id="sns-collector-form">
         <div class="modal-header">
-          <h2>SNS検索・取込</h2>
+          <div>
+            <p class="step-kicker">ステップ 1 / 4</p>
+            <h2>SNSで被害投稿を探す</h2>
+          </div>
           <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
         </div>
-        <p class="modal-help">
-          公式APIで取得できる投稿は連携APIから取り込み、取得できないInstagram検索結果は検索画面を開いてスクショ証跡へ送ります。
-        </p>
+
+        <section class="link-register-panel">
+          <div>
+            <strong>SNS投稿のURLが分かる場合</strong>
+            <span>場所が分からなくても、リンクだけ先に登録できます。</span>
+          </div>
+          <label>
+            投稿URL
+            <input id="collector-post-url" type="url" placeholder="https://www.instagram.com/p/...">
+          </label>
+          <button class="tool-button primary workflow-primary" id="register-social-link-button" type="button">場所未特定で登録</button>
+        </section>
+
+        <div class="option-divider"><span>投稿をこれから探す場合</span></div>
+
+        <div class="workflow-steps" aria-label="登録の流れ">
+          <span class="is-current"><b>1</b>検索</span>
+          <span><b>2</b>画像保存</span>
+          <span><b>3</b>場所指定</span>
+          <span><b>4</b>確認・保存</span>
+        </div>
 
         <div class="form-grid">
           <label>
@@ -427,10 +528,7 @@
               <option value="web">Web検索</option>
             </select>
           </label>
-          <label>
-            確認者
-            <input id="collector-operator" type="text" placeholder="氏名・担当名">
-          </label>
+          <div class="platform-help" id="platform-help">Instagramの検索画面を新しいタブで開きます。</div>
         </div>
 
         <label>
@@ -446,32 +544,50 @@
           <button type="button" data-query="千葉ニュータウン 大雨">千葉ニュータウン 大雨</button>
         </div>
 
-        <div class="form-grid">
-          <label>
-            期間開始
-            <input id="collector-since" type="datetime-local">
-          </label>
-          <label>
-            期間終了
-            <input id="collector-until" type="datetime-local">
-          </label>
-        </div>
-
         <div class="collector-actions">
-          <button class="tool-button primary" type="button" id="open-social-search-button">検索画面を開く</button>
-          <button class="tool-button" type="button" id="to-screenshot-button">スクショ登録へ</button>
-          <button class="tool-button" type="button" id="api-search-button">連携APIで検索</button>
+          <button class="tool-button primary workflow-primary" type="button" id="open-social-search-button">Instagramで検索を開く</button>
         </div>
 
-        <div class="api-note" id="collector-api-note"></div>
+        <section class="next-step" id="collector-next-step">
+          <div>
+            <strong>投稿が見つかったら</strong>
+            <span>その投稿を表示したまま戻り、ボタンを押します。画像取得と文字解析は自動です。</span>
+          </div>
+          <button class="tool-button primary" type="button" id="to-screenshot-button">投稿画面を自動取込</button>
+        </section>
 
-        <details class="json-import">
-          <summary>APIレスポンスJSONを手動で取り込む</summary>
-          <textarea id="sns-json-input" rows="7" spellcheck="false" placeholder='{"data":[{"id":"...","text":"印西市で冠水","permalink":"https://...","timestamp":"..."}]}'></textarea>
-          <button class="tool-button" id="parse-sns-json-button" type="button">JSONを読み込む</button>
+        <details class="advanced-options">
+          <summary>検索期間・確認者を変更する</summary>
+          <div class="advanced-options-body">
+            <label>
+              確認者
+              <input id="collector-operator" type="text" placeholder="氏名・担当名">
+            </label>
+            <div class="form-grid">
+              <label>
+                期間開始
+                <input id="collector-since" type="datetime-local">
+              </label>
+              <label>
+                期間終了
+                <input id="collector-until" type="datetime-local">
+              </label>
+            </div>
+          </div>
         </details>
 
-        <div class="api-results" id="api-results" aria-live="polite"></div>
+        <details class="advanced-options admin-options">
+          <summary>管理者向け: API・JSONから取り込む</summary>
+          <div class="advanced-options-body">
+            <div class="api-note" id="collector-api-note"></div>
+            <button class="tool-button" type="button" id="api-search-button">連携APIで検索</button>
+            <div class="json-import">
+              <textarea id="sns-json-input" rows="7" spellcheck="false" placeholder='{"data":[{"id":"...","text":"印西市で冠水","permalink":"https://...","timestamp":"..."}]}'></textarea>
+              <button class="tool-button" id="parse-sns-json-button" type="button">JSONを読み込む</button>
+            </div>
+            <div class="api-results" id="api-results" aria-live="polite"></div>
+          </div>
+        </details>
 
         <div class="modal-actions">
           <span></span><span></span>
@@ -480,9 +596,31 @@
       </form>
     </dialog>
 
+    <dialog id="help-dialog" class="modal help-modal">
+      <form method="dialog">
+        <div class="modal-header">
+          <h2>このMAPの使い方</h2>
+          <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
+        </div>
+        <p class="modal-help">SNS投稿はリンクだけで先に登録できます。場所が不明なときは投稿者へ確認してからピンを置きます。</p>
+        <ol class="help-steps">
+          <li><b>投稿リンクを登録</b><span>Instagramなどの投稿URLを貼ります。場所は空欄で構いません。</span></li>
+          <li><b>場所を質問</b><span>元投稿を開き、コメントまたはDMで撮影場所を確認します。</span></li>
+          <li><b>回答後にピン設定</b><span>分かった場所を地図上でクリックします。</span></li>
+          <li><b>内容を確認して保存</b><span>分類、重要度、写真状態を確認します。</span></li>
+        </ol>
+        <div class="help-note">地図へのピン設定は無料です。データはこのブラウザ内に保存されます。投稿内容は未確認情報として登録されるため、公開判断の前に複数根拠や現地確認で確かめてください。</div>
+        <div class="modal-actions">
+          <span></span><span></span>
+          <button class="tool-button" type="button" data-close-dialog>閉じる</button>
+          <button class="tool-button primary" id="help-start-button" type="button">SNS収集を始める</button>
+        </div>
+      </form>
+    </dialog>
+
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
-    <script src="./config.js?v=20260814a"></script>
-    <script src="./app.js?v=20260814a"></script>
+    <script src="./config.js?v=20260814b"></script>
+    <script src="./app.js?v=20260814b"></script>
   </body>
 </html>

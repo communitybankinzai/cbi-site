@@ -5,7 +5,7 @@
 ## できること
 
 - 国土地理院地図を背景に、洪水浸水想定、内水浸水想定、土砂災害警戒区域を重ねる
-- 千葉県内の道路冠水注意箇所から、印西市の「六軒ガード下」を初期リスク地点として表示する
+- 千葉県内の道路冠水注意箇所から、印西市の「六軒ガード下」を任意の参考レイヤーとして表示する（初期OFF、座標は暫定位置）
 - SNS、Web、住民通報、職員確認、公式発表を同じ台帳に登録する
 - 被害地点ごとに、想定内被害、想定外被害、高リスク未確認、情報不確実を表示する
 - 写真待ち、写真リンクあり、職員写真確認済、取得不可を管理する
@@ -16,6 +16,27 @@
 - 投稿URL、投稿ID、OCR本文、近接地点から重複候補を警告する
 - CBI側のサーバーAPIまたは手動JSONからThreads/Instagram等の投稿候補を取り込む
 - CSV取込、CSV出力、GeoJSON出力、印刷用表示に対応する
+- SNS投稿URLだけで先に登録し、場所未特定の候補を「場所確認待ち」で管理する
+- 元投稿を開くと同時に、撮影場所を尋ねるコメント・DM文をクリップボードへ用意する
+- 投稿者から回答を得た後、地図クリックでピンを設定する
+- スクリーンショット内の「3時間前」などを確認時刻から逆算し、推定投稿時刻として記録する
+- 画面キャプチャはブラウザ上で取得するため、スクリーンショットファイルを事前保存する必要はない
+
+## 無料で利用できる範囲
+
+- 地図表示とピン設定は Leaflet と国土地理院タイルを利用し、Google Maps の有料APIは使用しない
+- 登録データと切り出した証跡画像は、現在の構成ではブラウザのローカルストレージへ保存する
+- CSV/GeoJSONの入出力、投稿リンク登録、場所確認待ち、相対時刻の逆算は無料で利用できる
+
+複数端末でのリアルタイム共有、画像のサーバー保管、公式SNS APIの利用を追加する場合は、別途バックエンドやAPI利用料が発生する可能性があります。
+
+## SNS投稿の登録手順
+
+1. `SNS収集`を開き、分かっている投稿URLを貼って`場所未特定で登録`を押す
+2. 投稿URLが分からない場合はSNS検索を開き、投稿を表示したまま`投稿画面を自動取込`を押す
+3. 場所が不明な候補で`場所を質問（コメント / DM）`を押し、確認手段を選んで用意された文面を貼る
+4. 回答後に`地図でピンを置く`を押し、確認できた位置を地図上でクリックする
+5. 分類、重要度、写真状態、推定時刻を確認して保存する
 
 ## 注意
 
@@ -26,7 +47,7 @@ SNSやWeb由来の情報は確認候補です。行政判断や公開判断に�
 ## CSVヘッダー
 
 ```csv
-title,category,locationName,lat,lng,observedAt,sourceType,sourceUrl,status,severity,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,notes
+title,category,locationName,lat,lng,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,notes
 ```
 
 スクリーンショット証跡はブラウザのローカル保存です。CSV/GeoJSONには巨大な画像本体は含めず、`evidenceHasImage`、`evidencePlatform`、`evidenceQuery` を出力します。
