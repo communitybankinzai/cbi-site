@@ -1,0 +1,1799 @@
+const INZAI_BOUNDS = L.latLngBounds([35.735, 140.055], [35.875, 140.245]);
+const STORAGE_KEY = "inzai-disaster-records-v1";
+const SEARCH_LOG_KEY = "inzai-disaster-search-log-v1";
+const OPERATOR_KEY = "inzai-disaster-operator-v1";
+const SOURCE_CHECKED_AT = "2026-08-14";
+const APP_CONFIG = window.CBI_DISASTER_CONFIG || {};
+
+const statusLabels = {
+  unconfirmed: "未確認",
+  corroborated: "複数根拠",
+  verified: "確認済",
+  actioning: "対応中",
+  resolved: "解消済"
+};
+
+const categoryLabels = {
+  road_flood: "道路冠水",
+  inundation: "浸水",
+  river: "河川増水",
+  landslide: "土砂",
+  traffic: "通行止め",
+  lifeline: "ライフライン",
+  shelter: "避難所",
+  other: "その他"
+};
+
+const sourceLabels = {
+  official: "公式",
+  staff: "職員確認",
+  citizen: "住民通報",
+  sns: "SNS",
+  news: "報道",
+  web: "Web"
+};
+
+const photoLabels = {
+  "needs-photo": "写真待ち",
+  "has-photo": "写真リンクあり",
+  "official-verified": "職員写真確認済",
+  unavailable: "取得不可"
+};
+
+const platformLabels = {
+  instagram: "Instagram",
+  threads: "Threads",
+  x: "X",
+  "yahoo-realtime": "Yahoo!リアルタイム検索",
+  web: "Web検索",
+  other: "その他"
+};
+
+const searchMethodLabels = {
+  "manual-search": "画面検索",
+  screenshot: "スクショ登録",
+  api: "連携API",
+  json: "JSON取込",
+  host: "CBI連携"
+};
+
+const alignmentLabels = {
+  expected: "想定内被害",
+  unexpected: "想定外被害",
+  highRisk: "高リスク未確認",
+  uncertain: "情報不確実",
+  resolved: "解消済"
+};
+
+const roadFloodSites = [
+  {
+    id: "road-39",
+    no: 39,
+    city: "印西市",
+    roadType: "市道",
+    route: "印西市 08-014号線",
+    name: "大森4233-10 六軒ガード下",
+    lat: 35.8379,
+    lng: 140.1494,
+    accuracy: "住所・通称名からの暫定位置",
+    source: "国土交通省 関東地方整備局 千葉国道事務所 道路冠水注意箇所マップ 令和8年6月30日更新"
+  }
+];
+
+const demoRecords = [
+  {
+    id: "demo-1",
+    title: "道路冠水のSNS候補",
+    category: "road_flood",
+    locationName: "木下駅北側周辺 サンプル",
+    lat: 35.8372,
+    lng: 140.1482,
+    observedAt: "2026-08-13T08:40",
+    sourceType: "sns",
+    sourceUrl: "",
+    status: "unconfirmed",
+    severity: "medium",
+    photoStatus: "has-photo",
+    photoUrl: "SNS画像URLを庁内台帳へ転記",
+    photoPrivacy: "internal",
+    assignedTo: "道路管理",
+    notes: "デモデータです。実被害ではありません。投稿位置と道路冠水注意箇所の近接を確認する想定。",
+    hazardFlags: { flood: false, inland: true, road: true, landslide: false }
+  },
+  {
+    id: "demo-2",
+    title: "低地で浸水通報",
+    category: "inundation",
+    locationName: "発作地区周辺 サンプル",
+    lat: 35.8264,
+    lng: 140.1584,
+    observedAt: "2026-08-13T09:15",
+    sourceType: "citizen",
+    sourceUrl: "",
+    status: "corroborated",
+    severity: "high",
+    photoStatus: "needs-photo",
+    photoUrl: "",
+    photoPrivacy: "internal",
+    assignedTo: "防災課",
+    notes: "デモデータです。複数通報があるが写真未確認、現地確認依頼に回す想定。",
+    hazardFlags: { flood: true, inland: true, road: false, landslide: false }
+  },
+  {
+    id: "demo-3",
+    title: "ハザード外の冠水候補",
+    category: "road_flood",
+    locationName: "千葉ニュータウン中央駅南側 サンプル",
+    lat: 35.8005,
+    lng: 140.1166,
+    observedAt: "2026-08-13T10:05",
+    sourceType: "web",
+    sourceUrl: "",
+    status: "unconfirmed",
+    severity: "low",
+    photoStatus: "needs-photo",
+    photoUrl: "",
+    photoPrivacy: "internal",
+    assignedTo: "確認待ち",
+    notes: "デモデータです。ハザード一致が弱い地点を想定外候補として扱う例。",
+    hazardFlags: { flood: false, inland: false, road: false, landslide: false }
+  }
+];
+
+let records = loadRecords();
+let searchLog = loadSearchLog();
+let selectedId = null;
+let clickAddMode = false;
+let apiResultItems = [];
+let screenshotState = {
+  image: null,
+  scale: 1,
+  crop: null,
+  dragging: false,
+  start: null
+};
+
+const map = L.map("map", {
+  zoomControl: true,
+  preferCanvas: true
+}).fitBounds(INZAI_BOUNDS);
+
+const baseLayers = {
+  pale: L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
+    attribution: "地理院タイル",
+    maxZoom: 18
+  }),
+  std: L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
+    attribution: "地理院タイル",
+    maxZoom: 18
+  }),
+  photo: L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", {
+    attribution: "地理院タイル",
+    maxZoom: 18
+  })
+};
+
+const hazardLayers = {
+  floodMax: L.tileLayer("https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin_data/{z}/{x}/{y}.png", {
+    attribution: "ハザードマップポータルサイト",
+    opacity: 0.56,
+    maxZoom: 17
+  }),
+  floodPlan: L.tileLayer("https://disaportaldata.gsi.go.jp/raster/01_flood_l1_shinsuishin_newlegend_data/{z}/{x}/{y}.png", {
+    attribution: "ハザードマップポータルサイト",
+    opacity: 0.56,
+    maxZoom: 17
+  }),
+  inland: L.tileLayer("https://disaportaldata.gsi.go.jp/raster/02_naisui_data/{z}/{x}/{y}.png", {
+    attribution: "ハザードマップポータルサイト",
+    opacity: 0.56,
+    maxZoom: 17
+  })
+};
+
+const landslideGroup = L.layerGroup([
+  L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_dosekiryukeikaikuiki_data/{z}/{x}/{y}.png", {
+    attribution: "ハザードマップポータルサイト",
+    opacity: 0.56,
+    maxZoom: 17
+  }),
+  L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_kyukeishakeikaikuiki_data/{z}/{x}/{y}.png", {
+    attribution: "ハザードマップポータルサイト",
+    opacity: 0.56,
+    maxZoom: 17
+  }),
+  L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_jisuberikeikaikuiki_data/{z}/{x}/{y}.png", {
+    attribution: "ハザードマップポータルサイト",
+    opacity: 0.56,
+    maxZoom: 17
+  })
+]);
+
+const recordLayer = L.layerGroup();
+const roadFloodLayer = L.layerGroup();
+const boundaryLayer = L.geoJSON(null, {
+  style: {
+    color: "#2365a8",
+    weight: 2,
+    fillColor: "#2365a8",
+    fillOpacity: 0.05,
+    dashArray: "7 5"
+  }
+});
+
+baseLayers.pale.addTo(map);
+hazardLayers.floodMax.addTo(map);
+hazardLayers.inland.addTo(map);
+recordLayer.addTo(map);
+roadFloodLayer.addTo(map);
+boundaryLayer.addTo(map);
+
+initBoundary();
+renderRoadFloodSites();
+initIntegration();
+renderAll();
+bindEvents();
+
+function bindEvents() {
+  document.getElementById("base-layer-select").addEventListener("change", event => {
+    Object.values(baseLayers).forEach(layer => map.removeLayer(layer));
+    baseLayers[event.target.value].addTo(map);
+  });
+
+  document.querySelectorAll("[data-overlay]").forEach(input => {
+    input.addEventListener("change", () => toggleOverlay(input.dataset.overlay, input.checked));
+  });
+
+  document.getElementById("hazard-opacity").addEventListener("input", event => {
+    const opacity = Number(event.target.value) / 100;
+    document.getElementById("hazard-opacity-value").textContent = `${event.target.value}%`;
+    Object.values(hazardLayers).forEach(layer => layer.setOpacity(opacity));
+    landslideGroup.eachLayer(layer => layer.setOpacity(opacity));
+  });
+
+  document.getElementById("reset-view-button").addEventListener("click", () => map.fitBounds(INZAI_BOUNDS));
+  document.getElementById("print-button").addEventListener("click", () => window.print());
+  document.getElementById("sns-collector-button").addEventListener("click", openCollectorDialog);
+  document.getElementById("add-point-button").addEventListener("click", () => openRecordDialog());
+  document.getElementById("map-click-button").addEventListener("click", toggleClickAddMode);
+  document.getElementById("screenshot-button").addEventListener("click", openScreenshotDialog);
+  document.getElementById("use-map-center-button").addEventListener("click", useMapCenter);
+  document.getElementById("record-form").addEventListener("submit", saveRecordFromForm);
+  document.getElementById("delete-record-button").addEventListener("click", deleteCurrentRecord);
+  document.getElementById("import-button").addEventListener("click", () => document.getElementById("import-dialog").showModal());
+  document.getElementById("import-form").addEventListener("submit", importCsv);
+  document.getElementById("copy-template-button").addEventListener("click", copyCsvTemplate);
+  document.getElementById("screenshot-file").addEventListener("change", loadScreenshotFile);
+  document.getElementById("capture-screen-button").addEventListener("click", captureScreen);
+  document.getElementById("screenshot-form").addEventListener("submit", saveScreenshotEvidence);
+  document.getElementById("reset-crop-button").addEventListener("click", resetCrop);
+  document.getElementById("download-crop-button").addEventListener("click", downloadCrop);
+  document.getElementById("clear-screenshot-button").addEventListener("click", clearScreenshot);
+  document.getElementById("run-ocr-button").addEventListener("click", runEvidenceOcr);
+  document.getElementById("screenshot-dialog").addEventListener("paste", handleScreenshotPaste);
+  document.getElementById("open-social-search-button").addEventListener("click", openSocialSearch);
+  document.getElementById("to-screenshot-button").addEventListener("click", collectorToScreenshot);
+  document.getElementById("api-search-button").addEventListener("click", searchViaBridge);
+  document.getElementById("parse-sns-json-button").addEventListener("click", parseSnsJsonInput);
+  document.getElementById("api-results").addEventListener("click", handleApiResultAction);
+  document.getElementById("clear-search-log-button").addEventListener("click", clearSearchLog);
+  document.querySelectorAll("[data-query]").forEach(button => {
+    button.addEventListener("click", () => setFormValue("collector-query", button.dataset.query));
+  });
+  ["record-title", "record-location", "record-lat", "record-lng", "record-observed-at", "record-source-url"].forEach(id => {
+    document.getElementById(id).addEventListener("input", renderRecordDuplicateWarning);
+  });
+  ["evidence-platform", "evidence-query", "evidence-url", "evidence-observed-at", "evidence-ocr-text"].forEach(id => {
+    document.getElementById(id).addEventListener("input", renderEvidenceDuplicateWarning);
+  });
+  bindCropCanvas();
+  document.getElementById("export-csv-button").addEventListener("click", exportCsv);
+  document.getElementById("export-geojson-button").addEventListener("click", exportGeoJson);
+  document.getElementById("load-demo-button").addEventListener("click", loadDemoRecords);
+  document.getElementById("clear-filters-button").addEventListener("click", clearFilters);
+  document.getElementById("keyword-filter").addEventListener("input", renderAll);
+  document.getElementById("photo-filter").addEventListener("change", renderAll);
+  document.querySelectorAll("[data-status]").forEach(input => input.addEventListener("change", renderAll));
+  document.querySelectorAll("[data-close-dialog]").forEach(button => {
+    button.addEventListener("click", () => button.closest("dialog").close());
+  });
+
+  map.on("click", event => {
+    if (!clickAddMode) return;
+    openRecordDialog({ lat: event.latlng.lat, lng: event.latlng.lng });
+  });
+}
+
+function initIntegration() {
+  const homeLink = document.querySelector(".cbi-home-link");
+  if (homeLink && APP_CONFIG.cbiHomeUrl) homeLink.href = APP_CONFIG.cbiHomeUrl;
+  if (new URLSearchParams(window.location.search).get("embed") === "1") {
+    document.body.classList.add("embed-mode");
+  }
+
+  const endpoint = String(APP_CONFIG.snsSearchEndpoint || "").trim();
+  const apiStatus = document.getElementById("api-status");
+  const apiButton = document.getElementById("api-search-button");
+  const apiNote = document.getElementById("collector-api-note");
+  if (endpoint) {
+    apiStatus.textContent = "SNS API接続設定済み";
+    apiStatus.classList.add("is-connected");
+    apiButton.disabled = false;
+    apiNote.textContent = "CBI連携APIを通じて検索します。Metaのアクセストークンはこの画面には保存しません。";
+  } else {
+    apiStatus.textContent = "SNS API未接続";
+    apiButton.disabled = true;
+    apiButton.title = "config.js にCBI連携APIを設定すると利用できます";
+    apiNote.textContent = "現在は検索画面・スクショ・JSON取込を利用できます。公式API接続時は config.js の snsSearchEndpoint にCBI側の連携先を設定します。";
+  }
+
+  window.CBIDisasterMap = {
+    version: APP_CONFIG.appVersion || "",
+    getRecords: () => records.map(withoutLargeImage),
+    getSearchLog: () => searchLog.map(item => ({ ...item })),
+    importSnsPayload: (payload, platform = "web") => consumeSnsPayload(payload, platform, "host")
+  };
+}
+
+function openCollectorDialog() {
+  const incidentDate = getFormValue("incident-date") || dateStamp().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
+  setFormValue("collector-since", `${incidentDate}T00:00`);
+  setFormValue("collector-until", `${incidentDate}T23:59`);
+  setFormValue("collector-operator", loadOperator());
+  apiResultItems = [];
+  renderApiResults();
+  document.getElementById("sns-collector-dialog").showModal();
+}
+
+function openSocialSearch() {
+  const platform = getFormValue("collector-platform");
+  const query = getFormValue("collector-query");
+  const operator = getFormValue("collector-operator");
+  if (!query) {
+    alert("検索語を入力してください。");
+    return;
+  }
+  saveOperator(operator);
+  const url = buildSocialSearchUrl(platform, query);
+  navigator.clipboard?.writeText(query).catch(() => {});
+  const opened = window.open(url, "_blank");
+  if (opened) opened.opener = null;
+  else alert("検索画面を開けませんでした。ポップアップの許可を確認してください。");
+  logSearch({ platform, query, operator, checkedAt: nowLocalInput(), method: "manual-search", resultCount: "-" });
+}
+
+function collectorToScreenshot() {
+  const platform = getFormValue("collector-platform");
+  const query = getFormValue("collector-query");
+  const operator = getFormValue("collector-operator");
+  saveOperator(operator);
+  document.getElementById("sns-collector-dialog").close();
+  openScreenshotDialog({ platform, query, operator, checkedAt: nowLocalInput() });
+}
+
+function buildSocialSearchUrl(platform, query) {
+  const encoded = encodeURIComponent(query);
+  if (platform === "instagram") {
+    const tag = query.trim().replace(/^#/, "");
+    if (/^[^\s#]+$/.test(tag)) return `https://www.instagram.com/explore/tags/${encodeURIComponent(tag)}/`;
+    return `https://www.instagram.com/explore/search/keyword/?q=${encoded}`;
+  }
+  if (platform === "threads") return `https://www.threads.net/search?q=${encoded}&serp_type=default`;
+  if (platform === "x") return `https://x.com/search?q=${encoded}&src=typed_query&f=live`;
+  if (platform === "yahoo-realtime") return `https://search.yahoo.co.jp/realtime/search?p=${encoded}`;
+  return `https://www.google.com/search?q=${encodeURIComponent(`${query} 印西市 災害`)}`;
+}
+
+async function searchViaBridge() {
+  const endpoint = String(APP_CONFIG.snsSearchEndpoint || "").trim();
+  if (!endpoint) return;
+  const platform = getFormValue("collector-platform");
+  const query = getFormValue("collector-query");
+  const operator = getFormValue("collector-operator");
+  if (!query) {
+    alert("検索語を入力してください。");
+    return;
+  }
+  const button = document.getElementById("api-search-button");
+  const results = document.getElementById("api-results");
+  button.disabled = true;
+  results.innerHTML = '<div class="detail-empty">連携APIを検索中です...</div>';
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        platform,
+        query,
+        since: getFormValue("collector-since"),
+        until: getFormValue("collector-until")
+      })
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    consumeSnsPayload(payload, platform, "api");
+    saveOperator(operator);
+    logSearch({ platform, query, operator, checkedAt: nowLocalInput(), method: "api", resultCount: apiResultItems.length });
+  } catch {
+    results.innerHTML = '<div class="duplicate-warning"><strong>連携APIから取得できませんでした</strong>検索画面・スクショ、またはJSON取込を利用してください。</div>';
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function parseSnsJsonInput() {
+  const text = getFormValue("sns-json-input");
+  if (!text) return;
+  try {
+    const payload = JSON.parse(text);
+    const platform = getFormValue("collector-platform");
+    consumeSnsPayload(payload, platform, "json");
+    logSearch({
+      platform,
+      query: getFormValue("collector-query"),
+      operator: getFormValue("collector-operator"),
+      checkedAt: nowLocalInput(),
+      method: "json",
+      resultCount: apiResultItems.length
+    });
+  } catch {
+    alert("JSONの形式を確認してください。");
+  }
+}
+
+function consumeSnsPayload(payload, fallbackPlatform, method) {
+  const source = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload?.results)
+          ? payload.results
+          : [];
+  apiResultItems = source.map(item => normalizeSnsItem(item, fallbackPlatform)).filter(Boolean);
+  renderApiResults();
+  if (!apiResultItems.length && method === "host") return [];
+  return apiResultItems.map(item => ({ ...item }));
+}
+
+function normalizeSnsItem(item, fallbackPlatform) {
+  if (!item || typeof item !== "object") return null;
+  const text = String(item.text || item.caption || item.description || item.title || "").trim();
+  const permalink = String(item.permalink || item.url || item.link || "").trim();
+  const mediaUrl = String(item.mediaUrl || item.media_url || item.thumbnailUrl || item.thumbnail_url || "").trim();
+  const coordinates = item.coordinates || item.location || {};
+  const lat = Number(item.lat ?? item.latitude ?? coordinates.lat ?? coordinates.latitude);
+  const lng = Number(item.lng ?? item.longitude ?? coordinates.lng ?? coordinates.longitude);
+  return {
+    externalId: String(item.externalId || item.id || item.shortcode || ""),
+    platform: String(item.platform || fallbackPlatform || "web"),
+    text,
+    permalink,
+    mediaUrl,
+    timestamp: String(item.timestamp || item.createdAt || item.created_at || ""),
+    username: String(item.username || item.owner?.username || ""),
+    locationName: String(item.locationName || item.location_name || coordinates.name || ""),
+    lat: Number.isFinite(lat) ? lat : null,
+    lng: Number.isFinite(lng) ? lng : null
+  };
+}
+
+function renderApiResults() {
+  const node = document.getElementById("api-results");
+  if (!apiResultItems.length) {
+    node.innerHTML = '<div class="detail-empty">APIまたはJSONの検索結果はまだありません。</div>';
+    return;
+  }
+  node.innerHTML = apiResultItems.map((item, index) => {
+    const duplicate = findExactDuplicate(item);
+    return `
+      <article class="api-result">
+        <div>
+          <h3>${escapeHtml(truncateText(item.text || "本文なし", 92))}</h3>
+          <p class="result-meta">
+            <span>${escapeHtml(platformLabels[item.platform] || item.platform)}</span>
+            <span>${escapeHtml(item.username ? `@${item.username}` : "投稿者不明")}</span>
+            <span>${escapeHtml(formatDateTime(toDateTimeLocal(item.timestamp)))}</span>
+          </p>
+          ${item.permalink ? `<p><a href="${escapeAttribute(item.permalink)}" target="_blank" rel="noreferrer">元投稿を開く</a></p>` : ""}
+        </div>
+        <button class="tool-button ${duplicate ? "" : "primary"}" type="button" data-api-index="${index}" ${duplicate ? "disabled" : ""}>
+          ${duplicate ? "登録済" : "候補に追加"}
+        </button>
+      </article>`;
+  }).join("");
+}
+
+function handleApiResultAction(event) {
+  const button = event.target.closest("[data-api-index]");
+  if (!button) return;
+  addApiResultAsRecord(apiResultItems[Number(button.dataset.apiIndex)]);
+}
+
+function addApiResultAsRecord(item) {
+  if (!item) return;
+  const duplicate = findExactDuplicate(item);
+  if (duplicate) {
+    selectRecord(duplicate.id, true);
+    return;
+  }
+  const center = map.getCenter();
+  const operator = getFormValue("collector-operator") || loadOperator();
+  const record = {
+    id: `rec-${Date.now()}`,
+    title: truncateText(item.text || `${platformLabels[item.platform] || "SNS"}投稿候補`, 72),
+    category: inferCategory(item.text),
+    locationName: item.locationName || "位置未確定",
+    lat: item.lat ?? Number(center.lat.toFixed(6)),
+    lng: item.lng ?? Number(center.lng.toFixed(6)),
+    observedAt: toDateTimeLocal(item.timestamp) || nowLocalInput(),
+    sourceType: item.platform === "web" ? "web" : "sns",
+    sourceUrl: item.permalink,
+    status: "unconfirmed",
+    severity: "medium",
+    photoStatus: item.mediaUrl ? "has-photo" : "needs-photo",
+    photoUrl: item.mediaUrl,
+    photoPrivacy: "internal",
+    assignedTo: "確認待ち",
+    notes: "公式APIまたは連携JSONから登録。位置・内容・写真の真正性は未確認。",
+    hazardFlags: { flood: false, inland: false, road: false, landslide: false },
+    evidencePlatform: item.platform,
+    evidenceQuery: getFormValue("collector-query"),
+    evidenceOperator: operator,
+    evidenceCheckedAt: nowLocalInput(),
+    evidenceOcrText: item.text,
+    evidenceImage: "",
+    externalId: item.externalId,
+    sourceUsername: item.username
+  };
+  records = [...records, record];
+  selectedId = record.id;
+  persistRecords();
+  renderAll();
+  renderApiResults();
+  openRecordDialog({ id: record.id });
+}
+
+function findExactDuplicate(item) {
+  const url = canonicalUrl(item.permalink);
+  return records.find(record =>
+    (item.externalId && record.externalId && item.externalId === record.externalId) ||
+    (url && canonicalUrl(record.sourceUrl) === url)
+  );
+}
+
+function inferCategory(text) {
+  const value = String(text || "");
+  if (/冠水|アンダーパス|道路.*水/.test(value)) return "road_flood";
+  if (/浸水|床上|床下/.test(value)) return "inundation";
+  if (/河川|川.*増水|氾濫/.test(value)) return "river";
+  if (/崖|土砂|土石流|地すべり/.test(value)) return "landslide";
+  if (/通行止|渋滞|運休/.test(value)) return "traffic";
+  if (/停電|断水|通信障害/.test(value)) return "lifeline";
+  if (/避難所|避難場所/.test(value)) return "shelter";
+  return "other";
+}
+
+function logSearch(entry) {
+  searchLog = [{
+    id: `search-${Date.now()}`,
+    platform: entry.platform || "web",
+    query: entry.query || "",
+    operator: entry.operator || "",
+    checkedAt: entry.checkedAt || nowLocalInput(),
+    method: entry.method || "manual-search",
+    resultCount: entry.resultCount ?? "-"
+  }, ...searchLog].slice(0, 50);
+  try {
+    localStorage.setItem(SEARCH_LOG_KEY, JSON.stringify(searchLog));
+  } catch {}
+  renderSearchLog();
+}
+
+function loadSearchLog() {
+  try {
+    const raw = localStorage.getItem(SEARCH_LOG_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function renderSearchLog() {
+  const node = document.getElementById("search-log");
+  if (!node) return;
+  if (!searchLog.length) {
+    node.innerHTML = '<div class="detail-empty">検索履歴はまだありません。</div>';
+    return;
+  }
+  node.innerHTML = searchLog.slice(0, 8).map(item => `
+    <div class="search-log-item">
+      <strong>${escapeHtml(platformLabels[item.platform] || item.platform)} / ${escapeHtml(item.query || "検索語なし")}</strong>
+      <span>${escapeHtml(formatDateTime(item.checkedAt))} ・ ${escapeHtml(item.operator || "確認者未設定")} ・ ${escapeHtml(searchMethodLabels[item.method] || item.method)}</span>
+    </div>
+  `).join("");
+}
+
+function clearSearchLog() {
+  searchLog = [];
+  try {
+    localStorage.removeItem(SEARCH_LOG_KEY);
+  } catch {}
+  renderSearchLog();
+}
+
+function loadOperator() {
+  try {
+    return localStorage.getItem(OPERATOR_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function saveOperator(operator) {
+  if (!operator) return;
+  try {
+    localStorage.setItem(OPERATOR_KEY, operator);
+  } catch {}
+}
+
+function toggleOverlay(name, checked) {
+  const layerMap = {
+    boundary: boundaryLayer,
+    floodMax: hazardLayers.floodMax,
+    floodPlan: hazardLayers.floodPlan,
+    inland: hazardLayers.inland,
+    landslide: landslideGroup,
+    roadFlood: roadFloodLayer,
+    records: recordLayer
+  };
+  const layer = layerMap[name];
+  if (!layer) return;
+  if (checked) layer.addTo(map);
+  else map.removeLayer(layer);
+}
+
+function initBoundary() {
+  fetch("https://geoshape.ex.nii.ac.jp/jma/resource/AreaInformationCity_risk/20241025/1223100.geojson")
+    .then(response => {
+      if (!response.ok) throw new Error("Boundary fetch failed");
+      return response.json();
+    })
+    .then(data => {
+      boundaryLayer.addData(data);
+      document.getElementById("map-status").textContent = `公開レイヤー接続済み・確認日 ${SOURCE_CHECKED_AT}`;
+    })
+    .catch(() => {
+      document.getElementById("map-status").textContent = "境界データを取得できませんでした。背景地図と手元データで表示しています。";
+    });
+}
+
+function renderRoadFloodSites() {
+  roadFloodLayer.clearLayers();
+  roadFloodSites.forEach(site => {
+    const marker = L.marker([site.lat, site.lng], {
+      icon: L.divIcon({
+        className: "",
+        html: '<div class="risk-point" aria-hidden="true"></div>',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+      })
+    });
+    marker.bindPopup(`
+      <div class="popup-title">道路冠水注意箇所 No.${site.no}</div>
+      <div>${escapeHtml(site.name)}</div>
+      <div class="detail-meta">${escapeHtml(site.route)} / ${escapeHtml(site.accuracy)}</div>
+    `);
+    roadFloodLayer.addLayer(marker);
+  });
+}
+
+function renderAll() {
+  renderRecords();
+  renderList();
+  renderSummary();
+  renderPhotoQueue();
+  renderDetail();
+  renderSearchLog();
+}
+
+function renderRecords() {
+  recordLayer.clearLayers();
+  getFilteredRecords().forEach(record => {
+    const alignment = deriveAlignment(record);
+    const marker = L.marker([Number(record.lat), Number(record.lng)], {
+      icon: L.divIcon({
+        className: "",
+        html: `<div class="marker-pin" style="background:${markerColor(record, alignment)}"><span></span></div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 28]
+      })
+    });
+    marker.on("click", () => selectRecord(record.id, true));
+    marker.bindPopup(`
+      <div class="popup-title">${escapeHtml(record.title)}</div>
+      <div>${escapeHtml(categoryLabels[record.category] || record.category)} / ${escapeHtml(statusLabels[record.status] || record.status)}</div>
+      <div class="detail-meta">${escapeHtml(alignmentLabels[alignment])} ・ ${escapeHtml(photoLabels[record.photoStatus] || "")}</div>
+    `);
+    recordLayer.addLayer(marker);
+  });
+}
+
+function renderList() {
+  const list = document.getElementById("record-list");
+  const filtered = getFilteredRecords();
+  if (!filtered.length) {
+    list.innerHTML = '<div class="detail-empty">登録地点はまだありません。地点追加またはCSV取込から始めてください。</div>';
+    return;
+  }
+  list.innerHTML = filtered
+    .sort((a, b) => String(b.observedAt || "").localeCompare(String(a.observedAt || "")))
+    .map(record => {
+      const alignment = deriveAlignment(record);
+      return `
+        <article class="record-card ${record.id === selectedId ? "is-selected" : ""}" data-record-id="${record.id}" style="border-left-color:${markerColor(record, alignment)}">
+          <h3>${escapeHtml(record.title)}</h3>
+          <div class="record-meta">
+            <span class="badge ${badgeColor(record.status)}">${escapeHtml(statusLabels[record.status] || record.status)}</span>
+            <span class="badge ${alignmentColor(alignment)}">${escapeHtml(alignmentLabels[alignment])}</span>
+            <span>${escapeHtml(categoryLabels[record.category] || record.category)}</span>
+            <span>${escapeHtml(record.locationName || "場所名なし")}</span>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+  list.querySelectorAll("[data-record-id]").forEach(card => {
+    card.addEventListener("click", () => selectRecord(card.dataset.recordId, true));
+  });
+}
+
+function renderSummary() {
+  const filtered = getFilteredRecords();
+  const outside = filtered.filter(record => deriveAlignment(record) === "unexpected").length;
+  const needsPhoto = filtered.filter(record => record.photoStatus === "needs-photo" || record.photoStatus === "has-photo").length;
+  const verified = filtered.filter(record => ["verified", "actioning", "resolved"].includes(record.status)).length;
+  const official = filtered.filter(record => record.sourceType === "official" || record.sourceType === "staff").length;
+  document.getElementById("summary-stats").innerHTML = `
+    <div class="stat"><strong>${filtered.length}</strong><span>表示中の地点</span></div>
+    <div class="stat"><strong>${verified}</strong><span>確認済・対応中</span></div>
+    <div class="stat"><strong>${outside}</strong><span>想定外候補</span></div>
+    <div class="stat"><strong>${needsPhoto}</strong><span>写真確認待ち</span></div>
+    <div class="stat"><strong>${official}</strong><span>公式/職員根拠</span></div>
+    <div class="stat"><strong>${roadFloodSites.length}</strong><span>道路冠水注意箇所</span></div>
+  `;
+}
+
+function renderPhotoQueue() {
+  const queue = records.filter(record => record.photoStatus !== "official-verified" && record.status !== "resolved");
+  const node = document.getElementById("photo-queue");
+  if (!queue.length) {
+    node.innerHTML = '<div class="detail-empty">写真確認待ちはありません。</div>';
+    return;
+  }
+  node.innerHTML = queue
+    .map(record => `
+      <article class="queue-item" data-record-id="${record.id}">
+        <h3>${escapeHtml(record.title)}</h3>
+        <div class="queue-meta">
+          <span class="badge ${record.photoStatus === "needs-photo" ? "yellow" : "blue"}">${escapeHtml(photoLabels[record.photoStatus] || record.photoStatus)}</span>
+          <span>${escapeHtml(record.locationName || "場所名なし")}</span>
+          <span>${escapeHtml(record.assignedTo || "担当未設定")}</span>
+        </div>
+      </article>
+    `)
+    .join("");
+  node.querySelectorAll("[data-record-id]").forEach(item => {
+    item.addEventListener("click", () => selectRecord(item.dataset.recordId, true));
+  });
+}
+
+function renderDetail() {
+  const detail = document.getElementById("detail-panel");
+  const record = records.find(item => item.id === selectedId);
+  if (!record) {
+    detail.innerHTML = "地図または一覧から地点を選択してください。";
+    return;
+  }
+  const alignment = deriveAlignment(record);
+  const riskHits = getRiskHits(record);
+  detail.innerHTML = `
+    <div class="detail-title">
+      <h3>${escapeHtml(record.title)}</h3>
+      <div class="detail-meta">
+        <span class="badge ${badgeColor(record.status)}">${escapeHtml(statusLabels[record.status] || record.status)}</span>
+        <span class="badge ${alignmentColor(alignment)}">${escapeHtml(alignmentLabels[alignment])}</span>
+        <span class="badge ${photoBadgeColor(record.photoStatus)}">${escapeHtml(photoLabels[record.photoStatus] || record.photoStatus)}</span>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-row"><span>分類</span><span>${escapeHtml(categoryLabels[record.category] || record.category)}</span></div>
+      <div class="detail-row"><span>場所</span><span>${escapeHtml(record.locationName || "-")}</span></div>
+      <div class="detail-row"><span>座標</span><span>${Number(record.lat).toFixed(6)}, ${Number(record.lng).toFixed(6)}</span></div>
+      <div class="detail-row"><span>時刻</span><span>${escapeHtml(formatDateTime(record.observedAt))}</span></div>
+      <div class="detail-row"><span>情報源</span><span>${escapeHtml(sourceLabels[record.sourceType] || record.sourceType)}</span></div>
+      ${record.sourceUsername ? `<div class="detail-row"><span>投稿者</span><span>@${escapeHtml(record.sourceUsername)}</span></div>` : ""}
+      <div class="detail-row"><span>担当</span><span>${escapeHtml(record.assignedTo || "-")}</span></div>
+      ${record.evidenceOperator ? `<div class="detail-row"><span>確認者</span><span>${escapeHtml(record.evidenceOperator)}</span></div>` : ""}
+      ${record.evidenceCheckedAt ? `<div class="detail-row"><span>確認時刻</span><span>${escapeHtml(formatDateTime(record.evidenceCheckedAt))}</span></div>` : ""}
+      <div class="detail-row"><span>ハザード</span><span>${riskHits.length ? riskHits.map(escapeHtml).join("、") : "該当なし/未判定"}</span></div>
+      <div class="detail-row"><span>写真</span><span>${escapeHtml(photoLabels[record.photoStatus] || record.photoStatus)} / ${escapeHtml(record.photoPrivacy || "internal")}</span></div>
+      ${record.evidencePlatform ? `<div class="detail-row"><span>証跡</span><span>${escapeHtml(platformLabels[record.evidencePlatform] || record.evidencePlatform)} / ${escapeHtml(record.evidenceQuery || "-")}</span></div>` : ""}
+      <div class="detail-row"><span>メモ</span><span>${escapeHtml(record.notes || "-")}</span></div>
+    </div>
+    ${record.evidenceImage ? `<img class="evidence-preview" src="${record.evidenceImage}" alt="検索画面スクリーンショット切り出し">` : ""}
+    ${isHttpUrl(record.photoUrl) && record.photoUrl !== record.evidenceImage ? `<a href="${escapeAttribute(record.photoUrl)}" target="_blank" rel="noreferrer"><img class="evidence-preview" src="${escapeAttribute(record.photoUrl)}" alt="投稿に添付された被害候補写真" loading="lazy"></a>` : ""}
+    ${record.evidenceOcrText ? `<pre class="evidence-ocr">${escapeHtml(record.evidenceOcrText)}</pre>` : ""}
+    <div class="detail-actions">
+      <button class="tool-button" type="button" data-action="edit">編集</button>
+      <button class="tool-button" type="button" data-action="verified">確認済</button>
+      <button class="tool-button" type="button" data-action="photo">写真確認済</button>
+      <button class="tool-button" type="button" data-action="actioning">対応中</button>
+      <button class="tool-button" type="button" data-action="resolved">解消済</button>
+      ${record.evidenceImage ? `<button class="tool-button" type="button" data-action="download-evidence">証跡画像DL</button>` : ""}
+      ${record.sourceUrl ? `<a class="tool-button" href="${escapeAttribute(record.sourceUrl)}" target="_blank" rel="noreferrer">根拠を開く</a>` : ""}
+    </div>
+  `;
+  detail.querySelectorAll("[data-action]").forEach(button => {
+    button.addEventListener("click", () => handleDetailAction(button.dataset.action));
+  });
+}
+
+function selectRecord(id, panTo) {
+  selectedId = id;
+  const record = records.find(item => item.id === id);
+  if (record && panTo) {
+    map.setView([Number(record.lat), Number(record.lng)], Math.max(map.getZoom(), 15));
+  }
+  renderAll();
+}
+
+function openRecordDialog(seed = {}) {
+  const record = seed.id ? records.find(item => item.id === seed.id) : null;
+  const dialog = document.getElementById("record-dialog");
+  document.getElementById("record-dialog-title").textContent = record ? "地点編集" : "地点追加";
+  document.getElementById("delete-record-button").style.visibility = record ? "visible" : "hidden";
+
+  const center = map.getCenter();
+  const values = record || {
+    id: "",
+    category: seed.category || "road_flood",
+    status: seed.status || "unconfirmed",
+    severity: seed.severity || "medium",
+    sourceType: seed.sourceType || "sns",
+    title: seed.title || "",
+    locationName: seed.locationName || "",
+    lat: seed.lat || center.lat,
+    lng: seed.lng || center.lng,
+    observedAt: seed.observedAt || "",
+    assignedTo: seed.assignedTo || "",
+    sourceUrl: seed.sourceUrl || "",
+    photoStatus: seed.photoStatus || "needs-photo",
+    photoPrivacy: seed.photoPrivacy || "internal",
+    photoUrl: seed.photoUrl || "",
+    notes: seed.notes || "",
+    hazardFlags: seed.hazardFlags || { flood: false, inland: false, road: false, landslide: false }
+  };
+
+  setFormValue("record-id", values.id || "");
+  setFormValue("record-category", values.category);
+  setFormValue("record-status", values.status);
+  setFormValue("record-severity", values.severity);
+  setFormValue("record-source-type", values.sourceType);
+  setFormValue("record-title", values.title);
+  setFormValue("record-location", values.locationName);
+  setFormValue("record-lat", Number(values.lat).toFixed(6));
+  setFormValue("record-lng", Number(values.lng).toFixed(6));
+  setFormValue("record-observed-at", values.observedAt || "");
+  setFormValue("record-assignee", values.assignedTo);
+  setFormValue("record-source-url", values.sourceUrl);
+  setFormValue("record-photo-status", values.photoStatus);
+  setFormValue("record-photo-privacy", values.photoPrivacy);
+  setFormValue("record-photo-url", values.photoUrl);
+  setFormValue("record-notes", values.notes);
+  document.getElementById("hazard-flood").checked = Boolean(values.hazardFlags?.flood);
+  document.getElementById("hazard-inland").checked = Boolean(values.hazardFlags?.inland);
+  document.getElementById("hazard-road").checked = Boolean(values.hazardFlags?.road);
+  document.getElementById("hazard-landslide").checked = Boolean(values.hazardFlags?.landslide);
+
+  dialog.showModal();
+  renderRecordDuplicateWarning();
+}
+
+function useMapCenter() {
+  const center = map.getCenter();
+  setFormValue("record-lat", center.lat.toFixed(6));
+  setFormValue("record-lng", center.lng.toFixed(6));
+}
+
+function saveRecordFromForm(event) {
+  event.preventDefault();
+  const existingId = getFormValue("record-id");
+  const existingRecord = existingId ? records.find(item => item.id === existingId) : null;
+  const record = {
+    ...(existingRecord || {}),
+    id: existingId || `rec-${Date.now()}`,
+    title: getFormValue("record-title"),
+    category: getFormValue("record-category"),
+    locationName: getFormValue("record-location"),
+    lat: Number(getFormValue("record-lat")),
+    lng: Number(getFormValue("record-lng")),
+    observedAt: getFormValue("record-observed-at"),
+    sourceType: getFormValue("record-source-type"),
+    sourceUrl: getFormValue("record-source-url"),
+    status: getFormValue("record-status"),
+    severity: getFormValue("record-severity"),
+    photoStatus: getFormValue("record-photo-status"),
+    photoUrl: getFormValue("record-photo-url"),
+    photoPrivacy: getFormValue("record-photo-privacy"),
+    assignedTo: getFormValue("record-assignee"),
+    notes: getFormValue("record-notes"),
+    hazardFlags: {
+      flood: document.getElementById("hazard-flood").checked,
+      inland: document.getElementById("hazard-inland").checked,
+      road: document.getElementById("hazard-road").checked,
+      landslide: document.getElementById("hazard-landslide").checked
+    }
+  };
+
+  if (!Number.isFinite(record.lat) || !Number.isFinite(record.lng)) {
+    alert("緯度・経度を確認してください。");
+    return;
+  }
+
+  const duplicates = detectDuplicates(record, existingId);
+  if (duplicates.length && !confirmDuplicateRegistration(duplicates)) return;
+
+  records = existingId
+    ? records.map(item => (item.id === existingId ? record : item))
+    : [...records, record];
+  selectedId = record.id;
+  persistRecords();
+  document.getElementById("record-dialog").close();
+  renderAll();
+}
+
+function deleteCurrentRecord() {
+  const id = getFormValue("record-id");
+  if (!id) return;
+  if (!confirm("この地点を削除しますか。")) return;
+  records = records.filter(record => record.id !== id);
+  selectedId = null;
+  persistRecords();
+  document.getElementById("record-dialog").close();
+  renderAll();
+}
+
+function handleDetailAction(action) {
+  const record = records.find(item => item.id === selectedId);
+  if (!record) return;
+  if (action === "edit") {
+    openRecordDialog({ id: record.id });
+    return;
+  }
+  if (action === "download-evidence") {
+    downloadDataUrl(record.evidenceImage, `evidence-${record.id}.jpg`);
+    return;
+  }
+  if (action === "photo") {
+    record.photoStatus = "official-verified";
+    record.photoPrivacy = record.photoPrivacy || "internal";
+  } else {
+    record.status = action;
+  }
+  persistRecords();
+  renderAll();
+}
+
+function toggleClickAddMode() {
+  clickAddMode = !clickAddMode;
+  const button = document.getElementById("map-click-button");
+  button.setAttribute("aria-pressed", String(clickAddMode));
+  document.getElementById("map-status").textContent = clickAddMode
+    ? "地図上をクリックすると被害候補を追加します。"
+    : `公開レイヤー接続済み・確認日 ${SOURCE_CHECKED_AT}`;
+}
+
+function importCsv(event) {
+  event.preventDefault();
+  const text = document.getElementById("csv-input").value.trim();
+  if (!text) return;
+  const imported = parseCsv(text).map(row => normalizeImportedRow(row)).filter(Boolean);
+  if (!imported.length) {
+    alert("取り込める行がありませんでした。");
+    return;
+  }
+  records = [...records, ...imported];
+  selectedId = imported[0].id;
+  persistRecords();
+  document.getElementById("import-dialog").close();
+  renderAll();
+}
+
+function openScreenshotDialog(seed = {}) {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  setFormValue("evidence-platform", seed.platform || getFormValue("evidence-platform") || "instagram");
+  setFormValue("evidence-query", seed.query || "");
+  setFormValue("evidence-url", seed.url || "");
+  setFormValue("evidence-operator", seed.operator || loadOperator());
+  setFormValue("evidence-observed-at", seed.observedAt || "");
+  setFormValue("evidence-checked-at", seed.checkedAt || local);
+  setFormValue("evidence-notes", seed.notes || "");
+  setFormValue("evidence-ocr-text", "");
+  document.getElementById("ocr-status").textContent = "OCR未実行";
+  document.getElementById("ocr-status").classList.remove("is-active");
+  document.getElementById("screenshot-dialog").showModal();
+  drawScreenshotCanvas();
+  renderEvidenceDuplicateWarning();
+}
+
+function loadScreenshotFile(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  loadScreenshotBlob(file);
+}
+
+function handleScreenshotPaste(event) {
+  const imageItem = Array.from(event.clipboardData?.items || []).find(item => item.type.startsWith("image/"));
+  if (!imageItem) return;
+  event.preventDefault();
+  loadScreenshotBlob(imageItem.getAsFile());
+}
+
+async function captureScreen() {
+  if (!navigator.mediaDevices?.getDisplayMedia) {
+    alert("このブラウザでは画面キャプチャが利用できません。スクリーンショットを貼り付けるか、画像を選択してください。");
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    const video = document.createElement("video");
+    video.srcObject = stream;
+    await video.play();
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    stream.getTracks().forEach(track => track.stop());
+    canvas.toBlob(blob => {
+      if (blob) loadScreenshotBlob(blob);
+    }, "image/jpeg", 0.9);
+  } catch {
+    alert("画面キャプチャがキャンセルされました。");
+  }
+}
+
+function loadScreenshotBlob(blob) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const image = new Image();
+    image.onload = () => {
+      screenshotState.image = image;
+      screenshotState.crop = null;
+      drawScreenshotCanvas();
+    };
+    image.src = reader.result;
+  };
+  reader.readAsDataURL(blob);
+}
+
+function bindCropCanvas() {
+  const canvas = document.getElementById("screenshot-canvas");
+  canvas.addEventListener("pointerdown", event => {
+    if (!screenshotState.image) return;
+    const point = canvasPoint(event, canvas);
+    screenshotState.dragging = true;
+    screenshotState.start = point;
+    screenshotState.crop = { x: point.x, y: point.y, w: 1, h: 1 };
+    canvas.setPointerCapture(event.pointerId);
+  });
+  canvas.addEventListener("pointermove", event => {
+    if (!screenshotState.dragging || !screenshotState.start) return;
+    const point = canvasPoint(event, canvas);
+    const x = Math.min(point.x, screenshotState.start.x);
+    const y = Math.min(point.y, screenshotState.start.y);
+    const w = Math.abs(point.x - screenshotState.start.x);
+    const h = Math.abs(point.y - screenshotState.start.y);
+    screenshotState.crop = clampCrop({ x, y, w, h }, canvas);
+    drawScreenshotCanvas();
+  });
+  canvas.addEventListener("pointerup", event => {
+    screenshotState.dragging = false;
+    canvas.releasePointerCapture(event.pointerId);
+  });
+}
+
+function drawScreenshotCanvas() {
+  const canvas = document.getElementById("screenshot-canvas");
+  const ctx = canvas.getContext("2d");
+  if (!screenshotState.image) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#f6fafc";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#5d6b74";
+    ctx.font = "14px sans-serif";
+    ctx.fillText("スクリーンショットを貼り付けるか画像を選択してください", 24, 48);
+    return;
+  }
+
+  const image = screenshotState.image;
+  const maxWidth = 720;
+  const maxHeight = 520;
+  const scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight, 1);
+  screenshotState.scale = scale;
+  canvas.width = Math.round(image.naturalWidth * scale);
+  canvas.height = Math.round(image.naturalHeight * scale);
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  if (!screenshotState.crop) {
+    screenshotState.crop = {
+      x: Math.round(canvas.width * 0.08),
+      y: Math.round(canvas.height * 0.10),
+      w: Math.round(canvas.width * 0.84),
+      h: Math.round(canvas.height * 0.58)
+    };
+  }
+
+  const crop = clampCrop(screenshotState.crop, canvas);
+  screenshotState.crop = crop;
+  ctx.save();
+  ctx.fillStyle = "rgba(22, 33, 42, 0.42)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(crop.x, crop.y, crop.w, crop.h);
+  ctx.strokeStyle = "#0c6e99";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(crop.x + 1.5, crop.y + 1.5, crop.w - 3, crop.h - 3);
+  ctx.restore();
+}
+
+function canvasPoint(event, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: ((event.clientX - rect.left) / rect.width) * canvas.width,
+    y: ((event.clientY - rect.top) / rect.height) * canvas.height
+  };
+}
+
+function clampCrop(crop, canvas) {
+  const x = Math.max(0, Math.min(crop.x, canvas.width - 1));
+  const y = Math.max(0, Math.min(crop.y, canvas.height - 1));
+  const w = Math.max(1, Math.min(crop.w, canvas.width - x));
+  const h = Math.max(1, Math.min(crop.h, canvas.height - y));
+  return { x, y, w, h };
+}
+
+function resetCrop() {
+  screenshotState.crop = null;
+  drawScreenshotCanvas();
+}
+
+function clearScreenshot() {
+  screenshotState = {
+    image: null,
+    scale: 1,
+    crop: null,
+    dragging: false,
+    start: null
+  };
+  document.getElementById("screenshot-file").value = "";
+  setFormValue("evidence-ocr-text", "");
+  document.getElementById("ocr-status").textContent = "OCR未実行";
+  document.getElementById("ocr-status").classList.remove("is-active");
+  drawScreenshotCanvas();
+  renderEvidenceDuplicateWarning();
+}
+
+async function runEvidenceOcr() {
+  const dataUrl = getCroppedEvidenceDataUrl();
+  if (!dataUrl) {
+    alert("スクリーンショットを読み込んで、文字を抽出する範囲を指定してください。");
+    return;
+  }
+  if (!window.Tesseract?.recognize) {
+    alert("OCR機能を読み込めませんでした。通信状態を確認して再読み込みしてください。");
+    return;
+  }
+
+  const button = document.getElementById("run-ocr-button");
+  const status = document.getElementById("ocr-status");
+  button.disabled = true;
+  status.classList.add("is-active");
+  status.textContent = "OCR準備中...";
+  try {
+    const result = await window.Tesseract.recognize(dataUrl, "jpn+eng", {
+      logger(message) {
+        if (message.status === "recognizing text") {
+          status.textContent = `OCR解析中 ${Math.round((message.progress || 0) * 100)}%`;
+        }
+      }
+    });
+    const text = String(result?.data?.text || "").trim();
+    setFormValue("evidence-ocr-text", text);
+    status.textContent = text ? `OCR完了 ${text.length}文字` : "文字を認識できませんでした";
+    renderEvidenceDuplicateWarning();
+  } catch {
+    status.textContent = "OCRに失敗しました。切り出し範囲を調整して再実行してください。";
+  } finally {
+    button.disabled = false;
+    status.classList.remove("is-active");
+  }
+}
+
+function getCroppedEvidenceDataUrl() {
+  if (!screenshotState.image || !screenshotState.crop) return "";
+  const crop = screenshotState.crop;
+  const scale = screenshotState.scale || 1;
+  const sourceX = Math.round(crop.x / scale);
+  const sourceY = Math.round(crop.y / scale);
+  const sourceW = Math.round(crop.w / scale);
+  const sourceH = Math.round(crop.h / scale);
+  const maxOutputWidth = 1200;
+  const outputScale = Math.min(maxOutputWidth / sourceW, 1);
+  const output = document.createElement("canvas");
+  output.width = Math.max(1, Math.round(sourceW * outputScale));
+  output.height = Math.max(1, Math.round(sourceH * outputScale));
+  output.getContext("2d").drawImage(
+    screenshotState.image,
+    sourceX,
+    sourceY,
+    sourceW,
+    sourceH,
+    0,
+    0,
+    output.width,
+    output.height
+  );
+  return output.toDataURL("image/jpeg", 0.84);
+}
+
+function downloadCrop() {
+  const dataUrl = getCroppedEvidenceDataUrl();
+  if (!dataUrl) {
+    alert("スクリーンショットを読み込んでください。");
+    return;
+  }
+  downloadDataUrl(dataUrl, `sns-evidence-${dateStamp()}.jpg`);
+}
+
+function saveScreenshotEvidence(event) {
+  event.preventDefault();
+  const dataUrl = getCroppedEvidenceDataUrl();
+  if (!dataUrl) {
+    alert("スクリーンショットを読み込んでください。");
+    return;
+  }
+  const center = map.getCenter();
+  const platform = getFormValue("evidence-platform");
+  const query = getFormValue("evidence-query");
+  const operator = getFormValue("evidence-operator");
+  const checkedAt = getFormValue("evidence-checked-at");
+  const record = {
+    id: `rec-${Date.now()}`,
+    title: `${platformLabels[platform] || "検索"}証跡: ${query || "検索結果"}`,
+    category: "other",
+    locationName: "位置未確定",
+    lat: Number(center.lat.toFixed(6)),
+    lng: Number(center.lng.toFixed(6)),
+    observedAt: getFormValue("evidence-observed-at") || checkedAt,
+    sourceType: platform === "web" ? "web" : "sns",
+    sourceUrl: getFormValue("evidence-url"),
+    status: "unconfirmed",
+    severity: "medium",
+    photoStatus: "has-photo",
+    photoUrl: "ローカルスクショ証跡",
+    photoPrivacy: "internal",
+    assignedTo: "確認待ち",
+    notes: getFormValue("evidence-notes") || "API取得が難しいプラットフォームの手動検索結果スクリーンショットから登録。",
+    hazardFlags: { flood: false, inland: false, road: false, landslide: false },
+    evidencePlatform: platform,
+    evidenceQuery: query,
+    evidenceOperator: operator,
+    evidenceCheckedAt: checkedAt,
+    evidenceOcrText: getFormValue("evidence-ocr-text"),
+    evidenceImage: dataUrl
+  };
+  const duplicates = detectDuplicates(record);
+  if (duplicates.length && !confirmDuplicateRegistration(duplicates)) return;
+  saveOperator(operator);
+  records = [...records, record];
+  selectedId = record.id;
+  persistRecords();
+  document.getElementById("screenshot-dialog").close();
+  logSearch({ platform, query, operator, checkedAt, method: "screenshot", resultCount: 1 });
+  clearScreenshot();
+  renderAll();
+  openRecordDialog({ id: record.id });
+}
+
+function downloadDataUrl(dataUrl, filename) {
+  const link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+function normalizeImportedRow(row) {
+  const lat = Number(row.lat || row.latitude || row["緯度"]);
+  const lng = Number(row.lng || row.lon || row.longitude || row["経度"]);
+  if (!row.title || !Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return {
+    id: row.id || `rec-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    title: row.title,
+    category: row.category || "other",
+    locationName: row.locationName || row.location || row["場所"] || "",
+    lat,
+    lng,
+    observedAt: row.observedAt || row.time || "",
+    sourceType: row.sourceType || "web",
+    sourceUrl: row.sourceUrl || "",
+    status: row.status || "unconfirmed",
+    severity: row.severity || "medium",
+    photoStatus: row.photoStatus || "needs-photo",
+    photoUrl: row.photoUrl || "",
+    photoPrivacy: row.photoPrivacy || "internal",
+    assignedTo: row.assignedTo || "",
+    notes: row.notes || "",
+    evidencePlatform: row.evidencePlatform || "",
+    evidenceQuery: row.evidenceQuery || "",
+    evidenceOperator: row.evidenceOperator || "",
+    evidenceCheckedAt: row.evidenceCheckedAt || "",
+    evidenceOcrText: row.evidenceOcrText || "",
+    externalId: row.externalId || "",
+    sourceUsername: row.sourceUsername || "",
+    evidenceImage: "",
+    hazardFlags: {
+      flood: toBool(row.hazardFlood),
+      inland: toBool(row.hazardInland),
+      road: toBool(row.hazardRoad),
+      landslide: toBool(row.hazardLandslide)
+    }
+  };
+}
+
+function copyCsvTemplate() {
+  const template = "title,category,locationName,lat,lng,observedAt,sourceType,sourceUrl,status,severity,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,evidencePlatform,evidenceQuery,evidenceOperator,evidenceCheckedAt,externalId,sourceUsername,notes\n";
+  navigator.clipboard?.writeText(template);
+  document.getElementById("csv-input").value = template;
+}
+
+function exportCsv() {
+  const headers = [
+    "id", "title", "category", "locationName", "lat", "lng", "observedAt", "sourceType",
+    "sourceUrl", "status", "severity", "photoStatus", "photoUrl", "photoPrivacy",
+    "hazardFlood", "hazardInland", "hazardRoad", "hazardLandslide", "assignedTo", "evidencePlatform", "evidenceQuery",
+    "evidenceOperator", "evidenceCheckedAt", "evidenceOcrText", "externalId", "sourceUsername", "evidenceHasImage", "notes"
+  ];
+  const rows = records.map(record => headers.map(key => {
+    if (key.startsWith("hazard")) {
+      const flag = key.replace("hazard", "").toLowerCase();
+      const normalized = flag === "flood" ? "flood" : flag === "inland" ? "inland" : flag === "road" ? "road" : "landslide";
+      return csvCell(record.hazardFlags?.[normalized] ? "true" : "false");
+    }
+    if (key === "evidenceHasImage") return csvCell(record.evidenceImage ? "true" : "false");
+    return csvCell(record[key] ?? "");
+  }).join(","));
+  downloadText(`inzai-disaster-records-${dateStamp()}.csv`, [headers.join(","), ...rows].join("\n"), "text/csv");
+}
+
+function exportGeoJson() {
+  const geojson = {
+    type: "FeatureCollection",
+    name: "inzai_disaster_records",
+    features: records.map(record => ({
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [Number(record.lng), Number(record.lat)]
+      },
+      properties: {
+        ...withoutLargeImage(record),
+        alignment: deriveAlignment(record),
+        riskHits: getRiskHits(record).join(", ")
+      }
+    }))
+  };
+  downloadText(`inzai-disaster-records-${dateStamp()}.geojson`, JSON.stringify(geojson, null, 2), "application/geo+json");
+}
+
+function withoutLargeImage(record) {
+  const copy = { ...record };
+  copy.evidenceHasImage = Boolean(copy.evidenceImage);
+  delete copy.evidenceImage;
+  return copy;
+}
+
+function loadDemoRecords() {
+  if (records.some(record => record.id.startsWith("demo-"))) {
+    alert("サンプルはすでに表示されています。");
+    return;
+  }
+  records = [...records, ...demoRecords];
+  selectedId = demoRecords[0].id;
+  persistRecords();
+  renderAll();
+}
+
+function clearFilters() {
+  document.getElementById("keyword-filter").value = "";
+  document.getElementById("photo-filter").value = "all";
+  document.querySelectorAll("[data-status]").forEach(input => {
+    input.checked = true;
+  });
+  renderAll();
+}
+
+function getFilteredRecords() {
+  const keyword = document.getElementById("keyword-filter").value.trim().toLowerCase();
+  const photoFilter = document.getElementById("photo-filter").value;
+  const activeStatuses = new Set(
+    Array.from(document.querySelectorAll("[data-status]"))
+      .filter(input => input.checked)
+      .map(input => input.dataset.status)
+  );
+
+  return records.filter(record => {
+    if (!activeStatuses.has(record.status)) return false;
+    if (photoFilter !== "all" && record.photoStatus !== photoFilter) return false;
+    if (!keyword) return true;
+    const haystack = [
+      record.title,
+      record.locationName,
+      record.notes,
+      record.assignedTo,
+      record.evidenceOperator,
+      record.evidenceOcrText,
+      record.sourceUsername,
+      record.sourceUrl,
+      categoryLabels[record.category],
+      sourceLabels[record.sourceType]
+    ].join(" ").toLowerCase();
+    return haystack.includes(keyword);
+  });
+}
+
+function renderRecordDuplicateWarning() {
+  const node = document.getElementById("record-duplicate-warning");
+  const id = getFormValue("record-id");
+  const candidate = {
+    id,
+    title: getFormValue("record-title"),
+    locationName: getFormValue("record-location"),
+    lat: Number(getFormValue("record-lat")),
+    lng: Number(getFormValue("record-lng")),
+    observedAt: getFormValue("record-observed-at"),
+    sourceUrl: getFormValue("record-source-url")
+  };
+  renderDuplicateWarning(node, detectDuplicates(candidate, id));
+}
+
+function renderEvidenceDuplicateWarning() {
+  const node = document.getElementById("evidence-duplicate-warning");
+  const platform = getFormValue("evidence-platform");
+  const query = getFormValue("evidence-query");
+  const ocrText = getFormValue("evidence-ocr-text");
+  const candidate = {
+    title: `${platformLabels[platform] || platform}証跡: ${query || "検索結果"}`,
+    sourceUrl: getFormValue("evidence-url"),
+    observedAt: getFormValue("evidence-observed-at") || getFormValue("evidence-checked-at"),
+    evidencePlatform: platform,
+    evidenceQuery: query,
+    evidenceOcrText: ocrText
+  };
+  renderDuplicateWarning(node, detectDuplicates(candidate));
+}
+
+function renderDuplicateWarning(node, duplicates) {
+  if (!node) return;
+  if (!duplicates.length) {
+    node.hidden = true;
+    node.innerHTML = "";
+    return;
+  }
+  node.hidden = false;
+  node.innerHTML = `
+    <strong>重複候補 ${duplicates.length}件</strong>
+    ${duplicates.slice(0, 3).map(item => `${escapeHtml(item.record.title)}（${escapeHtml(item.reason)}）`).join("<br>")}
+  `;
+}
+
+function detectDuplicates(candidate, excludeId = "") {
+  if (!candidate) return [];
+  const candidateUrl = canonicalUrl(candidate.sourceUrl);
+  const candidateText = normalizeForMatch(candidate.evidenceOcrText || candidate.title);
+  const candidateTime = parseTime(candidate.observedAt || candidate.evidenceCheckedAt);
+  const matches = [];
+
+  records.forEach(record => {
+    if (record.id === excludeId) return;
+    let reason = "";
+    if (candidate.externalId && record.externalId && candidate.externalId === record.externalId) {
+      reason = "投稿IDが一致";
+    } else if (candidateUrl && candidateUrl === canonicalUrl(record.sourceUrl)) {
+      reason = "根拠URLが一致";
+    } else if (
+      candidate.evidencePlatform &&
+      candidate.evidenceQuery &&
+      candidate.evidencePlatform === record.evidencePlatform &&
+      normalizeForMatch(candidate.evidenceQuery) === normalizeForMatch(record.evidenceQuery) &&
+      isWithinHours(candidateTime, parseTime(record.observedAt || record.evidenceCheckedAt), 24)
+    ) {
+      reason = "同じ検索語・24時間以内";
+    } else if (
+      candidateText.length >= 8 &&
+      textSimilarity(candidateText, normalizeForMatch(record.evidenceOcrText || record.title)) >= 0.72 &&
+      isWithinHours(candidateTime, parseTime(record.observedAt || record.evidenceCheckedAt), 48)
+    ) {
+      reason = "本文・OCRが類似";
+    } else if (
+      Number.isFinite(candidate.lat) && Number.isFinite(candidate.lng) &&
+      Number.isFinite(Number(record.lat)) && Number.isFinite(Number(record.lng)) &&
+      distanceMeters(candidate.lat, candidate.lng, Number(record.lat), Number(record.lng)) <= 150 &&
+      textSimilarity(normalizeForMatch(candidate.title), normalizeForMatch(record.title)) >= 0.55 &&
+      isWithinHours(candidateTime, parseTime(record.observedAt), 24)
+    ) {
+      reason = "近接地点・類似件名";
+    }
+    if (reason) matches.push({ record, reason });
+  });
+  return matches;
+}
+
+function confirmDuplicateRegistration(duplicates) {
+  const summary = duplicates.slice(0, 3).map(item => `・${item.record.title}（${item.reason}）`).join("\n");
+  return confirm(`重複候補が見つかりました。別情報として登録しますか。\n\n${summary}`);
+}
+
+function canonicalUrl(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  try {
+    const url = new URL(text);
+    ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "fbclid", "igshid"].forEach(key => url.searchParams.delete(key));
+    url.hash = "";
+    return url.toString().replace(/\/$/, "").toLowerCase();
+  } catch {
+    return text.replace(/\/$/, "").toLowerCase();
+  }
+}
+
+function isHttpUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function normalizeForMatch(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/[\s\p{P}\p{S}]+/gu, "")
+    .slice(0, 500);
+}
+
+function textSimilarity(left, right) {
+  if (!left || !right) return 0;
+  if (left === right) return 1;
+  const leftSet = bigrams(left);
+  const rightSet = bigrams(right);
+  if (!leftSet.size || !rightSet.size) return 0;
+  let intersection = 0;
+  leftSet.forEach(value => {
+    if (rightSet.has(value)) intersection += 1;
+  });
+  return intersection / (leftSet.size + rightSet.size - intersection);
+}
+
+function bigrams(value) {
+  const set = new Set();
+  for (let index = 0; index < value.length - 1; index += 1) set.add(value.slice(index, index + 2));
+  return set;
+}
+
+function parseTime(value) {
+  const timestamp = Date.parse(String(value || ""));
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function isWithinHours(left, right, hours) {
+  if (left === null || right === null) return false;
+  return Math.abs(left - right) <= hours * 60 * 60 * 1000;
+}
+
+function deriveAlignment(record) {
+  if (record.status === "resolved") return "resolved";
+  const riskHits = getRiskHits(record);
+  const hasReliableSignal = ["official", "staff", "citizen", "news"].includes(record.sourceType) || ["corroborated", "verified", "actioning"].includes(record.status);
+  if (riskHits.length && ["verified", "actioning", "corroborated", "unconfirmed"].includes(record.status)) return "expected";
+  if (!riskHits.length && hasReliableSignal) return "unexpected";
+  if (!riskHits.length && record.sourceType === "sns") return "uncertain";
+  return riskHits.length ? "highRisk" : "uncertain";
+}
+
+function getRiskHits(record) {
+  const hits = [];
+  if (record.hazardFlags?.flood) hits.push("洪水");
+  if (record.hazardFlags?.inland) hits.push("内水");
+  if (record.hazardFlags?.landslide) hits.push("土砂");
+  const nearRoad = roadFloodSites.some(site => distanceMeters(record.lat, record.lng, site.lat, site.lng) <= 220);
+  if (record.hazardFlags?.road || nearRoad) hits.push("道路冠水注意箇所");
+  return [...new Set(hits)];
+}
+
+function markerColor(record, alignment) {
+  if (record.status === "resolved") return "#6b737a";
+  if (record.status === "verified" || record.status === "actioning") return "#b8322c";
+  if (record.status === "corroborated") return "#c96321";
+  if (alignment === "highRisk") return "#2365a8";
+  if (alignment === "unexpected") return "#7050a8";
+  return "#a77708";
+}
+
+function badgeColor(status) {
+  if (status === "verified" || status === "actioning") return "red";
+  if (status === "corroborated") return "orange";
+  if (status === "resolved") return "green";
+  return "yellow";
+}
+
+function alignmentColor(alignment) {
+  if (alignment === "expected") return "blue";
+  if (alignment === "unexpected") return "purple";
+  if (alignment === "highRisk") return "blue";
+  if (alignment === "resolved") return "green";
+  return "yellow";
+}
+
+function photoBadgeColor(status) {
+  if (status === "official-verified") return "green";
+  if (status === "has-photo") return "blue";
+  if (status === "unavailable") return "purple";
+  return "yellow";
+}
+
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const radius = 6371000;
+  const toRad = value => (Number(value) * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function loadRecords() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistRecords() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    notifyHost();
+  } catch {
+    alert("ブラウザのローカル保存容量を超えました。証跡画像を切り出しDLしてから、画像なしでCSV/GeoJSON管理してください。");
+  }
+}
+
+function notifyHost() {
+  if (window.parent === window) return;
+  const targetOrigin = String(APP_CONFIG.hostOrigin || window.location.origin);
+  window.parent.postMessage({
+    type: "cbi:disaster-map:records-changed",
+    count: records.length,
+    selectedId,
+    updatedAt: new Date().toISOString()
+  }, targetOrigin);
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let inQuotes = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1];
+    if (char === '"' && inQuotes && next === '"') {
+      cell += '"';
+      index += 1;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      row.push(cell);
+      cell = "";
+    } else if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && next === "\n") index += 1;
+      row.push(cell);
+      if (row.some(value => value.trim() !== "")) rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += char;
+    }
+  }
+  row.push(cell);
+  if (row.some(value => value.trim() !== "")) rows.push(row);
+  const headers = rows.shift()?.map(value => value.trim()) || [];
+  return rows.map(values => Object.fromEntries(headers.map((header, index) => [header, values[index] || ""])));
+}
+
+function downloadText(filename, text, type) {
+  const blob = new Blob([text], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function csvCell(value) {
+  const text = String(value ?? "");
+  if (/[",\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+  return text;
+}
+
+function dateStamp() {
+  return new Date().toISOString().slice(0, 10).replaceAll("-", "");
+}
+
+function nowLocalInput() {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
+function toDateTimeLocal(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value).slice(0, 16);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
+function truncateText(value, maxLength) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+}
+
+function formatDateTime(value) {
+  if (!value) return "-";
+  return value.replace("T", " ");
+}
+
+function setFormValue(id, value) {
+  document.getElementById(id).value = value ?? "";
+}
+
+function getFormValue(id) {
+  return document.getElementById(id).value.trim();
+}
+
+function toBool(value) {
+  return ["true", "1", "yes", "y", "該当", "あり"].includes(String(value || "").trim().toLowerCase());
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value).replaceAll("`", "&#096;");
+}

@@ -118,6 +118,11 @@ h1, h2, h3 {
 }
 .site-nav a.nav-external:hover { color: var(--c-green-soft); }
 .site-nav a.nav-external::after { background: var(--c-green); }
+.site-nav a.nav-tool {
+  color: #963f32;
+  font-weight: 700;
+}
+.site-nav a.nav-tool::after { background: #963f32; }
 
 .nav-toggle {
   display: none;
