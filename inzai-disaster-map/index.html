@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260814b">
+    <link rel="stylesheet" href="./styles.css?v=20260814c">
   </head>
   <body>
     <div class="app-shell">
@@ -27,8 +27,9 @@
             <input id="incident-date" type="date" value="2026-08-13">
           </label>
           <span class="connection-status" id="api-status">SNS API未接続</span>
-          <button class="tool-button primary" id="sns-collector-button" type="button">SNS収集</button>
+          <button class="tool-button primary" id="sns-collector-button" type="button">SNS登録を試す</button>
           <button class="tool-button" id="help-button" type="button">使い方</button>
+          <button class="tool-button official-button" id="official-links-button" type="button">公式情報</button>
           <button class="tool-button primary" id="add-point-button" type="button">地点追加</button>
           <button class="tool-button" id="map-click-button" type="button" aria-pressed="false">地図クリック追加</button>
           <button class="tool-button" id="screenshot-button" type="button">スクショ証跡</button>
@@ -38,6 +39,11 @@
           <button class="tool-button" id="print-button" type="button">印刷</button>
         </div>
       </header>
+
+      <div class="prototype-banner" role="status">
+        <strong>構想検証版・現在は運用前です</strong>
+        <span>「こんな仕組みがあったら便利か」を検討する試作品です。入力内容はこの端末内だけに保存され、印西市や運営者には送信されません。</span>
+      </div>
 
       <main class="workspace">
         <aside class="side-panel left-panel" aria-label="レイヤーとフィルター">
@@ -110,7 +116,7 @@
           </section>
 
           <section class="panel-section source-section">
-            <h2>主な参照元</h2>
+            <h2>地図データ参照元</h2>
             <a href="https://disaportaldata.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank" rel="noreferrer">ハザードマップポータル</a>
             <a href="https://www.ktr.mlit.go.jp/chiba/chiba_index030.html" target="_blank" rel="noreferrer">千葉県内 道路冠水注意箇所</a>
             <a href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">印西市防災ポータル</a>
@@ -129,7 +135,7 @@
           </div>
           <div class="map-status" id="map-status">地図を読み込み中です</div>
           <div class="map-disclaimer">
-            被害地点は確認候補を含みます。SNS・Web情報は根拠確認前に公開判断へ使わないでください。
+            構想検証用の試作画面です。市民投稿の収集・公開運用は開始していません。
           </div>
         </section>
 
@@ -602,25 +608,85 @@
           <h2>このMAPの使い方</h2>
           <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
         </div>
-        <p class="modal-help">SNS投稿はリンクだけで先に登録できます。場所が不明なときは投稿者へ確認してからピンを置きます。</p>
+        <p class="modal-help">実際の運用を想定した操作を試せます。SNS投稿はリンクだけで先に登録し、場所が不明なときは投稿者へ確認してからピンを置く構想です。</p>
         <ol class="help-steps">
           <li><b>投稿リンクを登録</b><span>Instagramなどの投稿URLを貼ります。場所は空欄で構いません。</span></li>
           <li><b>場所を質問</b><span>元投稿を開き、コメントまたはDMで撮影場所を確認します。</span></li>
           <li><b>回答後にピン設定</b><span>分かった場所を地図上でクリックします。</span></li>
           <li><b>内容を確認して保存</b><span>分類、重要度、写真状態を確認します。</span></li>
         </ol>
-        <div class="help-note">地図へのピン設定は無料です。データはこのブラウザ内に保存されます。投稿内容は未確認情報として登録されるため、公開判断の前に複数根拠や現地確認で確かめてください。</div>
+        <div class="help-note">現在は運用前です。入力データはこのブラウザ内だけに保存され、印西市や運営者には送信されません。操作を試し、地域で役立ちそうか、心配な点は何か、どのような参加なら協力できそうかをご検討ください。</div>
         <div class="modal-actions">
           <span></span><span></span>
           <button class="tool-button" type="button" data-close-dialog>閉じる</button>
-          <button class="tool-button primary" id="help-start-button" type="button">SNS収集を始める</button>
+          <button class="tool-button primary" id="help-start-button" type="button">SNS登録を試す</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="official-links-dialog" class="modal official-modal">
+      <form method="dialog">
+        <div class="modal-header">
+          <div>
+            <p class="step-kicker">公的機関の発表を確認</p>
+            <h2>印西市の公式防災情報</h2>
+          </div>
+          <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
+        </div>
+
+        <div class="official-priority">
+          <strong>避難や通行の判断は、必ず公式情報を優先してください。</strong>
+          <span>このMAPは構想検証版で、市民投稿の収集・公開運用はまだ開始していません。</span>
+        </div>
+
+        <div class="official-link-grid">
+          <a class="official-link-card is-local" href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">
+            <span class="authority-label">印西市</span>
+            <strong>印西市防災ポータル</strong>
+            <small>市からの防災行政無線、避難・災害情報、避難所を確認</small>
+            <span class="external-label">公式サイトを開く</span>
+          </a>
+          <a class="official-link-card is-local" href="https://www.city.inzai.lg.jp/bousaiportal/category/16-5-2-0-0.html" target="_blank" rel="noreferrer">
+            <span class="authority-label">印西市</span>
+            <strong>市の災害情報一覧</strong>
+            <small>印西市が掲載する災害関連のお知らせを確認</small>
+            <span class="external-label">公式サイトを開く</span>
+          </a>
+          <a class="official-link-card" href="https://www.bousai.pref.chiba.lg.jp/" target="_blank" rel="noreferrer">
+            <span class="authority-label">千葉県</span>
+            <strong>千葉県防災ポータル</strong>
+            <small>県内の緊急情報、避難情報、避難所、交通情報を確認</small>
+            <span class="external-label">公式サイトを開く</span>
+          </a>
+          <a class="official-link-card" href="https://www.jma.go.jp/bosai/#area_type=class20s&amp;area_code=1223100" target="_blank" rel="noreferrer">
+            <span class="authority-label">気象庁</span>
+            <strong>印西市の防災気象情報</strong>
+            <small>警報・注意報、キキクル、雨雲、台風情報を確認</small>
+            <span class="external-label">公式サイトを開く</span>
+          </a>
+          <a class="official-link-card" href="https://www.river.go.jp/" target="_blank" rel="noreferrer">
+            <span class="authority-label">国土交通省</span>
+            <strong>川の防災情報</strong>
+            <small>河川水位、洪水予報、河川カメラなどを確認</small>
+            <span class="external-label">公式サイトを開く</span>
+          </a>
+        </div>
+
+        <div class="emergency-note">
+          <strong>緊急時</strong>
+          <span>命の危険や救助は119、事件・事故は110へ。このMAPへの登録より通報を優先してください。</span>
+        </div>
+
+        <div class="modal-actions">
+          <span></span><span></span>
+          <button class="tool-button" type="button" data-close-dialog>閉じる</button>
         </div>
       </form>
     </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
-    <script src="./config.js?v=20260814b"></script>
-    <script src="./app.js?v=20260814b"></script>
+    <script src="./config.js?v=20260814c"></script>
+    <script src="./app.js?v=20260814c"></script>
   </body>
 </html>

@@ -277,6 +277,7 @@ function bindEvents() {
   document.getElementById("print-button").addEventListener("click", () => window.print());
   document.getElementById("sns-collector-button").addEventListener("click", openCollectorDialog);
   document.getElementById("help-button").addEventListener("click", openHelpDialog);
+  document.getElementById("official-links-button").addEventListener("click", openOfficialLinksDialog);
   document.getElementById("help-start-button").addEventListener("click", startFromHelp);
   document.getElementById("register-social-link-button").addEventListener("click", registerSocialLink);
   document.getElementById("collector-platform").addEventListener("change", updateCollectorPlatformHelp);
@@ -354,7 +355,7 @@ function initIntegration() {
     apiButton.disabled = false;
     apiNote.textContent = "CBI連携APIを通じて検索します。Metaのアクセストークンはこの画面には保存しません。";
   } else {
-    apiStatus.textContent = "手動収集モード";
+    apiStatus.textContent = "試作・端末内保存";
     apiButton.disabled = true;
     apiButton.title = "config.js にCBI連携APIを設定すると利用できます";
     apiNote.textContent = "現在は検索画面・スクショ・JSON取込を利用できます。公式API接続時は config.js の snsSearchEndpoint にCBI側の連携先を設定します。";
@@ -379,6 +380,10 @@ function initHelpGuide() {
 
 function openHelpDialog() {
   document.getElementById("help-dialog").showModal();
+}
+
+function openOfficialLinksDialog() {
+  document.getElementById("official-links-dialog").showModal();
 }
 
 function startFromHelp() {
