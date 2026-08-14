@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260814c">
+    <link rel="stylesheet" href="./styles.css?v=20260814d">
   </head>
   <body>
     <div class="app-shell">
@@ -31,6 +31,7 @@
           <button class="tool-button" id="help-button" type="button">使い方</button>
           <button class="tool-button official-button" id="official-links-button" type="button">公式情報</button>
           <button class="tool-button primary" id="add-point-button" type="button">地点追加</button>
+          <button class="tool-button road-button" id="add-road-status-button" type="button">通行情報追加</button>
           <button class="tool-button" id="map-click-button" type="button" aria-pressed="false">地図クリック追加</button>
           <button class="tool-button" id="screenshot-button" type="button">スクショ証跡</button>
           <button class="tool-button" id="import-button" type="button">CSV取込</button>
@@ -101,6 +102,17 @@
                 <option value="official-verified">職員写真確認済</option>
               </select>
             </label>
+            <label class="select-label">
+              道路通行状況
+              <select id="passability-filter">
+                <option value="all">すべて</option>
+                <option value="blocked">通行止め・通行不能</option>
+                <option value="restricted">通行注意・規制</option>
+                <option value="reopened">通行再開</option>
+                <option value="passed">通行実績あり</option>
+                <option value="none">道路情報以外</option>
+              </select>
+            </label>
           </section>
 
           <section class="panel-section">
@@ -113,14 +125,23 @@
               <div><span class="dot dot-blue"></span>高リスク未確認</div>
               <div><span class="dot dot-gray"></span>解消済</div>
             </div>
+            <div class="legend traffic-legend">
+              <strong>道路通行情報の色</strong>
+              <div><span class="dot dot-red"></span>通行止め・通行不能</div>
+              <div><span class="dot dot-orange"></span>通行注意・規制</div>
+              <div><span class="dot dot-green"></span>通行再開</div>
+              <div><span class="dot dot-blue"></span>通行実績あり</div>
+              <p>通行実績は記録時刻時点の参考です。現在の安全や通行可能を保証しません。</p>
+            </div>
           </section>
 
           <section class="panel-section source-section">
-            <h2>地図データ参照元</h2>
+            <h2>参照元・関連情報</h2>
             <a href="https://disaportaldata.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank" rel="noreferrer">ハザードマップポータル</a>
             <a href="https://www.ktr.mlit.go.jp/chiba/chiba_index030.html" target="_blank" rel="noreferrer">千葉県内 道路冠水注意箇所</a>
             <a href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">印西市防災ポータル</a>
             <a href="https://www.jma.go.jp/jma/kishou/know/bosai/riskmap.html" target="_blank" rel="noreferrer">気象庁キキクル</a>
+            <a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">参考: TOYOTA 通れた道マップ</a>
           </section>
         </aside>
 
@@ -191,7 +212,7 @@
               <option value="inundation">浸水</option>
               <option value="river">河川増水</option>
               <option value="landslide">土砂</option>
-              <option value="traffic">通行止め</option>
+              <option value="traffic">道路通行情報</option>
               <option value="lifeline">ライフライン</option>
               <option value="shelter">避難所</option>
               <option value="other">その他</option>
@@ -258,6 +279,40 @@
             <option value="pinned">ピン設定済</option>
           </select>
         </label>
+
+        <fieldset class="field-box">
+          <legend>道路通行情報（該当時）</legend>
+          <div class="form-grid">
+            <label>
+              通行状況
+              <select id="record-passability">
+                <option value="none">該当なし・未設定</option>
+                <option value="closed">通行止め</option>
+                <option value="impassable">通行不能・通れない</option>
+                <option value="restricted">通行注意・規制あり</option>
+                <option value="reopened">通行再開</option>
+                <option value="passed">通行実績あり</option>
+              </select>
+            </label>
+            <label>
+              対象・確認手段
+              <select id="record-passability-mode">
+                <option value="unknown">不明</option>
+                <option value="all">全般</option>
+                <option value="passenger-car">乗用車</option>
+                <option value="large-vehicle">大型車</option>
+                <option value="motorcycle">二輪車</option>
+                <option value="bicycle">自転車</option>
+                <option value="pedestrian">歩行者</option>
+              </select>
+            </label>
+            <label>
+              最終確認時刻
+              <input id="record-passability-checked-at" type="datetime-local">
+            </label>
+          </div>
+          <p class="field-note">「通れた」は過去の通行実績として記録します。現在通れることの保証には使用しません。</p>
+        </fieldset>
 
         <fieldset class="field-box">
           <legend>場所確認の記録</legend>
@@ -686,7 +741,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
-    <script src="./config.js?v=20260814c"></script>
-    <script src="./app.js?v=20260814c"></script>
+    <script src="./config.js?v=20260814d"></script>
+    <script src="./app.js?v=20260814d"></script>
   </body>
 </html>

@@ -24,6 +24,9 @@
 - スクリーンショット内の「3時間前」などを確認時刻から逆算し、推定投稿時刻として記録する
 - 画面キャプチャはブラウザ上で取得するため、スクリーンショットファイルを事前保存する必要はない
 - 上部の「公式情報」から、印西市、千葉県、気象庁、国土交通省の防災情報へ直接移動できる
+- 「通行情報追加」から、通行止め、通行不能、規制、通行再開、通行実績を記録し、危険側の情報を優先して絞り込める
+- 通行情報には対象交通手段と最終確認時刻を持たせ、「通行実績あり」は現在の安全を保証しない参考情報として表示する
+- スマートフォンでは地図を画面上部に表示し、縦横変更後も地図を再描画してピンを設定できる
 
 ## 無料で利用できる範囲
 
@@ -50,7 +53,7 @@ SNSやWeb由来の情報は確認候補です。行政判断や公開判断に�
 ## CSVヘッダー
 
 ```csv
-title,category,locationName,lat,lng,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,notes
+title,category,locationName,lat,lng,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,passability,passabilityMode,passabilityCheckedAt,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,notes
 ```
 
 スクリーンショット証跡はブラウザのローカル保存です。CSV/GeoJSONには巨大な画像本体は含めず、`evidenceHasImage`、`evidencePlatform`、`evidenceQuery` を出力します。
@@ -102,6 +105,8 @@ CBIトップページから `inzai-disaster-map/` へリンクしています。
 - `status`: `unconfirmed`, `corroborated`, `verified`, `actioning`, `resolved`
 - `photoStatus`: `needs-photo`, `has-photo`, `official-verified`, `unavailable`
 - `photoPrivacy`: `internal`, `public-blurred`, `public`
+- `passability`: `none`, `closed`, `impassable`, `restricted`, `reopened`, `passed`
+- `passabilityMode`: `unknown`, `all`, `passenger-car`, `large-vehicle`, `motorcycle`, `bicycle`, `pedestrian`
 
 ## 主な参照元
 
@@ -110,3 +115,4 @@ CBIトップページから `inzai-disaster-map/` へリンクしています。
 - 国土交通省 関東地方整備局 千葉国道事務所 道路冠水注意箇所マップ
 - 印西市防災ポータル
 - 気象庁キキクル
+- TOYOTA 通れた道マップ（参考リンク。データ連携は行わない）

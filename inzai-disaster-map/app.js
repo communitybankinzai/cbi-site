@@ -19,10 +19,29 @@ const categoryLabels = {
   inundation: "浸水",
   river: "河川増水",
   landslide: "土砂",
-  traffic: "通行止め",
+  traffic: "道路通行情報",
   lifeline: "ライフライン",
   shelter: "避難所",
   other: "その他"
+};
+
+const passabilityLabels = {
+  none: "該当なし・未設定",
+  closed: "通行止め",
+  impassable: "通行不能・通れない",
+  restricted: "通行注意・規制あり",
+  reopened: "通行再開",
+  passed: "通行実績あり"
+};
+
+const passabilityModeLabels = {
+  unknown: "不明",
+  all: "全般",
+  "passenger-car": "乗用車",
+  "large-vehicle": "大型車",
+  motorcycle: "二輪車",
+  bicycle: "自転車",
+  pedestrian: "歩行者"
 };
 
 const sourceLabels = {
@@ -111,6 +130,9 @@ const demoRecords = [
     sourceUrl: "",
     status: "unconfirmed",
     severity: "medium",
+    passability: "impassable",
+    passabilityMode: "all",
+    passabilityCheckedAt: "2026-08-13T08:40",
     photoStatus: "has-photo",
     photoUrl: "SNS画像URLを庁内台帳へ転記",
     photoPrivacy: "internal",
@@ -255,6 +277,7 @@ initIntegration();
 renderAll();
 bindEvents();
 initHelpGuide();
+scheduleMapResize();
 
 function bindEvents() {
   document.getElementById("base-layer-select").addEventListener("change", event => {
@@ -285,6 +308,7 @@ function bindEvents() {
   document.getElementById("ask-comment-button").addEventListener("click", () => beginLocationContact("comment"));
   document.getElementById("ask-dm-button").addEventListener("click", () => beginLocationContact("dm"));
   document.getElementById("add-point-button").addEventListener("click", () => openRecordDialog());
+  document.getElementById("add-road-status-button").addEventListener("click", openRoadStatusDialog);
   document.getElementById("map-click-button").addEventListener("click", toggleClickAddMode);
   document.getElementById("screenshot-button").addEventListener("click", openScreenshotDialog);
   document.getElementById("use-map-center-button").addEventListener("click", useMapCenter);
@@ -323,6 +347,7 @@ function bindEvents() {
   document.getElementById("clear-filters-button").addEventListener("click", clearFilters);
   document.getElementById("keyword-filter").addEventListener("input", renderAll);
   document.getElementById("photo-filter").addEventListener("change", renderAll);
+  document.getElementById("passability-filter").addEventListener("change", renderAll);
   document.querySelectorAll("[data-status]").forEach(input => input.addEventListener("change", renderAll));
   document.querySelectorAll("[data-close-dialog]").forEach(button => {
     button.addEventListener("click", () => button.closest("dialog").close());
@@ -336,6 +361,14 @@ function bindEvents() {
     if (!clickAddMode) return;
     openRecordDialog({ lat: event.latlng.lat, lng: event.latlng.lng });
   });
+
+  window.addEventListener("resize", scheduleMapResize);
+  window.addEventListener("orientationchange", scheduleMapResize);
+}
+
+function scheduleMapResize() {
+  requestAnimationFrame(() => map.invalidateSize({ animate: false, pan: false }));
+  setTimeout(() => map.invalidateSize({ animate: false, pan: false }), 240);
 }
 
 function initIntegration() {
@@ -664,6 +697,9 @@ function addApiResultAsRecord(item) {
     sourceUrl: item.permalink,
     status: "unconfirmed",
     severity: "medium",
+    passability: inferPassability(item.text),
+    passabilityMode: "unknown",
+    passabilityCheckedAt: toDateTimeLocal(item.timestamp) || nowLocalInput(),
     photoStatus: item.mediaUrl ? "has-photo" : "needs-photo",
     photoUrl: item.mediaUrl,
     photoPrivacy: "internal",
@@ -704,10 +740,20 @@ function inferCategory(text) {
   if (/浸水|床上|床下/.test(value)) return "inundation";
   if (/河川|川.*増水|氾濫/.test(value)) return "river";
   if (/崖|土砂|土石流|地すべり/.test(value)) return "landslide";
-  if (/通行止|渋滞|運休/.test(value)) return "traffic";
+  if (/通行止|通れない|通行不能|通行規制|通行再開|通れた|走行不能|走行可能|渋滞/.test(value)) return "traffic";
   if (/停電|断水|通信障害/.test(value)) return "lifeline";
   if (/避難所|避難場所/.test(value)) return "shelter";
   return "other";
+}
+
+function inferPassability(text) {
+  const value = String(text || "");
+  if (/通行止|通行禁止|進入禁止|閉鎖/.test(value)) return "closed";
+  if (/通れない|通行不能|走行不能|進入不可|立ち往生/.test(value)) return "impassable";
+  if (/片側交互|車線規制|通行規制|徐行/.test(value)) return "restricted";
+  if (/通行再開|規制解除|開通/.test(value)) return "reopened";
+  if (/通れた|通行できた|走行できた|走行可能/.test(value)) return "passed";
+  return "none";
 }
 
 function deriveObservedAtFromRelativeText(text, referenceValue) {
@@ -934,9 +980,11 @@ function renderRecords() {
       })
     });
     marker.on("click", () => selectRecord(record.id, true));
+    const passability = getPassability(record);
     marker.bindPopup(`
       <div class="popup-title">${escapeHtml(record.title)}</div>
       <div>${escapeHtml(categoryLabels[record.category] || record.category)} / ${escapeHtml(statusLabels[record.status] || record.status)}</div>
+      ${passability !== "none" ? `<div class="detail-meta">${escapeHtml(passabilityLabels[passability])} ・ ${escapeHtml(formatDateTime(record.passabilityCheckedAt || record.observedAt))}</div>` : ""}
       <div class="detail-meta">${escapeHtml(alignmentLabels[alignment])} ・ ${escapeHtml(photoLabels[record.photoStatus] || "")}</div>
     `);
     recordLayer.addLayer(marker);
@@ -954,12 +1002,14 @@ function renderList() {
     .sort((a, b) => String(b.observedAt || "").localeCompare(String(a.observedAt || "")))
     .map(record => {
       const alignment = deriveAlignment(record);
+      const passability = getPassability(record);
       return `
         <article class="record-card ${record.id === selectedId ? "is-selected" : ""}" data-record-id="${record.id}" style="border-left-color:${markerColor(record, alignment)}">
           <h3>${escapeHtml(record.title)}</h3>
           <div class="record-meta">
             <span class="badge ${badgeColor(record.status)}">${escapeHtml(statusLabels[record.status] || record.status)}</span>
             <span class="badge ${alignmentColor(alignment)}">${escapeHtml(alignmentLabels[alignment])}</span>
+            ${passability !== "none" ? `<span class="badge ${passabilityBadgeColor(passability)}">${escapeHtml(passabilityLabels[passability])}</span>` : ""}
             <span>${escapeHtml(categoryLabels[record.category] || record.category)}</span>
             <span>${escapeHtml(record.locationName || "場所名なし")}</span>
             <span class="badge ${getLocationStatus(record) === "pinned" ? "green" : "yellow"}">${escapeHtml(locationStatusLabels[getLocationStatus(record)])}</span>
@@ -980,6 +1030,7 @@ function renderSummary() {
   const verified = filtered.filter(record => ["verified", "actioning", "resolved"].includes(record.status)).length;
   const official = filtered.filter(record => record.sourceType === "official" || record.sourceType === "staff").length;
   const locationPending = filtered.filter(record => getLocationStatus(record) !== "pinned").length;
+  const blocked = filtered.filter(record => ["closed", "impassable"].includes(getPassability(record))).length;
   document.getElementById("summary-stats").innerHTML = `
     <div class="stat"><strong>${filtered.length}</strong><span>登録候補</span></div>
     <div class="stat"><strong>${verified}</strong><span>確認済・対応中</span></div>
@@ -987,6 +1038,7 @@ function renderSummary() {
     <div class="stat"><strong>${needsPhoto}</strong><span>写真確認待ち</span></div>
     <div class="stat"><strong>${official}</strong><span>公式/職員根拠</span></div>
     <div class="stat"><strong>${locationPending}</strong><span>場所確認待ち</span></div>
+    <div class="stat"><strong>${blocked}</strong><span>通行止め・不能</span></div>
     <div class="stat"><strong>${roadFloodSites.length}</strong><span>参考リスク箇所</span></div>
   `;
 }
@@ -1046,6 +1098,7 @@ function renderDetail() {
   const alignment = deriveAlignment(record);
   const riskHits = getRiskHits(record);
   const locationStatus = getLocationStatus(record);
+  const passability = getPassability(record);
   detail.innerHTML = `
     <div class="detail-title">
       <h3>${escapeHtml(record.title)}</h3>
@@ -1054,10 +1107,14 @@ function renderDetail() {
         <span class="badge ${alignmentColor(alignment)}">${escapeHtml(alignmentLabels[alignment])}</span>
         <span class="badge ${photoBadgeColor(record.photoStatus)}">${escapeHtml(photoLabels[record.photoStatus] || record.photoStatus)}</span>
         <span class="badge ${locationStatus === "pinned" ? "green" : "yellow"}">${escapeHtml(locationStatusLabels[locationStatus])}</span>
+        ${passability !== "none" ? `<span class="badge ${passabilityBadgeColor(passability)}">${escapeHtml(passabilityLabels[passability])}</span>` : ""}
       </div>
     </div>
     <div class="detail-grid">
       <div class="detail-row"><span>分類</span><span>${escapeHtml(categoryLabels[record.category] || record.category)}</span></div>
+      ${passability !== "none" ? `<div class="detail-row"><span>通行状況</span><span>${escapeHtml(passabilityLabels[passability])}</span></div>` : ""}
+      ${passability !== "none" ? `<div class="detail-row"><span>対象</span><span>${escapeHtml(passabilityModeLabels[record.passabilityMode] || passabilityModeLabels.unknown)}</span></div>` : ""}
+      ${passability !== "none" ? `<div class="detail-row"><span>最終確認</span><span>${escapeHtml(formatDateTime(record.passabilityCheckedAt || record.observedAt))}</span></div>` : ""}
       <div class="detail-row"><span>場所</span><span>${escapeHtml(record.locationName || "-")}</span></div>
       <div class="detail-row"><span>座標</span><span>${hasCoordinates(record) ? `${Number(record.lat).toFixed(6)}, ${Number(record.lng).toFixed(6)}` : "未特定"}</span></div>
       <div class="detail-row"><span>場所確認</span><span>${escapeHtml(locationStatusLabels[locationStatus])}</span></div>
@@ -1105,13 +1162,27 @@ function selectRecord(id, panTo) {
   renderAll();
 }
 
+function openRoadStatusDialog() {
+  openRecordDialog({
+    category: "traffic",
+    severity: "high",
+    sourceType: "citizen",
+    passability: "impassable",
+    passabilityMode: "all",
+    passabilityCheckedAt: nowLocalInput(),
+    observedAt: nowLocalInput()
+  });
+}
+
 function openRecordDialog(seed = {}) {
   const record = seed.id ? records.find(item => item.id === seed.id) : null;
   const dialog = document.getElementById("record-dialog");
-  document.getElementById("record-dialog-title").textContent = record ? "地点編集" : "地点追加";
+  document.getElementById("record-dialog-title").textContent = record
+    ? "地点編集"
+    : seed.category === "traffic" ? "道路通行情報を追加" : "地点追加";
   document.getElementById("delete-record-button").style.visibility = record ? "visible" : "hidden";
 
-  const center = map.getCenter();
+  const seedHasCoordinates = hasCoordinates(seed);
   const values = record || {
     id: "",
     category: seed.category || "road_flood",
@@ -1120,15 +1191,18 @@ function openRecordDialog(seed = {}) {
     sourceType: seed.sourceType || "sns",
     title: seed.title || "",
     locationName: seed.locationName || "",
-    lat: seed.lat ?? center.lat,
-    lng: seed.lng ?? center.lng,
-    locationStatus: seed.locationStatus || "pinned",
+    lat: seedHasCoordinates ? seed.lat : null,
+    lng: seedHasCoordinates ? seed.lng : null,
+    locationStatus: seed.locationStatus || (seedHasCoordinates ? "pinned" : "unknown"),
     locationContactMethod: seed.locationContactMethod || "",
     locationAnsweredAt: seed.locationAnsweredAt || "",
     locationAnswerNote: seed.locationAnswerNote || "",
     observedAt: seed.observedAt || "",
     assignedTo: seed.assignedTo || "",
     sourceUrl: seed.sourceUrl || "",
+    passability: seed.passability || "none",
+    passabilityMode: seed.passabilityMode || "unknown",
+    passabilityCheckedAt: seed.passabilityCheckedAt || "",
     photoStatus: seed.photoStatus || "needs-photo",
     photoPrivacy: seed.photoPrivacy || "internal",
     photoUrl: seed.photoUrl || "",
@@ -1141,6 +1215,9 @@ function openRecordDialog(seed = {}) {
   setFormValue("record-status", values.status);
   setFormValue("record-severity", values.severity);
   setFormValue("record-source-type", values.sourceType);
+  setFormValue("record-passability", getPassability(values));
+  setFormValue("record-passability-mode", values.passabilityMode || "unknown");
+  setFormValue("record-passability-checked-at", values.passabilityCheckedAt || "");
   setFormValue("record-title", values.title);
   setFormValue("record-location", values.locationName);
   setFormValue("record-lat", hasCoordinates(values) ? Number(values.lat).toFixed(6) : "");
@@ -1206,6 +1283,9 @@ function saveRecordFromForm(event) {
     sourceUrl: getFormValue("record-source-url"),
     status: getFormValue("record-status"),
     severity: getFormValue("record-severity"),
+    passability: getFormValue("record-passability"),
+    passabilityMode: getFormValue("record-passability-mode"),
+    passabilityCheckedAt: getFormValue("record-passability-checked-at"),
     photoStatus: getFormValue("record-photo-status"),
     photoUrl: getFormValue("record-photo-url"),
     photoPrivacy: getFormValue("record-photo-privacy"),
@@ -1310,6 +1390,7 @@ function startLocationPick(recordId) {
   if (hasCoordinates(record)) map.setView([Number(record.lat), Number(record.lng)], Math.max(map.getZoom(), 15));
   else map.fitBounds(INZAI_BOUNDS);
   document.querySelector(".map-pane").scrollIntoView({ behavior: "smooth", block: "center" });
+  scheduleMapResize();
 }
 
 function completeLocationPick(latlng) {
@@ -1664,6 +1745,9 @@ function saveScreenshotEvidence(event) {
     sourceUrl: getFormValue("evidence-url"),
     status: "unconfirmed",
     severity: "medium",
+    passability: inferPassability(ocrText),
+    passabilityMode: "unknown",
+    passabilityCheckedAt: getFormValue("evidence-observed-at") || checkedAt,
     photoStatus: "has-photo",
     photoUrl: "ローカルスクショ証跡",
     photoPrivacy: "internal",
@@ -1723,6 +1807,9 @@ function normalizeImportedRow(row) {
     sourceUrl: row.sourceUrl || "",
     status: row.status || "unconfirmed",
     severity: row.severity || "medium",
+    passability: row.passability || (row.category === "traffic" ? "closed" : "none"),
+    passabilityMode: row.passabilityMode || "unknown",
+    passabilityCheckedAt: row.passabilityCheckedAt || row.observedAt || row.time || "",
     photoStatus: row.photoStatus || "needs-photo",
     photoUrl: row.photoUrl || "",
     photoPrivacy: row.photoPrivacy || "internal",
@@ -1748,7 +1835,7 @@ function normalizeImportedRow(row) {
 }
 
 function copyCsvTemplate() {
-  const template = "title,category,locationName,lat,lng,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,evidencePlatform,evidenceQuery,evidenceOperator,evidenceCheckedAt,evidenceRelativeTime,observedAtDerived,externalId,sourceUsername,notes\n";
+  const template = "title,category,locationName,lat,lng,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,passability,passabilityMode,passabilityCheckedAt,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,evidencePlatform,evidenceQuery,evidenceOperator,evidenceCheckedAt,evidenceRelativeTime,observedAtDerived,externalId,sourceUsername,notes\n";
   navigator.clipboard?.writeText(template);
   document.getElementById("csv-input").value = template;
 }
@@ -1756,7 +1843,7 @@ function copyCsvTemplate() {
 function exportCsv() {
   const headers = [
     "id", "title", "category", "locationName", "lat", "lng", "locationStatus", "locationAskedAt", "locationAskedBy", "locationContactMethod", "locationAnsweredAt", "locationAnswerNote", "observedAt", "sourceType",
-    "sourceUrl", "status", "severity", "photoStatus", "photoUrl", "photoPrivacy",
+    "sourceUrl", "status", "severity", "passability", "passabilityMode", "passabilityCheckedAt", "photoStatus", "photoUrl", "photoPrivacy",
     "hazardFlood", "hazardInland", "hazardRoad", "hazardLandslide", "assignedTo", "evidencePlatform", "evidenceQuery",
     "evidenceOperator", "evidenceCheckedAt", "evidenceRelativeTime", "observedAtDerived", "evidenceOcrText", "externalId", "sourceUsername", "evidenceHasImage", "notes"
   ];
@@ -1813,6 +1900,7 @@ function loadDemoRecords() {
 function clearFilters() {
   document.getElementById("keyword-filter").value = "";
   document.getElementById("photo-filter").value = "all";
+  document.getElementById("passability-filter").value = "all";
   document.querySelectorAll("[data-status]").forEach(input => {
     input.checked = true;
   });
@@ -1822,6 +1910,7 @@ function clearFilters() {
 function getFilteredRecords() {
   const keyword = document.getElementById("keyword-filter").value.trim().toLowerCase();
   const photoFilter = document.getElementById("photo-filter").value;
+  const passabilityFilter = document.getElementById("passability-filter").value;
   const activeStatuses = new Set(
     Array.from(document.querySelectorAll("[data-status]"))
       .filter(input => input.checked)
@@ -1831,6 +1920,7 @@ function getFilteredRecords() {
   return records.filter(record => {
     if (!activeStatuses.has(record.status)) return false;
     if (photoFilter !== "all" && record.photoStatus !== photoFilter) return false;
+    if (!matchesPassabilityFilter(record, passabilityFilter)) return false;
     if (!keyword) return true;
     const haystack = [
       record.title,
@@ -1842,10 +1932,24 @@ function getFilteredRecords() {
       record.sourceUsername,
       record.sourceUrl,
       categoryLabels[record.category],
+      passabilityLabels[getPassability(record)],
+      passabilityModeLabels[record.passabilityMode],
       sourceLabels[record.sourceType]
     ].join(" ").toLowerCase();
     return haystack.includes(keyword);
   });
+}
+
+function getPassability(record) {
+  if (record?.passability && passabilityLabels[record.passability]) return record.passability;
+  return record?.category === "traffic" ? "closed" : "none";
+}
+
+function matchesPassabilityFilter(record, filter) {
+  if (filter === "all") return true;
+  const passability = getPassability(record);
+  if (filter === "blocked") return passability === "closed" || passability === "impassable";
+  return passability === filter;
 }
 
 function renderRecordDuplicateWarning() {
@@ -2040,6 +2144,11 @@ function getRiskHits(record) {
 
 function markerColor(record, alignment) {
   if (record.status === "resolved") return "#6b737a";
+  const passability = getPassability(record);
+  if (passability === "closed" || passability === "impassable") return "#b8322c";
+  if (passability === "restricted") return "#c96321";
+  if (passability === "reopened") return "#24745a";
+  if (passability === "passed") return "#2365a8";
   if (record.status === "verified" || record.status === "actioning") return "#b8322c";
   if (record.status === "corroborated") return "#c96321";
   if (alignment === "highRisk") return "#2365a8";
@@ -2066,6 +2175,14 @@ function photoBadgeColor(status) {
   if (status === "official-verified") return "green";
   if (status === "has-photo") return "blue";
   if (status === "unavailable") return "purple";
+  return "yellow";
+}
+
+function passabilityBadgeColor(passability) {
+  if (passability === "closed" || passability === "impassable") return "red";
+  if (passability === "restricted") return "orange";
+  if (passability === "reopened") return "green";
+  if (passability === "passed") return "blue";
   return "yellow";
 }
 
