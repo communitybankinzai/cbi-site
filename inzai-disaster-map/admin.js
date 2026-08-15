@@ -1,5 +1,5 @@
 const WORK_LOG_KEY = "inzai-disaster-work-log-v1";
-const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v4";
+const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v5";
 const statusLabels = {
   planned: "検討中",
   testing: "試験中",
@@ -193,6 +193,17 @@ const initialRecords = [
     summary: "気象庁の2026年新体系の警報・注意報データから印西市だけを抽出し、右側最上段に発表中の種別、警戒レベル相当、行動の目安、発表・取得時刻を表示する。発表なしと取得失敗は明確に区別する。",
     nextAction: "実際の注意報・警報発表時に表示内容、更新間隔、気象庁ページとの差異を確認する。河川ごとの氾濫情報と市の避難情報は別情報として公式ページへの導線を維持する。",
     referenceUrl: "https://www.jma.go.jp/bosai/warning/#area_type=class20s&area_code=1223100",
+    origin: "seed"
+  },
+  {
+    id: "seed-jshis-wms",
+    feature: "J-SHIS地震ハザードレイヤー",
+    status: "testing",
+    owner: "",
+    loggedAt: "2026-08-15T17:45:00+09:00",
+    summary: "J-SHISが公式提供するWMSから、2024年版の今後30年間に震度6弱以上となる確率と、V4表層地盤の揺れの増幅率を地図へ重ねるチェックボックスを追加。公式凡例、出典、読込状態、共通透過度調整を表示する。",
+    nextAction: "J-SHIS側の版更新とWMS稼働状況を継続確認する。将来予測・地盤特性であり、現在の震度や実被害ではないことを運用時にも周知する。",
+    referenceUrl: "https://www.j-shis.bosai.go.jp/wms-list",
     origin: "seed"
   }
 ];

@@ -248,6 +248,47 @@ input[type="checkbox"] {
   color: var(--red);
 }
 
+.layer-group-label {
+  margin-top: 3px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.jshis-layer-note {
+  display: grid;
+  gap: 7px;
+  margin: -2px 0 4px 22px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.jshis-legend {
+  margin: 0;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.jshis-legend[hidden] {
+  display: none;
+}
+
+.jshis-legend figcaption {
+  margin-bottom: 4px;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.jshis-legend img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+}
+
 .tool-button,
 .text-button,
 .icon-button {

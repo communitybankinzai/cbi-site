@@ -315,6 +315,38 @@ const hazardLayers = {
   })
 };
 
+const jshisLayers = {
+  jshisPshm: L.tileLayer.wms(String(APP_CONFIG.jshisPshmWmsUrl || "https://www.j-shis.bosai.go.jp/map/wms/pshm/Y2024"), {
+    layers: "P-Y2024-MAP-AVR-TTL_MTTL-T30_I55_PS",
+    styles: "default",
+    format: "image/png",
+    transparent: true,
+    version: "1.3.0",
+    crs: L.CRS.EPSG3857,
+    attribution: '<a href="https://www.j-shis.bosai.go.jp/" target="_blank" rel="noreferrer">J-SHIS（防災科研）</a>',
+    opacity: 0.56,
+    zIndex: 440,
+    updateWhenIdle: true
+  }),
+  jshisGround: L.tileLayer.wms(String(APP_CONFIG.jshisGroundWmsUrl || "https://www.j-shis.bosai.go.jp/map/wms/sstrct/V4"), {
+    layers: "Z-V4-JAPAN-AMP-VS400_M250-IDARV2",
+    styles: "default",
+    format: "image/png",
+    transparent: true,
+    version: "1.3.0",
+    crs: L.CRS.EPSG3857,
+    attribution: '<a href="https://www.j-shis.bosai.go.jp/" target="_blank" rel="noreferrer">J-SHIS（防災科研）</a>',
+    opacity: 0.56,
+    zIndex: 441,
+    updateWhenIdle: true
+  })
+};
+
+const jshisLayerMeta = {
+  jshisPshm: { statusId: "jshis-pshm-status", idle: "2024年版・将来予測" },
+  jshisGround: { statusId: "jshis-ground-status", idle: "V4・250mメッシュ" }
+};
+
 const rainNowcastLayer = L.tileLayer("", {
   attribution: "気象庁 高解像度降水ナウキャスト",
   opacity: 0.62,
@@ -387,6 +419,7 @@ function bindEvents() {
     const opacity = Number(event.target.value) / 100;
     document.getElementById("hazard-opacity-value").textContent = `${event.target.value}%`;
     Object.values(hazardLayers).forEach(layer => layer.setOpacity(opacity));
+    Object.values(jshisLayers).forEach(layer => layer.setOpacity(opacity));
     landslideGroup.eachLayer(layer => layer.setOpacity(opacity));
     rainNowcastLayer.setOpacity(opacity);
   });
@@ -1636,6 +1669,8 @@ function toggleOverlay(name, checked) {
     floodMax: hazardLayers.floodMax,
     floodPlan: hazardLayers.floodPlan,
     inland: hazardLayers.inland,
+    jshisPshm: jshisLayers.jshisPshm,
+    jshisGround: jshisLayers.jshisGround,
     landslide: landslideGroup,
     roadFlood: roadFloodLayer,
     records: recordLayer
@@ -1644,6 +1679,28 @@ function toggleOverlay(name, checked) {
   if (!layer) return;
   if (checked) layer.addTo(map);
   else map.removeLayer(layer);
+  if (jshisLayers[name]) {
+    setJshisLayerStatus(name, checked ? "読込中" : jshisLayerMeta[name].idle);
+    updateJshisLegend(name, checked);
+  }
+}
+
+Object.entries(jshisLayers).forEach(([name, layer]) => {
+  layer.on("loading", () => setJshisLayerStatus(name, "読込中"));
+  layer.on("load", () => setJshisLayerStatus(name, "表示中"));
+  layer.on("tileerror", () => setJshisLayerStatus(name, "取得できません", true));
+});
+
+function setJshisLayerStatus(name, text, isError = false) {
+  const node = document.getElementById(jshisLayerMeta[name]?.statusId || "");
+  if (!node) return;
+  node.textContent = text;
+  node.classList.toggle("is-error", isError);
+}
+
+function updateJshisLegend(name, visible) {
+  const legend = document.querySelector(`[data-jshis-legend="${name}"]`);
+  if (legend) legend.hidden = !visible;
 }
 
 async function refreshRainNowcast(showLayer) {

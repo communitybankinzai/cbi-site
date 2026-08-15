@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260815d">
+    <link rel="stylesheet" href="./styles.css?v=20260815e">
   </head>
   <body>
     <div class="app-shell">
@@ -72,6 +72,20 @@
               <label><input type="checkbox" data-overlay="inland" checked> 内水浸水想定</label>
               <label><input type="checkbox" data-overlay="landslide"> 土砂災害警戒区域</label>
               <label class="live-layer-label"><input type="checkbox" data-overlay="rainNowcast"> 雨雲レーダー（気象庁・実況）<span id="rain-layer-status">最新時刻を確認中</span></label>
+              <div class="layer-group-label">地震ハザード（J-SHIS）</div>
+              <label class="live-layer-label"><input type="checkbox" data-overlay="jshisPshm"> 30年以内に震度6弱以上となる確率<span id="jshis-pshm-status">2024年版・将来予測</span></label>
+              <label class="live-layer-label"><input type="checkbox" data-overlay="jshisGround"> 表層地盤の揺れの増幅率<span id="jshis-ground-status">V4・250mメッシュ</span></label>
+              <div class="jshis-layer-note">
+                <span>実際の被害や現在の震度ではありません。地震発生時は気象庁の震度情報と被害ピンを優先してください。</span>
+                <figure class="jshis-legend" data-jshis-legend="jshisPshm" hidden>
+                  <figcaption>震度6弱以上となる確率</figcaption>
+                  <img src="https://www.j-shis.bosai.go.jp/map/wms/pshm/Y2024?version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=P-Y2024-MAP-AVR-TTL_MTTL-T30_I55_PS&amp;format=image/png&amp;STYLE=default" alt="J-SHIS 震度6弱以上となる確率の凡例" loading="lazy">
+                </figure>
+                <figure class="jshis-legend" data-jshis-legend="jshisGround" hidden>
+                  <figcaption>表層地盤の増幅率</figcaption>
+                  <img src="https://www.j-shis.bosai.go.jp/map/wms/sstrct/V4?version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=Z-V4-JAPAN-AMP-VS400_M250-IDARV2&amp;format=image/png&amp;STYLE=default" alt="J-SHIS 表層地盤の増幅率の凡例" loading="lazy">
+                </figure>
+              </div>
               <label><input type="checkbox" data-overlay="roadFlood"> 参考: 道路冠水注意箇所（平常時）</label>
               <label><input type="checkbox" data-overlay="records" checked> 被害・確認候補</label>
             </div>
@@ -153,6 +167,7 @@
             <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">印西市わが街ガイド オープンデータ</a>
             <a href="https://www.jma.go.jp/jma/kishou/know/bosai/riskmap.html" target="_blank" rel="noreferrer">気象庁キキクル</a>
             <a href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noreferrer">気象庁 雨雲の動き</a>
+            <a href="https://www.j-shis.bosai.go.jp/" target="_blank" rel="noreferrer">J-SHIS 地震ハザードステーション</a>
             <a href="https://www.jartic.or.jp/" target="_blank" rel="noreferrer">JARTIC 道路交通情報（未接続）</a>
             <a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">参考: TOYOTA 通れた道マップ</a>
           </section>
@@ -920,7 +935,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
-    <script src="./config.js?v=20260815d"></script>
-    <script src="./app.js?v=20260815d"></script>
+    <script src="./config.js?v=20260815e"></script>
+    <script src="./app.js?v=20260815e"></script>
   </body>
 </html>
