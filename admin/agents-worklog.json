@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-08-15",
+          "title": "CiDAO SNS定期紹介の実行間隔を管理画面から変更可能に＋選定ルール説明追記 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao supabase/migrations/20260815110000_sns_rotation_schedule_control.sql（新規。pg_cron ジョブを読み書きする get/set_sns_rotation_schedule 関数。プリセット制・管理者チェック内蔵）",
+            "C:/Repos/cidao src/app/admin/sns/actions.ts（setRotationSchedule サーバーアクション追加）",
+            "C:/Repos/cidao src/app/admin/sns/_components/RotationScheduleCard.tsx（新規。毎日/隔日/週1回/月1回/停止のプリセット選択カード）",
+            "C:/Repos/cidao src/app/admin/sns/page.tsx（現在間隔の取得・カード配置、画面下部に団体候補の選定ルール説明を追記）",
+            "検証: 本番DBで管理者JWT偽装により weekly→off→daily の往復切替と非管理者拒否を確認（最終状態は毎日に復元）／npm run build 成功／commit edec56a を push、Vercel デプロイ success"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "祐樹さんの依頼「日次1件の間隔を管理者側で変更できるインターフェースがほしい」＋追加依頼「/admin/sns 下部に選定ルール（claim・編集で更新済みになれば自動候補入り）を記載」。自由な cron 式入力は誤設定防止のためプリセット制（毎日/隔日/週1/月1/停止）を採用。停止中も手動「今すぐ実行」は使える設計。管理画面 UI の目視確認は管理者ログインが必要なため祐樹さんに依頼。session: 23653407-0429-4012-aa42-a2cac2e63133 / output: 75,537 / cost: $25.67"
+        },
+        {
+          "date": "2026-08-15",
           "title": "CiDAO SNS定期紹介の団体候補を登録完了・更新済みに限定 0.2時間",
           "category": "実装",
           "outputs": [
