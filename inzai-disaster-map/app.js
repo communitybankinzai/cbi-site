@@ -1758,18 +1758,60 @@ function renderRecords() {
         iconAnchor: [14, 28]
       })
     });
-    marker.on("click", () => selectRecord(record.id, true));
+    marker.on("click", () => selectRecord(record.id, false, { preserveMap: true }));
     const passability = getPassability(record);
     const platform = getRecordPlatform(record);
+    const hasSnsPost = record.sourceType === "sns" && isHttpUrl(record.sourceUrl);
+    const popupPhoto = getPopupPhoto(record);
     marker.bindPopup(`
       <div class="popup-title">${escapeHtml(record.title)}</div>
+      ${popupPhoto ? `<div class="popup-photo-wrap ${popupPhoto.blurred ? "is-blurred" : ""}"><img src="${escapeAttribute(popupPhoto.src)}" alt="登録されたSNS投稿の証跡写真" loading="lazy" referrerpolicy="no-referrer"></div>` : ""}
       <div>${escapeHtml(categoryLabels[record.category] || record.category)} / ${escapeHtml(statusLabels[record.status] || record.status)}</div>
       ${platform ? `<div class="detail-meta">情報元: ${escapeHtml(platformLabels[platform] || platform)}</div>` : ""}
       ${passability !== "none" ? `<div class="detail-meta">${escapeHtml(passabilityLabels[passability])} ・ ${escapeHtml(formatDateTime(record.passabilityCheckedAt || record.observedAt))}</div>` : ""}
       <div class="detail-meta">${escapeHtml(alignmentLabels[alignment])} ・ ${escapeHtml(photoLabels[record.photoStatus] || "")}</div>
+      ${hasSnsPost ? `
+        <div class="popup-source-actions">
+          <a class="popup-source-link" href="${escapeAttribute(record.sourceUrl)}" target="_blank" rel="noopener noreferrer">元のSNS投稿を見る</a>
+          ${PUBLIC_VIEW ? "" : `<button class="popup-question-button" type="button" data-popup-question-record="${escapeAttribute(record.id)}">質問文をコピーして投稿を開く</button>`}
+        </div>
+        ${PUBLIC_VIEW ? "" : '<div class="popup-contact-note">コメント送信はSNS画面で内容を確認してから行います。</div>'}
+      ` : '<div class="popup-contact-note">元投稿URLが登録されていません。</div>'}
     `);
+    marker.on("popupopen", () => bindMarkerPopupActions(marker, record));
     recordLayer.addLayer(marker);
   });
+}
+
+function bindMarkerPopupActions(marker, record) {
+  const popupElement = marker.getPopup()?.getElement();
+  const button = popupElement?.querySelector("[data-popup-question-record]");
+  if (!button) return;
+  button.addEventListener("click", () => beginLocationContactForRecord(record.id, "comment"), { once: true });
+}
+
+function getPopupPhoto(record) {
+  if (!record) return null;
+  const publicPhotoAllowed = record.photoPrivacy === "public" || record.photoPrivacy === "public-blurred";
+  if (PUBLIC_VIEW && (!publicPhotoAllowed || record.category === "rescue_request")) return null;
+  const evidenceImage = String(record.evidenceImage || "");
+  const directPhotoUrl = String(record.photoUrl || "");
+  const src = evidenceImage.startsWith("data:image/")
+    ? evidenceImage
+    : isDirectImageUrl(directPhotoUrl)
+      ? directPhotoUrl
+      : "";
+  return src ? { src, blurred: PUBLIC_VIEW && record.photoPrivacy === "public-blurred" } : null;
+}
+
+function isDirectImageUrl(value) {
+  if (!isHttpUrl(value)) return false;
+  try {
+    const pathname = new URL(value).pathname.toLowerCase();
+    return /\.(?:avif|gif|jpe?g|png|webp)$/.test(pathname);
+  } catch {
+    return false;
+  }
 }
 
 function renderList() {
@@ -1952,14 +1994,19 @@ function renderDetail() {
   });
 }
 
-function selectRecord(id, panTo) {
+function selectRecord(id, panTo, options = {}) {
   selectedId = id;
   const record = records.find(item => item.id === id);
   const displayCoordinates = getDisplayCoordinates(record);
   if (record && panTo && displayCoordinates) {
     map.setView([displayCoordinates.lat, displayCoordinates.lng], Math.max(map.getZoom(), 15));
   }
-  renderAll();
+  if (options.preserveMap) {
+    renderList();
+    renderDetail();
+  } else {
+    renderAll();
+  }
 }
 
 function openRoadStatusDialog() {
@@ -2185,24 +2232,32 @@ function handleDetailAction(action) {
 }
 
 function beginLocationContact(method) {
-  const record = records.find(item => item.id === locationContactRecordId);
+  beginLocationContactForRecord(locationContactRecordId, method);
+}
+
+function beginLocationContactForRecord(recordId, method) {
+  const record = records.find(item => item.id === recordId);
   if (!record) return;
-  const question = method === "dm"
-    ? "突然のご連絡失礼します。印西市内の被害状況確認のため、差し支えない範囲で撮影場所（町名・目印）を教えていただけますか。個人宅など詳細住所は不要です。"
-    : "印西市内の被害状況確認のため、差し支えない範囲で撮影場所（町名・目印）を教えていただけますか。個人宅など詳細住所は不要です。";
+  const question = buildLocationQuestion(method);
   navigator.clipboard?.writeText(question).catch(() => {});
   const opened = window.open(record.sourceUrl, "_blank");
   if (opened) opened.opener = null;
-  record.locationStatus = "asked";
+  if (getLocationStatus(record) !== "pinned") record.locationStatus = "asked";
   record.locationContactMethod = method;
   record.locationAskedAt = nowLocalInput();
   record.locationAskedBy = record.evidenceOperator || loadOperator();
   record.assignedTo = record.assignedTo === "場所確認待ち" ? "投稿者へ確認中" : record.assignedTo;
   locationContactRecordId = null;
-  document.getElementById("location-contact-dialog").close();
+  const dialog = document.getElementById("location-contact-dialog");
+  if (dialog.open) dialog.close();
   persistRecords();
   renderAll();
   document.getElementById("map-status").textContent = `${locationContactLabels[method]}用の質問文をコピーしました。元投稿を開いて貼り付けてください。`;
+}
+
+function buildLocationQuestion(method) {
+  const body = "印西市内の災害状況確認のため、差し支えない範囲で撮影場所（町名・道路名・目印）と撮影時刻、現在も同じ状況かを教えていただけますか。個人名・電話番号・個人宅の詳細住所は書かないでください。";
+  return method === "dm" ? `突然のご連絡失礼します。${body}` : body;
 }
 
 function startLocationPick(recordId) {

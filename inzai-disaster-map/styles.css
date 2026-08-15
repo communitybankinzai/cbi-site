@@ -717,6 +717,67 @@ input[type="checkbox"] {
   margin-bottom: 6px;
 }
 
+.popup-photo-wrap {
+  background: #eef3f5;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin: 0 0 8px;
+  overflow: hidden;
+}
+
+.popup-photo-wrap img {
+  display: block;
+  max-height: 190px;
+  object-fit: contain;
+  width: 100%;
+}
+
+.popup-photo-wrap.is-blurred img {
+  filter: blur(10px);
+  transform: scale(1.08);
+}
+
+.popup-source-actions {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.popup-source-link,
+.popup-question-button {
+  align-items: center;
+  border: 1px solid var(--blue);
+  border-radius: 6px;
+  box-sizing: border-box;
+  display: flex;
+  font: inherit;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 34px;
+  padding: 6px 9px;
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.popup-source-link {
+  background: #fff;
+  color: var(--blue);
+}
+
+.popup-question-button {
+  background: var(--blue);
+  color: #fff;
+  cursor: pointer;
+}
+
+.popup-contact-note {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+  margin-top: 7px;
+}
+
 .modal {
   width: min(760px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);

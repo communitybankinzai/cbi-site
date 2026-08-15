@@ -1,5 +1,5 @@
 const WORK_LOG_KEY = "inzai-disaster-work-log-v1";
-const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v2";
+const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v3";
 const statusLabels = {
   planned: "検討中",
   testing: "試験中",
@@ -171,6 +171,17 @@ const initialRecords = [
     summary: "救助・安否確認要請を内部台帳に登録し、確認後だけ公開対象にできる基礎機能を追加。救助要請の正確な位置は一般公開できない制御と、119・110を優先する注意表示を設けた。",
     nextAction: "消防・警察・自治体との役割分担、個人情報、公開遅延、削除基準を合意するまで一般向けの実運用公開は行わない。",
     referenceUrl: "https://www.fdma.go.jp/",
+    origin: "seed"
+  },
+  {
+    id: "seed-pin-sns-popup",
+    feature: "地図ピンからSNS証跡・質問導線を表示",
+    status: "testing",
+    owner: "",
+    loggedAt: "2026-08-15T17:00:00+09:00",
+    summary: "被害ピンのポップアップに登録済み証跡写真、SNS媒体、元投稿リンク、質問文をコピーして投稿を開くボタンを追加。送信前にSNS画面で内容を確認する。",
+    nextAction: "実在投稿で写真の公開区分、リンク切れ、スマートフォンのコメント入力、質問後の回答記録を確認する。SNS APIによるコメント自動送信は権限・誤送信リスクを確認するまで接続しない。",
+    referenceUrl: "",
     origin: "seed"
   }
 ];
