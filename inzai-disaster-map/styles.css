@@ -579,6 +579,19 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
+.record-card {
+  color: inherit;
+  display: block;
+  text-decoration: none;
+}
+
+.record-card.has-source-link h3::after {
+  content: "↗";
+  color: var(--blue);
+  font-size: 0.82em;
+  margin-left: 6px;
+}
+
 .record-card.is-selected {
   outline: 2px solid rgba(12, 110, 153, 0.35);
 }
@@ -1039,6 +1052,102 @@ input[type="checkbox"] {
   background: #edf7fb;
 }
 
+.location-assist-row,
+.location-search-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.location-assist-row > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.location-search-modal {
+  width: min(840px, calc(100vw - 24px));
+}
+
+.location-candidate-results {
+  display: grid;
+  gap: 8px;
+}
+
+.location-candidate-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--focus);
+  border-radius: 6px;
+  padding: 10px 11px;
+  background: #fff;
+}
+
+.location-candidate-card.is-outside {
+  border-left-color: var(--orange);
+  background: #fff9f2;
+}
+
+.location-candidate-card strong,
+.location-candidate-card span {
+  display: block;
+}
+
+.location-candidate-card p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.location-candidate-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.privacy-note {
+  border: 1px solid #e3c888;
+  border-radius: 6px;
+  padding: 9px 11px;
+  background: #fff9e8;
+  color: #604c1e;
+  font-size: 12px;
+}
+
+.privacy-note strong,
+.privacy-note span {
+  display: block;
+}
+
+.privacy-note span {
+  margin-top: 3px;
+}
+
+.earthquake-summary-content,
+.earthquake-event {
+  display: grid;
+  gap: 5px;
+}
+
+.earthquake-event strong {
+  font-size: 13px;
+}
+
+.earthquake-event span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.earthquake-event .intensity-value {
+  color: var(--red);
+  font-weight: 700;
+}
+
 .search-mode-fieldset {
   display: flex;
   flex-wrap: wrap;
@@ -1467,7 +1576,8 @@ body.embed-mode .cbi-home-link {
   .next-step,
   .link-register-panel,
   .contact-choices,
-  .official-link-grid {
+  .official-link-grid,
+  .location-candidate-card {
     grid-template-columns: 1fr;
   }
 

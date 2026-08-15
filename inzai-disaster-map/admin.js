@@ -1,5 +1,5 @@
 const WORK_LOG_KEY = "inzai-disaster-work-log-v1";
-const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v1";
+const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v2";
 const statusLabels = {
   planned: "検討中",
   testing: "試験中",
@@ -116,6 +116,61 @@ const initialRecords = [
     summary: "投稿・発生時刻または登録時の災害対象日が一致する記録だけを、地図、一覧、集計、写真・場所確認キューへ表示する。過去記録は明示的にONにした場合だけ表示する。",
     nextAction: "複数日にわたる災害へ対応する場合は、対象開始・終了日時の範囲指定へ拡張する。",
     referenceUrl: "",
+    origin: "seed"
+  },
+  {
+    id: "seed-image-gps",
+    feature: "元画像GPSによる自動ピン留め",
+    status: "completed",
+    owner: "",
+    loggedAt: "2026-08-15T16:00:00+09:00",
+    summary: "選択・貼り付け・ドロップした元画像にEXIF GPSが残っている場合、緯度経度を読み取り、その座標でピン留めする。GPSがない画像や画面キャプチャは自動確定しない。",
+    nextAction: "実機のスマートフォン写真でGPSあり・なしの両方を確認し、公開前の位置確認を運用手順に含める。",
+    referenceUrl: "https://github.com/MikeKovarik/exifr",
+    origin: "seed"
+  },
+  {
+    id: "seed-location-ai",
+    feature: "投稿本文・コメントからの場所候補検索",
+    status: "testing",
+    owner: "",
+    loggedAt: "2026-08-15T16:05:00+09:00",
+    summary: "本文・コメント・場所の手掛かりから地名を抽出し、無料の国土地理院検索で候補を提示する機能を実装。AI補完はCBI側APIの接続先が設定された場合だけ利用でき、候補は人が確認して採用する。",
+    nextAction: "市内外の同名地名、道路名だけの投稿、コメントで追記された住所を使って候補精度を検証する。",
+    referenceUrl: "https://msearch.gsi.go.jp/address-search/",
+    origin: "seed"
+  },
+  {
+    id: "seed-operator-auth",
+    feature: "自主防災組織の利用登録・権限管理",
+    status: "planned",
+    owner: "",
+    loggedAt: "2026-08-15T16:10:00+09:00",
+    summary: "画面側に利用者セッション、編集権限、共有台帳APIの接続口を追加。現在は端末内保存の試作であり、CiDAOログイン・組織所属・役割を検証するサーバーAPIは未接続。",
+    nextAction: "CiDAOのSupabase認証と組織所属を使い、閲覧・登録・確認・公開承認の権限をサーバー側で強制する。",
+    referenceUrl: "https://cidao.vercel.app/login",
+    origin: "seed"
+  },
+  {
+    id: "seed-earthquake-info",
+    feature: "気象庁の地震情報表示",
+    status: "testing",
+    owner: "",
+    loggedAt: "2026-08-15T16:15:00+09:00",
+    summary: "気象庁の地震情報一覧から最新の全国情報と印西市の震度情報を取得し、地図脇に要約表示する機能を追加。被害投稿とは別の公式参考情報として扱う。",
+    nextAction: "気象庁側の配信変更、通信障害、同一地震の更新報の表示を継続確認する。",
+    referenceUrl: "https://www.data.jma.go.jp/developer/",
+    origin: "seed"
+  },
+  {
+    id: "seed-rescue-publication",
+    feature: "救助・安否確認要請の登録・公開承認",
+    status: "testing",
+    owner: "",
+    loggedAt: "2026-08-15T16:20:00+09:00",
+    summary: "救助・安否確認要請を内部台帳に登録し、確認後だけ公開対象にできる基礎機能を追加。救助要請の正確な位置は一般公開できない制御と、119・110を優先する注意表示を設けた。",
+    nextAction: "消防・警察・自治体との役割分担、個人情報、公開遅延、削除基準を合意するまで一般向けの実運用公開は行わない。",
+    referenceUrl: "https://www.fdma.go.jp/",
     origin: "seed"
   }
 ];

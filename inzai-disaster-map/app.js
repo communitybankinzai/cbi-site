@@ -6,6 +6,7 @@ const OPERATOR_KEY = "inzai-disaster-operator-v1";
 const GUIDE_SEEN_KEY = "inzai-disaster-guide-seen-v1";
 const SOURCE_CHECKED_AT = "2026-08-15";
 const APP_CONFIG = window.CBI_DISASTER_CONFIG || {};
+const PUBLIC_VIEW = new URLSearchParams(window.location.search).get("view") === "public";
 
 const statusLabels = {
   unconfirmed: "未確認",
@@ -21,6 +22,8 @@ const categoryLabels = {
   river: "河川増水",
   landslide: "土砂",
   traffic: "道路通行情報",
+  rescue_request: "救助・安否確認要請",
+  earthquake_damage: "地震被害",
   lifeline: "ライフライン",
   shelter: "避難所",
   other: "その他"
@@ -80,6 +83,9 @@ const platformLabels = {
   instagram: "Instagram",
   threads: "Threads",
   x: "X",
+  facebook: "Facebook",
+  tiktok: "TikTok",
+  youtube: "YouTube",
   "yahoo-realtime": "Yahoo!リアルタイム検索",
   web: "Web検索",
   other: "その他"
@@ -115,6 +121,17 @@ const roadFloodSites = [
     accuracy: "住所・通称名からの暫定位置",
     source: "国土交通省 関東地方整備局 千葉国道事務所 道路冠水注意箇所マップ 令和8年6月30日更新",
     sourceUrl: "https://www.ktr.mlit.go.jp/chiba/chiba_index030.html"
+  }
+];
+
+const locationAliases = [
+  {
+    patterns: ["やわたパレット", "八幡パレット"],
+    title: "やわたパレット（市原市八幡総合市民センター）",
+    query: "千葉県市原市八幡1050-3",
+    confidence: 0.94,
+    reason: "市原市広報に掲載された正式名称・所在地と『白金通り』の記述が一致",
+    sourceUrl: "https://prdurbanosichapp1.blob.core.windows.net/common-article/6973379d8dbe435020068490/2026_2_seikatujouhou_16-17_kouhouichihara_web.pdf"
   }
 ];
 
@@ -188,6 +205,10 @@ let clickAddMode = false;
 let locationPickRecordId = null;
 let locationContactRecordId = null;
 let apiResultItems = [];
+let collectorLocationCandidate = null;
+let recordFormLocationCandidate = null;
+let locationSearchContext = { source: "collector", recordId: null, candidates: [] };
+let sharedRecordsSyncTimer = null;
 let screenshotState = {
   image: null,
   scale: 1,
@@ -195,7 +216,9 @@ let screenshotState = {
   dragging: false,
   start: null,
   locationCandidate: null,
-  relativeTime: null
+  relativeTime: null,
+  gpsInspectionState: "not-checked",
+  autoGpsRecordId: null
 };
 
 const map = L.map("map", {
@@ -284,8 +307,10 @@ boundaryLayer.addTo(map);
 
 initBoundary();
 refreshRainNowcast(false);
+refreshEarthquakeSummary(false);
 renderRoadFloodSites();
 initIntegration();
+applyTrialRecordFromQuery();
 renderAll();
 bindEvents();
 initHelpGuide();
@@ -324,6 +349,15 @@ function bindEvents() {
   document.getElementById("official-links-button").addEventListener("click", openOfficialLinksDialog);
   document.getElementById("help-start-button").addEventListener("click", startFromHelp);
   document.getElementById("register-social-link-button").addEventListener("click", registerSocialLink);
+  document.getElementById("collector-location-search-button").addEventListener("click", () => openLocationSearchDialog({ source: "collector" }));
+  document.getElementById("record-location-search-button").addEventListener("click", () => openLocationSearchDialog({ source: "record-form" }));
+  document.getElementById("free-location-search-button").addEventListener("click", runFreeLocationSearch);
+  document.getElementById("ai-location-search-button").addEventListener("click", runAiLocationSearch);
+  document.getElementById("location-candidate-results").addEventListener("click", handleLocationCandidateAction);
+  ["location-search-post-text", "location-search-comments", "location-search-hint"].forEach(id => {
+    document.getElementById(id).addEventListener("input", updateLocationWebSearchLink);
+  });
+  document.getElementById("refresh-earthquake-button").addEventListener("click", () => refreshEarthquakeSummary(true));
   document.getElementById("paste-social-link-button").addEventListener("click", pasteSocialLink);
   document.getElementById("collector-post-url").addEventListener("input", syncCollectorPlatformFromUrl);
   document.getElementById("collector-platform").addEventListener("change", updateCollectorPlatformHelp);
@@ -404,6 +438,12 @@ function initIntegration() {
   if (new URLSearchParams(window.location.search).get("embed") === "1") {
     document.body.classList.add("embed-mode");
   }
+  if (PUBLIC_VIEW) {
+    document.body.classList.add("public-view");
+    document.getElementById("operation-banner-title").textContent = "一般公開用の参考表示";
+    document.getElementById("operation-banner-text").textContent = "公開承認済みの参考情報だけを表示します。救助・事件・事故は119・110へ通報し、公式情報を優先してください。";
+    applyPublicViewControls();
+  }
 
   const endpoint = String(APP_CONFIG.snsSearchEndpoint || "").trim();
   const apiStatus = document.getElementById("api-status");
@@ -421,12 +461,91 @@ function initIntegration() {
     apiNote.textContent = "現在は検索画面・スクショ・JSON取込を利用できます。公式API接続時は config.js の snsSearchEndpoint にCBI側の連携先を設定します。";
   }
 
+  const locationAiEndpoint = String(APP_CONFIG.locationAiEndpoint || "").trim();
+  const aiButton = document.getElementById("ai-location-search-button");
+  if (locationAiEndpoint) {
+    aiButton.disabled = false;
+    aiButton.title = "CBI側のAI連携先で候補を補完します";
+  } else {
+    aiButton.disabled = true;
+    aiButton.title = "CBI側のAI連携先を設定すると利用できます";
+  }
+
+  const operatorEndpoint = String(APP_CONFIG.operatorSessionEndpoint || "").trim();
+  const operatorStatus = document.getElementById("operator-status");
+  if (operatorEndpoint) {
+    operatorStatus.textContent = "利用資格を確認中";
+    initOperatorSession(operatorEndpoint);
+  } else {
+    operatorStatus.textContent = "試作利用";
+  }
+
   window.CBIDisasterMap = {
     version: APP_CONFIG.appVersion || "",
     getRecords: () => records.map(withoutLargeImage),
     getSearchLog: () => searchLog.map(item => ({ ...item })),
     importSnsPayload: (payload, platform = "web") => consumeSnsPayload(payload, platform, "host")
   };
+}
+
+function applyPublicViewControls() {
+  [
+    "sns-collector-button", "add-point-button", "add-road-status-button", "map-click-button",
+    "screenshot-button", "import-button", "export-csv-button", "export-geojson-button"
+  ].forEach(id => {
+    const control = document.getElementById(id);
+    if (control) control.hidden = true;
+  });
+  document.querySelector(".admin-button")?.setAttribute("hidden", "");
+  ["photo-queue", "location-queue", "search-log"].forEach(id => {
+    const section = document.getElementById(id)?.closest(".panel-section");
+    if (section) section.hidden = true;
+  });
+}
+
+async function initOperatorSession(endpoint) {
+  const status = document.getElementById("operator-status");
+  try {
+    const response = await fetch(endpoint, { credentials: "include", headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(response.status === 401 ? "LOGIN_REQUIRED" : `HTTP ${response.status}`);
+    const session = await response.json();
+    window.CBIDisasterOperator = session;
+    const roleLabel = session.roleLabel || session.role || "登録利用者";
+    status.textContent = `${session.displayName || "利用者"} / ${roleLabel}`;
+    status.classList.add("is-connected");
+    applyOperatorPermissions(session.permissions || {});
+    await loadSharedRecords();
+  } catch (error) {
+    window.CBIDisasterOperator = null;
+    status.textContent = error?.message === "LOGIN_REQUIRED" ? "CiDAOログインが必要" : "利用資格を確認できません";
+    applyOperatorPermissions({ canEdit: false });
+  }
+}
+
+function applyOperatorPermissions(permissions) {
+  if (!APP_CONFIG.operatorSessionEndpoint) return;
+  const canEdit = Boolean(permissions.canEdit || permissions.canCreate);
+  [
+    "sns-collector-button", "add-point-button", "add-road-status-button", "map-click-button",
+    "screenshot-button", "import-button"
+  ].forEach(id => {
+    const control = document.getElementById(id);
+    if (!control) return;
+    control.disabled = !canEdit;
+    if (!canEdit) control.title = "承認済みの自主防災組織利用者のみ操作できます";
+  });
+}
+
+async function loadSharedRecords() {
+  const endpoint = String(APP_CONFIG.sharedRecordsEndpoint || "").trim();
+  if (!endpoint || !window.CBIDisasterOperator) return;
+  const response = await fetch(endpoint, { credentials: "include", headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error(`共有記録の取得に失敗しました (${response.status})`);
+  const payload = await response.json();
+  if (!Array.isArray(payload.records)) return;
+  records = payload.records;
+  selectedId = null;
+  renderAll();
 }
 
 function initHelpGuide() {
@@ -436,6 +555,59 @@ function initHelpGuide() {
       document.getElementById("help-dialog").showModal();
     }
   } catch {}
+}
+
+function applyTrialRecordFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("trial") !== "yawata") return;
+  const id = "trial-yawata-palette";
+  const incidentDate = getFormValue("incident-date") || "2026-08-13";
+  if (!records.some(record => record.id === id)) {
+    records = [...records, {
+      id,
+      title: "やわたパレット・白金通り（市外試験ピン）",
+      category: "other",
+      locationName: "やわたパレット（市原市八幡1050-3）",
+      lat: 35.536659,
+      lng: 140.116455,
+      locationStatus: "pinned",
+      observedAt: `${incidentDate}T00:00`,
+      incidentDate,
+      sourceType: "web",
+      sourceUrl: "https://prdurbanosichapp1.blob.core.windows.net/common-article/6973379d8dbe435020068490/2026_2_seikatujouhou_16-17_kouhouichihara_web.pdf",
+      status: "unconfirmed",
+      severity: "low",
+      passability: "none",
+      passabilityMode: "unknown",
+      passabilityCheckedAt: "",
+      photoStatus: "needs-photo",
+      photoUrl: "",
+      photoPrivacy: "internal",
+      assignedTo: "市外試験",
+      notes: "投稿語『八幡パレット』『白金通り』から検索した試験ピン。正式名称は『やわたパレット』。印西市外のため実運用データとは分離して扱う。",
+      hazardFlags: { flood: false, inland: false, road: false, landslide: false },
+      sourceText: "八幡パレットの白金通り",
+      sourceComments: "",
+      publicationStatus: "internal",
+      publicLocationPrecision: "hidden",
+      locationCandidateSource: "public-source-gsi",
+      locationCandidateConfidence: 0.94,
+      locationCandidateQuery: "千葉県市原市八幡1050-3",
+      locationCandidateReason: "市原市広報の所在地と国土地理院地名検索の座標が一致",
+      locationCandidateOutsideArea: true,
+      locationSearchCheckedAt: nowLocalInput()
+    }];
+    persistRecords();
+  }
+  selectedId = PUBLIC_VIEW ? null : id;
+  document.getElementById("show-all-dates").checked = true;
+  setTimeout(() => {
+    if (!PUBLIC_VIEW) map.setView([35.536659, 140.116455], 15);
+    renderAll();
+    document.getElementById("map-status").textContent = PUBLIC_VIEW
+      ? "一般公開用の参考表示です。公開承認済みの情報だけを表示しています。"
+      : "市外試験ピン『やわたパレット』を表示しています。";
+  }, 250);
 }
 
 function openHelpDialog() {
@@ -458,8 +630,11 @@ function openCollectorDialog() {
   setFormValue("collector-operator", loadOperator());
   setFormValue("collector-post-url", "");
   setFormValue("collector-post-text", "");
+  setFormValue("collector-comments", "");
   setFormValue("collector-post-time", "");
   setFormValue("collector-location-note", "");
+  collectorLocationCandidate = null;
+  document.getElementById("collector-location-candidate-status").textContent = "候補未選択";
   document.getElementById("collector-link-status").textContent = "";
   apiResultItems = [];
   renderApiResults();
@@ -523,6 +698,7 @@ function registerSocialLink() {
   const operator = getFormValue("collector-operator") || loadOperator();
   const checkedAt = nowLocalInput();
   const sourceText = getFormValue("collector-post-text").trim();
+  const sourceComments = getFormValue("collector-comments").trim();
   const locationNote = getFormValue("collector-location-note").trim();
   const postTime = parseCollectorPostTime(getFormValue("collector-post-time"), checkedAt);
   const metadata = parseSocialUrlMetadata(sourceUrl);
@@ -537,10 +713,10 @@ function registerSocialLink() {
     id: `rec-${Date.now()}`,
     title: sourceText ? truncateText(sourceText, 72) : `${platformLabels[platform] || "SNS"}投稿（場所確認待ち）`,
     category: inferCategory(sourceText),
-    locationName: locationNote || "場所未特定",
-    lat: null,
-    lng: null,
-    locationStatus: "unknown",
+    locationName: collectorLocationCandidate?.title || locationNote || "場所未特定",
+    lat: collectorLocationCandidate?.lat ?? null,
+    lng: collectorLocationCandidate?.lng ?? null,
+    locationStatus: collectorLocationCandidate ? "pinned" : "unknown",
     observedAt: postTime.observedAt,
     incidentDate: getFormValue("incident-date"),
     sourceType: "sns",
@@ -553,9 +729,11 @@ function registerSocialLink() {
     photoStatus: "needs-photo",
     photoUrl: "",
     photoPrivacy: "internal",
-    assignedTo: "場所確認待ち",
-    notes: locationNote
-      ? `場所の手掛かり: ${locationNote}。位置を投稿者または別資料で確認後、地図へピンを設定する。`
+    assignedTo: collectorLocationCandidate ? "位置・内容確認待ち" : "場所確認待ち",
+    notes: collectorLocationCandidate
+      ? `本文・コメントから採用した場所候補: ${collectorLocationCandidate.title}。${collectorLocationCandidate.outsideInzai ? "印西市外候補。" : ""}候補の緯度経度でピン設定済み。公開前に位置と根拠を確認する。`
+      : locationNote
+        ? `場所の手掛かり: ${locationNote}。位置を投稿者または別資料で確認後、地図へピンを設定する。`
       : "SNS投稿リンクから登録。投稿者へ撮影場所を確認後、地図へピンを設定する。",
     hazardFlags: { flood: false, inland: false, road: false, landslide: false },
     evidencePlatform: platform,
@@ -565,10 +743,19 @@ function registerSocialLink() {
     evidenceRelativeTime: postTime.label,
     observedAtDerived: postTime.derived,
     sourceText,
+    sourceComments,
     evidenceOcrText: "",
     evidenceImage: "",
     externalId: metadata.externalId,
-    sourceUsername: metadata.sourceUsername
+    sourceUsername: metadata.sourceUsername,
+    publicationStatus: "internal",
+    publicLocationPrecision: "hidden",
+    locationCandidateSource: collectorLocationCandidate?.source || "",
+    locationCandidateConfidence: collectorLocationCandidate?.confidence ?? null,
+    locationCandidateQuery: collectorLocationCandidate?.query || "",
+    locationCandidateReason: collectorLocationCandidate?.reason || "",
+    locationCandidateOutsideArea: Boolean(collectorLocationCandidate?.outsideInzai),
+    locationSearchCheckedAt: collectorLocationCandidate ? checkedAt : ""
   };
   saveOperator(operator);
   records = [...records, record];
@@ -588,10 +775,20 @@ function detectPlatformFromUrl(value) {
     if (host.includes("instagram.com")) return "instagram";
     if (host.includes("threads.net") || host.includes("threads.com")) return "threads";
     if (host === "x.com" || host.endsWith(".x.com") || host.includes("twitter.com")) return "x";
+    if (host.includes("facebook.com") || host === "fb.watch") return "facebook";
+    if (host.includes("tiktok.com")) return "tiktok";
+    if (host.includes("youtube.com") || host === "youtu.be") return "youtube";
     return "web";
   } catch {
     return "";
   }
+}
+
+function getRecordPlatform(record) {
+  if (!record) return "";
+  const platform = record.evidencePlatform || detectPlatformFromUrl(record.sourceUrl);
+  if (!platform || platform === "web" || platform === "other") return "";
+  return platform;
 }
 
 function parseSocialUrlMetadata(value) {
@@ -777,6 +974,9 @@ function normalizeSnsItem(item, fallbackPlatform) {
     mediaUrl,
     timestamp: String(item.timestamp || item.createdAt || item.created_at || ""),
     username: String(item.username || item.owner?.username || ""),
+    commentsText: Array.isArray(item.comments)
+      ? item.comments.map(comment => typeof comment === "string" ? comment : comment?.text || "").filter(Boolean).join("\n")
+      : String(item.commentsText || item.comments_text || item.commentText || ""),
     locationName: String(item.locationName || item.location_name || coordinates.name || ""),
     lat: Number.isFinite(lat) ? lat : null,
     lng: Number.isFinite(lng) ? lng : null
@@ -831,7 +1031,7 @@ function addApiResultAsRecord(item) {
     locationName: item.locationName || "場所未特定",
     lat: apiHasLocation ? item.lat : null,
     lng: apiHasLocation ? item.lng : null,
-    locationStatus: apiHasLocation ? "identified" : "unknown",
+    locationStatus: apiHasLocation ? "pinned" : "unknown",
     observedAt: toDateTimeLocal(item.timestamp) || nowLocalInput(),
     incidentDate: getFormValue("incident-date"),
     sourceType: item.platform === "web" ? "web" : "sns",
@@ -844,7 +1044,7 @@ function addApiResultAsRecord(item) {
     photoStatus: item.mediaUrl ? "has-photo" : "needs-photo",
     photoUrl: item.mediaUrl,
     photoPrivacy: "internal",
-    assignedTo: apiHasLocation ? "ピン位置確認待ち" : "場所確認待ち",
+    assignedTo: apiHasLocation ? "投稿位置情報の確認待ち" : "場所確認待ち",
     notes: "公式APIまたは連携JSONから登録。位置・内容・写真の真正性は未確認。",
     hazardFlags: { flood: false, inland: false, road: false, landslide: false },
     evidencePlatform: item.platform,
@@ -852,10 +1052,19 @@ function addApiResultAsRecord(item) {
     evidenceOperator: operator,
     evidenceCheckedAt: nowLocalInput(),
     sourceText: item.text,
+    sourceComments: item.commentsText || "",
     evidenceOcrText: item.text,
     evidenceImage: "",
     externalId: item.externalId,
-    sourceUsername: item.username
+    sourceUsername: item.username,
+    publicationStatus: "internal",
+    publicLocationPrecision: "hidden",
+    locationCandidateSource: apiHasLocation ? "platform-location" : "",
+    locationCandidateConfidence: apiHasLocation ? 0.9 : null,
+    locationCandidateQuery: apiHasLocation ? "投稿API位置情報" : "",
+    locationCandidateReason: apiHasLocation ? "投稿APIまたは連携JSONに緯度経度が含まれていました" : "",
+    locationCandidateOutsideArea: apiHasLocation ? !INZAI_BOUNDS.contains([item.lat, item.lng]) : false,
+    locationSearchCheckedAt: apiHasLocation ? nowLocalInput() : ""
   };
   records = [...records, record];
   selectedId = record.id;
@@ -878,6 +1087,8 @@ function findExactDuplicate(item) {
 
 function inferCategory(text) {
   const value = String(text || "");
+  if (/助けて|救助|閉じ込め|生き埋め|安否確認|動けない|取り残され/.test(value)) return "rescue_request";
+  if (/地震|揺れ|震度|倒壊|落下物/.test(value)) return "earthquake_damage";
   if (/冠水|アンダーパス|道路.*水/.test(value)) return "road_flood";
   if (/浸水|床上|床下/.test(value)) return "inundation";
   if (/河川|川.*増水|氾濫/.test(value)) return "river";
@@ -948,38 +1159,349 @@ function deriveObservedAtFromRelativeText(text, referenceValue) {
 }
 
 async function suggestLocationFromOcr(text) {
-  const source = String(text || "").normalize("NFKC");
-  const knownPlaces = [
-    "千葉ニュータウン中央駅", "千葉ニュータウン中央", "印西牧の原駅", "印西牧の原",
-    "印旛日本医大駅", "印旛日本医大", "木下駅", "木下", "小林駅", "小林",
-    "六軒", "大森", "草深", "船尾", "師戸", "岩戸", "瀬戸", "平賀"
-  ];
-  const queries = [];
-  const addressMatches = source.match(/印西市[一-龯々ヶケぁ-んァ-ヶー0-9\-]{2,28}/g) || [];
-  addressMatches.slice(0, 2).forEach(value => queries.push(`千葉県${value}`));
-  knownPlaces.filter(place => source.includes(place)).slice(0, 3).forEach(place => queries.push(`千葉県印西市${place}`));
+  const candidates = await findFreeLocationCandidates({ postText: text, commentsText: "", hint: "" });
+  return candidates.find(candidate => !candidate.outsideInzai) || candidates[0] || null;
+}
 
-  for (const query of [...new Set(queries)].slice(0, 4)) {
+function openLocationSearchDialog(options = {}) {
+  const source = options.source || "collector";
+  const recordId = options.recordId || (source === "record-form" ? getFormValue("record-id") : null);
+  const record = recordId ? records.find(item => item.id === recordId) : null;
+  const values = source === "collector"
+    ? {
+        postText: getFormValue("collector-post-text"),
+        commentsText: getFormValue("collector-comments"),
+        hint: getFormValue("collector-location-note")
+      }
+    : source === "record-form"
+      ? {
+          postText: getFormValue("record-source-text"),
+          commentsText: getFormValue("record-source-comments"),
+          hint: getFormValue("record-location")
+        }
+      : {
+          postText: record?.sourceText || record?.evidenceOcrText || "",
+          commentsText: record?.sourceComments || record?.locationAnswerNote || "",
+          hint: record?.locationName && !["場所未特定", "位置未確定"].includes(record.locationName) ? record.locationName : ""
+        };
+  locationSearchContext = { source, recordId, candidates: [] };
+  setFormValue("location-search-post-text", values.postText);
+  setFormValue("location-search-comments", values.commentsText);
+  setFormValue("location-search-hint", values.hint);
+  document.getElementById("location-search-status").textContent = "無料候補検索から始めてください。「この候補を使う」を押すと、その緯度経度でピンを設定します。";
+  renderLocationCandidates();
+  updateLocationWebSearchLink();
+  document.getElementById("location-search-dialog").showModal();
+}
+
+function getLocationSearchInput() {
+  return {
+    postText: getFormValue("location-search-post-text"),
+    commentsText: getFormValue("location-search-comments"),
+    hint: getFormValue("location-search-hint")
+  };
+}
+
+function updateLocationWebSearchLink() {
+  const input = getLocationSearchInput();
+  const query = [input.hint, input.postText, input.commentsText]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 180);
+  document.getElementById("location-web-search-link").href = `https://www.google.com/search?q=${encodeURIComponent(query || "印西市 災害 場所")}`;
+}
+
+async function runFreeLocationSearch() {
+  const button = document.getElementById("free-location-search-button");
+  const status = document.getElementById("location-search-status");
+  const input = getLocationSearchInput();
+  if (![input.postText, input.commentsText, input.hint].some(Boolean)) {
+    status.textContent = "投稿本文、コメント、場所の手掛かりのいずれかを入力してください。";
+    return;
+  }
+  button.disabled = true;
+  status.textContent = "地名・施設名・道路名を抽出して、公開地名検索に照会しています...";
+  try {
+    const candidates = await findFreeLocationCandidates(input);
+    locationSearchContext.candidates = candidates;
+    renderLocationCandidates();
+    status.textContent = candidates.length
+      ? `${candidates.length}件の候補が見つかりました。市外候補も含め、根拠と地図を確認してください。`
+      : "候補を特定できませんでした。コメントで町名・目印を確認するか、AI補完・Web検索を利用してください。";
+  } catch (error) {
+    status.textContent = `候補検索に失敗しました（${error?.message || "接続エラー"}）。`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function findFreeLocationCandidates(input) {
+  const queryItems = buildLocationQueries(input);
+  const candidates = [];
+  for (const item of queryItems.slice(0, 6)) {
     try {
-      const response = await fetch(`https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(item.query)}`);
       if (!response.ok) continue;
       const results = await response.json();
-      const match = Array.isArray(results) ? results.find(item => {
-        const coordinates = item?.geometry?.coordinates;
-        if (!Array.isArray(coordinates) || coordinates.length < 2) return false;
-        return INZAI_BOUNDS.contains([Number(coordinates[1]), Number(coordinates[0])]);
-      }) : null;
-      if (match) {
-        return {
-          title: String(match.properties?.title || query),
-          lat: Number(match.geometry.coordinates[1]),
-          lng: Number(match.geometry.coordinates[0]),
-          query
-        };
-      }
+      if (!Array.isArray(results)) continue;
+      results.slice(0, item.alias ? 1 : 3).forEach(result => {
+        const coordinates = result?.geometry?.coordinates;
+        if (!Array.isArray(coordinates) || coordinates.length < 2) return;
+        const lng = Number(coordinates[0]);
+        const lat = Number(coordinates[1]);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+        const address = String(result.properties?.title || item.query);
+        const tooBroad = /(?:都|道|府|県|市|区|町|村)$/.test(address) && item.query.length > address.length + 3 && !item.alias;
+        if (tooBroad) return;
+        candidates.push({
+          title: item.alias?.title || address,
+          address,
+          lat,
+          lng,
+          query: item.query,
+          source: item.alias ? "local-alias-gsi" : "gsi",
+          confidence: Math.max(0.35, Math.min(1, item.confidence - (tooBroad ? 0.25 : 0))),
+          reason: item.alias?.reason || item.reason,
+          sourceUrl: item.alias?.sourceUrl || "https://maps.gsi.go.jp/",
+          outsideInzai: !INZAI_BOUNDS.contains([lat, lng]),
+          autoPin: false
+        });
+      });
     } catch {}
   }
-  return null;
+  return dedupeLocationCandidates(candidates).sort((left, right) => {
+    if (left.outsideInzai !== right.outsideInzai) return left.outsideInzai ? 1 : -1;
+    return right.confidence - left.confidence;
+  }).slice(0, 8);
+}
+
+function buildLocationQueries(input) {
+  const source = [input.hint, input.postText, input.commentsText].filter(Boolean).join("\n").normalize("NFKC");
+  const items = [];
+  locationAliases.forEach(alias => {
+    if (alias.patterns.some(pattern => source.includes(pattern))) {
+      items.push({ query: alias.query, confidence: alias.confidence, reason: alias.reason, alias });
+    }
+  });
+
+  const addressPattern = /(?:(?:北海道|東京都|(?:京都|大阪)府|.{2,3}県))?(?:[一-龯々ヶケ]{1,12}(?:市|区|町|村))[一-龯々ヶケぁ-んァ-ヶー0-9\-丁目番地号]{2,36}/g;
+  (source.match(addressPattern) || []).slice(0, 3).forEach(value => {
+    items.push({ query: value, confidence: /\d/.test(value) ? 0.92 : 0.76, reason: "本文またはコメントに住所・自治体名を含む記述があります" });
+  });
+
+  const knownPlaces = [
+    "千葉ニュータウン中央駅", "印西牧の原駅", "印旛日本医大駅", "木下駅", "小林駅",
+    "六軒", "大森", "草深", "船尾", "師戸", "岩戸", "瀬戸", "平賀"
+  ];
+  knownPlaces.filter(place => source.includes(place)).slice(0, 3).forEach(place => {
+    items.push({ query: `千葉県印西市${place}`, confidence: 0.84, reason: "印西市内の既知の地名を検出しました" });
+  });
+
+  const municipality = (source.match(/[一-龯々ヶケ]{1,12}(?:市|区|町|村)/) || [])[0] || "印西市";
+  const placeTerms = source.match(/[一-龯々ヶケぁ-んァ-ヶーA-Za-z0-9]{2,28}(?:駅|通り|街道|道路|橋|交差点|公園|学校|病院|センター|パレット|ガード|店)/g) || [];
+  placeTerms.slice(0, 4).forEach(term => {
+    items.push({ query: `千葉県${municipality}${term}`, confidence: 0.66, reason: "施設名・道路名・目印らしい語を検出しました" });
+  });
+
+  const hint = String(input.hint || "").replace(/\s+/g, " ").trim();
+  if (hint && !items.some(item => item.query.includes(hint))) {
+    const prefix = /(?:都|道|府|県|市|区|町|村)/.test(hint) ? "" : `千葉県${municipality}`;
+    items.push({ query: `${prefix}${hint}`, confidence: 0.62, reason: "入力された場所の手掛かりを検索しました" });
+  }
+
+  const seen = new Set();
+  return items.filter(item => {
+    const key = item.query.replace(/\s+/g, "");
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function dedupeLocationCandidates(candidates) {
+  const result = [];
+  candidates.forEach(candidate => {
+    const duplicate = result.find(item => distanceMeters(item.lat, item.lng, candidate.lat, candidate.lng) < 80);
+    if (!duplicate) result.push(candidate);
+    else if (candidate.confidence > duplicate.confidence) Object.assign(duplicate, candidate);
+  });
+  return result;
+}
+
+async function runAiLocationSearch() {
+  const endpoint = String(APP_CONFIG.locationAiEndpoint || "").trim();
+  const status = document.getElementById("location-search-status");
+  if (!endpoint) {
+    status.textContent = "AI連携先は未設定です。無料候補検索またはWeb検索を利用してください。";
+    return;
+  }
+  const button = document.getElementById("ai-location-search-button");
+  const input = getLocationSearchInput();
+  button.disabled = true;
+  status.textContent = "個人情報をマスクし、CBI側のAI連携先で候補を補完しています...";
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        version: "1",
+        targetArea: { name: "千葉県印西市", bounds: [[35.735, 140.055], [35.875, 140.245]] },
+        postText: redactSensitiveText(input.postText),
+        commentsText: redactSensitiveText(input.commentsText),
+        locationHint: redactSensitiveText(input.hint),
+        existingCandidates: locationSearchContext.candidates.map(candidate => withoutCandidatePrivateFields(candidate))
+      })
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const aiCandidates = normalizeAiLocationCandidates(payload.candidates || payload.data || []);
+    locationSearchContext.candidates = dedupeLocationCandidates([...locationSearchContext.candidates, ...aiCandidates]);
+    renderLocationCandidates();
+    status.textContent = aiCandidates.length
+      ? `AI補完で${aiCandidates.length}件を追加しました。候補の根拠を確認して採用してください。`
+      : "AI補完でも新しい候補を特定できませんでした。投稿者への確認を続けてください。";
+  } catch (error) {
+    status.textContent = `AI補完に失敗しました（${error?.message || "接続エラー"}）。無料候補はそのまま利用できます。`;
+    appendSystemWorkLog("AI場所候補検索", "blocked", status.textContent, "CBI側AIエンドポイントと利用者認証を確認する");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function redactSensitiveText(value) {
+  return String(value || "")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[メール非送信]")
+    .replace(/(?:\+?81[- ]?)?0\d{1,4}[- ]?\d{1,4}[- ]?\d{3,4}/g, "[電話番号非送信]")
+    .replace(/@[A-Za-z0-9_.]{2,30}/g, "@[アカウント非送信]")
+    .slice(0, 4000);
+}
+
+function withoutCandidatePrivateFields(candidate) {
+  return {
+    title: candidate.title,
+    address: candidate.address,
+    lat: candidate.lat,
+    lng: candidate.lng,
+    confidence: candidate.confidence,
+    source: candidate.source
+  };
+}
+
+function normalizeAiLocationCandidates(items) {
+  if (!Array.isArray(items)) return [];
+  return items.map(item => {
+    const lat = Number(item.lat ?? item.latitude);
+    const lng = Number(item.lng ?? item.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return {
+      title: String(item.title || item.name || item.address || "AI場所候補"),
+      address: String(item.address || item.title || ""),
+      lat,
+      lng,
+      confidence: Math.max(0, Math.min(1, Number(item.confidence) || 0.5)),
+      reason: String(item.reason || "投稿本文とコメントからAIが推定"),
+      query: String(item.query || "AI補完"),
+      source: "ai",
+      sourceUrl: isHttpUrl(item.sourceUrl) ? item.sourceUrl : "",
+      outsideInzai: !INZAI_BOUNDS.contains([lat, lng]),
+      autoPin: false
+    };
+  }).filter(Boolean);
+}
+
+function renderLocationCandidates() {
+  const node = document.getElementById("location-candidate-results");
+  const candidates = locationSearchContext.candidates || [];
+  if (!candidates.length) {
+    node.innerHTML = '<div class="detail-empty">場所候補はまだありません。</div>';
+    return;
+  }
+  node.innerHTML = candidates.map((candidate, index) => `
+    <article class="location-candidate-card ${candidate.outsideInzai ? "is-outside" : ""}">
+      <div>
+        <strong>${escapeHtml(candidate.title)}</strong>
+        <p>${escapeHtml(candidate.address || candidate.reason || "候補住所なし")}</p>
+        <div class="location-candidate-meta">
+          <span class="badge ${candidate.outsideInzai ? "orange" : "green"}">${candidate.outsideInzai ? "印西市外" : "印西市内"}</span>
+          <span class="badge blue">確度 ${Math.round(candidate.confidence * 100)}%</span>
+          <span class="badge yellow">${escapeHtml(locationCandidateSourceLabel(candidate.source))}</span>
+        </div>
+        <p>${escapeHtml(candidate.reason || "候補の根拠は未記載です")}</p>
+      </div>
+      <button class="tool-button primary" type="button" data-location-candidate-index="${index}">この候補を使う</button>
+    </article>
+  `).join("");
+}
+
+function locationCandidateSourceLabel(source) {
+  if (source === "image-exif") return "元画像GPS";
+  if (source === "ai") return "AI補完";
+  if (source === "local-alias-gsi" || source === "public-source-gsi") return "公開資料+地理院";
+  return "国土地理院検索";
+}
+
+function publicationStatusLabel(value) {
+  return ({ internal: "内部確認中", review: "公開承認待ち", published: "公開承認済み" })[value] || "内部確認中";
+}
+
+function publicLocationPrecisionLabel(value) {
+  return ({ hidden: "位置非公開", approximate: "概略位置", exact: "正確な位置" })[value] || "位置非公開";
+}
+
+function handleLocationCandidateAction(event) {
+  const button = event.target.closest("[data-location-candidate-index]");
+  if (!button) return;
+  const candidate = locationSearchContext.candidates[Number(button.dataset.locationCandidateIndex)];
+  if (!candidate) return;
+  applyLocationCandidate(candidate);
+}
+
+function applyLocationCandidate(candidate) {
+  const checkedAt = nowLocalInput();
+  if (locationSearchContext.source === "collector") {
+    collectorLocationCandidate = candidate;
+    setFormValue("collector-location-note", candidate.title);
+    document.getElementById("collector-location-candidate-status").textContent = `${candidate.title} / ${candidate.outsideInzai ? "印西市外" : "印西市内"} / 確度${Math.round(candidate.confidence * 100)}%`;
+  } else if (locationSearchContext.source === "record-form") {
+    recordFormLocationCandidate = candidate;
+    setFormValue("record-location", candidate.title);
+    setFormValue("record-lat", candidate.lat.toFixed(6));
+    setFormValue("record-lng", candidate.lng.toFixed(6));
+    setFormValue("record-location-status", "pinned");
+    setFormValue("record-source-text", getFormValue("location-search-post-text"));
+    setFormValue("record-source-comments", getFormValue("location-search-comments"));
+  } else {
+    const record = records.find(item => item.id === locationSearchContext.recordId);
+    if (!record) return;
+    record.locationName = candidate.title;
+    record.lat = candidate.lat;
+    record.lng = candidate.lng;
+    record.locationStatus = "pinned";
+    record.sourceComments = getFormValue("location-search-comments");
+    Object.assign(record, locationCandidateAuditFields(candidate, checkedAt));
+    record.assignedTo = "位置・内容確認待ち";
+    persistRecords();
+    selectedId = record.id;
+    map.setView([candidate.lat, candidate.lng], 15);
+    renderAll();
+  }
+  document.getElementById("location-search-dialog").close();
+  document.getElementById("map-status").textContent = `${candidate.title}の緯度経度でピンを設定しました。公開前に位置と根拠を確認してください。`;
+}
+
+function locationCandidateAuditFields(candidate, checkedAt = nowLocalInput()) {
+  return {
+    locationCandidateSource: candidate.source || "",
+    locationCandidateConfidence: candidate.confidence ?? null,
+    locationCandidateQuery: candidate.query || "",
+    locationCandidateReason: candidate.reason || "",
+    locationCandidateOutsideArea: Boolean(candidate.outsideInzai),
+    locationSearchCheckedAt: checkedAt
+  };
 }
 
 function logSearch(entry) {
@@ -1089,6 +1611,57 @@ async function refreshRainNowcast(showLayer) {
   }
 }
 
+async function refreshEarthquakeSummary(manual) {
+  const node = document.getElementById("earthquake-summary-content");
+  const endpoint = String(APP_CONFIG.earthquakeListEndpoint || "https://www.jma.go.jp/bosai/quake/data/list.json");
+  if (manual) node.innerHTML = '<div class="detail-empty">最新情報を更新中です。</div>';
+  try {
+    const response = await fetch(`${endpoint}${endpoint.includes("?") ? "&" : "?"}_=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const items = await response.json();
+    const reports = Array.isArray(items)
+      ? items.filter(item => String(item.ttl || "").includes("震源・震度") && item.ift !== "取消")
+      : [];
+    const latest = reports[0];
+    const inzai = reports.find(item => Array.isArray(item.int) && item.int.some(prefecture =>
+      Array.isArray(prefecture.city) && prefecture.city.some(city => String(city.code) === "1223100")
+    ));
+    if (!latest) throw new Error("表示対象の地震情報がありません");
+    const inzaiIntensity = inzai ? findCityIntensity(inzai, "1223100") : "";
+    node.innerHTML = `
+      <div class="earthquake-event">
+        <strong>最新: ${escapeHtml(latest.anm || "震源地不明")} M${escapeHtml(latest.mag || "-")}</strong>
+        <span>${escapeHtml(formatJmaDateTime(latest.at))} / 最大震度 <span class="intensity-value">${escapeHtml(latest.maxi || "-")}</span></span>
+        ${inzai ? `<span>印西市の直近観測: ${escapeHtml(formatJmaDateTime(inzai.at))} / 震度 <span class="intensity-value">${escapeHtml(inzaiIntensity || "-")}</span></span>` : '<span>取得範囲内に印西市の震度記録はありません。</span>'}
+        <a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">気象庁の地震情報を確認</a>
+      </div>
+    `;
+  } catch (error) {
+    node.innerHTML = '<div class="detail-empty">地震情報を取得できません。気象庁の公式ページを確認してください。</div>';
+    if (manual) appendSystemWorkLog("気象庁 地震情報", "blocked", `地震情報を取得できませんでした: ${error?.message || "不明なエラー"}`, "気象庁公式ページと配信URLを確認する");
+  }
+}
+
+function findCityIntensity(report, cityCode) {
+  for (const prefecture of report.int || []) {
+    const city = (prefecture.city || []).find(item => String(item.code) === cityCode);
+    if (city) return String(city.maxi || "");
+  }
+  return "";
+}
+
+function formatJmaDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value || "-");
+  return new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
 function formatJmaTime(value) {
   const text = String(value || "");
   if (!/^\d{14}$/.test(text)) return text;
@@ -1112,6 +1685,8 @@ function formatJmaTime(value) {
 setInterval(() => {
   if (document.querySelector('[data-overlay="rainNowcast"]')?.checked) refreshRainNowcast(true);
 }, 5 * 60 * 1000);
+
+setInterval(() => refreshEarthquakeSummary(false), 10 * 60 * 1000);
 
 function initBoundary() {
   fetch("https://geoshape.ex.nii.ac.jp/jma/resource/AreaInformationCity_risk/20241025/1223100.geojson")
@@ -1172,9 +1747,10 @@ function renderDateScope() {
 function renderRecords() {
   recordLayer.clearLayers();
   getFilteredRecords().forEach(record => {
-    if (!hasCoordinates(record) || getLocationStatus(record) !== "pinned") return;
+    const displayCoordinates = getDisplayCoordinates(record);
+    if (!displayCoordinates || getLocationStatus(record) !== "pinned") return;
     const alignment = deriveAlignment(record);
-    const marker = L.marker([Number(record.lat), Number(record.lng)], {
+    const marker = L.marker([displayCoordinates.lat, displayCoordinates.lng], {
       icon: L.divIcon({
         className: "",
         html: `<div class="marker-pin" style="background:${markerColor(record, alignment)}"><span></span></div>`,
@@ -1184,9 +1760,11 @@ function renderRecords() {
     });
     marker.on("click", () => selectRecord(record.id, true));
     const passability = getPassability(record);
+    const platform = getRecordPlatform(record);
     marker.bindPopup(`
       <div class="popup-title">${escapeHtml(record.title)}</div>
       <div>${escapeHtml(categoryLabels[record.category] || record.category)} / ${escapeHtml(statusLabels[record.status] || record.status)}</div>
+      ${platform ? `<div class="detail-meta">情報元: ${escapeHtml(platformLabels[platform] || platform)}</div>` : ""}
       ${passability !== "none" ? `<div class="detail-meta">${escapeHtml(passabilityLabels[passability])} ・ ${escapeHtml(formatDateTime(record.passabilityCheckedAt || record.observedAt))}</div>` : ""}
       <div class="detail-meta">${escapeHtml(alignmentLabels[alignment])} ・ ${escapeHtml(photoLabels[record.photoStatus] || "")}</div>
     `);
@@ -1206,18 +1784,25 @@ function renderList() {
     .map(record => {
       const alignment = deriveAlignment(record);
       const passability = getPassability(record);
+      const platform = getRecordPlatform(record);
+      const opensSnsPost = record.sourceType === "sns" && isHttpUrl(record.sourceUrl);
+      const cardTag = opensSnsPost ? "a" : "article";
+      const linkAttributes = opensSnsPost
+        ? `href="${escapeAttribute(record.sourceUrl)}" target="_blank" rel="noopener noreferrer" title="元のSNS投稿を開く"`
+        : "";
       return `
-        <article class="record-card ${record.id === selectedId ? "is-selected" : ""}" data-record-id="${record.id}" style="border-left-color:${markerColor(record, alignment)}">
+        <${cardTag} class="record-card ${opensSnsPost ? "has-source-link" : ""} ${record.id === selectedId ? "is-selected" : ""}" data-record-id="${record.id}" ${linkAttributes} style="border-left-color:${markerColor(record, alignment)}">
           <h3>${escapeHtml(record.title)}</h3>
           <div class="record-meta">
             <span class="badge ${badgeColor(record.status)}">${escapeHtml(statusLabels[record.status] || record.status)}</span>
             <span class="badge ${alignmentColor(alignment)}">${escapeHtml(alignmentLabels[alignment])}</span>
+            ${platform ? `<span class="badge blue">${escapeHtml(platformLabels[platform] || platform)}</span>` : ""}
             ${passability !== "none" ? `<span class="badge ${passabilityBadgeColor(passability)}">${escapeHtml(passabilityLabels[passability])}</span>` : ""}
             <span>${escapeHtml(categoryLabels[record.category] || record.category)}</span>
-            <span>${escapeHtml(record.locationName || "場所名なし")}</span>
+            <span>${escapeHtml(PUBLIC_VIEW && record.publicLocationPrecision !== "exact" ? (record.publicLocationPrecision === "approximate" ? "概略位置" : "位置非公開") : (record.locationName || "場所名なし"))}</span>
             <span class="badge ${getLocationStatus(record) === "pinned" ? "green" : "yellow"}">${escapeHtml(locationStatusLabels[getLocationStatus(record)])}</span>
           </div>
-        </article>
+        </${cardTag}>
       `;
     })
     .join("");
@@ -1294,7 +1879,8 @@ function renderLocationQueue() {
 function renderDetail() {
   const detail = document.getElementById("detail-panel");
   const record = records.find(item => item.id === selectedId);
-  if (!record) {
+  if (!record || (PUBLIC_VIEW && record.publicationStatus !== "published")) {
+    if (PUBLIC_VIEW && record) selectedId = null;
     detail.innerHTML = "地図または一覧から地点を選択してください。";
     return;
   }
@@ -1302,6 +1888,10 @@ function renderDetail() {
   const riskHits = getRiskHits(record);
   const locationStatus = getLocationStatus(record);
   const passability = getPassability(record);
+  const platform = getRecordPlatform(record);
+  const displayCoordinates = getDisplayCoordinates(record);
+  const publicApproximate = PUBLIC_VIEW && record.publicLocationPrecision === "approximate";
+  const displayLocationName = publicApproximate ? "公開用の概略位置" : (record.locationName || "-");
   detail.innerHTML = `
     <div class="detail-title">
       <h3>${escapeHtml(record.title)}</h3>
@@ -1318,30 +1908,35 @@ function renderDetail() {
       ${passability !== "none" ? `<div class="detail-row"><span>通行状況</span><span>${escapeHtml(passabilityLabels[passability])}</span></div>` : ""}
       ${passability !== "none" ? `<div class="detail-row"><span>対象</span><span>${escapeHtml(passabilityModeLabels[record.passabilityMode] || passabilityModeLabels.unknown)}</span></div>` : ""}
       ${passability !== "none" ? `<div class="detail-row"><span>最終確認</span><span>${escapeHtml(formatDateTime(record.passabilityCheckedAt || record.observedAt))}</span></div>` : ""}
-      <div class="detail-row"><span>場所</span><span>${escapeHtml(record.locationName || "-")}</span></div>
-      <div class="detail-row"><span>座標</span><span>${hasCoordinates(record) ? `${Number(record.lat).toFixed(6)}, ${Number(record.lng).toFixed(6)}` : "未特定"}</span></div>
+      <div class="detail-row"><span>場所</span><span>${escapeHtml(displayLocationName)}</span></div>
+      <div class="detail-row"><span>座標</span><span>${displayCoordinates ? `${displayCoordinates.lat.toFixed(publicApproximate ? 3 : 6)}, ${displayCoordinates.lng.toFixed(publicApproximate ? 3 : 6)}${publicApproximate ? "（概略）" : ""}` : PUBLIC_VIEW ? "非公開" : "未特定"}</span></div>
       <div class="detail-row"><span>場所確認</span><span>${escapeHtml(locationStatusLabels[locationStatus])}</span></div>
+      ${record.locationCandidateSource ? `<div class="detail-row"><span>場所候補根拠</span><span>${escapeHtml(locationCandidateSourceLabel(record.locationCandidateSource))} / 確度${Math.round(Number(record.locationCandidateConfidence || 0) * 100)}%${record.locationCandidateOutsideArea ? " / 印西市外" : ""}</span></div>` : ""}
       ${record.locationAskedAt ? `<div class="detail-row"><span>質問日時</span><span>${escapeHtml(formatDateTime(record.locationAskedAt))}</span></div>` : ""}
       ${record.locationContactMethod ? `<div class="detail-row"><span>確認手段</span><span>${escapeHtml(locationContactLabels[record.locationContactMethod] || record.locationContactMethod)}</span></div>` : ""}
       ${record.locationAnsweredAt ? `<div class="detail-row"><span>回答確認</span><span>${escapeHtml(formatDateTime(record.locationAnsweredAt))}</span></div>` : ""}
       ${record.locationAnswerNote ? `<div class="detail-row"><span>場所回答</span><span>${escapeHtml(record.locationAnswerNote)}</span></div>` : ""}
       <div class="detail-row"><span>時刻</span><span>${escapeHtml(formatDateTime(record.observedAt))}${record.observedAtDerived ? `（${escapeHtml(record.evidenceRelativeTime || "相対表記")}から逆算）` : ""}</span></div>
       <div class="detail-row"><span>情報源</span><span>${escapeHtml(sourceLabels[record.sourceType] || record.sourceType)}</span></div>
-      ${record.sourceUsername ? `<div class="detail-row"><span>投稿者</span><span>@${escapeHtml(record.sourceUsername)}</span></div>` : ""}
-      <div class="detail-row"><span>担当</span><span>${escapeHtml(record.assignedTo || "-")}</span></div>
-      ${record.evidenceOperator ? `<div class="detail-row"><span>確認者</span><span>${escapeHtml(record.evidenceOperator)}</span></div>` : ""}
+      ${platform ? `<div class="detail-row"><span>SNS媒体</span><span>${escapeHtml(platformLabels[platform] || platform)}</span></div>` : ""}
+      ${!PUBLIC_VIEW && record.sourceUsername ? `<div class="detail-row"><span>投稿者</span><span>@${escapeHtml(record.sourceUsername)}</span></div>` : ""}
+      ${!PUBLIC_VIEW ? `<div class="detail-row"><span>担当</span><span>${escapeHtml(record.assignedTo || "-")}</span></div>` : ""}
+      ${!PUBLIC_VIEW && record.evidenceOperator ? `<div class="detail-row"><span>確認者</span><span>${escapeHtml(record.evidenceOperator)}</span></div>` : ""}
       ${record.evidenceCheckedAt ? `<div class="detail-row"><span>確認時刻</span><span>${escapeHtml(formatDateTime(record.evidenceCheckedAt))}</span></div>` : ""}
       <div class="detail-row"><span>ハザード</span><span>${riskHits.length ? riskHits.map(escapeHtml).join("、") : "該当なし/未判定"}</span></div>
       <div class="detail-row"><span>写真</span><span>${escapeHtml(photoLabels[record.photoStatus] || record.photoStatus)} / ${escapeHtml(record.photoPrivacy || "internal")}</span></div>
+      <div class="detail-row"><span>公開状態</span><span>${escapeHtml(publicationStatusLabel(record.publicationStatus))} / ${escapeHtml(publicLocationPrecisionLabel(record.publicLocationPrecision))}</span></div>
       ${record.evidencePlatform ? `<div class="detail-row"><span>証跡</span><span>${escapeHtml(platformLabels[record.evidencePlatform] || record.evidencePlatform)} / ${escapeHtml(record.evidenceQuery || "-")}</span></div>` : ""}
-      <div class="detail-row"><span>メモ</span><span>${escapeHtml(record.notes || "-")}</span></div>
+      ${!PUBLIC_VIEW ? `<div class="detail-row"><span>メモ</span><span>${escapeHtml(record.notes || "-")}</span></div>` : ""}
     </div>
-    ${record.evidenceImage ? `<img class="evidence-preview" src="${record.evidenceImage}" alt="検索画面スクリーンショット切り出し">` : ""}
-    ${isHttpUrl(record.photoUrl) && record.photoUrl !== record.evidenceImage ? `<a href="${escapeAttribute(record.photoUrl)}" target="_blank" rel="noreferrer"><img class="evidence-preview" src="${escapeAttribute(record.photoUrl)}" alt="投稿に添付された被害候補写真" loading="lazy"></a>` : ""}
-    ${record.sourceText ? `<div class="source-text-block"><strong>投稿本文・要約</strong><p>${escapeHtml(record.sourceText)}</p></div>` : ""}
-    ${record.evidenceOcrText ? `<pre class="evidence-ocr">${escapeHtml(record.evidenceOcrText)}</pre>` : ""}
-    <div class="detail-actions">
+    ${!PUBLIC_VIEW && record.evidenceImage ? `<img class="evidence-preview" src="${record.evidenceImage}" alt="検索画面スクリーンショット切り出し">` : ""}
+    ${!PUBLIC_VIEW && isHttpUrl(record.photoUrl) && record.photoUrl !== record.evidenceImage ? `<a href="${escapeAttribute(record.photoUrl)}" target="_blank" rel="noreferrer"><img class="evidence-preview" src="${escapeAttribute(record.photoUrl)}" alt="投稿に添付された被害候補写真" loading="lazy"></a>` : ""}
+    ${!PUBLIC_VIEW && record.sourceText ? `<div class="source-text-block"><strong>投稿本文・要約</strong><p>${escapeHtml(record.sourceText)}</p></div>` : ""}
+    ${!PUBLIC_VIEW && record.sourceComments ? `<div class="source-text-block"><strong>場所に関係するコメント</strong><p>${escapeHtml(record.sourceComments)}</p></div>` : ""}
+    ${!PUBLIC_VIEW && record.evidenceOcrText ? `<pre class="evidence-ocr">${escapeHtml(record.evidenceOcrText)}</pre>` : ""}
+    ${PUBLIC_VIEW ? "" : `<div class="detail-actions">
       ${record.sourceUrl && locationStatus !== "pinned" ? `<button class="tool-button primary" type="button" data-action="ask-location">場所を質問（コメント / DM）</button>` : ""}
+      ${(record.sourceText || record.sourceComments || record.evidenceOcrText) ? `<button class="tool-button" type="button" data-action="search-location">本文・コメントから場所候補</button>` : ""}
       ${locationStatus !== "pinned" ? `<button class="tool-button" type="button" data-action="locate">${locationStatus === "identified" ? "場所候補を地図で確認してピン" : "回答後、地図でピンを置く"}</button>` : ""}
       <button class="tool-button" type="button" data-action="edit">編集</button>
       <button class="tool-button" type="button" data-action="verified">確認済</button>
@@ -1350,7 +1945,7 @@ function renderDetail() {
       <button class="tool-button" type="button" data-action="resolved">解消済</button>
       ${record.evidenceImage ? `<button class="tool-button" type="button" data-action="download-evidence">証跡画像DL</button>` : ""}
       ${record.sourceUrl ? `<a class="tool-button" href="${escapeAttribute(record.sourceUrl)}" target="_blank" rel="noreferrer">根拠を開く</a>` : ""}
-    </div>
+    </div>`}
   `;
   detail.querySelectorAll("[data-action]").forEach(button => {
     button.addEventListener("click", () => handleDetailAction(button.dataset.action));
@@ -1360,8 +1955,9 @@ function renderDetail() {
 function selectRecord(id, panTo) {
   selectedId = id;
   const record = records.find(item => item.id === id);
-  if (record && panTo && hasCoordinates(record)) {
-    map.setView([Number(record.lat), Number(record.lng)], Math.max(map.getZoom(), 15));
+  const displayCoordinates = getDisplayCoordinates(record);
+  if (record && panTo && displayCoordinates) {
+    map.setView([displayCoordinates.lat, displayCoordinates.lng], Math.max(map.getZoom(), 15));
   }
   renderAll();
 }
@@ -1385,6 +1981,7 @@ function openRecordDialog(seed = {}) {
     ? "地点編集"
     : seed.category === "traffic" ? "道路通行情報を追加" : "地点追加";
   document.getElementById("delete-record-button").style.visibility = record ? "visible" : "hidden";
+  recordFormLocationCandidate = null;
 
   const seedHasCoordinates = hasCoordinates(seed);
   const values = record || {
@@ -1404,6 +2001,10 @@ function openRecordDialog(seed = {}) {
     observedAt: seed.observedAt || "",
     assignedTo: seed.assignedTo || "",
     sourceUrl: seed.sourceUrl || "",
+    sourceText: seed.sourceText || "",
+    sourceComments: seed.sourceComments || "",
+    publicationStatus: seed.publicationStatus || "internal",
+    publicLocationPrecision: seed.publicLocationPrecision || (seed.category === "rescue_request" ? "approximate" : "hidden"),
     passability: seed.passability || "none",
     passabilityMode: seed.passabilityMode || "unknown",
     passabilityCheckedAt: seed.passabilityCheckedAt || "",
@@ -1433,6 +2034,10 @@ function openRecordDialog(seed = {}) {
   setFormValue("record-observed-at", values.observedAt || "");
   setFormValue("record-assignee", values.assignedTo);
   setFormValue("record-source-url", values.sourceUrl);
+  setFormValue("record-source-text", values.sourceText || values.evidenceOcrText || "");
+  setFormValue("record-source-comments", values.sourceComments || "");
+  setFormValue("record-publication-status", values.publicationStatus || "internal");
+  setFormValue("record-public-location-precision", values.publicLocationPrecision || "hidden");
   setFormValue("record-photo-status", values.photoStatus);
   setFormValue("record-photo-privacy", values.photoPrivacy);
   setFormValue("record-photo-url", values.photoUrl);
@@ -1486,6 +2091,10 @@ function saveRecordFromForm(event) {
     incidentDate: existingRecord?.incidentDate || getFormValue("incident-date"),
     sourceType: getFormValue("record-source-type"),
     sourceUrl: getFormValue("record-source-url"),
+    sourceText: getFormValue("record-source-text"),
+    sourceComments: getFormValue("record-source-comments"),
+    publicationStatus: getFormValue("record-publication-status"),
+    publicLocationPrecision: getFormValue("record-public-location-precision"),
     status: getFormValue("record-status"),
     severity: getFormValue("record-severity"),
     passability: getFormValue("record-passability"),
@@ -1504,11 +2113,19 @@ function saveRecordFromForm(event) {
     }
   };
 
+  if (recordFormLocationCandidate) {
+    Object.assign(record, locationCandidateAuditFields(recordFormLocationCandidate));
+  }
+
   if ((record.lat === null) !== (record.lng === null)) {
     alert("緯度と経度は両方入力するか、両方空欄にしてください。");
     return;
   }
   if (!hasCoordinates(record) && record.locationStatus === "pinned") record.locationStatus = "unknown";
+  if (record.category === "rescue_request" && record.publicationStatus === "published" && record.publicLocationPrecision === "exact") {
+    alert("救助・安否確認要請の正確な位置は公開できません。『概略位置』または『位置を非公開』を選んでください。");
+    return;
+  }
 
   const duplicates = detectDuplicates(record, existingId);
   if (duplicates.length && !confirmDuplicateRegistration(duplicates)) return;
@@ -1547,6 +2164,10 @@ function handleDetailAction(action) {
   if (action === "ask-location") {
     locationContactRecordId = record.id;
     document.getElementById("location-contact-dialog").showModal();
+    return;
+  }
+  if (action === "search-location") {
+    openLocationSearchDialog({ source: "record", recordId: record.id });
     return;
   }
   if (action === "locate") {
@@ -1671,17 +2292,17 @@ function openScreenshotDialog(seed = {}) {
   renderEvidenceDuplicateWarning();
 }
 
-function loadScreenshotFile(event) {
+async function loadScreenshotFile(event) {
   const file = event.target.files?.[0];
   if (!file) return;
-  loadScreenshotBlob(file);
+  await loadScreenshotBlob(file, { inspectGps: true });
 }
 
 function handleScreenshotPaste(event) {
   const imageItem = Array.from(event.clipboardData?.items || []).find(item => item.type.startsWith("image/"));
   if (!imageItem) return;
   event.preventDefault();
-  loadScreenshotBlob(imageItem.getAsFile());
+  loadScreenshotBlob(imageItem.getAsFile(), { inspectGps: true });
 }
 
 function bindScreenshotDropZone() {
@@ -1695,7 +2316,7 @@ function bindScreenshotDropZone() {
     event.preventDefault();
     zone.classList.remove("is-dragover");
     const file = Array.from(event.dataTransfer?.files || []).find(item => item.type.startsWith("image/"));
-    if (file) loadScreenshotBlob(file);
+    if (file) loadScreenshotBlob(file, { inspectGps: true });
   });
   zone.addEventListener("click", () => zone.focus());
 }
@@ -1712,6 +2333,8 @@ async function captureScreen() {
     setFormValue("evidence-ocr-text", "");
     screenshotState.relativeTime = null;
     screenshotState.locationCandidate = null;
+    screenshotState.gpsInspectionState = "not-checked";
+    screenshotState.autoGpsRecordId = null;
     status.classList.add("is-active");
     status.textContent = "共有画面で、投稿を表示したSNSタブを選んでください...";
     stream = await navigator.mediaDevices.getDisplayMedia({
@@ -1800,8 +2423,12 @@ function canvasToBlob(canvas, type, quality) {
   return new Promise(resolve => canvas.toBlob(resolve, type, quality));
 }
 
-function loadScreenshotBlob(blob) {
+async function loadScreenshotBlob(blob, options = {}) {
   if (!blob) return;
+  const gpsInspection = options.inspectGps
+    ? await inspectImageGps(blob)
+    : { state: "not-checked", candidate: null };
+  const gpsCandidate = gpsInspection.candidate;
   const reader = new FileReader();
   reader.onload = () => {
     const image = new Image();
@@ -1809,10 +2436,19 @@ function loadScreenshotBlob(blob) {
       screenshotState.image = image;
       screenshotState.crop = null;
       screenshotState.relativeTime = null;
-      screenshotState.locationCandidate = null;
+      screenshotState.locationCandidate = gpsCandidate;
+      screenshotState.gpsInspectionState = gpsInspection.state;
+      if (!gpsCandidate) screenshotState.autoGpsRecordId = null;
       setFormValue("evidence-ocr-text", "");
       drawScreenshotCanvas();
-      document.getElementById("ocr-status").textContent = "画像を取得しました。投稿部分をドラッグで囲み、「OCR文字抽出」を押してください。";
+      if (gpsCandidate) autoSaveGpsDraft(gpsCandidate);
+      document.getElementById("ocr-status").textContent = gpsCandidate
+        ? `GPSあり（${gpsCandidate.lat.toFixed(6)}, ${gpsCandidate.lng.toFixed(6)}）。内部確認中のピンとして自動保存しました。`
+        : gpsInspection.state === "absent"
+          ? "GPS情報なし。本文・コメント・OCRから場所候補を確認してください。"
+          : gpsInspection.state === "unavailable"
+            ? "GPS情報を判定できませんでした。写真形式または解析機能の読み込みを確認してください。"
+            : "画面キャプチャには元写真のGPSは含まれません。投稿部分を囲んでOCRしてください。";
       renderEvidenceDuplicateWarning();
     };
     image.onerror = () => {
@@ -1825,6 +2461,82 @@ function loadScreenshotBlob(blob) {
     document.getElementById("ocr-status").textContent = "画像ファイルを読み込めませんでした。";
   };
   reader.readAsDataURL(blob);
+}
+
+async function inspectImageGps(blob) {
+  if (!window.exifr?.gps) return { state: "unavailable", candidate: null };
+  try {
+    const gps = await window.exifr.gps(blob);
+    const lat = Number(gps?.latitude);
+    const lng = Number(gps?.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return { state: "absent", candidate: null };
+    const candidate = {
+      title: "元画像GPS位置",
+      lat,
+      lng,
+      source: "image-exif",
+      confidence: 1,
+      query: "EXIF GPS",
+      reason: "選択した元画像に記録されたGPS緯度経度",
+      outsideInzai: !INZAI_BOUNDS.contains([lat, lng]),
+      autoPin: true
+    };
+    return { state: "found", candidate };
+  } catch {
+    return { state: "unavailable", candidate: null };
+  }
+}
+
+function autoSaveGpsDraft(candidate) {
+  const checkedAt = getFormValue("evidence-checked-at") || nowLocalInput();
+  const observedAt = getFormValue("evidence-observed-at") || checkedAt;
+  const platform = getFormValue("evidence-platform") || "other";
+  const existingId = screenshotState.autoGpsRecordId;
+  const existing = existingId ? records.find(record => record.id === existingId) : null;
+  const id = existing?.id || `gps-draft-${Date.now()}`;
+  const draft = {
+    ...(existing || {}),
+    id,
+    title: existing?.title && !existing.autoGpsDraft ? existing.title : "GPS付き写真（内容確認待ち）",
+    category: existing?.category || "other",
+    locationName: "元画像GPS位置",
+    lat: candidate.lat,
+    lng: candidate.lng,
+    locationStatus: "pinned",
+    observedAt,
+    incidentDate: getFormValue("incident-date"),
+    sourceType: platform === "web" ? "web" : "sns",
+    sourceUrl: getFormValue("evidence-url"),
+    status: existing?.status || "unconfirmed",
+    severity: existing?.severity || "medium",
+    passability: existing?.passability || "none",
+    passabilityMode: existing?.passabilityMode || "unknown",
+    passabilityCheckedAt: existing?.passabilityCheckedAt || observedAt,
+    photoStatus: existing?.photoStatus || "needs-photo",
+    photoUrl: existing?.photoUrl || "",
+    photoPrivacy: "internal",
+    assignedTo: "画像内容・位置確認待ち",
+    notes: "元画像のEXIF GPSだけを自動保存した確認待ち記録。画像証跡と投稿内容は未確定。",
+    hazardFlags: existing?.hazardFlags || { flood: false, inland: false, road: false, landslide: false },
+    evidencePlatform: platform,
+    evidenceQuery: getFormValue("evidence-query"),
+    evidenceOperator: getFormValue("evidence-operator"),
+    evidenceCheckedAt: checkedAt,
+    sourceText: existing?.sourceText || "",
+    sourceComments: existing?.sourceComments || "",
+    publicationStatus: "internal",
+    publicLocationPrecision: "hidden",
+    ...locationCandidateAuditFields(candidate, checkedAt),
+    autoGpsDraft: true
+  };
+  records = existing
+    ? records.map(record => record.id === id ? draft : record)
+    : [...records, draft];
+  screenshotState.autoGpsRecordId = id;
+  selectedId = id;
+  persistRecords();
+  renderAll();
+  map.setView([candidate.lat, candidate.lng], 16);
 }
 
 function bindCropCanvas() {
@@ -1925,7 +2637,9 @@ function clearScreenshot() {
     dragging: false,
     start: null,
     locationCandidate: null,
-    relativeTime: null
+    relativeTime: null,
+    gpsInspectionState: "not-checked",
+    autoGpsRecordId: null
   };
   document.getElementById("screenshot-file").value = "";
   setFormValue("evidence-ocr-text", "");
@@ -1969,7 +2683,9 @@ async function runEvidenceOcr() {
     if (screenshotState.relativeTime) {
       setFormValue("evidence-observed-at", screenshotState.relativeTime.observedAt);
     }
-    screenshotState.locationCandidate = text ? await suggestLocationFromOcr(text) : null;
+    if (screenshotState.locationCandidate?.source !== "image-exif") {
+      screenshotState.locationCandidate = text ? await suggestLocationFromOcr(text) : null;
+    }
     if (text) {
       const messages = [`OCR完了 ${text.length}文字`];
       if (screenshotState.relativeTime) {
@@ -2038,14 +2754,15 @@ function saveScreenshotEvidence(event) {
   const checkedAt = getFormValue("evidence-checked-at");
   const ocrText = getFormValue("evidence-ocr-text");
   const locationCandidate = screenshotState.locationCandidate;
+  const autoGpsRecordId = screenshotState.autoGpsRecordId;
   const record = {
-    id: `rec-${Date.now()}`,
+    id: autoGpsRecordId || `rec-${Date.now()}`,
     title: ocrText ? truncateText(ocrText, 72) : `${platformLabels[platform] || "検索"}証跡: ${query || "検索結果"}`,
     category: inferCategory(ocrText),
     locationName: locationCandidate?.title || "場所未特定",
     lat: locationCandidate?.lat ?? null,
     lng: locationCandidate?.lng ?? null,
-    locationStatus: locationCandidate ? "identified" : "unknown",
+    locationStatus: locationCandidate?.autoPin ? "pinned" : locationCandidate ? "identified" : "unknown",
     observedAt: getFormValue("evidence-observed-at"),
     incidentDate: getFormValue("incident-date"),
     sourceType: platform === "web" ? "web" : "sns",
@@ -2058,7 +2775,7 @@ function saveScreenshotEvidence(event) {
     photoStatus: "has-photo",
     photoUrl: "ローカルスクショ証跡",
     photoPrivacy: "internal",
-    assignedTo: locationCandidate ? "ピン位置確認待ち" : "場所確認待ち",
+    assignedTo: locationCandidate?.autoPin ? "画像GPS位置確認待ち" : locationCandidate ? "ピン位置確認待ち" : "場所確認待ち",
     notes: getFormValue("evidence-notes") || "スクリーンショットから登録。投稿者へ撮影場所を確認後、地図へピンを設定する。",
     hazardFlags: { flood: false, inland: false, road: false, landslide: false },
     evidencePlatform: platform,
@@ -2068,20 +2785,33 @@ function saveScreenshotEvidence(event) {
     evidenceRelativeTime: screenshotState.relativeTime?.label || "",
     observedAtDerived: Boolean(screenshotState.relativeTime),
     sourceText: ocrText,
+    sourceComments: "",
     evidenceOcrText: ocrText,
-    evidenceImage: dataUrl
+    evidenceImage: dataUrl,
+    publicationStatus: "internal",
+    publicLocationPrecision: "hidden",
+    locationCandidateSource: locationCandidate?.source || "",
+    locationCandidateConfidence: locationCandidate?.confidence ?? null,
+    locationCandidateQuery: locationCandidate?.query || "",
+    locationCandidateReason: locationCandidate?.reason || "",
+    locationCandidateOutsideArea: Boolean(locationCandidate?.outsideInzai),
+    locationSearchCheckedAt: locationCandidate ? nowLocalInput() : ""
   };
-  const duplicates = detectDuplicates(record);
+  const duplicates = detectDuplicates(record, autoGpsRecordId || "");
   if (duplicates.length && !confirmDuplicateRegistration(duplicates)) return;
   saveOperator(operator);
-  records = [...records, record];
+  records = autoGpsRecordId && records.some(item => item.id === autoGpsRecordId)
+    ? records.map(item => item.id === autoGpsRecordId ? record : item)
+    : [...records, record];
   selectedId = record.id;
   persistRecords();
   document.getElementById("screenshot-dialog").close();
   logSearch({ platform, query, operator, checkedAt, method: "screenshot", resultCount: 1 });
   clearScreenshot();
   renderAll();
-  document.getElementById("map-status").textContent = "スクリーンショットを登録しました。場所が不明な場合は、元投稿から投稿者へ確認できます。";
+  document.getElementById("map-status").textContent = locationCandidate?.autoPin
+    ? "元画像のGPS緯度経度でピン留めし、スクリーンショット証跡を登録しました。公開前に位置と内容を確認してください。"
+    : "スクリーンショットを登録しました。場所が不明な場合は、元投稿から投稿者へ確認できます。";
 }
 
 function downloadDataUrl(dataUrl, filename) {
@@ -2131,9 +2861,18 @@ function normalizeImportedRow(row) {
     evidenceRelativeTime: row.evidenceRelativeTime || "",
     observedAtDerived: toBool(row.observedAtDerived),
     sourceText: row.sourceText || row.postText || "",
+    sourceComments: row.sourceComments || row.comments || "",
     evidenceOcrText: row.evidenceOcrText || "",
     externalId: row.externalId || "",
     sourceUsername: row.sourceUsername || "",
+    publicationStatus: row.publicationStatus || "internal",
+    publicLocationPrecision: row.publicLocationPrecision || "hidden",
+    locationCandidateSource: row.locationCandidateSource || "",
+    locationCandidateConfidence: parseOptionalNumber(row.locationCandidateConfidence),
+    locationCandidateQuery: row.locationCandidateQuery || "",
+    locationCandidateReason: row.locationCandidateReason || "",
+    locationCandidateOutsideArea: toBool(row.locationCandidateOutsideArea),
+    locationSearchCheckedAt: row.locationSearchCheckedAt || "",
     evidenceImage: "",
     hazardFlags: {
       flood: toBool(row.hazardFlood),
@@ -2145,7 +2884,7 @@ function normalizeImportedRow(row) {
 }
 
 function copyCsvTemplate() {
-  const template = "title,category,locationName,lat,lng,incidentDate,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,passability,passabilityMode,passabilityCheckedAt,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,evidencePlatform,evidenceQuery,evidenceOperator,evidenceCheckedAt,evidenceRelativeTime,observedAtDerived,sourceText,externalId,sourceUsername,notes\n";
+  const template = "title,category,locationName,lat,lng,incidentDate,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,passability,passabilityMode,passabilityCheckedAt,photoStatus,photoUrl,photoPrivacy,publicationStatus,publicLocationPrecision,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,evidencePlatform,evidenceQuery,evidenceOperator,evidenceCheckedAt,evidenceRelativeTime,observedAtDerived,sourceText,sourceComments,locationCandidateSource,locationCandidateConfidence,locationCandidateQuery,locationCandidateReason,locationCandidateOutsideArea,locationSearchCheckedAt,externalId,sourceUsername,notes\n";
   navigator.clipboard?.writeText(template);
   document.getElementById("csv-input").value = template;
 }
@@ -2153,9 +2892,11 @@ function copyCsvTemplate() {
 function exportCsv() {
   const headers = [
     "id", "title", "category", "locationName", "lat", "lng", "incidentDate", "locationStatus", "locationAskedAt", "locationAskedBy", "locationContactMethod", "locationAnsweredAt", "locationAnswerNote", "observedAt", "sourceType",
-    "sourceUrl", "status", "severity", "passability", "passabilityMode", "passabilityCheckedAt", "photoStatus", "photoUrl", "photoPrivacy",
+    "sourceUrl", "status", "severity", "passability", "passabilityMode", "passabilityCheckedAt", "photoStatus", "photoUrl", "photoPrivacy", "publicationStatus", "publicLocationPrecision",
     "hazardFlood", "hazardInland", "hazardRoad", "hazardLandslide", "assignedTo", "evidencePlatform", "evidenceQuery",
-    "evidenceOperator", "evidenceCheckedAt", "evidenceRelativeTime", "observedAtDerived", "sourceText", "evidenceOcrText", "externalId", "sourceUsername", "evidenceHasImage", "notes"
+    "evidenceOperator", "evidenceCheckedAt", "evidenceRelativeTime", "observedAtDerived", "sourceText", "sourceComments", "evidenceOcrText",
+    "locationCandidateSource", "locationCandidateConfidence", "locationCandidateQuery", "locationCandidateReason", "locationCandidateOutsideArea", "locationSearchCheckedAt",
+    "externalId", "sourceUsername", "evidenceHasImage", "notes"
   ];
   const rows = records.map(record => headers.map(key => {
     if (key.startsWith("hazard")) {
@@ -2228,6 +2969,7 @@ function getFilteredRecords() {
   );
 
   return records.filter(record => {
+    if (PUBLIC_VIEW && record.publicationStatus !== "published") return false;
     if (!matchesIncidentDate(record)) return false;
     if (!activeStatuses.has(record.status)) return false;
     if (photoFilter !== "all" && record.photoStatus !== photoFilter) return false;
@@ -2240,6 +2982,7 @@ function getFilteredRecords() {
       record.assignedTo,
       record.evidenceOperator,
       record.sourceText,
+      record.sourceComments,
       record.evidenceOcrText,
       record.sourceUsername,
       record.sourceUrl,
@@ -2454,6 +3197,19 @@ function hasCoordinates(record) {
     Number.isFinite(Number(record.lat)) && Number.isFinite(Number(record.lng));
 }
 
+function getDisplayCoordinates(record) {
+  if (!hasCoordinates(record)) return null;
+  const lat = Number(record.lat);
+  const lng = Number(record.lng);
+  if (!PUBLIC_VIEW) return { lat, lng };
+  const precision = record.publicLocationPrecision || "hidden";
+  if (precision === "hidden") return null;
+  if (precision === "approximate") {
+    return { lat: Number(lat.toFixed(3)), lng: Number(lng.toFixed(3)) };
+  }
+  return { lat, lng };
+}
+
 function getLocationStatus(record) {
   if (record?.locationStatus && locationStatusLabels[record.locationStatus]) return record.locationStatus;
   return hasCoordinates(record) ? "pinned" : "unknown";
@@ -2545,9 +3301,32 @@ function persistRecords() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
     notifyHost();
+    queueSharedRecordsSync();
   } catch {
     alert("ブラウザのローカル保存容量を超えました。証跡画像を切り出しDLしてから、画像なしでCSV/GeoJSON管理してください。");
   }
+}
+
+function queueSharedRecordsSync() {
+  const endpoint = String(APP_CONFIG.sharedRecordsEndpoint || "").trim();
+  const permissions = window.CBIDisasterOperator?.permissions || {};
+  if (!endpoint || !(permissions.canEdit || permissions.canCreate)) return;
+  clearTimeout(sharedRecordsSyncTimer);
+  sharedRecordsSyncTimer = setTimeout(async () => {
+    try {
+      const response = await fetch(endpoint, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ appVersion: APP_CONFIG.appVersion || "", records })
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      document.getElementById("map-status").textContent = "共有台帳へ保存しました。";
+    } catch (error) {
+      document.getElementById("map-status").textContent = `端末には保存しましたが、共有台帳へ送信できませんでした（${error?.message || "接続エラー"}）。`;
+      appendSystemWorkLog("自主防災組織 共有台帳", "blocked", "共有台帳への保存に失敗しました。", "認証状態とCBI連携APIを確認する");
+    }
+  }, 600);
 }
 
 function appendSystemWorkLog(feature, status, summary, nextAction) {

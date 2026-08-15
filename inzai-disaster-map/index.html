@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260815a">
+    <link rel="stylesheet" href="./styles.css?v=20260815b">
   </head>
   <body>
     <div class="app-shell">
@@ -27,6 +27,7 @@
             <input id="incident-date" type="date" value="2026-08-13">
           </label>
           <span class="connection-status" id="api-status">SNS API未接続</span>
+          <span class="connection-status" id="operator-status">試作利用</span>
           <button class="tool-button primary" id="sns-collector-button" type="button">SNS投稿を登録</button>
           <button class="tool-button" id="help-button" type="button">使い方</button>
           <button class="tool-button official-button" id="official-links-button" type="button">公式情報</button>
@@ -43,8 +44,8 @@
       </header>
 
       <div class="prototype-banner" role="status">
-        <strong>構想検証版・現在は運用前です</strong>
-        <span>「こんな仕組みがあったら便利か」を検討する試作品です。入力内容はこの端末内だけに保存され、印西市や運営者には送信されません。</span>
+        <strong id="operation-banner-title">構想検証版・現在は運用前です</strong>
+        <span id="operation-banner-text">「こんな仕組みがあったら便利か」を検討する試作品です。入力内容はこの端末内だけに保存され、印西市や運営者には送信されません。</span>
       </div>
 
       <main class="workspace">
@@ -173,6 +174,14 @@
         </section>
 
         <aside class="side-panel right-panel" aria-label="被害一覧と詳細">
+          <section class="panel-section earthquake-summary">
+            <div class="section-title">
+              <h2>気象庁 地震情報</h2>
+              <button class="text-button" id="refresh-earthquake-button" type="button">更新</button>
+            </div>
+            <div id="earthquake-summary-content" class="detail-empty">最新情報を確認中です。</div>
+          </section>
+
           <section class="panel-section">
             <div class="section-title">
               <h2>被害・確認候補</h2>
@@ -225,6 +234,8 @@
               <option value="river">河川増水</option>
               <option value="landslide">土砂</option>
               <option value="traffic">道路通行情報</option>
+              <option value="rescue_request">救助・安否確認要請</option>
+              <option value="earthquake_damage">地震被害</option>
               <option value="lifeline">ライフライン</option>
               <option value="shelter">避難所</option>
               <option value="other">その他</option>
@@ -366,6 +377,45 @@
           根拠URL
           <input id="record-source-url" type="url" placeholder="https://...">
         </label>
+
+        <div class="form-grid">
+          <label>
+            投稿本文・要約
+            <textarea id="record-source-text" rows="3" placeholder="投稿本文または要約"></textarea>
+          </label>
+          <label>
+            場所に関係するコメント
+            <textarea id="record-source-comments" rows="3" placeholder="例：白金通りです／駅から海側です"></textarea>
+          </label>
+        </div>
+
+        <div class="location-assist-row">
+          <button class="tool-button" id="record-location-search-button" type="button">本文・コメントから場所候補</button>
+          <span>候補を採用すると、その緯度経度でピンを設定します。公開前に位置と根拠を確認してください。</span>
+        </div>
+
+        <fieldset class="field-box">
+          <legend>共有・公開管理</legend>
+          <div class="form-grid">
+            <label>
+              公開状態
+              <select id="record-publication-status">
+                <option value="internal">内部確認中</option>
+                <option value="review">公開承認待ち</option>
+                <option value="published">公開承認済み</option>
+              </select>
+            </label>
+            <label>
+              公開時の位置
+              <select id="record-public-location-precision">
+                <option value="hidden">位置を非公開</option>
+                <option value="approximate">概略位置（約100m単位）</option>
+                <option value="exact">正確な位置</option>
+              </select>
+            </label>
+          </div>
+          <p class="field-note">救助・安否確認要請は、個人情報と安全を確認し、原則として概略位置で公開します。119・110への通報を代替しません。</p>
+        </fieldset>
 
         <div id="record-duplicate-warning" class="duplicate-warning" hidden></div>
 
@@ -509,6 +559,9 @@
                   <option value="instagram">Instagram</option>
                   <option value="threads">Threads</option>
                   <option value="x">X</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="youtube">YouTube</option>
                   <option value="yahoo-realtime">Yahoo!リアルタイム検索</option>
                   <option value="web">Web検索</option>
                   <option value="other">その他</option>
@@ -596,6 +649,14 @@
               投稿本文・要約
               <textarea id="collector-post-text" rows="3" placeholder="コピーできる本文、または被害内容の要約"></textarea>
             </label>
+            <label>
+              場所に関係するコメント
+              <textarea id="collector-comments" rows="3" placeholder="投稿への返信やコメントから、場所の手掛かりになる部分を貼り付け"></textarea>
+            </label>
+            <div class="location-assist-row">
+              <button class="tool-button" id="collector-location-search-button" type="button">本文・コメントから場所候補</button>
+              <span id="collector-location-candidate-status">候補未選択</span>
+            </div>
             <p class="field-status" id="collector-link-status" aria-live="polite"></p>
           </div>
           <button class="tool-button primary workflow-primary" id="register-social-link-button" type="button">投稿候補として登録</button>
@@ -617,6 +678,9 @@
               <option value="instagram">Instagram</option>
               <option value="threads">Threads</option>
               <option value="x">X</option>
+              <option value="facebook">Facebook</option>
+              <option value="tiktok">TikTok</option>
+              <option value="youtube">YouTube</option>
               <option value="yahoo-realtime">Yahoo!リアルタイム検索</option>
               <option value="web">Web検索</option>
             </select>
@@ -690,6 +754,46 @@
           </div>
         </details>
 
+        <div class="modal-actions">
+          <span></span><span></span>
+          <button class="tool-button" type="button" data-close-dialog>閉じる</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="location-search-dialog" class="modal location-search-modal">
+      <form method="dialog">
+        <div class="modal-header">
+          <div>
+            <p class="step-kicker">場所の自動候補</p>
+            <h2>投稿本文・コメントから場所を探す</h2>
+          </div>
+          <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
+        </div>
+        <p class="modal-help">無料候補検索は端末内で語を抽出し、国土地理院の地名検索に照会します。AI補完は設定済みのCBI連携先だけを使用し、公開画面にAPIキーは保存しません。</p>
+        <label>
+          投稿本文・要約
+          <textarea id="location-search-post-text" rows="4"></textarea>
+        </label>
+        <label>
+          コメント・返信
+          <textarea id="location-search-comments" rows="4" placeholder="場所の手掛かりになるコメントだけを入力。氏名・電話番号は入力しないでください"></textarea>
+        </label>
+        <label>
+          既知の場所の手掛かり
+          <input id="location-search-hint" type="text" placeholder="例：八幡パレット、白金通り">
+        </label>
+        <div class="location-search-actions">
+          <button class="tool-button primary" id="free-location-search-button" type="button">無料で候補検索</button>
+          <button class="tool-button" id="ai-location-search-button" type="button">AIで補完検索</button>
+          <a class="tool-button" id="location-web-search-link" href="#" target="_blank" rel="noreferrer">Web検索で確認</a>
+        </div>
+        <p class="field-status" id="location-search-status" aria-live="polite"></p>
+        <div class="location-candidate-results" id="location-candidate-results"></div>
+        <div class="privacy-note">
+          <strong>送信前の確認</strong>
+          <span>AI補完では電話番号・メール・SNSアカウント名を自動マスクして送ります。救助要請の個人名や詳細住所は入力しないでください。</span>
+        </div>
         <div class="modal-actions">
           <span></span><span></span>
           <button class="tool-button" type="button" data-close-dialog>閉じる</button>
@@ -771,6 +875,12 @@
             <small>警報・注意報、キキクル、雨雲、台風情報を確認</small>
             <span class="external-label">公式サイトを開く</span>
           </a>
+          <a class="official-link-card" href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">
+            <span class="authority-label">気象庁</span>
+            <strong>地震情報</strong>
+            <small>震源、マグニチュード、最大震度、各地の震度を確認</small>
+            <span class="external-label">公式地震情報を開く</span>
+          </a>
           <a class="official-link-card" href="https://www.river.go.jp/" target="_blank" rel="noreferrer">
             <span class="authority-label">国土交通省</span>
             <strong>川の防災情報</strong>
@@ -799,7 +909,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
-    <script src="./config.js?v=20260815a"></script>
-    <script src="./app.js?v=20260815a"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
+    <script src="./config.js?v=20260815b"></script>
+    <script src="./app.js?v=20260815b"></script>
   </body>
 </html>
