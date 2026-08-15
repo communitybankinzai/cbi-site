@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-15",
+          "title": "Threads告知失敗の修正（Media Not Found対策）＋未適用migration点検・適用 0.2時間",
+          "category": "保守",
+          "outputs": "cidao: src/lib/sns-dispatch.ts(statusポーリング+リトライ), 20260808160000適用, 災害情報MAP告知の再送成功",
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "container作成直後の即publishが原因のMedia Not Foundを恒久修正し失敗告知を再送。8/8実装の紹介済みマークmigrationが本番未適用と発覚し適用、8月分の全migrationを点検。session: 4c86305c-8dbf-4b0e-be8e-c362dfbb3ccd / output: 226,682 / cost: $138.46"
+        },
+        {
           "date": "2026-08-13",
           "title": "SNS承認まわりの不具合2件修正＋承認済みの自動配信（毎日18時JST）実装 0.32時間",
           "category": "実装",
