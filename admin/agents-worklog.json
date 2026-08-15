@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-15",
+          "title": "CiDAO SNSローテから運営元CBIを除外＋イベント下書き即時削除 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao supabase/migrations/20260815140000_sns_rotation_exclude_cbi.sql（CBIを登録番号08-001で除外〔団体名は改称可能性があるため不使用〕＋イベント未配信下書きの一回きり削除）",
+            "C:/Repos/cidao src/app/admin/sns/page.tsx（選定ルール説明に「CBI自身は対象外」を追記）",
+            "検証: 本番DBで候補が FreeFree 2件のみ（団体0・イベント0）、イベント未配信下書き0件を確認／npm run build 成功／commit 3ae2eca push、Vercel success／git diff --cached で並行セッションの巻き込みなしを確認"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "祐樹さんの依頼「CBIは紹介する元団体なのでローテーションから外す」「イベントの下書きはただちに削除」。イベント下書きは適用時点で既に0件（削除対象なし）。これで団体枠の候補は0件となり、仮登録団体の claim・編集が進めば自動で候補が生まれる待機状態。工数は同一セッション内の差分。session: 23653407-0429-4012-aa42-a2cac2e63133 / output: 109,983 / cost: $37.28"
+        },
+        {
+          "date": "2026-08-15",
           "title": "CiDAO SNSローテのイベント除外＋団体候補を代表者関与ありに厳格化 0.3時間",
           "category": "実装",
           "outputs": [
