@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-08-15",
+          "title": "CiDAO SNSローテのイベント除外＋団体候補を代表者関与ありに厳格化 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao supabase/migrations/20260815120000_sns_rotation_drop_events.sql（イベントは毎朝のまとめ配信と重複のためローテーション対象外に。FreeFreeのイベントカテゴリ掲載分は単独紹介を継続）",
+            "C:/Repos/cidao supabase/migrations/20260815130000_sns_rotation_org_needs_rep_approval.sql（団体候補を「更新済み or 承認済み代表者メンバーシップあり」に厳格化）",
+            "C:/Repos/cidao src/app/admin/sns/page.tsx・RotationScheduleCard.tsx（説明文を新ルールに更新）",
+            "検証: 本番DBで候補が FreeFree 2＋団体 CBI 1 のみ（イベント0・未承認団体0）を確認／npm run build 成功／commit 1e41f45 push、Vercel success"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "祐樹さんの指摘3点への対応。(1)「正式登録は除外では？」→3択確認の結果、定期紹介の枠組みは現状維持としたが、続く指摘「候補の団体は管理者が登録したもので代表者の承認は済んでいない（CBI除く）」が決定打。実データ確認で候補24団体中23件が representative_id NULL の管理者代理登録と判明し、初版（enriched_at＋プレースホルダー判定）の誤りを修正。「代表者による登録完了」は memberships の role=representative / status=confirmed で判定するのが正解。(2)イベントは朝のまとめ配信と重複のためローテ除外。(3)FreeFree のイベント情報掲載分は単独紹介を継続。並行セッションと同一作業ツリー共有のため、git add はファイル個別指定を徹底（巻き込みなしを git show で確認済み）。session: 23653407-0429-4012-aa42-a2cac2e63133 / output: 101,134 / cost: $33.55"
+        },
+        {
+          "date": "2026-08-15",
           "title": "CiDAO SNS定期紹介の実行間隔を管理画面から変更可能に＋選定ルール説明追記 0.2時間",
           "category": "実装",
           "outputs": [
