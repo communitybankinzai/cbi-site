@@ -17,6 +17,19 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-09",
+          "title": "CiDAO 団体一覧に登録状態バッジ・絞り込み・並び替え・更新日表示を実装 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/orgs/page.tsx（representative_id 等を取得し、登録状態3区分をサーバー側で判定してクライアントへ渡す）",
+            "C:/Repos/cidao src/app/orgs/_components/OrgsBrowser.tsx（状態バッジ、登録状態絞り込みチップ、並び替えチップ〔名前順/情報更新順/登録順〕、カードに情報更新日を表示）",
+            "検証: npm run build 3回成功／commit a1de04f・f2d6c4b を push、Vercel デプロイ success×2／本番 /orgs で仮登録222・新規登録23・更新済み1 の分類、絞り込み222/246、情報更新順の先頭5件が2026/8/9、登録順への切替をブラウザ実 DOM で確認"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "祐樹さんの依頼「仮登録/新規登録/更新済みを識別したい＋更新順・名前順・登録順ソート」。区分定義・見せ方・ソート方向は3択で確認して推奨案を採用。途中の追加依頼でカードに情報更新日も表示。初回実装は enriched_at だけで判定したが、本番で仮登録3/新規登録243と実態に合わず、一括取り込み（seed-orgs.mjs）が enriched_at を設定していないことを特定。代表者がシステムプレースホルダー会員かどうかを判定に加えて修正した。formatDate はサーバーUTC/ブラウザJSTの日付ずれによる hydration 不一致を避けるため Asia/Tokyo 固定。工数は同一セッション前半（団体削除 0.1h・output 10,638）との差分。session: 23653407-0429-4012-aa42-a2cac2e63133 / output: 44,166 / cost: $13.49"
+        },
+        {
           "date": "2026-08-15",
           "title": "SNS告知の不具合修正3件＋却下機能＋団体紹介のイベントドリブン化 0.6時間",
           "category": "保守",
