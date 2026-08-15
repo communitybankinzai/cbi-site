@@ -1,9 +1,10 @@
 const INZAI_BOUNDS = L.latLngBounds([35.735, 140.055], [35.875, 140.245]);
 const STORAGE_KEY = "inzai-disaster-records-v1";
 const SEARCH_LOG_KEY = "inzai-disaster-search-log-v1";
+const WORK_LOG_KEY = "inzai-disaster-work-log-v1";
 const OPERATOR_KEY = "inzai-disaster-operator-v1";
 const GUIDE_SEEN_KEY = "inzai-disaster-guide-seen-v1";
-const SOURCE_CHECKED_AT = "2026-08-14";
+const SOURCE_CHECKED_AT = "2026-08-15";
 const APP_CONFIG = window.CBI_DISASTER_CONFIG || {};
 
 const statusLabels = {
@@ -235,6 +236,16 @@ const hazardLayers = {
   })
 };
 
+const rainNowcastLayer = L.tileLayer("", {
+  attribution: "気象庁 高解像度降水ナウキャスト",
+  opacity: 0.62,
+  maxNativeZoom: 10,
+  maxZoom: 18,
+  zIndex: 450,
+  updateWhenIdle: true
+});
+let rainNowcastTime = null;
+
 const landslideGroup = L.layerGroup([
   L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_dosekiryukeikaikuiki_data/{z}/{x}/{y}.png", {
     attribution: "ハザードマップポータルサイト",
@@ -272,6 +283,7 @@ recordLayer.addTo(map);
 boundaryLayer.addTo(map);
 
 initBoundary();
+refreshRainNowcast(false);
 renderRoadFloodSites();
 initIntegration();
 renderAll();
@@ -294,16 +306,30 @@ function bindEvents() {
     document.getElementById("hazard-opacity-value").textContent = `${event.target.value}%`;
     Object.values(hazardLayers).forEach(layer => layer.setOpacity(opacity));
     landslideGroup.eachLayer(layer => layer.setOpacity(opacity));
+    rainNowcastLayer.setOpacity(opacity);
   });
 
   document.getElementById("reset-view-button").addEventListener("click", () => map.fitBounds(INZAI_BOUNDS));
+  document.getElementById("incident-date").addEventListener("change", () => {
+    selectedId = null;
+    renderAll();
+  });
+  document.getElementById("show-all-dates").addEventListener("change", () => {
+    selectedId = null;
+    renderAll();
+  });
   document.getElementById("print-button").addEventListener("click", () => window.print());
   document.getElementById("sns-collector-button").addEventListener("click", openCollectorDialog);
   document.getElementById("help-button").addEventListener("click", openHelpDialog);
   document.getElementById("official-links-button").addEventListener("click", openOfficialLinksDialog);
   document.getElementById("help-start-button").addEventListener("click", startFromHelp);
   document.getElementById("register-social-link-button").addEventListener("click", registerSocialLink);
+  document.getElementById("paste-social-link-button").addEventListener("click", pasteSocialLink);
+  document.getElementById("collector-post-url").addEventListener("input", syncCollectorPlatformFromUrl);
   document.getElementById("collector-platform").addEventListener("change", updateCollectorPlatformHelp);
+  document.querySelectorAll('[name="collector-search-mode"]').forEach(input => {
+    input.addEventListener("change", updateCollectorPlatformHelp);
+  });
   document.getElementById("cancel-location-pick-button").addEventListener("click", cancelLocationPick);
   document.getElementById("ask-comment-button").addEventListener("click", () => beginLocationContact("comment"));
   document.getElementById("ask-dm-button").addEventListener("click", () => beginLocationContact("dm"));
@@ -318,13 +344,14 @@ function bindEvents() {
   document.getElementById("import-form").addEventListener("submit", importCsv);
   document.getElementById("copy-template-button").addEventListener("click", copyCsvTemplate);
   document.getElementById("screenshot-file").addEventListener("change", loadScreenshotFile);
-  document.getElementById("capture-screen-button").addEventListener("click", () => captureScreen(true));
+  document.getElementById("capture-screen-button").addEventListener("click", captureScreen);
   document.getElementById("screenshot-form").addEventListener("submit", saveScreenshotEvidence);
   document.getElementById("reset-crop-button").addEventListener("click", resetCrop);
   document.getElementById("download-crop-button").addEventListener("click", downloadCrop);
   document.getElementById("clear-screenshot-button").addEventListener("click", clearScreenshot);
   document.getElementById("run-ocr-button").addEventListener("click", runEvidenceOcr);
   document.getElementById("screenshot-dialog").addEventListener("paste", handleScreenshotPaste);
+  bindScreenshotDropZone();
   document.getElementById("open-social-search-button").addEventListener("click", openSocialSearch);
   document.getElementById("to-screenshot-button").addEventListener("click", collectorToScreenshot);
   document.getElementById("api-search-button").addEventListener("click", searchViaBridge);
@@ -430,6 +457,10 @@ function openCollectorDialog() {
   setFormValue("collector-until", `${incidentDate}T23:59`);
   setFormValue("collector-operator", loadOperator());
   setFormValue("collector-post-url", "");
+  setFormValue("collector-post-text", "");
+  setFormValue("collector-post-time", "");
+  setFormValue("collector-location-note", "");
+  document.getElementById("collector-link-status").textContent = "";
   apiResultItems = [];
   renderApiResults();
   updateCollectorPlatformHelp();
@@ -439,8 +470,47 @@ function openCollectorDialog() {
 function updateCollectorPlatformHelp() {
   const platform = getFormValue("collector-platform");
   const label = platformLabels[platform] || "SNS";
+  const mode = getCollectorSearchMode();
   document.getElementById("open-social-search-button").textContent = `${label}で検索を開く`;
-  document.getElementById("platform-help").textContent = `${label}の検索画面を新しいタブで開きます。検索語は自動でコピーされます。`;
+  document.getElementById("platform-help").textContent = `${label}の検索画面を新しいタブで開きます。検索語もコピーします。`;
+  const messages = {
+    instagram: "ハッシュタグなしのキーワードでも検索できます。本文等が候補になりますが、複数語の厳密なAND・完全一致は保証されません。",
+    threads: "投稿本文をキーワード検索できます。複数語は絞り込みに使えますが、厳密なAND・完全一致は保証されません。",
+    x: mode === "phrase"
+      ? "Xは引用符付きの完全一致検索を開きます。ログイン後は高度な検索で期間も絞れます。"
+      : "Xは半角スペースで区切った語を、すべて含む投稿として検索できます。",
+    "yahoo-realtime": "本文中のキーワードを検索できます。複数語は絞り込みに使えますが、検索サービス側の順位付けがあります。",
+    web: "Web検索を利用します。完全一致では引用符を付けて検索します。"
+  };
+  document.getElementById("search-capability-note").textContent = messages[platform] || messages.web;
+}
+
+async function pasteSocialLink() {
+  const status = document.getElementById("collector-link-status");
+  try {
+    const text = await navigator.clipboard.readText();
+    const url = extractFirstHttpUrl(text);
+    if (!url) throw new Error("URL_NOT_FOUND");
+    setFormValue("collector-post-url", url);
+    syncCollectorPlatformFromUrl();
+    status.textContent = "共有リンクを貼り付けました。";
+  } catch (error) {
+    status.textContent = error?.message === "URL_NOT_FOUND"
+      ? "クリップボードに投稿URLが見つかりません。URL欄へ直接貼り付けてください。"
+      : "自動貼り付けが許可されませんでした。URL欄を選び、Ctrl + Vで貼り付けてください。";
+    document.getElementById("collector-post-url").focus();
+  }
+}
+
+function extractFirstHttpUrl(value) {
+  const match = String(value || "").match(/https?:\/\/[^\s<>"']+/i);
+  return match ? match[0].replace(/[)\]}>。、，．]+$/, "") : "";
+}
+
+function syncCollectorPlatformFromUrl() {
+  const platform = detectPlatformFromUrl(getFormValue("collector-post-url"));
+  if (platform && platform !== "web") setFormValue("collector-platform", platform);
+  updateCollectorPlatformHelp();
 }
 
 function registerSocialLink() {
@@ -452,6 +522,10 @@ function registerSocialLink() {
   const platform = detectPlatformFromUrl(sourceUrl) || getFormValue("collector-platform") || "other";
   const operator = getFormValue("collector-operator") || loadOperator();
   const checkedAt = nowLocalInput();
+  const sourceText = getFormValue("collector-post-text").trim();
+  const locationNote = getFormValue("collector-location-note").trim();
+  const postTime = parseCollectorPostTime(getFormValue("collector-post-time"), checkedAt);
+  const metadata = parseSocialUrlMetadata(sourceUrl);
   const existing = records.find(record => canonicalUrl(record.sourceUrl) === canonicalUrl(sourceUrl));
   if (existing) {
     document.getElementById("sns-collector-dialog").close();
@@ -461,29 +535,40 @@ function registerSocialLink() {
   }
   const record = {
     id: `rec-${Date.now()}`,
-    title: `${platformLabels[platform] || "SNS"}投稿（場所確認待ち）`,
-    category: "other",
-    locationName: "場所未特定",
+    title: sourceText ? truncateText(sourceText, 72) : `${platformLabels[platform] || "SNS"}投稿（場所確認待ち）`,
+    category: inferCategory(sourceText),
+    locationName: locationNote || "場所未特定",
     lat: null,
     lng: null,
     locationStatus: "unknown",
-    observedAt: "",
+    observedAt: postTime.observedAt,
+    incidentDate: getFormValue("incident-date"),
     sourceType: "sns",
     sourceUrl,
     status: "unconfirmed",
     severity: "medium",
+    passability: inferPassability(sourceText),
+    passabilityMode: "unknown",
+    passabilityCheckedAt: postTime.observedAt || checkedAt,
     photoStatus: "needs-photo",
     photoUrl: "",
     photoPrivacy: "internal",
     assignedTo: "場所確認待ち",
-    notes: "SNS投稿リンクから登録。投稿者へ撮影場所を確認後、地図へピンを設定する。",
+    notes: locationNote
+      ? `場所の手掛かり: ${locationNote}。位置を投稿者または別資料で確認後、地図へピンを設定する。`
+      : "SNS投稿リンクから登録。投稿者へ撮影場所を確認後、地図へピンを設定する。",
     hazardFlags: { flood: false, inland: false, road: false, landslide: false },
     evidencePlatform: platform,
     evidenceQuery: getFormValue("collector-query"),
     evidenceOperator: operator,
     evidenceCheckedAt: checkedAt,
+    evidenceRelativeTime: postTime.label,
+    observedAtDerived: postTime.derived,
+    sourceText,
     evidenceOcrText: "",
-    evidenceImage: ""
+    evidenceImage: "",
+    externalId: metadata.externalId,
+    sourceUsername: metadata.sourceUsername
   };
   saveOperator(operator);
   records = [...records, record];
@@ -492,19 +577,60 @@ function registerSocialLink() {
   logSearch({ platform, query: sourceUrl, operator, checkedAt, method: "link", resultCount: 1 });
   document.getElementById("sns-collector-dialog").close();
   renderAll();
-  document.getElementById("map-status").textContent = "投稿リンクを登録しました。場所が不明な場合は「場所を質問（コメント / DM）」を使います。";
+  document.getElementById("map-status").textContent = matchesIncidentDate(record)
+    ? "投稿リンクを登録しました。場所が不明な場合は「場所を質問（コメント / DM）」を使います。"
+    : "投稿リンクを台帳へ保存しましたが、対象日外のため地図には表示していません。「過去記録も表示」で確認できます。";
 }
 
 function detectPlatformFromUrl(value) {
   try {
     const host = new URL(value).hostname.toLowerCase();
     if (host.includes("instagram.com")) return "instagram";
-    if (host.includes("threads.net")) return "threads";
+    if (host.includes("threads.net") || host.includes("threads.com")) return "threads";
     if (host === "x.com" || host.endsWith(".x.com") || host.includes("twitter.com")) return "x";
     return "web";
   } catch {
     return "";
   }
+}
+
+function parseSocialUrlMetadata(value) {
+  try {
+    const url = new URL(value);
+    const path = url.pathname;
+    const instagram = path.match(/^\/(?:p|reel|reels|tv)\/([^/?#]+)/i);
+    if (instagram) return { externalId: instagram[1], sourceUsername: "" };
+    const threads = path.match(/^\/@([^/]+)\/post\/([^/?#]+)/i);
+    if (threads) return { externalId: threads[2], sourceUsername: threads[1] };
+    const x = path.match(/^\/([^/]+)\/status\/([^/?#]+)/i);
+    if (x) return { externalId: x[2], sourceUsername: x[1] };
+  } catch {}
+  return { externalId: "", sourceUsername: "" };
+}
+
+function parseCollectorPostTime(value, checkedAt) {
+  const text = String(value || "").trim();
+  if (!text) return { label: "", observedAt: "", derived: false };
+  const relative = deriveObservedAtFromRelativeText(text, checkedAt);
+  if (relative) return { ...relative, derived: true };
+  const normalized = text
+    .normalize("NFKC")
+    .replace(/[年\/\.]/g, "-")
+    .replace(/月/g, "-")
+    .replace(/日/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const match = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/);
+  if (!match) return { label: text, observedAt: "", derived: false };
+  const [, year, month, day, hour = "00", minute = "00"] = match;
+  const observedAt = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${hour.padStart(2, "0")}:${minute}`;
+  return Number.isNaN(new Date(observedAt).getTime())
+    ? { label: text, observedAt: "", derived: false }
+    : { label: "", observedAt, derived: false };
+}
+
+function getCollectorSearchMode() {
+  return document.querySelector('[name="collector-search-mode"]:checked')?.value || "keywords";
 }
 
 function openSocialSearch() {
@@ -516,11 +642,16 @@ function openSocialSearch() {
     return;
   }
   saveOperator(operator);
-  const url = buildSocialSearchUrl(platform, query);
-  navigator.clipboard?.writeText(query).catch(() => {});
+  const mode = getCollectorSearchMode();
+  const effectiveQuery = buildSearchQuery(platform, query, mode);
+  const url = buildSocialSearchUrl(platform, effectiveQuery);
+  navigator.clipboard?.writeText(effectiveQuery).catch(() => {});
   const opened = window.open(url, "_blank");
   if (opened) opened.opener = null;
-  else alert("検索画面を開けませんでした。ポップアップの許可を確認してください。");
+  else {
+    alert("検索画面を開けませんでした。ポップアップの許可を確認してください。");
+    appendSystemWorkLog("SNS検索画面", "blocked", "検索画面のポップアップを開けませんでした。", "ブラウザのポップアップ許可を確認する");
+  }
   logSearch({ platform, query, operator, checkedAt: nowLocalInput(), method: "manual-search", resultCount: "-" });
 }
 
@@ -531,14 +662,22 @@ function collectorToScreenshot() {
   saveOperator(operator);
   document.getElementById("sns-collector-dialog").close();
   openScreenshotDialog({ platform, query, operator, checkedAt: nowLocalInput() });
-  captureScreen(true);
+  captureScreen();
+}
+
+function buildSearchQuery(platform, query, mode) {
+  const clean = String(query || "").trim().replace(/\s+/g, " ");
+  if (mode === "phrase" && (platform === "x" || platform === "web" || platform === "yahoo-realtime")) {
+    return `"${clean.replace(/^"|"$/g, "")}"`;
+  }
+  return clean;
 }
 
 function buildSocialSearchUrl(platform, query) {
   const encoded = encodeURIComponent(query);
   if (platform === "instagram") {
     const tag = query.trim().replace(/^#/, "");
-    if (/^[^\s#]+$/.test(tag)) return `https://www.instagram.com/explore/tags/${encodeURIComponent(tag)}/`;
+    if (query.trim().startsWith("#") && /^[^\s#]+$/.test(tag)) return `https://www.instagram.com/explore/tags/${encodeURIComponent(tag)}/`;
     return `https://www.instagram.com/explore/search/keyword/?q=${encoded}`;
   }
   if (platform === "threads") return `https://www.threads.net/search?q=${encoded}&serp_type=default`;
@@ -578,8 +717,9 @@ async function searchViaBridge() {
     consumeSnsPayload(payload, platform, "api");
     saveOperator(operator);
     logSearch({ platform, query, operator, checkedAt: nowLocalInput(), method: "api", resultCount: apiResultItems.length });
-  } catch {
+  } catch (error) {
     results.innerHTML = '<div class="duplicate-warning"><strong>連携APIから取得できませんでした</strong>検索画面・スクショ、またはJSON取込を利用してください。</div>';
+    appendSystemWorkLog("SNS連携API", "blocked", `連携APIから取得できませんでした: ${error?.message || "不明なエラー"}`, "API設定、権限、レスポンス形式を確認する");
   } finally {
     button.disabled = false;
   }
@@ -693,6 +833,7 @@ function addApiResultAsRecord(item) {
     lng: apiHasLocation ? item.lng : null,
     locationStatus: apiHasLocation ? "identified" : "unknown",
     observedAt: toDateTimeLocal(item.timestamp) || nowLocalInput(),
+    incidentDate: getFormValue("incident-date"),
     sourceType: item.platform === "web" ? "web" : "sns",
     sourceUrl: item.permalink,
     status: "unconfirmed",
@@ -710,6 +851,7 @@ function addApiResultAsRecord(item) {
     evidenceQuery: getFormValue("collector-query"),
     evidenceOperator: operator,
     evidenceCheckedAt: nowLocalInput(),
+    sourceText: item.text,
     evidenceOcrText: item.text,
     evidenceImage: "",
     externalId: item.externalId,
@@ -904,6 +1046,11 @@ function saveOperator(operator) {
 }
 
 function toggleOverlay(name, checked) {
+  if (name === "rainNowcast") {
+    if (checked) refreshRainNowcast(true);
+    else map.removeLayer(rainNowcastLayer);
+    return;
+  }
   const layerMap = {
     boundary: boundaryLayer,
     floodMax: hazardLayers.floodMax,
@@ -918,6 +1065,53 @@ function toggleOverlay(name, checked) {
   if (checked) layer.addTo(map);
   else map.removeLayer(layer);
 }
+
+async function refreshRainNowcast(showLayer) {
+  const status = document.getElementById("rain-layer-status");
+  try {
+    const response = await fetch(`https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json?_=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const times = await response.json();
+    const latest = Array.isArray(times) ? times.find(item => item?.elements?.includes("hrpns")) : null;
+    if (!latest?.basetime || !latest?.validtime) throw new Error("最新時刻がありません");
+    const template = `https://www.jma.go.jp/bosai/jmatile/data/nowc/${latest.basetime}/none/${latest.validtime}/surf/hrpns/{z}/{x}/{y}.png`;
+    rainNowcastLayer.setUrl(template, false);
+    rainNowcastTime = latest.validtime;
+    status.textContent = `${formatJmaTime(latest.validtime)}実況・5分更新`;
+    status.classList.remove("is-error");
+    const enabled = document.querySelector('[data-overlay="rainNowcast"]')?.checked;
+    if ((showLayer || enabled) && !map.hasLayer(rainNowcastLayer)) rainNowcastLayer.addTo(map);
+  } catch (error) {
+    status.textContent = "取得できません";
+    status.classList.add("is-error");
+    if (showLayer) document.querySelector('[data-overlay="rainNowcast"]').checked = false;
+    appendSystemWorkLog("リアルタイム降水レイヤー", "blocked", `気象庁の最新降水データを取得できませんでした: ${error?.message || "不明なエラー"}`, "通信状態と気象庁配信URLを確認する");
+  }
+}
+
+function formatJmaTime(value) {
+  const text = String(value || "");
+  if (!/^\d{14}$/.test(text)) return text;
+  const date = new Date(Date.UTC(
+    Number(text.slice(0, 4)),
+    Number(text.slice(4, 6)) - 1,
+    Number(text.slice(6, 8)),
+    Number(text.slice(8, 10)),
+    Number(text.slice(10, 12)),
+    Number(text.slice(12, 14))
+  ));
+  return new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+setInterval(() => {
+  if (document.querySelector('[data-overlay="rainNowcast"]')?.checked) refreshRainNowcast(true);
+}, 5 * 60 * 1000);
 
 function initBoundary() {
   fetch("https://geoshape.ex.nii.ac.jp/jma/resource/AreaInformationCity_risk/20241025/1223100.geojson")
@@ -957,6 +1151,7 @@ function renderRoadFloodSites() {
 }
 
 function renderAll() {
+  renderDateScope();
   renderRecords();
   renderList();
   renderSummary();
@@ -964,6 +1159,14 @@ function renderAll() {
   renderLocationQueue();
   renderDetail();
   renderSearchLog();
+}
+
+function renderDateScope() {
+  const target = getFormValue("incident-date");
+  const showAll = document.getElementById("show-all-dates").checked;
+  document.getElementById("date-scope-label").textContent = showAll
+    ? "過去記録を含めて表示中"
+    : `${target ? target.replace(/-/g, "/") : "対象日"} の記録だけ表示中`;
 }
 
 function renderRecords() {
@@ -995,7 +1198,7 @@ function renderList() {
   const list = document.getElementById("record-list");
   const filtered = getFilteredRecords();
   if (!filtered.length) {
-    list.innerHTML = '<div class="detail-empty">登録地点はまだありません。地点追加またはCSV取込から始めてください。</div>';
+    list.innerHTML = '<div class="detail-empty">対象日に一致する登録地点はありません。対象日または「過去記録も表示」を確認してください。</div>';
     return;
   }
   list.innerHTML = filtered
@@ -1044,7 +1247,7 @@ function renderSummary() {
 }
 
 function renderPhotoQueue() {
-  const queue = records.filter(record => record.photoStatus !== "official-verified" && record.status !== "resolved");
+  const queue = getFilteredRecords().filter(record => record.photoStatus !== "official-verified" && record.status !== "resolved");
   const node = document.getElementById("photo-queue");
   if (!queue.length) {
     node.innerHTML = '<div class="detail-empty">写真確認待ちはありません。</div>';
@@ -1068,7 +1271,7 @@ function renderPhotoQueue() {
 }
 
 function renderLocationQueue() {
-  const queue = records.filter(record => getLocationStatus(record) !== "pinned" && record.status !== "resolved");
+  const queue = getFilteredRecords().filter(record => getLocationStatus(record) !== "pinned" && record.status !== "resolved");
   const node = document.getElementById("location-queue");
   if (!queue.length) {
     node.innerHTML = '<div class="detail-empty">場所確認待ちはありません。</div>';
@@ -1135,6 +1338,7 @@ function renderDetail() {
     </div>
     ${record.evidenceImage ? `<img class="evidence-preview" src="${record.evidenceImage}" alt="検索画面スクリーンショット切り出し">` : ""}
     ${isHttpUrl(record.photoUrl) && record.photoUrl !== record.evidenceImage ? `<a href="${escapeAttribute(record.photoUrl)}" target="_blank" rel="noreferrer"><img class="evidence-preview" src="${escapeAttribute(record.photoUrl)}" alt="投稿に添付された被害候補写真" loading="lazy"></a>` : ""}
+    ${record.sourceText ? `<div class="source-text-block"><strong>投稿本文・要約</strong><p>${escapeHtml(record.sourceText)}</p></div>` : ""}
     ${record.evidenceOcrText ? `<pre class="evidence-ocr">${escapeHtml(record.evidenceOcrText)}</pre>` : ""}
     <div class="detail-actions">
       ${record.sourceUrl && locationStatus !== "pinned" ? `<button class="tool-button primary" type="button" data-action="ask-location">場所を質問（コメント / DM）</button>` : ""}
@@ -1279,6 +1483,7 @@ function saveRecordFromForm(event) {
     locationAnsweredAt: getFormValue("record-location-answered-at"),
     locationAnswerNote: getFormValue("record-location-answer-note"),
     observedAt: getFormValue("record-observed-at"),
+    incidentDate: existingRecord?.incidentDate || getFormValue("incident-date"),
     sourceType: getFormValue("record-source-type"),
     sourceUrl: getFormValue("record-source-url"),
     status: getFormValue("record-status"),
@@ -1469,56 +1674,155 @@ function openScreenshotDialog(seed = {}) {
 function loadScreenshotFile(event) {
   const file = event.target.files?.[0];
   if (!file) return;
-  loadScreenshotBlob(file, true);
+  loadScreenshotBlob(file);
 }
 
 function handleScreenshotPaste(event) {
   const imageItem = Array.from(event.clipboardData?.items || []).find(item => item.type.startsWith("image/"));
   if (!imageItem) return;
   event.preventDefault();
-  loadScreenshotBlob(imageItem.getAsFile(), true);
+  loadScreenshotBlob(imageItem.getAsFile());
 }
 
-async function captureScreen(autoProcess = false) {
+function bindScreenshotDropZone() {
+  const zone = document.getElementById("paste-zone");
+  zone.addEventListener("dragover", event => {
+    event.preventDefault();
+    zone.classList.add("is-dragover");
+  });
+  zone.addEventListener("dragleave", () => zone.classList.remove("is-dragover"));
+  zone.addEventListener("drop", event => {
+    event.preventDefault();
+    zone.classList.remove("is-dragover");
+    const file = Array.from(event.dataTransfer?.files || []).find(item => item.type.startsWith("image/"));
+    if (file) loadScreenshotBlob(file);
+  });
+  zone.addEventListener("click", () => zone.focus());
+}
+
+async function captureScreen() {
+  const status = document.getElementById("ocr-status");
   if (!navigator.mediaDevices?.getDisplayMedia) {
     alert("このブラウザでは画面キャプチャが利用できません。スクリーンショットを貼り付けるか、画像を選択してください。");
+    appendSystemWorkLog("SNS画面キャプチャ", "blocked", "このブラウザは画面キャプチャAPIに対応していません。", "画像ファイルまたは貼り付けで証跡を登録する");
     return;
   }
+  let stream = null;
   try {
-    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    setFormValue("evidence-ocr-text", "");
+    screenshotState.relativeTime = null;
+    screenshotState.locationCandidate = null;
+    status.classList.add("is-active");
+    status.textContent = "共有画面で、投稿を表示したSNSタブを選んでください...";
+    stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { frameRate: { ideal: 1, max: 5 } },
+      audio: false,
+      preferCurrentTab: false,
+      selfBrowserSurface: "exclude",
+      surfaceSwitching: "include",
+      systemAudio: "exclude"
+    });
     const video = document.createElement("video");
+    video.muted = true;
+    video.playsInline = true;
     video.srcObject = stream;
     await video.play();
+    await waitForCapturedFrame(video);
+    if (!video.videoWidth || !video.videoHeight) throw new Error("共有画面の画像サイズを取得できませんでした");
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-    stream.getTracks().forEach(track => track.stop());
-    canvas.toBlob(blob => {
-      if (blob) loadScreenshotBlob(blob, autoProcess);
-    }, "image/jpeg", 0.9);
-  } catch {
-    alert("画面キャプチャがキャンセルされました。");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    if (isCanvasBlank(canvas, context)) throw new Error("共有画面が白紙として取得されました");
+    const blob = await canvasToBlob(canvas, "image/jpeg", 0.9);
+    if (!blob) throw new Error("共有画面を画像へ変換できませんでした");
+    loadScreenshotBlob(blob);
+  } catch (error) {
+    if (error?.name === "NotAllowedError" || error?.name === "AbortError") {
+      status.textContent = "画面共有はキャンセルされました。必要なときにもう一度お試しください。";
+    } else {
+      status.textContent = `画面を取得できませんでした。${error?.message || "画像選択または貼り付けをお試しください。"}`;
+      appendSystemWorkLog("SNS画面キャプチャ", "blocked", status.textContent, "SNSタブを明示選択して再試行し、難しい場合は画像貼り付けを利用する");
+    }
+  } finally {
+    stream?.getTracks().forEach(track => track.stop());
+    status.classList.remove("is-active");
   }
 }
 
-function loadScreenshotBlob(blob, autoProcess = false) {
+function waitForCapturedFrame(video) {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = callback => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      callback();
+    };
+    const timeout = setTimeout(() => finish(() => reject(new Error("共有画面の読み込みがタイムアウトしました"))), 5000);
+    const ready = () => {
+      if (!video.videoWidth || !video.videoHeight || video.readyState < 2) return;
+      if (typeof video.requestVideoFrameCallback === "function") {
+        video.requestVideoFrameCallback(() => finish(resolve));
+      } else {
+        requestAnimationFrame(() => requestAnimationFrame(() => finish(resolve)));
+      }
+    };
+    video.addEventListener("loadeddata", ready, { once: true });
+    video.addEventListener("resize", ready, { once: true });
+    ready();
+  });
+}
+
+function isCanvasBlank(canvas, context) {
+  const sampleWidth = Math.min(canvas.width, 80);
+  const sampleHeight = Math.min(canvas.height, 45);
+  const sample = document.createElement("canvas");
+  sample.width = sampleWidth;
+  sample.height = sampleHeight;
+  const sampleContext = sample.getContext("2d", { willReadFrequently: true });
+  sampleContext.drawImage(canvas, 0, 0, sampleWidth, sampleHeight);
+  const data = sampleContext.getImageData(0, 0, sampleWidth, sampleHeight).data;
+  let min = 255;
+  let max = 0;
+  let alphaCount = 0;
+  for (let index = 0; index < data.length; index += 4) {
+    const luminance = (data[index] + data[index + 1] + data[index + 2]) / 3;
+    min = Math.min(min, luminance);
+    max = Math.max(max, luminance);
+    if (data[index + 3] > 0) alphaCount += 1;
+  }
+  return alphaCount === 0 || (min > 248 && max - min < 3);
+}
+
+function canvasToBlob(canvas, type, quality) {
+  return new Promise(resolve => canvas.toBlob(resolve, type, quality));
+}
+
+function loadScreenshotBlob(blob) {
+  if (!blob) return;
   const reader = new FileReader();
   reader.onload = () => {
     const image = new Image();
-    image.onload = async () => {
+    image.onload = () => {
       screenshotState.image = image;
       screenshotState.crop = null;
+      screenshotState.relativeTime = null;
+      screenshotState.locationCandidate = null;
+      setFormValue("evidence-ocr-text", "");
       drawScreenshotCanvas();
-      if (autoProcess) {
-        const canvas = document.getElementById("screenshot-canvas");
-        screenshotState.crop = { x: 0, y: 0, w: canvas.width, h: canvas.height };
-        drawScreenshotCanvas();
-        document.getElementById("ocr-status").textContent = "画像を取得しました。文字を自動解析します...";
-        await runEvidenceOcr();
-      }
+      document.getElementById("ocr-status").textContent = "画像を取得しました。投稿部分をドラッグで囲み、「OCR文字抽出」を押してください。";
+      renderEvidenceDuplicateWarning();
+    };
+    image.onerror = () => {
+      document.getElementById("ocr-status").textContent = "画像を読み込めませんでした。別の画像でお試しください。";
+      appendSystemWorkLog("SNS証跡画像", "blocked", "選択または貼り付けた画像を読み込めませんでした。", "別形式の画像で再試行する");
     };
     image.src = reader.result;
+  };
+  reader.onerror = () => {
+    document.getElementById("ocr-status").textContent = "画像ファイルを読み込めませんでした。";
   };
   reader.readAsDataURL(blob);
 }
@@ -1639,6 +1943,7 @@ async function runEvidenceOcr() {
   }
   if (!window.Tesseract?.recognize) {
     alert("OCR機能を読み込めませんでした。通信状態を確認して再読み込みしてください。");
+    appendSystemWorkLog("SNS画像OCR", "blocked", "OCRライブラリを読み込めませんでした。", "通信状態とCDN接続を確認する");
     return;
   }
 
@@ -1675,8 +1980,9 @@ async function runEvidenceOcr() {
       status.textContent = messages.join(" / ");
     }
     renderEvidenceDuplicateWarning();
-  } catch {
+  } catch (error) {
     status.textContent = "OCRに失敗しました。切り出し範囲を調整して再実行してください。";
+    appendSystemWorkLog("SNS画像OCR", "testing", `OCRに失敗しました: ${error?.message || "不明なエラー"}`, "投稿本文だけを囲んで再実行し、難しい場合は本文を手入力する");
   } finally {
     button.disabled = false;
     status.classList.remove("is-active");
@@ -1740,7 +2046,8 @@ function saveScreenshotEvidence(event) {
     lat: locationCandidate?.lat ?? null,
     lng: locationCandidate?.lng ?? null,
     locationStatus: locationCandidate ? "identified" : "unknown",
-    observedAt: getFormValue("evidence-observed-at") || checkedAt,
+    observedAt: getFormValue("evidence-observed-at"),
+    incidentDate: getFormValue("incident-date"),
     sourceType: platform === "web" ? "web" : "sns",
     sourceUrl: getFormValue("evidence-url"),
     status: "unconfirmed",
@@ -1760,6 +2067,7 @@ function saveScreenshotEvidence(event) {
     evidenceCheckedAt: checkedAt,
     evidenceRelativeTime: screenshotState.relativeTime?.label || "",
     observedAtDerived: Boolean(screenshotState.relativeTime),
+    sourceText: ocrText,
     evidenceOcrText: ocrText,
     evidenceImage: dataUrl
   };
@@ -1803,6 +2111,7 @@ function normalizeImportedRow(row) {
     locationAnsweredAt: row.locationAnsweredAt || "",
     locationAnswerNote: row.locationAnswerNote || "",
     observedAt: row.observedAt || row.time || "",
+    incidentDate: row.incidentDate || extractLocalDate(row.observedAt || row.time || row.evidenceCheckedAt || ""),
     sourceType: row.sourceType || "web",
     sourceUrl: row.sourceUrl || "",
     status: row.status || "unconfirmed",
@@ -1821,6 +2130,7 @@ function normalizeImportedRow(row) {
     evidenceCheckedAt: row.evidenceCheckedAt || "",
     evidenceRelativeTime: row.evidenceRelativeTime || "",
     observedAtDerived: toBool(row.observedAtDerived),
+    sourceText: row.sourceText || row.postText || "",
     evidenceOcrText: row.evidenceOcrText || "",
     externalId: row.externalId || "",
     sourceUsername: row.sourceUsername || "",
@@ -1835,17 +2145,17 @@ function normalizeImportedRow(row) {
 }
 
 function copyCsvTemplate() {
-  const template = "title,category,locationName,lat,lng,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,passability,passabilityMode,passabilityCheckedAt,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,evidencePlatform,evidenceQuery,evidenceOperator,evidenceCheckedAt,evidenceRelativeTime,observedAtDerived,externalId,sourceUsername,notes\n";
+  const template = "title,category,locationName,lat,lng,incidentDate,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,passability,passabilityMode,passabilityCheckedAt,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,evidencePlatform,evidenceQuery,evidenceOperator,evidenceCheckedAt,evidenceRelativeTime,observedAtDerived,sourceText,externalId,sourceUsername,notes\n";
   navigator.clipboard?.writeText(template);
   document.getElementById("csv-input").value = template;
 }
 
 function exportCsv() {
   const headers = [
-    "id", "title", "category", "locationName", "lat", "lng", "locationStatus", "locationAskedAt", "locationAskedBy", "locationContactMethod", "locationAnsweredAt", "locationAnswerNote", "observedAt", "sourceType",
+    "id", "title", "category", "locationName", "lat", "lng", "incidentDate", "locationStatus", "locationAskedAt", "locationAskedBy", "locationContactMethod", "locationAnsweredAt", "locationAnswerNote", "observedAt", "sourceType",
     "sourceUrl", "status", "severity", "passability", "passabilityMode", "passabilityCheckedAt", "photoStatus", "photoUrl", "photoPrivacy",
     "hazardFlood", "hazardInland", "hazardRoad", "hazardLandslide", "assignedTo", "evidencePlatform", "evidenceQuery",
-    "evidenceOperator", "evidenceCheckedAt", "evidenceRelativeTime", "observedAtDerived", "evidenceOcrText", "externalId", "sourceUsername", "evidenceHasImage", "notes"
+    "evidenceOperator", "evidenceCheckedAt", "evidenceRelativeTime", "observedAtDerived", "sourceText", "evidenceOcrText", "externalId", "sourceUsername", "evidenceHasImage", "notes"
   ];
   const rows = records.map(record => headers.map(key => {
     if (key.startsWith("hazard")) {
@@ -1918,6 +2228,7 @@ function getFilteredRecords() {
   );
 
   return records.filter(record => {
+    if (!matchesIncidentDate(record)) return false;
     if (!activeStatuses.has(record.status)) return false;
     if (photoFilter !== "all" && record.photoStatus !== photoFilter) return false;
     if (!matchesPassabilityFilter(record, passabilityFilter)) return false;
@@ -1928,6 +2239,7 @@ function getFilteredRecords() {
       record.notes,
       record.assignedTo,
       record.evidenceOperator,
+      record.sourceText,
       record.evidenceOcrText,
       record.sourceUsername,
       record.sourceUrl,
@@ -1938,6 +2250,31 @@ function getFilteredRecords() {
     ].join(" ").toLowerCase();
     return haystack.includes(keyword);
   });
+}
+
+function matchesIncidentDate(record) {
+  if (document.getElementById("show-all-dates").checked) return true;
+  const target = getFormValue("incident-date");
+  if (!target) return true;
+  return getRecordIncidentDate(record) === target;
+}
+
+function getRecordIncidentDate(record) {
+  return extractLocalDate(record?.observedAt) ||
+    String(record?.incidentDate || "") ||
+    extractLocalDate(record?.evidenceCheckedAt) ||
+    extractLocalDate(record?.passabilityCheckedAt) ||
+    extractLocalDate(record?.locationAskedAt);
+}
+
+function extractLocalDate(value) {
+  const text = String(value || "");
+  const direct = text.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (direct) return direct[1];
+  const date = new Date(text);
+  if (Number.isNaN(date.getTime())) return "";
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
 }
 
 function getPassability(record) {
@@ -2000,7 +2337,7 @@ function renderDuplicateWarning(node, duplicates) {
 function detectDuplicates(candidate, excludeId = "") {
   if (!candidate) return [];
   const candidateUrl = canonicalUrl(candidate.sourceUrl);
-  const candidateText = normalizeForMatch(candidate.evidenceOcrText || candidate.title);
+  const candidateText = normalizeForMatch(candidate.evidenceOcrText || candidate.sourceText || candidate.title);
   const candidateTime = parseTime(candidate.observedAt || candidate.evidenceCheckedAt);
   const matches = [];
 
@@ -2021,7 +2358,7 @@ function detectDuplicates(candidate, excludeId = "") {
       reason = "同じ検索語・24時間以内";
     } else if (
       candidateText.length >= 8 &&
-      textSimilarity(candidateText, normalizeForMatch(record.evidenceOcrText || record.title)) >= 0.72 &&
+      textSimilarity(candidateText, normalizeForMatch(record.evidenceOcrText || record.sourceText || record.title)) >= 0.72 &&
       isWithinHours(candidateTime, parseTime(record.observedAt || record.evidenceCheckedAt), 48)
     ) {
       reason = "本文・OCRが類似";
@@ -2211,6 +2548,31 @@ function persistRecords() {
   } catch {
     alert("ブラウザのローカル保存容量を超えました。証跡画像を切り出しDLしてから、画像なしでCSV/GeoJSON管理してください。");
   }
+}
+
+function appendSystemWorkLog(feature, status, summary, nextAction) {
+  try {
+    const current = JSON.parse(localStorage.getItem(WORK_LOG_KEY) || "[]");
+    const now = new Date();
+    const duplicate = current.some(item =>
+      item.feature === feature &&
+      item.summary === summary &&
+      now.getTime() - new Date(item.loggedAt).getTime() < 30 * 60 * 1000
+    );
+    if (duplicate) return;
+    current.unshift({
+      id: `work-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      feature,
+      status,
+      owner: "",
+      loggedAt: now.toISOString(),
+      summary,
+      nextAction,
+      referenceUrl: "",
+      origin: "system"
+    });
+    localStorage.setItem(WORK_LOG_KEY, JSON.stringify(current.slice(0, 500)));
+  } catch {}
 }
 
 function notifyHost() {

@@ -11,7 +11,8 @@
 - SNS、Web、住民通報、職員確認、公式発表を同じ台帳に登録する
 - 被害地点ごとに、想定内被害、想定外被害、高リスク未確認、情報不確実を表示する
 - 写真待ち、写真リンクあり、職員写真確認済、取得不可を管理する
-- Instagram、ThreadsなどAPIで広域取得しにくい検索結果を、画面キャプチャ・貼り付け・画像選択からスクリーンショット証跡として切り出し、被害候補に登録する
+- Instagram、ThreadsなどAPIで広域取得しにくい投稿を、共有リンク、本文・要約、相対時刻、場所の手掛かりから候補登録する
+- 画面共有でSNSタブを明示選択するか、貼り付け・画像選択からスクリーンショット証跡を切り出して登録する
 - Instagram、Threads、X、Yahoo!リアルタイム検索、Web検索の検索画面を検索語付きで開く
 - スクリーンショットの切り出し範囲から日本語・英語OCRを行い、抽出文字を証跡として保存する
 - 確認者、検索・確認時刻、投稿・発生時刻、検索履歴を記録する
@@ -24,9 +25,14 @@
 - スクリーンショット内の「3時間前」などを確認時刻から逆算し、推定投稿時刻として記録する
 - 画面キャプチャはブラウザ上で取得するため、スクリーンショットファイルを事前保存する必要はない
 - 上部の「公式情報」から、印西市、千葉県、気象庁、国土交通省の防災情報へ直接移動できる
+- 印西市わが街ガイドの公式MAPとオープンデータ一覧へ直接移動できる
 - 「通行情報追加」から、通行止め、通行不能、規制、通行再開、通行実績を記録し、危険側の情報を優先して絞り込める
 - 通行情報には対象交通手段と最終確認時刻を持たせ、「通行実績あり」は現在の安全を保証しない参考情報として表示する
 - スマートフォンでは地図を画面上部に表示し、縦横変更後も地図を再描画してピンを設定できる
+- 気象庁の高解像度降水ナウキャスト実況を任意レイヤーとして重ね、最新時刻を5分ごとに確認する
+- 対象日と一致する投稿・発生情報だけを地図、一覧、集計へ表示し、過去記録は明示的にONにした場合だけ重ねる
+- 未実現機能、試験結果、次の対応をパスワードなしの管理記録画面へ保存し、CSV/JSONで出力する
+- SNS検索・画面取得・OCRの技術的な失敗を管理記録へ自動追記する
 
 ## 無料で利用できる範囲
 
@@ -38,11 +44,12 @@
 
 ## SNS投稿の登録手順
 
-1. `SNS収集`を開き、分かっている投稿URLを貼って`場所未特定で登録`を押す
-2. 投稿URLが分からない場合はSNS検索を開き、投稿を表示したまま`投稿画面を自動取込`を押す
-3. 場所が不明な候補で`場所を質問（コメント / DM）`を押し、確認手段を選んで用意された文面を貼る
-4. 回答後に`地図でピンを置く`を押し、確認できた位置を地図上でクリックする
-5. 分類、重要度、写真状態、推定時刻を確認して保存する
+1. `SNS投稿を登録`を開き、分かっている投稿URL、本文・要約、時刻表示、場所の手掛かりを入力して`投稿候補として登録`を押す
+2. 投稿URLが分からない場合はSNS検索を開く。InstagramとThreadsはキーワード検索、Xは複数語のAND相当と完全一致検索を利用できる
+3. 画像証跡を残す場合は`SNSタブを選んで画像取得`を押し、共有画面で投稿を表示したブラウザータブを選ぶ。取得後に投稿部分を囲んでOCRする
+4. 場所が不明な候補で`場所を質問（コメント / DM）`を押し、確認手段を選んで用意された文面を貼る
+5. 回答後に`地図でピンを置く`を押し、確認できた位置を地図上でクリックする
+6. 分類、重要度、写真状態、推定時刻を確認して保存する
 
 ## 注意
 
@@ -50,10 +57,12 @@
 
 SNSやWeb由来の情報は確認候補です。行政判断や公開判断に使う前に、公式発表、現地確認、写真確認、複数根拠で確認してください。
 
+「通行情報ピンの色」は登録地点の状態を表すもので、道路区間の線を着色する機能ではありません。道路区間線、JARTICデータ、TOYOTA走行データの自動反映は未実装です。JARTICは公式サイトへの参照リンクを表示し、データ提供条件と二次利用許諾の確認を管理記録に残しています。
+
 ## CSVヘッダー
 
 ```csv
-title,category,locationName,lat,lng,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,passability,passabilityMode,passabilityCheckedAt,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,notes
+title,category,locationName,lat,lng,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,passability,passabilityMode,passabilityCheckedAt,photoStatus,photoUrl,photoPrivacy,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,sourceText,notes
 ```
 
 スクリーンショット証跡はブラウザのローカル保存です。CSV/GeoJSONには巨大な画像本体は含めず、`evidenceHasImage`、`evidencePlatform`、`evidenceQuery` を出力します。

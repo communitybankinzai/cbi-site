@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>管理記録 | 印西市 災害状況整合MAP</title>
+    <meta name="description" content="印西市 災害状況整合MAPの機能検討と作業記録">
+    <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
+    <link rel="stylesheet" href="./admin.css?v=20260815a">
+  </head>
+  <body>
+    <header class="admin-header">
+      <div class="admin-brand">
+        <img src="../assets/cbi-logo.png" alt="CBI">
+        <div>
+          <p>Community Bank INZAI / 防災情報支援</p>
+          <h1>機能検討・作業記録</h1>
+        </div>
+      </div>
+      <a class="button" href="./">MAPへ戻る</a>
+    </header>
+
+    <div class="local-notice" role="status">
+      <strong>現在はパスワードなし・この端末内だけに保存</strong>
+      <span>運用開始前の検討用です。共有する記録はCSVまたはJSONで出力してください。</span>
+    </div>
+
+    <main class="admin-main">
+      <section class="status-band" aria-label="記録集計">
+        <div><strong id="total-count">0</strong><span>全記録</span></div>
+        <div><strong id="planned-count">0</strong><span>検討中</span></div>
+        <div><strong id="testing-count">0</strong><span>試験中</span></div>
+        <div><strong id="blocked-count">0</strong><span>未実現・要対応</span></div>
+        <div><strong id="completed-count">0</strong><span>対応済</span></div>
+      </section>
+
+      <div class="admin-columns">
+        <section class="editor-panel" aria-labelledby="editor-title">
+          <div class="section-heading">
+            <div>
+              <p class="kicker">記録を追加・更新</p>
+              <h2 id="editor-title">作業記録</h2>
+            </div>
+            <button class="text-button" id="reset-form-button" type="button">入力をクリア</button>
+          </div>
+
+          <form id="work-log-form">
+            <input id="record-id" type="hidden">
+            <div class="form-grid">
+              <label>
+                機能・課題名
+                <input id="feature" type="text" required placeholder="例: Instagram投稿の候補登録">
+              </label>
+              <label>
+                状態
+                <select id="status" required>
+                  <option value="planned">検討中</option>
+                  <option value="testing">試験中</option>
+                  <option value="blocked">未実現・要対応</option>
+                  <option value="completed">対応済</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-grid">
+              <label>
+                担当
+                <input id="owner" type="text" placeholder="氏名・団体・担当名">
+              </label>
+              <label>
+                記録日時
+                <input id="logged-at" type="datetime-local" required>
+              </label>
+            </div>
+            <label>
+              実施結果・できなかった理由
+              <textarea id="summary" rows="4" required placeholder="試したこと、確認できたこと、エラー、制約など"></textarea>
+            </label>
+            <label>
+              次の対応
+              <textarea id="next-action" rows="3" placeholder="誰が、何を確認・実施するか"></textarea>
+            </label>
+            <label>
+              参照URL
+              <input id="reference-url" type="url" placeholder="https://...">
+            </label>
+            <div class="form-actions">
+              <button class="button primary" type="submit">記録を保存</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="records-panel" aria-labelledby="records-title">
+          <div class="section-heading">
+            <div>
+              <p class="kicker">未実現機能と対応履歴</p>
+              <h2 id="records-title">記録一覧</h2>
+            </div>
+            <span class="visible-count" id="visible-count">0件</span>
+          </div>
+
+          <div class="record-tools">
+            <input id="keyword-filter" type="search" placeholder="機能・結果・担当で検索">
+            <select id="status-filter" aria-label="状態で絞り込み">
+              <option value="all">すべての状態</option>
+              <option value="planned">検討中</option>
+              <option value="testing">試験中</option>
+              <option value="blocked">未実現・要対応</option>
+              <option value="completed">対応済</option>
+            </select>
+          </div>
+
+          <div class="export-tools">
+            <button class="button" id="export-csv-button" type="button">CSV出力</button>
+            <button class="button" id="export-json-button" type="button">JSON出力</button>
+            <label class="button file-button">
+              JSON取込
+              <input id="import-json-file" type="file" accept="application/json,.json">
+            </label>
+          </div>
+
+          <div class="records-list" id="records-list" aria-live="polite"></div>
+        </section>
+      </div>
+    </main>
+
+    <script src="./admin.js?v=20260815a"></script>
+  </body>
+</html>

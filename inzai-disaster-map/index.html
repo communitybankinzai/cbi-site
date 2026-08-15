@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260814d">
+    <link rel="stylesheet" href="./styles.css?v=20260815a">
   </head>
   <body>
     <div class="app-shell">
@@ -27,7 +27,7 @@
             <input id="incident-date" type="date" value="2026-08-13">
           </label>
           <span class="connection-status" id="api-status">SNS API未接続</span>
-          <button class="tool-button primary" id="sns-collector-button" type="button">SNS登録を試す</button>
+          <button class="tool-button primary" id="sns-collector-button" type="button">SNS投稿を登録</button>
           <button class="tool-button" id="help-button" type="button">使い方</button>
           <button class="tool-button official-button" id="official-links-button" type="button">公式情報</button>
           <button class="tool-button primary" id="add-point-button" type="button">地点追加</button>
@@ -37,6 +37,7 @@
           <button class="tool-button" id="import-button" type="button">CSV取込</button>
           <button class="tool-button" id="export-csv-button" type="button">CSV出力</button>
           <button class="tool-button" id="export-geojson-button" type="button">GeoJSON出力</button>
+          <a class="tool-button admin-button" href="./admin.html">管理記録</a>
           <button class="tool-button" id="print-button" type="button">印刷</button>
         </div>
       </header>
@@ -69,6 +70,7 @@
               <label><input type="checkbox" data-overlay="floodPlan"> 洪水浸水想定 計画規模</label>
               <label><input type="checkbox" data-overlay="inland" checked> 内水浸水想定</label>
               <label><input type="checkbox" data-overlay="landslide"> 土砂災害警戒区域</label>
+              <label class="live-layer-label"><input type="checkbox" data-overlay="rainNowcast"> 雨雲レーダー（気象庁・実況）<span id="rain-layer-status">最新時刻を確認中</span></label>
               <label><input type="checkbox" data-overlay="roadFlood"> 参考: 道路冠水注意箇所（平常時）</label>
               <label><input type="checkbox" data-overlay="records" checked> 被害・確認候補</label>
             </div>
@@ -86,6 +88,11 @@
               <button class="text-button" id="clear-filters-button" type="button">解除</button>
             </div>
             <input class="search-input" id="keyword-filter" type="search" placeholder="場所・根拠・担当で検索">
+            <div class="date-scope-box">
+              <strong id="date-scope-label">対象日の記録だけ表示</strong>
+              <label><input id="show-all-dates" type="checkbox"> 過去記録も表示</label>
+              <p>通常は投稿・発生時刻を基準に対象日だけを地図、一覧、集計へ反映します。</p>
+            </div>
             <div class="filter-grid">
               <label><input type="checkbox" data-status="unconfirmed" checked> 未確認</label>
               <label><input type="checkbox" data-status="corroborated" checked> 複数根拠</label>
@@ -126,11 +133,12 @@
               <div><span class="dot dot-gray"></span>解消済</div>
             </div>
             <div class="legend traffic-legend">
-              <strong>道路通行情報の色</strong>
+              <strong>通行情報ピンの色</strong>
               <div><span class="dot dot-red"></span>通行止め・通行不能</div>
               <div><span class="dot dot-orange"></span>通行注意・規制</div>
               <div><span class="dot dot-green"></span>通行再開</div>
               <div><span class="dot dot-blue"></span>通行実績あり</div>
+              <p><strong>現在は地点ピンのみです。</strong>道路区間を線で着色する機能とJARTICデータの自動反映は未実装です。各情報の出典は地点詳細で確認します。</p>
               <p>通行実績は記録時刻時点の参考です。現在の安全や通行可能を保証しません。</p>
             </div>
           </section>
@@ -140,7 +148,11 @@
             <a href="https://disaportaldata.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank" rel="noreferrer">ハザードマップポータル</a>
             <a href="https://www.ktr.mlit.go.jp/chiba/chiba_index030.html" target="_blank" rel="noreferrer">千葉県内 道路冠水注意箇所</a>
             <a href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">印西市防災ポータル</a>
+            <a href="https://www2.wagmap.jp/inzai/Portal" target="_blank" rel="noreferrer">印西市わが街ガイド（公式MAP）</a>
+            <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">印西市わが街ガイド オープンデータ</a>
             <a href="https://www.jma.go.jp/jma/kishou/know/bosai/riskmap.html" target="_blank" rel="noreferrer">気象庁キキクル</a>
+            <a href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noreferrer">気象庁 雨雲の動き</a>
+            <a href="https://www.jartic.or.jp/" target="_blank" rel="noreferrer">JARTIC 道路交通情報（未接続）</a>
             <a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">参考: TOYOTA 通れた道マップ</a>
           </section>
         </aside>
@@ -462,9 +474,9 @@
         </div>
 
         <div class="capture-guide">
-          <strong>次のどちらかで画像を用意します</strong>
-          <span>通常は自動で画面選択が開きます。Instagramのタブを1回選ぶだけです。</span>
-          <span>画像ファイルとして保存する必要はありません。</span>
+          <strong>SNS投稿タブを選んで画像を取得します</strong>
+          <span>「SNSタブを選んで取得」→「ブラウザー タブ」→投稿を表示したタブ→「共有」の順です。</span>
+          <span>取得後、投稿部分だけをドラッグで囲んでからOCRを実行します。画像ファイルの保存は不要です。</span>
         </div>
 
         <div class="screenshot-tools">
@@ -472,7 +484,7 @@
             スクショ画像
             <input id="screenshot-file" type="file" accept="image/*">
           </label>
-          <button class="tool-button primary" type="button" id="capture-screen-button">画面キャプチャ</button>
+          <button class="tool-button primary" type="button" id="capture-screen-button">SNSタブを選んで取得</button>
           <button class="tool-button" type="button" id="reset-crop-button">範囲リセット</button>
           <button class="tool-button" type="button" id="download-crop-button">切り出しDL</button>
           <button class="tool-button" type="button" id="run-ocr-button">OCR文字抽出</button>
@@ -480,8 +492,8 @@
 
         <p class="ocr-status" id="ocr-status" aria-live="polite">OCR未実行</p>
 
-        <div class="paste-zone" id="paste-zone">
-          この枠をクリックして Ctrl + V で貼り付けできます。画像を読み込んだら、投稿部分をドラッグで囲みます。
+        <div class="paste-zone" id="paste-zone" tabindex="0">
+          画像ファイルをここへドロップ、またはクリックして Ctrl + V で貼り付けできます。読み込んだら投稿部分をドラッグで囲みます。
         </div>
         <div class="canvas-wrap">
           <canvas id="screenshot-canvas" width="720" height="420" aria-label="スクリーンショット切り出し範囲"></canvas>
@@ -552,28 +564,48 @@
         <div class="modal-header">
           <div>
             <p class="step-kicker">ステップ 1 / 4</p>
-            <h2>SNSで被害投稿を探す</h2>
+            <h2>SNS投稿を登録する</h2>
           </div>
           <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
         </div>
 
         <section class="link-register-panel">
           <div>
-            <strong>SNS投稿のURLが分かる場合</strong>
-            <span>場所が分からなくても、リンクだけ先に登録できます。</span>
+            <strong>投稿の共有リンクを貼る</strong>
+            <span>URL、本文、時刻、場所の手掛かりを分かる範囲で候補登録します。</span>
           </div>
-          <label>
-            投稿URL
-            <input id="collector-post-url" type="url" placeholder="https://www.instagram.com/p/...">
-          </label>
-          <button class="tool-button primary workflow-primary" id="register-social-link-button" type="button">場所未特定で登録</button>
+          <div class="link-register-fields">
+            <label>
+              投稿URL
+              <span class="inline-input-action">
+                <input id="collector-post-url" type="url" placeholder="https://www.instagram.com/p/...">
+                <button class="tool-button" id="paste-social-link-button" type="button">貼り付け</button>
+              </span>
+            </label>
+            <div class="form-grid">
+              <label>
+                投稿時刻の表示
+                <input id="collector-post-time" type="text" placeholder="例: 3時間前 / 2026/08/13 08:40">
+              </label>
+              <label>
+                場所の手掛かり
+                <input id="collector-location-note" type="text" placeholder="例: 木下駅南側の高架下">
+              </label>
+            </div>
+            <label>
+              投稿本文・要約
+              <textarea id="collector-post-text" rows="3" placeholder="コピーできる本文、または被害内容の要約"></textarea>
+            </label>
+            <p class="field-status" id="collector-link-status" aria-live="polite"></p>
+          </div>
+          <button class="tool-button primary workflow-primary" id="register-social-link-button" type="button">投稿候補として登録</button>
         </section>
 
         <div class="option-divider"><span>投稿をこれから探す場合</span></div>
 
         <div class="workflow-steps" aria-label="登録の流れ">
-          <span class="is-current"><b>1</b>検索</span>
-          <span><b>2</b>画像保存</span>
+          <span class="is-current"><b>1</b>リンク・検索</span>
+          <span><b>2</b>画像証跡</span>
           <span><b>3</b>場所指定</span>
           <span><b>4</b>確認・保存</span>
         </div>
@@ -597,6 +629,14 @@
           <input id="collector-query" type="search" value="印西市 冠水" required>
         </label>
 
+        <fieldset class="search-mode-fieldset">
+          <legend>検索方法</legend>
+          <label><input type="radio" name="collector-search-mode" value="keywords" checked> 通常語</label>
+          <label><input type="radio" name="collector-search-mode" value="all"> すべて含む（AND相当）</label>
+          <label><input type="radio" name="collector-search-mode" value="phrase"> 完全一致</label>
+        </fieldset>
+        <p class="search-capability-note" id="search-capability-note"></p>
+
         <div class="query-chips" aria-label="検索語候補">
           <button type="button" data-query="#印西市">#印西市</button>
           <button type="button" data-query="#印西市冠水">#印西市冠水</button>
@@ -612,9 +652,9 @@
         <section class="next-step" id="collector-next-step">
           <div>
             <strong>投稿が見つかったら</strong>
-            <span>その投稿を表示したまま戻り、ボタンを押します。画像取得と文字解析は自動です。</span>
+            <span>ボタンを押し、共有画面で投稿を表示したSNSタブを選びます。取得後、投稿部分を囲んでOCRします。</span>
           </div>
-          <button class="tool-button primary" type="button" id="to-screenshot-button">投稿画面を自動取込</button>
+          <button class="tool-button primary" type="button" id="to-screenshot-button">SNSタブを選んで画像取得</button>
         </section>
 
         <details class="advanced-options">
@@ -674,7 +714,7 @@
         <div class="modal-actions">
           <span></span><span></span>
           <button class="tool-button" type="button" data-close-dialog>閉じる</button>
-          <button class="tool-button primary" id="help-start-button" type="button">SNS登録を試す</button>
+          <button class="tool-button primary" id="help-start-button" type="button">SNS投稿を登録</button>
         </div>
       </form>
     </dialog>
@@ -707,6 +747,18 @@
             <small>印西市が掲載する災害関連のお知らせを確認</small>
             <span class="external-label">公式サイトを開く</span>
           </a>
+          <a class="official-link-card is-local" href="https://www2.wagmap.jp/inzai/Portal" target="_blank" rel="noreferrer">
+            <span class="authority-label">印西市</span>
+            <strong>印西市わが街ガイド</strong>
+            <small>洪水・土砂災害、内水など印西市の公式ハザードMAPを確認</small>
+            <span class="external-label">公式MAPを開く</span>
+          </a>
+          <a class="official-link-card is-local" href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">
+            <span class="authority-label">印西市</span>
+            <strong>わが街ガイド オープンデータ</strong>
+            <small>土砂災害区域、避難所、災害用井戸などの公開ファイルと掲載日を確認</small>
+            <span class="external-label">公開データを開く</span>
+          </a>
           <a class="official-link-card" href="https://www.bousai.pref.chiba.lg.jp/" target="_blank" rel="noreferrer">
             <span class="authority-label">千葉県</span>
             <strong>千葉県防災ポータル</strong>
@@ -725,6 +777,12 @@
             <small>河川水位、洪水予報、河川カメラなどを確認</small>
             <span class="external-label">公式サイトを開く</span>
           </a>
+          <a class="official-link-card" href="https://www.jartic.or.jp/" target="_blank" rel="noreferrer">
+            <span class="authority-label">JARTIC</span>
+            <strong>日本道路交通情報センター</strong>
+            <small>通行止め、規制、渋滞などを公式サイトで確認。現在このMAPへのデータ自動反映は未接続</small>
+            <span class="external-label">道路交通情報を開く</span>
+          </a>
         </div>
 
         <div class="emergency-note">
@@ -741,7 +799,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
-    <script src="./config.js?v=20260814d"></script>
-    <script src="./app.js?v=20260814d"></script>
+    <script src="./config.js?v=20260815a"></script>
+    <script src="./app.js?v=20260815a"></script>
   </body>
 </html>
