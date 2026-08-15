@@ -7,6 +7,62 @@ const GUIDE_SEEN_KEY = "inzai-disaster-guide-seen-v1";
 const SOURCE_CHECKED_AT = "2026-08-15";
 const APP_CONFIG = window.CBI_DISASTER_CONFIG || {};
 const PUBLIC_VIEW = new URLSearchParams(window.location.search).get("view") === "public";
+const INZAI_CITY_CODE = "1223100";
+
+const weatherWarningDefinitions = {
+  "33": { name: "レベル5大雨特別警報", element: "rain", level: 50, alertLevel: 5 },
+  "43": { name: "レベル4大雨危険警報", element: "rain", level: 40, alertLevel: 4 },
+  "03": { name: "レベル3大雨警報", element: "rain", level: 30, alertLevel: 3 },
+  "10": { name: "レベル2大雨注意報", element: "rain", level: 20, alertLevel: 2 },
+  "39": { name: "レベル5土砂災害特別警報", element: "landslide", level: 50, alertLevel: 5 },
+  "49": { name: "レベル4土砂災害危険警報", element: "landslide", level: 40, alertLevel: 4 },
+  "09": { name: "レベル3土砂災害警報", element: "landslide", level: 30, alertLevel: 3 },
+  "29": { name: "レベル2土砂災害注意報", element: "landslide", level: 20, alertLevel: 2 },
+  "38": { name: "レベル5高潮特別警報", element: "tide", level: 50, alertLevel: 5 },
+  "48": { name: "レベル4高潮危険警報", element: "tide", level: 40, alertLevel: 4 },
+  "08": { name: "レベル3高潮警報", element: "tide", level: 30, alertLevel: 3 },
+  "19": { name: "レベル2高潮注意報", element: "tide", level: 20, alertLevel: 2 },
+  "35": { name: "暴風特別警報", element: "wind", level: 50 },
+  "05": { name: "暴風警報", element: "wind", level: 30 },
+  "15": { name: "強風注意報", element: "wind", level: 20 },
+  "32": { name: "暴風雪特別警報", element: "windSnow", level: 50 },
+  "02": { name: "暴風雪警報", element: "windSnow", level: 30 },
+  "13": { name: "風雪注意報", element: "windSnow", level: 20 },
+  "36": { name: "大雪特別警報", element: "snow", level: 50 },
+  "06": { name: "大雪警報", element: "snow", level: 30 },
+  "12": { name: "大雪注意報", element: "snow", level: 20 },
+  "37": { name: "波浪特別警報", element: "wave", level: 50 },
+  "07": { name: "波浪警報", element: "wave", level: 30 },
+  "16": { name: "波浪注意報", element: "wave", level: 20 },
+  "14": { name: "雷注意報", element: "thunder", level: 20 },
+  "17": { name: "融雪注意報", element: "snowMelt", level: 20 },
+  "20": { name: "濃霧注意報", element: "fog", level: 20 },
+  "21": { name: "乾燥注意報", element: "dry", level: 20 },
+  "22": { name: "なだれ注意報", element: "avalanche", level: 20 },
+  "23": { name: "低温注意報", element: "cold", level: 20 },
+  "24": { name: "霜注意報", element: "frost", level: 20 },
+  "25": { name: "着氷注意報", element: "ice", level: 20 },
+  "26": { name: "着雪注意報", element: "snowAccretion", level: 20 }
+};
+
+const weatherWarningActions = {
+  rain: "低い土地の浸水や中小河川の増水に警戒し、キキクルと印西市の避難情報を確認してください。",
+  landslide: "がけや急斜面から離れ、土砂キキクルと印西市の避難情報を確認してください。",
+  tide: "海岸・河口付近から離れ、高潮と河川の情報を確認してください。",
+  wind: "飛来物、倒木、停電に注意し、屋外物を固定して不要不急の外出を控えてください。",
+  windSnow: "暴風雪による視界不良と交通障害に警戒し、不要不急の外出を控えてください。",
+  snow: "積雪や路面凍結、交通障害に注意し、移動予定と備蓄を確認してください。",
+  wave: "海岸や河口付近には近づかず、最新の波浪情報を確認してください。",
+  thunder: "屋外活動を控えて頑丈な建物内へ移り、落雷、突風、ひょう、急な強い雨に注意してください。",
+  snowMelt: "融雪による浸水や土砂災害に注意し、斜面や増水した水路に近づかないでください。",
+  fog: "視界不良に注意し、運転時は速度を落として十分な車間距離を確保してください。",
+  dry: "火の取り扱いと延焼に注意し、屋外での火気使用を控えてください。",
+  avalanche: "積雪のある斜面や谷筋に近づかず、最新の道路・気象情報を確認してください。",
+  cold: "水道管の凍結、農作物、体調管理に注意してください。",
+  frost: "農作物の霜害に注意し、必要な保護対策を行ってください。",
+  ice: "電線や設備への着氷と交通障害に注意してください。",
+  snowAccretion: "電線や樹木への着雪、停電、交通障害に注意してください。"
+};
 
 const statusLabels = {
   unconfirmed: "未確認",
@@ -307,6 +363,7 @@ boundaryLayer.addTo(map);
 
 initBoundary();
 refreshRainNowcast(false);
+refreshWeatherWarnings(false);
 refreshEarthquakeSummary(false);
 renderRoadFloodSites();
 initIntegration();
@@ -358,6 +415,7 @@ function bindEvents() {
     document.getElementById(id).addEventListener("input", updateLocationWebSearchLink);
   });
   document.getElementById("refresh-earthquake-button").addEventListener("click", () => refreshEarthquakeSummary(true));
+  document.getElementById("refresh-weather-warning-button").addEventListener("click", () => refreshWeatherWarnings(true));
   document.getElementById("paste-social-link-button").addEventListener("click", pasteSocialLink);
   document.getElementById("collector-post-url").addEventListener("input", syncCollectorPlatformFromUrl);
   document.getElementById("collector-platform").addEventListener("change", updateCollectorPlatformHelp);
@@ -1642,6 +1700,133 @@ async function refreshEarthquakeSummary(manual) {
   }
 }
 
+async function refreshWeatherWarnings(manual) {
+  const node = document.getElementById("weather-warning-content");
+  const panel = document.getElementById("weather-warning-panel");
+  const button = document.getElementById("refresh-weather-warning-button");
+  const endpoint = String(APP_CONFIG.weatherWarningEndpoint || "https://www.jma.go.jp/bosai/warning/data/r8/120000.json");
+  if (manual) node.innerHTML = '<div class="weather-warning-loading">最新情報を更新中です。</div>';
+  node.setAttribute("aria-busy", "true");
+  button.disabled = true;
+  try {
+    const response = await fetch(`${endpoint}${endpoint.includes("?") ? "&" : "?"}_=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const reports = await response.json();
+    const summary = parseInzaiWeatherWarnings(reports);
+    renderWeatherWarnings(node, panel, summary);
+  } catch (error) {
+    setWeatherWarningPanelState(panel, "error");
+    node.innerHTML = `
+      <div class="weather-warning-error">
+        <strong>現在の発表状況を取得できません</strong>
+        <span>「発表なし」ではありません。通信状況を確認し、気象庁の公式ページで確認してください。</span>
+        ${weatherWarningOfficialLink("気象庁で警報・注意報を確認")}
+      </div>
+    `;
+    if (manual) appendSystemWorkLog("印西市の警報・注意報", "blocked", `気象庁の警報・注意報を取得できませんでした: ${error?.message || "不明なエラー"}`, "通信状態と気象庁の現行配信URLを確認する");
+  } finally {
+    node.setAttribute("aria-busy", "false");
+    button.disabled = false;
+  }
+}
+
+function parseInzaiWeatherWarnings(payload) {
+  if (!Array.isArray(payload)) throw new Error("現行の警報データ形式ではありません");
+  const latestByCode = new Map();
+  let latestLocalReport = null;
+  let foundCity = false;
+
+  payload.forEach(report => {
+    const city = (report?.warning?.class20Items || []).find(item => String(item.areaCode) === INZAI_CITY_CODE);
+    if (!city) return;
+    foundCity = true;
+    const reportTime = new Date(report.reportDatetime || 0);
+    if (!Number.isNaN(reportTime.getTime()) && (!latestLocalReport || reportTime > new Date(latestLocalReport.reportDatetime))) {
+      latestLocalReport = report;
+    }
+    (city.kinds || []).forEach(kind => {
+      const code = String(kind.code || "").padStart(2, "0");
+      if (!kind.code) return;
+      const existing = latestByCode.get(code);
+      if (!existing || reportTime > new Date(existing.reportDatetime || 0)) {
+        const definition = weatherWarningDefinitions[code] || {
+          name: `気象警報・注意報（コード${code}）`,
+          element: "other",
+          level: 20
+        };
+        latestByCode.set(code, { ...definition, code, status: String(kind.status || "発表"), reportDatetime: report.reportDatetime, headlineText: report.headlineText || "", publishingOffice: report.publishingOffice || "気象庁" });
+      }
+    });
+  });
+
+  if (!foundCity) throw new Error("印西市の発表区域が見つかりません");
+  const active = Array.from(latestByCode.values())
+    .filter(item => !/解除|発表警報・注意報はなし|発表なし/.test(item.status))
+    .sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, "ja"));
+  return {
+    active,
+    reportDatetime: latestLocalReport?.reportDatetime || "",
+    publishingOffice: latestLocalReport?.publishingOffice || "気象庁"
+  };
+}
+
+function renderWeatherWarnings(node, panel, summary) {
+  const checkedAt = formatJmaDateTime(new Date());
+  const reportAt = summary.reportDatetime ? formatJmaDateTime(summary.reportDatetime) : "-";
+  if (!summary.active.length) {
+    setWeatherWarningPanelState(panel, "clear");
+    node.innerHTML = `
+      <div class="weather-warning-clear">
+        <span class="weather-warning-state-mark" aria-hidden="true"></span>
+        <div>
+          <strong>発表中の警報・注意報はありません</strong>
+          <span>印西市を対象にした気象庁情報を確認しました。</span>
+        </div>
+      </div>
+      <div class="weather-warning-meta">情報元 ${escapeHtml(summary.publishingOffice)} / 最新発表 ${escapeHtml(reportAt)} / 取得確認 ${escapeHtml(checkedAt)}</div>
+      <div class="weather-warning-note">河川ごとの氾濫情報と印西市の避難情報は別に発表されます。</div>
+      ${weatherWarningOfficialLink("気象庁の印西市ページを確認")}
+    `;
+    return;
+  }
+
+  const highestLevel = Math.max(...summary.active.map(item => item.level));
+  const state = highestLevel >= 50 ? "emergency" : highestLevel >= 40 ? "danger" : highestLevel >= 30 ? "warning" : "advisory";
+  const stateLabel = highestLevel >= 50 ? "特別警報" : highestLevel >= 40 ? "危険警報" : highestLevel >= 30 ? "警報" : "注意報";
+  const alertLevel = Math.max(0, ...summary.active.filter(item => item.level === highestLevel).map(item => Number(item.alertLevel || 0)));
+  const headline = summary.active.map(item => item.headlineText).find(Boolean) || "";
+  const actions = Array.from(new Set(summary.active.map(item => weatherWarningActions[item.element]).filter(Boolean))).slice(0, 3);
+  setWeatherWarningPanelState(panel, state);
+  node.innerHTML = `
+    <div class="weather-warning-alert-head">
+      <span class="weather-warning-level">${escapeHtml(alertLevel ? `警戒レベル${alertLevel}相当` : stateLabel)}</span>
+      <strong>印西市に${escapeHtml(stateLabel)}が発表中</strong>
+    </div>
+    <div class="weather-warning-items">
+      ${summary.active.map(item => `
+        <div class="weather-warning-item">
+          <strong>${escapeHtml(item.name)}</strong>
+          <span>${escapeHtml(item.status)}</span>
+        </div>
+      `).join("")}
+    </div>
+    ${headline ? `<p class="weather-warning-headline">${escapeHtml(headline)}</p>` : ""}
+    ${actions.length ? `<div class="weather-warning-guidance"><strong>行動の目安</strong>${actions.map(action => `<span>${escapeHtml(action)}</span>`).join("")}</div>` : ""}
+    <div class="weather-warning-meta">情報元 ${escapeHtml(summary.publishingOffice)} / 最新発表 ${escapeHtml(reportAt)} / 取得確認 ${escapeHtml(checkedAt)}</div>
+    <div class="weather-warning-note">${alertLevel ? "警戒レベル相当情報は避難指示そのものではありません。" : "この表示は印西市の避難情報ではありません。"}印西市の避難情報も確認してください。</div>
+    ${weatherWarningOfficialLink("気象庁で詳細・時系列を確認")}
+  `;
+}
+
+function setWeatherWarningPanelState(panel, state) {
+  panel.classList.remove("is-clear", "is-advisory", "is-warning", "is-danger", "is-emergency", "is-error");
+  panel.classList.add(`is-${state}`);
+}
+
+function weatherWarningOfficialLink(label) {
+  return `<a class="weather-warning-official-link" href="https://www.jma.go.jp/bosai/warning/#area_type=class20s&amp;area_code=1223100" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>`;
+}
+
 function findCityIntensity(report, cityCode) {
   for (const prefecture of report.int || []) {
     const city = (prefecture.city || []).find(item => String(item.code) === cityCode);
@@ -1687,6 +1872,7 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 setInterval(() => refreshEarthquakeSummary(false), 10 * 60 * 1000);
+setInterval(() => refreshWeatherWarnings(false), 5 * 60 * 1000);
 
 function initBoundary() {
   fetch("https://geoshape.ex.nii.ac.jp/jma/resource/AreaInformationCity_risk/20241025/1223100.geojson")

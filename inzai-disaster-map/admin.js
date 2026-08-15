@@ -1,5 +1,5 @@
 const WORK_LOG_KEY = "inzai-disaster-work-log-v1";
-const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v3";
+const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v4";
 const statusLabels = {
   planned: "検討中",
   testing: "試験中",
@@ -182,6 +182,17 @@ const initialRecords = [
     summary: "被害ピンのポップアップに登録済み証跡写真、SNS媒体、元投稿リンク、質問文をコピーして投稿を開くボタンを追加。送信前にSNS画面で内容を確認する。",
     nextAction: "実在投稿で写真の公開区分、リンク切れ、スマートフォンのコメント入力、質問後の回答記録を確認する。SNS APIによるコメント自動送信は権限・誤送信リスクを確認するまで接続しない。",
     referenceUrl: "",
+    origin: "seed"
+  },
+  {
+    id: "seed-inzai-weather-warning",
+    feature: "印西市の警報・注意報表示",
+    status: "testing",
+    owner: "",
+    loggedAt: "2026-08-15T17:30:00+09:00",
+    summary: "気象庁の2026年新体系の警報・注意報データから印西市だけを抽出し、右側最上段に発表中の種別、警戒レベル相当、行動の目安、発表・取得時刻を表示する。発表なしと取得失敗は明確に区別する。",
+    nextAction: "実際の注意報・警報発表時に表示内容、更新間隔、気象庁ページとの差異を確認する。河川ごとの氾濫情報と市の避難情報は別情報として公式ページへの導線を維持する。",
+    referenceUrl: "https://www.jma.go.jp/bosai/warning/#area_type=class20s&area_code=1223100",
     origin: "seed"
   }
 ];
