@@ -566,7 +566,8 @@ input[type="checkbox"] {
   font-size: 12px;
 }
 
-.location-pick-banner {
+.location-pick-banner,
+.road-draw-banner {
   position: absolute;
   top: 56px;
   left: 50%;
@@ -584,22 +585,46 @@ input[type="checkbox"] {
   box-shadow: var(--shadow);
 }
 
-.location-pick-banner[hidden] {
+.location-pick-banner[hidden],
+.road-draw-banner[hidden] {
   display: none;
 }
 
 .location-pick-banner strong,
-.location-pick-banner span {
+.location-pick-banner span,
+.road-draw-banner strong,
+.road-draw-banner span {
   display: block;
 }
 
-.location-pick-banner span {
+.location-pick-banner span,
+.road-draw-banner span {
   margin-top: 2px;
   color: var(--muted);
   font-size: 12px;
 }
 
-.map-pane.is-location-pick #map {
+.road-draw-banner {
+  top: 14px;
+  width: min(680px, calc(100% - 28px));
+  align-items: stretch;
+  flex-direction: column;
+  border-color: var(--red);
+}
+
+.road-draw-actions,
+.road-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.road-draw-actions {
+  justify-content: flex-end;
+}
+
+.map-pane.is-location-pick #map,
+.map-pane.is-road-drawing #map {
   cursor: crosshair;
 }
 
@@ -728,6 +753,21 @@ input[type="checkbox"] {
   margin: 6px;
   border-radius: 50%;
   background: #fff;
+}
+
+.closure-cross {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.34);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .risk-point {
@@ -867,6 +907,58 @@ input[type="checkbox"] {
   color: var(--muted);
   font-size: 13px;
   padding: 0 4px;
+}
+
+.road-section-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.road-color-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.road-color-preview > span {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 7px;
+  border: 1px solid rgba(22, 33, 42, 0.18);
+  border-radius: 4px;
+  background: var(--gray);
+}
+
+.road-section-control strong,
+.road-section-control span {
+  display: block;
+}
+
+.road-section-control span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.traffic-source-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  margin-top: 9px;
+  font-size: 12px;
+}
+
+.traffic-source-links span {
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .modal-actions {
@@ -1865,9 +1957,17 @@ body.embed-mode .cbi-home-link {
     grid-template-columns: 1fr;
   }
 
-  .location-pick-banner {
+  .location-pick-banner,
+  .road-draw-banner,
+  .road-section-control {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .road-draw-actions,
+  .road-section-actions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 }
 

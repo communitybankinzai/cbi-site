@@ -1,5 +1,5 @@
 const WORK_LOG_KEY = "inzai-disaster-work-log-v1";
-const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v5";
+const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v6";
 const statusLabels = {
   planned: "検討中",
   testing: "試験中",
@@ -204,6 +204,17 @@ const initialRecords = [
     summary: "J-SHISが公式提供するWMSから、2024年版の今後30年間に震度6弱以上となる確率と、V4表層地盤の揺れの増幅率を地図へ重ねるチェックボックスを追加。公式凡例、出典、読込状態、共通透過度調整を表示する。",
     nextAction: "J-SHIS側の版更新とWMS稼働状況を継続確認する。将来予測・地盤特性であり、現在の震度や実被害ではないことを運用時にも周知する。",
     referenceUrl: "https://www.j-shis.bosai.go.jp/wms-list",
+    origin: "seed"
+  },
+  {
+    id: "seed-road-section-workflow",
+    feature: "通行止め・通行不能の道路区間表示",
+    status: "testing",
+    owner: "",
+    loggedAt: "2026-08-15T18:35:00+09:00",
+    summary: "始点と終点の交差点を地図上で選び、通行止め・不能、規制、再開、通行実績の状態色で道路区間を表示する機能を追加。区間未設定の通行止め・不能は赤い×で表示し、線または×から情報源、根拠URL、最終確認時刻を参照できる。",
+    nextAction: "実災害時の道路管理担当者による入力手順と更新間隔を確認する。JARTICリアルタイム情報の自動連携は契約・提供条件を確認するまで未接続とし、公式画面の確認記録で運用試験する。",
+    referenceUrl: "https://www.jartic.or.jp/",
     origin: "seed"
   }
 ];

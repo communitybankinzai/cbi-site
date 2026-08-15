@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260815e">
+    <link rel="stylesheet" href="./styles.css?v=20260815g">
   </head>
   <body>
     <div class="app-shell">
@@ -32,7 +32,7 @@
           <button class="tool-button" id="help-button" type="button">使い方</button>
           <button class="tool-button official-button" id="official-links-button" type="button">公式情報</button>
           <button class="tool-button primary" id="add-point-button" type="button">地点追加</button>
-          <button class="tool-button road-button" id="add-road-status-button" type="button">通行情報追加</button>
+          <button class="tool-button road-button" id="add-road-status-button" type="button">通行止め登録</button>
           <button class="tool-button" id="map-click-button" type="button" aria-pressed="false">地図クリック追加</button>
           <button class="tool-button" id="screenshot-button" type="button">スクショ証跡</button>
           <button class="tool-button" id="import-button" type="button">CSV取込</button>
@@ -77,6 +77,7 @@
               <label class="live-layer-label"><input type="checkbox" data-overlay="jshisGround"> 表層地盤の揺れの増幅率<span id="jshis-ground-status">V4・250mメッシュ</span></label>
               <div class="jshis-layer-note">
                 <span>実際の被害や現在の震度ではありません。地震発生時は気象庁の震度情報と被害ピンを優先してください。</span>
+                <span>印西市公式の「揺れやすさマップ」「液状化マップ」は未反映です。J-SHISは別の予測データです。</span>
                 <figure class="jshis-legend" data-jshis-legend="jshisPshm" hidden>
                   <figcaption>震度6弱以上となる確率</figcaption>
                   <img src="https://www.j-shis.bosai.go.jp/map/wms/pshm/Y2024?version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=P-Y2024-MAP-AVR-TTL_MTTL-T30_I55_PS&amp;format=image/png&amp;STYLE=default" alt="J-SHIS 震度6弱以上となる確率の凡例" loading="lazy">
@@ -148,12 +149,12 @@
               <div><span class="dot dot-gray"></span>解消済</div>
             </div>
             <div class="legend traffic-legend">
-              <strong>通行情報ピンの色</strong>
+              <strong>道路区間・ピンの色</strong>
               <div><span class="dot dot-red"></span>通行止め・通行不能</div>
               <div><span class="dot dot-orange"></span>通行注意・規制</div>
               <div><span class="dot dot-green"></span>通行再開</div>
               <div><span class="dot dot-blue"></span>通行実績あり</div>
-              <p><strong>現在は地点ピンのみです。</strong>道路区間を線で着色する機能とJARTICデータの自動反映は未実装です。各情報の出典は地点詳細で確認します。</p>
+              <p>道路線または地点をクリックすると、情報源と最終確認時刻を確認できます。JARTICのリアルタイム自動反映は未接続です。</p>
               <p>通行実績は記録時刻時点の参考です。現在の安全や通行可能を保証しません。</p>
             </div>
           </section>
@@ -169,6 +170,8 @@
             <a href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noreferrer">気象庁 雨雲の動き</a>
             <a href="https://www.j-shis.bosai.go.jp/" target="_blank" rel="noreferrer">J-SHIS 地震ハザードステーション</a>
             <a href="https://www.jartic.or.jp/" target="_blank" rel="noreferrer">JARTIC 道路交通情報（未接続）</a>
+            <a href="https://www.jartic.or.jp/service/opendata/" target="_blank" rel="noreferrer">JARTIC 交通規制オープンデータ（月次）</a>
+            <a href="https://www.pref.chiba.lg.jp/cate/baa/lifeline/kendou/index.html" target="_blank" rel="noreferrer">千葉県 県管理道路通行規制</a>
             <a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">参考: TOYOTA 通れた道マップ</a>
           </section>
         </aside>
@@ -181,6 +184,17 @@
               <span>おおよその場所で構いません。クリック後に詳細を確認できます。</span>
             </div>
             <button class="tool-button" id="cancel-location-pick-button" type="button">あとで設定</button>
+          </div>
+          <div class="road-draw-banner" id="road-draw-banner" hidden>
+            <div>
+              <strong>始点の交差点、終点の交差点の順にクリック</strong>
+              <span id="road-draw-status">まず通行止め区間の始点となる交差点を選んでください。</span>
+            </div>
+            <div class="road-draw-actions">
+              <button class="tool-button" id="road-draw-undo-button" type="button">1点戻す</button>
+              <button class="tool-button" id="road-draw-cancel-button" type="button">中止</button>
+              <button class="tool-button primary" id="road-draw-finish-button" type="button" disabled>この交点間で確定</button>
+            </div>
           </div>
           <div class="map-status" id="map-status">地図を読み込み中です</div>
           <div class="map-disclaimer">
@@ -216,7 +230,7 @@
           </section>
 
           <section class="panel-section detail-section">
-            <h2>地点詳細</h2>
+            <h2>地点・道路区間詳細</h2>
             <div id="detail-panel" class="detail-empty">地図または一覧から地点を選択してください。</div>
           </section>
 
@@ -358,6 +372,36 @@
               最終確認時刻
               <input id="record-passability-checked-at" type="datetime-local">
             </label>
+            <label>
+              規制方向
+              <select id="record-road-direction">
+                <option value="unknown">方向不明</option>
+                <option value="both">両方向</option>
+                <option value="up">上り</option>
+                <option value="down">下り</option>
+              </select>
+            </label>
+          </div>
+          <div class="road-color-preview" id="record-road-color-preview">
+            <span aria-hidden="true"></span>
+            <strong>通行状態を選ぶと、道路線と地点記号の色が変わります。</strong>
+          </div>
+          <div class="road-section-control">
+            <div>
+              <strong>地図上の道路区間</strong>
+              <span id="record-road-geometry-summary">区間未設定（地点ピンとして登録）</span>
+            </div>
+            <div class="road-section-actions">
+              <button class="tool-button primary" id="record-road-draw-button" type="button">交点間を地図で指定</button>
+              <button class="tool-button" id="record-road-clear-button" type="button">区間を消去</button>
+            </div>
+          </div>
+          <input id="record-road-geometry" type="hidden">
+          <div class="traffic-source-links" aria-label="道路情報の確認先">
+            <span>確認先</span>
+            <a href="https://www.jartic.or.jp/" target="_blank" rel="noreferrer">JARTIC</a>
+            <a href="https://www.pref.chiba.lg.jp/cate/baa/lifeline/kendou/index.html" target="_blank" rel="noreferrer">千葉県 通行規制</a>
+            <a href="https://www.bousai.pref.chiba.lg.jp/" target="_blank" rel="noreferrer">千葉県防災</a>
           </div>
           <p class="field-note">「通れた」は過去の通行実績として記録します。現在通れることの保証には使用しません。</p>
         </fieldset>
@@ -935,7 +979,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
-    <script src="./config.js?v=20260815e"></script>
-    <script src="./app.js?v=20260815e"></script>
+    <script src="./config.js?v=20260815g"></script>
+    <script src="./app.js?v=20260815g"></script>
   </body>
 </html>

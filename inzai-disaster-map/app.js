@@ -104,6 +104,13 @@ const passabilityModeLabels = {
   pedestrian: "歩行者"
 };
 
+const roadDirectionLabels = {
+  unknown: "方向不明",
+  both: "両方向",
+  up: "上り",
+  down: "下り"
+};
+
 const sourceLabels = {
   official: "公式",
   staff: "職員確認",
@@ -207,6 +214,8 @@ const demoRecords = [
     passability: "impassable",
     passabilityMode: "all",
     passabilityCheckedAt: "2026-08-13T08:40",
+    roadDirection: "both",
+    roadGeometry: [[35.83705, 140.1477], [35.8374, 140.1488]],
     photoStatus: "has-photo",
     photoUrl: "SNS画像URLを庁内台帳へ転記",
     photoPrivacy: "internal",
@@ -258,6 +267,9 @@ let records = loadRecords();
 let searchLog = loadSearchLog();
 let selectedId = null;
 let clickAddMode = false;
+let roadDrawingMode = false;
+let roadDrawingPoints = [];
+let roadDrawingOriginal = [];
 let locationPickRecordId = null;
 let locationContactRecordId = null;
 let apiResultItems = [];
@@ -377,6 +389,7 @@ const landslideGroup = L.layerGroup([
 
 const recordLayer = L.layerGroup();
 const roadFloodLayer = L.layerGroup();
+const roadDrawingLayer = L.layerGroup();
 const boundaryLayer = L.geoJSON(null, {
   style: {
     color: "#2365a8",
@@ -391,6 +404,7 @@ baseLayers.pale.addTo(map);
 hazardLayers.floodMax.addTo(map);
 hazardLayers.inland.addTo(map);
 recordLayer.addTo(map);
+roadDrawingLayer.addTo(map);
 boundaryLayer.addTo(map);
 
 initBoundary();
@@ -460,6 +474,12 @@ function bindEvents() {
   document.getElementById("ask-dm-button").addEventListener("click", () => beginLocationContact("dm"));
   document.getElementById("add-point-button").addEventListener("click", () => openRecordDialog());
   document.getElementById("add-road-status-button").addEventListener("click", openRoadStatusDialog);
+  document.getElementById("record-road-draw-button").addEventListener("click", startRoadSectionSelection);
+  document.getElementById("record-road-clear-button").addEventListener("click", clearRoadSection);
+  document.getElementById("record-passability").addEventListener("change", updateRoadColorPreview);
+  document.getElementById("road-draw-undo-button").addEventListener("click", undoRoadSectionPoint);
+  document.getElementById("road-draw-cancel-button").addEventListener("click", cancelRoadSectionSelection);
+  document.getElementById("road-draw-finish-button").addEventListener("click", finishRoadSectionSelection);
   document.getElementById("map-click-button").addEventListener("click", toggleClickAddMode);
   document.getElementById("screenshot-button").addEventListener("click", openScreenshotDialog);
   document.getElementById("use-map-center-button").addEventListener("click", useMapCenter);
@@ -506,6 +526,10 @@ function bindEvents() {
   });
 
   map.on("click", event => {
+    if (roadDrawingMode) {
+      addRoadSectionPoint(event.latlng);
+      return;
+    }
     if (locationPickRecordId) {
       completeLocationPick(event.latlng);
       return;
@@ -1990,28 +2014,23 @@ function renderDateScope() {
 function renderRecords() {
   recordLayer.clearLayers();
   getFilteredRecords().forEach(record => {
-    const displayCoordinates = getDisplayCoordinates(record);
+    const roadGeometry = getDisplayRoadGeometry(record);
+    const displayCoordinates = getDisplayCoordinates(record) || roadGeometryCenter(roadGeometry);
     if (!displayCoordinates || getLocationStatus(record) !== "pinned") return;
     const alignment = deriveAlignment(record);
-    const marker = L.marker([displayCoordinates.lat, displayCoordinates.lng], {
-      icon: L.divIcon({
-        className: "",
-        html: `<div class="marker-pin" style="background:${markerColor(record, alignment)}"><span></span></div>`,
-        iconSize: [28, 28],
-        iconAnchor: [14, 28]
-      })
-    });
-    marker.on("click", () => selectRecord(record.id, false, { preserveMap: true }));
     const passability = getPassability(record);
     const platform = getRecordPlatform(record);
+    const hasSourceUrl = isHttpUrl(record.sourceUrl);
     const hasSnsPost = record.sourceType === "sns" && isHttpUrl(record.sourceUrl);
     const popupPhoto = getPopupPhoto(record);
-    marker.bindPopup(`
+    const popupContent = `
       <div class="popup-title">${escapeHtml(record.title)}</div>
       ${popupPhoto ? `<div class="popup-photo-wrap ${popupPhoto.blurred ? "is-blurred" : ""}"><img src="${escapeAttribute(popupPhoto.src)}" alt="登録されたSNS投稿の証跡写真" loading="lazy" referrerpolicy="no-referrer"></div>` : ""}
       <div>${escapeHtml(categoryLabels[record.category] || record.category)} / ${escapeHtml(statusLabels[record.status] || record.status)}</div>
+      <div class="detail-meta">情報源: ${escapeHtml(sourceLabels[record.sourceType] || record.sourceType)}</div>
       ${platform ? `<div class="detail-meta">情報元: ${escapeHtml(platformLabels[platform] || platform)}</div>` : ""}
       ${passability !== "none" ? `<div class="detail-meta">${escapeHtml(passabilityLabels[passability])} ・ ${escapeHtml(formatDateTime(record.passabilityCheckedAt || record.observedAt))}</div>` : ""}
+      ${roadGeometry ? `<div class="detail-meta">交点間 ${escapeHtml(formatRoadDistance(roadGeometry))} ・ ${escapeHtml(roadDirectionLabels[record.roadDirection] || roadDirectionLabels.unknown)}</div>` : ""}
       <div class="detail-meta">${escapeHtml(alignmentLabels[alignment])} ・ ${escapeHtml(photoLabels[record.photoStatus] || "")}</div>
       ${hasSnsPost ? `
         <div class="popup-source-actions">
@@ -2019,8 +2038,48 @@ function renderRecords() {
           ${PUBLIC_VIEW ? "" : `<button class="popup-question-button" type="button" data-popup-question-record="${escapeAttribute(record.id)}">質問文をコピーして投稿を開く</button>`}
         </div>
         ${PUBLIC_VIEW ? "" : '<div class="popup-contact-note">コメント送信はSNS画面で内容を確認してから行います。</div>'}
-      ` : '<div class="popup-contact-note">元投稿URLが登録されていません。</div>'}
-    `);
+      ` : hasSourceUrl
+        ? `<div class="popup-source-actions"><a class="popup-source-link" href="${escapeAttribute(record.sourceUrl)}" target="_blank" rel="noopener noreferrer">根拠情報を開く</a></div>`
+        : '<div class="popup-contact-note">根拠URLが登録されていません。</div>'}
+    `;
+
+    if (roadGeometry) {
+      const color = markerColor(record, alignment);
+      const casing = L.polyline(roadGeometry, {
+        color: "#ffffff",
+        weight: 11,
+        opacity: 0.92,
+        interactive: false
+      });
+      const line = L.polyline(roadGeometry, {
+        color,
+        weight: 7,
+        opacity: 0.96,
+        lineCap: "round",
+        lineJoin: "round",
+        dashArray: passability === "passed" ? "10 8" : null
+      });
+      line.on("click", () => selectRecord(record.id, false, { preserveMap: true }));
+      line.bindPopup(popupContent);
+      line.on("popupopen", () => bindMarkerPopupActions(line, record));
+      recordLayer.addLayer(casing);
+      recordLayer.addLayer(line);
+      return;
+    }
+
+    const isPointClosure = passability === "closed" || passability === "impassable";
+    const marker = L.marker([displayCoordinates.lat, displayCoordinates.lng], {
+      icon: L.divIcon({
+        className: "",
+        html: isPointClosure
+          ? '<div class="closure-cross" aria-label="通行止め地点">×</div>'
+          : `<div class="marker-pin" style="background:${markerColor(record, alignment)}"><span></span></div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, isPointClosure ? 14 : 28]
+      })
+    });
+    marker.on("click", () => selectRecord(record.id, false, { preserveMap: true }));
+    marker.bindPopup(popupContent);
     marker.on("popupopen", () => bindMarkerPopupActions(marker, record));
     recordLayer.addLayer(marker);
   });
@@ -2069,6 +2128,7 @@ function renderList() {
     .map(record => {
       const alignment = deriveAlignment(record);
       const passability = getPassability(record);
+      const roadGeometry = getDisplayRoadGeometry(record);
       const platform = getRecordPlatform(record);
       const opensSnsPost = record.sourceType === "sns" && isHttpUrl(record.sourceUrl);
       const cardTag = opensSnsPost ? "a" : "article";
@@ -2083,9 +2143,10 @@ function renderList() {
             <span class="badge ${alignmentColor(alignment)}">${escapeHtml(alignmentLabels[alignment])}</span>
             ${platform ? `<span class="badge blue">${escapeHtml(platformLabels[platform] || platform)}</span>` : ""}
             ${passability !== "none" ? `<span class="badge ${passabilityBadgeColor(passability)}">${escapeHtml(passabilityLabels[passability])}</span>` : ""}
+            ${roadGeometry ? `<span class="badge blue">交点間 ${escapeHtml(formatRoadDistance(roadGeometry))}</span>` : ""}
             <span>${escapeHtml(categoryLabels[record.category] || record.category)}</span>
             <span>${escapeHtml(PUBLIC_VIEW && record.publicLocationPrecision !== "exact" ? (record.publicLocationPrecision === "approximate" ? "概略位置" : "位置非公開") : (record.locationName || "場所名なし"))}</span>
-            <span class="badge ${getLocationStatus(record) === "pinned" ? "green" : "yellow"}">${escapeHtml(locationStatusLabels[getLocationStatus(record)])}</span>
+            <span class="badge ${getLocationStatus(record) === "pinned" ? "green" : "yellow"}">${escapeHtml(locationStatusDisplayLabel(record))}</span>
           </div>
         </${cardTag}>
       `;
@@ -2151,7 +2212,7 @@ function renderLocationQueue() {
     <article class="queue-item" data-record-id="${record.id}">
       <h3>${escapeHtml(record.title)}</h3>
       <div class="queue-meta">
-        <span class="badge yellow">${escapeHtml(locationStatusLabels[getLocationStatus(record)])}</span>
+        <span class="badge yellow">${escapeHtml(locationStatusDisplayLabel(record))}</span>
         <span>${escapeHtml(record.evidenceOperator || record.assignedTo || "担当未設定")}</span>
       </div>
     </article>
@@ -2174,7 +2235,8 @@ function renderDetail() {
   const locationStatus = getLocationStatus(record);
   const passability = getPassability(record);
   const platform = getRecordPlatform(record);
-  const displayCoordinates = getDisplayCoordinates(record);
+  const roadGeometry = getDisplayRoadGeometry(record);
+  const displayCoordinates = getDisplayCoordinates(record) || roadGeometryCenter(roadGeometry);
   const publicApproximate = PUBLIC_VIEW && record.publicLocationPrecision === "approximate";
   const displayLocationName = publicApproximate ? "公開用の概略位置" : (record.locationName || "-");
   detail.innerHTML = `
@@ -2184,7 +2246,7 @@ function renderDetail() {
         <span class="badge ${badgeColor(record.status)}">${escapeHtml(statusLabels[record.status] || record.status)}</span>
         <span class="badge ${alignmentColor(alignment)}">${escapeHtml(alignmentLabels[alignment])}</span>
         <span class="badge ${photoBadgeColor(record.photoStatus)}">${escapeHtml(photoLabels[record.photoStatus] || record.photoStatus)}</span>
-        <span class="badge ${locationStatus === "pinned" ? "green" : "yellow"}">${escapeHtml(locationStatusLabels[locationStatus])}</span>
+        <span class="badge ${locationStatus === "pinned" ? "green" : "yellow"}">${escapeHtml(locationStatusDisplayLabel(record))}</span>
         ${passability !== "none" ? `<span class="badge ${passabilityBadgeColor(passability)}">${escapeHtml(passabilityLabels[passability])}</span>` : ""}
       </div>
     </div>
@@ -2193,9 +2255,11 @@ function renderDetail() {
       ${passability !== "none" ? `<div class="detail-row"><span>通行状況</span><span>${escapeHtml(passabilityLabels[passability])}</span></div>` : ""}
       ${passability !== "none" ? `<div class="detail-row"><span>対象</span><span>${escapeHtml(passabilityModeLabels[record.passabilityMode] || passabilityModeLabels.unknown)}</span></div>` : ""}
       ${passability !== "none" ? `<div class="detail-row"><span>最終確認</span><span>${escapeHtml(formatDateTime(record.passabilityCheckedAt || record.observedAt))}</span></div>` : ""}
+      ${roadGeometry ? `<div class="detail-row"><span>道路区間</span><span>交点間 ${escapeHtml(formatRoadDistance(roadGeometry))}</span></div>` : ""}
+      ${roadGeometry ? `<div class="detail-row"><span>規制方向</span><span>${escapeHtml(roadDirectionLabels[record.roadDirection] || roadDirectionLabels.unknown)}</span></div>` : ""}
       <div class="detail-row"><span>場所</span><span>${escapeHtml(displayLocationName)}</span></div>
       <div class="detail-row"><span>座標</span><span>${displayCoordinates ? `${displayCoordinates.lat.toFixed(publicApproximate ? 3 : 6)}, ${displayCoordinates.lng.toFixed(publicApproximate ? 3 : 6)}${publicApproximate ? "（概略）" : ""}` : PUBLIC_VIEW ? "非公開" : "未特定"}</span></div>
-      <div class="detail-row"><span>場所確認</span><span>${escapeHtml(locationStatusLabels[locationStatus])}</span></div>
+      <div class="detail-row"><span>場所確認</span><span>${escapeHtml(locationStatusDisplayLabel(record))}</span></div>
       ${record.locationCandidateSource ? `<div class="detail-row"><span>場所候補根拠</span><span>${escapeHtml(locationCandidateSourceLabel(record.locationCandidateSource))} / 確度${Math.round(Number(record.locationCandidateConfidence || 0) * 100)}%${record.locationCandidateOutsideArea ? " / 印西市外" : ""}</span></div>` : ""}
       ${record.locationAskedAt ? `<div class="detail-row"><span>質問日時</span><span>${escapeHtml(formatDateTime(record.locationAskedAt))}</span></div>` : ""}
       ${record.locationContactMethod ? `<div class="detail-row"><span>確認手段</span><span>${escapeHtml(locationContactLabels[record.locationContactMethod] || record.locationContactMethod)}</span></div>` : ""}
@@ -2240,8 +2304,11 @@ function renderDetail() {
 function selectRecord(id, panTo, options = {}) {
   selectedId = id;
   const record = records.find(item => item.id === id);
-  const displayCoordinates = getDisplayCoordinates(record);
-  if (record && panTo && displayCoordinates) {
+  const roadGeometry = getDisplayRoadGeometry(record);
+  const displayCoordinates = getDisplayCoordinates(record) || roadGeometryCenter(roadGeometry);
+  if (record && panTo && roadGeometry) {
+    map.fitBounds(L.latLngBounds(roadGeometry).pad(0.5), { maxZoom: 16 });
+  } else if (record && panTo && displayCoordinates) {
     map.setView([displayCoordinates.lat, displayCoordinates.lng], Math.max(map.getZoom(), 15));
   }
   if (options.preserveMap) {
@@ -2253,14 +2320,15 @@ function selectRecord(id, panTo, options = {}) {
 }
 
 function openRoadStatusDialog() {
+  const checkedAt = incidentDateTimeInput();
   openRecordDialog({
     category: "traffic",
     severity: "high",
     sourceType: "citizen",
     passability: "impassable",
     passabilityMode: "all",
-    passabilityCheckedAt: nowLocalInput(),
-    observedAt: nowLocalInput()
+    passabilityCheckedAt: checkedAt,
+    observedAt: checkedAt
   });
 }
 
@@ -2268,7 +2336,7 @@ function openRecordDialog(seed = {}) {
   const record = seed.id ? records.find(item => item.id === seed.id) : null;
   const dialog = document.getElementById("record-dialog");
   document.getElementById("record-dialog-title").textContent = record
-    ? "地点編集"
+    ? getRoadGeometry(record) ? "道路区間編集" : "地点編集"
     : seed.category === "traffic" ? "道路通行情報を追加" : "地点追加";
   document.getElementById("delete-record-button").style.visibility = record ? "visible" : "hidden";
   recordFormLocationCandidate = null;
@@ -2298,6 +2366,8 @@ function openRecordDialog(seed = {}) {
     passability: seed.passability || "none",
     passabilityMode: seed.passabilityMode || "unknown",
     passabilityCheckedAt: seed.passabilityCheckedAt || "",
+    roadDirection: seed.roadDirection || "unknown",
+    roadGeometry: getRoadGeometry(seed) || [],
     photoStatus: seed.photoStatus || "needs-photo",
     photoPrivacy: seed.photoPrivacy || "internal",
     photoUrl: seed.photoUrl || "",
@@ -2313,6 +2383,8 @@ function openRecordDialog(seed = {}) {
   setFormValue("record-passability", getPassability(values));
   setFormValue("record-passability-mode", values.passabilityMode || "unknown");
   setFormValue("record-passability-checked-at", values.passabilityCheckedAt || "");
+  setFormValue("record-road-direction", values.roadDirection || "unknown");
+  setFormValue("record-road-geometry", JSON.stringify(getRoadGeometry(values) || []));
   setFormValue("record-title", values.title);
   setFormValue("record-location", values.locationName);
   setFormValue("record-lat", hasCoordinates(values) ? Number(values.lat).toFixed(6) : "");
@@ -2336,6 +2408,8 @@ function openRecordDialog(seed = {}) {
   document.getElementById("hazard-inland").checked = Boolean(values.hazardFlags?.inland);
   document.getElementById("hazard-road").checked = Boolean(values.hazardFlags?.road);
   document.getElementById("hazard-landslide").checked = Boolean(values.hazardFlags?.landslide);
+  renderRoadGeometrySummary();
+  updateRoadColorPreview();
 
   const formHelp = document.getElementById("record-form-help");
   if (record?.evidencePlatform || getLocationStatus(values) !== "pinned") {
@@ -2365,15 +2439,17 @@ function saveRecordFromForm(event) {
   const existingRecord = existingId ? records.find(item => item.id === existingId) : null;
   const latValue = parseOptionalNumber(getFormValue("record-lat"));
   const lngValue = parseOptionalNumber(getFormValue("record-lng"));
+  const roadGeometry = parseRoadGeometry(getFormValue("record-road-geometry"));
+  const roadCenter = roadGeometry ? roadGeometryCenter(roadGeometry) : null;
   const record = {
     ...(existingRecord || {}),
     id: existingId || `rec-${Date.now()}`,
     title: getFormValue("record-title"),
     category: getFormValue("record-category"),
     locationName: getFormValue("record-location"),
-    lat: latValue,
-    lng: lngValue,
-    locationStatus: getFormValue("record-location-status"),
+    lat: roadCenter?.lat ?? latValue,
+    lng: roadCenter?.lng ?? lngValue,
+    locationStatus: roadGeometry ? "pinned" : getFormValue("record-location-status"),
     locationContactMethod: getFormValue("record-location-contact-method"),
     locationAnsweredAt: getFormValue("record-location-answered-at"),
     locationAnswerNote: getFormValue("record-location-answer-note"),
@@ -2390,6 +2466,8 @@ function saveRecordFromForm(event) {
     passability: getFormValue("record-passability"),
     passabilityMode: getFormValue("record-passability-mode"),
     passabilityCheckedAt: getFormValue("record-passability-checked-at"),
+    roadDirection: getFormValue("record-road-direction"),
+    roadGeometry: roadGeometry || [],
     photoStatus: getFormValue("record-photo-status"),
     photoUrl: getFormValue("record-photo-url"),
     photoPrivacy: getFormValue("record-photo-privacy"),
@@ -2545,6 +2623,128 @@ function cancelLocationPick() {
   document.getElementById("location-pick-banner").hidden = true;
   document.querySelector(".map-pane").classList.remove("is-location-pick");
   document.getElementById("map-status").textContent = `公開レイヤー接続済み・確認日 ${SOURCE_CHECKED_AT}`;
+}
+
+function startRoadSectionSelection() {
+  const geometry = parseRoadGeometry(getFormValue("record-road-geometry")) || [];
+  roadDrawingOriginal = geometry.map(point => [...point]);
+  roadDrawingPoints = geometry.map(point => [...point]);
+  roadDrawingMode = true;
+  clickAddMode = false;
+  document.getElementById("map-click-button").setAttribute("aria-pressed", "false");
+  document.getElementById("record-dialog").close();
+  document.getElementById("road-draw-banner").hidden = false;
+  document.querySelector(".map-pane").classList.add("is-road-drawing");
+  renderRoadDrawingPreview();
+  if (roadDrawingPoints.length === 2) map.fitBounds(L.latLngBounds(roadDrawingPoints).pad(0.35));
+  scheduleMapResize();
+}
+
+function addRoadSectionPoint(latlng) {
+  if (!roadDrawingMode) return;
+  if (roadDrawingPoints.length >= 2) {
+    document.getElementById("road-draw-status").textContent = "始点と終点は選択済みです。変更する場合は「1点戻す」を押してください。";
+    return;
+  }
+  roadDrawingPoints.push([Number(latlng.lat.toFixed(6)), Number(latlng.lng.toFixed(6))]);
+  renderRoadDrawingPreview();
+}
+
+function undoRoadSectionPoint() {
+  roadDrawingPoints.pop();
+  renderRoadDrawingPreview();
+}
+
+function cancelRoadSectionSelection() {
+  setFormValue("record-road-geometry", JSON.stringify(roadDrawingOriginal));
+  closeRoadSectionSelection();
+}
+
+function finishRoadSectionSelection() {
+  if (roadDrawingPoints.length !== 2) return;
+  setFormValue("record-road-geometry", JSON.stringify(roadDrawingPoints));
+  const center = roadGeometryCenter(roadDrawingPoints);
+  if (center) {
+    setFormValue("record-lat", center.lat.toFixed(6));
+    setFormValue("record-lng", center.lng.toFixed(6));
+    setFormValue("record-location-status", "pinned");
+  }
+  closeRoadSectionSelection();
+}
+
+function closeRoadSectionSelection() {
+  roadDrawingMode = false;
+  roadDrawingLayer.clearLayers();
+  document.getElementById("road-draw-banner").hidden = true;
+  document.querySelector(".map-pane").classList.remove("is-road-drawing");
+  document.getElementById("record-dialog").showModal();
+  renderRoadGeometrySummary();
+  renderRecordDuplicateWarning();
+}
+
+function clearRoadSection() {
+  setFormValue("record-road-geometry", "[]");
+  renderRoadGeometrySummary();
+}
+
+function renderRoadDrawingPreview() {
+  roadDrawingLayer.clearLayers();
+  if (roadDrawingPoints.length === 2) {
+    roadDrawingLayer.addLayer(L.polyline(roadDrawingPoints, {
+      color: "#b8322c",
+      weight: 7,
+      opacity: 0.94,
+      dashArray: "10 7"
+    }));
+  }
+  roadDrawingPoints.forEach((point, index) => {
+    const marker = L.circleMarker(point, {
+      radius: 9,
+      color: "#ffffff",
+      weight: 3,
+      fillColor: "#b8322c",
+      fillOpacity: 1
+    });
+    marker.bindTooltip(index === 0 ? "始点" : "終点", {
+      permanent: true,
+      direction: "top",
+      offset: [0, -8]
+    });
+    roadDrawingLayer.addLayer(marker);
+  });
+  const status = document.getElementById("road-draw-status");
+  status.textContent = roadDrawingPoints.length === 0
+    ? "まず通行止め区間の始点となる交差点を選んでください。"
+    : roadDrawingPoints.length === 1
+      ? "次に終点となる交差点を選んでください。"
+      : `交点間 ${formatRoadDistance(roadDrawingPoints)}。位置を確認して確定してください。`;
+  document.getElementById("road-draw-undo-button").disabled = roadDrawingPoints.length === 0;
+  document.getElementById("road-draw-finish-button").disabled = roadDrawingPoints.length !== 2;
+}
+
+function renderRoadGeometrySummary() {
+  const geometry = parseRoadGeometry(getFormValue("record-road-geometry"));
+  const node = document.getElementById("record-road-geometry-summary");
+  node.textContent = geometry
+    ? `交点間を設定済み（${formatRoadDistance(geometry)}）`
+    : "区間未設定（通行止め・通行不能は地図上に×で表示）";
+  document.getElementById("record-road-clear-button").disabled = !geometry;
+  document.getElementById("record-road-draw-button").textContent = geometry ? "交点間を変更" : "交点間を地図で指定";
+}
+
+function updateRoadColorPreview() {
+  const passability = getFormValue("record-passability");
+  const colors = {
+    closed: "#b8322c",
+    impassable: "#b8322c",
+    restricted: "#c96321",
+    reopened: "#24745a",
+    passed: "#2365a8",
+    none: "#6b737a"
+  };
+  const node = document.getElementById("record-road-color-preview");
+  node.querySelector("span").style.background = colors[passability] || colors.none;
+  node.querySelector("strong").textContent = `${passabilityLabels[passability] || passabilityLabels.none}の表示色`;
 }
 
 function toggleClickAddMode() {
@@ -3122,8 +3322,14 @@ function downloadDataUrl(dataUrl, filename) {
 }
 
 function normalizeImportedRow(row) {
-  const lat = parseOptionalNumber(row.lat || row.latitude || row["緯度"]);
-  const lng = parseOptionalNumber(row.lng || row.lon || row.longitude || row["経度"]);
+  let lat = parseOptionalNumber(row.lat || row.latitude || row["緯度"]);
+  let lng = parseOptionalNumber(row.lng || row.lon || row.longitude || row["経度"]);
+  const roadGeometry = parseRoadGeometry(row.roadGeometry || row.road_geometry || row["道路区間"]);
+  const roadCenter = roadGeometry ? roadGeometryCenter(roadGeometry) : null;
+  if (roadCenter) {
+    lat = roadCenter.lat;
+    lng = roadCenter.lng;
+  }
   if (!row.title || ((lat === null) !== (lng === null))) return null;
   return {
     id: row.id || `rec-${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -3147,6 +3353,8 @@ function normalizeImportedRow(row) {
     passability: row.passability || (row.category === "traffic" ? "closed" : "none"),
     passabilityMode: row.passabilityMode || "unknown",
     passabilityCheckedAt: row.passabilityCheckedAt || row.observedAt || row.time || "",
+    roadDirection: row.roadDirection || "unknown",
+    roadGeometry: roadGeometry || [],
     photoStatus: row.photoStatus || "needs-photo",
     photoUrl: row.photoUrl || "",
     photoPrivacy: row.photoPrivacy || "internal",
@@ -3182,14 +3390,14 @@ function normalizeImportedRow(row) {
 }
 
 function copyCsvTemplate() {
-  const template = "title,category,locationName,lat,lng,incidentDate,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,passability,passabilityMode,passabilityCheckedAt,photoStatus,photoUrl,photoPrivacy,publicationStatus,publicLocationPrecision,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,evidencePlatform,evidenceQuery,evidenceOperator,evidenceCheckedAt,evidenceRelativeTime,observedAtDerived,sourceText,sourceComments,locationCandidateSource,locationCandidateConfidence,locationCandidateQuery,locationCandidateReason,locationCandidateOutsideArea,locationSearchCheckedAt,externalId,sourceUsername,notes\n";
+  const template = "title,category,locationName,lat,lng,roadGeometry,roadDirection,incidentDate,locationStatus,locationAskedAt,locationAskedBy,locationContactMethod,locationAnsweredAt,locationAnswerNote,observedAt,sourceType,sourceUrl,status,severity,passability,passabilityMode,passabilityCheckedAt,photoStatus,photoUrl,photoPrivacy,publicationStatus,publicLocationPrecision,hazardFlood,hazardInland,hazardRoad,hazardLandslide,assignedTo,evidencePlatform,evidenceQuery,evidenceOperator,evidenceCheckedAt,evidenceRelativeTime,observedAtDerived,sourceText,sourceComments,locationCandidateSource,locationCandidateConfidence,locationCandidateQuery,locationCandidateReason,locationCandidateOutsideArea,locationSearchCheckedAt,externalId,sourceUsername,notes\n";
   navigator.clipboard?.writeText(template);
   document.getElementById("csv-input").value = template;
 }
 
 function exportCsv() {
   const headers = [
-    "id", "title", "category", "locationName", "lat", "lng", "incidentDate", "locationStatus", "locationAskedAt", "locationAskedBy", "locationContactMethod", "locationAnsweredAt", "locationAnswerNote", "observedAt", "sourceType",
+    "id", "title", "category", "locationName", "lat", "lng", "roadGeometry", "roadDirection", "incidentDate", "locationStatus", "locationAskedAt", "locationAskedBy", "locationContactMethod", "locationAnsweredAt", "locationAnswerNote", "observedAt", "sourceType",
     "sourceUrl", "status", "severity", "passability", "passabilityMode", "passabilityCheckedAt", "photoStatus", "photoUrl", "photoPrivacy", "publicationStatus", "publicLocationPrecision",
     "hazardFlood", "hazardInland", "hazardRoad", "hazardLandslide", "assignedTo", "evidencePlatform", "evidenceQuery",
     "evidenceOperator", "evidenceCheckedAt", "evidenceRelativeTime", "observedAtDerived", "sourceText", "sourceComments", "evidenceOcrText",
@@ -3203,6 +3411,7 @@ function exportCsv() {
       return csvCell(record.hazardFlags?.[normalized] ? "true" : "false");
     }
     if (key === "evidenceHasImage") return csvCell(record.evidenceImage ? "true" : "false");
+    if (key === "roadGeometry") return csvCell(JSON.stringify(getRoadGeometry(record) || []));
     return csvCell(record[key] ?? "");
   }).join(","));
   downloadText(`inzai-disaster-records-${dateStamp()}.csv`, [headers.join(","), ...rows].join("\n"), "text/csv");
@@ -3214,10 +3423,13 @@ function exportGeoJson() {
     name: "inzai_disaster_records",
     features: records.map(record => ({
       type: "Feature",
-      geometry: hasCoordinates(record) ? {
-        type: "Point",
-        coordinates: [Number(record.lng), Number(record.lat)]
-      } : null,
+      geometry: getRoadGeometry(record) ? {
+        type: "LineString",
+        coordinates: getRoadGeometry(record).map(point => [point[1], point[0]])
+      } : hasCoordinates(record) ? {
+          type: "Point",
+          coordinates: [Number(record.lng), Number(record.lat)]
+        } : null,
       properties: {
         ...withoutLargeImage(record),
         alignment: deriveAlignment(record),
@@ -3495,6 +3707,57 @@ function hasCoordinates(record) {
     Number.isFinite(Number(record.lat)) && Number.isFinite(Number(record.lng));
 }
 
+function parseRoadGeometry(value) {
+  let source = value;
+  if (typeof source === "string") {
+    const text = source.trim();
+    if (!text) return null;
+    try {
+      source = JSON.parse(text);
+    } catch {
+      return null;
+    }
+  }
+  if (!Array.isArray(source)) return null;
+  const points = source
+    .map(point => Array.isArray(point) ? [Number(point[0]), Number(point[1])] : null)
+    .filter(point => point && Number.isFinite(point[0]) && Number.isFinite(point[1]) && Math.abs(point[0]) <= 90 && Math.abs(point[1]) <= 180);
+  return points.length >= 2 ? points : null;
+}
+
+function getRoadGeometry(record) {
+  return parseRoadGeometry(record?.roadGeometry);
+}
+
+function getDisplayRoadGeometry(record) {
+  const geometry = getRoadGeometry(record);
+  if (!geometry) return null;
+  if (!PUBLIC_VIEW) return geometry;
+  const precision = record.publicLocationPrecision || "hidden";
+  if (precision === "hidden") return null;
+  if (precision === "approximate") {
+    return geometry.map(point => [Number(point[0].toFixed(3)), Number(point[1].toFixed(3))]);
+  }
+  return geometry;
+}
+
+function roadGeometryCenter(geometry) {
+  const points = parseRoadGeometry(geometry);
+  if (!points) return null;
+  const center = L.latLngBounds(points).getCenter();
+  return { lat: center.lat, lng: center.lng };
+}
+
+function formatRoadDistance(geometry) {
+  const points = parseRoadGeometry(geometry);
+  if (!points) return "距離未設定";
+  let meters = 0;
+  for (let index = 1; index < points.length; index += 1) {
+    meters += distanceMeters(points[index - 1][0], points[index - 1][1], points[index][0], points[index][1]);
+  }
+  return meters >= 1000 ? `${(meters / 1000).toFixed(1)}km` : `${Math.max(1, Math.round(meters))}m`;
+}
+
 function getDisplayCoordinates(record) {
   if (!hasCoordinates(record)) return null;
   const lat = Number(record.lat);
@@ -3510,7 +3773,13 @@ function getDisplayCoordinates(record) {
 
 function getLocationStatus(record) {
   if (record?.locationStatus && locationStatusLabels[record.locationStatus]) return record.locationStatus;
-  return hasCoordinates(record) ? "pinned" : "unknown";
+  return hasCoordinates(record) || getRoadGeometry(record) ? "pinned" : "unknown";
+}
+
+function locationStatusDisplayLabel(record) {
+  const status = getLocationStatus(record);
+  if (status === "pinned" && getRoadGeometry(record)) return "道路区間設定済";
+  return locationStatusLabels[status] || status;
 }
 
 function deriveAlignment(record) {
@@ -3534,12 +3803,12 @@ function getRiskHits(record) {
 }
 
 function markerColor(record, alignment) {
-  if (record.status === "resolved") return "#6b737a";
   const passability = getPassability(record);
   if (passability === "closed" || passability === "impassable") return "#b8322c";
   if (passability === "restricted") return "#c96321";
   if (passability === "reopened") return "#24745a";
   if (passability === "passed") return "#2365a8";
+  if (record.status === "resolved") return "#6b737a";
   if (record.status === "verified" || record.status === "actioning") return "#b8322c";
   if (record.status === "corroborated") return "#c96321";
   if (alignment === "highRisk") return "#2365a8";
@@ -3720,6 +3989,12 @@ function dateStamp() {
 function nowLocalInput() {
   const now = new Date();
   return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
+function incidentDateTimeInput() {
+  const now = nowLocalInput();
+  const incidentDate = getFormValue("incident-date");
+  return incidentDate ? `${incidentDate}${now.slice(10)}` : now;
 }
 
 function toDateTimeLocal(value) {
