@@ -1,16 +1,16 @@
 # 印西市 災害状況整合MAP 引継ぎ
 
-最終更新: 2026-08-16
+最終更新: 2026-08-17
 
 ## 作業場所と公開先
 
 - MAPリポジトリ: `C:\Users\nsfactory\OneDrive\CBI\site`
 - MAP本体: `inzai-disaster-map/`
 - 本番: https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/
-- MAP最新コミット: `2d21d7d` (`Add SNS monitoring and multi-point road sections`)
+- MAP最新コミット: `df17e4a` (`Add shelter layer and SNS search term UI to disaster map`)
 - CIDAOリポジトリ: `C:\Repos\cidao`
 - CIDAO本番: https://cidao.vercel.app
-- CIDAO最新コミット: `da6c46d` (`Add disaster SNS monitoring API`)
+- CIDAO最新コミット: `429e717` (`Add Inzai shelters API and SNS monitor rules admin`)
 
 ## プロダクトの位置付け
 
@@ -28,6 +28,8 @@
 - J-SHISの「30年以内に震度6弱以上となる確率」「表層地盤の揺れの増幅率」。これは現在の震度・実被害ではない。
 - 公式情報リンク: 印西市防災ポータル、印西市わが街ガイド、気象庁、JARTIC、千葉県道路規制、TOYOTA通れた道マップ等。
 - 対象日で記録を絞り込み、通常は過去災害の記録を混在させない。「過去記録も表示」で明示的に切替可能。
+- 避難所レイヤー（2026-08-17追加）: CIDAO `/api/disaster/inzai-shelters` から印西市わが街ガイドの公式CSV（指定避難所・特別避難所・広域避難場所、計55施設）を取得しピン表示。種別・確認する災害（風水害/震災/土砂）・開設情報・名称/住所で絞り込み。市の防災速報と施設名が一致した場合のみ「開設中」、公式発表なしは「開設発表なし」（閉鎖扱いにしない）。「浸水想定を重ねる」で洪水最大規模＋内水＋避難所を一括表示。流体計算ではなく公式ハザードの視覚的照合である旨を画面に明記。
+- ヘッダーに「メタバース印西（3D）」リンク（別タブ）。3D浸水シミュレーション（水位0〜40m）は `site/metaverse/` 側にあり、平時の地形理解用。災害時利用は想定しない。
 
 ### SNS・写真・場所確認
 
@@ -59,6 +61,7 @@ MAPは `config.js` の `snsMonitorEndpoint` で以下へ接続する。
 - 発見した投稿は自動公開せず、`disaster_sns_candidates`へ未確認候補として保存する。
 - MAP右側の「SNS新着巡回」から元投稿を開き、確認後に端末内の被害候補へ登録できる。
 - 位置語と災害語の両方を満たす投稿だけを候補にする。巡回自体に生成AIは使わないため、AI API料金は発生しない。
+- 検索語の管理（2026-08-17追加）: GETが有効・無効を含む現在の検索ルールを返し、MAPの「SNS新着巡回」カードに表示。検索語ごとの手動検索リンクとFacebook手動検索リンク、見つけた投稿URLをSNS投稿登録画面へ引き継ぐ導線を追加。検索語の編集はCIDAO `/admin/sns`（媒体ごと1行1語・各12件・2〜50文字）。Facebookは一般公開投稿の自動全文検索APIがないため自動巡回対象外とし、手動検索＋URL登録で補完する（仕様）。
 
 ### 2026-08-16現在の接続状態
 

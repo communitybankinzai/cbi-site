@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-08-17",
+          "title": "Codex実装分の公開引継ぎ（避難所レイヤー・SNS検索語UI）＋文化財ピン切替 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao commit 429e717（避難所API /api/disaster/inzai-shelters＋SNS検索ルール管理UI。防災ファイル7件のみ個別指定add、依頼外のlayout.tsx/next.config.tsは除外）＋1d09ee3（ハンドオフ文書更新）",
+            "site commit df17e4a（避難所レイヤー・SNS検索語UI・config.jsにshelterEndpoint追加・キャッシュ20260817a）＋12f3217（メタバース: 冒険図鑑→印西市文化財に改名＋📍ピン50件の表示/非表示トグル）",
+            "site/admin/changelog.json 3件（避難所55施設/SNS検索語/文化財改名）＋CLAUDE_HANDOFF.md最終仕様更新＋cidao/2026-08-17引継ぎノートstatus更新",
+            "検証: 本番避難所API 200・55施設・CORS 204／本番MAPでLeafletマーカー55件・木下小学校実データ表示・コンソールエラーなし・appVersion 2026.08.17.1／メタバースはlocalhostでピン50→0→50のトグル動作とラベル連動を確認、本番反映済み／浸水シミュ3D描画はユーザーのスクショ（水位37mで低地水没・台地残存）で期待挙動を確認"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "祐樹さん依頼の引継ぎ実行（記録→公開）とメタバース文化財UI改修。Codexの依頼外変更2件（layout.tsx/next.config.ts）は未コミットで残置し、revert可否はユーザー判断待ち。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 185,459 / cost: $38.61（前回記録0.6h以降の差分0.3h）"
+        },
+        {
+          "date": "2026-08-17",
           "title": "Map Tiles使用量パネル実装（Codex委譲）＋防災MAPリンク＋課金調査＋Codex引継ぎノート 0.6時間",
           "category": "実装",
           "outputs": [
