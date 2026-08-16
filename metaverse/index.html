@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>COCoLaメタバース印西 | 印西市3Dワールド</title>
-<meta name="description" content="印西市をGoogle Photorealistic 3D Tilesでリアルに再現したCOCoLaのメタバースワールド。千葉ニュータウンの街を自由に歩けます。">
+<title>CBIメタバース印西 | 印西市3Dワールド</title>
+<meta name="description" content="印西市をGoogle Photorealistic 3D Tilesでリアルに再現したCBIのメタバースワールド。千葉ニュータウンの街を自由に歩けます。">
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
 <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 <style>
@@ -43,6 +43,69 @@
   #controlPanel button:hover { background: #2f66b3; }
   #controlPanel button.modeBtn { background: #2e8b57; }
   #controlPanel button.modeBtn.active { background: #e67e22; }
+  #controlPanel .controlSection {
+    border-top: 1px solid rgba(255,255,255,0.16);
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+  #floodControls .toggleRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    line-height: 1.4;
+  }
+  #floodControls input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: #3a7bd5;
+    flex-shrink: 0;
+  }
+  #floodControls input[type="range"] {
+    width: 100%;
+    margin: 8px 0 4px;
+    accent-color: #7fc8ff;
+  }
+  #floodControls .levelRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 11px;
+    opacity: 0.92;
+  }
+  #floodControls .levelValue {
+    color: #7fc8ff;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  #floodControls .floodHint {
+    margin: 4px 0 0;
+    color: rgba(255,255,255,0.74);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+  #floodNotice {
+    position: absolute;
+    top: 92px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 38;
+    display: none;
+    width: min(92vw, 620px);
+    box-sizing: border-box;
+    background: rgba(20, 30, 40, 0.92);
+    color: #fff;
+    border: 1px solid rgba(127, 200, 255, 0.75);
+    border-radius: 10px;
+    padding: 9px 13px;
+    font-size: 12px;
+    line-height: 1.6;
+    pointer-events: none;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.28);
+  }
+  #floodNotice b { color: #7fc8ff; }
   #panelToggle {
     position: absolute; top: 52px; right: 10px; z-index: 21;
     background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
@@ -283,6 +346,7 @@
     #helpBox { display: none; }
     #controlPanel { display: none; }
     #panelToggle { display: block; }
+    #floodNotice { top: 96px; font-size: 11px; }
   }
 </style>
 </head>
@@ -290,8 +354,8 @@
 <div id="cesiumContainer"></div>
 
 <div id="mvHeader">
-  <div class="title">🌏 COCoLaメタバース印西<small>印西市3Dワールド</small></div>
-  <a id="backLink" href="../index.html">← COCoLaサイトへ戻る</a>
+  <div class="title">🌏 CBIメタバース印西<small>印西市3Dワールド</small></div>
+  <a id="backLink" href="../index.html">← CBIサイトへ戻る</a>
 </div>
 
 <button id="panelToggle">📍 スポット</button>
@@ -338,7 +402,7 @@
 <button id="howtoBtn">❓ 遊び方</button>
 <div id="howtoModal">
   <div class="inner">
-    <h2>🌏 COCoLaメタバース印西 — 遊び方</h2>
+    <h2>🌏 CBIメタバース印西 — 遊び方</h2>
     <p>ここは、印西市の街並みをGoogleの3D都市データでリアルに再現したバーチャル空間です。空を飛んだり、地上を歩いたりしながら、本物そっくりの印西の街を自由に探検できます。</p>
 
     <h3>🎮 操作方法</h3>
@@ -394,8 +458,22 @@
   <h3 style="margin-top:10px;">🎮 モード</h3>
   <button id="walkModeBtn" class="modeBtn">🚶 歩行モード（地上視点）</button>
   <button id="flyModeBtn" class="modeBtn active">🚁 飛行モード（自由視点）</button>
+  <div class="controlSection" id="floodControls">
+    <h3>浸水シミュレーション</h3>
+    <label class="toggleRow" for="floodToggle">
+      <input type="checkbox" id="floodToggle">
+      <span>水面を表示</span>
+    </label>
+    <input id="floodLevel" type="range" min="0" max="15" step="0.5" value="3" disabled>
+    <div class="levelRow">
+      <span>水位（標高）</span>
+      <span class="levelValue" id="floodLevelValue">3.0 m</span>
+    </div>
+    <p class="floodHint">0〜15m、0.5m刻み。防災・平時の理解訓練用です。</p>
+  </div>
 </div>
 
+<div id="floodNotice"><b>浸水シミュレーション</b> これは標高の可視化であり、国や市が公表する公式の浸水想定ではありません。避難判断には公式情報を確認してください。</div>
 <div id="helpBox">
   <b>操作方法</b><br>
   移動：<b>W A S D</b> ／ 矢印キー（<b>Shift</b>で加速）<br>
@@ -431,7 +509,7 @@ const GOOGLE_3DTILES_URL = "https://tile.googleapis.com/v1/3dtiles/root.json?key
 // 印西市の主要スポット（座標は国土地理院 住所検索API / OpenStreetMap Nominatim で取得）
 const SPOTS = [
   { name: "千葉ニュータウン中央駅", lat: 35.799983, lon: 140.116119,
-    desc: "印西市の玄関口となる北総線の駅。駅周辺はCOCoLaの活動エリアの中心です。" },
+    desc: "印西市の玄関口となる北総線の駅。駅周辺はCBIの活動エリアの中心です。" },
   { name: "イオンモール千葉ニュータウン", lat: 35.800167, lon: 140.111502,
     desc: "千葉ニュータウン中央駅前の大型ショッピングモール。地域の暮らしの拠点です。" },
   { name: "印西牧の原駅", lat: 35.803497, lon: 140.166716,
@@ -472,6 +550,68 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
 viewer.scene.globe.show = false;          // 地表はGoogle 3D Tilesに含まれるため非表示
 viewer.scene.skyAtmosphere.show = true;
 viewer.scene.screenSpaceCameraController.enableCollisionDetection = true;
+
+// ============================================================
+// 浸水シミュレーション水面（標高MSL指定 -> Cesium楕円体高へ換算）
+// ============================================================
+const INZAI_GEOID_HEIGHT_M = 35.8; // 印西市中心付近のローカル補正値。Cesiumは楕円体高で描画するため標高に加算する。
+const INZAI_WATER_POLYGON_DEGREES = [
+  139.9650, 35.7750,
+  139.9850, 35.7420,
+  140.0550, 35.7240,
+  140.1450, 35.7080,
+  140.2450, 35.7240,
+  140.2880, 35.7600,
+  140.2880, 35.8250,
+  140.2580, 35.8700,
+  140.1700, 35.8880,
+  140.0750, 35.8750,
+  140.0200, 35.8500,
+  139.9850, 35.8100,
+];
+const floodState = { enabled: false, waterLevelMsl: 3.0 };
+
+function mslToCesiumHeight(mslHeight) {
+  return mslHeight + INZAI_GEOID_HEIGHT_M;
+}
+
+const floodSurface = viewer.entities.add({
+  id: "inzai-flood-surface",
+  show: false,
+  polygon: {
+    hierarchy: Cesium.Cartesian3.fromDegreesArray(INZAI_WATER_POLYGON_DEGREES),
+    height: new Cesium.CallbackProperty(function () {
+      return mslToCesiumHeight(floodState.waterLevelMsl);
+    }, false),
+    perPositionHeight: false,
+    material: Cesium.Color.fromCssColorString("#2f9de8").withAlpha(0.42),
+    outline: true,
+    outlineColor: Cesium.Color.fromCssColorString("#bfe9ff").withAlpha(0.72),
+  },
+});
+
+const floodToggleEl = document.getElementById("floodToggle");
+const floodLevelEl = document.getElementById("floodLevel");
+const floodLevelValueEl = document.getElementById("floodLevelValue");
+const floodNoticeEl = document.getElementById("floodNotice");
+
+function updateFloodUi() {
+  floodSurface.show = floodState.enabled;
+  floodLevelEl.disabled = !floodState.enabled;
+  floodLevelValueEl.textContent = floodState.waterLevelMsl.toFixed(1) + " m";
+  floodNoticeEl.style.display = floodState.enabled ? "block" : "none";
+  viewer.scene.requestRender();
+}
+
+floodToggleEl.addEventListener("change", function () {
+  floodState.enabled = floodToggleEl.checked;
+  updateFloodUi();
+});
+floodLevelEl.addEventListener("input", function () {
+  floodState.waterLevelMsl = Number(floodLevelEl.value);
+  updateFloodUi();
+});
+updateFloodUi();
 
 // ============================================================
 // Google Photorealistic 3D Tiles 読み込み
@@ -1007,10 +1147,21 @@ async function loadBunkazai() {
 }
 
 // 看板クリックで説明表示（6拠点スポット＋文化財の共通ハンドラ）
+function pickInteractiveEntity(position) {
+  const pickedObjects = viewer.scene.drillPick(position, 8);
+  for (const picked of pickedObjects) {
+    if (!Cesium.defined(picked) || !picked.id) continue;
+    const id = String(picked.id.id || "");
+    if (id === "inzai-flood-surface") continue;
+    return { picked: picked, id: id };
+  }
+  return null;
+}
+
 viewer.screenSpaceEventHandler.setInputAction(function (click) {
-  const picked = viewer.scene.pick(click.position);
-  if (!Cesium.defined(picked) || !picked.id) return;
-  const id = String(picked.id.id || "");
+  const interactivePick = pickInteractiveEntity(click.position);
+  if (!interactivePick) return;
+  const id = interactivePick.id;
   if (id.startsWith("spot-")) {
     const idx = parseInt(id.replace("spot-", ""), 10);
     const spot = SPOTS[idx];
@@ -1159,9 +1310,9 @@ async function startCinema() {
   const end = document.createElement("div");
   end.id = "cinemaEnd";
   end.innerHTML =
-    '<img src="../assets/COCoLa_Logo_transparent.png" alt="COCoLa">' +
-    "<h2>COCoLaメタバース印西</h2>" +
-    "<p>印西市文化財パズルラリー開催中<br>COCoLaサイトから今すぐ遊べます<br><b>「COCoLa 印西」で検索</b></p>";
+    '<img src="../assets/cbi-logo.png" alt="CBI">' +
+    "<h2>CBIメタバース印西</h2>" +
+    "<p>印西市文化財パズルラリー開催中<br>CBIサイトから今すぐ遊べます<br><b>communitybankinzai.github.io/cbi-site</b></p>";
   document.body.appendChild(end);
 
   // tileset読み込み完了を待つ
