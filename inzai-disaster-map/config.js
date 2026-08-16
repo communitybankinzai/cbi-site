@@ -2,6 +2,7 @@ window.CBI_DISASTER_CONFIG = Object.assign(
   {
     cbiHomeUrl: "../",
     snsSearchEndpoint: "",
+    snsMonitorEndpoint: "https://cidao.vercel.app/api/disaster/sns-monitor",
     locationAiEndpoint: "",
     operatorSessionEndpoint: "",
     sharedRecordsEndpoint: "",
@@ -11,7 +12,7 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     jshisPshmWmsUrl: "https://www.j-shis.bosai.go.jp/map/wms/pshm/Y2024",
     jshisGroundWmsUrl: "https://www.j-shis.bosai.go.jp/map/wms/sstrct/V4",
     hostOrigin: window.location.origin,
-    appVersion: "2026.08.15.6"
+    appVersion: "2026.08.16.1"
   },
   window.CBI_DISASTER_CONFIG || {}
 );

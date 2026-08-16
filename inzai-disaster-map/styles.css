@@ -1874,6 +1874,139 @@ input[type="checkbox"] {
   color: var(--muted);
 }
 
+.section-subtitle {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.new-count {
+  display: inline-grid;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 4px;
+  place-items: center;
+  border-radius: 10px;
+  background: #b8322c;
+  color: #fff;
+  font-size: 11px;
+  vertical-align: 1px;
+}
+
+.sns-monitor-panel {
+  border-left: 3px solid #14789c;
+}
+
+.sns-monitor-status {
+  margin: 8px 0;
+  padding: 7px 9px;
+  border: 1px solid #bcd1db;
+  border-radius: 6px;
+  background: #eef8fb;
+  color: #244652;
+  font-size: 12px;
+}
+
+.sns-monitor-status.is-error {
+  border-color: #d8aaa6;
+  background: #fff2f0;
+  color: #8f2923;
+}
+
+.sns-platform-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.platform-state {
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #f7f9fa;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.platform-state.is-active {
+  border-color: #83b79d;
+  background: #eef8f2;
+  color: #24633e;
+}
+
+.platform-state.is-error {
+  border-color: #ddb7a0;
+  background: #fff5ef;
+  color: #8c4725;
+}
+
+.sns-monitor-list {
+  display: grid;
+  gap: 7px;
+  max-height: 330px;
+  overflow: auto;
+}
+
+.sns-monitor-item {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px;
+  background: #fff;
+}
+
+.sns-monitor-item.is-registered {
+  background: #f5f7f8;
+}
+
+.sns-monitor-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sns-monitor-link:hover .sns-monitor-text,
+.sns-monitor-link:focus-visible .sns-monitor-text {
+  color: var(--focus);
+  text-decoration: underline;
+}
+
+.sns-monitor-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.sns-monitor-platform {
+  color: #17617d;
+  font-weight: 700;
+}
+
+.sns-monitor-text {
+  margin: 0;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.sns-monitor-thumb {
+  display: block;
+  width: 100%;
+  max-height: 150px;
+  margin-top: 6px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.sns-monitor-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 body.embed-mode .cbi-home-link {
   display: none;
 }

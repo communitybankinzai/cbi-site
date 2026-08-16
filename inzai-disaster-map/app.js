@@ -149,6 +149,7 @@ const platformLabels = {
   facebook: "Facebook",
   tiktok: "TikTok",
   youtube: "YouTube",
+  bluesky: "Bluesky",
   "yahoo-realtime": "Yahoo!リアルタイム検索",
   web: "Web検索",
   other: "その他"
@@ -277,6 +278,9 @@ let collectorLocationCandidate = null;
 let recordFormLocationCandidate = null;
 let locationSearchContext = { source: "collector", recordId: null, candidates: [] };
 let sharedRecordsSyncTimer = null;
+let snsMonitorItems = [];
+let snsMonitorPayload = null;
+let snsMonitorTimer = null;
 let screenshotState = {
   image: null,
   scale: 1,
@@ -416,6 +420,7 @@ initIntegration();
 applyTrialRecordFromQuery();
 renderAll();
 bindEvents();
+initSnsMonitor();
 initHelpGuide();
 scheduleMapResize();
 
@@ -442,6 +447,7 @@ function bindEvents() {
   document.getElementById("incident-date").addEventListener("change", () => {
     selectedId = null;
     renderAll();
+    refreshSnsMonitor(false);
   });
   document.getElementById("show-all-dates").addEventListener("change", () => {
     selectedId = null;
@@ -463,6 +469,8 @@ function bindEvents() {
   });
   document.getElementById("refresh-earthquake-button").addEventListener("click", () => refreshEarthquakeSummary(true));
   document.getElementById("refresh-weather-warning-button").addEventListener("click", () => refreshWeatherWarnings(true));
+  document.getElementById("refresh-sns-monitor-button").addEventListener("click", () => refreshSnsMonitor(true));
+  document.getElementById("sns-monitor-list").addEventListener("click", handleSnsMonitorAction);
   document.getElementById("paste-social-link-button").addEventListener("click", pasteSocialLink);
   document.getElementById("collector-post-url").addEventListener("input", syncCollectorPlatformFromUrl);
   document.getElementById("collector-platform").addEventListener("change", updateCollectorPlatformHelp);
@@ -561,6 +569,7 @@ function initIntegration() {
   }
 
   const endpoint = String(APP_CONFIG.snsSearchEndpoint || "").trim();
+  const monitorEndpoint = String(APP_CONFIG.snsMonitorEndpoint || "").trim();
   const apiStatus = document.getElementById("api-status");
   const apiButton = document.getElementById("api-search-button");
   const apiNote = document.getElementById("collector-api-note");
@@ -570,7 +579,8 @@ function initIntegration() {
     apiButton.disabled = false;
     apiNote.textContent = "CBI連携APIを通じて検索します。Metaのアクセストークンはこの画面には保存しません。";
   } else {
-    apiStatus.textContent = "試作・端末内保存";
+    apiStatus.textContent = monitorEndpoint ? "SNS自動巡回接続" : "試作・端末内保存";
+    if (monitorEndpoint) apiStatus.classList.add("is-connected");
     apiButton.disabled = true;
     apiButton.title = "config.js にCBI連携APIを設定すると利用できます";
     apiNote.textContent = "現在は検索画面・スクショ・JSON取込を利用できます。公式API接続時は config.js の snsSearchEndpoint にCBI側の連携先を設定します。";
@@ -601,6 +611,123 @@ function initIntegration() {
     getSearchLog: () => searchLog.map(item => ({ ...item })),
     importSnsPayload: (payload, platform = "web") => consumeSnsPayload(payload, platform, "host")
   };
+}
+
+function initSnsMonitor() {
+  const endpoint = String(APP_CONFIG.snsMonitorEndpoint || "").trim();
+  const panel = document.getElementById("sns-monitor-panel");
+  if (!endpoint) {
+    panel.hidden = true;
+    return;
+  }
+  refreshSnsMonitor(false);
+  clearInterval(snsMonitorTimer);
+  snsMonitorTimer = setInterval(() => refreshSnsMonitor(true, true), 5 * 60 * 1000);
+}
+
+async function refreshSnsMonitor(runScan = false, quiet = false) {
+  const endpoint = String(APP_CONFIG.snsMonitorEndpoint || "").trim();
+  if (!endpoint) return;
+  const button = document.getElementById("refresh-sns-monitor-button");
+  const status = document.getElementById("sns-monitor-status");
+  if (!quiet) {
+    button.disabled = true;
+    status.classList.remove("is-error");
+    status.textContent = runScan ? "各SNSの新着を確認しています..." : "巡回結果を読み込んでいます...";
+  }
+  try {
+    if (runScan) {
+      const scanResponse = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "operator" })
+      });
+      if (!scanResponse.ok) throw new Error(`巡回API HTTP ${scanResponse.status}`);
+    }
+    const date = getFormValue("incident-date");
+    const response = await fetch(`${endpoint}?date=${encodeURIComponent(date)}`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error(`新着API HTTP ${response.status}`);
+    const payload = await response.json();
+    snsMonitorItems = (Array.isArray(payload.items) ? payload.items : [])
+      .map(item => normalizeSnsItem(item, item.platform || "web"))
+      .filter(Boolean);
+    snsMonitorPayload = payload;
+    renderSnsMonitor(payload);
+  } catch (error) {
+    status.classList.add("is-error");
+    status.textContent = `SNS巡回結果を取得できませんでした（${error?.message || "接続エラー"}）。`;
+    appendSystemWorkLog("SNS自動巡回", "blocked", status.textContent, "CIDAO巡回API、DBマイグレーション、SNS認証状態を確認する");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function renderSnsMonitor(payload) {
+  const status = document.getElementById("sns-monitor-status");
+  const list = document.getElementById("sns-monitor-list");
+  const count = document.getElementById("sns-monitor-new-count");
+  const lastRunAt = payload?.lastRun?.finished_at || payload?.lastRun?.started_at || "";
+  const lastRunStatus = payload?.lastRun?.status || "waiting";
+  status.classList.toggle("is-error", lastRunStatus === "failed");
+  status.textContent = lastRunAt
+    ? `${formatDateTime(toDateTimeLocal(lastRunAt))} 巡回 / ${snsMonitorItems.length}件（${getFormValue("incident-date")}）`
+    : "初回巡回を待っています。";
+
+  const unregisteredCount = snsMonitorItems.filter(item => !findExactDuplicate(item)).length;
+  count.textContent = String(unregisteredCount);
+  count.hidden = unregisteredCount === 0;
+  renderSnsPlatformStatus(payload?.platforms || []);
+
+  if (!snsMonitorItems.length) {
+    list.innerHTML = '<div class="detail-empty">対象日の新着候補はありません。</div>';
+    return;
+  }
+  list.innerHTML = snsMonitorItems.map((item, index) => {
+    const duplicate = findExactDuplicate(item);
+    const platform = platformLabels[item.platform] || item.platform;
+    return `
+      <article class="sns-monitor-item ${duplicate ? "is-registered" : ""}">
+        <a class="sns-monitor-link" href="${escapeAttribute(item.permalink)}" target="_blank" rel="noreferrer">
+          <div class="sns-monitor-meta">
+            <span class="sns-monitor-platform">${escapeHtml(platform)}</span>
+            <span>${escapeHtml(item.username ? `@${item.username}` : "投稿者不明")}</span>
+            <span>${escapeHtml(formatDateTime(toDateTimeLocal(item.timestamp)))}</span>
+          </div>
+          <p class="sns-monitor-text">${escapeHtml(truncateText(item.text || "本文を取得できない投稿", 120))}</p>
+          ${item.mediaUrl ? `<img class="sns-monitor-thumb" src="${escapeAttribute(item.mediaUrl)}" alt="${escapeAttribute(`${platform}投稿の写真`)}" loading="lazy" referrerpolicy="no-referrer">` : ""}
+        </a>
+        <div class="sns-monitor-actions">
+          <button class="tool-button ${duplicate ? "" : "primary"}" type="button" data-monitor-index="${index}" ${duplicate ? "disabled" : ""}>${duplicate ? "登録済" : "未確認候補へ"}</button>
+        </div>
+      </article>`;
+  }).join("");
+}
+
+function renderSnsPlatformStatus(platforms) {
+  const node = document.getElementById("sns-platform-status");
+  const expected = ["threads", "instagram", "bluesky"];
+  const byPlatform = new Map(platforms.map(item => [item.platform, item]));
+  node.innerHTML = expected.map(platform => {
+    const item = byPlatform.get(platform);
+    const label = platformLabels[platform] || (platform === "bluesky" ? "Bluesky" : platform);
+    const state = !item ? "waiting" : item.status;
+    const className = state === "success" ? "is-active" : state === "failed" ? "is-error" : "";
+    const stateLabel = state === "success" ? "巡回中" : state === "failed" ? "要確認" : "待機";
+    const title = item?.message ? ` title="${escapeAttribute(item.message)}"` : "";
+    return `<span class="platform-state ${className}"${title}>${escapeHtml(label)} ${stateLabel}</span>`;
+  }).join("");
+}
+
+function handleSnsMonitorAction(event) {
+  const button = event.target.closest("[data-monitor-index]");
+  if (!button) return;
+  const item = snsMonitorItems[Number(button.dataset.monitorIndex)];
+  if (!item) return;
+  addApiResultAsRecord(item, { keepOpen: true, query: item.query || "SNS自動巡回" });
+  renderSnsMonitor(snsMonitorPayload || {});
 }
 
 function applyPublicViewControls() {
@@ -1093,6 +1220,8 @@ function normalizeSnsItem(item, fallbackPlatform) {
       ? item.comments.map(comment => typeof comment === "string" ? comment : comment?.text || "").filter(Boolean).join("\n")
       : String(item.commentsText || item.comments_text || item.commentText || ""),
     locationName: String(item.locationName || item.location_name || coordinates.name || ""),
+    query: String(item.query || item.matchedQuery || item.matched_query || ""),
+    discoveredAt: String(item.discoveredAt || item.discovered_at || ""),
     lat: Number.isFinite(lat) ? lat : null,
     lng: Number.isFinite(lng) ? lng : null
   };
@@ -1130,7 +1259,7 @@ function handleApiResultAction(event) {
   addApiResultAsRecord(apiResultItems[Number(button.dataset.apiIndex)]);
 }
 
-function addApiResultAsRecord(item) {
+function addApiResultAsRecord(item, options = {}) {
   if (!item) return;
   const duplicate = findExactDuplicate(item);
   if (duplicate) {
@@ -1163,7 +1292,7 @@ function addApiResultAsRecord(item) {
     notes: "公式APIまたは連携JSONから登録。位置・内容・写真の真正性は未確認。",
     hazardFlags: { flood: false, inland: false, road: false, landslide: false },
     evidencePlatform: item.platform,
-    evidenceQuery: getFormValue("collector-query"),
+    evidenceQuery: options.query || item.query || getFormValue("collector-query"),
     evidenceOperator: operator,
     evidenceCheckedAt: nowLocalInput(),
     sourceText: item.text,
@@ -1186,7 +1315,7 @@ function addApiResultAsRecord(item) {
   persistRecords();
   renderAll();
   renderApiResults();
-  document.getElementById("sns-collector-dialog").close();
+  if (!options.keepOpen) document.getElementById("sns-collector-dialog").close();
   document.getElementById("map-status").textContent = apiHasLocation
     ? "投稿の場所候補を取得しました。地図上でピン位置を確認してください。"
     : "投稿を登録しました。場所が不明な場合は投稿者へ確認できます。";
@@ -2030,7 +2159,7 @@ function renderRecords() {
       <div class="detail-meta">情報源: ${escapeHtml(sourceLabels[record.sourceType] || record.sourceType)}</div>
       ${platform ? `<div class="detail-meta">情報元: ${escapeHtml(platformLabels[platform] || platform)}</div>` : ""}
       ${passability !== "none" ? `<div class="detail-meta">${escapeHtml(passabilityLabels[passability])} ・ ${escapeHtml(formatDateTime(record.passabilityCheckedAt || record.observedAt))}</div>` : ""}
-      ${roadGeometry ? `<div class="detail-meta">交点間 ${escapeHtml(formatRoadDistance(roadGeometry))} ・ ${escapeHtml(roadDirectionLabels[record.roadDirection] || roadDirectionLabels.unknown)}</div>` : ""}
+      ${roadGeometry ? `<div class="detail-meta">道路区間 ${roadGeometry.length}点・${escapeHtml(formatRoadDistance(roadGeometry))} ・ ${escapeHtml(roadDirectionLabels[record.roadDirection] || roadDirectionLabels.unknown)}</div>` : ""}
       <div class="detail-meta">${escapeHtml(alignmentLabels[alignment])} ・ ${escapeHtml(photoLabels[record.photoStatus] || "")}</div>
       ${hasSnsPost ? `
         <div class="popup-source-actions">
@@ -2143,7 +2272,7 @@ function renderList() {
             <span class="badge ${alignmentColor(alignment)}">${escapeHtml(alignmentLabels[alignment])}</span>
             ${platform ? `<span class="badge blue">${escapeHtml(platformLabels[platform] || platform)}</span>` : ""}
             ${passability !== "none" ? `<span class="badge ${passabilityBadgeColor(passability)}">${escapeHtml(passabilityLabels[passability])}</span>` : ""}
-            ${roadGeometry ? `<span class="badge blue">交点間 ${escapeHtml(formatRoadDistance(roadGeometry))}</span>` : ""}
+            ${roadGeometry ? `<span class="badge blue">道路区間 ${roadGeometry.length}点・${escapeHtml(formatRoadDistance(roadGeometry))}</span>` : ""}
             <span>${escapeHtml(categoryLabels[record.category] || record.category)}</span>
             <span>${escapeHtml(PUBLIC_VIEW && record.publicLocationPrecision !== "exact" ? (record.publicLocationPrecision === "approximate" ? "概略位置" : "位置非公開") : (record.locationName || "場所名なし"))}</span>
             <span class="badge ${getLocationStatus(record) === "pinned" ? "green" : "yellow"}">${escapeHtml(locationStatusDisplayLabel(record))}</span>
@@ -2255,7 +2384,7 @@ function renderDetail() {
       ${passability !== "none" ? `<div class="detail-row"><span>通行状況</span><span>${escapeHtml(passabilityLabels[passability])}</span></div>` : ""}
       ${passability !== "none" ? `<div class="detail-row"><span>対象</span><span>${escapeHtml(passabilityModeLabels[record.passabilityMode] || passabilityModeLabels.unknown)}</span></div>` : ""}
       ${passability !== "none" ? `<div class="detail-row"><span>最終確認</span><span>${escapeHtml(formatDateTime(record.passabilityCheckedAt || record.observedAt))}</span></div>` : ""}
-      ${roadGeometry ? `<div class="detail-row"><span>道路区間</span><span>交点間 ${escapeHtml(formatRoadDistance(roadGeometry))}</span></div>` : ""}
+      ${roadGeometry ? `<div class="detail-row"><span>道路区間</span><span>${roadGeometry.length}点・${escapeHtml(formatRoadDistance(roadGeometry))}</span></div>` : ""}
       ${roadGeometry ? `<div class="detail-row"><span>規制方向</span><span>${escapeHtml(roadDirectionLabels[record.roadDirection] || roadDirectionLabels.unknown)}</span></div>` : ""}
       <div class="detail-row"><span>場所</span><span>${escapeHtml(displayLocationName)}</span></div>
       <div class="detail-row"><span>座標</span><span>${displayCoordinates ? `${displayCoordinates.lat.toFixed(publicApproximate ? 3 : 6)}, ${displayCoordinates.lng.toFixed(publicApproximate ? 3 : 6)}${publicApproximate ? "（概略）" : ""}` : PUBLIC_VIEW ? "非公開" : "未特定"}</span></div>
@@ -2636,16 +2765,12 @@ function startRoadSectionSelection() {
   document.getElementById("road-draw-banner").hidden = false;
   document.querySelector(".map-pane").classList.add("is-road-drawing");
   renderRoadDrawingPreview();
-  if (roadDrawingPoints.length === 2) map.fitBounds(L.latLngBounds(roadDrawingPoints).pad(0.35));
+  if (roadDrawingPoints.length >= 2) map.fitBounds(L.latLngBounds(roadDrawingPoints).pad(0.35));
   scheduleMapResize();
 }
 
 function addRoadSectionPoint(latlng) {
   if (!roadDrawingMode) return;
-  if (roadDrawingPoints.length >= 2) {
-    document.getElementById("road-draw-status").textContent = "始点と終点は選択済みです。変更する場合は「1点戻す」を押してください。";
-    return;
-  }
   roadDrawingPoints.push([Number(latlng.lat.toFixed(6)), Number(latlng.lng.toFixed(6))]);
   renderRoadDrawingPreview();
 }
@@ -2661,7 +2786,7 @@ function cancelRoadSectionSelection() {
 }
 
 function finishRoadSectionSelection() {
-  if (roadDrawingPoints.length !== 2) return;
+  if (roadDrawingPoints.length < 2) return;
   setFormValue("record-road-geometry", JSON.stringify(roadDrawingPoints));
   const center = roadGeometryCenter(roadDrawingPoints);
   if (center) {
@@ -2689,12 +2814,13 @@ function clearRoadSection() {
 
 function renderRoadDrawingPreview() {
   roadDrawingLayer.clearLayers();
-  if (roadDrawingPoints.length === 2) {
+  if (roadDrawingPoints.length >= 2) {
     roadDrawingLayer.addLayer(L.polyline(roadDrawingPoints, {
       color: "#b8322c",
       weight: 7,
       opacity: 0.94,
-      dashArray: "10 7"
+      dashArray: "10 7",
+      interactive: false
     }));
   }
   roadDrawingPoints.forEach((point, index) => {
@@ -2703,9 +2829,15 @@ function renderRoadDrawingPreview() {
       color: "#ffffff",
       weight: 3,
       fillColor: "#b8322c",
-      fillOpacity: 1
+      fillOpacity: 1,
+      interactive: false
     });
-    marker.bindTooltip(index === 0 ? "始点" : "終点", {
+    const pointLabel = index === 0
+      ? "始点"
+      : index === roadDrawingPoints.length - 1
+        ? "終点"
+        : `中間${index}`;
+    marker.bindTooltip(pointLabel, {
       permanent: true,
       direction: "top",
       offset: [0, -8]
@@ -2716,20 +2848,20 @@ function renderRoadDrawingPreview() {
   status.textContent = roadDrawingPoints.length === 0
     ? "まず通行止め区間の始点となる交差点を選んでください。"
     : roadDrawingPoints.length === 1
-      ? "次に終点となる交差点を選んでください。"
-      : `交点間 ${formatRoadDistance(roadDrawingPoints)}。位置を確認して確定してください。`;
+      ? "次の交差点を選んでください。曲がる道路では中間点を続けて追加できます。"
+      : `${roadDrawingPoints.length}点・${formatRoadDistance(roadDrawingPoints)}。曲がりに沿って点を追加するか、この区間で確定してください。`;
   document.getElementById("road-draw-undo-button").disabled = roadDrawingPoints.length === 0;
-  document.getElementById("road-draw-finish-button").disabled = roadDrawingPoints.length !== 2;
+  document.getElementById("road-draw-finish-button").disabled = roadDrawingPoints.length < 2;
 }
 
 function renderRoadGeometrySummary() {
   const geometry = parseRoadGeometry(getFormValue("record-road-geometry"));
   const node = document.getElementById("record-road-geometry-summary");
   node.textContent = geometry
-    ? `交点間を設定済み（${formatRoadDistance(geometry)}）`
+    ? `道路区間を設定済み（${geometry.length}点・${formatRoadDistance(geometry)}）`
     : "区間未設定（通行止め・通行不能は地図上に×で表示）";
   document.getElementById("record-road-clear-button").disabled = !geometry;
-  document.getElementById("record-road-draw-button").textContent = geometry ? "交点間を変更" : "交点間を地図で指定";
+  document.getElementById("record-road-draw-button").textContent = geometry ? "道路区間を変更" : "道路区間を地図で指定";
 }
 
 function updateRoadColorPreview() {
