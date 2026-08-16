@@ -17,6 +17,21 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-17",
+          "title": "Map Tiles使用量パネル実装（Codex委譲）＋防災MAPリンク＋課金調査＋Codex引継ぎノート 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/admin/analytics/map-tiles/route.ts＋_components/MapTilesUsageSection.tsx＋analytics/page.tsx（Cloud Monitoring API v3からMap Tiles APIリクエスト数を取得し/admin/analyticsに表示。node:cryptoで自前JWT署名・外部依存なし・環境変数未設定時は「未設定」案内。commit bd13535 push、Vercelデプロイ成功・API 401応答確認）",
+            "site/inzai-disaster-map/index.html（ヘッダーに「メタバース印西（3D）」リンク追加、別タブ。commit ff192b7）＋admin/changelog.json 1件",
+            "cidao/2026-08-17_災害MAP_SNS検索語管理と避難所レイヤーの引継ぎ.md（新規。Codex実装分の実装済み/未検証/未完了・Facebook手動検索方針・避難所レイヤー状況・コミット時のlayout.tsx/next.config.ts混入注意を整理）＋MOC_CiDAO.md登録",
+            "調査: Map Tiles API課金は実測¥0（¥177は全額Gemini API＝チラシ取込機能）／3D Tiles料金は無料枠1,000リクエスト/月・$5.10/1000（2Dの無料枠の1/100・単価10倍）／「課金はroot.jsonのみ」の当初説明を撤回し文化財MAP時代の課金実績確認を依頼中／APIキーのリファラ制限は適切設定済みと確認",
+            "メモリ: codex-hang-fallback-to-fable.md（Codexが10分ログ停滞ならFable 5へ切替えるルール）"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "Codexは今回ハングせず約25分で完了。ただし依頼外のlayout.tsx（node_modules内フォント直接参照）とnext.config.ts変更を残したため未コミットのまま隔離。防災MAP新機能（SNS検索語管理・避難所レイヤー）はCodex実装済み・全未コミットで、引継ぎノートに作業再開手順を記録。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 152,342 / cost: $26.20"
+        },
+        {
           "date": "2026-08-16",
           "title": "Google Map Tiles API課金監視の方式検討＋手順書作成 0.2時間",
           "category": "調査",
