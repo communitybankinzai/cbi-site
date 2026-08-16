@@ -1,0 +1,104 @@
+# 印西市 災害状況整合MAP 引継ぎ
+
+最終更新: 2026-08-16
+
+## 作業場所と公開先
+
+- MAPリポジトリ: `C:\Users\nsfactory\OneDrive\CBI\site`
+- MAP本体: `inzai-disaster-map/`
+- 本番: https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/
+- MAP最新コミット: `2d21d7d` (`Add SNS monitoring and multi-point road sections`)
+- CIDAOリポジトリ: `C:\Repos\cidao`
+- CIDAO本番: https://cidao.vercel.app
+- CIDAO最新コミット: `da6c46d` (`Add disaster SNS monitoring API`)
+
+## プロダクトの位置付け
+
+印西市のハザード情報、気象・地震情報、市民やSNSから得た被害候補、道路通行情報を同じ地図で照合する構想検証版。現時点では正式運用前であり、MAPへ手入力した内容はブラウザのLocalStorageにだけ保存される。印西市・CBI・他端末へは自動共有されない。
+
+救助要請や110・119に関わる情報は、将来の検討対象ではあるが、緊急通報の代替として扱わない。個人情報、正確な位置、写真の公開には承認工程が必要。
+
+## 実装済みの主な機能
+
+### 地図・ハザード・公式情報
+
+- Leafletによる印西市MAP。PC・スマホ向けレスポンシブ表示。
+- 地理院タイル、印西市境界、洪水浸水想定（最大規模・計画規模）、内水浸水想定、土砂災害警戒区域。
+- 気象庁の雨雲レーダー実況、印西市の警報・注意報、地震情報。
+- J-SHISの「30年以内に震度6弱以上となる確率」「表層地盤の揺れの増幅率」。これは現在の震度・実被害ではない。
+- 公式情報リンク: 印西市防災ポータル、印西市わが街ガイド、気象庁、JARTIC、千葉県道路規制、TOYOTA通れた道マップ等。
+- 対象日で記録を絞り込み、通常は過去災害の記録を混在させない。「過去記録も表示」で明示的に切替可能。
+
+### SNS・写真・場所確認
+
+- SNS投稿URLを直接登録し、情報元プラットフォーム、投稿時刻、本文・コメント、写真、根拠URLを記録。
+- 「n時間前」表記を検索確認時刻から逆算して投稿時刻へ変換。
+- スクリーンショットの貼付・ファイル読込・切出し・OCR。ブラウザ制約上、Instagram等の画面を完全自動キャプチャできない場合は貼付またはファイル読込を使う。
+- 写真にEXIF GPSが残っている場合は緯度経度を候補として利用。ただしSNS側で再圧縮された写真はGPSが除去されていることが多い。
+- 投稿本文と場所に関係するコメントから地名候補を検索し、確認後にピン設定。
+- 場所不明の投稿は「投稿コメント」「DM」等で確認中として保存し、判明後にピン設定。
+- 地図ピンのポップアップと右側カードから元SNS投稿へ移動。写真URLがある場合はポップアップで写真を表示。
+
+### 道路通行情報
+
+- 通行止め・通行不能は赤、注意・規制は橙、再開は緑、通行実績は青。
+- ピンポイントの通行止め・通行不能は地図上に赤い`×`で表示。
+- 道路区間は始点から順にクリックして作成。2点の直線だけでなく、中間点を何点でも追加して曲がった道路を折れ線表示できる。
+- 「1点戻す」で直前の点を取消し、2点以上で確定。既存の2点区間データとも互換。
+- 現状は道路中心線への自動スナップや交差点候補の自動抽出ではなく、地図上を手動クリックする方式。
+- JARTICリアルタイム情報とTOYOTA走行データの自動取込は未接続。表示中の道路線は、手入力、SNS/Web、住民通報、公式・職員確認など、各記録の情報源を保持する。
+
+## SNS自動巡回
+
+MAPは `config.js` の `snsMonitorEndpoint` で以下へ接続する。
+
+`https://cidao.vercel.app/api/disaster/sns-monitor`
+
+- Supabase `pg_cron`が5分ごとに固定検索語を巡回する。ブラウザを開いていなくても動く。
+- CIDAO APIのGETは`?date=YYYY-MM-DD`で指定した日本時間の日付だけを返す。過去災害を現在表示へ混在させない。
+- 発見した投稿は自動公開せず、`disaster_sns_candidates`へ未確認候補として保存する。
+- MAP右側の「SNS新着巡回」から元投稿を開き、確認後に端末内の被害候補へ登録できる。
+- 位置語と災害語の両方を満たす投稿だけを候補にする。巡回自体に生成AIは使わないため、AI API料金は発生しない。
+
+### 2026-08-16現在の接続状態
+
+- Bluesky: 稼働中。公開検索APIで巡回成功。
+- Threads: 投稿用認証はあるが、公開投稿検索の`threads_keyword_search`権限を含む再認証が必要。現状は画面に「要確認」と表示。
+- Instagram: 投稿用トークンとは別に、Facebook Login方式のInstagramプロアカウントIDとハッシュタグ検索権限付きユーザートークンが必要。現状は未設定で「要確認」。
+- 認証設定場所: CIDAOの`/admin/sns`。Instagram検索専用フォームを追加済み。
+
+## CIDAO側の実装
+
+- API: `src/app/api/disaster/sns-monitor/route.ts`
+- 巡回処理: `src/lib/disaster-sns-monitor.ts`
+- 管理認証: `src/app/admin/sns/actions.ts`、`page.tsx`、`_components/SnsAuthSettings.tsx`
+- DB migration: `supabase/migrations/20260816100000_disaster_sns_monitor.sql`
+- 主なDB: `disaster_sns_monitor_rules`、`disaster_sns_candidates`、`disaster_sns_scan_runs`
+- migrationは本番Supabaseへ適用済み。5分巡回と日次クリーンアップのcronも登録済み。
+- GitHub PagesからのGET/POST/OPTIONSを許可するCORSを設定済み。
+
+## 未実装・次の優先候補
+
+1. CIDAO `/admin/sns`でThreads検索権限付き再認証とInstagram検索専用認証を完了する。
+2. MAPのLocalStorage記録をSupabaseへ共有保存し、登録利用者・自主防災組織向けの認証、権限、承認、監査ログを実装する。
+3. SNS候補の確認・却下・採用状態をサーバー側へ保存し、複数端末で同期する。
+4. 道路中心線データを使い、クリック点を道路へスナップする。必要なら交差点候補、区間編集、方向別規制を追加する。
+5. 印西市公式の揺れやすさ・液状化、洪水浸水継続時間、家屋倒壊等氾濫想定区域、避難所等を、利用条件と更新日を確認したうえで追加する。
+6. JARTICはリアルタイム一般公開APIの利用条件を確認する。公開されている月次オープンデータをリアルタイム表示と誤認させない。
+7. TOYOTA走行データは利用許諾・提供方式を確認する。現在は参照リンクのみ。
+
+## 検証済み事項
+
+- CIDAO: `npm run build`成功。`/api/disaster/sns-monitor`を含む本番ビルド成功。
+- 本番API: GET `200`、GitHub Pages OriginへのCORS `204`を確認。
+- 本番巡回: Bluesky成功、Threads/Instagramは認証課題を明示したpartial状態。
+- MAP: `node --check inzai-disaster-map/app.js`成功、GitHub Pages deployment成功。
+- 本番画面: 警報・注意報、地図、SNS巡回状態の表示を確認。
+- 道路区間: 4点追加、座標配列への確定、2点データ互換を確認。
+
+## 作業時の注意
+
+- MAPリポジトリには本件と無関係な未追跡ファイルがある。削除・追加・コミットしないこと: `.claude/`、`assets/banner.png`、`assets/top.png`、その他既存の未追跡画像・フォルダ。
+- SNS候補を公的確定情報として自動公開しない。元投稿、確認時刻、確認者、写真状態、場所確認状態を残す。
+- 「通れた」実績は記録時点の参考情報であり、現在通行可能である保証に使わない。
+- ハザード予測と実被害を同一視しない。レイヤー名、出典、版、取得・確認日を表示する。
