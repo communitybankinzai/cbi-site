@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>いんざい冒険図鑑リアル | 印西の街を歩いて精霊をあつめよう</title>
+<meta name="description" content="印西市の文化財50か所を実際に歩いてめぐり、精霊をあつめるGPS冒険ゲーム。COCoLa製・無料・アプリインストール不要。">
+<meta name="theme-color" content="#2e8b57">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" href="../assets/COCoLa_Logo_transparent.png">
+<link rel="apple-touch-icon" href="../assets/COCoLa_Logo_BG.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; background: #f3efe3; }
+  * { box-sizing: border-box; }
+
+  /* ヘッダー */
+  #header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 52px;
+    background: #2e8b57; color: #fff; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 12px;
+  }
+  #header .title { font-size: 15px; font-weight: bold; }
+  #header .count {
+    background: rgba(255,255,255,0.25); border-radius: 14px; padding: 3px 12px;
+    font-size: 13px; font-weight: bold;
+  }
+
+  /* 地図 */
+  #map { position: fixed; top: 52px; bottom: 60px; left: 0; right: 0; }
+  #gpsStatus {
+    position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 900;
+    background: rgba(20,30,40,0.85); color: #fff; border-radius: 16px;
+    padding: 5px 14px; font-size: 11px; max-width: 90vw; text-align: center;
+  }
+  #locateBtn {
+    position: fixed; right: 12px; bottom: 76px; z-index: 900;
+    width: 46px; height: 46px; border-radius: 50%; border: none;
+    background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-size: 20px; cursor: pointer;
+  }
+
+  /* 下部ナビ */
+  #nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; height: 60px;
+    background: #fff; border-top: 1px solid #ddd; display: flex;
+  }
+  #nav button {
+    flex: 1; border: none; background: none; font-size: 11px; color: #777;
+    cursor: pointer; line-height: 1.3; padding-top: 6px;
+  }
+  #nav button .ico { font-size: 20px; display: block; }
+  #nav button.active { color: #2e8b57; font-weight: bold; }
+
+  /* 画面（ずかん・あそびかた） */
+  .screen {
+    position: fixed; top: 52px; bottom: 60px; left: 0; right: 0; z-index: 800;
+    background: #f3efe3; overflow-y: auto; padding: 12px; display: none;
+  }
+  .screen.show { display: block; }
+  .screen h2 { font-size: 16px; color: #2e8b57; margin: 4px 0 10px; }
+  .screen p, .screen li { font-size: 13px; line-height: 1.8; color: #333; }
+
+  /* ずかんグリッド */
+  #zukanGrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  #zukanGrid .zcell {
+    background: #fff; border-radius: 12px; padding: 6px 2px; text-align: center;
+    cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.12); line-height: 1.2;
+  }
+  #zukanGrid .zcell svg { width: 44px; height: 44px; display: block; margin: 0 auto; }
+  #zukanGrid .zcell.locked svg { filter: brightness(0) opacity(0.35); }
+  #zukanGrid .zcell .stars { font-size: 9px; color: #e67e22; letter-spacing: -1px; }
+  #zukanGrid .zcell.locked .stars { color: #bbb; }
+  #zukanGrid .zcell.rare3:not(.locked) {
+    background: linear-gradient(160deg, #fff3d6, #ffffff);
+    box-shadow: 0 0 10px rgba(230,160,30,0.55);
+  }
+  #zukanDetail {
+    margin-top: 10px; background: #fff; border-radius: 12px; padding: 10px 12px;
+    display: none; box-shadow: 0 1px 3px rgba(0,0,0,0.12); font-size: 13px; line-height: 1.7;
+  }
+  #zukanDetail .row { display: flex; align-items: center; gap: 12px; }
+  #zukanDetail svg { width: 60px; height: 60px; flex-shrink: 0; }
+
+  /* キャラ出現バナー */
+  #encounter {
+    position: fixed; bottom: 76px; left: 50%; transform: translateX(-50%);
+    z-index: 1100; background: #fff; border: 3px solid #e67e22; border-radius: 18px;
+    padding: 14px 16px; width: min(92vw, 330px); text-align: center; display: none;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  }
+  #encounter.show { display: block; }
+  #encounter .charBox svg { width: 96px; height: 96px; animation: charBounce 0.9s ease infinite; }
+  @keyframes charBounce {
+    0%, 100% { transform: translateY(0); }
+    45% { transform: translateY(-12px); }
+    60% { transform: translateY(0) scaleX(1.06) scaleY(0.94); }
+  }
+  #encounter .ename { font-size: 15px; font-weight: bold; color: #e67e22; margin: 4px 0 2px; }
+  #encounter .edesc { font-size: 12px; color: #555; margin-bottom: 10px; }
+  #encounter .getBtn {
+    border: none; border-radius: 12px; background: #e67e22; color: #fff;
+    font-size: 16px; font-weight: bold; padding: 12px 34px; cursor: pointer;
+  }
+  #encounter .closeBtn {
+    position: absolute; top: 6px; right: 10px; background: none; border: none;
+    color: #999; font-size: 15px; cursor: pointer;
+  }
+
+  /* トースト・コンプリート */
+  #toast {
+    position: fixed; top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.85);
+    z-index: 1200; background: rgba(230, 126, 34, 0.95); color: #fff;
+    border-radius: 16px; padding: 16px 24px; font-size: 15px; font-weight: bold;
+    text-align: center; display: none; opacity: 0; transition: all 0.3s ease;
+    max-width: 86vw;
+  }
+  #toast.show { display: block; transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  #completeModal {
+    position: fixed; inset: 0; z-index: 1300; background: rgba(10,16,24,0.88);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  #completeModal.show { display: flex; }
+  #completeModal .inner {
+    background: linear-gradient(160deg, #2c3e50, #1a2533); color: #fff;
+    border: 2px solid #ffd166; border-radius: 18px; padding: 26px 22px;
+    max-width: 340px; text-align: center; font-size: 13px; line-height: 1.8;
+  }
+  #completeModal h2 { color: #ffd166; font-size: 19px; margin: 0 0 10px; }
+  #completeModal .password {
+    background: rgba(255,209,102,0.15); border: 1px dashed #ffd166; border-radius: 10px;
+    padding: 10px; font-size: 16px; font-weight: bold; color: #ffd166; margin: 10px 0;
+  }
+  #completeModal button {
+    padding: 9px 28px; border: none; border-radius: 10px; background: #3a7bd5;
+    color: #fff; font-size: 13px; cursor: pointer;
+  }
+
+  /* 初回安全ガイド */
+  #safetyModal {
+    position: fixed; inset: 0; z-index: 1400; background: rgba(10,16,24,0.92);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  #safetyModal.show { display: flex; }
+  #safetyModal .inner {
+    background: #fff; border-radius: 18px; padding: 20px 18px;
+    max-width: 380px; max-height: 86vh; overflow-y: auto; font-size: 13px; line-height: 1.8;
+  }
+  #safetyModal h2 { font-size: 17px; color: #c0392b; margin: 0 0 8px; }
+  #safetyModal h3 { font-size: 14px; color: #2e8b57; margin: 12px 0 4px; }
+  #safetyModal ul { margin: 0; padding-left: 20px; }
+  #safetyModal .agreeBtn {
+    display: block; width: 100%; margin-top: 14px; padding: 12px; border: none;
+    border-radius: 12px; background: #2e8b57; color: #fff; font-size: 15px;
+    font-weight: bold; cursor: pointer;
+  }
+
+  .leaflet-div-icon { background: none; border: none; }
+  .spotPin { font-size: 13px; text-align: center; line-height: 1; }
+  .spotPin .pinBody {
+    width: 30px; height: 30px; border-radius: 50% 50% 50% 4px; transform: rotate(-45deg);
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.35); margin: 0 auto;
+  }
+  .spotPin .pinBody > span { transform: rotate(45deg); font-size: 14px; color: #fff; font-weight: bold; }
+  .spotPin svg { width: 26px; height: 26px; transform: rotate(45deg); }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <span class="title">🐾 いんざい冒険図鑑リアル</span>
+  <span class="count" id="countBadge">0/50</span>
+</div>
+
+<div id="map"></div>
+<div id="gpsStatus">📡 GPSを起動しています…</div>
+<button id="locateBtn" title="現在地へ">🎯</button>
+
+<div id="zukanScreen" class="screen">
+  <h2>📖 ずかん <small id="zukanSub"></small></h2>
+  <div id="zukanGrid"></div>
+  <div id="zukanDetail"></div>
+  <p style="font-size:11px;color:#888;margin-top:12px;">記録はこの端末のブラウザに保存されます。
+    <button id="resetBtn" style="border:none;background:none;color:#c0392b;text-decoration:underline;cursor:pointer;font-size:11px;">記録をリセット</button></p>
+</div>
+
+<div id="helpScreen" class="screen">
+  <h2>❓ あそびかた</h2>
+  <p>印西市の文化財<b>50か所</b>に「精霊」がかくれています。実際に街を歩いて、文化財の<b>100m以内</b>まで行くと精霊が出現！「ゲットする！」をタップして図鑑に登録しよう。</p>
+  <ul>
+    <li>精霊は6系統：やしろ・ほとけ・もり・いせき・まつり・たから</li>
+    <li>レア度：★市指定 ★★県指定 ★★★国指定（金色に輝く）</li>
+    <li>50体すべて集めると…ひみつのごほうびが！</li>
+  </ul>
+  <h2 style="margin-top:16px;">⚠️ やくそく（必ず守ってね）</h2>
+  <ul>
+    <li>小学生は<b>大人といっしょに</b>冒険しよう</li>
+    <li>歩きながらスマホを見ない。<b>立ち止まって操作</b></li>
+    <li>交通ルールを守る。道路に飛び出さない</li>
+    <li><b>私有地・お寺や神社の立入禁止場所に入らない</b>。精霊は100m以内なら道路からでもゲットできるよ</li>
+    <li>暑い日は水分補給。無理をしない</li>
+  </ul>
+  <p style="margin-top:12px;">🌏 家の中から遊びたいときは <a href="../metaverse/" style="color:#2e8b57;">メタバース版</a> もあるよ！</p>
+  <p style="font-size:11px;color:#888;">データ出典：印西市内の文化財一覧（印西市ホームページ）／地図：© OpenStreetMap contributors</p>
+</div>
+
+<div id="nav">
+  <button id="navMap" class="active"><span class="ico">🗺️</span>ちず</button>
+  <button id="navZukan"><span class="ico">📖</span>ずかん</button>
+  <button id="navHelp"><span class="ico">❓</span>あそびかた</button>
+</div>
+
+<div id="encounter">
+  <button class="closeBtn" onclick="dismissEncounter()">✕</button>
+  <div class="charBox" id="encounterChar"></div>
+  <div class="ename" id="encounterName"></div>
+  <div class="edesc" id="encounterDesc"></div>
+  <button class="getBtn" onclick="confirmCatch()">ゲットする！</button>
+</div>
+
+<div id="toast"></div>
+
+<div id="completeModal">
+  <div class="inner">
+    <h2>🏆 図鑑コンプリート！</h2>
+    <p>印西市の文化財50か所をすべて歩いてめぐり、<br>50体の精霊を集めました！<br>きみは ほんものの いんざい冒険マスター！</p>
+    <div class="password">合言葉：リアルいんざいマスター</div>
+    <p style="font-size:11px;opacity:0.8;">この画面のスクリーンショットがイベント参加の証明になります。</p>
+    <button onclick="document.getElementById('completeModal').classList.remove('show')">閉じる</button>
+  </div>
+</div>
+
+<div id="safetyModal">
+  <div class="inner">
+    <h2>⚠️ 冒険のまえの やくそく</h2>
+    <p>「いんざい冒険図鑑リアル」は、<b>実際に印西の街を歩いて</b>精霊を集めるゲームです。はじめる前に、おうちの人と一緒に読んでね。</p>
+    <h3>🚸 安全のやくそく</h3>
+    <ul>
+      <li>小学生は<b>大人といっしょに</b>冒険する</li>
+      <li>歩きながらスマホを見ない。<b>立ち止まって操作</b>する</li>
+      <li>交通ルールを守る。道路に飛び出さない</li>
+      <li><b>私有地や立入禁止の場所には入らない</b>（精霊は道路からでもゲットできます）</li>
+      <li>暑い日は水分補給。夜はあそばない</li>
+    </ul>
+    <h3>📡 位置情報について</h3>
+    <p>このゲームは現在地（GPS）を使います。位置情報は<b>あなたのスマホの中だけ</b>で使われ、サーバーには送信・保存されません。</p>
+    <button class="agreeBtn" onclick="agreeSafety()">やくそくを守って冒険する！</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ============================================================
+// 設定・データ
+// ============================================================
+const CATCH_RADIUS_M = 100;            // リアル版の獲得判定距離(m)。敷地外の道路からでも取れる距離
+const STORAGE_KEY = "cocola-real-zukan-v1";
+const SAFETY_KEY = "cocola-real-safety-agreed";
+const DEBUG = new URLSearchParams(location.search).get("debug") === "1"; // 地図タップ＝仮想移動
+
+// 精霊6系統（メタバース版 metaverse/index.html と同一定義）
+const SPIRIT_TRIBES = {
+  "やしろ": { match: ["建造物"], color: "#a5703f", label: "やしろ精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18,42 L50,18 L82,42 Z" fill="#7a5230"/><circle cx="50" cy="62" r="26" fill="#c89058"/><circle cx="41" cy="58" r="4.5" fill="#2d1f12"/><circle cx="59" cy="58" r="4.5" fill="#2d1f12"/><path d="M42,70 q8,7 16,0" stroke="#2d1f12" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="34" cy="66" r="4" fill="#e8a87c" opacity="0.7"/><circle cx="66" cy="66" r="4" fill="#e8a87c" opacity="0.7"/></svg>' },
+  "ほとけ": { match: ["彫刻", "彫刻・仏像"], color: "#d4a017", label: "ほとけ精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="58" r="26" fill="#f0c34e"/><circle cx="50" cy="58" r="33" fill="none" stroke="#ffe9a8" stroke-width="4" opacity="0.8"/><circle cx="50" cy="26" r="7" fill="#f0c34e"/><path d="M41,56 q4,-5 8,0 M51,56 q4,-5 8,0" stroke="#5a4310" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M43,70 q7,5 14,0" stroke="#5a4310" stroke-width="3" fill="none" stroke-linecap="round"/></svg>' },
+  "もり": { match: ["天然記念物"], color: "#3e8e5a", label: "もり精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="30" rx="14" ry="20" fill="#56b878" transform="rotate(-18 50 30)"/><circle cx="50" cy="62" r="26" fill="#79c994"/><circle cx="41" cy="58" r="4.5" fill="#1d3a28"/><circle cx="59" cy="58" r="4.5" fill="#1d3a28"/><path d="M42,70 q8,7 16,0" stroke="#1d3a28" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="33" cy="66" r="4" fill="#aee3c0" opacity="0.8"/><circle cx="67" cy="66" r="4" fill="#aee3c0" opacity="0.8"/></svg>' },
+  "いせき": { match: ["史跡"], color: "#8a8a7e", label: "いせき精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="58" r="26" fill="#b8b8aa"/><rect x="38" y="22" width="24" height="16" rx="6" fill="#9a9a8c"/><ellipse cx="41" cy="58" rx="5" ry="7" fill="#3a3a30"/><ellipse cx="59" cy="58" rx="5" ry="7" fill="#3a3a30"/><ellipse cx="50" cy="71" rx="5" ry="6" fill="#3a3a30"/></svg>' },
+  "まつり": { match: ["無形民俗文化財", "有形民俗文化財", "民俗文化財"], color: "#c0392b", label: "まつり精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="60" r="26" fill="#e05a4a"/><path d="M26,46 q24,-26 48,0 q-6,-9 -24,-9 q-18,0 -24,9 Z" fill="#8a2a1d"/><circle cx="41" cy="58" r="5" fill="#fff"/><circle cx="59" cy="58" r="5" fill="#fff"/><circle cx="41" cy="58" r="2.4" fill="#222"/><circle cx="59" cy="58" r="2.4" fill="#222"/><path d="M40,71 q10,8 20,0" stroke="#f1c40f" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M30,44 l-8,-11 M70,44 l8,-11" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/></svg>' },
+  "たから": { match: ["工芸品", "古文書", "歴史資料", "考古資料", "工芸品・古文書"], color: "#5b6ee1", label: "たから精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="60" r="26" fill="#7d8cf0"/><rect x="34" y="20" width="32" height="14" rx="7" fill="#aab6ff"/><rect x="30" y="24" width="8" height="6" rx="3" fill="#8d9cf5"/><rect x="62" y="24" width="8" height="6" rx="3" fill="#8d9cf5"/><circle cx="41" cy="58" r="4.5" fill="#1d2350"/><circle cx="59" cy="58" r="4.5" fill="#1d2350"/><path d="M42,70 q8,7 16,0" stroke="#1d2350" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M50,38 l3,6 6,1 -4,5 1,6 -6,-3 -6,3 1,-6 -4,-5 6,-1 Z" fill="#ffd166"/></svg>' },
+};
+
+function tribeOf(b) {
+  for (const key in SPIRIT_TRIBES) {
+    if (SPIRIT_TRIBES[key].match.some((m) => b.type.indexOf(m) >= 0 || m.indexOf(b.type) >= 0)) return key;
+  }
+  return "たから";
+}
+function starsOf(b) {
+  if (b.designation === "国指定" || b.designation === "国登録") return 3;
+  if (b.designation === "県指定") return 2;
+  return 1;
+}
+function distM(la1, lo1, la2, lo2) {
+  return Math.hypot((la1 - la2) * 111320, (lo1 - lo2) * 111320 * Math.cos(la1 * Math.PI / 180));
+}
+
+let BUNKAZAI = [];
+let got = loadGot(); // { index: ISO日時 }
+function loadGot() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    return (d && typeof d === "object" && !Array.isArray(d)) ? d : {};
+  } catch (e) { return {}; }
+}
+function saveGot() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(got)); } catch (e) {} }
+function gotTotal() { return Object.keys(got).length; }
+
+// ============================================================
+// 地図（Leaflet + OpenStreetMap）
+// ============================================================
+const map = L.map("map", { zoomControl: false }).setView([35.812, 140.145], 12);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+}).addTo(map);
+L.control.zoom({ position: "bottomright" }).addTo(map);
+
+let meMarker = null;
+let meCircle = null;
+let mePos = null; // [lat, lon]
+const spotMarkers = [];
+
+function spotIcon(b, i) {
+  const isGot = got[i] !== undefined;
+  const tribe = SPIRIT_TRIBES[tribeOf(b)];
+  const inner = isGot ? tribe.svg : '<span>？</span>';
+  const bg = isGot ? "#fff" : tribe.color;
+  return L.divIcon({
+    className: "spotPin",
+    html: '<div class="pinBody" style="background:' + bg + ';">' + inner + "</div>",
+    iconSize: [30, 38], iconAnchor: [15, 34],
+  });
+}
+
+function renderSpots() {
+  spotMarkers.forEach((m) => map.removeLayer(m));
+  spotMarkers.length = 0;
+  BUNKAZAI.forEach((b, i) => {
+    const mk = L.marker([b.lat, b.lon], { icon: spotIcon(b, i) }).addTo(map);
+    const isGot = got[i] !== undefined;
+    const tribe = SPIRIT_TRIBES[tribeOf(b)];
+    mk.bindPopup(
+      "<b>" + (isGot ? tribe.label : "？？？") + "</b> " + "★".repeat(starsOf(b)) + "<br>" +
+      "すみか: " + b.name + "<br><small>［" + b.designation + "・" + b.type + "］ " +
+      (isGot ? new Date(got[i]).toLocaleDateString("ja-JP") + " ゲット" : "100m以内に近づくと出現") + "</small>");
+    spotMarkers.push(mk);
+  });
+}
+
+// ============================================================
+// GPS
+// ============================================================
+const gpsStatus = document.getElementById("gpsStatus");
+
+function onPosition(lat, lon, accuracy) {
+  mePos = [lat, lon];
+  if (!meMarker) {
+    meMarker = L.marker([lat, lon], {
+      icon: L.divIcon({ className: "", html: '<div style="width:18px;height:18px;border-radius:50%;background:#3a7bd5;border:3px solid #fff;box-shadow:0 0 8px rgba(58,123,213,0.8);"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }),
+      zIndexOffset: 1000,
+    }).addTo(map);
+    meCircle = L.circle([lat, lon], { radius: accuracy || 30, color: "#3a7bd5", weight: 1, fillOpacity: 0.08 }).addTo(map);
+    map.setView([lat, lon], 15);
+  } else {
+    meMarker.setLatLng([lat, lon]);
+    meCircle.setLatLng([lat, lon]).setRadius(accuracy || 30);
+  }
+  if (accuracy !== null) {
+    gpsStatus.textContent = accuracy > 150
+      ? "📡 GPSの精度が低めです（±" + Math.round(accuracy) + "m）。空がひらけた場所だと安定します"
+      : "📡 GPS受信中（±" + Math.round(accuracy) + "m）";
+  }
+  checkProximity(lat, lon);
+}
+
+function startGps() {
+  if (DEBUG) {
+    gpsStatus.textContent = "🧪 テストモード：地図をタップすると移動できます";
+    map.on("click", (e) => onPosition(e.latlng.lat, e.latlng.lng, 10));
+    return;
+  }
+  if (!navigator.geolocation) {
+    gpsStatus.textContent = "⚠️ この端末では位置情報が使えません";
+    return;
+  }
+  navigator.geolocation.watchPosition(
+    (pos) => onPosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
+    (err) => {
+      gpsStatus.textContent = err.code === 1
+        ? "⚠️ 位置情報が許可されていません。ブラウザの設定から許可してください"
+        : "⚠️ 現在地を取得できません（" + err.message + "）";
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+}
+
+document.getElementById("locateBtn").onclick = function () {
+  if (mePos) map.setView(mePos, 16);
+  else gpsStatus.textContent = "📡 現在地を取得中です…";
+};
+
+// ============================================================
+// 出現・ゲット
+// ============================================================
+let encounterIdx = null;
+
+function checkProximity(lat, lon) {
+  if (encounterIdx !== null || BUNKAZAI.length === 0) return;
+  if (gotTotal() === BUNKAZAI.length) return;
+  for (let i = 0; i < BUNKAZAI.length; i++) {
+    if (got[i] !== undefined) continue;
+    if (distM(lat, lon, BUNKAZAI[i].lat, BUNKAZAI[i].lon) <= CATCH_RADIUS_M) {
+      showEncounter(i);
+      break;
+    }
+  }
+}
+
+function showEncounter(idx) {
+  encounterIdx = idx;
+  const b = BUNKAZAI[idx];
+  const tribe = SPIRIT_TRIBES[tribeOf(b)];
+  document.getElementById("encounterChar").innerHTML = tribe.svg;
+  document.getElementById("encounterName").textContent = tribe.label + "があらわれた！ " + "★".repeat(starsOf(b));
+  document.getElementById("encounterDesc").textContent = b.name + "（" + b.designation + "）にすんでいる精霊だ";
+  document.getElementById("encounter").classList.add("show");
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+}
+
+function confirmCatch() {
+  if (encounterIdx === null) return;
+  const idx = encounterIdx;
+  encounterIdx = null;
+  document.getElementById("encounter").classList.remove("show");
+  got[idx] = new Date().toISOString();
+  saveGot();
+  refreshAll();
+  const tribe = SPIRIT_TRIBES[tribeOf(BUNKAZAI[idx])];
+  showToast("🎉 " + tribe.label + "をゲット！（" + gotTotal() + "/" + BUNKAZAI.length + "）");
+  if (gotTotal() === BUNKAZAI.length) {
+    setTimeout(() => document.getElementById("completeModal").classList.add("show"), 2600);
+  }
+}
+
+function dismissEncounter() {
+  encounterIdx = null;
+  document.getElementById("encounter").classList.remove("show");
+}
+
+let toastTimer = null;
+function showToast(text) {
+  const t = document.getElementById("toast");
+  t.textContent = text;
+  t.classList.add("show");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+// ============================================================
+// ずかん
+// ============================================================
+function renderZukan() {
+  const grid = document.getElementById("zukanGrid");
+  grid.innerHTML = "";
+  BUNKAZAI.forEach((b, i) => {
+    const isGot = got[i] !== undefined;
+    const tribe = SPIRIT_TRIBES[tribeOf(b)];
+    const stars = starsOf(b);
+    const cell = document.createElement("div");
+    cell.className = "zcell" + (isGot ? "" : " locked") + (stars === 3 ? " rare3" : "");
+    cell.innerHTML = tribe.svg + '<div class="stars">' + "★".repeat(stars) + "</div>";
+    cell.onclick = function () { showZukanDetail(i); };
+    grid.appendChild(cell);
+  });
+  document.getElementById("zukanSub").textContent = gotTotal() + "/" + (BUNKAZAI.length || 50);
+}
+
+function showZukanDetail(i) {
+  const b = BUNKAZAI[i];
+  const isGot = got[i] !== undefined;
+  const tribe = SPIRIT_TRIBES[tribeOf(b)];
+  const detail = document.getElementById("zukanDetail");
+  detail.style.display = "block";
+  detail.innerHTML =
+    '<div class="row"><div style="' + (isGot ? "" : "filter:brightness(0) opacity(0.35);") + '">' + tribe.svg + "</div>" +
+    "<div><b style=\"color:" + tribe.color + ";\">" + (isGot ? tribe.label : "？？？") + "</b> " +
+    '<span style="color:#e67e22;">' + "★".repeat(starsOf(b)) + "</span><br>" +
+    "<small>すみか: " + b.name + "<br>" +
+    (isGot ? new Date(got[i]).toLocaleDateString("ja-JP") + " ゲット" : "100m以内に近づくと出現するよ") +
+    "</small></div></div>" +
+    '<button style="margin-top:8px;width:100%;padding:8px;border:none;border-radius:10px;background:#3a7bd5;color:#fff;cursor:pointer;font-size:12px;" ' +
+    'onclick="showOnMap(' + i + ')">🗺️ 地図でみる</button>';
+}
+
+function showOnMap(i) {
+  switchScreen("map");
+  map.setView([BUNKAZAI[i].lat, BUNKAZAI[i].lon], 16);
+  spotMarkers[i] && spotMarkers[i].openPopup();
+}
+
+document.getElementById("resetBtn").onclick = function () {
+  if (confirm("冒険の記録をぜんぶリセットしますか？")) {
+    got = {};
+    saveGot();
+    refreshAll();
+  }
+};
+
+function refreshAll() {
+  document.getElementById("countBadge").textContent = gotTotal() + "/" + (BUNKAZAI.length || 50);
+  renderZukan();
+  renderSpots();
+}
+
+// ============================================================
+// 画面切替・初期化
+// ============================================================
+function switchScreen(name) {
+  document.getElementById("zukanScreen").classList.toggle("show", name === "zukan");
+  document.getElementById("helpScreen").classList.toggle("show", name === "help");
+  document.getElementById("navMap").classList.toggle("active", name === "map");
+  document.getElementById("navZukan").classList.toggle("active", name === "zukan");
+  document.getElementById("navHelp").classList.toggle("active", name === "help");
+  if (name === "map") setTimeout(() => map.invalidateSize(), 100);
+}
+document.getElementById("navMap").onclick = () => switchScreen("map");
+document.getElementById("navZukan").onclick = () => switchScreen("zukan");
+document.getElementById("navHelp").onclick = () => switchScreen("help");
+
+function agreeSafety() {
+  try { localStorage.setItem(SAFETY_KEY, "1"); } catch (e) {}
+  document.getElementById("safetyModal").classList.remove("show");
+  startGps();
+}
+
+async function init() {
+  try {
+    const res = await fetch("../metaverse/bunkazai.json");
+    BUNKAZAI = (await res.json()).spots;
+  } catch (e) {
+    document.getElementById("gpsStatus").textContent = "⚠️ 文化財データの読み込みに失敗しました。再読み込みしてください";
+    return;
+  }
+  refreshAll();
+  let agreed = false;
+  try { agreed = localStorage.getItem(SAFETY_KEY) === "1"; } catch (e) {}
+  if (agreed) startGps();
+  else document.getElementById("safetyModal").classList.add("show");
+}
+init();
+
+// PWA: Service Worker登録
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>COCoLaメタバース印西 | 印西市3Dワールド</title>
+<meta name="description" content="印西市をGoogle Photorealistic 3D Tilesでリアルに再現したCOCoLaのメタバースワールド。千葉ニュータウンの街を自由に歩けます。">
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; background: #000; }
+  #cesiumContainer { width: 100%; height: 100%; }
+
+  /* ヘッダー */
+  #mvHeader {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; pointer-events: none;
+  }
+  #mvHeader .title {
+    background: rgba(20, 30, 40, 0.75); color: #fff; border-radius: 10px;
+    padding: 6px 14px; font-size: 14px; font-weight: bold; pointer-events: auto;
+  }
+  #mvHeader .title small { font-weight: normal; opacity: 0.8; margin-left: 6px; }
+  #backLink {
+    background: rgba(20, 30, 40, 0.75); color: #fff; text-decoration: none;
+    border-radius: 10px; padding: 6px 12px; font-size: 12px; pointer-events: auto;
+  }
+  #backLink:hover { background: rgba(20, 30, 40, 0.95); }
+
+  /* 操作パネル */
+  #controlPanel {
+    position: absolute; top: 52px; right: 10px; z-index: 20;
+    background: rgba(20, 30, 40, 0.8); color: #fff; border-radius: 12px;
+    padding: 10px; width: 190px; font-size: 12px;
+  }
+  #controlPanel h3 { margin: 0 0 6px; font-size: 13px; }
+  #controlPanel button {
+    display: block; width: 100%; margin: 4px 0; padding: 7px 8px;
+    border: none; border-radius: 8px; cursor: pointer; font-size: 12px;
+    background: #3a7bd5; color: #fff; text-align: left;
+  }
+  #controlPanel button:hover { background: #2f66b3; }
+  #controlPanel button.modeBtn { background: #2e8b57; }
+  #controlPanel button.modeBtn.active { background: #e67e22; }
+  #panelToggle {
+    position: absolute; top: 52px; right: 10px; z-index: 21;
+    background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
+    border-radius: 10px; padding: 8px 10px; font-size: 13px; cursor: pointer; display: none;
+  }
+
+  /* 操作説明 */
+  #helpBox {
+    position: absolute; bottom: 36px; left: 10px; z-index: 20;
+    background: rgba(20, 30, 40, 0.75); color: #fff; border-radius: 10px;
+    padding: 8px 12px; font-size: 11px; line-height: 1.6; max-width: 270px;
+  }
+  #helpBox b { color: #ffd166; }
+
+  /* スポット情報 */
+  #spotInfo {
+    position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+    z-index: 25; background: rgba(20, 30, 40, 0.9); color: #fff;
+    border-radius: 12px; padding: 12px 16px; max-width: 320px; font-size: 13px;
+    display: none;
+  }
+  #spotInfo h4 { margin: 0 0 6px; color: #ffd166; font-size: 14px; }
+  #spotInfo p { margin: 0; line-height: 1.6; }
+  #spotInfo .close { position: absolute; top: 6px; right: 10px; cursor: pointer; opacity: 0.7; }
+
+  /* ローディング・エラー */
+  #overlay {
+    position: absolute; inset: 0; z-index: 50; background: rgba(10, 16, 24, 0.95);
+    color: #fff; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center; padding: 20px;
+  }
+  #overlay h2 { font-size: 18px; margin-bottom: 10px; }
+  #overlay p { font-size: 13px; line-height: 1.8; max-width: 480px; }
+  #overlay .spinner {
+    width: 36px; height: 36px; border: 4px solid rgba(255,255,255,0.2);
+    border-top-color: #3a7bd5; border-radius: 50%; margin-bottom: 16px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* 文化財パズルラリー */
+  #puzzleBtn {
+    position: absolute; top: 52px; left: 10px; z-index: 21;
+    background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
+    border-radius: 10px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+  }
+  #puzzleBtn .badge {
+    background: #e67e22; border-radius: 10px; padding: 1px 7px;
+    font-size: 11px; margin-left: 4px; font-weight: bold;
+  }
+  #puzzlePanel {
+    position: absolute; top: 92px; left: 10px; z-index: 25;
+    background: rgba(20, 30, 40, 0.94); color: #fff; border-radius: 12px;
+    padding: 12px 14px; width: min(92vw, 420px); font-size: 12px; display: none;
+    max-height: calc(100vh - 140px); overflow-y: auto;
+  }
+  #puzzlePanel h3 { margin: 0 0 8px; font-size: 14px; color: #ffd166; }
+  #puzzleBoard {
+    position: relative; width: 100%; aspect-ratio: 2 / 1;
+    border-radius: 8px; overflow: hidden; background: #111;
+  }
+  #puzzleBoard img { width: 100%; height: 100%; display: block; }
+  #puzzleMask {
+    position: absolute; inset: 0; display: grid;
+    grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(5, 1fr);
+  }
+  #puzzleMask .cell {
+    background: #2c3a4a; border: 1px solid rgba(255,255,255,0.08);
+    transition: opacity 0.8s ease;
+  }
+  #puzzleMask .cell.revealed { opacity: 0; pointer-events: none; }
+  #puzzlePanel ul { list-style: none; margin: 8px 0 0; padding: 0; max-height: 300px; overflow-y: auto; }
+  #puzzlePanel li {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.12);
+    line-height: 1.4;
+  }
+  #puzzlePanel li:last-child { border-bottom: none; }
+  #puzzlePanel li .mark { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
+  #puzzlePanel li:not(.got) { opacity: 0.6; }
+  #puzzlePanel li .nm { flex: 1; }
+  #puzzlePanel li .desig { font-size: 10px; opacity: 0.7; }
+  #puzzlePanel li .goBtn {
+    flex-shrink: 0; border: none; border-radius: 6px; background: #3a7bd5;
+    color: #fff; font-size: 11px; padding: 4px 8px; cursor: pointer;
+  }
+  #puzzlePanel .resetBtn {
+    margin-top: 8px; width: 100%; padding: 6px; border: none; border-radius: 8px;
+    background: rgba(255,255,255,0.15); color: #fff; font-size: 11px; cursor: pointer;
+  }
+  #puzzlePanel .hint { font-size: 10px; opacity: 0.75; margin: 6px 0 0; line-height: 1.5; }
+  #puzzlePanel .filterRow { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+  #puzzlePanel .filterRow button {
+    border: none; border-radius: 6px; background: rgba(255,255,255,0.15);
+    color: #fff; font-size: 10px; padding: 3px 8px; cursor: pointer;
+  }
+  #puzzlePanel .filterRow button.active { background: #e67e22; }
+
+  #stampToast {
+    position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+    z-index: 40; background: rgba(230, 126, 34, 0.95); color: #fff;
+    border-radius: 16px; padding: 18px 26px; font-size: 16px; font-weight: bold;
+    text-align: center; display: none; box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+    transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0;
+  }
+  #stampToast.show { display: block; transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  #stampToast .big { font-size: 34px; display: block; margin-bottom: 6px; }
+
+  #completeModal {
+    position: absolute; inset: 0; z-index: 60; background: rgba(10, 16, 24, 0.88);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  #completeModal.show { display: flex; }
+  #completeModal .inner {
+    background: linear-gradient(160deg, #2c3e50, #1a2533); color: #fff;
+    border: 2px solid #ffd166; border-radius: 18px; padding: 28px 24px;
+    max-width: 360px; text-align: center;
+  }
+  #completeModal h2 { color: #ffd166; font-size: 20px; margin: 0 0 10px; }
+  #completeModal p { font-size: 13px; line-height: 1.8; margin: 0 0 12px; }
+  #completeModal .password {
+    background: rgba(255, 209, 102, 0.15); border: 1px dashed #ffd166;
+    border-radius: 10px; padding: 10px; font-size: 16px; font-weight: bold;
+    color: #ffd166; margin-bottom: 14px;
+  }
+  #completeModal button {
+    padding: 9px 28px; border: none; border-radius: 10px; background: #3a7bd5;
+    color: #fff; font-size: 13px; cursor: pointer;
+  }
+
+  /* いんざい冒険図鑑（キャラ収集） */
+  #puzzlePanel .tabRow { display: flex; gap: 6px; margin-bottom: 8px; }
+  #puzzlePanel .tabRow button {
+    flex: 1; border: none; border-radius: 8px; padding: 7px;
+    background: rgba(255,255,255,0.15); color: #fff; font-size: 12px;
+    font-weight: bold; cursor: pointer;
+  }
+  #puzzlePanel .tabRow button.active { background: #e67e22; }
+  #zukanGrid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 4px;
+  }
+  #zukanGrid .zcell {
+    background: rgba(255,255,255,0.08); border-radius: 10px; padding: 5px 2px;
+    text-align: center; cursor: pointer; line-height: 1.2;
+  }
+  #zukanGrid .zcell svg { width: 40px; height: 40px; display: block; margin: 0 auto; }
+  #zukanGrid .zcell img.zimg { width: 100%; height: 52px; object-fit: contain; display: block; border-radius: 6px; }
+  #zukanGrid .zcell.locked svg { filter: brightness(0) opacity(0.45); }
+  #zukanGrid .zcell .stars { font-size: 9px; color: #ffd166; letter-spacing: -1px; }
+  #zukanGrid .zcell.locked .stars { color: #667; }
+  #zukanGrid .zcell.rare3:not(.locked) {
+    background: linear-gradient(160deg, rgba(255,209,102,0.30), rgba(255,255,255,0.08));
+    box-shadow: 0 0 8px rgba(255,209,102,0.45);
+  }
+  #zukanDetail {
+    margin-top: 8px; background: rgba(255,255,255,0.10); border-radius: 10px;
+    padding: 8px 10px; display: none; line-height: 1.6;
+  }
+  #zukanDetail .row { display: flex; align-items: center; gap: 10px; }
+  #zukanDetail svg { width: 56px; height: 56px; flex-shrink: 0; }
+
+  /* キャラ出現バナー */
+  #encounter {
+    position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%);
+    z-index: 45; background: rgba(20, 30, 40, 0.92); color: #fff;
+    border: 2px solid #ffd166; border-radius: 16px; padding: 12px 16px;
+    width: min(92vw, 330px); text-align: center; display: none;
+  }
+  #encounter.show { display: block; }
+  #encounter .charBox svg { width: 90px; height: 90px; animation: charBounce 0.9s ease infinite; }
+  #encounter .charBox img.cardImg { width: auto; max-width: min(74vw, 220px); max-height: 180px; border-radius: 12px; }
+  @keyframes charBounce {
+    0%, 100% { transform: translateY(0); }
+    45% { transform: translateY(-12px); }
+    60% { transform: translateY(0) scaleX(1.06) scaleY(0.94); }
+  }
+  #encounter .ename { font-size: 14px; font-weight: bold; color: #ffd166; margin: 4px 0 2px; }
+  #encounter .edesc { font-size: 11px; opacity: 0.9; margin-bottom: 8px; }
+  #encounter .getBtn {
+    border: none; border-radius: 10px; background: #e67e22; color: #fff;
+    font-size: 15px; font-weight: bold; padding: 10px 30px; cursor: pointer;
+  }
+  #encounter .detailBtn {
+    display: block; width: fit-content; margin: 0 auto 8px; padding: 7px 16px;
+    border: 1px solid #ffd166; border-radius: 10px; background: rgba(255, 209, 102, 0.12);
+    color: #ffd166; font-size: 12px; font-weight: bold; text-decoration: none; cursor: pointer;
+  }
+  #encounter .closeBtn {
+    position: absolute; top: 6px; right: 10px; background: none; border: none;
+    color: #fff; opacity: 0.7; font-size: 14px; cursor: pointer;
+  }
+
+  /* 遊び方ガイド */
+  #howtoBtn {
+    position: absolute; top: 52px; left: 132px; z-index: 21;
+    background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
+    border-radius: 10px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+  }
+  #howtoModal {
+    position: absolute; inset: 0; z-index: 55; background: rgba(10, 16, 24, 0.88);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  #howtoModal.show { display: flex; }
+  #howtoModal .inner {
+    background: linear-gradient(160deg, #2c3e50, #1a2533); color: #fff;
+    border: 2px solid #3a7bd5; border-radius: 18px; padding: 22px 20px;
+    max-width: 440px; max-height: 86vh; overflow-y: auto; font-size: 13px;
+  }
+  #howtoModal h2 { color: #ffd166; font-size: 17px; margin: 0 0 4px; }
+  #howtoModal h3 { color: #7fc8ff; font-size: 14px; margin: 16px 0 6px; }
+  #howtoModal p, #howtoModal li { line-height: 1.8; margin: 0 0 6px; }
+  #howtoModal ul { margin: 0; padding-left: 18px; }
+  #howtoModal b { color: #ffd166; }
+  #howtoModal .keybox {
+    display: inline-block; background: rgba(255,255,255,0.15); border-radius: 5px;
+    padding: 0 7px; font-weight: bold; margin: 0 1px;
+  }
+  #howtoModal .closeRow { text-align: center; margin-top: 16px; }
+  #howtoModal .closeRow button {
+    padding: 10px 36px; border: none; border-radius: 10px; background: #3a7bd5;
+    color: #fff; font-size: 14px; cursor: pointer; font-weight: bold;
+  }
+
+  /* 仮想ジョイスティック（モバイル） */
+  #joystick {
+    position: absolute; bottom: 90px; left: 24px; z-index: 30;
+    width: 110px; height: 110px; border-radius: 50%;
+    background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.3);
+    display: none; touch-action: none;
+  }
+  #joystickKnob {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 46px; height: 46px; border-radius: 50%;
+    background: rgba(255,255,255,0.55);
+  }
+  @media (pointer: coarse) {
+    #joystick { display: block; }
+    #helpBox { display: none; }
+    #controlPanel { display: none; }
+    #panelToggle { display: block; }
+  }
+</style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+
+<div id="mvHeader">
+  <div class="title">🌏 COCoLaメタバース印西<small>印西市3Dワールド</small></div>
+  <a id="backLink" href="../index.html">← COCoLaサイトへ戻る</a>
+</div>
+
+<button id="panelToggle">📍 スポット</button>
+
+<button id="puzzleBtn">📖 冒険図鑑<span class="badge" id="puzzleCount">0/50</span></button>
+<div id="puzzlePanel">
+  <h3>📖 いんざい冒険図鑑</h3>
+  <div class="tabRow">
+    <button id="tabZukan" class="active">🐾 ずかん</button>
+    <button id="tabPuzzle">🧩 パズル</button>
+  </div>
+  <div id="zukanView">
+    <p class="hint">印西市の文化財50か所には「精霊」がかくれています。80m以内まで近づくと出現！ タップしてゲットしよう。レア度は ★市指定 ★★県指定 ★★★国指定。</p>
+    <div id="zukanGrid"></div>
+    <div id="zukanDetail"></div>
+  </div>
+  <div id="puzzleView" style="display:none;">
+  <div id="puzzleBoard">
+    <img src="puzzle-art.svg" alt="印西の文化財風景パズル">
+    <div id="puzzleMask"></div>
+  </div>
+  <p class="hint">印西市の指定文化財50か所に近づく（80m以内）とパズルのピースが1枚ずつ開きます。50枚すべて集めると絵が完成！「▶行く」で文化財の近くまで飛べます（最後は自分で近づこう）。</p>
+  <div class="filterRow" id="desigFilter">
+    <button data-f="all" class="active">すべて</button>
+    <button data-f="国指定">国指定</button>
+    <button data-f="県指定">県指定</button>
+    <button data-f="市指定">市指定</button>
+    <button data-f="国登録">国登録</button>
+  </div>
+  <ul id="bunkazaiList"></ul>
+  <button class="resetBtn" id="puzzleResetBtn">記録をリセット</button>
+  </div>
+</div>
+
+<div id="encounter">
+  <button class="closeBtn" onclick="dismissEncounter()">✕</button>
+  <div class="charBox" id="encounterChar"></div>
+  <div class="ename" id="encounterName"></div>
+  <div class="edesc" id="encounterDesc"></div>
+  <a class="detailBtn" id="encounterDetail" href="#" target="_blank" rel="noopener">🔎 実物を詳しく見る（市公式）</a>
+  <button class="getBtn" onclick="confirmCatch()">ゲットする！</button>
+</div>
+
+<button id="howtoBtn">❓ 遊び方</button>
+<div id="howtoModal">
+  <div class="inner">
+    <h2>🌏 COCoLaメタバース印西 — 遊び方</h2>
+    <p>ここは、印西市の街並みをGoogleの3D都市データでリアルに再現したバーチャル空間です。空を飛んだり、地上を歩いたりしながら、本物そっくりの印西の街を自由に探検できます。</p>
+
+    <h3>🎮 操作方法</h3>
+    <p><b>パソコン：</b></p>
+    <ul>
+      <li>移動：<span class="keybox">W</span><span class="keybox">A</span><span class="keybox">S</span><span class="keybox">D</span> または矢印キー（<span class="keybox">Shift</span>で加速）</li>
+      <li>上昇／下降：<span class="keybox">E</span>／<span class="keybox">Q</span>（飛行モード時）</li>
+      <li>見回す：画面をマウスで<b>ドラッグ</b></li>
+    </ul>
+    <p><b>スマートフォン：</b></p>
+    <ul>
+      <li>移動：画面左下の<b>丸いスティック</b>を指でたおす</li>
+      <li>見回す：画面を<b>スワイプ</b></li>
+    </ul>
+
+    <h3>🚶 2つのモード</h3>
+    <ul>
+      <li><b>歩行モード</b>：地上の目線（高さ1.7m）で街を歩けます。文化財めぐりはこちらで</li>
+      <li><b>飛行モード</b>：空を自由に飛んで街を一望できます</li>
+    </ul>
+    <p>右側のパネル（スマホは「📍スポット」ボタン）から駅やモールへひとっ飛びもできます。</p>
+
+    <h3>🐾 精霊あつめ＆文化財パズル</h3>
+    <p>印西市の指定・登録文化財<b>50か所</b>に「<b>精霊</b>」がかくれています。</p>
+    <ul>
+      <li>文化財に<b>80m以内</b>まで近づくと精霊が出現！「<b>ゲットする！</b>」をタップして図鑑に登録しよう（上空を飛んで通過しただけでは出ません）</li>
+      <li>精霊は6系統（やしろ・ほとけ・もり・いせき・まつり・たから）。レア度は ★市指定 ★★県指定 <b>★★★国指定</b></li>
+      <li>左上の「<b>📖 冒険図鑑</b>」で集めた精霊とパズルを確認。「<b>▶行く</b>」で精霊のすみかの近くまで飛べます</li>
+      <li>精霊をゲットするとパズルのピースも1枚開き、50体すべて集めると…<b>ひみつの絵が完成</b>し、合言葉が表示されます🏆</li>
+    </ul>
+    <p>集めた記録はこの端末のブラウザに保存されるので、途中でやめても続きから遊べます。</p>
+    <p style="font-size:11px;opacity:0.8;">※移動した直後は街並みの読み込みに数秒〜数十秒かかることがあります（「🌍読み込み中…」表示が消えるまでお待ちください）。駅前から離れた郊外では映像が粗い場所もありますが、ピース獲得には影響ありません。</p>
+
+    <div class="closeRow"><button onclick="closeHowto()">探検をはじめる！</button></div>
+  </div>
+</div>
+
+<div id="stampToast"><span class="big">🧩</span><span id="stampToastText"></span></div>
+
+<div id="completeModal">
+  <div class="inner">
+    <h2>🏆 文化財パズル コンプリート！</h2>
+    <div style="border-radius:10px;overflow:hidden;margin-bottom:12px;"><img src="puzzle-art.svg" style="width:100%;display:block;" alt="完成した印西の文化財風景"></div>
+    <p>印西市の指定文化財50か所をすべて巡り、絵が完成しました！<br>おめでとうございます！</p>
+    <div class="password">合言葉：いんざいメタマスター</div>
+    <p style="font-size:11px;opacity:0.8;">この画面のスクリーンショットがイベント参加の証明になります。</p>
+    <button onclick="document.getElementById('completeModal').classList.remove('show')">閉じる</button>
+  </div>
+</div>
+<div id="controlPanel">
+  <h3>📍 スポットへ移動</h3>
+  <div id="spotButtons"></div>
+  <h3 style="margin-top:10px;">🎮 モード</h3>
+  <button id="walkModeBtn" class="modeBtn">🚶 歩行モード（地上視点）</button>
+  <button id="flyModeBtn" class="modeBtn active">🚁 飛行モード（自由視点）</button>
+</div>
+
+<div id="helpBox">
+  <b>操作方法</b><br>
+  移動：<b>W A S D</b> ／ 矢印キー（<b>Shift</b>で加速）<br>
+  上昇・下降：<b>E</b> ／ <b>Q</b>（飛行モード）<br>
+  見回す：画面を<b>ドラッグ</b><br>
+  スポット看板を<b>クリック</b>で説明表示<br>
+  🧩 文化財に<b>80m以内</b>まで近づくとパズルピース獲得
+</div>
+
+<div id="spotInfo">
+  <span class="close" onclick="document.getElementById('spotInfo').style.display='none'">✕</span>
+  <h4 id="spotInfoTitle"></h4>
+  <p id="spotInfoDesc"></p>
+</div>
+
+<div id="joystick"><div id="joystickKnob"></div></div>
+
+<div id="overlay">
+  <div class="spinner"></div>
+  <h2>印西市3Dワールドを読み込み中…</h2>
+  <p>Google Photorealistic 3D Tiles から印西市の街並みデータを取得しています。<br>通信環境により数十秒かかることがあります。</p>
+</div>
+
+<script>
+"use strict";
+
+// ============================================================
+// 設定
+// ============================================================
+const GOOGLE_MAPS_API_KEY = "AIzaSyA9NAb0XATmwwr7Z0gkl_3hAkSjJRh2c2E"; // COCoLa Metaverse Key（Map Tiles API専用・you0810jmsdf.github.io限定）
+const GOOGLE_3DTILES_URL = "https://tile.googleapis.com/v1/3dtiles/root.json?key=" + GOOGLE_MAPS_API_KEY;
+
+// 印西市の主要スポット（座標は国土地理院 住所検索API / OpenStreetMap Nominatim で取得）
+const SPOTS = [
+  { name: "千葉ニュータウン中央駅", lat: 35.799983, lon: 140.116119,
+    desc: "印西市の玄関口となる北総線の駅。駅周辺はCOCoLaの活動エリアの中心です。" },
+  { name: "イオンモール千葉ニュータウン", lat: 35.800167, lon: 140.111502,
+    desc: "千葉ニュータウン中央駅前の大型ショッピングモール。地域の暮らしの拠点です。" },
+  { name: "印西牧の原駅", lat: 35.803497, lon: 140.166716,
+    desc: "北総線の駅。周辺には大型商業施設が集まり、家族連れで賑わうエリアです。" },
+  { name: "BIG HOPガーデンモール印西", lat: 35.803195, lon: 140.162553,
+    desc: "印西牧の原駅前のアウトレットモール。観覧車がランドマークです。" },
+  { name: "印西市役所", lat: 35.832338, lon: 140.145795,
+    desc: "印西市の行政の中心。CiDAO（市民投票PoC）など行政連携の取り組みも進行中です。" },
+  { name: "木下駅（木下河岸）", lat: 35.838908, lon: 140.148377,
+    desc: "JR成田線の駅。利根川の舟運で栄えた木下河岸の歴史が残る、印西の旧市街エリアです。" },
+];
+
+const START_SPOT = SPOTS[0]; // 初期位置：千葉ニュータウン中央駅
+const WALK_EYE_HEIGHT = 1.7;   // 歩行モードの目線の高さ(m)
+const WALK_SPEED = 6;          // 歩行速度(m/s)
+const FLY_SPEED = 30;          // 飛行速度(m/s)
+const SPEED_BOOST = 4;         // Shift押下時の倍率
+
+// ============================================================
+// Cesium Viewer 初期化（Cesium ion 不使用・Google APIキーのみで動作）
+// ============================================================
+Cesium.Ion.defaultAccessToken = "";
+
+const viewer = new Cesium.Viewer("cesiumContainer", {
+  baseLayer: false,
+  baseLayerPicker: false,
+  geocoder: false,
+  homeButton: false,
+  sceneModePicker: false,
+  navigationHelpButton: false,
+  animation: false,
+  timeline: false,
+  fullscreenButton: false,
+  infoBox: false,
+  selectionIndicator: false,
+  requestRenderMode: false,
+});
+viewer.scene.globe.show = false;          // 地表はGoogle 3D Tilesに含まれるため非表示
+viewer.scene.skyAtmosphere.show = true;
+viewer.scene.screenSpaceCameraController.enableCollisionDetection = true;
+
+// ============================================================
+// Google Photorealistic 3D Tiles 読み込み
+// ============================================================
+let tileset = null;
+
+async function loadTileset() {
+  try {
+    tileset = await Cesium.Cesium3DTileset.fromUrl(GOOGLE_3DTILES_URL, {
+      showCreditsOnScreen: true, // Google規約上クレジット表示は必須
+    });
+    viewer.scene.primitives.add(tileset);
+    document.getElementById("overlay").style.display = "none";
+
+    // タイル読み込み中インジケータ（テレポート直後・歩行モードで「何も見えない」不安を防ぐ）
+    const tileLoading = document.createElement("div");
+    tileLoading.id = "tileLoading";
+    tileLoading.textContent = "🌍 街並みを読み込み中…";
+    tileLoading.style.cssText =
+      "position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:30;" +
+      "background:rgba(20,30,40,0.85);color:#fff;border-radius:20px;padding:6px 16px;" +
+      "font-size:12px;display:none;pointer-events:none;";
+    document.body.appendChild(tileLoading);
+    let tileLoadingTimer = null;
+    tileset.loadProgress.addEventListener(function (pending, processing) {
+      if (pending + processing > 0) {
+        tileLoading.style.display = "block";
+        if (tileLoadingTimer) clearTimeout(tileLoadingTimer);
+        // 完了通知が来ないケースに備えて一定時間で自動的に消す
+        tileLoadingTimer = setTimeout(function () { tileLoading.style.display = "none"; }, 8000);
+      } else {
+        tileLoading.style.display = "none";
+      }
+    });
+
+    flyToSpot(START_SPOT, 900);
+  } catch (e) {
+    showError(e);
+  }
+}
+
+function showError(e) {
+  const overlay = document.getElementById("overlay");
+  overlay.innerHTML =
+    '<h2>⚠️ 3D都市データの読み込みに失敗しました</h2>' +
+    '<p>Google Map Tiles API からデータを取得できませんでした。<br>' +
+    '考えられる原因：<br>' +
+    '・Google Cloud プロジェクトで <b>Map Tiles API</b> が有効化されていない<br>' +
+    '・APIキーのリファラ制限にこのページのURLが含まれていない<br>' +
+    '・一時的な通信エラー（再読み込みで直る場合があります）<br><br>' +
+    '<small>エラー詳細: ' + String(e).replace(/</g, "&lt;").substring(0, 300) + '</small></p>' +
+    '<p><button onclick="location.reload()" style="padding:10px 24px;border:none;border-radius:8px;background:#3a7bd5;color:#fff;font-size:14px;cursor:pointer;">再読み込み</button></p>';
+}
+
+// ============================================================
+// スポット看板（ビルボード＋ラベル）
+// ============================================================
+const SPOT_BILLBOARD_HEIGHT = 60; // 看板を建物より上に浮かせる高さ(m)
+
+SPOTS.forEach((spot, i) => {
+  viewer.entities.add({
+    id: "spot-" + i,
+    position: Cesium.Cartesian3.fromDegrees(spot.lon, spot.lat, SPOT_BILLBOARD_HEIGHT),
+    point: { pixelSize: 14, color: Cesium.Color.fromCssColorString("#ffd166"),
+             outlineColor: Cesium.Color.fromCssColorString("#1a2533"), outlineWidth: 3,
+             disableDepthTestDistance: Number.POSITIVE_INFINITY },
+    label: {
+      text: spot.name,
+      font: "bold 14px sans-serif",
+      fillColor: Cesium.Color.WHITE,
+      outlineColor: Cesium.Color.fromCssColorString("#1a2533"),
+      outlineWidth: 4,
+      style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+      pixelOffset: new Cesium.Cartesian2(0, -22),
+      disableDepthTestDistance: Number.POSITIVE_INFINITY,
+    },
+  });
+});
+
+// 看板クリックの説明表示は文化財看板と共通のハンドラで行う
+// （Cesium の setInputAction は同一イベントへの再登録で上書きされるため1本に統合）
+
+// ============================================================
+// スポット移動ボタン
+// ============================================================
+function flyToSpot(spot, height) {
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(spot.lon, spot.lat - 0.006, height || 600),
+    orientation: {
+      heading: 0,
+      pitch: Cesium.Math.toRadians(-35),
+      roll: 0,
+    },
+    duration: 3,
+  });
+}
+
+const spotButtonsEl = document.getElementById("spotButtons");
+SPOTS.forEach((spot) => {
+  const btn = document.createElement("button");
+  btn.textContent = "📍 " + spot.name;
+  btn.onclick = () => flyToSpot(spot);
+  spotButtonsEl.appendChild(btn);
+});
+
+document.getElementById("panelToggle").onclick = function () {
+  const panel = document.getElementById("controlPanel");
+  panel.style.display = (panel.style.display === "block") ? "none" : "block";
+};
+
+// ============================================================
+// 移動操作（WASD＋ドラッグ視点＋仮想ジョイスティック）
+// ============================================================
+let walkMode = false; // false=飛行モード, true=歩行モード（地面吸着）
+const keys = {};
+
+document.addEventListener("keydown", (e) => { keys[e.code] = true; });
+document.addEventListener("keyup", (e) => { keys[e.code] = false; });
+window.addEventListener("blur", () => { Object.keys(keys).forEach((k) => { keys[k] = false; }); });
+
+// --- ドラッグで見回す（自前実装。Cesium標準操作は無効化して統一） ---
+viewer.scene.screenSpaceCameraController.enableRotate = false;
+viewer.scene.screenSpaceCameraController.enableTranslate = false;
+viewer.scene.screenSpaceCameraController.enableTilt = false;
+viewer.scene.screenSpaceCameraController.enableLook = false;
+viewer.scene.screenSpaceCameraController.enableZoom = true; // ホイールズームは残す
+
+let dragging = false;
+let lastX = 0, lastY = 0;
+const canvas = viewer.scene.canvas;
+const joystickEl = document.getElementById("joystick");
+
+canvas.addEventListener("pointerdown", (e) => {
+  if (e.target === joystickEl || joystickEl.contains(e.target)) return;
+  dragging = true; lastX = e.clientX; lastY = e.clientY;
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener("pointermove", (e) => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX;
+  const dy = e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+  const cam = viewer.camera;
+  cam.setView({
+    orientation: {
+      heading: cam.heading + dx * 0.003,
+      pitch: Cesium.Math.clamp(cam.pitch - dy * 0.003, Cesium.Math.toRadians(-89), Cesium.Math.toRadians(89)),
+      roll: 0,
+    },
+  });
+});
+canvas.addEventListener("pointerup", () => { dragging = false; });
+canvas.addEventListener("pointercancel", () => { dragging = false; });
+
+// --- 仮想ジョイスティック（モバイル） ---
+const joyState = { active: false, dx: 0, dy: 0 };
+const knob = document.getElementById("joystickKnob");
+
+joystickEl.addEventListener("pointerdown", (e) => {
+  joyState.active = true;
+  joystickEl.setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+joystickEl.addEventListener("pointermove", (e) => {
+  if (!joyState.active) return;
+  const rect = joystickEl.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  let dx = (e.clientX - cx) / (rect.width / 2);
+  let dy = (e.clientY - cy) / (rect.height / 2);
+  const len = Math.hypot(dx, dy);
+  if (len > 1) { dx /= len; dy /= len; }
+  joyState.dx = dx; joyState.dy = dy;
+  knob.style.left = (50 + dx * 32) + "%";
+  knob.style.top = (50 + dy * 32) + "%";
+  e.preventDefault();
+});
+function joyEnd() {
+  joyState.active = false; joyState.dx = 0; joyState.dy = 0;
+  knob.style.left = "50%"; knob.style.top = "50%";
+}
+joystickEl.addEventListener("pointerup", joyEnd);
+joystickEl.addEventListener("pointercancel", joyEnd);
+
+// --- 毎フレームの移動処理 ---
+let lastTime = undefined;
+viewer.clock.onTick.addEventListener(function () {
+  const now = performance.now();
+  const dt = lastTime === undefined ? 0.016 : Math.min((now - lastTime) / 1000, 0.1);
+  lastTime = now;
+
+  const cam = viewer.camera;
+  const baseSpeed = walkMode ? WALK_SPEED : FLY_SPEED;
+  const speed = baseSpeed * ((keys["ShiftLeft"] || keys["ShiftRight"]) ? SPEED_BOOST : 1) * dt;
+
+  let forward = 0, right = 0, up = 0;
+  if (keys["KeyW"] || keys["ArrowUp"]) forward += 1;
+  if (keys["KeyS"] || keys["ArrowDown"]) forward -= 1;
+  if (keys["KeyD"] || keys["ArrowRight"]) right += 1;
+  if (keys["KeyA"] || keys["ArrowLeft"]) right -= 1;
+  if (keys["KeyE"]) up += 1;
+  if (keys["KeyQ"]) up -= 1;
+
+  forward += -joyState.dy; // ジョイスティック上=前進
+  right += joyState.dx;
+
+  if (forward !== 0 || right !== 0 || up !== 0 || walkMode) {
+    // 歩行モードでは水平方向のみに移動（ピッチの影響を除去）
+    if (walkMode) {
+      const heading = cam.heading;
+      const carto = Cesium.Cartographic.fromCartesian(cam.position);
+      // ENU座標系で水平移動
+      const moveNorth = (forward * Math.cos(heading) - right * Math.sin(heading + Math.PI)) * speed;
+      const moveEast = (forward * Math.sin(heading) + right * Math.cos(heading + Math.PI * 2)) * speed;
+      const metersPerDegLat = 111320;
+      const metersPerDegLon = 111320 * Math.cos(carto.latitude);
+      const newLat = Cesium.Math.toDegrees(carto.latitude) + moveNorth / metersPerDegLat;
+      const newLon = Cesium.Math.toDegrees(carto.longitude) + moveEast / metersPerDegLon;
+
+      // 地面の高さに吸着（sampleHeightが使えない場合は現在高度を維持）
+      let groundHeight = undefined;
+      if (viewer.scene.sampleHeightSupported) {
+        groundHeight = viewer.scene.sampleHeight(
+          new Cesium.Cartographic(Cesium.Math.toRadians(newLon) , Cesium.Math.toRadians(newLat)),
+          [/* 全オブジェクト対象 */]
+        );
+      }
+      // 地面高さが取れない場合は現在高度を維持（地中＝楕円体高75m未満には落とさない）
+      const targetHeight = (groundHeight !== undefined && groundHeight !== null)
+        ? groundHeight + WALK_EYE_HEIGHT
+        : Math.max(carto.height, 75);
+
+      cam.setView({
+        destination: Cesium.Cartesian3.fromDegrees(newLon, newLat, targetHeight),
+        orientation: { heading: cam.heading, pitch: cam.pitch, roll: 0 },
+      });
+    } else {
+      if (forward !== 0) cam.moveForward(forward * speed);
+      if (right !== 0) cam.moveRight(right * speed);
+      if (up !== 0) cam.moveUp(up * speed);
+    }
+  }
+});
+
+// ============================================================
+// モード切替
+// ============================================================
+const walkBtn = document.getElementById("walkModeBtn");
+const flyBtn = document.getElementById("flyModeBtn");
+
+function setMode(walk) {
+  walkMode = walk;
+  walkBtn.classList.toggle("active", walk);
+  flyBtn.classList.toggle("active", !walk);
+  if (walk) {
+    // 現在位置の真下の地面に降り立つ
+    const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+    let ground = undefined;
+    if (viewer.scene.sampleHeightSupported) {
+      ground = viewer.scene.sampleHeight(carto.clone());
+    }
+    // 地面高さが取れない（タイル未ロード等）場合は現在高度を維持しつつ、
+    // 印西の地表（楕円体高約60〜70m）より下＝地中に潜らないよう75mを下限にする
+    const h = (ground !== undefined && ground !== null)
+      ? ground + WALK_EYE_HEIGHT
+      : Math.max(carto.height, 75);
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(
+        Cesium.Math.toDegrees(carto.longitude), Cesium.Math.toDegrees(carto.latitude), h),
+      orientation: { heading: viewer.camera.heading, pitch: 0, roll: 0 },
+      duration: 1.5,
+    });
+  }
+}
+walkBtn.onclick = () => setMode(true);
+flyBtn.onclick = () => setMode(false);
+
+// ============================================================
+// 印西市文化財パズルラリー（端末内完結・localStorage保存）
+// 文化財データ出典: 印西市内の文化財一覧 https://www.city.inzai.lg.jp/0000000354.html
+// ============================================================
+// ---- いんざい冒険図鑑: 精霊キャラ定義 ----
+// 系統は文化財の種別から、レア度（★）は指定区分から自動で決まる
+const SPIRIT_TRIBES = {
+  "やしろ": { match: ["建造物"], color: "#a5703f", label: "やしろ精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18,42 L50,18 L82,42 Z" fill="#7a5230"/><circle cx="50" cy="62" r="26" fill="#c89058"/><circle cx="41" cy="58" r="4.5" fill="#2d1f12"/><circle cx="59" cy="58" r="4.5" fill="#2d1f12"/><path d="M42,70 q8,7 16,0" stroke="#2d1f12" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="34" cy="66" r="4" fill="#e8a87c" opacity="0.7"/><circle cx="66" cy="66" r="4" fill="#e8a87c" opacity="0.7"/></svg>' },
+  "ほとけ": { match: ["彫刻", "彫刻・仏像"], color: "#d4a017", label: "ほとけ精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="58" r="26" fill="#f0c34e"/><circle cx="50" cy="58" r="33" fill="none" stroke="#ffe9a8" stroke-width="4" opacity="0.8"/><circle cx="50" cy="26" r="7" fill="#f0c34e"/><path d="M41,56 q4,-5 8,0 M51,56 q4,-5 8,0" stroke="#5a4310" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M43,70 q7,5 14,0" stroke="#5a4310" stroke-width="3" fill="none" stroke-linecap="round"/></svg>' },
+  "もり": { match: ["天然記念物"], color: "#3e8e5a", label: "もり精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="30" rx="14" ry="20" fill="#56b878" transform="rotate(-18 50 30)"/><circle cx="50" cy="62" r="26" fill="#79c994"/><circle cx="41" cy="58" r="4.5" fill="#1d3a28"/><circle cx="59" cy="58" r="4.5" fill="#1d3a28"/><path d="M42,70 q8,7 16,0" stroke="#1d3a28" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="33" cy="66" r="4" fill="#aee3c0" opacity="0.8"/><circle cx="67" cy="66" r="4" fill="#aee3c0" opacity="0.8"/></svg>' },
+  "いせき": { match: ["史跡"], color: "#8a8a7e", label: "いせき精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="58" r="26" fill="#b8b8aa"/><rect x="38" y="22" width="24" height="16" rx="6" fill="#9a9a8c"/><ellipse cx="41" cy="58" rx="5" ry="7" fill="#3a3a30"/><ellipse cx="59" cy="58" rx="5" ry="7" fill="#3a3a30"/><ellipse cx="50" cy="71" rx="5" ry="6" fill="#3a3a30"/></svg>' },
+  "まつり": { match: ["無形民俗文化財", "有形民俗文化財", "民俗文化財"], color: "#c0392b", label: "まつり精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="60" r="26" fill="#e05a4a"/><path d="M26,46 q24,-26 48,0 q-6,-9 -24,-9 q-18,0 -24,9 Z" fill="#8a2a1d"/><circle cx="41" cy="58" r="5" fill="#fff"/><circle cx="59" cy="58" r="5" fill="#fff"/><circle cx="41" cy="58" r="2.4" fill="#222"/><circle cx="59" cy="58" r="2.4" fill="#222"/><path d="M40,71 q10,8 20,0" stroke="#f1c40f" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M30,44 l-8,-11 M70,44 l8,-11" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/></svg>' },
+  "たから": { match: ["工芸品", "古文書", "歴史資料", "考古資料", "工芸品・古文書"], color: "#5b6ee1", label: "たから精霊",
+    svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="60" r="26" fill="#7d8cf0"/><rect x="34" y="20" width="32" height="14" rx="7" fill="#aab6ff"/><rect x="30" y="24" width="8" height="6" rx="3" fill="#8d9cf5"/><rect x="62" y="24" width="8" height="6" rx="3" fill="#8d9cf5"/><circle cx="41" cy="58" r="4.5" fill="#1d2350"/><circle cx="59" cy="58" r="4.5" fill="#1d2350"/><path d="M42,70 q8,7 16,0" stroke="#1d2350" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M50,38 l3,6 6,1 -4,5 1,6 -6,-3 -6,3 1,-6 -4,-5 6,-1 Z" fill="#ffd166"/></svg>' },
+};
+
+function tribeOf(b) {
+  for (const key in SPIRIT_TRIBES) {
+    if (SPIRIT_TRIBES[key].match.some((m) => b.type.indexOf(m) >= 0 || m.indexOf(b.type) >= 0)) return key;
+  }
+  return "たから";
+}
+function starsOf(b) {
+  if (b.designation === "国指定" || b.designation === "国登録") return 3;
+  if (b.designation === "県指定") return 2;
+  return 1;
+}
+
+const PUZZLE_STORAGE_KEY = "cocola-metaverse-puzzle-v1";
+const PIECE_RADIUS_M = 80;           // 獲得判定の水平距離(m)。住所が「地先」等の文化財は座標が町中心になるため広めに設定
+const PIECE_MAX_ELLIP_HEIGHT = 150;  // 上空通過での獲得を防ぐ楕円体高の上限(m)。印西の地表は楕円体高約60〜70m
+
+let BUNKAZAI = [];                   // bunkazai.json から読み込む50件
+let pieces = loadPieces();           // { 文化財index: 獲得日時ISO文字列 }
+let desigFilterVal = "all";
+
+function loadPieces() {
+  try {
+    const raw = localStorage.getItem(PUZZLE_STORAGE_KEY);
+    const data = raw ? JSON.parse(raw) : {};
+    return (data && typeof data === "object" && !Array.isArray(data)) ? data : {};
+  } catch (e) { return {}; }
+}
+function savePieces() {
+  try { localStorage.setItem(PUZZLE_STORAGE_KEY, JSON.stringify(pieces)); } catch (e) {}
+}
+function pieceTotal() { return Object.keys(pieces).length; }
+
+// パズル盤面（10×5＝50セル）。文化財index i のピース獲得でセル i が開く
+function buildPuzzleMask() {
+  const mask = document.getElementById("puzzleMask");
+  mask.innerHTML = "";
+  for (let i = 0; i < 50; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.id = "pcell-" + i;
+    mask.appendChild(cell);
+  }
+}
+
+function renderPuzzle() {
+  for (let i = 0; i < 50; i++) {
+    const cell = document.getElementById("pcell-" + i);
+    if (cell) cell.classList.toggle("revealed", pieces[i] !== undefined);
+  }
+  document.getElementById("puzzleCount").textContent =
+    pieceTotal() + "/" + (BUNKAZAI.length || 50);
+  renderZukan(); // ずかんタブの獲得状態も同期
+
+  const list = document.getElementById("bunkazaiList");
+  list.innerHTML = "";
+  BUNKAZAI.forEach((b, i) => {
+    if (desigFilterVal !== "all" && b.designation !== desigFilterVal) return;
+    const got = pieces[i] !== undefined;
+    const li = document.createElement("li");
+    li.className = got ? "got" : "";
+    const nm = document.createElement("span");
+    nm.className = "nm";
+    nm.innerHTML = b.name + ' <span class="desig">［' + b.designation + "・" + b.type + "］</span>";
+    const mark = document.createElement("span");
+    mark.className = "mark";
+    mark.textContent = got ? "🧩" : "⚪";
+    const go = document.createElement("button");
+    go.className = "goBtn";
+    go.textContent = "▶行く";
+    go.onclick = function () { teleportNear(b); };
+    li.appendChild(mark); li.appendChild(nm); li.appendChild(go);
+    list.appendChild(li);
+  });
+}
+
+// 文化財の約300m南・上空200mへテレポート（最後の接近は自分で）
+function teleportNear(b) {
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(b.lon, b.lat - 0.0027, 200),
+    orientation: { heading: 0, pitch: Cesium.Math.toRadians(-30), roll: 0 },
+    duration: 3,
+  });
+}
+
+let toastTimer = null;
+function showStampToast(text) {
+  const toast = document.getElementById("stampToast");
+  document.getElementById("stampToastText").textContent = text;
+  toast.classList.add("show");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.classList.remove("show"); }, 2500);
+}
+
+function awardPiece(idx) {
+  pieces[idx] = new Date().toISOString();
+  savePieces();
+  renderPuzzle();
+  const tribe = SPIRIT_TRIBES[tribeOf(BUNKAZAI[idx])];
+  showStampToast(tribe.label + "をゲット！ パズルピースも開いた（" + pieceTotal() + "/" + BUNKAZAI.length + "）");
+  if (pieceTotal() === BUNKAZAI.length) {
+    setTimeout(() => {
+      document.getElementById("completeModal").classList.add("show");
+    }, 2800);
+  }
+}
+
+// ---- キャラ出現（エンカウント）----
+let encounterIdx = null;
+
+function showEncounter(idx) {
+  encounterIdx = idx;
+  const b = BUNKAZAI[idx];
+  const tribe = SPIRIT_TRIBES[tribeOf(b)];
+  const charEl = document.getElementById("encounterChar");
+  charEl.innerHTML = tribe.svg;
+  if (b.cardImage) {
+    const probe = new Image();
+    probe.onload = function () {
+      charEl.innerHTML = '<img class="cardImg" src="' + b.cardImage + '" alt="' + b.name + '">';
+    };
+    probe.src = b.cardImage;   // 画像が無ければ onload が発火せず SVG のまま（壊れ画像なし）
+  }
+  document.getElementById("encounterName").textContent =
+    (b.spiritName || tribe.label) + " があらわれた！ " + "★".repeat(starsOf(b));
+  document.getElementById("encounterDesc").textContent =
+    b.name + "（" + b.designation + "）にすんでいる精霊だ";
+  var dEl = document.getElementById("encounterDetail");
+  if (b.detailUrl) { dEl.href = b.detailUrl; dEl.style.display = "block"; }
+  else { dEl.style.display = "none"; }
+  document.getElementById("encounter").classList.add("show");
+}
+
+function confirmCatch() {
+  if (encounterIdx === null) return;
+  const idx = encounterIdx;
+  encounterIdx = null;
+  document.getElementById("encounter").classList.remove("show");
+  awardPiece(idx);
+}
+
+function dismissEncounter() {
+  encounterIdx = null;
+  document.getElementById("encounter").classList.remove("show");
+}
+
+// ---- ずかん表示 ----
+function renderZukan() {
+  const grid = document.getElementById("zukanGrid");
+  grid.innerHTML = "";
+  BUNKAZAI.forEach((b, i) => {
+    const got = pieces[i] !== undefined;
+    const tribe = SPIRIT_TRIBES[tribeOf(b)];
+    const stars = starsOf(b);
+    const cell = document.createElement("div");
+    cell.className = "zcell" + (got ? "" : " locked") + (stars === 3 ? " rare3" : "");
+    const face = (got && b.cardImage) ? '<img class="zimg" src="' + b.cardImage + '" alt="">' : tribe.svg;
+    cell.innerHTML = face + '<div class="stars">' + "★".repeat(stars) + "</div>";
+    cell.onclick = function () { showZukanDetail(i); };
+    grid.appendChild(cell);
+  });
+}
+
+function showZukanDetail(i) {
+  const b = BUNKAZAI[i];
+  const got = pieces[i] !== undefined;
+  const tribe = SPIRIT_TRIBES[tribeOf(b)];
+  const detail = document.getElementById("zukanDetail");
+  detail.style.display = "block";
+  detail.innerHTML =
+    '<div class="row">' +
+    '<div style="' + (got ? "" : "filter:brightness(0) opacity(0.45);") + '">' + ((got && b.cardImage) ? '<img src="' + b.cardImage + '" style="width:72px;height:72px;object-fit:contain;border-radius:8px;display:block;">' : tribe.svg) + "</div>" +
+    "<div><b style=\"color:" + tribe.color + ";\">" + (got ? tribe.label : "？？？") + "</b> " +
+    '<span style="color:#ffd166;">' + "★".repeat(starsOf(b)) + "</span><br>" +
+    "<small>" + (got ? "すみか: " + b.name + "<br>" + new Date(pieces[i]).toLocaleDateString("ja-JP") + " ゲット"
+                     : "すみか: " + b.name + "<br>近くまで行くと出現するよ") + "</small></div></div>" +
+    (got && b.detailUrl ? '<a href="' + b.detailUrl + '" target="_blank" rel="noopener" style="display:block;margin-top:6px;padding:6px;border-radius:8px;border:1px solid #ffd166;background:rgba(255,209,102,0.12);color:#ffd166;font-size:12px;font-weight:bold;text-decoration:none;text-align:center;">🔎 実物を詳しく見る（市公式）</a>' : "") +
+    '<button class="goBtn" style="margin-top:6px;width:100%;padding:6px;border:none;border-radius:8px;background:#3a7bd5;color:#fff;cursor:pointer;" ' +
+    'onclick="teleportNear(BUNKAZAI[' + i + '])">▶ すみかの近くへ行く</button>';
+}
+
+// ---- タブ切替 ----
+document.getElementById("tabZukan").onclick = function () {
+  this.classList.add("active");
+  document.getElementById("tabPuzzle").classList.remove("active");
+  document.getElementById("zukanView").style.display = "block";
+  document.getElementById("puzzleView").style.display = "none";
+};
+document.getElementById("tabPuzzle").onclick = function () {
+  this.classList.add("active");
+  document.getElementById("tabZukan").classList.remove("active");
+  document.getElementById("zukanView").style.display = "none";
+  document.getElementById("puzzleView").style.display = "block";
+};
+
+// 文化財データ読み込み＋看板設置
+async function loadBunkazai() {
+  try {
+    const res = await fetch("bunkazai.json");
+    const data = await res.json();
+    BUNKAZAI = data.spots;
+  } catch (e) {
+    console.error("bunkazai.json の読み込みに失敗:", e);
+    return;
+  }
+  const DESIG_COLOR = {
+    "国指定": "#e74c3c", "国登録": "#e67e22",
+    "県指定": "#9b59b6", "市指定": "#3498db",
+  };
+  BUNKAZAI.forEach((b, i) => {
+    viewer.entities.add({
+      id: "bunkazai-" + i,
+      position: Cesium.Cartesian3.fromDegrees(b.lon, b.lat, 40),
+      point: {
+        pixelSize: 11,
+        color: Cesium.Color.fromCssColorString(DESIG_COLOR[b.designation] || "#3498db"),
+        outlineColor: Cesium.Color.fromCssColorString("#1a2533"), outlineWidth: 2,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        // 遠すぎる看板は非表示にして描画負荷と画面の混雑を抑える
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 8000),
+      },
+      label: {
+        text: "🧩 " + b.name,
+        font: "bold 12px sans-serif",
+        fillColor: Cesium.Color.WHITE,
+        outlineColor: Cesium.Color.fromCssColorString("#1a2533"),
+        outlineWidth: 4,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        pixelOffset: new Cesium.Cartesian2(0, -18),
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2500),
+      },
+    });
+  });
+  renderPuzzle();
+}
+
+// 看板クリックで説明表示（6拠点スポット＋文化財の共通ハンドラ）
+viewer.screenSpaceEventHandler.setInputAction(function (click) {
+  const picked = viewer.scene.pick(click.position);
+  if (!Cesium.defined(picked) || !picked.id) return;
+  const id = String(picked.id.id || "");
+  if (id.startsWith("spot-")) {
+    const idx = parseInt(id.replace("spot-", ""), 10);
+    const spot = SPOTS[idx];
+    if (!spot) return;
+    document.getElementById("spotInfoTitle").textContent = "📍 " + spot.name;
+    document.getElementById("spotInfoDesc").textContent = spot.desc;
+    document.getElementById("spotInfo").style.display = "block";
+  } else if (id.startsWith("bunkazai-")) {
+    const idx = parseInt(id.replace("bunkazai-", ""), 10);
+    const b = BUNKAZAI[idx];
+    if (!b) return;
+    document.getElementById("spotInfoTitle").textContent = "🧩 " + b.name;
+    document.getElementById("spotInfoDesc").textContent =
+      "［" + b.designation + "・" + b.type + "］ 所在地: 印西市" + b.address +
+      (pieces[idx] !== undefined ? "（ピース獲得済み）" : "（80m以内に近づくとピース獲得）");
+    document.getElementById("spotInfo").style.display = "block";
+  }
+}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+// 近接判定（500msごと・地上〜低空のみ）
+let lastPieceCheck = 0;
+viewer.clock.onTick.addEventListener(function () {
+  const now = performance.now();
+  if (now - lastPieceCheck < 500) return;
+  lastPieceCheck = now;
+  if (!tileset || BUNKAZAI.length === 0) return;
+  if (pieceTotal() === BUNKAZAI.length) return;
+
+  const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+  if (carto.height > PIECE_MAX_ELLIP_HEIGHT) return;
+
+  const lat = Cesium.Math.toDegrees(carto.latitude);
+  const lon = Cesium.Math.toDegrees(carto.longitude);
+  if (encounterIdx !== null) return; // キャラ出現中は次の判定をしない
+  BUNKAZAI.forEach((b, i) => {
+    if (encounterIdx !== null || pieces[i] !== undefined) return;
+    const dNorth = (lat - b.lat) * 111320;
+    const dEast = (lon - b.lon) * 111320 * Math.cos(carto.latitude);
+    if (Math.hypot(dNorth, dEast) <= PIECE_RADIUS_M) {
+      if (typeof CINEMA !== "undefined" && CINEMA) return; // 撮影モード中は出現させない
+      showEncounter(i);
+    }
+  });
+});
+
+// パズル帳の開閉・指定区分フィルタ・リセット
+document.getElementById("puzzleBtn").onclick = function () {
+  const panel = document.getElementById("puzzlePanel");
+  panel.style.display = (panel.style.display === "block") ? "none" : "block";
+};
+document.getElementById("desigFilter").addEventListener("click", function (e) {
+  if (e.target.tagName !== "BUTTON") return;
+  desigFilterVal = e.target.getAttribute("data-f");
+  this.querySelectorAll("button").forEach((btn) => btn.classList.remove("active"));
+  e.target.classList.add("active");
+  renderPuzzle();
+});
+document.getElementById("puzzleResetBtn").onclick = function () {
+  if (confirm("パズルラリーの記録をリセットしますか？")) {
+    pieces = {};
+    savePieces();
+    renderPuzzle();
+  }
+};
+
+buildPuzzleMask();
+renderPuzzle();
+loadBunkazai();
+
+// ============================================================
+// 遊び方ガイド（初回訪問時は自動表示）
+// ============================================================
+const HOWTO_SEEN_KEY = "cocola-metaverse-howto-seen";
+
+function openHowto() {
+  document.getElementById("howtoModal").classList.add("show");
+}
+function closeHowto() {
+  document.getElementById("howtoModal").classList.remove("show");
+  try { localStorage.setItem(HOWTO_SEEN_KEY, "1"); } catch (e) {}
+}
+document.getElementById("howtoBtn").onclick = openHowto;
+
+let howtoSeen = false;
+try { howtoSeen = localStorage.getItem(HOWTO_SEEN_KEY) === "1"; } catch (e) {}
+if (!howtoSeen) openHowto();
+
+// ============================================================
+// シネマティックモード（PR動画撮影用・?cinema=1 で起動）
+// カメラ自動運転＋テロップを表示する。通常利用には影響しない。
+// ============================================================
+const CINEMA_MODE = new URLSearchParams(location.search).get("cinema");
+const CINEMA = CINEMA_MODE === "1";
+
+function cinemaFlyTo(lon, lat, height, pitchDeg, headingDeg, durationSec) {
+  return new Promise((resolve) => {
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
+      orientation: {
+        heading: Cesium.Math.toRadians(headingDeg || 0),
+        pitch: Cesium.Math.toRadians(pitchDeg),
+        roll: 0,
+      },
+      duration: durationSec,
+      complete: resolve,
+      cancel: resolve,
+    });
+  });
+}
+
+function cinemaCaption(text, ms) {
+  const el = document.getElementById("cinemaCaption");
+  el.innerHTML = text;
+  el.classList.add("show");
+  if (ms) setTimeout(() => el.classList.remove("show"), ms);
+}
+
+async function startCinema() {
+  // 通常UIを隠す
+  ["mvHeader", "controlPanel", "helpBox", "puzzleBtn", "howtoBtn",
+   "panelToggle", "joystick", "spotInfo", "puzzlePanel"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+  document.getElementById("howtoModal").classList.remove("show");
+
+  // テロップ・エンド画面の要素を生成
+  const cap = document.createElement("div");
+  cap.id = "cinemaCaption";
+  document.body.appendChild(cap);
+  const style = document.createElement("style");
+  style.textContent =
+    "#cinemaCaption{position:absolute;left:50%;bottom:22%;transform:translateX(-50%);z-index:70;" +
+    "color:#fff;font-size:30px;font-weight:bold;text-align:center;line-height:1.6;width:92%;" +
+    "text-shadow:0 2px 14px rgba(0,0,0,0.9),0 0 4px rgba(0,0,0,0.9);opacity:0;transition:opacity 0.7s;}" +
+    "#cinemaCaption.show{opacity:1;}" +
+    "#cinemaCaption small{font-size:18px;font-weight:normal;display:block;margin-top:6px;}" +
+    "#cinemaEnd{position:absolute;inset:0;z-index:80;background:linear-gradient(160deg,#2c3e50,#1a2533);" +
+    "display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;" +
+    "color:#fff;opacity:0;transition:opacity 1.2s;pointer-events:none;}" +
+    "#cinemaEnd.show{opacity:1;}" +
+    "#cinemaEnd img{width:46%;max-width:260px;margin-bottom:22px;}" +
+    "#cinemaEnd h2{color:#ffd166;font-size:30px;margin:0 0 10px;}" +
+    "#cinemaEnd p{font-size:17px;line-height:1.9;margin:0;}";
+  document.head.appendChild(style);
+  const end = document.createElement("div");
+  end.id = "cinemaEnd";
+  end.innerHTML =
+    '<img src="../assets/COCoLa_Logo_transparent.png" alt="COCoLa">' +
+    "<h2>COCoLaメタバース印西</h2>" +
+    "<p>印西市文化財パズルラリー開催中<br>COCoLaサイトから今すぐ遊べます<br><b>「COCoLa 印西」で検索</b></p>";
+  document.body.appendChild(end);
+
+  // tileset読み込み完了を待つ
+  while (!tileset) { await new Promise((r) => setTimeout(r, 300)); }
+  await new Promise((r) => setTimeout(r, 2500)); // 初期タイルの描画安定待ち
+
+  // --- シーケンス（合計約26秒） ---
+  // 1. 上空から千葉ニュータウン中央駅へダイブ
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(140.1161, 35.770, 2600),
+    orientation: { heading: 0, pitch: Cesium.Math.toRadians(-55), roll: 0 },
+  });
+  cinemaCaption("印西市が まるごと<br>メタバースになった", 4500);
+  await cinemaFlyTo(140.1161, 35.7935, 420, -32, 0, 5);
+
+  // 2. 駅前を低空で旋回ぎみに移動
+  cinemaCaption("本物そっくりの街を<br>自由に歩ける・飛べる", 4500);
+  await cinemaFlyTo(140.1185, 35.7975, 180, -22, -40, 5);
+
+  // 3. 文化財（宝珠院観音堂方面）へ接近
+  cinemaCaption("印西の文化財 <b>50か所</b>をめぐる<br>🧩 パズルラリー開催中", 5000);
+  await cinemaFlyTo(140.1173, 35.8170, 300, -30, 10, 5.5);
+
+  // 4. パズル演出（ピースが開いていくデモ・記録には保存しない）
+  const panel = document.getElementById("puzzlePanel");
+  panel.style.display = "block";
+  panel.style.zIndex = "75";
+  cinemaCaption("ピースを集めて<br>絵を完成させよう", 5000);
+  for (let i = 0; i < 50; i += 2) {
+    const cell = document.getElementById("pcell-" + i);
+    if (cell) cell.classList.add("revealed");
+    await new Promise((r) => setTimeout(r, 90));
+  }
+  for (let i = 1; i < 50; i += 2) {
+    const cell = document.getElementById("pcell-" + i);
+    if (cell) cell.classList.add("revealed");
+    await new Promise((r) => setTimeout(r, 40));
+  }
+  await new Promise((r) => setTimeout(r, 1200));
+
+  // 5. エンド画面
+  end.classList.add("show");
+  await new Promise((r) => setTimeout(r, 4500));
+  window.cinemaDone = true; // 録画スクリプトの終了検知用
+}
+
+// 告知teaser用シーケンス（?cinema=2・約17秒）飛ぶ→歩く→精霊出現→ゲット
+async function startTeaser() {
+  ["mvHeader", "controlPanel", "helpBox", "puzzleBtn", "howtoBtn",
+   "panelToggle", "joystick", "spotInfo", "puzzlePanel"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+  document.getElementById("howtoModal").classList.remove("show");
+
+  const cap = document.createElement("div");
+  cap.id = "cinemaCaption";
+  document.body.appendChild(cap);
+  const style = document.createElement("style");
+  style.textContent =
+    "#cinemaCaption{position:absolute;left:50%;bottom:44%;transform:translateX(-50%);z-index:70;" +
+    "color:#fff;font-size:28px;font-weight:bold;text-align:center;line-height:1.6;width:92%;" +
+    "text-shadow:0 2px 14px rgba(0,0,0,0.9),0 0 4px rgba(0,0,0,0.9);opacity:0;transition:opacity 0.6s;}" +
+    "#cinemaCaption.show{opacity:1;}#cinemaCaption b{color:#ffd166;}";
+  document.head.appendChild(style);
+
+  while (!tileset) { await new Promise((r) => setTimeout(r, 300)); }
+  await new Promise((r) => setTimeout(r, 2500));
+
+  const idx = 47;           // 吉高の大桜（精霊ヨシザクラ）
+  const b = BUNKAZAI[idx];
+
+  // 1. 上空から接近（飛ぶ）
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(b.lon, b.lat - 0.004, 700),
+    orientation: { heading: 0, pitch: Cesium.Math.toRadians(-40), roll: 0 },
+  });
+  cinemaCaption("メタバースの空を <b>飛ぶ</b>", 3200);
+  await cinemaFlyTo(b.lon, b.lat - 0.0022, 140, -16, 0, 4.5);
+
+  // 2. 地上に降りて歩く視点
+  cinemaCaption("降りて、<b>歩く</b>", 3000);
+  await cinemaFlyTo(b.lon, b.lat - 0.0014, 55, -6, 0, 3.2);
+  await cinemaFlyTo(b.lon, b.lat - 0.0009, 32, -3, 0, 2.6);
+
+  // 3. 精霊が出現（カード表示）
+  cinemaCaption("文化財の精霊が <b>あらわれた！</b>", 3200);
+  showEncounter(idx);
+  document.getElementById("encounterChar").innerHTML = ""; // 録画用：SVGを消す（カードは後でffmpeg合成）
+  await new Promise((r) => setTimeout(r, 2800));
+
+  // 4. ゲット
+  cinemaCaption("タップで <b>ゲット！</b>", 2400);
+  await new Promise((r) => setTimeout(r, 1500));
+  confirmCatch();
+  await new Promise((r) => setTimeout(r, 1600));
+
+  window.cinemaDone = true; // 録画スクリプトの終了検知用
+}
+
+if (CINEMA) startCinema();
+else if (CINEMA_MODE === "2") startTeaser();
+
+// ============================================================
+// 開始
+// ============================================================
+loadTileset();
+</script>
+</body>
+</html>

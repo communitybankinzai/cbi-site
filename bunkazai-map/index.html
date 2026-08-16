@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>印西市文化財マップ | COCoLa</title>
+  <meta name="description" content="印西市内の文化財を地図と一覧で探せるマップです。COCoLa × 印西市。">
+  <meta name="theme-color" content="#2c3a1e">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="印西市文化財マップ | COCoLa">
+  <meta property="og:description" content="印西市内の文化財を地図と一覧で探せるマップです。COCoLa × 印西市。">
+  <meta property="og:image" content="../assets/COCoLa_Logo_BG.png">
+  <meta property="og:locale" content="ja_JP">
+  <link rel="icon" type="image/png" href="../assets/COCoLa_Logo_transparent.png">
+  <link rel="apple-touch-icon" href="../assets/COCoLa_Logo_BG.png">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { font-family: 'Noto Sans JP', sans-serif; background: #f5f0e8; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* COCoLa サイトバー */
+    .site-bar {
+      background: #fff;
+      border-bottom: 1px solid #e0ddd6;
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      font-size: 12px;
+    }
+    .site-bar__logo { height: 22px; vertical-align: middle; }
+    .site-bar__back {
+      color: #5a7a3a;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .site-bar__back:hover { text-decoration: underline; }
+    .site-bar__sep { color: #ccc; }
+
+    /* アプリヘッダー */
+    .app-header {
+      background: #2c3a1e;
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+    .app-header__title { display: flex; flex-direction: column; gap: 1px; }
+    .app-header__sub  { font-size: 10px; color: #a8c08a; letter-spacing: 2px; text-transform: uppercase; }
+    .app-header__main { font-size: 17px; font-weight: 700; line-height: 1.2; }
+    .count-box {
+      background: linear-gradient(135deg, #7b5e2a, #b88a3a);
+      border-radius: 12px;
+      padding: 7px 16px;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .count-number { font-size: 2.4rem; font-weight: 900; line-height: 1; letter-spacing: -2px; }
+    .count-unit   { font-size: 11px; line-height: 1.4; }
+    .collab-badge {
+      margin-left: auto;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 10px;
+      color: #d4e8bc;
+      white-space: nowrap;
+    }
+
+    /* フィルターバー */
+    .filter-bar {
+      background: #fff;
+      border-bottom: 1px solid #e0ddd6;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .filter-row { padding: 6px 16px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .filter-row + .filter-row { border-top: 1px solid #f0ede8; }
+    .filter-label { font-size: 10px; color: #999; margin-right: 4px; white-space: nowrap; }
+    .filter-sep   { width: 1px; height: 20px; background: #ddd; margin: 0 6px; }
+
+    .filter-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #444;
+      background: #f5f5f5;
+      padding: 3px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: border-color 0.15s;
+      user-select: none;
+    }
+    .filter-btn:hover  { border-color: #bbb; }
+    .filter-btn.active { border-color: #555; background: #fff; font-weight: 700; }
+    .filter-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    /* 検索バー */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: #fafaf8;
+      border-bottom: 1px solid #e0e0e0;
+      flex-shrink: 0;
+    }
+    .search-input {
+      flex: 1;
+      padding: 5px 10px;
+      border: 1.5px solid #ddd;
+      border-radius: 20px;
+      font-size: 13px;
+      font-family: 'Noto Sans JP', sans-serif;
+      outline: none;
+      background: #fff;
+    }
+    .search-input:focus { border-color: #2c3a1e; }
+    .search-clear { cursor: pointer; color: #999; font-size: 18px; padding: 0 4px; display: none; }
+
+    /* 表示切替 */
+    .view-toggle { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; margin-left: auto; }
+    .view-btn {
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #f5f5f5;
+      color: #888;
+      border: none;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .view-btn.active { background: #2c3a1e; color: #fff; }
+
+    /* マップビュー */
+    #map-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    #map-view iframe {
+      flex: 1;
+      border: 0;
+      width: 100%;
+    }
+    .map-note {
+      background: #fffbe6;
+      border-top: 1px solid #ffe58f;
+      padding: 6px 16px;
+      font-size: 11px;
+      color: #7c5e00;
+      flex-shrink: 0;
+    }
+
+    /* リストビュー */
+    #list-view {
+      flex: 1;
+      overflow-y: auto;
+      background: #f5f0e8;
+      padding: 14px 18px;
+      display: none;
+      min-height: 0;
+    }
+    .heritage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 12px;
+    }
+    .heritage-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .card-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .card-desig-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .card-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      color: #555;
+      background: #f0f0f0;
+    }
+    .badge-cocola {
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      background: #e8f5e9;
+      color: #2c5f2e;
+      border: 1px solid #81c784;
+    }
+    .badge-risk {
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      background: #fff3e0;
+      color: #e65100;
+      border: 1px solid #ffb74d;
+    }
+    .card-name { font-size: 15px; font-weight: 700; color: #2c3a1e; line-height: 1.3; }
+    .card-row  { font-size: 11px; color: #666; line-height: 1.6; }
+    .card-supplement {
+      font-size: 11px;
+      color: #555;
+      line-height: 1.6;
+      background: #f9f6f0;
+      border-left: 3px solid #b88a3a;
+      padding: 5px 8px;
+      border-radius: 0 4px 4px 0;
+    }
+    .card-map-link {
+      display: inline-block;
+      font-size: 11px;
+      color: #5a7a3a;
+      text-decoration: none;
+      padding: 2px 0;
+    }
+    .card-map-link:hover { text-decoration: underline; }
+    .empty-msg { text-align: center; color: #aaa; padding: 60px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<!-- COCoLa サイトバー -->
+<div class="site-bar">
+  <img class="site-bar__logo" src="../assets/COCoLa_Logo_transparent.png" alt="COCoLa">
+  <span class="site-bar__sep">|</span>
+  <a class="site-bar__back" href="../index.html">← サイトトップへ戻る</a>
+  <span class="site-bar__sep">|</span>
+  <a class="site-bar__back" href="../apps/">アプリ一覧</a>
+</div>
+
+<!-- アプリヘッダー -->
+<div class="app-header">
+  <div class="app-header__title">
+    <span class="app-header__sub">Inzai Cultural Heritage Map</span>
+    <span class="app-header__main">印西市文化財マップ</span>
+  </div>
+  <div class="count-box">
+    <span class="count-number" id="count">10</span>
+    <span class="count-unit">件の<br>文化財</span>
+  </div>
+  <div class="collab-badge">COCoLa × 印西市</div>
+</div>
+
+<!-- フィルターバー -->
+<div class="filter-bar">
+  <div class="filter-row">
+    <span class="filter-label">▼ 指定区分</span>
+    <div id="desig-filters" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="btn-map"  onclick="switchView('map')">🗺 マップ</button>
+      <button class="view-btn"        id="btn-list" onclick="switchView('list')">📋 リスト</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">▼ 有形・無形</span>
+    <div id="tang-filters" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+    <div class="filter-sep"></div>
+    <span class="filter-label">▼ 種別</span>
+    <div id="type-filters" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+  </div>
+</div>
+
+<!-- 検索バー -->
+<div class="search-bar">
+  <span style="font-size:14px;">🔍</span>
+  <input
+    class="search-input"
+    id="search-input"
+    type="text"
+    placeholder="名称・所在地・所有者・説明で検索..."
+    oninput="onSearchInput(this.value)"
+  >
+  <span class="search-clear" id="search-clear" onclick="clearSearch()">✕</span>
+</div>
+
+<!-- マップビュー -->
+<div id="map-view">
+  <iframe
+    src="https://maps.google.com/maps?q=%E5%8D%83%E8%91%89%E7%9C%8C%E5%8D%B0%E8%A5%BF%E5%B8%82&t=&z=13&ie=UTF8&iwloc=&output=embed"
+    title="印西市文化財マップ"
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade"
+    allowfullscreen
+  ></iframe>
+  <div class="map-note">📍 地図は印西市全域を表示しています。各文化財の場所は「📋 リスト」から「Googleマップで見る」リンクをご利用ください。</div>
+</div>
+
+<!-- リストビュー -->
+<div id="list-view">
+  <div class="heritage-grid" id="heritage-grid"></div>
+</div>
+
+<script>
+const DESIGNATIONS = {
+  '国指定': { color: '#c0392b', emoji: '🔴' },
+  '県指定': { color: '#2471a3', emoji: '🔵' },
+  '市指定': { color: '#1e8449', emoji: '🟢' },
+  '国登録': { color: '#b7770d', emoji: '🟡' },
+};
+const TANGIBILITIES = {
+  '有形'  : { emoji: '🏺', color: '#5d4037' },
+  '無形'  : { emoji: '🎭', color: '#6a1b9a' },
+  '記念物': { emoji: '🌿', color: '#2e7d32' },
+};
+const TYPES = {
+  '建造物'        : { emoji: '🏛' },
+  '彫刻・仏像'    : { emoji: '🗿' },
+  '天然記念物'    : { emoji: '🌸' },
+  '史跡'          : { emoji: '🏯' },
+  '民俗文化財'    : { emoji: '🎶' },
+  '工芸品・古文書': { emoji: '📜' },
+};
+
+const HERITAGE_DATA = [
+  { name:'宝珠院観音堂', designation:'国指定', tangibility:'有形', type:'建造物', date:'1934年1月30日', address:'小倉三門口1114', owner:'宝珠院', description:'国指定有形文化財。印西市内最古の指定文化財の一つ。', cocola:false, risk:false },
+  { name:'岩井家住宅主屋（旧武蔵屋店舗）', designation:'国登録', tangibility:'有形', type:'建造物', date:'2007年12月5日', address:'木下1645', owner:'個人', description:'大正3年築の町家建築。COCoLaがひなまつりイベントを支援。', supplement:'2026年2月・3月のひなまつりイベントにCOCoLaが参加。来場者約450名。', cocola:true, risk:false },
+  { name:'木下貝層', designation:'国指定', tangibility:'記念物', type:'天然記念物', date:'2002年3月19日', address:'木下字平台799-1', owner:'印西市・千葉県・国', description:'貝化石の地層として学術的価値が高い。', cocola:false, risk:false },
+  { name:'吉高の大桜', designation:'市指定', tangibility:'記念物', type:'天然記念物', date:'1981年10月15日', address:'吉高930-1-1', owner:'個人', description:'樹齢約300年のヤマザクラ。毎春多くの来訪者が訪れる。', cocola:false, risk:false },
+  { name:'鳥見神社の獅子舞（平岡）', designation:'県指定', tangibility:'無形', type:'民俗文化財', date:'1955年12月15日', address:'平岡', owner:'平岡鳥見神社獅子舞保存会', description:'担い手の継続が課題。消失リスクあり。', cocola:false, risk:true },
+  { name:'武西の百庚申塚', designation:'市指定', tangibility:'記念物', type:'史跡', date:'1999年3月25日', address:'武西学園台3丁目128', owner:'印西市', description:'庚申信仰の石塔群。', cocola:false, risk:false },
+  { name:'銅造不動明王立像', designation:'国指定', tangibility:'有形', type:'彫刻・仏像', date:'1914年4月17日', address:'結縁寺516', owner:'結縁寺', description:'国指定有形文化財（彫刻）。', cocola:false, risk:false },
+  { name:'別所の獅子舞', designation:'市指定', tangibility:'無形', type:'民俗文化財', date:'1966年4月19日', address:'別所1005', owner:'別所獅子舞保存会', description:'担い手の継続が課題。', cocola:false, risk:true },
+  { name:'掩体壕', designation:'市指定', tangibility:'記念物', type:'史跡', date:'2016年9月23日', address:'東の原3丁目108', owner:'印西市', description:'太平洋戦争時に航空機を格納するために使用された。', cocola:false, risk:false },
+  { name:'吉岡家河岸関係文書', designation:'市指定', tangibility:'有形', type:'工芸品・古文書', date:'1991年6月4日', address:'木下地先', owner:'個人', description:'木下河岸の歴史を伝える貴重な文書。', cocola:false, risk:false },
+];
+
+let currentView = 'map';
+let searchKeyword = '';
+let activeDesig = new Set();
+let activeTangs = new Set();
+let activeTypes = new Set();
+
+function toggleFilter(set, name, btn) {
+  if (set.has(name)) { set.delete(name); btn.classList.add('active'); }
+  else               { set.add(name);    btn.classList.remove('active'); }
+  applyFilter();
+}
+
+function buildFilters() {
+  const dc = document.getElementById('desig-filters');
+  Object.entries(DESIGNATIONS).forEach(function([name, conf]) {
+    const btn = document.createElement('div');
+    btn.className = 'filter-btn active';
+    btn.innerHTML = '<span class="filter-dot" style="background:' + conf.color + '"></span>' + conf.emoji + ' ' + name;
+    btn.addEventListener('click', function() { toggleFilter(activeDesig, name, btn); });
+    dc.appendChild(btn);
+  });
+
+  const tg = document.getElementById('tang-filters');
+  Object.entries(TANGIBILITIES).forEach(function([name, conf]) {
+    const btn = document.createElement('div');
+    btn.className = 'filter-btn active';
+    btn.innerHTML = '<span class="filter-dot" style="background:' + conf.color + '"></span>' + conf.emoji + ' ' + name;
+    btn.addEventListener('click', function() { toggleFilter(activeTangs, name, btn); });
+    tg.appendChild(btn);
+  });
+
+  const tc = document.getElementById('type-filters');
+  Object.entries(TYPES).forEach(function([name, conf]) {
+    const btn = document.createElement('div');
+    btn.className = 'filter-btn active';
+    btn.innerHTML = conf.emoji + ' ' + name;
+    btn.addEventListener('click', function() { toggleFilter(activeTypes, name, btn); });
+    tc.appendChild(btn);
+  });
+}
+
+function isVisible(item) {
+  if (activeDesig.size > 0 && activeDesig.has(item.designation)) return false;
+  if (activeTangs.size > 0 && activeTangs.has(item.tangibility)) return false;
+  if (activeTypes.size > 0 && activeTypes.has(item.type))        return false;
+  if (searchKeyword) {
+    var q = searchKeyword.toLowerCase();
+    var fields = [item.name, item.address, item.owner, item.description, item.designation, item.type, item.tangibility];
+    if (!fields.some(function(v) { return v && v.toLowerCase().includes(q); })) return false;
+  }
+  return true;
+}
+
+function applyFilter() {
+  var visible = HERITAGE_DATA.filter(isVisible);
+  document.getElementById('count').textContent = visible.length;
+  if (currentView === 'list') renderList(visible);
+}
+
+function switchView(view) {
+  currentView = view;
+  document.getElementById('map-view').style.display  = view === 'map'  ? 'flex' : 'none';
+  document.getElementById('list-view').style.display = view === 'list' ? 'block' : 'none';
+  document.getElementById('btn-map').classList.toggle('active',  view === 'map');
+  document.getElementById('btn-list').classList.toggle('active', view === 'list');
+  if (view === 'list') renderList(HERITAGE_DATA.filter(isVisible));
+}
+
+function onSearchInput(val) {
+  searchKeyword = val.trim();
+  document.getElementById('search-clear').style.display = val ? 'block' : 'none';
+  applyFilter();
+}
+function clearSearch() {
+  searchKeyword = '';
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-clear').style.display = 'none';
+  applyFilter();
+}
+
+function mapsUrl(item) {
+  return 'https://maps.google.com/maps?q=' + encodeURIComponent('印西市' + (item.address || item.name));
+}
+
+function renderList(items) {
+  var grid = document.getElementById('heritage-grid');
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="empty-msg">表示できる文化財がありません</div>';
+    return;
+  }
+  grid.innerHTML = items.map(function(item) {
+    var conf     = DESIGNATIONS[item.designation] || DESIGNATIONS['市指定'];
+    var typeConf = TYPES[item.type] || { emoji: '📌' };
+    var tangConf = TANGIBILITIES[item.tangibility] || {};
+    var cocoHtml = item.cocola ? '<span class="badge-cocola">⭐ COCoLa関与</span>' : '';
+    var riskHtml = item.risk   ? '<span class="badge-risk">⚠ 消失リスク</span>'   : '';
+    var tangHtml = item.tangibility
+      ? '<span class="card-type-badge" style="background:#f3f0f8;">' + (tangConf.emoji || '') + ' ' + item.tangibility + '</span>' : '';
+    var suppHtml = item.supplement
+      ? '<div class="card-supplement">📝 ' + item.supplement + '</div>' : '';
+    return [
+      '<div class="heritage-card">',
+      '  <div class="card-top">',
+      '    <span class="card-desig-badge" style="background:' + conf.color + '">' + item.designation + '</span>',
+      '    ' + tangHtml,
+      '    <span class="card-type-badge">' + typeConf.emoji + ' ' + item.type + '</span>',
+      '    ' + cocoHtml + riskHtml,
+      '  </div>',
+      '  <div class="card-name">' + item.name + '</div>',
+      item.address     ? '<div class="card-row">📍 印西市' + item.address + '</div>'  : '',
+      item.owner       ? '<div class="card-row">🏠 ' + item.owner + '</div>'           : '',
+      item.date        ? '<div class="card-row">📅 ' + item.date + '指定</div>'        : '',
+      item.description ? '<div class="card-row">💬 ' + item.description + '</div>'    : '',
+      suppHtml,
+      '  <a class="card-map-link" href="' + mapsUrl(item) + '" target="_blank" rel="noreferrer noopener">🗺 Googleマップで見る</a>',
+      '</div>',
+    ].join('\n');
+  }).join('\n');
+}
+
+buildFilters();
+applyFilter();
+</script>
+</body>
+</html>

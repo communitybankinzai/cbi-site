@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <!-- COCoLaメタバース印西 文化財パズル絵（暫定版・AI生成画像に差し替え可能） -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd9a0"/>
+      <stop offset="0.5" stop-color="#ffe9c4"/>
+      <stop offset="1" stop-color="#fff6e3"/>
+    </linearGradient>
+    <linearGradient id="lake" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a8d4e8"/>
+      <stop offset="1" stop-color="#7fb8d4"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff3d6"/>
+      <stop offset="0.6" stop-color="#ffd98c"/>
+      <stop offset="1" stop-color="#ffd98c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 空と夕日 -->
+  <rect width="1280" height="420" fill="url(#sky)"/>
+  <circle cx="1050" cy="150" r="130" fill="url(#sun)"/>
+  <circle cx="1050" cy="150" r="55" fill="#ffca66"/>
+
+  <!-- 遠景の里山 -->
+  <path d="M0,330 Q160,260 340,320 Q500,370 640,330 Q800,285 960,330 Q1120,370 1280,320 L1280,420 L0,420 Z" fill="#b5cf9a"/>
+  <path d="M0,370 Q200,310 420,365 Q640,415 860,365 Q1060,320 1280,370 L1280,420 L0,420 Z" fill="#9cbf82"/>
+
+  <!-- 印旛沼（水面） -->
+  <rect y="420" width="1280" height="100" fill="url(#lake)"/>
+  <ellipse cx="300" cy="455" rx="90" ry="5" fill="#ffffff" opacity="0.45"/>
+  <ellipse cx="900" cy="480" rx="120" ry="6" fill="#ffffff" opacity="0.35"/>
+  <ellipse cx="620" cy="440" rx="60" ry="4" fill="#ffffff" opacity="0.4"/>
+
+  <!-- 水鳥 -->
+  <g stroke="#5a4a3a" stroke-width="3" fill="none" stroke-linecap="round">
+    <path d="M180,140 q12,-14 24,0 q12,-14 24,0"/>
+    <path d="M250,170 q10,-12 20,0 q10,-12 20,0"/>
+    <path d="M130,190 q8,-10 16,0 q8,-10 16,0"/>
+  </g>
+
+  <!-- お祝いの花火（市制施行30周年） -->
+  <g stroke-linecap="round" fill="none">
+    <g stroke="#e8647a" stroke-width="4">
+      <path d="M560,120 v-40 M560,120 v40 M560,120 h-40 M560,120 h40
+               M560,120 l-28,-28 M560,120 l28,-28 M560,120 l-28,28 M560,120 l28,28"/>
+    </g>
+    <g stroke="#f1c40f" stroke-width="3">
+      <path d="M780,90 v-30 M780,90 v30 M780,90 h-30 M780,90 h30
+               M780,90 l-21,-21 M780,90 l21,-21 M780,90 l-21,21 M780,90 l21,21"/>
+    </g>
+    <g stroke="#7fc8ff" stroke-width="3">
+      <path d="M680,200 v-24 M680,200 v24 M680,200 h-24 M680,200 h24
+               M680,200 l-17,-17 M680,200 l17,-17 M680,200 l-17,17 M680,200 l17,17"/>
+    </g>
+  </g>
+  <g fill="#ffd166">
+    <circle cx="560" cy="120" r="7"/><circle cx="780" cy="90" r="6"/><circle cx="680" cy="200" r="5"/>
+  </g>
+
+  <!-- 祝・市制施行30周年の帯 -->
+  <g>
+    <rect x="370" y="246" width="540" height="74" rx="14" fill="#c0392b" opacity="0.92"/>
+    <rect x="378" y="254" width="524" height="58" rx="10" fill="none" stroke="#ffd166" stroke-width="3"/>
+    <text x="640" y="285" font-size="30" font-family="serif" font-weight="bold"
+          fill="#ffffff" text-anchor="middle">祝・印西市 市制施行30周年</text>
+    <text x="640" y="308" font-size="17" font-family="sans-serif"
+          fill="#ffe9c4" text-anchor="middle">1996 - 2026　みんなでつくる これからの印西</text>
+  </g>
+
+  <!-- 田んぼ（手前） -->
+  <rect y="520" width="1280" height="120" fill="#cde0a8"/>
+  <g stroke="#a8c47e" stroke-width="3">
+    <line x1="0" y1="550" x2="1280" y2="545"/>
+    <line x1="0" y1="580" x2="1280" y2="572"/>
+    <line x1="0" y1="612" x2="1280" y2="604"/>
+  </g>
+  <g fill="#7da85c">
+    <ellipse cx="90" cy="556" rx="4" ry="10"/><ellipse cx="180" cy="552" rx="4" ry="10"/>
+    <ellipse cx="320" cy="556" rx="4" ry="10"/><ellipse cx="455" cy="552" rx="4" ry="10"/>
+    <ellipse cx="610" cy="554" rx="4" ry="10"/><ellipse cx="760" cy="550" rx="4" ry="10"/>
+    <ellipse cx="910" cy="554" rx="4" ry="10"/><ellipse cx="1070" cy="551" rx="4" ry="10"/>
+    <ellipse cx="1200" cy="554" rx="4" ry="10"/>
+  </g>
+
+  <!-- 吉高の大桜（左） -->
+  <g>
+    <rect x="178" y="320" width="34" height="160" rx="10" fill="#8a6242"/>
+    <path d="M165,360 L120,300" stroke="#8a6242" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <path d="M215,350 L280,290" stroke="#8a6242" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <circle cx="195" cy="240" r="105" fill="#f7c9d4"/>
+    <circle cx="110" cy="280" r="70" fill="#f9d4dd"/>
+    <circle cx="285" cy="275" r="72" fill="#f9d4dd"/>
+    <circle cx="160" cy="190" r="60" fill="#fbe0e7"/>
+    <circle cx="245" cy="195" r="55" fill="#fbe0e7"/>
+    <g fill="#f3aabb">
+      <circle cx="135" cy="245" r="7"/><circle cx="210" cy="180" r="7"/>
+      <circle cx="265" cy="240" r="7"/><circle cx="175" cy="290" r="7"/>
+      <circle cx="240" cy="300" r="6"/><circle cx="95" cy="310" r="6"/>
+    </g>
+    <!-- 散る花びら -->
+    <g fill="#f7c9d4">
+      <ellipse cx="350" cy="250" rx="6" ry="4" transform="rotate(25 350 250)"/>
+      <ellipse cx="395" cy="300" rx="6" ry="4" transform="rotate(-15 395 300)"/>
+      <ellipse cx="370" cy="370" rx="5" ry="3.5" transform="rotate(40 370 370)"/>
+      <ellipse cx="420" cy="200" rx="5" ry="3.5" transform="rotate(10 420 200)"/>
+    </g>
+  </g>
+
+  <!-- 観音堂（中央・茅葺き寄棟） -->
+  <g>
+    <rect x="540" y="380" width="200" height="105" fill="#b08a5e"/>
+    <g stroke="#8a6242" stroke-width="5">
+      <line x1="570" y1="380" x2="570" y2="485"/>
+      <line x1="640" y1="380" x2="640" y2="485"/>
+      <line x1="710" y1="380" x2="710" y2="485"/>
+    </g>
+    <rect x="600" y="420" width="80" height="65" fill="#6e4f33"/>
+    <path d="M500,385 L640,270 L780,385 Z" fill="#7a6a52"/>
+    <path d="M520,372 L640,282 L760,372 Z" fill="#94815f"/>
+    <rect x="630" y="258" width="20" height="26" rx="4" fill="#5a4a3a"/>
+    <rect x="510" y="485" width="260" height="18" fill="#9c9c8e"/>
+  </g>
+
+  <!-- 五重塔風の板碑・石塔（観音堂の右） -->
+  <g fill="#a0a094">
+    <rect x="816" y="400" width="48" height="85" rx="4"/>
+    <rect x="806" y="388" width="68" height="16" rx="4"/>
+    <rect x="824" y="350" width="32" height="42" rx="3"/>
+    <rect x="818" y="340" width="44" height="12" rx="3"/>
+  </g>
+
+  <!-- 獅子舞（手前左） -->
+  <g>
+    <path d="M380,560 q40,-36 84,0 l-6,46 q-36,16 -72,0 Z" fill="#2e6e4e"/>
+    <circle cx="422" cy="528" r="30" fill="#c0392b"/>
+    <path d="M398,512 q24,-26 48,0 q-6,-8 -24,-8 q-18,0 -24,8 Z" fill="#8a2a1d"/>
+    <circle cx="410" cy="524" r="5" fill="#fff"/><circle cx="434" cy="524" r="5" fill="#fff"/>
+    <circle cx="410" cy="524" r="2.4" fill="#222"/><circle cx="434" cy="524" r="2.4" fill="#222"/>
+    <path d="M404,544 q18,12 36,0" stroke="#f1c40f" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M392,506 l-12,-16 M452,506 l12,-16" stroke="#f1c40f" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <!-- 観覧車（右・BIG HOP） -->
+  <g stroke="#d98c9c" stroke-width="5" fill="none">
+    <circle cx="1120" cy="380" r="85"/>
+    <line x1="1120" y1="295" x2="1120" y2="465"/>
+    <line x1="1035" y1="380" x2="1205" y2="380"/>
+    <line x1="1060" y1="320" x2="1180" y2="440"/>
+    <line x1="1180" y1="320" x2="1060" y2="440"/>
+  </g>
+  <g fill="#e8647a">
+    <circle cx="1120" cy="295" r="11"/><circle cx="1120" cy="465" r="11"/>
+    <circle cx="1035" cy="380" r="11"/><circle cx="1205" cy="380" r="11"/>
+    <circle cx="1060" cy="320" r="11"/><circle cx="1180" cy="440" r="11"/>
+    <circle cx="1180" cy="320" r="11"/><circle cx="1060" cy="440" r="11"/>
+  </g>
+  <path d="M1095,520 L1120,465 L1145,520 Z" fill="#c47a88"/>
+
+  <!-- 利根川の帆掛け舟（水面） -->
+  <g>
+    <path d="M560,505 q40,18 80,0 l-10,14 q-30,8 -60,0 Z" fill="#6e4f33"/>
+    <line x1="600" y1="455" x2="600" y2="505" stroke="#5a4a3a" stroke-width="4"/>
+    <path d="M604,458 q30,18 0,40 Z" fill="#f5efdf"/>
+  </g>
+</svg>
