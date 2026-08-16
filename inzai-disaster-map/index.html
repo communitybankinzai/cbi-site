@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260816a">
+    <link rel="stylesheet" href="./styles.css?v=20260817a">
   </head>
   <body>
     <div class="app-shell">
@@ -71,6 +71,7 @@
               <label><input type="checkbox" data-overlay="floodMax" checked> 洪水浸水想定 最大規模</label>
               <label><input type="checkbox" data-overlay="floodPlan"> 洪水浸水想定 計画規模</label>
               <label><input type="checkbox" data-overlay="inland" checked> 内水浸水想定</label>
+              <label><input type="checkbox" data-overlay="shelters" checked> 避難所（印西市公式）</label>
               <label><input type="checkbox" data-overlay="landslide"> 土砂災害警戒区域</label>
               <label class="live-layer-label"><input type="checkbox" data-overlay="rainNowcast"> 雨雲レーダー（気象庁・実況）<span id="rain-layer-status">最新時刻を確認中</span></label>
               <div class="layer-group-label">地震ハザード（J-SHIS）</div>
@@ -97,6 +98,40 @@
               <span id="hazard-opacity-value">56%</span>
               <input id="hazard-opacity" type="range" min="20" max="85" value="56">
             </label>
+          </section>
+
+          <section class="panel-section shelter-control-panel">
+            <div class="section-title">
+              <h2>避難所安全確認</h2>
+              <button class="text-button" id="show-shelter-flood-button" type="button">浸水想定を重ねる</button>
+            </div>
+            <label class="select-label">
+              確認する災害
+              <select id="shelter-hazard-filter">
+                <option value="windFlood">風水害</option>
+                <option value="earthquake">震災</option>
+                <option value="landslide">土砂災害</option>
+              </select>
+            </label>
+            <label class="select-label">
+              避難所区分
+              <select id="shelter-kind-filter">
+                <option value="all">すべて</option>
+                <option value="specified">指定避難所</option>
+                <option value="special">特別避難所</option>
+                <option value="wide-area">広域避難場所</option>
+              </select>
+            </label>
+            <label class="select-label">
+              開設情報
+              <select id="shelter-opening-filter">
+                <option value="all">すべて</option>
+                <option value="open">開設中のみ</option>
+                <option value="not-announced">開設発表なし</option>
+              </select>
+            </label>
+            <input class="search-input" id="shelter-keyword-filter" type="search" placeholder="避難所名・住所で検索">
+            <p class="shelter-control-note">公式の洪水・内水想定と、避難所データの災害別対応可否を2Dで照合します。流体計算による浸水シミュレーションではありません。</p>
           </section>
 
           <section class="panel-section">
@@ -214,6 +249,22 @@
             </div>
           </section>
 
+          <section class="panel-section shelter-status-panel" id="shelter-status-panel">
+            <div class="section-title">
+              <div>
+                <h2>避難所 開設・安全確認</h2>
+                <p class="section-subtitle">印西市公式データ</p>
+              </div>
+              <button class="text-button" id="refresh-shelters-button" type="button">更新</button>
+            </div>
+            <div class="shelter-summary" id="shelter-summary" role="status" aria-live="polite">避難所情報を確認中です。</div>
+            <div class="shelter-list" id="shelter-list"></div>
+            <p class="shelter-source-note">
+              「災害対応可」は施設区分、「開設中」は防災速報による現在情報です。指定されていても常時開設ではありません。
+              <a href="https://www.city.inzai.lg.jp/bousaiportal/0000008839.html" target="_blank" rel="noreferrer">印西市の避難所情報</a>
+            </p>
+          </section>
+
           <section class="panel-section sns-monitor-panel" id="sns-monitor-panel">
             <div class="section-title">
               <div>
@@ -224,6 +275,20 @@
             </div>
             <div class="sns-monitor-status" id="sns-monitor-status" role="status" aria-live="polite">接続を確認中です。</div>
             <div class="sns-platform-status" id="sns-platform-status"></div>
+            <details class="sns-monitor-rules-box">
+              <summary>巡回検索語と手動収集</summary>
+              <div id="sns-monitor-rules" class="sns-monitor-rules">検索条件を読み込み中です。</div>
+              <div class="manual-search-links" id="sns-manual-search-links"></div>
+              <label class="manual-url-register">
+                見つけた投稿URL
+                <span class="inline-input-action">
+                  <input id="sns-manual-post-url" type="url" placeholder="https://www.facebook.com/...">
+                  <button class="tool-button primary" id="sns-manual-register-button" type="button">確認候補へ</button>
+                </span>
+              </label>
+              <p class="sns-monitor-limitation">Facebookの一般公開投稿はAPIで一括検索できないため、手動検索してURLを登録します。</p>
+              <a class="tool-button" id="sns-monitor-settings-link" href="https://cidao.vercel.app/admin/sns#disaster-monitor-rules" target="_blank" rel="noreferrer">検索語を変更</a>
+            </details>
             <div class="sns-monitor-list" id="sns-monitor-list"></div>
           </section>
 
@@ -994,6 +1059,6 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
     <script src="./config.js?v=20260816a"></script>
-    <script src="./app.js?v=20260816a"></script>
+    <script src="./app.js?v=20260817a"></script>
   </body>
 </html>

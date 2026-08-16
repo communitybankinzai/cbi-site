@@ -281,6 +281,10 @@ let sharedRecordsSyncTimer = null;
 let snsMonitorItems = [];
 let snsMonitorPayload = null;
 let snsMonitorTimer = null;
+let officialShelters = [];
+let shelterPayload = null;
+let shelterTimer = null;
+let selectedShelterId = null;
 let screenshotState = {
   image: null,
   scale: 1,
@@ -394,6 +398,7 @@ const landslideGroup = L.layerGroup([
 const recordLayer = L.layerGroup();
 const roadFloodLayer = L.layerGroup();
 const roadDrawingLayer = L.layerGroup();
+const shelterLayer = L.layerGroup();
 const boundaryLayer = L.geoJSON(null, {
   style: {
     color: "#2365a8",
@@ -410,6 +415,7 @@ hazardLayers.inland.addTo(map);
 recordLayer.addTo(map);
 roadDrawingLayer.addTo(map);
 boundaryLayer.addTo(map);
+shelterLayer.addTo(map);
 
 initBoundary();
 refreshRainNowcast(false);
@@ -421,6 +427,7 @@ applyTrialRecordFromQuery();
 renderAll();
 bindEvents();
 initSnsMonitor();
+initShelters();
 initHelpGuide();
 scheduleMapResize();
 
@@ -471,6 +478,14 @@ function bindEvents() {
   document.getElementById("refresh-weather-warning-button").addEventListener("click", () => refreshWeatherWarnings(true));
   document.getElementById("refresh-sns-monitor-button").addEventListener("click", () => refreshSnsMonitor(true));
   document.getElementById("sns-monitor-list").addEventListener("click", handleSnsMonitorAction);
+  document.getElementById("sns-manual-register-button").addEventListener("click", registerManualMonitorUrl);
+  document.getElementById("refresh-shelters-button").addEventListener("click", () => refreshShelters(true));
+  document.getElementById("show-shelter-flood-button").addEventListener("click", showShelterFloodLayers);
+  document.getElementById("shelter-hazard-filter").addEventListener("change", renderShelters);
+  document.getElementById("shelter-kind-filter").addEventListener("change", renderShelters);
+  document.getElementById("shelter-opening-filter").addEventListener("change", renderShelters);
+  document.getElementById("shelter-keyword-filter").addEventListener("input", renderShelters);
+  document.getElementById("shelter-list").addEventListener("click", handleShelterListClick);
   document.getElementById("paste-social-link-button").addEventListener("click", pasteSocialLink);
   document.getElementById("collector-post-url").addEventListener("input", syncCollectorPlatformFromUrl);
   document.getElementById("collector-platform").addEventListener("change", updateCollectorPlatformHelp);
@@ -680,6 +695,7 @@ function renderSnsMonitor(payload) {
   count.textContent = String(unregisteredCount);
   count.hidden = unregisteredCount === 0;
   renderSnsPlatformStatus(payload?.platforms || []);
+  renderSnsMonitorRules(payload?.rules || []);
 
   if (!snsMonitorItems.length) {
     list.innerHTML = '<div class="detail-empty">対象日の新着候補はありません。</div>';
@@ -728,6 +744,206 @@ function handleSnsMonitorAction(event) {
   if (!item) return;
   addApiResultAsRecord(item, { keepOpen: true, query: item.query || "SNS自動巡回" });
   renderSnsMonitor(snsMonitorPayload || {});
+}
+
+function renderSnsMonitorRules(rules) {
+  const node = document.getElementById("sns-monitor-rules");
+  const links = document.getElementById("sns-manual-search-links");
+  const activeRules = (Array.isArray(rules) ? rules : []).filter(rule => rule.enabled && rule.query);
+  if (!activeRules.length) {
+    node.innerHTML = '<span class="detail-empty">有効な検索語はありません。</span>';
+  } else {
+    const grouped = new Map();
+    activeRules.forEach(rule => {
+      if (!grouped.has(rule.platform)) grouped.set(rule.platform, []);
+      grouped.get(rule.platform).push(rule.query);
+    });
+    node.innerHTML = Array.from(grouped.entries()).map(([platform, queries]) => `
+      <div><strong>${escapeHtml(platformLabels[platform] || platform)}</strong><span>${queries.map(escapeHtml).join(" / ")}</span></div>
+    `).join("");
+  }
+
+  const manualRules = activeRules.slice(0, 9).map(rule => ({ ...rule }));
+  const fallbackQuery = activeRules[0]?.query || "印西市 災害";
+  manualRules.push({ platform: "facebook", query: fallbackQuery });
+  links.innerHTML = manualRules.map(rule => `
+    <a class="manual-search-link" href="${escapeAttribute(buildSocialSearchUrl(rule.platform, rule.query))}" target="_blank" rel="noopener noreferrer">
+      ${escapeHtml(platformLabels[rule.platform] || rule.platform)}: ${escapeHtml(rule.query)}
+    </a>
+  `).join("");
+}
+
+function registerManualMonitorUrl() {
+  const input = document.getElementById("sns-manual-post-url");
+  const url = input.value.trim();
+  if (!isHttpUrl(url)) {
+    alert("見つけたSNS投稿のURLを入力してください。");
+    input.focus();
+    return;
+  }
+  openCollectorDialog();
+  setFormValue("collector-post-url", url);
+  syncCollectorPlatformFromUrl();
+  const platform = detectPlatformFromUrl(url);
+  const firstQuery = (snsMonitorPayload?.rules || []).find(rule => rule.enabled && (!platform || rule.platform === platform))?.query;
+  if (firstQuery) setFormValue("collector-query", firstQuery);
+  document.getElementById("collector-link-status").textContent = "手動巡回で見つけたURLを設定しました。分かる範囲で本文・時刻・場所を補ってください。";
+}
+
+function initShelters() {
+  const endpoint = String(APP_CONFIG.shelterEndpoint || "").trim();
+  if (!endpoint) {
+    document.getElementById("shelter-summary").textContent = "避難所APIが未設定です。";
+    return;
+  }
+  refreshShelters(false);
+  clearInterval(shelterTimer);
+  shelterTimer = setInterval(() => refreshShelters(false, true), 5 * 60 * 1000);
+}
+
+async function refreshShelters(showStatus = false, quiet = false) {
+  const endpoint = String(APP_CONFIG.shelterEndpoint || "").trim();
+  if (!endpoint) return;
+  const button = document.getElementById("refresh-shelters-button");
+  const summary = document.getElementById("shelter-summary");
+  if (!quiet) {
+    button.disabled = true;
+    if (showStatus) summary.textContent = "印西市の公式避難所・防災速報を更新中です。";
+  }
+  try {
+    const response = await fetch(endpoint, { headers: { Accept: "application/json" }, cache: "no-store" });
+    if (!response.ok) throw new Error(`避難所API HTTP ${response.status}`);
+    const payload = await response.json();
+    officialShelters = Array.isArray(payload.shelters) ? payload.shelters.filter(shelter => (
+      Number.isFinite(Number(shelter.latitude)) && Number.isFinite(Number(shelter.longitude))
+    )) : [];
+    shelterPayload = payload;
+    renderShelters();
+  } catch (error) {
+    summary.classList.add("is-error");
+    summary.textContent = `避難所情報を取得できませんでした（${error?.message || "接続エラー"}）。`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function getShelterFilters() {
+  return {
+    hazard: getFormValue("shelter-hazard-filter") || "windFlood",
+    kind: getFormValue("shelter-kind-filter") || "all",
+    opening: getFormValue("shelter-opening-filter") || "all",
+    keyword: getFormValue("shelter-keyword-filter").toLowerCase()
+  };
+}
+
+function getFilteredShelters() {
+  const filters = getShelterFilters();
+  return officialShelters.filter(shelter => {
+    if (filters.kind !== "all" && shelter.kind !== filters.kind) return false;
+    if (filters.opening !== "all" && shelter.openingStatus !== filters.opening) return false;
+    if (filters.keyword && !`${shelter.name} ${shelter.address} ${shelter.district}`.toLowerCase().includes(filters.keyword)) return false;
+    return true;
+  });
+}
+
+function renderShelters() {
+  const summary = document.getElementById("shelter-summary");
+  const list = document.getElementById("shelter-list");
+  const filters = getShelterFilters();
+  const filtered = getFilteredShelters();
+  const hazardLabels = { windFlood: "風水害", earthquake: "震災", landslide: "土砂災害" };
+  const suitableCount = filtered.filter(shelter => shelter.suitableFor?.[filters.hazard]).length;
+  const openCount = officialShelters.filter(shelter => shelter.openingStatus === "open").length;
+  const updateTime = shelterPayload?.fetchedAt ? formatDateTime(toDateTimeLocal(shelterPayload.fetchedAt)) : "";
+  summary.classList.remove("is-error");
+  summary.innerHTML = `
+    <strong>${escapeHtml(hazardLabels[filters.hazard] || filters.hazard)}対応 ${suitableCount} / 表示${filtered.length}施設</strong>
+    <span>開設中 ${openCount}施設${updateTime ? ` ・ ${escapeHtml(updateTime)}取得` : ""}</span>
+    <span>${escapeHtml(shelterPayload?.openingInformation || "公式の開設発表を確認中です。")}</span>
+  `;
+
+  shelterLayer.clearLayers();
+  filtered.forEach(shelter => {
+    const suitable = Boolean(shelter.suitableFor?.[filters.hazard]);
+    const opening = shelter.openingStatus || "not-announced";
+    const marker = L.marker([Number(shelter.latitude), Number(shelter.longitude)], {
+      icon: L.divIcon({
+        className: "",
+        html: `<div class="shelter-marker is-${escapeAttribute(opening)} ${suitable ? "" : "is-unsuitable"}" aria-label="${escapeAttribute(shelter.name)}"><span>${opening === "open" ? "開" : suitable ? "避" : "!"}</span></div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      })
+    });
+    marker._shelterId = shelter.id;
+    marker.bindPopup(buildShelterPopup(shelter, filters.hazard));
+    marker.on("click", () => {
+      selectedShelterId = shelter.id;
+      renderShelterList(filtered, filters.hazard);
+    });
+    shelterLayer.addLayer(marker);
+  });
+  renderShelterList(filtered, filters.hazard);
+}
+
+function buildShelterPopup(shelter, hazard) {
+  const hazardLabels = { windFlood: "風水害", earthquake: "震災", landslide: "土砂災害" };
+  const openingLabels = { open: "開設中", closed: "閉鎖・開設終了", "not-announced": "開設発表なし" };
+  const suitable = Boolean(shelter.suitableFor?.[hazard]);
+  const evidence = shelter.openingEvidence;
+  return `
+    <div class="popup-title">${escapeHtml(shelter.name)}</div>
+    <div class="shelter-popup-badges">
+      <span class="badge ${suitable ? "green" : "red"}">${escapeHtml(hazardLabels[hazard])}: ${suitable ? "対応可" : "対象外"}</span>
+      <span class="badge ${shelter.openingStatus === "open" ? "green" : shelter.openingStatus === "closed" ? "gray" : "yellow"}">${escapeHtml(openingLabels[shelter.openingStatus] || "開設発表なし")}</span>
+    </div>
+    <div>${escapeHtml(shelter.kindLabel)} / ${escapeHtml(shelter.address)}</div>
+    ${shelter.phone ? `<div class="detail-meta">電話 ${escapeHtml(shelter.phone)}</div>` : ""}
+    ${evidence ? `<div class="shelter-evidence"><strong>${escapeHtml(evidence.title || "印西市防災速報")}</strong><span>${escapeHtml(truncateText(evidence.message || "", 140))}</span><a href="${escapeAttribute(evidence.sourceUrl)}" target="_blank" rel="noreferrer">公式発表を確認</a></div>` : '<div class="popup-contact-note">現在の開設を示す公式発表は確認されていません。</div>'}
+    <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">出典: 印西市わが街ガイド オープンデータ</a>
+  `;
+}
+
+function renderShelterList(filtered, hazard) {
+  const list = document.getElementById("shelter-list");
+  if (!filtered.length) {
+    list.innerHTML = '<div class="detail-empty">条件に一致する避難所はありません。</div>';
+    return;
+  }
+  const openingLabels = { open: "開設中", closed: "閉鎖発表", "not-announced": "開設発表なし" };
+  list.innerHTML = filtered.map(shelter => {
+    const suitable = Boolean(shelter.suitableFor?.[hazard]);
+    return `
+      <button class="shelter-list-item ${shelter.id === selectedShelterId ? "is-selected" : ""}" type="button" data-shelter-id="${escapeAttribute(shelter.id)}">
+        <strong>${escapeHtml(shelter.name)}</strong>
+        <span>${escapeHtml(shelter.kindLabel)} ・ ${suitable ? "災害対応可" : "この災害は対象外"}</span>
+        <span class="shelter-opening is-${escapeAttribute(shelter.openingStatus)}">${escapeHtml(openingLabels[shelter.openingStatus] || "開設発表なし")}</span>
+      </button>`;
+  }).join("");
+}
+
+function handleShelterListClick(event) {
+  const button = event.target.closest("[data-shelter-id]");
+  if (!button) return;
+  const shelter = officialShelters.find(item => item.id === button.dataset.shelterId);
+  if (!shelter) return;
+  selectedShelterId = shelter.id;
+  map.setView([Number(shelter.latitude), Number(shelter.longitude)], Math.max(map.getZoom(), 15));
+  shelterLayer.eachLayer(marker => {
+    if (marker._shelterId === shelter.id) marker.openPopup();
+  });
+  renderShelterList(getFilteredShelters(), getShelterFilters().hazard);
+}
+
+function showShelterFloodLayers() {
+  setFormValue("shelter-hazard-filter", "windFlood");
+  ["floodMax", "inland", "shelters"].forEach(name => {
+    const input = document.querySelector(`[data-overlay="${name}"]`);
+    if (input) input.checked = true;
+    toggleOverlay(name, true);
+  });
+  renderShelters();
+  map.fitBounds(INZAI_BOUNDS);
+  document.getElementById("map-status").textContent = "公式の洪水・内水浸水想定と風水害対応避難所を重ねています。";
 }
 
 function applyPublicViewControls() {
@@ -1120,6 +1336,8 @@ function buildSocialSearchUrl(platform, query) {
     return `https://www.instagram.com/explore/search/keyword/?q=${encoded}`;
   }
   if (platform === "threads") return `https://www.threads.net/search?q=${encoded}&serp_type=default`;
+  if (platform === "bluesky") return `https://bsky.app/search?q=${encoded}`;
+  if (platform === "facebook") return `https://www.facebook.com/search/posts/?q=${encoded}`;
   if (platform === "x") return `https://x.com/search?q=${encoded}&src=typed_query&f=live`;
   if (platform === "yahoo-realtime") return `https://search.yahoo.co.jp/realtime/search?p=${encoded}`;
   return `https://www.google.com/search?q=${encodeURIComponent(`${query} 印西市 災害`)}`;
@@ -1826,6 +2044,7 @@ function toggleOverlay(name, checked) {
     jshisGround: jshisLayers.jshisGround,
     landslide: landslideGroup,
     roadFlood: roadFloodLayer,
+    shelters: shelterLayer,
     records: recordLayer
   };
   const layer = layerMap[name];
