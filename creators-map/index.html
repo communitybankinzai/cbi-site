@@ -2,846 +2,1002 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6DBLY190M8"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-6DBLY190M8');
-  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>千葉ニュータウン クリエイターズマップ</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  >
   <style>
-    /* ===== リセット・基本 ===== */
     :root {
-      --app-height: 100vh;
+      --bg: #f3efe7;
+      --panel: rgba(255, 255, 255, 0.94);
+      --line: #d8d4ca;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #1d4ed8;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
     }
-    html {
-      height: 100%;
-      height: -webkit-fill-available;
+
+    * {
+      box-sizing: border-box;
     }
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: 'Noto Sans JP', sans-serif;
-      background: #f5f2ec;
-      display: flex;
-      flex-direction: column;
-      min-height: var(--app-height);
-      height: var(--app-height);
-      overflow: hidden;
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(244, 194, 132, 0.35), transparent 24%),
+        linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
     }
 
-    /* ===== ヘッダー ===== */
-    .header {
-      background: #1a1a2e;
+    .shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .hero {
+      padding: 24px 20px 14px;
+    }
+
+    .hero-card {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      background: #182033;
       color: #fff;
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
     }
-    .header-title {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .header-title .sub  { font-size: 10px; color: #aaa; letter-spacing: 2px; text-transform: uppercase; }
-    .header-title .main { font-size: 16px; font-weight: 700; line-height: 1.2; }
 
-    /* クリエイター数カウント */
-    .count-box {
-      background: linear-gradient(135deg, #e67e22, #f39c12);
-      border-radius: 12px;
-      padding: 8px 18px;
-      display: flex;
-      align-items: baseline;
-      gap: 5px;
-      box-shadow: 0 2px 6px rgba(230,126,34,0.4);
+    .hero-copy {
+      min-width: 0;
     }
-    .count-number {
-      font-size: 2.8rem;
-      font-weight: 900;
-      line-height: 1;
-      letter-spacing: -2px;
-    }
-    .count-unit { font-size: 12px; line-height: 1.3; }
 
-    /* ===== 凡例バー ===== */
-    .legend-bar {
-      background: #fff;
-      border-bottom: 1px solid #e0ddd6;
-      padding: 8px 20px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: wrap;
-      flex-shrink: 0;
-    }
-    .legend-label { font-size: 10px; color: #999; margin-right: 6px; white-space: nowrap; }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
+    .hero-copy small {
+      display: block;
+      margin-bottom: 6px;
+      letter-spacing: 0.14em;
       font-size: 11px;
-      color: #444;
-      background: #f8f8f8;
-      padding: 3px 8px;
-      border-radius: 20px;
-      white-space: nowrap;
-      cursor: pointer;
-      border: 1.5px solid transparent;
-      transition: border-color 0.15s;
+      color: rgba(255, 255, 255, 0.72);
     }
-    .legend-item:hover { border-color: #ccc; }
-    .legend-item.active { border-color: #555; background: #fff; }
-    .legend-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
+
+    .hero-copy h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .hero-count {
       flex-shrink: 0;
+      min-width: 132px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      text-align: center;
+      background: linear-gradient(135deg, #eb7d2a, #f0b23d);
     }
 
-    /* エリア凡例 */
-    .area-legend {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-left: auto;
-    }
-    .area-legend-label { font-size: 10px; color: #999; }
-    .area-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      color: #555;
-    }
-    .area-swatch {
-      width: 22px; height: 12px;
-      border-radius: 3px;
-      border: 1.5px solid;
-    }
-    /* ===== 検索ボックス ===== */
-    .search-bar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      background: #fff;
-      border-bottom: 1px solid #e0e0e0;
-    }
-    .search-input {
-      flex: 1;
-      padding: 6px 10px;
-      border: 1.5px solid #ddd;
-      border-radius: 20px;
-      font-size: 13px;
-      font-family: 'Noto Sans JP', sans-serif;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .search-input:focus { border-color: #1a237e; }
-    .search-clear {
-      cursor: pointer;
-      color: #999;
-      font-size: 18px;
+    .hero-count strong {
+      display: block;
+      font-size: 40px;
       line-height: 1;
-      padding: 0 4px;
-      display: none;
     }
 
-    .area-btn {
-      cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 12px;
-      border: 1.5px solid transparent;
-      transition: background 0.15s;
-    }
-    .area-btn.active {
-      background: #e8e8e8;
-      border-color: #999;
-      font-weight: bold;
-    }
-    .area-btn:hover {
-      background: #f0f0f0;
-    }
-
-    /* ===== 切り替えボタン ===== */
-    .view-toggle {
-      display: flex;
-      margin-left: auto;
-      border: 1.5px solid #ddd;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .view-btn {
-      padding: 5px 14px;
+    .hero-count span {
+      display: block;
+      margin-top: 4px;
       font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      background: #f5f5f5;
-      color: #888;
-      border: none;
-      transition: background 0.15s, color 0.15s;
-      font-family: 'Noto Sans JP', sans-serif;
-    }
-    .view-btn.active {
-      background: #1a1a2e;
-      color: #fff;
     }
 
-    /* ===== 地図エリア ===== */
-    #map {
-      flex: 1;
-      width: 100%;
-    }
-
-    /* ===== リストビュー ===== */
-    #list-view {
-      flex: 1;
-      overflow-y: auto;
-      background: #f5f2ec;
-      padding: 16px 20px;
-      display: none;
-    }
-    .creator-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 14px;
-    }
-    .creator-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    .site-header {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 14px 20px 0;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
     }
-    .card-badge {
+
+    .brand {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 10px;
-      font-weight: 700;
-      color: #fff;
-      width: fit-content;
-    }
-    .card-name {
-      font-size: 16px;
-      font-weight: 700;
-      color: #1a1a2e;
-      line-height: 1.3;
-    }
-    .card-row {
-      font-size: 12px;
-      color: #555;
-      line-height: 1.6;
-    }
-    .card-link {
-      font-size: 12px;
-      color: #2980b9;
       text-decoration: none;
-      margin-top: 4px;
-    }
-    .card-link:hover { text-decoration: underline; }
-    .list-empty {
-      text-align: center;
-      color: #aaa;
-      padding: 60px 20px;
-      font-size: 14px;
-    }
-    .new-badge {
-      display: inline-block;
-      background: #ff4757;
-      color: #fff;
-      font-size: 10px;
-      font-weight: bold;
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 6px;
-      vertical-align: middle;
-      letter-spacing: 0.5px;
     }
 
-    /* ===== スマホ対応 ===== */
+    .brand__logo {
+      display: block;
+      width: 140px;
+      height: auto;
+    }
+
+    .site-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .site-nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
     @media (max-width: 600px) {
-      body {
-        height: auto;
-        min-height: var(--app-height);
-        overflow-y: auto;
-        display: block;
+      .site-header {
+        flex-direction: column;
+        align-items: flex-start;
       }
-
-      /* ヘッダーだけ固定 */
-      .header {
-        position: sticky;
-        top: 0;
-        z-index: 200;
-        padding: 6px 10px;
-        gap: 8px;
+      .brand__logo {
+        width: 120px;
       }
-      .header-title .main { font-size: 12px; }
-      .header-title .sub  { display: none; }
-      .count-number { font-size: 1.6rem; }
-      .count-box { padding: 4px 10px; }
-
-      /* フィルター・検索は通常フロー（スクロールで見える）*/
-      .legend-bar { padding: 6px 10px; gap: 4px; flex-wrap: wrap; }
-      .legend-item { font-size: 10px; padding: 2px 6px; }
-      .area-legend { margin-left: 0; flex-wrap: wrap; gap: 4px; }
-      .area-legend-label { display: none; }
-      .search-bar { padding: 5px 10px; }
-      .search-input { font-size: 12px; }
-
-      /* マップ・リストは固定高さ */
-      #map {
-        height: 65vw;
-        min-height: 280px;
-        max-height: 420px;
+      .site-nav {
+        gap: 8px 14px;
       }
-      #list-view {
-        min-height: 50vh;
-        overflow-y: auto;
-        padding: 10px;
-      }
-
-      .view-btn { padding: 5px 10px; font-size: 11px; }
-      .creator-grid { grid-template-columns: 1fr; gap: 10px; }
-      .card-name { font-size: 14px; }
     }
 
-    /* ===== 情報ウィンドウのスタイル ===== */
-    .iw-wrap {
-      font-family: 'Noto Sans JP', sans-serif;
-      min-width: 200px;
-      max-width: 240px;
-      padding: 4px 2px 2px;
+    .latest-notice {
+      margin: 10px 20px 0;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, #fff7eb, #ffe9c8);
+      border: 1px solid #f0b23d;
+      border-radius: 12px;
+      color: #5a3a14;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(235, 125, 42, 0.12);
     }
-    .iw-badge {
+    .latest-notice[hidden] {
+      display: none;
+    }
+    .latest-notice .label {
       display: inline-block;
       padding: 2px 8px;
-      border-radius: 20px;
-      font-size: 10px;
-      font-weight: 700;
+      margin-right: 6px;
+      background: #eb7d2a;
       color: #fff;
-      margin-bottom: 6px;
-    }
-    .iw-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: #1a1a2e;
-      margin-bottom: 5px;
-      line-height: 1.3;
-    }
-    .iw-row {
+      font-weight: bold;
       font-size: 11px;
-      color: #555;
-      margin-bottom: 3px;
-      line-height: 1.5;
+      border-radius: 999px;
+      letter-spacing: 0.05em;
     }
-    .iw-link {
+    .latest-notice .name {
+      font-weight: bold;
+    }
+    .latest-notice .relative {
+      margin-left: 6px;
+      color: #8a6a3c;
+      font-size: 12px;
+    }
+
+    .register-bar {
+      padding: 12px 20px 4px;
+      text-align: center;
+    }
+
+    .register-btn {
       display: inline-block;
-      margin-top: 6px;
+      padding: 13px 28px;
+      background: linear-gradient(135deg, #eb7d2a, #f0b23d);
+      color: #fff;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 999px;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(235, 125, 42, 0.35);
+      letter-spacing: 0.05em;
+    }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+      padding: 0 20px 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(18px);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      padding: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search {
+      flex: 1 1 240px;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 14px;
+      background: #fff;
+    }
+
+    .toggle {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .toggle button {
+      border: 0;
+      padding: 11px 16px;
+      background: transparent;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .toggle button.active {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .filters {
+      padding: 0 14px 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .filter-row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .filter-row label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .chip.active {
+      border-color: var(--accent);
+      background: #e7efff;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      padding: 0 20px 20px;
+    }
+
+    .viewport {
+      height: calc(100vh - 284px);
+      min-height: 480px;
+      overflow: hidden;
+    }
+
+    #map-view,
+    #list-view {
+      height: 100%;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    #list-view {
+      display: none;
+      overflow: auto;
+      padding: 14px;
+    }
+
+    .list-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      padding: 16px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid #ebe6dc;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+      cursor: pointer;
+    }
+
+    .card h2 {
+      margin: 10px 0 6px;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      color: #fff;
       font-size: 11px;
-      color: #2980b9;
+      font-weight: 700;
+    }
+
+    .badge-new {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #e63946;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .meta {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.65;
+      color: #475569;
+      word-break: break-word;
+    }
+
+    .meta a {
+      color: var(--accent);
       text-decoration: none;
     }
-    .iw-link:hover { text-decoration: underline; }
+
+    .state {
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .leaflet-popup-content {
+      min-width: 220px;
+      line-height: 1.6;
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+    }
+
+    .popup-title {
+      margin: 10px 0 6px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .popup-line {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #475569;
+      word-break: break-word;
+    }
+
+    @media (max-width: 720px) {
+      .hero-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .hero-count {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .content,
+      .controls,
+      .hero {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .viewport {
+        height: auto;
+        min-height: 0;
+      }
+
+      #map-view {
+        height: 56vh;
+        min-height: 360px;
+      }
+
+      #list-view {
+        min-height: 40vh;
+      }
+
+      .list-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="shell">
+    <header class="site-header">
+      <a class="brand" href="https://you0810jmsdf.github.io/cocola-site/" aria-label="COCoLa ホームへ">
+        <img class="brand__logo" src="https://you0810jmsdf.github.io/cocola-site/assets/COCoLa_Logo_transparent.png" alt="COCoLa ロゴ">
+      </a>
+      <nav class="site-nav" aria-label="ナビゲーション">
+        <a href="https://you0810jmsdf.github.io/cocola-site/">COCoLaサイトへ</a>
+        <a href="https://you0810jmsdf.github.io/cocola-site/member-app/">メンバーページ</a>
+        <a href="https://you0810jmsdf.github.io/cocola-site/dao/">提案／投票</a>
+      </nav>
+    </header>
 
-<!-- ヘッダー -->
-<div class="header">
-  <div class="header-title">
-    <span class="sub">Chiba New Town</span>
-    <span class="main">クリエイターズマップ</span>
-  </div>
-  <div class="count-box">
-    <span class="count-number" id="count">…</span>
-    <span class="count-unit">名の<br>クリエイター</span>
-  </div>
-</div>
+    <header class="hero">
+      <div class="hero-card">
+        <div class="hero-copy">
+          <small>CHIBA NEW TOWN</small>
+          <h1>クリエイターズマップ</h1>
+        </div>
+        <div class="hero-count">
+          <strong id="count">-</strong>
+          <span>掲載クリエイター</span>
+        </div>
+      </div>
+    </header>
 
-<!-- 検索バー -->
-<div class="search-bar">
-  <span style="font-size:14px;">🔍</span>
-  <input class="search-input" id="search-input" type="text" placeholder="屋号・代表作・一言紹介で検索..."
-    oninput="onSearchInput(this.value)" />
-  <span class="search-clear" id="search-clear" onclick="clearSearch()">✕</span>
-</div>
-
-<!-- 凡例バー -->
-<div class="legend-bar">
-  <span class="legend-label">▼ 分野</span>
-  <div id="legend-items"></div>
-
-  <div class="area-legend">
-    <span class="area-legend-label">▼ エリア</span>
-    <div class="area-item area-btn active" id="area-btn-all" onclick="setAreaFilter('')">
-      <div class="area-swatch" style="background:#eee; border-color:#999;"></div>全て
+    <div id="latest-notice" class="latest-notice" hidden>
+      <span class="label">新着</span>
+      <span class="content"></span>
     </div>
-    <div class="area-item area-btn" id="area-btn-印西市" onclick="setAreaFilter('印西市')">
-      <div class="area-swatch" style="background:#FFF59D88; border-color:#F9A825;"></div>印西市
+
+    <div class="register-bar">
+      <a class="register-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdcMWEJDLDc_gbnKCnT7lKbC0hcdqGBY26MdFbjOs1QApC5gA/viewform?usp=dialog" target="_blank" rel="noopener noreferrer">＋ 掲載登録する</a>
     </div>
-    <div class="area-item area-btn" id="area-btn-白井市" onclick="setAreaFilter('白井市')">
-      <div class="area-swatch" style="background:#B2EBF288; border-color:#00838F;"></div>白井市
-    </div>
-    <div class="area-item area-btn" id="area-btn-栄町" onclick="setAreaFilter('栄町')">
-      <div class="area-swatch" style="background:#F8BBD088; border-color:#C2185B;"></div>栄町
-    </div>
+
+    <section class="controls">
+      <div class="panel toolbar">
+        <input id="search-input" class="search" type="search" placeholder="屋号・代表作・一言紹介で検索">
+        <div class="toggle">
+          <button id="show-map" class="active" type="button">地図</button>
+          <button id="show-list" type="button">一覧</button>
+        </div>
+      </div>
+
+      <div class="panel filters">
+        <div class="filter-row">
+          <label>エリア</label>
+          <div id="area-filters" class="chip-list"></div>
+        </div>
+        <div class="filter-row">
+          <label>分野</label>
+          <div id="category-filters" class="chip-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <main class="content">
+      <div class="panel viewport">
+        <div id="map-view">
+          <div id="map"></div>
+        </div>
+        <div id="list-view">
+          <div id="status" class="state">データを読み込み中です。</div>
+          <div id="list-grid" class="list-grid"></div>
+        </div>
+      </div>
+    </main>
   </div>
 
-  <!-- 切り替えボタン -->
-  <div class="view-toggle">
-    <button class="view-btn active" id="btn-map" onclick="switchView('map')">🗺 マップ</button>
-    <button class="view-btn" id="btn-list" onclick="switchView('list')">📋 リスト</button>
-  </div>
-</div>
-
-<!-- 地図 -->
-<div id="map"></div>
-
-<!-- リストビュー -->
-<div id="list-view">
-  <div class="creator-grid" id="creator-grid"></div>
-</div>
-
-<script>
-// ===== カテゴリ設定 =====
-let activeAreaFilter = ''; // '' = 全エリア表示
-
-const CITIES = {
-  '印西市': { bg: '#FFF59D88', border: '#F9A825' },
-  '白井市': { bg: '#B2EBF288', border: '#00838F' },
-  '栄町'  : { bg: '#F8BBD088', border: '#C2185B' },
-};
-
-const CATEGORIES = {
-  '革・レザー'          : { color: '#795548', emoji: '🟤' },
-  '布・糸・手芸'        : { color: '#e91e8c', emoji: '🧵' },
-  '陶・木・金属'        : { color: '#d4832a', emoji: '🏺' },
-  'ファブ・デジタル工作' : { color: '#607d8b', emoji: '⚙️' },
-  '食・農・発酵'        : { color: '#27ae60', emoji: '🌿' },
-  '絵・デザイン'        : { color: '#e74c3c', emoji: '🎨' },
-  '映像・写真'          : { color: '#8e44ad', emoji: '📷' },
-  'IT・Web'             : { color: '#2196f3', emoji: '💻' },
-  'その他・複合'        : { color: '#7f8c8d', emoji: '💡' },
-};
-
-// ===== 市区町村エリア設定（GeoJSON差し替え前の簡易ポリゴン）=====
-// ※ 正確な境界は国土数値情報のGeoJSONを読み込んで差し替えてください
-const CITY_POLYGONS = [
-  {
-    name       : '印西市',
-    fillColor  : '#FFF59D',
-    strokeColor: '#F9A825',
-    coords: [
-      {lat:35.749453,lng:140.168648},{lat:35.755189,lng:140.159146},{lat:35.758444,lng:140.153736},
-      {lat:35.763297,lng:140.148814},{lat:35.763739,lng:140.144759},{lat:35.766969,lng:140.138458},
-      {lat:35.772958,lng:140.133084},{lat:35.776012,lng:140.125005},{lat:35.778665,lng:140.118985},
-      {lat:35.779981,lng:140.115395},{lat:35.779958,lng:140.105890},{lat:35.782905,lng:140.096909},
-      {lat:35.787493,lng:140.100000},{lat:35.794034,lng:140.102752},{lat:35.796266,lng:140.104212},
-      {lat:35.798502,lng:140.108333},{lat:35.802477,lng:140.109171},{lat:35.804777,lng:140.105596},
-      {lat:35.805043,lng:140.101759},{lat:35.807087,lng:140.101210},{lat:35.808333,lng:140.099940},
-      {lat:35.809708,lng:140.097921},{lat:35.811829,lng:140.089308},{lat:35.816667,lng:140.087505},
-      {lat:35.822666,lng:140.093033},{lat:35.827203,lng:140.097158},{lat:35.831288,lng:140.099147},
-      {lat:35.834380,lng:140.105405},{lat:35.839907,lng:140.110936},{lat:35.843764,lng:140.109317},
-      {lat:35.850000,lng:140.117232},{lat:35.847603,lng:140.116884},{lat:35.843553,lng:140.119687},
-      {lat:35.842443,lng:140.128453},{lat:35.841667,lng:140.134625},{lat:35.843735,lng:140.141204},
-      {lat:35.844504,lng:140.148278},{lat:35.842916,lng:140.158059},{lat:35.845457,lng:140.167779},
-      {lat:35.843484,lng:140.175000},{lat:35.842184,lng:140.180125},{lat:35.839684,lng:140.186017},
-      {lat:35.836465,lng:140.192936},{lat:35.835203,lng:140.198787},{lat:35.834860,lng:140.205330},
-      {lat:35.836559,lng:140.208855},{lat:35.839305,lng:140.213840},{lat:35.839651,lng:140.220494},
-      {lat:35.840432,lng:140.227307},{lat:35.838873,lng:140.232826},{lat:35.832409,lng:140.233026},
-      {lat:35.829783,lng:140.238980},{lat:35.827777,lng:140.244616},{lat:35.823601,lng:140.240173},
-      {lat:35.820587,lng:140.240297},{lat:35.816667,lng:140.243480},{lat:35.820980,lng:140.245001},
-      {lat:35.820999,lng:140.250000},{lat:35.814187,lng:140.250679},{lat:35.808333,lng:140.251462},
-      {lat:35.800000,lng:140.251613},{lat:35.791682,lng:140.250000},{lat:35.786674,lng:140.249529},
-      {lat:35.781449,lng:140.254611},{lat:35.778860,lng:140.258994},{lat:35.773877,lng:140.259430},
-      {lat:35.768316,lng:140.258949},{lat:35.764450,lng:140.257797},{lat:35.759635,lng:140.261806},
-      {lat:35.750000,lng:140.264774},{lat:35.742319,lng:140.264147},{lat:35.739648,lng:140.255914},
-      {lat:35.742466,lng:140.250000},{lat:35.747202,lng:140.241667},{lat:35.754334,lng:140.229078},
-      {lat:35.759382,lng:140.220493},{lat:35.765875,lng:140.210354},{lat:35.764870,lng:140.205269},
-      {lat:35.755443,lng:140.196788},{lat:35.747589,lng:140.191942},{lat:35.746016,lng:140.187674},
-      {lat:35.748425,lng:140.176676},{lat:35.748742,lng:140.171074},{lat:35.749453,lng:140.168648}
-    ]
-  },
-  {
-    name       : '白井市',
-    fillColor  : '#B2EBF2',
-    strokeColor: '#00838F',
-    coords: [
-      {lat:35.783492,lng:140.018885},{lat:35.780536,lng:140.022311},{lat:35.780337,lng:140.027549},
-      {lat:35.774172,lng:140.020040},{lat:35.774343,lng:140.018150},{lat:35.769162,lng:140.015400},
-      {lat:35.768084,lng:140.015181},{lat:35.766706,lng:140.016384},{lat:35.765490,lng:140.021029},
-      {lat:35.771310,lng:140.030692},{lat:35.769075,lng:140.034443},{lat:35.768500,lng:140.037961},
-      {lat:35.766710,lng:140.038626},{lat:35.766683,lng:140.039807},{lat:35.770706,lng:140.045738},
-      {lat:35.770636,lng:140.047614},{lat:35.772172,lng:140.051953},{lat:35.774717,lng:140.055522},
-      {lat:35.774626,lng:140.057805},{lat:35.777074,lng:140.062545},{lat:35.782508,lng:140.066196},
-      {lat:35.785524,lng:140.067209},{lat:35.795878,lng:140.068028},{lat:35.798046,lng:140.068837},
-      {lat:35.799632,lng:140.070444},{lat:35.798659,lng:140.073212},{lat:35.791909,lng:140.082429},
-      {lat:35.787648,lng:140.085209},{lat:35.784003,lng:140.089552},{lat:35.782905,lng:140.096904},
-      {lat:35.791604,lng:140.103054},{lat:35.794035,lng:140.102747},{lat:35.795459,lng:140.104876},
-      {lat:35.796432,lng:140.104071},{lat:35.799459,lng:140.111100},{lat:35.805557,lng:140.107129},
-      {lat:35.803650,lng:140.102562},{lat:35.804628,lng:140.101002},{lat:35.806014,lng:140.102895},
-      {lat:35.807596,lng:140.099264},{lat:35.808800,lng:140.100192},{lat:35.809370,lng:140.099916},
-      {lat:35.809664,lng:140.093074},{lat:35.812100,lng:140.089043},{lat:35.815169,lng:140.088154},
-      {lat:35.816299,lng:140.087056},{lat:35.819806,lng:140.092062},{lat:35.822667,lng:140.093028},
-      {lat:35.822531,lng:140.093705},{lat:35.824733,lng:140.093427},{lat:35.826059,lng:140.092896},
-      {lat:35.827204,lng:140.090650},{lat:35.828171,lng:140.091344},{lat:35.830457,lng:140.088674},
-      {lat:35.830594,lng:140.086859},{lat:35.832305,lng:140.086235},{lat:35.830792,lng:140.083702},
-      {lat:35.831281,lng:140.079599},{lat:35.830802,lng:140.077329},{lat:35.834403,lng:140.067196},
-      {lat:35.835735,lng:140.056164},{lat:35.834108,lng:140.054674},{lat:35.832645,lng:140.050355},
-      {lat:35.831523,lng:140.048994},{lat:35.824299,lng:140.041673},{lat:35.817652,lng:140.037113},
-      {lat:35.816433,lng:140.034463},{lat:35.810922,lng:140.032094},{lat:35.807570,lng:140.031319},
-      {lat:35.804332,lng:140.031468},{lat:35.799618,lng:140.029862},{lat:35.791834,lng:140.025005},
-      {lat:35.787381,lng:140.020464},{lat:35.783492,lng:140.018885}
-    ]
-  },
-  {
-    name       : '栄町',
-    fillColor  : '#F8BBD0',
-    strokeColor: '#C2185B',
-    coords: [
-      {lat:35.862006,lng:140.213640},{lat:35.861627,lng:140.208111},{lat:35.860743,lng:140.203138},
-      {lat:35.858155,lng:140.197255},{lat:35.853394,lng:140.189734},{lat:35.851103,lng:140.184411},
-      {lat:35.849381,lng:140.177889},{lat:35.847006,lng:140.171459},{lat:35.845458,lng:140.167774},
-      {lat:35.844418,lng:140.170718},{lat:35.843604,lng:140.174200},{lat:35.843176,lng:140.176422},
-      {lat:35.842340,lng:140.179265},{lat:35.839685,lng:140.186011},{lat:35.836466,lng:140.192930},
-      {lat:35.835504,lng:140.196380},{lat:35.834988,lng:140.201074},{lat:35.834861,lng:140.205324},
-      {lat:35.835626,lng:140.207568},{lat:35.837713,lng:140.210261},{lat:35.839146,lng:140.213009},
-      {lat:35.839389,lng:140.216039},{lat:35.839652,lng:140.220488},{lat:35.840073,lng:140.224470},
-      {lat:35.840794,lng:140.229530},{lat:35.838874,lng:140.232819},{lat:35.836561,lng:140.232268},
-      {lat:35.831752,lng:140.233904},{lat:35.830009,lng:140.237976},{lat:35.828370,lng:140.241823},
-      {lat:35.827778,lng:140.244610},{lat:35.824457,lng:140.242418},{lat:35.821974,lng:140.238431},
-      {lat:35.820894,lng:140.240124},{lat:35.815889,lng:140.242963},{lat:35.817934,lng:140.243749},
-      {lat:35.820038,lng:140.243663},{lat:35.820981,lng:140.244995},{lat:35.819681,lng:140.246717},
-      {lat:35.821005,lng:140.249959},{lat:35.817215,lng:140.250200},{lat:35.812117,lng:140.251024},
-      {lat:35.806984,lng:140.251512},{lat:35.800306,lng:140.251618},{lat:35.815059,lng:140.258451},
-      {lat:35.818448,lng:140.264877},{lat:35.820545,lng:140.266805},{lat:35.822942,lng:140.268686},
-      {lat:35.821602,lng:140.272741},{lat:35.820260,lng:140.275765},{lat:35.818225,lng:140.277921},
-      {lat:35.822722,lng:140.280866},{lat:35.826020,lng:140.283716},{lat:35.828931,lng:140.285303},
-      {lat:35.830674,lng:140.284340},{lat:35.831342,lng:140.283671},{lat:35.833058,lng:140.282529},
-      {lat:35.837138,lng:140.281519},{lat:35.838913,lng:140.281962},{lat:35.842350,lng:140.279905},
-      {lat:35.846635,lng:140.279634},{lat:35.846009,lng:140.277605},{lat:35.845495,lng:140.275510},
-      {lat:35.846801,lng:140.275878},{lat:35.848619,lng:140.275685},{lat:35.848440,lng:140.274049},
-      {lat:35.849796,lng:140.274875},{lat:35.851678,lng:140.277083},{lat:35.852929,lng:140.280358},
-      {lat:35.855979,lng:140.281222},{lat:35.859144,lng:140.282244},{lat:35.861542,lng:140.281602},
-      {lat:35.862995,lng:140.284643},{lat:35.867057,lng:140.286486},{lat:35.870081,lng:140.287934},
-      {lat:35.871852,lng:140.288504},{lat:35.873756,lng:140.283371},{lat:35.874045,lng:140.278291},
-      {lat:35.872656,lng:140.273583},{lat:35.869969,lng:140.266858},{lat:35.866461,lng:140.261192},
-      {lat:35.861018,lng:140.252603},{lat:35.855401,lng:140.243611},{lat:35.854031,lng:140.236893},
-      {lat:35.854244,lng:140.231397},{lat:35.856166,lng:140.226177},{lat:35.858158,lng:140.222866},
-      {lat:35.861033,lng:140.216887},{lat:35.861895,lng:140.214415},{lat:35.862006,lng:140.213640}
-    ]
-  },
-];
-
-let map;
-let allMarkers = [];
-// 表示するカテゴリの集合（初期=全カテゴリON）
-const ALL_CATEGORIES = ['革・レザー','布・糸・手芸','陶・木・金属','ファブ・デジタル工作',
-                        '食・農・発酵','絵・デザイン','映像・写真','IT・Web','その他・複合'];
-let activeFilters = new Set(ALL_CATEGORIES);
-let allCreators  = []; // リスト表示用に保持
-let currentView  = 'map';
-
-function updateViewportHeight() {
-  const viewport = window.visualViewport;
-  const height = viewport ? viewport.height : window.innerHeight;
-  document.documentElement.style.setProperty('--app-height', height + 'px');
-}
-
-function scheduleMapResize() {
-  if (!map || typeof google === 'undefined' || !google.maps) return;
-  window.setTimeout(function() {
-    google.maps.event.trigger(map, 'resize');
-    const center = map.getCenter();
-    if (center) map.setCenter(center);
-  }, 100);
-}
-
-updateViewportHeight();
-window.addEventListener('resize', updateViewportHeight, { passive: true });
-window.addEventListener('orientationchange', updateViewportHeight, { passive: true });
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', updateViewportHeight, { passive: true });
-}
-
-// ===== 地図初期化 =====
-function initMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
-    center     : { lat: 35.785, lng: 140.150 },
-    zoom       : 12,
-    mapTypeId  : 'roadmap',
-    mapTypeControl       : false,
-    streetViewControl    : false,
-    fullscreenControl    : true,
-    gestureHandling      : 'greedy',
-    styles: [
-      { featureType: 'poi',     stylers: [{ visibility: 'off' }] },
-      { featureType: 'transit', stylers: [{ visibility: 'simplified' }] },
-    ]
-  });
-
-  drawCityAreas();
-  buildLegend();
-  loadCreators();
-  scheduleMapResize();
-}
-
-// ===== 市区町村エリア描画 =====
-function drawCityAreas() {
-  CITY_POLYGONS.forEach(function(city) {
-    new google.maps.Polygon({
-      paths        : city.coords,
-      strokeColor  : city.strokeColor,
-      strokeOpacity: 0.9,
-      strokeWeight : 2,
-      fillColor    : city.fillColor,
-      fillOpacity  : 0.32,
-      map          : map,
-    });
-  });
-}
-
-// ===== 凡例ボタン生成 =====
-function buildLegend() {
-  const container = document.getElementById('legend-items');
-  container.style.display = 'flex';
-  container.style.gap = '4px';
-  container.style.flexWrap = 'wrap';
-
-  Object.entries(CATEGORIES).forEach(function([name, conf]) {
-    const btn = document.createElement('div');
-    btn.className = 'legend-item active';
-    btn.dataset.category = name;
-    btn.innerHTML = `
-      <span class="legend-dot" style="background:${conf.color}"></span>
-      ${conf.emoji} ${name}
-    `;
-    btn.addEventListener('click', function() { toggleFilter(name, btn); });
-    container.appendChild(btn);
-  });
-}
-
-// カテゴリ名を9分野に正規化（不一致はその他・複合に）
-function normalizeCategory(cat) {
-  return ALL_CATEGORIES.includes(cat) ? cat : 'その他・複合';
-}
-
-function toggleFilter(category, btn) {
-  if (activeFilters.has(category)) {
-    activeFilters.delete(category);   // ONだったのでOFF（非表示に）
-    btn.classList.remove('active');
-  } else {
-    activeFilters.add(category);      // OFFだったのでON（表示に）
-    btn.classList.add('active');
-  }
-  applyFilter();
-  if (currentView === 'list') buildCreatorList();
-}
-
-function applyFilter() {
-  allCreators.forEach(function(c, i) {
-    const item = allMarkers[i];
-    if (!item) return;
-    const cat        = normalizeCategory(c.category);
-    const categoryOk = activeFilters.has(cat);          // 集合に含まれていれば表示
-    const areaOk     = !activeAreaFilter || c.city === activeAreaFilter;
-    const searchOk   = matchesSearch(c);
-    item.marker.setVisible(categoryOk && areaOk && searchOk);
-  });
-}
-
-// ===== ビュー切り替え =====
-function switchView(view) {
-  currentView = view;
-  document.getElementById('map').style.display       = view === 'map'  ? 'block' : 'none';
-  document.getElementById('list-view').style.display = view === 'list' ? 'flex'  : 'none';
-  document.getElementById('btn-map').classList.toggle('active',  view === 'map');
-  document.getElementById('btn-list').classList.toggle('active', view === 'list');
-  if (view === 'map') scheduleMapResize();
-  if (view === 'list') buildCreatorList();
-}
-
-// ===== キーワード検索 =====
-let searchKeyword = '';
-
-function onSearchInput(val) {
-  searchKeyword = val.trim().toLowerCase();
-  document.getElementById('search-clear').style.display = val ? 'block' : 'none';
-  applyFilter();
-  if (currentView === 'list') buildCreatorList();
-}
-
-function clearSearch() {
-  searchKeyword = '';
-  document.getElementById('search-input').value = '';
-  document.getElementById('search-clear').style.display = 'none';
-  applyFilter();
-  if (currentView === 'list') buildCreatorList();
-}
-
-function matchesSearch(c) {
-  if (!searchKeyword) return true;
-  return [c.name, c.works, c.description, c.category]
-    .some(v => v && v.toLowerCase().includes(searchKeyword));
-}
-
-// ===== エリアフィルター =====
-function setAreaFilter(city) {
-  activeAreaFilter = city;
-  // ボタンのアクティブ状態を更新
-  ['', '印西市', '白井市', '栄町'].forEach(function(c) {
-    const id = 'area-btn-' + (c || 'all');
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('active', c === city);
-  });
-  applyFilter();                                  // マップのピンを絞り込み
-  if (currentView === 'list') buildCreatorList(); // リストも絞り込み
-}
-
-// ===== リスト生成 =====
-function buildCreatorList() {
-  const grid = document.getElementById('creator-grid');
-  let filtered = allCreators.filter(c => activeFilters.has(normalizeCategory(c.category)));
-  if (activeAreaFilter) filtered = filtered.filter(c => c.city === activeAreaFilter);
-  if (searchKeyword)    filtered = filtered.filter(c => matchesSearch(c));
-
-  if (filtered.length === 0) {
-    grid.innerHTML = '<div class="list-empty">表示できるクリエイターがいません</div>';
-    return;
-  }
-  grid.innerHTML = filtered.map(function(c, i) {
-    const markerIndex = allCreators.indexOf(c);
-    const conf    = CATEGORIES[c.category] || CATEGORIES['その他・複合'];
-    const isNew   = c.isNew;
-    const urlHtml = c.url
-      ? `<a class="card-link" href="${c.url}" target="_blank" onclick="event.stopPropagation()">🔗 詳細を見る</a>`
-      : '';
-    return `
-      <div class="creator-card" onclick="jumpToMap(${markerIndex})" style="cursor:pointer;" title="地図で見る">
-        <span class="card-badge" style="background:${conf.color}">${conf.emoji} ${c.category}</span>
-        ${isNew ? '<span class="new-badge">NEW</span>' : ''}
-        <div class="card-name">${c.name}</div>
-        ${c.works       ? `<div class="card-row">🎨 <b>代表作：</b>${c.works}</div>`  : ''}
-        ${c.description ? `<div class="card-row">💬 ${c.description}</div>`           : ''}
-        ${urlHtml}
-      </div>`;
-  }).join('');
-}
-
-// ===== リストカード→マップジャンプ =====
-function jumpToMap(markerIndex) {
-  switchView('map');
-  const item = allMarkers[markerIndex];
-  if (!item) return;
-  map.panTo(item.marker.getPosition());
-  map.setZoom(14);
-  allMarkers.forEach(m => m.infoWindow.close());
-  item.infoWindow.open(map, item.marker);
-}
-
-// ===== クリエイターデータ読み込み（Safari対応・fetch方式）=====
-function loadCreators() {
-  // Apps Script JSON エンドポイントからデータ取得（GitHub Pages / Safari 対応）
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzR2b5gTAWEzWQIG31OLNvMjnHjo5r7UfQLkHwHaMfjtZYJ9bKtilMzU5J85GpKOFWb/exec';
-  const jsonUrl = GAS_URL + '?mode=json';
-  fetch(jsonUrl)
-    .then(function(res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
-    .then(function(creators) {
-      allCreators = creators;
-      document.getElementById('count').textContent = creators.length;
-      creators.forEach(addCreatorPin);
-      if (currentView === 'list') buildCreatorList();
-    })
-    .catch(function(err) {
-      // fetchが失敗した場合はgoogle.script.runにフォールバック
-      console.warn('fetch失敗、google.script.runにフォールバック:', err);
-      if (typeof google !== 'undefined' && google.script) {
-        google.script.run
-          .withSuccessHandler(function(creators) {
-            allCreators = creators;
-            document.getElementById('count').textContent = creators.length;
-            creators.forEach(addCreatorPin);
-            if (currentView === 'list') buildCreatorList();
-          })
-          .withFailureHandler(function(e) {
-            document.getElementById('count').textContent = '–';
-            console.error('データ取得エラー:', e);
-          })
-          .getCreators();
-      } else {
-        document.getElementById('count').textContent = '–';
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script>
+    const DATA_BASE_URL = 'https://script.google.com/macros/s/AKfycbzR2b5gTAWEzWQIG31OLNvMjnHjo5r7UfQLkHwHaMfjtZYJ9bKtilMzU5J85GpKOFWb/exec?mode=json';
+    const LOCAL_DATA_URL = './creators.json';
+    const CATEGORY_STYLES = {
+      '革・レザー': { color: '#8a5a44' },
+      '布・糸・手芸': { color: '#d94677' },
+      '陶・木・金属': { color: '#b7791f' },
+      'ファブ・デジタル工作': { color: '#556f86' },
+      '食・農・発酵': { color: '#2f9e44' },
+      '絵・デザイン': { color: '#dc2626' },
+      '映像・写真': { color: '#7c3aed' },
+      'IT・Web': { color: '#2563eb' },
+      'その他・複合': { color: '#6b7280' }
+    };
+    const AREA_ORDER = ['', '印西市', '白井市', '栄町', 'その他'];
+    const DEFAULT_CENTER = [35.79, 140.12];
+    const DEFAULT_ZOOM = 11;
+    const FOCUS_CITIES = new Set(['印西市', '白井市', '栄町']);
+    const CITY_POLYGONS = [
+      {
+        name: '印西市',
+        fillColor: '#FFF59D',
+        strokeColor: '#F9A825',
+        coords: [
+          [35.749453,140.168648],[35.755189,140.159146],[35.758444,140.153736],[35.763297,140.148814],
+          [35.763739,140.144759],[35.766969,140.138458],[35.772958,140.133084],[35.776012,140.125005],
+          [35.778665,140.118985],[35.779981,140.115395],[35.779958,140.105890],[35.782905,140.096909],
+          [35.787493,140.100000],[35.794034,140.102752],[35.796266,140.104212],[35.798502,140.108333],
+          [35.802477,140.109171],[35.804777,140.105596],[35.805043,140.101759],[35.807087,140.101210],
+          [35.808333,140.099940],[35.809708,140.097921],[35.811829,140.089308],[35.816667,140.087505],
+          [35.822666,140.093033],[35.827203,140.097158],[35.831288,140.099147],[35.834380,140.105405],
+          [35.839907,140.110936],[35.843764,140.109317],[35.850000,140.117232],[35.847603,140.116884],
+          [35.843553,140.119687],[35.842443,140.128453],[35.841667,140.134625],[35.843735,140.141204],
+          [35.844504,140.148278],[35.842916,140.158059],[35.845457,140.167779],[35.843484,140.175000],
+          [35.842184,140.180125],[35.839684,140.186017],[35.836465,140.192936],[35.835203,140.198787],
+          [35.834860,140.205330],[35.836559,140.208855],[35.839305,140.213840],[35.839651,140.220494],
+          [35.840432,140.227307],[35.838873,140.232826],[35.832409,140.233026],[35.829783,140.238980],
+          [35.827777,140.244616],[35.823601,140.240173],[35.820587,140.240297],[35.816667,140.243480],
+          [35.820980,140.245001],[35.820999,140.250000],[35.814187,140.250679],[35.808333,140.251462],
+          [35.800000,140.251613],[35.791682,140.250000],[35.786674,140.249529],[35.781449,140.254611],
+          [35.778860,140.258994],[35.773877,140.259430],[35.768316,140.258949],[35.764450,140.257797],
+          [35.759635,140.261806],[35.750000,140.264774],[35.742319,140.264147],[35.739648,140.255914],
+          [35.742466,140.250000],[35.747202,140.241667],[35.754334,140.229078],[35.759382,140.220493],
+          [35.765875,140.210354],[35.764870,140.205269],[35.755443,140.196788],[35.747589,140.191942],
+          [35.746016,140.187674],[35.748425,140.176676],[35.748742,140.171074],[35.749453,140.168648]
+        ]
+      },
+      {
+        name: '白井市',
+        fillColor: '#B2EBF2',
+        strokeColor: '#00838F',
+        coords: [
+          [35.783492,140.018885],[35.780536,140.022311],[35.780337,140.027549],[35.774172,140.020040],
+          [35.774343,140.018150],[35.769162,140.015400],[35.768084,140.015181],[35.766706,140.016384],
+          [35.765490,140.021029],[35.771310,140.030692],[35.769075,140.034443],[35.768500,140.037961],
+          [35.766710,140.038626],[35.766683,140.039807],[35.770706,140.045738],[35.770636,140.047614],
+          [35.772172,140.051953],[35.774717,140.055522],[35.774626,140.057805],[35.777074,140.062545],
+          [35.782508,140.066196],[35.785524,140.067209],[35.795878,140.068028],[35.798046,140.068837],
+          [35.799632,140.070444],[35.798659,140.073212],[35.791909,140.082429],[35.787648,140.085209],
+          [35.784003,140.089552],[35.782905,140.096904],[35.791604,140.103054],[35.794035,140.102747],
+          [35.795459,140.104876],[35.796432,140.104071],[35.799459,140.111100],[35.805557,140.107129],
+          [35.803650,140.102562],[35.804628,140.101002],[35.806014,140.102895],[35.807596,140.099264],
+          [35.808800,140.100192],[35.809370,140.099916],[35.809664,140.093074],[35.812100,140.089043],
+          [35.815169,140.088154],[35.816299,140.087056],[35.819806,140.092062],[35.822667,140.093028],
+          [35.822531,140.093705],[35.824733,140.093427],[35.826059,140.092896],[35.827204,140.090650],
+          [35.828171,140.091344],[35.830457,140.088674],[35.830594,140.086859],[35.832305,140.086235],
+          [35.830792,140.083702],[35.831281,140.079599],[35.830802,140.077329],[35.834403,140.067196],
+          [35.835735,140.056164],[35.834108,140.054674],[35.832645,140.050355],[35.831523,140.048994],
+          [35.824299,140.041673],[35.817652,140.037113],[35.816433,140.034463],[35.810922,140.032094],
+          [35.807570,140.031319],[35.804332,140.031468],[35.799618,140.029862],[35.791834,140.025005],
+          [35.787381,140.020464],[35.783492,140.018885]
+        ]
+      },
+      {
+        name: '栄町',
+        fillColor: '#F8BBD0',
+        strokeColor: '#C2185B',
+        coords: [
+          [35.862006,140.213640],[35.861627,140.208111],[35.860743,140.203138],[35.858155,140.197255],
+          [35.853394,140.189734],[35.851103,140.184411],[35.849381,140.177889],[35.847006,140.171459],
+          [35.845458,140.167774],[35.844418,140.170718],[35.843604,140.174200],[35.843176,140.176422],
+          [35.842340,140.179265],[35.839685,140.186011],[35.836466,140.192930],[35.835504,140.196380],
+          [35.834988,140.201074],[35.834861,140.205324],[35.835626,140.207568],[35.837713,140.210261],
+          [35.839146,140.213009],[35.839389,140.216039],[35.839652,140.220488],[35.840073,140.224470],
+          [35.840794,140.229530],[35.838874,140.232819],[35.836561,140.232268],[35.831752,140.233904],
+          [35.830009,140.237976],[35.828370,140.241823],[35.827778,140.244610],[35.824457,140.242418],
+          [35.821974,140.238431],[35.820894,140.240124],[35.815889,140.242963],[35.817934,140.243749],
+          [35.820038,140.243663],[35.820981,140.244995],[35.819681,140.246717],[35.821005,140.249959],
+          [35.817215,140.250200],[35.812117,140.251024],[35.806984,140.251512],[35.800306,140.251618],
+          [35.815059,140.258451],[35.818448,140.264877],[35.820545,140.266805],[35.822942,140.268686],
+          [35.821602,140.272741],[35.820260,140.275765],[35.818225,140.277921],[35.822722,140.280866],
+          [35.826020,140.283716],[35.828931,140.285303],[35.830674,140.284340],[35.831342,140.283671],
+          [35.833058,140.282529],[35.837138,140.281519],[35.838913,140.281962],[35.842350,140.279905],
+          [35.846635,140.279634],[35.846009,140.277605],[35.845495,140.275510],[35.846801,140.275878],
+          [35.848619,140.275685],[35.848440,140.274049],[35.849796,140.274875],[35.851678,140.277083],
+          [35.852929,140.280358],[35.855979,140.281222],[35.859144,140.282244],[35.861542,140.281602],
+          [35.862995,140.284643],[35.867057,140.286486],[35.870081,140.287934],[35.871852,140.288504],
+          [35.873756,140.283371],[35.874045,140.278291],[35.872656,140.273583],[35.869969,140.266858],
+          [35.866461,140.261192],[35.861018,140.252603],[35.855401,140.243611],[35.854031,140.236893],
+          [35.854244,140.231397],[35.856166,140.226177],[35.858158,140.222866],[35.861033,140.216887],
+          [35.861895,140.214415],[35.862006,140.213640]
+        ]
       }
+    ];
+
+    const state = {
+      creators: [],
+      filtered: [],
+      area: '',
+      keyword: '',
+      activeCategories: new Set(Object.keys(CATEGORY_STYLES)),
+      currentView: 'map',
+      map: null,
+      layerGroup: null,
+      boundaryLayer: null
+    };
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function styleForCategory(category) {
+      return CATEGORY_STYLES[normalizeCategory(category)] || CATEGORY_STYLES['その他・複合'];
+    }
+
+    function normalizeCategory(category) {
+      return CATEGORY_STYLES[category] ? category : 'その他・複合';
+    }
+
+    function setStatus(message) {
+      document.getElementById('status').textContent = message;
+    }
+
+    function initMap() {
+      state.map = L.map('map', {
+        zoomControl: true,
+        scrollWheelZoom: true
+      }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(state.map);
+
+      state.boundaryLayer = L.layerGroup().addTo(state.map);
+      state.layerGroup = L.layerGroup().addTo(state.map);
+      drawCityAreas();
+    }
+
+    function drawCityAreas() {
+      state.boundaryLayer.clearLayers();
+      CITY_POLYGONS.forEach(function(city) {
+        L.polygon(city.coords, {
+          color: city.strokeColor,
+          weight: 2,
+          opacity: 0.9,
+          fillColor: city.fillColor,
+          fillOpacity: 0.2
+        }).addTo(state.boundaryLayer);
+      });
+    }
+
+    function buildFilterChips() {
+      const areaRoot = document.getElementById('area-filters');
+      const categoryRoot = document.getElementById('category-filters');
+      areaRoot.innerHTML = '';
+      categoryRoot.innerHTML = '';
+
+      AREA_ORDER.forEach(function(area) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'chip' + (area === state.area ? ' active' : '');
+        button.textContent = area || 'すべて';
+        button.addEventListener('click', function() {
+          state.area = area;
+          buildFilterChips();
+          applyFilters();
+        });
+        areaRoot.appendChild(button);
+      });
+
+      Object.keys(CATEGORY_STYLES).forEach(function(category) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'chip' + (state.activeCategories.has(category) ? ' active' : '');
+        button.textContent = category;
+        button.addEventListener('click', function() {
+          if (state.activeCategories.has(category)) {
+            state.activeCategories.delete(category);
+          } else {
+            state.activeCategories.add(category);
+          }
+          buildFilterChips();
+          applyFilters();
+        });
+        categoryRoot.appendChild(button);
+      });
+    }
+
+    function popupHtml(creator) {
+      const category = normalizeCategory(creator.category || 'その他・複合');
+      const color = styleForCategory(category).color;
+      const lines = [];
+      if (creator.works) lines.push('<div class="popup-line"><strong>代表作:</strong> ' + escapeHtml(creator.works) + '</div>');
+      if (creator.description) lines.push('<div class="popup-line">' + escapeHtml(creator.description) + '</div>');
+      if (creator.city) lines.push('<div class="popup-line"><strong>エリア:</strong> ' + escapeHtml(creator.city) + '</div>');
+      if (creator.url) lines.push('<div class="popup-line"><a href="' + escapeHtml(creator.url) + '" target="_blank" rel="noopener noreferrer">詳細を見る</a></div>');
+
+      return '' +
+        '<span class="badge" style="background:' + color + ';">' + escapeHtml(category) + '</span>' +
+        '<div class="popup-title">' + escapeHtml(creator.name) + '</div>' +
+        lines.join('');
+    }
+
+    function renderMap(items) {
+      state.layerGroup.clearLayers();
+
+      if (!items.length) {
+        state.map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+        return;
+      }
+
+      const bounds = [];
+      items.forEach(function(creator, index) {
+        const lat = Number(creator.lat);
+        const lng = Number(creator.lng);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+        const marker = L.circleMarker([lat, lng], {
+          radius: 8,
+          fillColor: styleForCategory(creator.category).color,
+          fillOpacity: 0.92,
+          color: '#ffffff',
+          weight: 2
+        });
+
+        marker.bindPopup(popupHtml(creator));
+        marker.on('click', function() {
+          state.currentView = 'map';
+          syncViewButtons();
+        });
+        marker.addTo(state.layerGroup);
+        creator.__markerIndex = index;
+        if (FOCUS_CITIES.has(creator.city)) {
+          bounds.push([lat, lng]);
+        }
+      });
+
+      if (bounds.length) {
+        state.map.fitBounds(bounds, { padding: [36, 36], maxZoom: 12 });
+      } else {
+        state.map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+      }
+    }
+
+    function renderList(items) {
+      const grid = document.getElementById('list-grid');
+      grid.innerHTML = '';
+
+      if (!items.length) {
+        setStatus('条件に合うクリエイターが見つかりません。');
+        return;
+      }
+
+      setStatus('');
+
+      items.forEach(function(creator) {
+        const category = normalizeCategory(creator.category || 'その他・複合');
+        const color = styleForCategory(category).color;
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML =
+          '<div class="badge-row">' +
+            '<span class="badge" style="background:' + color + ';">' + escapeHtml(category) + '</span>' +
+            (creator.isNew ? '<span class="badge-new">NEW</span>' : '') +
+          '</div>' +
+          '<h2>' + escapeHtml(creator.name) + '</h2>' +
+          (creator.works ? '<div class="meta"><strong>代表作:</strong> ' + escapeHtml(creator.works) + '</div>' : '') +
+          (creator.description ? '<div class="meta">' + escapeHtml(creator.description) + '</div>' : '') +
+          (creator.city ? '<div class="meta"><strong>エリア:</strong> ' + escapeHtml(creator.city) + '</div>' : '') +
+          (creator.url ? '<div class="meta"><a href="' + escapeHtml(creator.url) + '" target="_blank" rel="noopener noreferrer">詳細を見る</a></div>' : '');
+
+        card.addEventListener('click', function() {
+          state.currentView = 'map';
+          syncViewButtons();
+          document.getElementById('map-view').style.display = 'block';
+          document.getElementById('list-view').style.display = 'none';
+          state.map.setView([Number(creator.lat), Number(creator.lng)], 14);
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    function matchesCreator(creator) {
+      const category = normalizeCategory(creator.category || 'その他・複合');
+      const areaOk = !state.area || creator.city === state.area;
+      const categoryOk = state.activeCategories.has(category);
+      const keyword = state.keyword;
+      const haystack = [
+        creator.name,
+        creator.works,
+        creator.description,
+        creator.city,
+        category
+      ].join(' ').toLowerCase();
+      const keywordOk = !keyword || haystack.includes(keyword);
+      return areaOk && categoryOk && keywordOk;
+    }
+
+    function applyFilters() {
+      state.filtered = state.creators.filter(matchesCreator);
+      document.getElementById('count').textContent = String(state.filtered.length);
+      renderMap(state.filtered);
+      renderList(state.filtered);
+    }
+
+    function syncViewButtons() {
+      const mapView = state.currentView === 'map';
+      document.getElementById('show-map').classList.toggle('active', mapView);
+      document.getElementById('show-list').classList.toggle('active', !mapView);
+      document.getElementById('map-view').style.display = mapView ? 'block' : 'none';
+      document.getElementById('list-view').style.display = mapView ? 'none' : 'block';
+      if (mapView) {
+        window.setTimeout(function() {
+          state.map.invalidateSize();
+        }, 120);
+      }
+    }
+
+    function formatRelativeDate(date) {
+      const diffMs = Date.now() - date.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays <= 0) return '本日';
+      if (diffDays === 1) return '昨日';
+      if (diffDays < 7) return diffDays + '日前';
+      if (diffDays < 30) return Math.floor(diffDays / 7) + '週間前';
+      return Math.floor(diffDays / 30) + 'ヶ月前';
+    }
+
+    function updateLatestNotice(creators) {
+      const notice = document.getElementById('latest-notice');
+      if (!notice) return;
+
+      const withTs = creators
+        .filter(function(c) { return c && c.timestamp; })
+        .map(function(c) { return { name: c.name, date: new Date(c.timestamp) }; })
+        .filter(function(c) { return !isNaN(c.date.getTime()); })
+        .sort(function(a, b) { return b.date - a.date; });
+
+      if (withTs.length === 0) {
+        notice.hidden = true;
+        return;
+      }
+
+      const latest = withTs[0];
+      const y = latest.date.getFullYear();
+      const m = String(latest.date.getMonth() + 1).padStart(2, '0');
+      const d = String(latest.date.getDate()).padStart(2, '0');
+      const dateStr = y + '/' + m + '/' + d;
+      const relative = formatRelativeDate(latest.date);
+
+      notice.querySelector('.content').innerHTML =
+        '最新登録: ' + dateStr +
+        ' <span class="name">' + escapeHtml(latest.name) + '</span>' +
+        ' <span class="relative">（' + relative + '）</span>';
+      notice.hidden = false;
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, function(ch) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+      });
+    }
+
+    function handleCreators(payload) {
+      state.creators = Array.isArray(payload) ? payload : [];
+      document.getElementById('count').textContent = String(state.creators.length);
+      updateLatestNotice(state.creators);
+      buildFilterChips();
+      applyFilters();
+    }
+
+    function loadLocalData(reason) {
+      const retryLabel = reason ? 'データを代替読み込み中です。' : 'データを読み込み中です。';
+      setStatus(retryLabel);
+
+      fetch(LOCAL_DATA_URL + '?_=' + Date.now(), { cache: 'no-store' })
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+          }
+          return response.json();
+        })
+        .then(function(payload) {
+          handleCreators(payload);
+        })
+        .catch(function() {
+          setStatus('データ取得に失敗しました。時間をおいて再読み込みしてください。');
+        });
+    }
+
+    function loadData(attempt) {
+      const retryCount = attempt || 0;
+      const callbackName = '__creatorsMapData_' + Date.now() + '_' + retryCount;
+      let finished = false;
+
+      setStatus(retryCount === 0 ? 'データを読み込み中です。' : 'データを再読み込み中です。');
+
+      const script = document.createElement('script');
+      const timeoutId = window.setTimeout(function() {
+        cleanup();
+        if (retryCount < 1) {
+          loadData(retryCount + 1);
+          return;
+        }
+        loadLocalData('jsonp-timeout');
+      }, 8000);
+
+      function cleanup() {
+        if (finished) return;
+        finished = true;
+        window.clearTimeout(timeoutId);
+        try {
+          delete window[callbackName];
+        } catch (error) {
+          window[callbackName] = undefined;
+        }
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      }
+
+      window[callbackName] = function(payload) {
+        cleanup();
+        handleCreators(payload);
+      };
+
+      script.src = DATA_BASE_URL + '&callback=' + encodeURIComponent(callbackName) + '&_=' + Date.now();
+      script.async = false;
+      script.onerror = function() {
+        cleanup();
+        if (retryCount < 1) {
+          loadData(retryCount + 1);
+          return;
+        }
+        loadLocalData('jsonp-error');
+      };
+      document.body.appendChild(script);
+    }
+
+    document.getElementById('search-input').addEventListener('input', function(event) {
+      state.keyword = event.target.value.trim().toLowerCase();
+      applyFilters();
     });
-}
 
-// ===== ピン追加 =====
-function addCreatorPin(creator) {
-  const conf  = CATEGORIES[creator.category] || CATEGORIES['その他・複合'];
-  const color = conf.color;
+    document.getElementById('show-map').addEventListener('click', function() {
+      state.currentView = 'map';
+      syncViewButtons();
+    });
 
-  const marker = new google.maps.Marker({
-    position : { lat: creator.lat, lng: creator.lng },
-    map      : map,
-    title    : creator.name,
-    icon: {
-      path        : google.maps.SymbolPath.CIRCLE,
-      scale       : 11,
-      fillColor   : color,
-      fillOpacity : 1,
-      strokeColor : '#ffffff',
-      strokeWeight: 2.5,
-    },
-    zIndex: 10,
-  });
+    document.getElementById('show-list').addEventListener('click', function() {
+      state.currentView = 'list';
+      syncViewButtons();
+    });
 
-  const infoWindow = new google.maps.InfoWindow({
-    content: buildInfoWindowContent(creator, color, conf.emoji),
-  });
-
-  marker.addListener('click', function() {
-    infoWindow.open(map, marker);
-  });
-
-  allMarkers.push({ marker: marker, category: creator.category, city: creator.city, infoWindow: infoWindow });
-}
-
-// ===== 吹き出しのHTML =====
-function buildInfoWindowContent(creator, color, emoji) {
-  const urlHtml = creator.url
-    ? `<a class="iw-link" href="${creator.url}" target="_blank">🔗 詳細を見る</a>`
-    : '';
-  return `
-    <div class="iw-wrap">
-      <span class="iw-badge" style="background:${color}">${emoji} ${creator.category}</span>
-      <div class="iw-name">${creator.name}</div>
-      ${creator.works       ? `<div class="iw-row">🎨 <b>代表作：</b>${creator.works}</div>`       : ''}
-      ${creator.description ? `<div class="iw-row">💬 ${creator.description}</div>` : ''}
-      ${urlHtml}
-    </div>
-  `;
-}
-</script>
-
-<!-- Google Maps API: 旧キーが GitHub に漏洩したため除去。
-     このルート版 index.html は GAS HtmlService 配信用の旧バージョンで、
-     現在の公開サイトは docs/index.html（Leaflet）に移行済み。
-     復活させる場合は doGet 側で template.apiKey をプロパティから注入し、
-     <script src=".../maps/api/js?key=<?= apiKey ?>&callback=initMap"> 形式で記述すること。
--->
-<!-- <script src="https://maps.googleapis.com/maps/api/js?key=REMOVED&callback=initMap&language=ja" async defer></script> -->
+    initMap();
+    buildFilterChips();
+    loadData();
+  </script>
 </body>
 </html>
