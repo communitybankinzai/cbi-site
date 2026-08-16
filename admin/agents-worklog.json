@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-16",
+          "title": "防災MAP引継ぎ資料の読込＋Codex連携確認＋保管庫ノート化 0.1時間",
+          "category": "事務",
+          "outputs": [
+            "cidao/proposals/2026-08-16_印西市災害状況整合MAPとSNS巡回.md（新規。位置付け4原則・設計判断表・SNS認証の詰まりどころ・次の優先候補7件・落とし穴を集約）",
+            "MOC_CiDAO.md（「構想・提案メモ」節へ1行登録）",
+            "確認のみ: site/inzai-disaster-map/CLAUDE_HANDOFF.md と C:/Repos/cidao/docs/disaster-sns-monitor-handoff.md（いずれもCodexが作成済み、両リポジトリのCLAUDE.mdが@インポート済みで自動読込されることを確認）",
+            "検証: site=a2cb992／cidao=a4dcc05 いずれもコミット済み・作業ツリークリーン（未追跡は注意書きどおりの画像のみ）／codex-companion setup --json で ready:true、codex-cli 0.130.0、ChatGPTログイン済みを確認"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "祐樹さんの依頼「防災MAPをcodexで作り込んだので読み込んでいつでも作業継続できるように」→ 自動読込は既に設定済みだったため、追加でCodex連携方式（A案）を確認し、保管庫へ知識ノート化＋MOC登録まで実施。レビューゲートは実装フェーズ入りまでOFFのままとする方針。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 11,921 / cost: $1.60"
+        },
+        {
           "date": "2026-08-15",
           "title": "CiDAO SNSローテから運営元CBIを除外＋イベント下書き即時削除 0.1時間",
           "category": "実装",
