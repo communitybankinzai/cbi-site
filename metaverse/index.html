@@ -147,11 +147,15 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* 文化財パズルラリー */
-  #puzzleBtn {
+  #topLeftBar {
     position: absolute; top: 52px; left: 10px; z-index: 21;
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  #topLeftBar button {
     background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
     border-radius: 10px; padding: 8px 12px; font-size: 13px; cursor: pointer;
   }
+  #pinToggleBtn.off { opacity: 0.55; }
   #puzzleBtn .badge {
     background: #e67e22; border-radius: 10px; padding: 1px 7px;
     font-size: 11px; margin-left: 4px; font-weight: bold;
@@ -299,11 +303,6 @@
   }
 
   /* 遊び方ガイド */
-  #howtoBtn {
-    position: absolute; top: 52px; left: 132px; z-index: 21;
-    background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
-    border-radius: 10px; padding: 8px 12px; font-size: 13px; cursor: pointer;
-  }
   #howtoModal {
     position: absolute; inset: 0; z-index: 55; background: rgba(10, 16, 24, 0.88);
     display: none; align-items: center; justify-content: center; padding: 16px;
@@ -360,7 +359,11 @@
 
 <button id="panelToggle">📍 スポット</button>
 
-<button id="puzzleBtn">📖 冒険図鑑<span class="badge" id="puzzleCount">0/50</span></button>
+<div id="topLeftBar">
+  <button id="puzzleBtn">🏛 印西市文化財<span class="badge" id="puzzleCount">0/50</span></button>
+  <button id="pinToggleBtn" title="地図上の文化財ピンの表示／非表示を切り替えます">📍 表示中</button>
+  <button id="howtoBtn">❓ 遊び方</button>
+</div>
 <div id="puzzlePanel">
   <h3>📖 いんざい冒険図鑑</h3>
   <div class="tabRow">
@@ -399,7 +402,6 @@
   <button class="getBtn" onclick="confirmCatch()">ゲットする！</button>
 </div>
 
-<button id="howtoBtn">❓ 遊び方</button>
 <div id="howtoModal">
   <div class="inner">
     <h2>🌏 CBIメタバース印西 — 遊び方</h2>
@@ -430,7 +432,7 @@
     <ul>
       <li>文化財に<b>80m以内</b>まで近づくと精霊が出現！「<b>ゲットする！</b>」をタップして図鑑に登録しよう（上空を飛んで通過しただけでは出ません）</li>
       <li>精霊は6系統（やしろ・ほとけ・もり・いせき・まつり・たから）。レア度は ★市指定 ★★県指定 <b>★★★国指定</b></li>
-      <li>左上の「<b>📖 冒険図鑑</b>」で集めた精霊とパズルを確認。「<b>▶行く</b>」で精霊のすみかの近くまで飛べます</li>
+      <li>左上の「<b>🏛 印西市文化財</b>」で集めた精霊とパズルを確認。「<b>▶行く</b>」で精霊のすみかの近くまで飛べます。「<b>📍</b>」で地図上の文化財ピンの表示／非表示を切り替えられます</li>
       <li>精霊をゲットするとパズルのピースも1枚開き、50体すべて集めると…<b>ひみつの絵が完成</b>し、合言葉が表示されます🏆</li>
     </ul>
     <p>集めた記録はこの端末のブラウザに保存されるので、途中でやめても続きから遊べます。</p>
@@ -1144,7 +1146,24 @@ async function loadBunkazai() {
     });
   });
   renderPuzzle();
+  applyBunkazaiPinVisibility(); // 読込前にトグル操作されていても状態を反映する
 }
+
+// ---- 文化財ピンの表示／非表示切替 ----
+let bunkazaiPinsVisible = true;
+function applyBunkazaiPinVisibility() {
+  for (let i = 0; i < BUNKAZAI.length; i++) {
+    const e = viewer.entities.getById("bunkazai-" + i);
+    if (e) e.show = bunkazaiPinsVisible;
+  }
+  const btn = document.getElementById("pinToggleBtn");
+  btn.textContent = bunkazaiPinsVisible ? "📍 表示中" : "📍 非表示";
+  btn.classList.toggle("off", !bunkazaiPinsVisible);
+}
+document.getElementById("pinToggleBtn").addEventListener("click", function () {
+  bunkazaiPinsVisible = !bunkazaiPinsVisible;
+  applyBunkazaiPinVisibility();
+});
 
 // 看板クリックで説明表示（6拠点スポット＋文化財の共通ハンドラ）
 function pickInteractiveEntity(position) {
