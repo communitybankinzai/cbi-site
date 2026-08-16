@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-16",
+          "title": "Google Map Tiles API課金監視の方式検討＋手順書作成 0.2時間",
+          "category": "調査",
+          "outputs": [
+            "cidao/2026-08-16_GoogleMapTilesAPI課金の監視手順.md（新規。予算アラート設定手順・請求額の正はCloud Consoleのみ・APIキーのリファラ制限確認・PV計測の限界を明記）",
+            "MOC_CiDAO.md（運用手順節へ1行登録）",
+            "調査結果: CiDAOのPageViewTrackerはVercel側layout常駐のため、GitHub PagesのCBIサイトは全ページ未計測と判明。外部ドメインから /api/track/view へ送るにはCORS対応とPV水増し対策が必要"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "祐樹さんの依頼「Map Tiles APIの課金を画面上でモニタできないか」。当初A+C（予算アラート＋自前計測）で合意したが、調査でPV計測が課金の代理指標として粗すぎることが判明（1回のページ閲覧で数百〜数千タイルを読み、視点移動でも増える）ため方針を修正。予算アラート（実装ゼロ）を先行し、C（計測基盤）は実額を確認してから要否を判断することで合意。祐樹さんがCloud Consoleで確認する3点＝月額・リクエスト数・リファラ制限の登録内容。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 88,431 / cost: $13.00"
+        },
+        {
+          "date": "2026-08-16",
           "title": "メタバース印西に浸水シミュレーション実装（Codex委譲）＋CBI表記統一＋水位40m拡張 0.6時間",
           "category": "実装",
           "outputs": [
