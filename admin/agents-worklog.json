@@ -18,17 +18,18 @@
       "actuals": [
         {
           "date": "2026-08-16",
-          "title": "メタバース印西に浸水シミュレーション実装（Codex委譲）＋CBI表記統一 0.4時間",
+          "title": "メタバース印西に浸水シミュレーション実装（Codex委譲）＋CBI表記統一＋水位40m拡張 0.6時間",
           "category": "実装",
           "outputs": [
             "site/metaverse/index.html（浸水シミュレーション: 水面ポリゴン・水位スライダー0〜15m・ON/OFFトグル・注意書き常時表示。標高MSL→楕円体高換算にジオイド高35.8mを加算。drillPickで水面をクリック貫通させ既存の看板クリックを非破壊に）",
             "site/metaverse/index.html（COCoLa→CBI 表記9箇所: title/description/ヘッダー/戻るリンク/遊び方見出し/駅説明/共有画像のロゴ・見出し・誘導先URL）",
-            "site/admin/changelog.json（feature 1件＋content 1件）",
-            "検証: localhost:4173で目視確認。トグルON→注意書きblock・スライダー有効、7.5m/15.0m表示追随、OFF→非表示・無効を確認／既存機能の非破壊を確認（冒険図鑑0/50、スポット6＋モード2ボタン、歩行⇔飛行のactive切替）／JSエラーなし（Google 3D Tilesの403のみ）"
+            "site/metaverse/index.html（水位スライダー上限を15m→40mへ拡張。祐樹さん要望「30mの津波が噂されている」に対応。説明文も0〜40mへ）",
+            "site/admin/changelog.json（feature 2件＋content 1件）",
+            "検証: localhost:4173で目視確認。トグルON→注意書きblock・スライダー有効、7.5m/15.0m表示追随、OFF→非表示・無効を確認／40m拡張後も0・8・30・40mで表示追随を確認／既存機能の非破壊を確認（冒険図鑑0/50、スポット6＋モード2ボタン、歩行⇔飛行のactive切替）／本番 communitybankinzai.github.io/cbi-site/metaverse/ でコンソールエラーなし＝Google 3D Tiles読み込み成功を確認（localhostでは403）"
           ],
-          "hours": 0.4,
+          "hours": 0.6,
           "partnerApproved": false,
-          "note": "実装はCodex（codex-cliプラグイン）へ委譲。Codexは実装完了後の検証用HTTPサーバ起動でハングしたため約45分でジョブを停止し、検証とタイトル変更はClaude側で実施。未検証項目: 3D表示上で水面が低地を water で覆う見え方は、APIキーのリファラ制限によりlocalhostで403となり目視できていない。本番デプロイ後に要確認。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 53,332 / cost: $6.78"
+          "note": "実装はCodex（codex-cliプラグイン）へ委譲。Codexは実装完了後の検証用HTTPサーバ起動でハングしたため約45分でジョブを停止し、検証・表記統一・40m拡張はClaude側で実施。次回Codex委譲時は「サーバはバックグラウンド起動」を制約に加えること。未検証項目2件: (1)3D上で低地が実際に水没して見えるかの目視。Browser paneが非表示でスクリーンショットが撮れず、祐樹さんへ確認依頼中。(2)ジオイド高の定数 INZAI_GEOID_HEIGHT_M=35.8 はCodex実装で出典未記載。水位の絶対値がずれる可能性あり（確信度:中）。目視で台地/低地の水没順が不自然なら要調整。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 65,761 / cost: $8.78"
         },
         {
           "date": "2026-08-16",
