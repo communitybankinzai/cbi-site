@@ -156,6 +156,16 @@
     border-radius: 10px; padding: 8px 12px; font-size: 13px; cursor: pointer;
   }
   #pinToggleBtn.off { opacity: 0.55; }
+  #pickModeBtn.on { background: #e67e22; }
+  #pickResult {
+    position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+    z-index: 40; max-width: min(94vw, 640px); box-sizing: border-box;
+    background: rgba(20, 30, 40, 0.94); color: #fff;
+    border: 1px solid rgba(230, 162, 60, 0.8); border-radius: 10px;
+    padding: 9px 14px; font-size: 12px; line-height: 1.6;
+    display: none; user-select: text;
+  }
+  #pickResult.show { display: block; }
   #puzzleBtn .badge {
     background: #e67e22; border-radius: 10px; padding: 1px 7px;
     font-size: 11px; margin-left: 4px; font-weight: bold;
@@ -362,8 +372,11 @@
 <div id="topLeftBar">
   <button id="puzzleBtn">🏛 印西市文化財<span class="badge" id="puzzleCount">0/50</span></button>
   <button id="pinToggleBtn" title="地図上の文化財ピンの表示／非表示を切り替えます">📍 表示中</button>
+  <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="howtoBtn">❓ 遊び方</button>
 </div>
+
+<div id="pickResult"></div>
 <div id="puzzlePanel">
   <h3>🏛 印西市文化財ずかん</h3>
   <div class="tabRow">
@@ -1170,6 +1183,47 @@ document.getElementById("pinToggleBtn").addEventListener("click", function () {
   applyBunkazaiPinVisibility();
 });
 
+// ---- 位置修正モード：正しい位置をクリックして座標を取得（bunkazai.json修正の報告用）----
+let pickModeActive = false;
+function showPickResult(text, holdMs) {
+  const el = document.getElementById("pickResult");
+  el.textContent = text;
+  el.classList.add("show");
+  clearTimeout(showPickResult._t);
+  if (holdMs) showPickResult._t = setTimeout(() => el.classList.remove("show"), holdMs);
+}
+document.getElementById("pickModeBtn").addEventListener("click", function () {
+  pickModeActive = !pickModeActive;
+  this.classList.toggle("on", pickModeActive);
+  if (pickModeActive) {
+    showPickResult("位置修正モード：文化財の正しい位置（建物・地面）をクリックすると座標をコピーします。もう一度ボタンを押すと終了。");
+  } else {
+    document.getElementById("pickResult").classList.remove("show");
+  }
+});
+function handlePickPosition(click) {
+  const cart = viewer.scene.pickPosition(click.position);
+  if (!Cesium.defined(cart)) {
+    showPickResult("位置を取得できませんでした。建物や地面をクリックしてください（空は不可）。", 6000);
+    return;
+  }
+  const carto = Cesium.Cartographic.fromCartesian(cart);
+  const lat = Cesium.Math.toDegrees(carto.latitude);
+  const lon = Cesium.Math.toDegrees(carto.longitude);
+  let best = null, bestDist = Infinity;
+  BUNKAZAI.forEach(b => {
+    const dLat = (b.lat - lat) * 111320;
+    const dLon = (b.lon - lon) * 111320 * Math.cos(lat * Math.PI / 180);
+    const d = Math.hypot(dLat, dLon);
+    if (d < bestDist) { bestDist = d; best = b; }
+  });
+  const text = `位置修正: ${best ? best.name : "?"} lat=${lat.toFixed(6)} lon=${lon.toFixed(6)}（現ピンから${Math.round(bestDist)}m）`;
+  showPickResult(text + " ─ コピーしました。この行をClaudeへ貼り付けてください。", 12000);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(() => {});
+  }
+}
+
 // 看板クリックで説明表示（6拠点スポット＋文化財の共通ハンドラ）
 function pickInteractiveEntity(position) {
   const pickedObjects = viewer.scene.drillPick(position, 8);
@@ -1183,6 +1237,10 @@ function pickInteractiveEntity(position) {
 }
 
 viewer.screenSpaceEventHandler.setInputAction(function (click) {
+  if (pickModeActive) {
+    handlePickPosition(click);
+    return; // 位置修正モード中は看板クリックを無効化（誤タップ防止）
+  }
   const interactivePick = pickInteractiveEntity(click.position);
   if (!interactivePick) return;
   const id = interactivePick.id;
