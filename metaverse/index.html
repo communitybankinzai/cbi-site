@@ -466,12 +466,12 @@
       <input type="checkbox" id="floodToggle">
       <span>水面を表示</span>
     </label>
-    <input id="floodLevel" type="range" min="0" max="40" step="0.5" value="3" disabled>
+    <input id="floodLevel" type="range" min="0" max="50" step="0.5" value="3" disabled>
     <div class="levelRow">
       <span>水位（標高）</span>
       <span class="levelValue" id="floodLevelValue">3.0 m</span>
     </div>
-    <p class="floodHint">0〜40m、0.5m刻み。防災・平時の理解訓練用です。</p>
+    <p class="floodHint">0〜50m、0.5m刻み。防災・平時の理解訓練用です。</p>
   </div>
 </div>
 
@@ -1120,6 +1120,9 @@ async function loadBunkazai() {
     "国指定": "#e74c3c", "国登録": "#e67e22",
     "県指定": "#9b59b6", "市指定": "#3498db",
   };
+  // ピンは3D Tilesの地表面に吸着させる（固定高だと台地で地中に埋まり、
+  // 斜め視点で実位置から大きくずれて見えるため）。未対応環境では従来の固定高で描画
+  const pinHeightRef = Cesium.HeightReference.CLAMP_TO_3D_TILE ?? Cesium.HeightReference.NONE;
   BUNKAZAI.forEach((b, i) => {
     viewer.entities.add({
       id: "bunkazai-" + i,
@@ -1128,6 +1131,7 @@ async function loadBunkazai() {
         pixelSize: 11,
         color: Cesium.Color.fromCssColorString(DESIG_COLOR[b.designation] || "#3498db"),
         outlineColor: Cesium.Color.fromCssColorString("#1a2533"), outlineWidth: 2,
+        heightReference: pinHeightRef,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
         // 遠すぎる看板は非表示にして描画負荷と画面の混雑を抑える
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 8000),
@@ -1140,6 +1144,7 @@ async function loadBunkazai() {
         outlineWidth: 4,
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         pixelOffset: new Cesium.Cartesian2(0, -18),
+        heightReference: pinHeightRef,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2500),
       },
