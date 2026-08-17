@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-08-17",
+          "title": "Threads検索権限の認証対応（OAuth再認証機能実装＋検索専用アプリ方式へ設計変更） 1.2時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao commit ebc792e（OAuth再認証機能: /api/admin/sns/threads-oauth/start・callback、認可URL自前組立でthreads_keyword_searchを明示要求、app ID/secretはサーバー側のみ保存、/admin/snsに再認証UI）",
+            "C:/Repos/cidao commit 6cbd347（検索専用アプリ方式へ設計変更: sns_threads_discovery_authに分離保存、巡回は検索用トークン優先、週次リフレッシュcron対象に追加。投稿用sns_threads_authとの完全分離で認証事故の再発を構造的に防止）",
+            "cidao/2026-08-17_SNS検索権限の設定手順.md（新規＋全面改訂。不可能と実証した3経路・危険な仕様・新方式の構成表・残作業10分手順）＋MOC_CiDAO.md登録",
+            "検証: npx tsc --noEmit exit 0／npm run build成功×2回／Vercelデプロイ後にstartルート307応答確認／ユーザー操作の伴走でMeta側フォーム破損を切り分け（5経路試行→既知バグと確定、fbsamples/threads_api Issue#18と同症状）",
+            "対応: 検証中にThreads承認削除で投稿用トークンが無効化→承認ポップアップ再実行＋トークン貼り直しで即時復旧（2026/8/17保存・2026/10/16失効予定を確認）"
+          ],
+          "hours": 1.2,
+          "partnerApproved": false,
+          "note": "祐樹さんの操作伴走（Meta開発者コンソール・threads.com・CiDAO管理画面）＋実装。トークン生成ツールがthreads_keyword_searchを要求できない・設定フォームが保存不能というMeta側制約を実証し、検索専用アプリ方式へ設計変更して対応。残作業はユーザーの新アプリ作成10分（手順書に記載）。人名誤記（新井会長→中司さん）を再発させメモリ強化済み。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 266,008 / cost: $72.07（前回記録1.5h以降の差分1.2h）"
+        },
+        {
+          "date": "2026-08-17",
           "title": "Codex実装分の公開引継ぎ（避難所レイヤー・SNS検索語UI）＋文化財ピン切替 0.3時間",
           "category": "実装",
           "outputs": [
