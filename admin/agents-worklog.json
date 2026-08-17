@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-08-17",
+          "title": "避難所開設の手動入力機能（SNS/LINE本文の一括貼り付け）＋出典説明対応 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/（app.js: 貼り付け本文と55施設名の照合パーサ〔略記「木下小」・時刻「15時30分」認識・開設/閉鎖判定〕＋プレビュー確認→チェック分のみ反映＋LocalStorage保存＋手動バッジ・出典・確認時刻表示／index.html: 貼り付けダイアログ＋情報源リンク〔印西市公式LINE lin.ee/1ShNepr・市長X @Fujishiro_1102・市長Instagram〕／styles.css・config.js: v2026.08.17.2）",
+            "site/admin/changelog.json 1件＋CLAUDE_HANDOFF.md更新（commit 6df3da1）",
+            "回答: 避難所データの根拠説明（わが街ガイドCSV 3本・CC BY 2.1 JP・防災速報照合ロジック・直接確認用リンク3種）",
+            "検証: パーサ単体（略記→正式名・閉鎖表現・時刻抽出・非該当無視の4パターン）／UI通し（ダイアログ→照合→プレビュー→反映→バッジ「手動入力1件」→永続化→解除）すべてOK／本番反映 appVersion 2026.08.17.2 確認／リンク先は市公式ページ・検索で出典確認済み"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "祐樹さんの発案「公式反映が遅い場合に手動で開設情報を入れたい・SNS/LINEのテキストを一括貼り付けできないか」。A案（端末内のみ・共有なし）で合意して実装。貼り付け→即反映はせず必ずプレビュー確認を挟み、手動と公式判定をバッジで区別。共有保存（B案）はMAP記録Supabase化とセットで後日。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 298,398 / cost: $87.72（前回記録2.7h以降の差分0.3h）"
+        },
+        {
+          "date": "2026-08-17",
           "title": "Threads検索権限の認証対応（OAuth再認証機能実装＋検索専用アプリ方式へ設計変更） 1.2時間",
           "category": "実装",
           "outputs": [
