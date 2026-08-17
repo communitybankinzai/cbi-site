@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260817a">
+    <link rel="stylesheet" href="./styles.css?v=20260817b">
   </head>
   <body>
     <div class="app-shell">
@@ -258,10 +258,20 @@
               <button class="text-button" id="refresh-shelters-button" type="button">更新</button>
             </div>
             <div class="shelter-summary" id="shelter-summary" role="status" aria-live="polite">避難所情報を確認中です。</div>
+            <div class="shelter-manual-toolbar">
+              <button class="tool-button" id="shelter-paste-button" type="button">📋 開設情報を貼り付け</button>
+              <span class="shelter-manual-count" id="shelter-manual-count" hidden></span>
+            </div>
             <div class="shelter-list" id="shelter-list"></div>
             <p class="shelter-source-note">
               「災害対応可」は施設区分、「開設中」は防災速報による現在情報です。指定されていても常時開設ではありません。
               <a href="https://www.city.inzai.lg.jp/bousaiportal/0000008839.html" target="_blank" rel="noreferrer">印西市の避難所情報</a>
+            </p>
+            <p class="shelter-source-note">
+              情報源リンク:
+              <a href="https://lin.ee/1ShNepr" target="_blank" rel="noreferrer">印西市公式LINE</a> ・
+              <a href="https://x.com/Fujishiro_1102" target="_blank" rel="noreferrer">市長X</a> ・
+              <a href="https://www.instagram.com/fujishiro.kengo/" target="_blank" rel="noreferrer">市長Instagram</a>
             </p>
           </section>
 
@@ -949,6 +959,48 @@
       </form>
     </dialog>
 
+    <dialog id="shelter-paste-dialog" class="modal">
+      <form method="dialog">
+        <div class="modal-header">
+          <h2>避難所の開設情報を貼り付け</h2>
+          <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
+        </div>
+        <p class="modal-help">
+          市長SNSや印西市公式LINEの本文を貼り付けると、避難所名を自動照合します。内容を確認してから反映してください。
+          反映結果は<strong>この端末内にのみ保存</strong>され、公式発表とは区別して表示されます。
+        </p>
+        <p class="modal-help shelter-paste-links">
+          <a href="https://lin.ee/1ShNepr" target="_blank" rel="noreferrer">印西市公式LINE</a> ・
+          <a href="https://x.com/Fujishiro_1102" target="_blank" rel="noreferrer">市長X</a> ・
+          <a href="https://www.instagram.com/fujishiro.kengo/" target="_blank" rel="noreferrer">市長Instagram</a> ・
+          <a href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">防災ポータル</a>
+        </p>
+        <label class="select-label">
+          情報源
+          <select id="shelter-paste-source">
+            <option value="市長SNS（X）">市長SNS（X）</option>
+            <option value="市長SNS（Instagram）">市長SNS（Instagram）</option>
+            <option value="印西市公式LINE">印西市公式LINE</option>
+            <option value="防災行政無線">防災行政無線</option>
+            <option value="その他">その他</option>
+          </select>
+        </label>
+        <textarea id="shelter-paste-text" rows="6" placeholder="例）市内に避難所を開設しました。木下小学校、印西中学校、そうふけ公民館（15時00分開設）"></textarea>
+        <div class="dialog-actions">
+          <button type="button" class="tool-button" id="shelter-paste-parse-button">照合する</button>
+        </div>
+        <div id="shelter-paste-preview" class="shelter-paste-preview" hidden></div>
+        <div class="dialog-actions">
+          <button type="button" class="tool-button primary" id="shelter-paste-apply-button" disabled>チェックした施設に反映</button>
+        </div>
+        <div class="shelter-manual-current">
+          <h3>手動入力済みの開設情報</h3>
+          <div id="shelter-manual-list"></div>
+          <button type="button" class="text-button" id="shelter-manual-clear-button">すべて解除</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog id="help-dialog" class="modal help-modal">
       <form method="dialog">
         <div class="modal-header">
@@ -1059,6 +1111,6 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
     <script src="./config.js?v=20260816a"></script>
-    <script src="./app.js?v=20260817a"></script>
+    <script src="./app.js?v=20260817b"></script>
   </body>
 </html>

@@ -285,6 +285,169 @@ let officialShelters = [];
 let shelterPayload = null;
 let shelterTimer = null;
 let selectedShelterId = null;
+
+// ============================================================
+// 避難所開設の手動入力（市長SNS・公式LINE等の本文貼り付け）
+// 公式APIの反映が遅い場合の補完。この端末のLocalStorageにのみ保存し、
+// 公式判定（防災速報照合）とはバッジ・出典表示で明確に区別する。
+// ============================================================
+const SHELTER_MANUAL_KEY = "cbi-disaster-shelter-manual-v1";
+let shelterManualOverrides = loadShelterManualOverrides();
+let shelterPasteCandidates = [];
+
+function loadShelterManualOverrides() {
+  try {
+    const raw = localStorage.getItem(SHELTER_MANUAL_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveShelterManualOverrides() {
+  localStorage.setItem(SHELTER_MANUAL_KEY, JSON.stringify(shelterManualOverrides));
+}
+
+// 手動入力を優先した実効開設状態。manual が null なら公式判定のまま
+function effectiveShelterOpening(shelter) {
+  const manual = shelterManualOverrides[shelter.id] || null;
+  return {
+    status: manual ? manual.status : (shelter.openingStatus || "not-announced"),
+    manual
+  };
+}
+
+// 貼り付け本文と避難所名を照合する。
+// 「木下小」→「木下小学校」等の略記も拾えるよう、正式名と省略形の両方で探す。
+function shelterNameVariants(name) {
+  const variants = new Set([name]);
+  variants.add(name.replace(/小学校$/, "小"));
+  variants.add(name.replace(/中学校$/, "中"));
+  variants.add(name.replace(/公民館$/, "公民館"));
+  variants.add(name.replace(/^印西市立/, ""));
+  return [...variants].filter(v => v.length >= 3);
+}
+
+function parseShelterPasteText(text) {
+  const normalized = String(text || "").replace(/[　\t]/g, " ");
+  if (!normalized.trim()) return [];
+  // 文単位に割り、施設名ごとに最寄りの文から開設/閉鎖と時刻を推定する
+  const segments = normalized.split(/[。\n！!]/).map(s => s.trim()).filter(Boolean);
+  const results = [];
+  officialShelters.forEach(shelter => {
+    const variants = shelterNameVariants(shelter.name);
+    let hit = null;
+    for (const segment of segments) {
+      const matched = variants.find(v => segment.includes(v));
+      if (matched) { hit = { segment, matched }; break; }
+    }
+    if (!hit) return;
+    const closed = /閉鎖|閉所|開設.{0,8}(終了|取りやめ)|受入.{0,6}終了/.test(hit.segment);
+    const opened = /開設|開放|受け入れ|受入れ|受入開始/.test(hit.segment);
+    const timeMatch = hit.segment.match(/(\d{1,2})[:時](\d{1,2})?分?/);
+    const time = timeMatch ? `${timeMatch[1]}:${String(timeMatch[2] || "0").padStart(2, "0")}` : "";
+    results.push({
+      id: shelter.id,
+      name: shelter.name,
+      status: closed ? "closed" : opened ? "open" : "open",
+      ambiguous: !closed && !opened,
+      time,
+      segment: hit.segment
+    });
+  });
+  return results;
+}
+
+function renderShelterPastePreview() {
+  const preview = document.getElementById("shelter-paste-preview");
+  const applyButton = document.getElementById("shelter-paste-apply-button");
+  if (!shelterPasteCandidates.length) {
+    preview.hidden = false;
+    preview.innerHTML = '<div class="detail-empty">本文から避難所名を見つけられませんでした。施設名（例: 木下小学校）が含まれているか確認してください。</div>';
+    applyButton.disabled = true;
+    return;
+  }
+  preview.hidden = false;
+  preview.innerHTML = shelterPasteCandidates.map((item, index) => `
+    <div class="shelter-paste-row">
+      <label class="toggleRow">
+        <input type="checkbox" data-paste-check="${index}" checked>
+        <strong>${escapeHtml(item.name)}</strong>
+      </label>
+      <select data-paste-status="${index}">
+        <option value="open" ${item.status === "open" ? "selected" : ""}>開設</option>
+        <option value="closed" ${item.status === "closed" ? "selected" : ""}>閉鎖・終了</option>
+      </select>
+      <input type="text" data-paste-time="${index}" value="${escapeAttribute(item.time)}" placeholder="時刻 例 15:00" size="8">
+      ${item.ambiguous ? '<span class="badge yellow">開設/閉鎖の語が本文になく「開設」と仮定</span>' : ""}
+      <div class="shelter-paste-segment">${escapeHtml(truncateText(item.segment, 90))}</div>
+    </div>
+  `).join("");
+  applyButton.disabled = false;
+}
+
+function applyShelterPaste() {
+  const source = getFormValue("shelter-paste-source") || "その他";
+  let applied = 0;
+  shelterPasteCandidates.forEach((item, index) => {
+    const check = document.querySelector(`[data-paste-check="${index}"]`);
+    if (!check || !check.checked) return;
+    const status = document.querySelector(`[data-paste-status="${index}"]`)?.value === "closed" ? "closed" : "open";
+    const time = String(document.querySelector(`[data-paste-time="${index}"]`)?.value || "").trim();
+    shelterManualOverrides[item.id] = {
+      status,
+      time,
+      source,
+      confirmedAt: new Date().toISOString()
+    };
+    applied += 1;
+  });
+  if (!applied) return;
+  saveShelterManualOverrides();
+  renderShelters();
+  renderShelterManualList();
+  shelterPasteCandidates = [];
+  document.getElementById("shelter-paste-preview").hidden = true;
+  document.getElementById("shelter-paste-apply-button").disabled = true;
+  document.getElementById("shelter-paste-text").value = "";
+  // 反映結果は一覧の「手動」バッジと右上の件数表示（renderShelterManualList）で確認できる
+  document.getElementById("shelter-paste-dialog").close();
+}
+
+function renderShelterManualList() {
+  const container = document.getElementById("shelter-manual-list");
+  const badge = document.getElementById("shelter-manual-count");
+  const entries = Object.entries(shelterManualOverrides);
+  if (badge) {
+    badge.hidden = entries.length === 0;
+    badge.textContent = entries.length ? `手動入力 ${entries.length}件` : "";
+  }
+  if (!container) return;
+  if (!entries.length) {
+    container.innerHTML = '<div class="detail-empty">手動入力はありません。</div>';
+    return;
+  }
+  container.innerHTML = entries.map(([id, manual]) => {
+    const shelter = officialShelters.find(item => item.id === id);
+    return `
+      <div class="shelter-paste-row">
+        <strong>${escapeHtml(shelter?.name || id)}</strong>
+        <span class="badge ${manual.status === "open" ? "green" : "gray"}">${manual.status === "open" ? "開設" : "閉鎖"}（手動）</span>
+        <span>${escapeHtml(manual.time ? `${manual.time} ` : "")}${escapeHtml(manual.source || "")} / ${escapeHtml(formatDateTime(toDateTimeLocal(manual.confirmedAt)))}確認</span>
+        <button type="button" class="text-button" data-manual-remove="${escapeAttribute(id)}">解除</button>
+      </div>`;
+  }).join("");
+}
+
+function handleShelterManualListClick(event) {
+  const button = event.target.closest("[data-manual-remove]");
+  if (!button) return;
+  delete shelterManualOverrides[button.dataset.manualRemove];
+  saveShelterManualOverrides();
+  renderShelters();
+  renderShelterManualList();
+}
 let screenshotState = {
   image: null,
   scale: 1,
@@ -486,6 +649,22 @@ function bindEvents() {
   document.getElementById("shelter-opening-filter").addEventListener("change", renderShelters);
   document.getElementById("shelter-keyword-filter").addEventListener("input", renderShelters);
   document.getElementById("shelter-list").addEventListener("click", handleShelterListClick);
+  document.getElementById("shelter-paste-button").addEventListener("click", () => {
+    renderShelterManualList();
+    document.getElementById("shelter-paste-dialog").showModal();
+  });
+  document.getElementById("shelter-paste-parse-button").addEventListener("click", () => {
+    shelterPasteCandidates = parseShelterPasteText(document.getElementById("shelter-paste-text").value);
+    renderShelterPastePreview();
+  });
+  document.getElementById("shelter-paste-apply-button").addEventListener("click", applyShelterPaste);
+  document.getElementById("shelter-manual-list").addEventListener("click", handleShelterManualListClick);
+  document.getElementById("shelter-manual-clear-button").addEventListener("click", () => {
+    shelterManualOverrides = {};
+    saveShelterManualOverrides();
+    renderShelters();
+    renderShelterManualList();
+  });
   document.getElementById("paste-social-link-button").addEventListener("click", pasteSocialLink);
   document.getElementById("collector-post-url").addEventListener("input", syncCollectorPlatformFromUrl);
   document.getElementById("collector-platform").addEventListener("change", updateCollectorPlatformHelp);
@@ -819,6 +998,7 @@ async function refreshShelters(showStatus = false, quiet = false) {
     )) : [];
     shelterPayload = payload;
     renderShelters();
+    renderShelterManualList();
   } catch (error) {
     summary.classList.add("is-error");
     summary.textContent = `避難所情報を取得できませんでした（${error?.message || "接続エラー"}）。`;
@@ -840,7 +1020,7 @@ function getFilteredShelters() {
   const filters = getShelterFilters();
   return officialShelters.filter(shelter => {
     if (filters.kind !== "all" && shelter.kind !== filters.kind) return false;
-    if (filters.opening !== "all" && shelter.openingStatus !== filters.opening) return false;
+    if (filters.opening !== "all" && effectiveShelterOpening(shelter).status !== filters.opening) return false;
     if (filters.keyword && !`${shelter.name} ${shelter.address} ${shelter.district}`.toLowerCase().includes(filters.keyword)) return false;
     return true;
   });
@@ -853,23 +1033,25 @@ function renderShelters() {
   const filtered = getFilteredShelters();
   const hazardLabels = { windFlood: "風水害", earthquake: "震災", landslide: "土砂災害" };
   const suitableCount = filtered.filter(shelter => shelter.suitableFor?.[filters.hazard]).length;
-  const openCount = officialShelters.filter(shelter => shelter.openingStatus === "open").length;
+  const openCount = officialShelters.filter(shelter => effectiveShelterOpening(shelter).status === "open").length;
+  const manualCount = Object.keys(shelterManualOverrides).length;
   const updateTime = shelterPayload?.fetchedAt ? formatDateTime(toDateTimeLocal(shelterPayload.fetchedAt)) : "";
   summary.classList.remove("is-error");
   summary.innerHTML = `
     <strong>${escapeHtml(hazardLabels[filters.hazard] || filters.hazard)}対応 ${suitableCount} / 表示${filtered.length}施設</strong>
-    <span>開設中 ${openCount}施設${updateTime ? ` ・ ${escapeHtml(updateTime)}取得` : ""}</span>
+    <span>開設中 ${openCount}施設${manualCount ? `（うち手動入力 ${manualCount}件を含む）` : ""}${updateTime ? ` ・ ${escapeHtml(updateTime)}取得` : ""}</span>
     <span>${escapeHtml(shelterPayload?.openingInformation || "公式の開設発表を確認中です。")}</span>
   `;
 
   shelterLayer.clearLayers();
   filtered.forEach(shelter => {
     const suitable = Boolean(shelter.suitableFor?.[filters.hazard]);
-    const opening = shelter.openingStatus || "not-announced";
+    const effective = effectiveShelterOpening(shelter);
+    const opening = effective.status;
     const marker = L.marker([Number(shelter.latitude), Number(shelter.longitude)], {
       icon: L.divIcon({
         className: "",
-        html: `<div class="shelter-marker is-${escapeAttribute(opening)} ${suitable ? "" : "is-unsuitable"}" aria-label="${escapeAttribute(shelter.name)}"><span>${opening === "open" ? "開" : suitable ? "避" : "!"}</span></div>`,
+        html: `<div class="shelter-marker is-${escapeAttribute(opening)} ${effective.manual ? "is-manual" : ""} ${suitable ? "" : "is-unsuitable"}" aria-label="${escapeAttribute(shelter.name)}"><span>${opening === "open" ? "開" : suitable ? "避" : "!"}</span></div>`,
         iconSize: [28, 28],
         iconAnchor: [14, 14]
       })
@@ -890,15 +1072,18 @@ function buildShelterPopup(shelter, hazard) {
   const openingLabels = { open: "開設中", closed: "閉鎖・開設終了", "not-announced": "開設発表なし" };
   const suitable = Boolean(shelter.suitableFor?.[hazard]);
   const evidence = shelter.openingEvidence;
+  const effective = effectiveShelterOpening(shelter);
+  const manual = effective.manual;
   return `
     <div class="popup-title">${escapeHtml(shelter.name)}</div>
     <div class="shelter-popup-badges">
       <span class="badge ${suitable ? "green" : "red"}">${escapeHtml(hazardLabels[hazard])}: ${suitable ? "対応可" : "対象外"}</span>
-      <span class="badge ${shelter.openingStatus === "open" ? "green" : shelter.openingStatus === "closed" ? "gray" : "yellow"}">${escapeHtml(openingLabels[shelter.openingStatus] || "開設発表なし")}</span>
+      <span class="badge ${effective.status === "open" ? "green" : effective.status === "closed" ? "gray" : "yellow"}">${escapeHtml(openingLabels[effective.status] || "開設発表なし")}${manual ? "（手動）" : ""}</span>
     </div>
     <div>${escapeHtml(shelter.kindLabel)} / ${escapeHtml(shelter.address)}</div>
     ${shelter.phone ? `<div class="detail-meta">電話 ${escapeHtml(shelter.phone)}</div>` : ""}
-    ${evidence ? `<div class="shelter-evidence"><strong>${escapeHtml(evidence.title || "印西市防災速報")}</strong><span>${escapeHtml(truncateText(evidence.message || "", 140))}</span><a href="${escapeAttribute(evidence.sourceUrl)}" target="_blank" rel="noreferrer">公式発表を確認</a></div>` : '<div class="popup-contact-note">現在の開設を示す公式発表は確認されていません。</div>'}
+    ${manual ? `<div class="shelter-evidence is-manual"><strong>手動入力（${escapeHtml(manual.source || "出典未記入")}）</strong><span>${escapeHtml(manual.time ? `${manual.time} ` : "")}${escapeHtml(formatDateTime(toDateTimeLocal(manual.confirmedAt)))}に運用者が確認・入力。公式発表ではありません。</span></div>` : ""}
+    ${evidence ? `<div class="shelter-evidence"><strong>${escapeHtml(evidence.title || "印西市防災速報")}</strong><span>${escapeHtml(truncateText(evidence.message || "", 140))}</span><a href="${escapeAttribute(evidence.sourceUrl)}" target="_blank" rel="noreferrer">公式発表を確認</a></div>` : manual ? "" : '<div class="popup-contact-note">現在の開設を示す公式発表は確認されていません。</div>'}
     <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">出典: 印西市わが街ガイド オープンデータ</a>
   `;
 }
@@ -912,11 +1097,12 @@ function renderShelterList(filtered, hazard) {
   const openingLabels = { open: "開設中", closed: "閉鎖発表", "not-announced": "開設発表なし" };
   list.innerHTML = filtered.map(shelter => {
     const suitable = Boolean(shelter.suitableFor?.[hazard]);
+    const effective = effectiveShelterOpening(shelter);
     return `
       <button class="shelter-list-item ${shelter.id === selectedShelterId ? "is-selected" : ""}" type="button" data-shelter-id="${escapeAttribute(shelter.id)}">
         <strong>${escapeHtml(shelter.name)}</strong>
         <span>${escapeHtml(shelter.kindLabel)} ・ ${suitable ? "災害対応可" : "この災害は対象外"}</span>
-        <span class="shelter-opening is-${escapeAttribute(shelter.openingStatus)}">${escapeHtml(openingLabels[shelter.openingStatus] || "開設発表なし")}</span>
+        <span class="shelter-opening is-${escapeAttribute(effective.status)}">${escapeHtml(openingLabels[effective.status] || "開設発表なし")}${effective.manual ? "（手動）" : ""}</span>
       </button>`;
   }).join("");
 }
