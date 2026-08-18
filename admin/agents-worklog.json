@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-08-19",
+          "title": "災害MAP: SNS検索認証の設定支援（Threads/Instagram）＋IG巡回コード修正 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "Meta検索専用アプリ「CBI災害検索」作成支援（8/17夜: threads_keyword_search権限・コールバックURL・テスター招待の操作案内。保存不能エラーの真因＝タグ入力式UIの未確定を特定）",
+            "Instagram検索認証の設定支援（8/18朝: Facebookページ「Community Bank INZAI」新規作成→IG連携→Graph API Explorerで60日トークン取得。OAuth途中失敗で残った空アセットのビジネス統合を修復）",
+            "C:\\Repos\\cidao src/lib/disaster-sns-monitor.ts（IG巡回修正2コミット: 存在しないハッシュタグの0件success扱い・recent_media limit削減と再試行・username フィールド除去。35d93c3/12b59b1）",
+            "agents/a1-core/credentials.md（§1.0.1 FBページ・§1.0.2 IG検索トークン・§1.1.1 CBI災害検索アプリを追記）",
+            "cidao/2026-08-17_SNS検索権限の設定手順.md（実施結果・ハマりどころを追記、status完了に更新）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（接続状態を2026-08-19版に更新）＋site/admin/changelog.json 1件",
+            "検証: 8/19 8:35巡回で Threads=success・Instagram=success（#印西市で公開投稿1件取得を実証）。残課題: Bluesky失敗（別セッション調査中）・IG検索トークン2026-10-17失効（手動再発行）"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "2026-08-17_SNS検索権限の設定手順.md に基づく操作案内依頼（8/17夜〜8/19朝の3日にまたがる同一セッション）。session: ffcda098-652d-43b2-8eab-38e4d4158d17 / output: 75,873 / cost: $30.51"
+        },
+        {
+          "date": "2026-08-19",
           "title": "メタバース: 文化財解説文50件の収集執筆＋年表・クイズタブ実装 0.4時間",
           "category": "実装",
           "outputs": [

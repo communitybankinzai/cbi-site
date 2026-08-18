@@ -64,12 +64,12 @@ MAPは `config.js` の `snsMonitorEndpoint` で以下へ接続する。
 - 位置語と災害語の両方を満たす投稿だけを候補にする。巡回自体に生成AIは使わないため、AI API料金は発生しない。
 - 検索語の管理（2026-08-17追加）: GETが有効・無効を含む現在の検索ルールを返し、MAPの「SNS新着巡回」カードに表示。検索語ごとの手動検索リンクとFacebook手動検索リンク、見つけた投稿URLをSNS投稿登録画面へ引き継ぐ導線を追加。検索語の編集はCIDAO `/admin/sns`（媒体ごと1行1語・各12件・2〜50文字）。Facebookは一般公開投稿の自動全文検索APIがないため自動巡回対象外とし、手動検索＋URL登録で補完する（仕様）。
 
-### 2026-08-16現在の接続状態
+### 2026-08-19現在の接続状態
 
-- Bluesky: 稼働中。公開検索APIで巡回成功。
-- Threads: 投稿用認証はあるが、公開投稿検索の`threads_keyword_search`権限を含む再認証が必要。現状は画面に「要確認」と表示。
-- Instagram: 投稿用トークンとは別に、Facebook Login方式のInstagramプロアカウントIDとハッシュタグ検索権限付きユーザートークンが必要。現状は未設定で「要確認」。
-- 認証設定場所: CIDAOの`/admin/sns`。Instagram検索専用フォームを追加済み。
+- Threads: **稼働中**（2026-08-17設定）。検索専用Metaアプリ「CBI災害検索」＋`threads_keyword_search`で巡回success。投稿用トークンとは完全分離（`sns_threads_discovery_auth`）。
+- Instagram: **稼働中**（2026-08-18認証・08-19巡回成功）。Facebook Login方式（FBページ「Community Bank INZAI」＋IGプロアカウントID）のハッシュタグ検索。公開投稿の取得を実証済み。**検索用トークンは自動リフレッシュなし・2026-10-17失効**（再発行手順は `cidao/2026-08-17_SNS検索権限の設定手順.md` と credentials.md §1.0.2）。
+- Bluesky: **失敗中**（APIがHTML応答を返す既存問題。2026-08-18に別セッションで調査開始）。
+- 認証設定場所: CIDAOの`/admin/sns`。認証情報・アプリID等の記録は `agents/a1-core/credentials.md` §1.0.1〜1.1.1。
 
 ## CIDAO側の実装
 
@@ -83,7 +83,7 @@ MAPは `config.js` の `snsMonitorEndpoint` で以下へ接続する。
 
 ## 未実装・次の優先候補
 
-1. CIDAO `/admin/sns`でThreads検索権限付き再認証とInstagram検索専用認証を完了する。
+1. ~~CIDAO `/admin/sns`でThreads検索権限付き再認証とInstagram検索専用認証を完了する。~~（2026-08-19完了）→ 残: Blueskyの巡回失敗の修正、Threads検索がApp Review未承認でも公開投稿を取れるかのデータ確認。
 2. MAPのLocalStorage記録をSupabaseへ共有保存し、登録利用者・自主防災組織向けの認証、権限、承認、監査ログを実装する。
 3. SNS候補の確認・却下・採用状態をサーバー側へ保存し、複数端末で同期する。
 4. 道路中心線データを使い、クリック点を道路へスナップする。必要なら交差点候補、区間編集、方向別規制を追加する。
