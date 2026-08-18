@@ -17,6 +17,21 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-19",
+          "title": "メタバース: 文化財解説文50件の収集執筆＋年表・クイズタブ実装 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/bunkazai.json（全50件に description=市公式ページ由来の2〜3行要約・era 47件・eraYear 46件を追加。404だった別所の獅子舞の detailUrl を現行ページ 0000011181 へ修正。commit 44af64b）",
+            "site/metaverse/index.html（ピンクリックパネルに時代・解説・市公式リンク常時表示／ずかん詳細にゲット前から解説＋公式リンク／📜年表タブ=eraYear昇順50件＋▶行く／🧠クイズタブ=データから毎回5問3択を自動生成）",
+            "site/metaverse/CLAUDE_HANDOFF.md＋site/admin/changelog.json 2件（feature＋content）",
+            "調査: 市公式文化財ページ50件を一括取得（49件成功・1件404→WebSearchで現行URL特定）。解説は市公式記載の事実のみで執筆、写真表示は転載可否未確認のため見送り",
+            "検証: ローカルで年表50件描画・クイズ5問通し（正解判定・結果表示・再挑戦）・ずかん解説/リンク表示を確認／本番でデータ50件読込・年表・クイズ起動・ずかん解説を確認"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "文化財詳細の充実依頼（B=解説文収集＋C=学習モード化）。session: 51b587ef-7426-442b-977e-b941cdd6e689 / output: 64,994 / cost: $18.62（前回記録0.2h以降の差分0.4h）"
+        },
+        {
           "date": "2026-08-18",
           "title": "メタバース: 避難所ピン表示切替の追加＋「遊び方」→「使い方」改称 0.2時間",
           "category": "実装",
