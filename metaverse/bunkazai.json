@@ -11,7 +11,10 @@
    "lon": 140.117325,
    "detailUrl": "https://www.city.inzai.lg.jp/0000004863.html",
    "spiritName": "ホウジュ",
-   "cardImage": "spirits/ホウジュ.webp"
+   "cardImage": "spirits/ホウジュ.webp",
+   "description": "貞観年間（859〜877年）開基と伝わる宝珠院に残る観音堂。茅葺寄棟造で、内部の須弥壇や厨子に美しい色彩装飾が施され、通称「光堂」と呼ばれる。厨子内の墨書銘から永禄6年（1563年）頃の建立と推定される。",
+   "era": "室町時代",
+   "eraYear": 1563
   },
   {
    "name": "泉福寺薬師堂",
@@ -22,7 +25,10 @@
    "lon": 140.168365,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005005.html",
    "spiritName": "センプク",
-   "cardImage": "spirits/センプク.webp"
+   "cardImage": "spirits/センプク.webp",
+   "description": "茅葺寄棟造の堂で、建築手法から室町時代末期の建立と考えられる。昭和56年の解体修理により、貞享2年（1685年）に現在の地へ移築されたことがわかった。",
+   "era": "室町時代末期",
+   "eraYear": 1550
   },
   {
    "name": "栄福寺薬師堂",
@@ -33,7 +39,10 @@
    "lon": 140.190826,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005006.html",
    "spiritName": "エイフク",
-   "cardImage": "spirits/エイフク.webp"
+   "cardImage": "spirits/エイフク.webp",
+   "description": "棟札に寛正7年（1466年）柱立などの墨書銘が残る、建立年代の明確なものとして千葉県下最古の建造物。茅葺寄棟造で、外陣の鏡天井には極彩色の天女図が描かれている。",
+   "era": "室町時代",
+   "eraYear": 1466
   },
   {
    "name": "銅造不動明王立像",
@@ -44,7 +53,10 @@
    "lon": 140.135068,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005007.html",
    "spiritName": "フドラ",
-   "cardImage": "spirits/フドラ.webp"
+   "cardImage": "spirits/フドラ.webp",
+   "description": "像高47cmの鋳銅製の不動明王像。裳の刻銘から嘉元元年（1303年）の造像とわかる。写実的で迫力のある鎌倉時代の造形感覚をよく表した作品で、毎年9月28日に開帳される。",
+   "era": "鎌倉時代",
+   "eraYear": 1303
   },
   {
    "name": "木造薬師如来坐像・立像（七仏薬師）",
@@ -55,7 +67,10 @@
    "lon": 140.215973,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005008.html",
    "spiritName": "ナナヤク",
-   "cardImage": "spirits/ナナヤク.webp"
+   "cardImage": "spirits/ナナヤク.webp",
+   "description": "坐像の中尊と立像6躯からなる七仏薬師。坐像と立像の組み合わせは他に例がなく、古い様式の七仏薬師は全国でも松虫寺と滋賀県鶏足寺のみ。平安時代末期の造像と考えられ、33年ごとに開帳される。",
+   "era": "平安時代末期",
+   "eraYear": 1150
   },
   {
    "name": "木下貝層",
@@ -66,7 +81,10 @@
    "lon": 140.156723,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005009.html",
    "spiritName": "キオロシ",
-   "cardImage": "spirits/キオロシ.webp"
+   "cardImage": "spirits/キオロシ.webp",
+   "description": "約12万年前に古東京湾に堆積した砂層の露頭で、100種類以上の貝化石が確認されている。「県の石（化石）」「千葉の地層10選」にも選定。指定地（木下万葉公園内）での採集は法律で禁止されている。",
+   "era": "約12万年前の地層",
+   "eraYear": -120000
   },
   {
    "name": "木造毘沙門天及び両脇侍立像",
@@ -77,7 +95,10 @@
    "lon": 140.138245,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005010.html",
    "spiritName": "ビシャモ",
-   "cardImage": "spirits/ビシャモ.webp"
+   "cardImage": "spirits/ビシャモ.webp",
+   "description": "毘沙門天・吉祥天・善膩師童子の三尊像。胎内の墨書銘から正応2年（1289年）に仏師賢光が造像したことが判明している。鎌倉時代仏像彫刻の写実性をよく表す作例で、毎年7月最終土曜日に開帳される。",
+   "era": "鎌倉時代",
+   "eraYear": 1289
   },
   {
    "name": "木造延命地蔵菩薩坐像",
@@ -88,7 +109,10 @@
    "lon": 140.118103,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005013.html",
    "spiritName": "エンメ",
-   "cardImage": "spirits/エンメ.webp"
+   "cardImage": "spirits/エンメ.webp",
+   "description": "像高139cm、カヤ材寄木造の漆箔像。平安時代末から鎌倉時代初めの造像と考えられ、柔和な顔とおだやかな肉付けが慈悲深い地蔵の特色をよく表す。弘化4年（1847年）に井伊家より泉倉寺へ寄進された。",
+   "era": "平安末期〜鎌倉初期",
+   "eraYear": 1190
   },
   {
    "name": "銅造十一面観音立像",
@@ -99,7 +123,10 @@
    "lon": 140.151993,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005014.html",
    "spiritName": "ジュウメン",
-   "cardImage": "spirits/ジュウメン.webp"
+   "cardImage": "spirits/ジュウメン.webp",
+   "description": "像高50.5cmの鋳銅製の十一面観音像。背面の銘文から永仁5年（1297年）の造像とわかる、鎌倉時代後期の金銅仏として重要な作例。毎年8月上旬の護摩焚きで開帳される。",
+   "era": "鎌倉時代",
+   "eraYear": 1297
   },
   {
    "name": "木造地蔵菩薩立像",
@@ -110,7 +137,10 @@
    "lon": 140.158615,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005015.html",
    "spiritName": "ジゾレ",
-   "cardImage": "spirits/ジゾレ.webp"
+   "cardImage": "spirits/ジゾレ.webp",
+   "description": "ヒノキ材一木割矧造、像高97.5cmの地蔵菩薩像。鎌倉時代前期の作で、繊細な彫技に加え、表面の彩色・切金が当初の華麗なさまをとどめている。",
+   "era": "鎌倉時代前期",
+   "eraYear": 1220
   },
   {
    "name": "木造不動明王立像及び毘沙門天立像",
@@ -121,7 +151,10 @@
    "lon": 140.19693,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005035.html",
    "spiritName": "フドビシャ",
-   "cardImage": "spirits/フドビシャ.webp"
+   "cardImage": "spirits/フドビシャ.webp",
+   "description": "不動明王・毘沙門天の2躯とも像内に仏師賢光の銘があり、鎌倉時代後期の作。中世の一仏師の作例がこれほどまとまって残るのは稀で、日本の中世彫刻史上でも大きな意義を持つ。",
+   "era": "鎌倉時代後期",
+   "eraYear": 1280
   },
   {
    "name": "木造薬師如来坐像",
@@ -132,7 +165,10 @@
    "lon": 140.252396,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005036.html",
    "spiritName": "ヒラガ",
-   "cardImage": "spirits/ヒラガ.webp"
+   "cardImage": "spirits/ヒラガ.webp",
+   "description": "像高56cm、カヤ材一木造の薬師如来像。胎内の墨書銘から弘安8年（1285年）に仏師賢光が造ったことがわかる。毎年7月7日の薬師尊大護摩供で開帳される。",
+   "era": "鎌倉時代",
+   "eraYear": 1285
   },
   {
    "name": "木造金剛力士像",
@@ -143,7 +179,10 @@
    "lon": 140.181854,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005037.html",
    "spiritName": "コンリキ",
-   "cardImage": "spirits/コンリキ.webp"
+   "cardImage": "spirits/コンリキ.webp",
+   "description": "阿形・吽形2躯のマツ材の金剛力士像で、像高は約230cm。誇張のない質実な力強さがあり、作風から鎌倉時代末期の造像と考えられている。",
+   "era": "鎌倉時代末期",
+   "eraYear": 1320
   },
   {
    "name": "梵鐘（応安二年在銘）",
@@ -154,7 +193,10 @@
    "lon": 140.137497,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005044.html",
    "spiritName": "オウアン",
-   "cardImage": "spirits/オウアン.webp"
+   "cardImage": "spirits/オウアン.webp",
+   "description": "総高80.5cmの梵鐘で、応安2年（1369年）の記年銘が刻まれている。縦帯に残る大きな傷跡は、中にいた妖怪を退治するために切りつけた刀傷と伝えられる。",
+   "era": "南北朝時代",
+   "eraYear": 1369
   },
   {
    "name": "鋳銅孔雀文磬",
@@ -165,7 +207,10 @@
    "lon": 140.215973,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005086.html",
    "spiritName": "クジャクケイ",
-   "cardImage": "spirits/クジャクケイ.webp"
+   "cardImage": "spirits/クジャクケイ.webp",
+   "description": "誦経など修法の際に打ち鳴らす鋳銅製の器具。裏表とも撞座の蓮華文に向かって翼を大きく張った孔雀が表現され、様式や制作手法から南北朝時代の作と推定される。",
+   "era": "南北朝時代",
+   "eraYear": 1350
   },
   {
    "name": "梵鐘（竜腹寺）",
@@ -176,7 +221,10 @@
    "lon": 140.193298,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005045.html",
    "spiritName": "リュウフク",
-   "cardImage": "spirits/リュウフク.webp"
+   "cardImage": "spirits/リュウフク.webp",
+   "description": "総高122.7cmの梵鐘。撞座が1か所だけという大変珍しい形式で、銘文に下総印西荘龍腹寺の寺名が刻まれる。南北朝時代の制作と考えられる。",
+   "era": "南北朝時代",
+   "eraYear": 1350
   },
   {
    "name": "梵鐘（建武五年在銘）",
@@ -187,7 +235,10 @@
    "lon": 140.181854,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005046.html",
    "spiritName": "ケンム",
-   "cardImage": "spirits/ケンム.webp"
+   "cardImage": "spirits/ケンム.webp",
+   "description": "総高99.6cmの梵鐘で、建武5年（1338年）の記年銘をもつ。県内では他に例のない形式の撞座を備え、欠所の見当たらない鋳上がりの美しい梵鐘。",
+   "era": "南北朝時代",
+   "eraYear": 1338
   },
   {
    "name": "馬込遺跡出土瓦塔",
@@ -198,7 +249,10 @@
    "lon": 140.154739,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005128.html",
    "spiritName": "ガトウ",
-   "cardImage": "spirits/ガトウ.webp"
+   "cardImage": "spirits/ガトウ.webp",
+   "description": "木造の塔の形を模して作られた焼物の塔で、七重塔2基に復元できた。一遺跡から七層2基に復元できる瓦塔の出土は全国唯一の例で、古代東国の仏教信仰を知る貴重な考古資料。木下交流の杜歴史資料センターに展示中。",
+   "era": "奈良〜平安時代",
+   "eraYear": 800
   },
   {
    "name": "押付の水塚",
@@ -209,7 +263,10 @@
    "lon": 140.211517,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005047.html",
    "spiritName": "ミズツカ",
-   "cardImage": "spirits/ミズツカ.webp"
+   "cardImage": "spirits/ミズツカ.webp",
+   "description": "利根川下流域で洪水から住宅や生活用品を守るため、平地より高く土を盛った上に土蔵や住宅を建てたもの。築造年代は近世中期といわれる。個人宅のため許可なく立ち入ることはできない。",
+   "era": "江戸時代中期",
+   "eraYear": 1700
   },
   {
    "name": "鳥見神社の獅子舞",
@@ -220,7 +277,10 @@
    "lon": 140.169006,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005048.html",
    "spiritName": "トリミシシ",
-   "cardImage": "spirits/トリミシシ.webp"
+   "cardImage": "spirits/トリミシシ.webp",
+   "description": "悪魔払いと豊作を祈願する三匹獅子舞。文明年間（1469〜87年）頃に大森の鳥見神社の祭礼で舞われていたものが、延宝6年（1678年）に平岡へ伝わったとされる。現在は5月3日の春の例大祭に奉納される。",
+   "era": "室町時代起源と伝承",
+   "eraYear": 1469
   },
   {
    "name": "浦部の神楽",
@@ -231,7 +291,10 @@
    "lon": 140.100479,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005050.html",
    "spiritName": "ウラベ",
-   "cardImage": "spirits/ウラベ.webp"
+   "cardImage": "spirits/ウラベ.webp",
+   "description": "鳥見神社と阿夫利神社の例大祭で12の演目が演じられる十二座神楽。江戸時代初期に伝えられたといわれている。",
+   "era": "江戸時代初期と伝承",
+   "eraYear": 1620
   },
   {
    "name": "鳥見神社の神楽",
@@ -242,7 +305,10 @@
    "lon": 140.197952,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005051.html",
    "spiritName": "カグライ",
-   "cardImage": "spirits/カグライ.webp"
+   "cardImage": "spirits/カグライ.webp",
+   "description": "毎年10月17日の鳥見神社例大祭で演じられる大和神楽（十二座神楽）。文安年間（1444〜49年）から始まったと伝えられ、現在使われる16の面の大半に宝暦元年（1751年）作の銘が入っている。",
+   "era": "室町時代起源と伝承",
+   "eraYear": 1444
   },
   {
    "name": "将監のオニバス発生地",
@@ -253,7 +319,8 @@
    "lon": 140.208435,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005052.html",
    "spiritName": "オニバス",
-   "cardImage": "spirits/オニバス.webp"
+   "cardImage": "spirits/オニバス.webp",
+   "description": "大きな葉を水面に浮かべるスイレン科の水生植物オニバスの発生地。環境省レッドデータブックで絶滅危惧2類に記載される。指定地では昭和57年を最後に確認されていないが、埋土種子による再生の取り組みが続く。"
   },
   {
    "name": "弥陀一尊武蔵型板碑",
@@ -264,7 +331,10 @@
    "lon": 140.102264,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005054.html",
    "spiritName": "イタムサ",
-   "cardImage": "spirits/イタムサ.webp"
+   "cardImage": "spirits/イタムサ.webp",
+   "description": "緑泥片岩製の武蔵型板碑。阿弥陀如来を示す種字キリークと建治元年（1275年）12月の紀年銘が刻まれている。",
+   "era": "鎌倉時代",
+   "eraYear": 1275
   },
   {
    "name": "弥陀三尊下総型板碑",
@@ -275,7 +345,10 @@
    "lon": 140.189499,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005055.html",
    "spiritName": "シモイタ",
-   "cardImage": "spirits/シモイタ.webp"
+   "cardImage": "spirits/シモイタ.webp",
+   "description": "阿弥陀三尊の種子を刻んだ下総型板碑。暦応4年（1341年）の銘文があり、造立者が母の供養のために作ったもの。",
+   "era": "南北朝時代",
+   "eraYear": 1341
   },
   {
    "name": "板石塔婆（吉高）",
@@ -286,7 +359,10 @@
    "lon": 140.238235,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005056.html",
    "spiritName": "ヨシイタ",
-   "cardImage": "spirits/ヨシイタ.webp"
+   "cardImage": "spirits/ヨシイタ.webp",
+   "description": "十三仏種字と造立の趣意が刻まれた下総型板碑としては古く大型のもの。永和4年（1378年）に夫婦が生前に自らの死後の供養（逆修供養）のために造立した。",
+   "era": "南北朝時代",
+   "eraYear": 1378
   },
   {
    "name": "板石塔婆（岩戸）",
@@ -297,7 +373,10 @@
    "lon": 140.167038,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005057.html",
    "spiritName": "イワイタ",
-   "cardImage": "spirits/イワイタ.webp"
+   "cardImage": "spirits/イワイタ.webp",
+   "description": "粘板岩製の武蔵型板碑。阿弥陀一尊を示すキリークと文和2年（1353年）7月の銘が刻まれている。",
+   "era": "南北朝時代",
+   "eraYear": 1353
   },
   {
    "name": "福聚院阿弥陀三尊立像",
@@ -308,7 +387,10 @@
    "lon": 140.199112,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005058.html",
    "spiritName": "フクジュ",
-   "cardImage": "spirits/フクジュ.webp"
+   "cardImage": "spirits/フクジュ.webp",
+   "description": "製作技法や彫りの深い衣文線などの特徴から、鎌倉時代初期に運慶・快慶を中心とした慶派の仏師によって製作されたと思われる秀作。",
+   "era": "鎌倉時代初期",
+   "eraYear": 1200
   },
   {
    "name": "薬師如来立像",
@@ -319,7 +401,10 @@
    "lon": 140.179108,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005059.html",
    "spiritName": "タキヤク",
-   "cardImage": "spirits/タキヤク.webp"
+   "cardImage": "spirits/タキヤク.webp",
+   "description": "像高96.5cm、割矧造の薬師如来立像。平安時代後期（12世紀）の作と思われ、仏師定朝が生み出した定朝様の特徴を持つ、温雅で優美な像。",
+   "era": "平安時代後期",
+   "eraYear": 1150
   },
   {
    "name": "鋳銅鰐口（竹袋）",
@@ -330,7 +415,10 @@
    "lon": 140.157898,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005060.html",
    "spiritName": "ワニタケ",
-   "cardImage": "spirits/ワニタケ.webp"
+   "cardImage": "spirits/ワニタケ.webp",
+   "description": "縦45cm・横50cmと市内で最も大きい鰐口。宝暦5年（1755年）に竹袋村の十九夜講中21人が奉納した銘文が刻まれている。",
+   "era": "江戸時代",
+   "eraYear": 1755
   },
   {
    "name": "観音寺鋳造鰐口",
@@ -341,7 +429,10 @@
    "lon": 140.102264,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005061.html",
    "spiritName": "カンワニ",
-   "cardImage": "spirits/カンワニ.webp"
+   "cardImage": "spirits/カンワニ.webp",
+   "description": "径16cmの鰐口で、延宝8年（1680年）の銘文が刻まれている。",
+   "era": "江戸時代",
+   "eraYear": 1680
   },
   {
    "name": "鋳銅鰐口（松虫）",
@@ -352,7 +443,10 @@
    "lon": 140.215973,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005062.html",
    "spiritName": "マツワニ",
-   "cardImage": "spirits/マツワニ.webp"
+   "cardImage": "spirits/マツワニ.webp",
+   "description": "径36cm・重さ8.9kgの鰐口。銘文から、天正13年（1585年）に松虫寺の別当栄澄が鋳物師の鵜沢信濃守敏信に注文したものと考えられている。",
+   "era": "安土桃山時代",
+   "eraYear": 1585
   },
   {
    "name": "曼荼羅掛軸",
@@ -363,7 +457,9 @@
    "lon": 140.207016,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005063.html",
    "spiritName": "マンダ",
-   "cardImage": "spirits/マンダ.webp"
+   "cardImage": "spirits/マンダ.webp",
+   "description": "胎蔵界曼荼羅といわれる掛軸仕様の仏画。諸仏・諸尊を一定の法則によって配列して描いたもので、気品のある作品（製作年代は不明）。",
+   "era": "製作年代不明"
   },
   {
    "name": "龍湖寺絵馬",
@@ -374,7 +470,10 @@
    "lon": 140.18924,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005064.html",
    "spiritName": "エマリュウ",
-   "cardImage": "spirits/エマリュウ.webp"
+   "cardImage": "spirits/エマリュウ.webp",
+   "description": "江戸時代中期から明治時代中期に奉納された横1m以上の大型絵馬11面。安産・子育ての祈祷で信仰された覚海賛元禅師への「拝み絵馬」で、当時の信仰の形態や婦人の風俗を伝える。",
+   "era": "江戸中期〜明治中期",
+   "eraYear": 1800
   },
   {
    "name": "吉岡家河岸関係文書",
@@ -385,7 +484,10 @@
    "lon": 140.155243,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005067.html",
    "spiritName": "カシモン",
-   "cardImage": "spirits/カシモン.webp"
+   "cardImage": "spirits/カシモン.webp",
+   "description": "木下河岸で代々問屋を営んだ吉岡家に伝わる176点の文書群。最盛期には年間4,000艘の出船があったという水陸交通の要所・木下河岸の様子を知るうえで重要。",
+   "era": "江戸時代〜明治初頭",
+   "eraYear": 1600
   },
   {
    "name": "常滑の大壺",
@@ -396,7 +498,10 @@
    "lon": 140.167038,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005065.html",
    "spiritName": "トコナメ",
-   "cardImage": "spirits/トコナメ.webp"
+   "cardImage": "spirits/トコナメ.webp",
+   "description": "師戸城本丸内から明治20年ごろ畑の耕作中に出土した高さ60.5cmの常滑焼の大壺。城と同時期の15世紀のもの。",
+   "era": "室町時代（15世紀）",
+   "eraYear": 1450
   },
   {
    "name": "小金牧鹿狩資料「村小旗」",
@@ -407,7 +512,10 @@
    "lon": 140.154739,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005066.html",
    "spiritName": "コガネ",
-   "cardImage": "spirits/コガネ.webp"
+   "cardImage": "spirits/コガネ.webp",
+   "description": "江戸時代の将軍の鹿狩りで使われた旗。染め抜き文字から別所村に10人の人足が割り当てられていたことがわかる。寛政の鹿狩り（1795年）以降に使用されたと考えられている。",
+   "era": "江戸時代",
+   "eraYear": 1795
   },
   {
    "name": "高札（五榜の掲示）",
@@ -418,7 +526,10 @@
    "lon": 140.230591,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005069.html",
    "spiritName": "ゴボウ",
-   "cardImage": "spirits/ゴボウ.webp"
+   "cardImage": "spirits/ゴボウ.webp",
+   "description": "明治元年（1868年）に明治政府が掲示を命じた「五榜の掲示」のうちの第1札と第2札。五倫道徳の遵守、徒党・強訴・逃散の禁止などが記された。",
+   "era": "明治元年",
+   "eraYear": 1868
   },
   {
    "name": "別所の獅子舞",
@@ -427,9 +538,12 @@
    "address": "別所1005",
    "lat": 35.825386,
    "lon": 140.158615,
-   "detailUrl": "https://www.city.inzai.lg.jp/0000005068.html",
+   "detailUrl": "https://www.city.inzai.lg.jp/0000011181.html",
    "spiritName": "ベッショ",
-   "cardImage": "spirits/ベッショ.webp"
+   "cardImage": "spirits/ベッショ.webp",
+   "description": "約800年前、獅子頭をかぶり囃子をつけて村内を巡り悪疫退散を祈願したのが起源と伝わる三匹獅子舞。江戸時代初期頃から現在の形態になったといわれ、現在は8月23日に宝泉院、翌24日に地蔵寺で演じられる。",
+   "era": "約800年前起源と伝承",
+   "eraYear": 1220
   },
   {
    "name": "いなざき獅子舞",
@@ -440,7 +554,8 @@
    "lon": 140.127258,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005070.html",
    "spiritName": "イナザキ",
-   "cardImage": "spirits/イナザキ.webp"
+   "cardImage": "spirits/イナザキ.webp",
+   "description": "秋分の日に和泉の鳥見神社へ奉納される、三匹獅子に道化が加わった獅子舞。「いなざき」とは稲の収穫を前にしてという意味で、秋の豊作への感謝を表す。"
   },
   {
    "name": "八幡神社の獅子舞",
@@ -451,7 +566,8 @@
    "lon": 140.198059,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005071.html",
    "spiritName": "ハチシシ",
-   "cardImage": "spirits/ハチシシ.webp"
+   "cardImage": "spirits/ハチシシ.webp",
+   "description": "4月下旬、春の農作業の始まりの神事として行われる。獅子の面をかぶった3人の踊り手が小太鼓を打ちながら力強く踊り、籾蒔きの終わりを祝い豊穣を祈る。"
   },
   {
    "name": "月影の井",
@@ -462,7 +578,10 @@
    "lon": 140.106567,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005072.html",
    "spiritName": "ツキカゲ",
-   "cardImage": "spirits/ツキカゲ.webp"
+   "cardImage": "spirits/ツキカゲ.webp",
+   "description": "鎌倉時代にこの周辺で勢力があった大菅豊後守正氏が産湯や行水の水を汲んだと伝わる井戸。鎌倉の「星影の井」、二本松の「日影の井」とともに「日本三井」の一つに数えられる。",
+   "era": "鎌倉時代の伝承",
+   "eraYear": 1200
   },
   {
    "name": "上宿古墳",
@@ -473,7 +592,10 @@
    "lon": 140.142044,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005073.html",
    "spiritName": "カミジュク",
-   "cardImage": "spirits/カミジュク.webp"
+   "cardImage": "spirits/カミジュク.webp",
+   "description": "木下貝層から切り出した石材を積み上げた横穴式石室が良好な形で残る古墳。7世紀代の方墳と推定される。",
+   "era": "古墳時代（7世紀）",
+   "eraYear": 650
   },
   {
    "name": "武西の百庚申塚",
@@ -484,7 +606,10 @@
    "lon": 140.112488,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005074.html",
    "spiritName": "ヒャクシン",
-   "cardImage": "spirits/ヒャクシン.webp"
+   "cardImage": "spirits/ヒャクシン.webp",
+   "description": "文久3年（1863年）造立の百庚申で、刻像塔10基・文字塔90基から成る。多くの塔を建てることでより多くの功徳を得たいという庚申信仰の表れ。",
+   "era": "江戸時代",
+   "eraYear": 1863
   },
   {
    "name": "泉新田大木戸野馬堀遺跡",
@@ -495,7 +620,10 @@
    "lon": 140.126434,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005075.html",
    "spiritName": "ノマホリ",
-   "cardImage": "spirits/ノマホリ.webp"
+   "cardImage": "spirits/ノマホリ.webp",
+   "description": "江戸時代の幕府直轄の牧場「印西牧」で、馬の逃亡や外部からの侵入を防ぐために築かれた土手と堀の遺構。延宝期（1673〜81年）の新田開発で設けられ、牧と新田の境界を示していた。",
+   "era": "江戸時代",
+   "eraYear": 1673
   },
   {
    "name": "道作古墳群",
@@ -506,7 +634,10 @@
    "lon": 140.179489,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005083.html",
    "spiritName": "ミチツク",
-   "cardImage": "spirits/ミチツク.webp"
+   "cardImage": "spirits/ミチツク.webp",
+   "description": "前方後円墳7基・円墳14基・方墳1基の計22基から成る群集墳。全長46mの1号墳は印旛沼西岸域で最大の規模で、6世紀後半の築造と考えられる。",
+   "era": "古墳時代（6世紀後半）",
+   "eraYear": 575
   },
   {
    "name": "掩体壕",
@@ -517,7 +648,10 @@
    "lon": 140.171341,
    "detailUrl": "https://www.city.inzai.lg.jp/0000006191.html",
    "spiritName": "エンタイ",
-   "cardImage": "spirits/エンタイ.webp"
+   "cardImage": "spirits/エンタイ.webp",
+   "description": "印旛飛行場に駐機する軍用機を空襲から守るために作られた無蓋型の格納庫跡。幅約30m・高さ3mで、太平洋戦争末期の首都防衛の痕跡を今に伝える。",
+   "era": "昭和（太平洋戦争期）",
+   "eraYear": 1944
   },
   {
    "name": "吉高の大桜",
@@ -528,7 +662,10 @@
    "lon": 140.231628,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005081.html",
    "spiritName": "ヨシザクラ",
-   "cardImage": "spirits/ヨシザクラ.webp"
+   "cardImage": "spirits/ヨシザクラ.webp",
+   "description": "樹齢推定500年以上のヤマザクラ。根回り6.65m・樹高11.7m・枝張最大幅24.5mで、花期のうすいピンク色のこんもりとしたシルエットが訪れる人の心をいやす。",
+   "era": "樹齢推定500年以上",
+   "eraYear": 1500
   },
   {
    "name": "藤の木",
@@ -539,7 +676,10 @@
    "lon": 140.197952,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005082.html",
    "spiritName": "フジノ",
-   "cardImage": "spirits/フジノ.webp"
+   "cardImage": "spirits/フジノ.webp",
+   "description": "熊野大権現のご神木として植えられたと伝わる樹齢約1000年の藤。この木に由来して昔この地は「藤の方」と呼ばれ、現在も小字名「藤方」として残っている。",
+   "era": "樹齢約1000年と伝承",
+   "eraYear": 1030
   },
   {
    "name": "岩井家住宅主屋（旧武蔵屋店舗）",
@@ -550,7 +690,11 @@
    "lon": 140.146774,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005084.html",
    "spiritName": "ムサシヤ",
-   "cardImage": "spirits/ムサシヤ.webp"
+   "cardImage": "spirits/ムサシヤ.webp",
+   "description": "利根川の囲堤上にあった旅籠屋で、大正3年ごろに移築・改築された木造2階建。1階土間まわりや2階の手摺付縁に旅籠の雰囲気を残す。",
+   "era": "大正3年ごろ移築",
+   "eraYear": 1914
   }
- ]
+ ],
+ "descriptionSource": "各エントリの detailUrl（印西市公式ページ）より要約。2026-08-19取得"
 }
