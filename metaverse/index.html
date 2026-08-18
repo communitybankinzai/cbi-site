@@ -155,7 +155,7 @@
     background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
     border-radius: 10px; padding: 8px 12px; font-size: 13px; cursor: pointer;
   }
-  #pinToggleBtn.off { opacity: 0.55; }
+  #pinToggleBtn.off, #shelterToggleBtn.off { opacity: 0.55; }
   #pickModeBtn.on { background: #e67e22; }
   #pickResult {
     position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
@@ -312,7 +312,7 @@
     color: #fff; opacity: 0.7; font-size: 14px; cursor: pointer;
   }
 
-  /* 遊び方ガイド */
+  /* 使い方ガイド */
   #howtoModal {
     position: absolute; inset: 0; z-index: 55; background: rgba(10, 16, 24, 0.88);
     display: none; align-items: center; justify-content: center; padding: 16px;
@@ -372,8 +372,9 @@
 <div id="topLeftBar">
   <button id="puzzleBtn">🏛 印西市文化財<span class="badge" id="puzzleCount">0/50</span></button>
   <button id="pinToggleBtn" title="地図上の文化財ピンの表示／非表示を切り替えます">📍 表示中</button>
+  <button id="shelterToggleBtn" class="off" title="印西市の指定避難所・特別避難所・広域避難場所（公式55施設）のピンを表示／非表示します">🏫 避難所</button>
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
-  <button id="howtoBtn">❓ 遊び方</button>
+  <button id="howtoBtn">❓ 使い方</button>
 </div>
 
 <div id="pickResult"></div>
@@ -417,7 +418,7 @@
 
 <div id="howtoModal">
   <div class="inner">
-    <h2>🌏 CBIメタバース印西 — 遊び方</h2>
+    <h2>🌏 CBIメタバース印西 — 使い方</h2>
     <p>ここは、印西市の街並みをGoogleの3D都市データでリアルに再現したバーチャル空間です。空を飛んだり、地上を歩いたりしながら、本物そっくりの印西の街を自由に探検できます。</p>
 
     <h3>🎮 操作方法</h3>
@@ -446,6 +447,7 @@
       <li>文化財に<b>80m以内</b>まで近づくと精霊が出現！「<b>ゲットする！</b>」をタップして図鑑に登録しよう（上空を飛んで通過しただけでは出ません）</li>
       <li>精霊は6系統（やしろ・ほとけ・もり・いせき・まつり・たから）。レア度は ★市指定 ★★県指定 <b>★★★国指定</b></li>
       <li>左上の「<b>🏛 印西市文化財</b>」で集めた精霊とパズルを確認。「<b>▶行く</b>」で精霊のすみかの近くまで飛べます。「<b>📍</b>」で地図上の文化財ピンの表示／非表示を切り替えられます</li>
+      <li>「<b>🏫 避難所</b>」で印西市公式の避難所55施設のピンを表示できます（平時の場所確認用。開設状況は災害状況整合MAPで確認）</li>
       <li>精霊をゲットするとパズルのピースも1枚開き、50体すべて集めると…<b>ひみつの絵が完成</b>し、合言葉が表示されます🏆</li>
     </ul>
     <p>集めた記録はこの端末のブラウザに保存されるので、途中でやめても続きから遊べます。</p>
@@ -1183,6 +1185,93 @@ document.getElementById("pinToggleBtn").addEventListener("click", function () {
   applyBunkazaiPinVisibility();
 });
 
+// ---- 避難所ピンの表示／非表示切替（印西市公式55施設・CIDAO API経由）----
+// データは災害MAPと同じ避難所APIから取得。メタバースは平時の場所確認用で、
+// 開設状況の照合は inzai-disaster-map/ 側が担当（ここでは表示しない）
+const SHELTER_ENDPOINT = "https://cidao.vercel.app/api/disaster/inzai-shelters";
+const SHELTER_KIND_COLOR = { "specified": "#27ae60", "special": "#16a085", "wide-area": "#8e44ad" };
+let SHELTERS = [];
+let shelterPinsVisible = false;
+let shelterLoadPromise = null;
+
+function addShelterEntities() {
+  const pinHeightRef = Cesium.HeightReference.CLAMP_TO_3D_TILE ?? Cesium.HeightReference.NONE;
+  SHELTERS.forEach((s, i) => {
+    viewer.entities.add({
+      id: "shelter-" + i,
+      show: shelterPinsVisible,
+      position: Cesium.Cartesian3.fromDegrees(s.lon, s.lat, 40),
+      point: {
+        pixelSize: 11,
+        color: Cesium.Color.fromCssColorString(SHELTER_KIND_COLOR[s.kind] || "#27ae60"),
+        outlineColor: Cesium.Color.fromCssColorString("#1a2533"), outlineWidth: 2,
+        heightReference: pinHeightRef,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 8000),
+      },
+      label: {
+        text: "🏫 " + s.name,
+        font: "bold 12px sans-serif",
+        fillColor: Cesium.Color.WHITE,
+        outlineColor: Cesium.Color.fromCssColorString("#1a2533"),
+        outlineWidth: 4,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        pixelOffset: new Cesium.Cartesian2(0, -18),
+        heightReference: pinHeightRef,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2500),
+      },
+    });
+  });
+}
+
+function loadShelters() {
+  if (!shelterLoadPromise) {
+    shelterLoadPromise = fetch(SHELTER_ENDPOINT, { headers: { Accept: "application/json" } })
+      .then(res => { if (!res.ok) throw new Error("避難所API HTTP " + res.status); return res.json(); })
+      .then(data => {
+        SHELTERS = (Array.isArray(data.shelters) ? data.shelters : [])
+          .filter(s => Number.isFinite(Number(s.latitude)) && Number.isFinite(Number(s.longitude)))
+          .map(s => ({
+            name: s.name, kind: s.kind, kindLabel: s.kindLabel, address: s.address,
+            lat: Number(s.latitude), lon: Number(s.longitude),
+          }));
+        addShelterEntities();
+      })
+      .catch(e => {
+        shelterLoadPromise = null; // 失敗時は次回ONで再取得できるようにする
+        throw e;
+      });
+  }
+  return shelterLoadPromise;
+}
+
+function applyShelterPinVisibility() {
+  for (let i = 0; i < SHELTERS.length; i++) {
+    const e = viewer.entities.getById("shelter-" + i);
+    if (e) e.show = shelterPinsVisible;
+  }
+  document.getElementById("shelterToggleBtn").classList.toggle("off", !shelterPinsVisible);
+}
+
+document.getElementById("shelterToggleBtn").addEventListener("click", function () {
+  shelterPinsVisible = !shelterPinsVisible;
+  applyShelterPinVisibility();
+  if (shelterPinsVisible && SHELTERS.length === 0) {
+    const btn = this;
+    btn.textContent = "🏫 取得中…";
+    loadShelters().then(() => {
+      btn.textContent = "🏫 避難所";
+      applyShelterPinVisibility(); // 取得中にOFFへ切り替えられていても最新状態を反映する
+    }).catch(() => {
+      btn.textContent = "🏫 避難所";
+      shelterPinsVisible = false;
+      applyShelterPinVisibility();
+      showPickResult("避難所情報を取得できませんでした。通信状態を確認してもう一度お試しください。", 6000);
+    });
+  }
+});
+
 // ---- 位置修正モード：正しい位置をクリックして座標を取得（bunkazai.json修正の報告用）----
 let pickModeActive = false;
 function showPickResult(text, holdMs) {
@@ -1260,6 +1349,15 @@ viewer.screenSpaceEventHandler.setInputAction(function (click) {
       "［" + b.designation + "・" + b.type + "］ 所在地: 印西市" + b.address +
       (pieces[idx] !== undefined ? "（ピース獲得済み）" : "（80m以内に近づくとピース獲得）");
     document.getElementById("spotInfo").style.display = "block";
+  } else if (id.startsWith("shelter-")) {
+    const idx = parseInt(id.replace("shelter-", ""), 10);
+    const s = SHELTERS[idx];
+    if (!s) return;
+    document.getElementById("spotInfoTitle").textContent = "🏫 " + s.name;
+    document.getElementById("spotInfoDesc").textContent =
+      "［" + (s.kindLabel || "避難所") + "］ 所在地: " + (s.address || "不明") +
+      "（印西市公式の避難所。開設状況の確認は災害状況整合MAPへ）";
+    document.getElementById("spotInfo").style.display = "block";
   }
 }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
@@ -1314,7 +1412,7 @@ renderPuzzle();
 loadBunkazai();
 
 // ============================================================
-// 遊び方ガイド（初回訪問時は自動表示）
+// 使い方ガイド（初回訪問時は自動表示）
 // ============================================================
 const HOWTO_SEEN_KEY = "cocola-metaverse-howto-seen";
 
