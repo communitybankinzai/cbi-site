@@ -169,6 +169,51 @@
   .quizBtn.quizStart, .quizQ b { color: #ffd166; }
   .quizQ { margin: 6px 0; font-size: 13px; line-height: 1.6; }
   .quizNote { margin: 6px 0; font-size: 12px; line-height: 1.6; color: #c9d6e2; }
+  .quizLevelRow { display: flex; gap: 6px; flex-wrap: wrap; }
+  .quizLevelRow .quizBtn { width: calc(50% - 3px); text-align: center; }
+  /* 文化財詳細モーダル */
+  #bunkazaiModal {
+    position: absolute; inset: 0; z-index: 55; background: rgba(10, 16, 24, 0.88);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  #bunkazaiModal.show { display: flex; }
+  #bunkazaiModal .inner {
+    background: linear-gradient(160deg, #2c3e50, #1a2533); color: #fff;
+    border: 2px solid #ffd166; border-radius: 16px; padding: 16px;
+    max-width: 420px; width: 100%; max-height: 86%; overflow-y: auto; position: relative;
+  }
+  #bunkazaiModal h3 { margin: 0 24px 8px 0; color: #ffd166; font-size: 16px; }
+  #bunkazaiModal .close { position: absolute; top: 8px; right: 12px; cursor: pointer; opacity: 0.7; font-size: 16px; }
+  #bmPhotoWrap img { width: 100%; border-radius: 10px; display: block; }
+  #bmPhotoWrap .credit { font-size: 10px; color: #9fb2c8; margin: 3px 0 0; text-align: right; }
+  #bmPhotoWrap .credit a { color: #9fb2c8; }
+  #bmMeta { font-size: 12px; color: #ffd166; margin: 8px 0 4px; }
+  #bmDesc { font-size: 12.5px; line-height: 1.7; margin: 0 0 6px; color: #eef3f8; }
+  #bmSrc { font-size: 10.5px; color: #9fb2c8; margin: 0 0 8px; }
+  #bmSrc a { color: #9fb2c8; }
+  .bmBtn { display: block; width: 100%; margin-top: 7px; padding: 8px; border: none; border-radius: 9px;
+    font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; }
+  .bmBtn.go { background: #3a7bd5; color: #fff; }
+  .bmBtn.quiz { background: #e67e22; color: #fff; }
+  .bmBtn.official { background: rgba(255,209,102,0.12); border: 1px solid #ffd166; color: #ffd166; font-size: 12px; }
+  /* 認定証 */
+  #certModal {
+    position: absolute; inset: 0; z-index: 70; background: rgba(10, 16, 24, 0.92);
+    display: none; align-items: center; justify-content: center; padding: 14px;
+  }
+  #certModal.show { display: flex; }
+  #certModal .inner { max-width: 560px; width: 100%; text-align: center; }
+  #certCanvas { width: 100%; border-radius: 10px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); }
+  #certModal button, #certModal a.dl {
+    display: inline-block; margin: 10px 5px 0; padding: 9px 20px; border: none; border-radius: 10px;
+    background: #3a7bd5; color: #fff; font-size: 13px; cursor: pointer; text-decoration: none;
+  }
+  #certModal a.dl { background: #e67e22; font-weight: bold; }
+  #certNameRow { margin: 10px 0 2px; }
+  #certNameRow input { width: 60%; padding: 8px; border-radius: 8px; border: 1px solid #ffd166;
+    background: rgba(255,255,255,0.95); color: #1a2533; font-size: 14px; }
+  #zukanCertBtn { display: none; width: 100%; margin: 0 0 8px; padding: 8px; border: 1px solid #ffd166;
+    border-radius: 10px; background: rgba(255,209,102,0.15); color: #ffd166; font-weight: bold; font-size: 13px; cursor: pointer; }
   #pickModeBtn.on { background: #e67e22; }
   #pickResult {
     position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
@@ -400,6 +445,7 @@
     <button id="tabQuiz">🧠 クイズ</button>
   </div>
   <div id="zukanView">
+    <button id="zukanCertBtn" onclick="showCert()">🏅 印西文化財マイスター認定証を見る</button>
     <p class="hint">印西市の文化財50か所には「精霊」がかくれています。80m以内まで近づくと出現！ タップしてゲットしよう。レア度は ★市指定 ★★県指定 ★★★国指定。</p>
     <div id="zukanGrid"></div>
     <div id="zukanDetail"></div>
@@ -471,7 +517,8 @@
       <li>精霊は6系統（やしろ・ほとけ・もり・いせき・まつり・たから）。レア度は ★市指定 ★★県指定 <b>★★★国指定</b></li>
       <li>左上の「<b>🏛 印西市文化財</b>」で集めた精霊とパズルを確認。「<b>▶行く</b>」で精霊のすみかの近くまで飛べます。「<b>📍</b>」で地図上の文化財ピンの表示／非表示を切り替えられます</li>
       <li>「<b>🏫 避難所</b>」で印西市公式の避難所55施設のピンを表示できます（平時の場所確認用。開設状況は災害状況整合MAPで確認）</li>
-      <li>文化財ピンをクリックすると<b>解説文</b>と市公式ページへのリンクが見られます。「🏛 印西市文化財」パネルの「<b>📜 年表</b>」で古い順の年表、「<b>🧠 クイズ</b>」で3択クイズにも挑戦できます</li>
+      <li>文化財ピンをクリックすると<b>写真・解説文・その文化財のクイズ</b>が見られます（写真・解説の出典は印西市ホームページ）。「🏛 印西市文化財」パネルの「<b>📜 年表</b>」で古い順の年表、「<b>🧠 クイズ</b>」で初級・中級・上級の3択クイズにも挑戦できます</li>
+      <li>文化財50か所をすべて巡ってずかんを完成させると、<b>🏅 印西文化財マイスター認定証</b>（名前入り・画像保存可）が発行されます</li>
       <li>精霊をゲットするとパズルのピースも1枚開き、50体すべて集めると…<b>ひみつの絵が完成</b>し、合言葉が表示されます🏆</li>
     </ul>
     <p>集めた記録はこの端末のブラウザに保存されるので、途中でやめても続きから遊べます。</p>
@@ -490,7 +537,37 @@
     <p>印西市の指定文化財50か所をすべて巡り、絵が完成しました！<br>おめでとうございます！</p>
     <div class="password">合言葉：いんざいメタマスター</div>
     <p style="font-size:11px;opacity:0.8;">この画面のスクリーンショットがイベント参加の証明になります。</p>
-    <button onclick="document.getElementById('completeModal').classList.remove('show')">閉じる</button>
+    <div id="certNameRow">
+      <p style="font-size:12px;margin:0 0 6px;">🏅 お名前（ニックネーム可）を入れると<b>印西文化財マイスター認定証</b>を発行できます</p>
+      <input id="certNameInput" type="text" maxlength="20" placeholder="お名前を入力">
+      <button onclick="issueCert()" style="margin-left:4px;">発行</button>
+    </div>
+    <button onclick="document.getElementById('completeModal').classList.remove('show')" style="margin-top:8px;">閉じる</button>
+  </div>
+</div>
+
+<div id="bunkazaiModal">
+  <div class="inner">
+    <span class="close" onclick="document.getElementById('bunkazaiModal').classList.remove('show')">✕</span>
+    <h3 id="bmTitle"></h3>
+    <div id="bmPhotoWrap"></div>
+    <div id="bmMeta"></div>
+    <p id="bmDesc"></p>
+    <p id="bmSrc"></p>
+    <div id="bmQuizArea"></div>
+    <a id="bmOfficial" class="bmBtn official" href="#" target="_blank" rel="noopener">🔎 市公式ページで詳しく見る</a>
+    <button class="bmBtn quiz" id="bmQuizBtn">🧠 この文化財のクイズ（3問）</button>
+    <button class="bmBtn go" id="bmGoBtn">▶ 現地へ行く</button>
+  </div>
+</div>
+
+<div id="certModal">
+  <div class="inner">
+    <canvas id="certCanvas" width="1123" height="794"></canvas>
+    <div>
+      <a id="certDl" class="dl" download="印西文化財マイスター認定証.png" href="#">💾 画像として保存</a>
+      <button onclick="document.getElementById('certModal').classList.remove('show')">閉じる</button>
+    </div>
   </div>
 </div>
 <div id="controlPanel">
@@ -1052,6 +1129,7 @@ function awardPiece(idx) {
   const tribe = SPIRIT_TRIBES[tribeOf(BUNKAZAI[idx])];
   showStampToast(tribe.label + "をゲット！ パズルピースも開いた（" + pieceTotal() + "/" + BUNKAZAI.length + "）");
   if (pieceTotal() === BUNKAZAI.length) {
+    updateCertButton();
     setTimeout(() => {
       document.getElementById("completeModal").classList.add("show");
     }, 2800);
@@ -1128,6 +1206,7 @@ function showZukanDetail(i) {
     "<small>" + (got ? "すみか: " + b.name + "<br>" + new Date(pieces[i]).toLocaleDateString("ja-JP") + " ゲット"
                      : "すみか: " + b.name + "<br>近くまで行くと出現するよ") + "</small></div></div>" +
     (b.description ? '<div style="margin-top:6px;font-size:12px;line-height:1.6;color:#dfe7f0;">' + (b.era ? "〔" + b.era + "〕" : "") + b.description + "</div>" : "") +
+    '<button style="display:block;width:100%;margin-top:6px;padding:6px;border:none;border-radius:8px;background:#e67e22;color:#fff;font-size:12px;font-weight:bold;cursor:pointer;" onclick="openBunkazaiDetail(' + i + ')">📷 写真とクイズを見る</button>' +
     (b.detailUrl ? '<a href="' + b.detailUrl + '" target="_blank" rel="noopener" style="display:block;margin-top:6px;padding:6px;border-radius:8px;border:1px solid #ffd166;background:rgba(255,209,102,0.12);color:#ffd166;font-size:12px;font-weight:bold;text-decoration:none;text-align:center;">🔎 実物を詳しく見る（市公式）</a>' : "") +
     '<button class="goBtn" style="margin-top:6px;width:100%;padding:6px;border:none;border-radius:8px;background:#3a7bd5;color:#fff;cursor:pointer;" ' +
     'onclick="teleportNear(BUNKAZAI[' + i + '])">▶ すみかの近くへ行く</button>';
@@ -1166,38 +1245,65 @@ function renderTimeline() {
     (undated.length ? '<li class="tlHead">年代未詳・伝承</li>' + undated.map(item).join("") : "");
 }
 
-// ---- クイズ（文化財データから毎回ランダム生成・全5問3択）----
-let quizQs = [], quizPos = 0, quizScore = 0;
+// ---- クイズ（コース制・文化財データから毎回ランダム生成）----
+// 問題の出典はすべて bunkazai.json（＝各文化財の市公式ページ）の記載事実
+let quizQs = [], quizPos = 0, quizScore = 0, quizMode = "classic";
 function shuffleArr(a) { return a.map(v => [Math.random(), v]).sort((p, q) => p[0] - q[0]).map(p => p[1]); }
-function buildQuizQuestions() {
-  const qs = [];
-  const eraLabels = [...new Set(BUNKAZAI.filter(b => b.era).map(b => b.era))];
-  const desigs = ["国指定", "県指定", "市指定", "国登録"];
-  for (const b of shuffleArr(BUNKAZAI)) {
-    if (qs.length >= 5) break;
-    if (qs.length % 2 === 0 && b.era && eraLabels.length >= 3) {
-      const wrong = shuffleArr(eraLabels.filter(e => e !== b.era)).slice(0, 2);
-      qs.push({ q: "「" + b.name + "」はいつごろのもの？", opts: shuffleArr([b.era, ...wrong]), a: b.era, note: b.description });
-    } else {
-      const wrong = shuffleArr(desigs.filter(x => x !== b.designation)).slice(0, 2);
-      qs.push({ q: "「" + b.name + "」の指定区分は？", opts: shuffleArr([b.designation, ...wrong]), a: b.designation, note: b.description });
-    }
-  }
-  return qs;
+function qDesig(b) {
+  const wrong = shuffleArr(["国指定", "県指定", "市指定", "国登録"].filter(x => x !== b.designation)).slice(0, 2);
+  return { q: "「" + b.name + "」の指定区分は？", opts: shuffleArr([b.designation, ...wrong]), a: b.designation, note: b.description, src: b.detailUrl };
 }
+function qType(b) {
+  const types = [...new Set(BUNKAZAI.map(x => x.type))].filter(t => t !== b.type);
+  return { q: "「" + b.name + "」の種別は？", opts: shuffleArr([b.type, ...shuffleArr(types).slice(0, 2)]), a: b.type, note: b.description, src: b.detailUrl };
+}
+function qEra(b) {
+  const eras = [...new Set(BUNKAZAI.filter(x => x.era).map(x => x.era))].filter(e => e !== b.era);
+  return { q: "「" + b.name + "」はいつごろのもの？", opts: shuffleArr([b.era, ...shuffleArr(eras).slice(0, 2)]), a: b.era, note: b.description, src: b.detailUrl };
+}
+function qPlace(b) {
+  const addrs = [...new Set(BUNKAZAI.map(x => x.address))].filter(a => a !== b.address);
+  return { q: "「" + b.name + "」があるのは印西市のどこ？", opts: shuffleArr([b.address, ...shuffleArr(addrs).slice(0, 2)]), a: b.address, note: b.description, src: b.detailUrl };
+}
+function qPhoto(b) {
+  const names = shuffleArr(BUNKAZAI.map(x => x.name).filter(n => n !== b.name)).slice(0, 2);
+  return { q: "この写真の文化財はどれ？", img: b.photo, opts: shuffleArr([b.name, ...names]), a: b.name, note: b.description, src: b.detailUrl };
+}
+function qExpert(b) {
+  return { q: b.quiz.q, opts: shuffleArr([b.quiz.a, ...b.quiz.wrong]), a: b.quiz.a, note: b.description, src: b.detailUrl };
+}
+const QUIZ_MODES = {
+  classic: { label: "おまかせ5問", build: () => shuffleArr(BUNKAZAI).slice(0, 5).map((b, i) => (i % 2 === 0 && b.era) ? qEra(b) : qDesig(b)) },
+  beginner: { label: "初級（5問）", build: () => {
+    const withPhoto = shuffleArr(BUNKAZAI.filter(b => b.photo)).slice(0, 2);
+    const rest = shuffleArr(BUNKAZAI.filter(b => !withPhoto.includes(b))).slice(0, 5 - withPhoto.length);
+    return shuffleArr([...withPhoto.map(qPhoto), ...rest.map((b, i) => i % 2 === 0 ? qDesig(b) : qType(b))]);
+  } },
+  intermediate: { label: "中級（5問）", build: () => shuffleArr(BUNKAZAI.filter(b => b.era)).slice(0, 5).map((b, i) => i % 2 === 0 ? qEra(b) : qPlace(b)) },
+  advanced: { label: "上級（5問）", build: () => shuffleArr(BUNKAZAI.filter(b => b.quiz)).slice(0, 5).map(qExpert) },
+};
 function renderQuizStart() {
   document.getElementById("quizBody").innerHTML =
-    '<button class="quizBtn quizStart" onclick="startQuiz()">▶ クイズをはじめる（全5問）</button>';
+    '<p class="quizQ"><b>コースをえらんでください</b>（問題は毎回かわります）</p>' +
+    '<div class="quizLevelRow">' +
+    '<button class="quizBtn" onclick="startQuiz(\'beginner\')">🔰 初級</button>' +
+    '<button class="quizBtn" onclick="startQuiz(\'intermediate\')">🥈 中級</button>' +
+    '<button class="quizBtn" onclick="startQuiz(\'advanced\')">🥇 上級</button>' +
+    '<button class="quizBtn" onclick="startQuiz(\'classic\')">🎲 おまかせ</button>' +
+    "</div>" +
+    '<p class="quizNote">初級=区分・種別・写真あて／中級=時代・場所あて／上級=市公式ページの解説から出題。将来の文化財案内人をめざして挑戦しよう！</p>';
 }
-function startQuiz() {
+function startQuiz(mode) {
   if (!BUNKAZAI.length) return;
-  quizQs = buildQuizQuestions(); quizPos = 0; quizScore = 0;
+  quizMode = mode || "classic";
+  quizQs = QUIZ_MODES[quizMode].build(); quizPos = 0; quizScore = 0;
   renderQuizQuestion();
 }
 function renderQuizQuestion() {
   const q = quizQs[quizPos];
   document.getElementById("quizBody").innerHTML =
-    '<p class="quizQ">第' + (quizPos + 1) + "問／" + quizQs.length + "問<br><b>" + q.q + "</b></p>" +
+    '<p class="quizQ">' + QUIZ_MODES[quizMode].label + " 第" + (quizPos + 1) + "問／" + quizQs.length + "問<br><b>" + q.q + "</b></p>" +
+    (q.img ? '<img src="' + q.img + '" style="width:100%;border-radius:10px;margin-bottom:4px;" alt="問題写真"><p class="quizNote" style="text-align:right;margin:0 0 4px;">写真出典：印西市ホームページ</p>' : "") +
     q.opts.map(o => '<button class="quizBtn" onclick="answerQuiz(this.textContent)">' + o + "</button>").join("");
 }
 function answerQuiz(sel) {
@@ -1207,6 +1313,7 @@ function answerQuiz(sel) {
   document.getElementById("quizBody").innerHTML =
     '<p class="quizQ">' + (ok ? "⭕ 正解！" : "❌ ざんねん… 正解は「" + q.a + "」") + "</p>" +
     (q.note ? '<p class="quizNote">' + q.note.slice(0, 90) + "…</p>" : "") +
+    (q.src ? '<p class="quizNote" style="font-size:10.5px;">出典：<a href="' + q.src + '" target="_blank" rel="noopener" style="color:#9fb2c8;">印西市ホームページ（文化財紹介ページ）</a></p>' : "") +
     '<button class="quizBtn" onclick="nextQuiz()">' +
     (quizPos + 1 < quizQs.length ? "つぎの問題へ ▶" : "けっかを見る") + "</button>";
 }
@@ -1214,11 +1321,136 @@ function nextQuiz() {
   quizPos++;
   if (quizPos < quizQs.length) { renderQuizQuestion(); return; }
   document.getElementById("quizBody").innerHTML =
-    '<p class="quizQ"><b>けっか：' + quizQs.length + "問中 " + quizScore + "問正解！</b><br>" +
+    '<p class="quizQ"><b>' + QUIZ_MODES[quizMode].label + " けっか：" + quizQs.length + "問中 " + quizScore + "問正解！</b><br>" +
     (quizScore === quizQs.length ? "パーフェクト！ きみは印西文化財はかせだ🎉"
       : quizScore >= 3 ? "おしい！ ずかんや年表で復習してもう一回！"
       : "ずかんと年表を読んでから再挑戦してみよう") + "</p>" +
-    '<button class="quizBtn" onclick="startQuiz()">🔁 もう一回あそぶ</button>';
+    '<button class="quizBtn" onclick="startQuiz(quizMode)">🔁 同じコースをもう一回</button>' +
+    '<button class="quizBtn" onclick="renderQuizStart()">📋 コースをえらびなおす</button>';
+}
+
+// ---- 文化財詳細モーダル（写真・解説・この文化財のクイズ）----
+let bmIdx = null, bmQs = [], bmPos = 0, bmScore = 0;
+function openBunkazaiDetail(i) {
+  const b = BUNKAZAI[i];
+  if (!b) return;
+  bmIdx = i;
+  document.getElementById("bmTitle").textContent = "🏛 " + b.name;
+  document.getElementById("bmPhotoWrap").innerHTML = b.photo
+    ? '<img src="' + b.photo + '" alt="' + (b.photoAlt || b.name) + '">' +
+      '<p class="credit">写真出典：<a href="' + b.detailUrl + '" target="_blank" rel="noopener">印西市ホームページ</a>（許可を得て転載）</p>'
+    : "";
+  document.getElementById("bmMeta").textContent =
+    "［" + b.designation + "・" + b.type + (b.era ? "・" + b.era : "") + "］ 所在地: 印西市" + b.address +
+    (pieces[i] !== undefined ? "　🧩ピース獲得済み" : "");
+  document.getElementById("bmDesc").textContent = b.description || "";
+  document.getElementById("bmSrc").innerHTML =
+    '解説出典：<a href="' + b.detailUrl + '" target="_blank" rel="noopener">印西市ホームページ（文化財紹介ページ）</a>';
+  document.getElementById("bmOfficial").href = b.detailUrl;
+  document.getElementById("bmQuizArea").innerHTML = "";
+  document.getElementById("bmQuizBtn").style.display = "block";
+  document.getElementById("bmQuizBtn").onclick = function () { startSiteQuiz(i); };
+  document.getElementById("bmGoBtn").onclick = function () {
+    document.getElementById("bunkazaiModal").classList.remove("show");
+    teleportNear(b);
+  };
+  document.getElementById("bunkazaiModal").classList.add("show");
+}
+// 閲覧中の文化財についての3問（初級→中級→上級の順）
+function startSiteQuiz(i) {
+  const b = BUNKAZAI[i];
+  bmQs = [qDesig(b)];
+  bmQs.push(b.era ? qEra(b) : qPlace(b));
+  if (b.quiz) bmQs.push(qExpert(b));
+  bmPos = 0; bmScore = 0;
+  document.getElementById("bmQuizBtn").style.display = "none";
+  renderSiteQuizQ();
+}
+function renderSiteQuizQ() {
+  const q = bmQs[bmPos];
+  const lv = ["🔰初級", "🥈中級", "🥇上級"][bmPos] || "";
+  document.getElementById("bmQuizArea").innerHTML =
+    '<p class="quizQ">' + lv + " 第" + (bmPos + 1) + "問／" + bmQs.length + "問<br><b>" + q.q + "</b></p>" +
+    q.opts.map(o => '<button class="quizBtn" onclick="answerSiteQuiz(this.textContent)">' + o + "</button>").join("");
+}
+function answerSiteQuiz(sel) {
+  const q = bmQs[bmPos];
+  const ok = sel === q.a;
+  if (ok) bmScore++;
+  bmPos++;
+  const fb = '<p class="quizQ">' + (ok ? "⭕ 正解！" : "❌ ざんねん… 正解は「" + q.a + "」") + "</p>";
+  if (bmPos < bmQs.length) {
+    document.getElementById("bmQuizArea").innerHTML = fb +
+      '<button class="quizBtn" onclick="renderSiteQuizQ()">つぎの問題へ ▶</button>';
+  } else {
+    document.getElementById("bmQuizArea").innerHTML = fb +
+      '<p class="quizQ"><b>けっか：' + bmQs.length + "問中 " + bmScore + "問正解！</b></p>" +
+      '<button class="quizBtn" onclick="startSiteQuiz(bmIdx)">🔁 もう一回（問題がかわるよ）</button>';
+  }
+}
+
+// ---- 印西文化財マイスター認定証（ピース50枚達成で発行）----
+const CERT_KEY = "cbi-meta-cert-v1";
+function loadCert() { try { return JSON.parse(localStorage.getItem(CERT_KEY)); } catch (e) { return null; } }
+function updateCertButton() {
+  const has = !!loadCert() || (BUNKAZAI.length > 0 && pieceTotal() === BUNKAZAI.length);
+  document.getElementById("zukanCertBtn").style.display = has ? "block" : "none";
+}
+function issueCert() {
+  const name = document.getElementById("certNameInput").value.trim();
+  if (!name) { document.getElementById("certNameInput").focus(); return; }
+  if (pieceTotal() !== BUNKAZAI.length) return; // 50枚達成者のみ発行できる
+  const now = new Date(); // 達成日はローカル（日本）時間で記録する（toISOStringはUTCで日付がずれる）
+  const cert = { name: name, date: now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0") };
+  localStorage.setItem(CERT_KEY, JSON.stringify(cert));
+  document.getElementById("completeModal").classList.remove("show");
+  showCert();
+}
+function showCert() {
+  let cert = loadCert();
+  if (!cert) {
+    // 未発行で50枚達成済みなら発行画面（completeModal）へ誘導
+    if (pieceTotal() === BUNKAZAI.length) document.getElementById("completeModal").classList.add("show");
+    return;
+  }
+  drawCert(cert.name, cert.date);
+  document.getElementById("certModal").classList.add("show");
+  updateCertButton();
+}
+function drawCert(name, dateStr) {
+  const cv = document.getElementById("certCanvas");
+  const ctx = cv.getContext("2d");
+  const W = cv.width, H = cv.height;
+  // 背景と飾り枠
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, "#fdf6e3"); grad.addColorStop(1, "#f5e6c8");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = "#b8860b"; ctx.lineWidth = 10; ctx.strokeRect(24, 24, W - 48, H - 48);
+  ctx.strokeStyle = "#d4af37"; ctx.lineWidth = 2; ctx.strokeRect(40, 40, W - 80, H - 80);
+  ctx.fillStyle = "#1a2533"; ctx.textAlign = "center";
+  ctx.font = "bold 54px serif";
+  ctx.fillText("認　定　証", W / 2, 130);
+  ctx.font = "bold 40px serif"; ctx.fillStyle = "#8a6d1a";
+  ctx.fillText("印西文化財マイスター", W / 2, 200);
+  ctx.fillStyle = "#1a2533";
+  ctx.font = "bold 44px serif";
+  ctx.fillText(name + " 殿", W / 2, 300);
+  ctx.font = "26px serif";
+  const lines = [
+    "あなたは CBIメタバース印西（3Dワールド）において",
+    "印西市の指定文化財 50か所すべてを巡り",
+    "文化財ずかんを完成させました",
+    "ここに「印西文化財マイスター」として認定します",
+  ];
+  lines.forEach((t, i) => ctx.fillText(t, W / 2, 380 + i * 46));
+  const d = dateStr.split("-");
+  ctx.font = "24px serif";
+  ctx.fillText("達成日　" + d[0] + "年" + Number(d[1]) + "月" + Number(d[2]) + "日", W / 2, 610);
+  ctx.font = "bold 26px serif";
+  ctx.fillText("Community Bank INZAI", W / 2, 672);
+  ctx.font = "20px serif"; ctx.fillStyle = "#5a5a5a";
+  ctx.fillText("印西「このゆびとまれ」プロジェクト ／ 🏅 50/50", W / 2, 708);
+  document.getElementById("certDl").href = cv.toDataURL("image/png");
 }
 
 // 文化財データ読み込み＋看板設置
@@ -1267,6 +1499,7 @@ async function loadBunkazai() {
   });
   renderPuzzle();
   applyBunkazaiPinVisibility(); // 読込前にトグル操作されていても状態を反映する
+  updateCertButton(); // 認定証ボタン（50枚達成済み or 発行済みなら表示）
 }
 
 // ---- 文化財ピンの表示／非表示切替 ----
@@ -1443,17 +1676,8 @@ viewer.screenSpaceEventHandler.setInputAction(function (click) {
     document.getElementById("spotInfo").style.display = "block";
   } else if (id.startsWith("bunkazai-")) {
     const idx = parseInt(id.replace("bunkazai-", ""), 10);
-    const b = BUNKAZAI[idx];
-    if (!b) return;
-    document.getElementById("spotInfoTitle").textContent = "🧩 " + b.name;
-    document.getElementById("spotInfoDesc").textContent =
-      "［" + b.designation + "・" + b.type + (b.era ? "・" + b.era : "") + "］ 所在地: 印西市" + b.address +
-      (pieces[idx] !== undefined ? "（ピース獲得済み）" : "（80m以内に近づくとピース獲得）") +
-      (b.description ? "\n" + b.description : "");
-    const linkEl = document.getElementById("spotInfoLink");
-    if (b.detailUrl) { linkEl.href = b.detailUrl; linkEl.style.display = "block"; }
-    else { linkEl.style.display = "none"; }
-    document.getElementById("spotInfo").style.display = "block";
+    if (!BUNKAZAI[idx]) return;
+    openBunkazaiDetail(idx); // 写真・解説・クイズつきの詳細モーダル
   } else if (id.startsWith("shelter-")) {
     const idx = parseInt(id.replace("shelter-", ""), 10);
     const s = SHELTERS[idx];
