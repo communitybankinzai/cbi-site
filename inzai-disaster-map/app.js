@@ -562,6 +562,8 @@ const recordLayer = L.layerGroup();
 const roadFloodLayer = L.layerGroup();
 const roadDrawingLayer = L.layerGroup();
 const shelterLayer = L.layerGroup();
+const bunkazaiLayer = L.layerGroup();   // 平時参考: 文化財（メタバースと同じ bunkazai.json）
+const kominkanLayer = L.layerGroup();   // 平時参考: 公民館・交流館・文化ホール（kominkan.json）
 const boundaryLayer = L.geoJSON(null, {
   style: {
     color: "#2365a8",
@@ -2215,10 +2217,75 @@ function saveOperator(operator) {
   } catch {}
 }
 
+let bunkazaiLoaded = false;
+async function ensureBunkazaiLayer() {
+  if (bunkazaiLoaded) return;
+  bunkazaiLoaded = true;
+  try {
+    const res = await fetch("../metaverse/bunkazai.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`bunkazai.json HTTP ${res.status}`);
+    const data = await res.json();
+    const colors = { "国指定": "#e74c3c", "国登録": "#e67e22", "県指定": "#9b59b6", "市指定": "#3498db" };
+    (data.spots || []).forEach(b => {
+      if (!Number.isFinite(b.lat) || !Number.isFinite(b.lon)) return;
+      const marker = L.circleMarker([b.lat, b.lon], {
+        radius: 7, color: "#ffffff", weight: 1.5,
+        fillColor: colors[b.designation] || "#3498db", fillOpacity: 0.9
+      });
+      marker.bindPopup(
+        `<strong>🏛 ${escapeHtml(b.name)}</strong><br>` +
+        `［${escapeHtml(b.designation)}・${escapeHtml(b.type)}${b.era ? "・" + escapeHtml(b.era) : ""}］ 印西市${escapeHtml(b.address)}<br>` +
+        (b.description ? `<span style="font-size:11px;">${escapeHtml(b.description.slice(0, 80))}…</span><br>` : "") +
+        (b.detailUrl ? `<a href="${b.detailUrl}" target="_blank" rel="noreferrer">市公式ページ（出典）</a> ・ ` : "") +
+        `<a href="../metaverse/" target="_blank" rel="noreferrer">3Dで見る</a>`
+      );
+      marker.addTo(bunkazaiLayer);
+    });
+  } catch (error) {
+    bunkazaiLoaded = false;
+    console.error("文化財データの読み込みに失敗:", error);
+  }
+}
+
+let kominkanLoaded = false;
+async function ensureKominkanLayer() {
+  if (kominkanLoaded) return;
+  kominkanLoaded = true;
+  try {
+    const res = await fetch("../metaverse/kominkan.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`kominkan.json HTTP ${res.status}`);
+    const data = await res.json();
+    (data.facilities || []).forEach(k => {
+      const marker = L.circleMarker([k.lat, k.lon], {
+        radius: 7, color: "#ffffff", weight: 1.5, fillColor: "#00bcd4", fillOpacity: 0.9
+      });
+      marker.bindPopup(
+        `<strong>🏢 ${escapeHtml(k.name)}</strong><br>` +
+        `${escapeHtml(k.address)}<br>` +
+        `<a href="${k.url}" target="_blank" rel="noreferrer">市公式ページ（出典）</a>`
+      );
+      marker.addTo(kominkanLayer);
+    });
+  } catch (error) {
+    kominkanLoaded = false;
+    console.error("公民館データの読み込みに失敗:", error);
+  }
+}
+
 function toggleOverlay(name, checked) {
   if (name === "rainNowcast") {
     if (checked) refreshRainNowcast(true);
     else map.removeLayer(rainNowcastLayer);
+    return;
+  }
+  if (name === "bunkazai") {
+    if (checked) { ensureBunkazaiLayer(); bunkazaiLayer.addTo(map); }
+    else map.removeLayer(bunkazaiLayer);
+    return;
+  }
+  if (name === "kominkan") {
+    if (checked) { ensureKominkanLayer(); kominkanLayer.addTo(map); }
+    else map.removeLayer(kominkanLayer);
     return;
   }
   const layerMap = {

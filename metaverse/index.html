@@ -155,7 +155,7 @@
     background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
     border-radius: 10px; padding: 8px 12px; font-size: 13px; cursor: pointer;
   }
-  #pinToggleBtn.off, #shelterToggleBtn.off { opacity: 0.55; }
+  #pinToggleBtn.off, #shelterToggleBtn.off, #kominkanToggleBtn.off { opacity: 0.55; }
   #spotInfo p { white-space: pre-line; }
   /* 年表・クイズ */
   #timelineList { list-style: none; margin: 0; padding: 0; }
@@ -431,6 +431,7 @@
   <button id="puzzleBtn">🏛 印西市文化財<span class="badge" id="puzzleCount">0/50</span></button>
   <button id="pinToggleBtn" title="地図上の文化財ピンの表示／非表示を切り替えます">📍 表示中</button>
   <button id="shelterToggleBtn" class="off" title="印西市の指定避難所・特別避難所・広域避難場所（公式55施設）のピンを表示／非表示します">🏫 避難所</button>
+  <button id="kominkanToggleBtn" class="off" title="印西市の公民館・交流館・文化ホールのピンを表示／非表示します（クリックで各施設の市公式ページへ）">🏢 公民館</button>
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="howtoBtn">❓ 使い方</button>
 </div>
@@ -1329,6 +1330,73 @@ function nextQuiz() {
     '<button class="quizBtn" onclick="renderQuizStart()">📋 コースをえらびなおす</button>';
 }
 
+// ---- 公民館ピンの表示／非表示切替（公民館・交流館・文化ホール7施設）----
+// データは kominkan.json（市公式の施設一覧ページ由来）。クリックで各施設の市公式ページへ誘導
+let KOMINKAN = [];
+let kominkanPinsVisible = false;
+let kominkanLoadPromise = null;
+
+function addKominkanEntities() {
+  const pinHeightRef = Cesium.HeightReference.CLAMP_TO_3D_TILE ?? Cesium.HeightReference.NONE;
+  KOMINKAN.forEach((k, i) => {
+    viewer.entities.add({
+      id: "kominkan-" + i,
+      show: kominkanPinsVisible,
+      position: Cesium.Cartesian3.fromDegrees(k.lon, k.lat, 40),
+      point: {
+        pixelSize: 11,
+        color: Cesium.Color.fromCssColorString("#00bcd4"),
+        outlineColor: Cesium.Color.fromCssColorString("#1a2533"), outlineWidth: 2,
+        heightReference: pinHeightRef,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 12000),
+      },
+      label: {
+        text: "🏢 " + k.shortName,
+        font: "bold 12px sans-serif",
+        fillColor: Cesium.Color.WHITE,
+        outlineColor: Cesium.Color.fromCssColorString("#1a2533"),
+        outlineWidth: 4,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        pixelOffset: new Cesium.Cartesian2(0, -18),
+        heightReference: pinHeightRef,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000),
+      },
+    });
+  });
+}
+
+function loadKominkan() {
+  if (!kominkanLoadPromise) {
+    kominkanLoadPromise = fetch("kominkan.json")
+      .then(res => { if (!res.ok) throw new Error("kominkan.json HTTP " + res.status); return res.json(); })
+      .then(data => { KOMINKAN = data.facilities || []; addKominkanEntities(); })
+      .catch(e => { kominkanLoadPromise = null; throw e; });
+  }
+  return kominkanLoadPromise;
+}
+
+function applyKominkanPinVisibility() {
+  for (let i = 0; i < KOMINKAN.length; i++) {
+    const e = viewer.entities.getById("kominkan-" + i);
+    if (e) e.show = kominkanPinsVisible;
+  }
+  document.getElementById("kominkanToggleBtn").classList.toggle("off", !kominkanPinsVisible);
+}
+
+document.getElementById("kominkanToggleBtn").addEventListener("click", function () {
+  kominkanPinsVisible = !kominkanPinsVisible;
+  applyKominkanPinVisibility();
+  if (kominkanPinsVisible && KOMINKAN.length === 0) {
+    loadKominkan().then(applyKominkanPinVisibility).catch(() => {
+      kominkanPinsVisible = false;
+      applyKominkanPinVisibility();
+      showPickResult("公民館情報を読み込めませんでした。", 6000);
+    });
+  }
+});
+
 // ---- 文化財詳細モーダル（写真・解説・この文化財のクイズ）----
 let bmIdx = null, bmQs = [], bmPos = 0, bmScore = 0;
 function openBunkazaiDetail(i) {
@@ -1687,6 +1755,15 @@ viewer.screenSpaceEventHandler.setInputAction(function (click) {
       "［" + (s.kindLabel || "避難所") + "］ 所在地: " + (s.address || "不明") +
       "（印西市公式の避難所。開設状況の確認は災害状況整合MAPへ）";
     document.getElementById("spotInfoLink").style.display = "none";
+    document.getElementById("spotInfo").style.display = "block";
+  } else if (id.startsWith("kominkan-")) {
+    const idx = parseInt(id.replace("kominkan-", ""), 10);
+    const k = KOMINKAN[idx];
+    if (!k) return;
+    document.getElementById("spotInfoTitle").textContent = "🏢 " + k.name;
+    document.getElementById("spotInfoDesc").textContent = "所在地: " + k.address + "（出典: 印西市ホームページ）";
+    const kLink = document.getElementById("spotInfoLink");
+    kLink.href = k.url; kLink.style.display = "block";
     document.getElementById("spotInfo").style.display = "block";
   }
 }, Cesium.ScreenSpaceEventType.LEFT_CLICK);

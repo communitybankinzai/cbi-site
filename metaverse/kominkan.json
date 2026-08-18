@@ -1,0 +1,62 @@
+{
+ "source": "印西市ホームページ 公民館・交流館・文化ホール https://www.city.inzai.lg.jp/0000012648.html（2026-08-19取得）",
+ "geocode": "国土地理院 住所検索API（番地代表点）",
+ "facilities": [
+  {
+   "name": "印西市立中央公民館",
+   "shortName": "中央公民館",
+   "address": "印西市大森3934-1",
+   "url": "https://www.city.inzai.lg.jp/0000012731.html",
+   "lat": 35.841534,
+   "lon": 140.145203
+  },
+  {
+   "name": "印西市立小林公民館",
+   "shortName": "小林公民館",
+   "address": "印西市小林北5-1-6",
+   "url": "https://www.city.inzai.lg.jp/0000001557.html",
+   "lat": 35.831291,
+   "lon": 140.19722
+  },
+  {
+   "name": "印西市立そうふけ公民館",
+   "shortName": "そうふけ公民館",
+   "address": "印西市原3-4",
+   "url": "https://www.city.inzai.lg.jp/0000001555.html",
+   "lat": 35.799629,
+   "lon": 140.165695
+  },
+  {
+   "name": "印西市立印旛公民館",
+   "shortName": "印旛公民館",
+   "address": "印西市瀬戸1518",
+   "url": "https://www.city.inzai.lg.jp/0000002335.html",
+   "lat": 35.780167,
+   "lon": 140.224731
+  },
+  {
+   "name": "印西市立本埜公民館",
+   "shortName": "本埜公民館",
+   "address": "印西市中根1375",
+   "url": "https://www.city.inzai.lg.jp/0000013509.html",
+   "lat": 35.808392,
+   "lon": 140.197952
+  },
+  {
+   "name": "印西市立中央駅前地域交流館【コスモスパレット】",
+   "shortName": "中央駅前地域交流館",
+   "address": "印西市中央南1-4-3",
+   "url": "https://www.city.inzai.lg.jp/0000001556.html",
+   "lat": 35.799309,
+   "lon": 140.119659
+  },
+  {
+   "name": "印西市文化ホール",
+   "shortName": "文化ホール",
+   "address": "印西市大森2535",
+   "url": "https://www.city.inzai.lg.jp/category/1-9-5-0-0.html",
+   "lat": 35.833294,
+   "lon": 140.145981
+  }
+ ]
+}
