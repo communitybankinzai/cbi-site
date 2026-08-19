@@ -294,6 +294,7 @@ let selectedShelterId = null;
 const SHELTER_MANUAL_KEY = "cbi-disaster-shelter-manual-v1";
 let shelterManualOverrides = loadShelterManualOverrides();
 let shelterPasteCandidates = [];
+let editingManualShelterId = null;  // 手動入力一覧でインライン編集中の施設ID
 
 function loadShelterManualOverrides() {
   try {
@@ -311,11 +312,31 @@ function saveShelterManualOverrides() {
 
 // 手動入力を優先した実効開設状態。manual が null なら公式判定のまま
 function effectiveShelterOpening(shelter) {
-  const manual = shelterManualOverrides[shelter.id] || null;
+  const manual = normalizeManualEntry(shelterManualOverrides[shelter.id]);
   return {
     status: manual ? manual.status : (shelter.openingStatus || "not-announced"),
     manual
   };
+}
+
+// 旧形式（time 1つ）の保存データを openedTime / closedTime 形式へ読み替える
+function normalizeManualEntry(manual) {
+  if (!manual) return null;
+  const legacyTime = manual.time || "";
+  return {
+    status: manual.status === "closed" ? "closed" : "open",
+    openedTime: manual.openedTime !== undefined ? manual.openedTime : (manual.status === "closed" ? "" : legacyTime),
+    closedTime: manual.closedTime !== undefined ? manual.closedTime : (manual.status === "closed" ? legacyTime : ""),
+    source: manual.source || "",
+    confirmedAt: manual.confirmedAt || ""
+  };
+}
+
+function manualTimeLabel(entry) {
+  const parts = [];
+  if (entry.openedTime) parts.push(`開設 ${entry.openedTime}`);
+  if (entry.closedTime) parts.push(`閉鎖 ${entry.closedTime}`);
+  return parts.join(" → ");
 }
 
 // 貼り付け本文と避難所名を照合する。
@@ -345,14 +366,18 @@ function parseShelterPasteText(text) {
     if (!hit) return;
     const closed = /閉鎖|閉所|開設.{0,8}(終了|取りやめ)|受入.{0,6}終了/.test(hit.segment);
     const opened = /開設|開放|受け入れ|受入れ|受入開始/.test(hit.segment);
-    const timeMatch = hit.segment.match(/(\d{1,2})[:時](\d{1,2})?分?/);
-    const time = timeMatch ? `${timeMatch[1]}:${String(timeMatch[2] || "0").padStart(2, "0")}` : "";
+    const times = [...hit.segment.matchAll(/(\d{1,2})[:時](\d{1,2})?分?/g)]
+      .map(m => `${m[1]}:${String(m[2] || "0").padStart(2, "0")}`);
+    // 開設と閉鎖が同じ文にある場合は 1つ目=開設時刻、2つ目=閉鎖時刻 とみなす（プレビューで修正可能）
+    const openedTime = closed && !opened ? "" : (times[0] || "");
+    const closedTime = closed ? (opened ? (times[1] || "") : (times[0] || "")) : "";
     results.push({
       id: shelter.id,
       name: shelter.name,
       status: closed ? "closed" : opened ? "open" : "open",
       ambiguous: !closed && !opened,
-      time,
+      openedTime,
+      closedTime,
       segment: hit.segment
     });
   });
@@ -379,7 +404,8 @@ function renderShelterPastePreview() {
         <option value="open" ${item.status === "open" ? "selected" : ""}>開設</option>
         <option value="closed" ${item.status === "closed" ? "selected" : ""}>閉鎖・終了</option>
       </select>
-      <input type="text" data-paste-time="${index}" value="${escapeAttribute(item.time)}" placeholder="時刻 例 15:00" size="8">
+      <input type="text" data-paste-opened="${index}" value="${escapeAttribute(item.openedTime)}" placeholder="開設時刻 例 9:00" size="10">
+      <input type="text" data-paste-closed="${index}" value="${escapeAttribute(item.closedTime)}" placeholder="閉鎖時刻 例 17:00" size="10">
       ${item.ambiguous ? '<span class="badge yellow">開設/閉鎖の語が本文になく「開設」と仮定</span>' : ""}
       <div class="shelter-paste-segment">${escapeHtml(truncateText(item.segment, 90))}</div>
     </div>
@@ -394,10 +420,14 @@ function applyShelterPaste() {
     const check = document.querySelector(`[data-paste-check="${index}"]`);
     if (!check || !check.checked) return;
     const status = document.querySelector(`[data-paste-status="${index}"]`)?.value === "closed" ? "closed" : "open";
-    const time = String(document.querySelector(`[data-paste-time="${index}"]`)?.value || "").trim();
+    const openedTime = String(document.querySelector(`[data-paste-opened="${index}"]`)?.value || "").trim();
+    const closedTime = String(document.querySelector(`[data-paste-closed="${index}"]`)?.value || "").trim();
+    const previous = normalizeManualEntry(shelterManualOverrides[item.id]);
     shelterManualOverrides[item.id] = {
       status,
-      time,
+      // 閉鎖の更新で開設時刻を空欄のまま反映しても、記録済みの開設時刻は消さない
+      openedTime: openedTime || (previous ? previous.openedTime : ""),
+      closedTime,
       source,
       confirmedAt: new Date().toISOString()
     };
@@ -428,21 +458,74 @@ function renderShelterManualList() {
     container.innerHTML = '<div class="detail-empty">手動入力はありません。</div>';
     return;
   }
-  container.innerHTML = entries.map(([id, manual]) => {
+  container.innerHTML = entries.map(([id, rawManual]) => {
+    const manual = normalizeManualEntry(rawManual);
     const shelter = officialShelters.find(item => item.id === id);
+    if (editingManualShelterId === id) {
+      return `
+      <div class="shelter-paste-row">
+        <strong>${escapeHtml(shelter?.name || id)}</strong>
+        <select data-manual-edit-status="${escapeAttribute(id)}">
+          <option value="open" ${manual.status === "open" ? "selected" : ""}>開設</option>
+          <option value="closed" ${manual.status === "closed" ? "selected" : ""}>閉鎖・終了</option>
+        </select>
+        <input type="text" data-manual-edit-opened="${escapeAttribute(id)}" value="${escapeAttribute(manual.openedTime)}" placeholder="開設時刻 例 9:00" size="10">
+        <input type="text" data-manual-edit-closed="${escapeAttribute(id)}" value="${escapeAttribute(manual.closedTime)}" placeholder="閉鎖時刻 例 17:00" size="10">
+        <button type="button" class="text-button" data-manual-save="${escapeAttribute(id)}">保存</button>
+        <button type="button" class="text-button" data-manual-cancel>キャンセル</button>
+      </div>`;
+    }
+    const timeLabel = manualTimeLabel(manual);
     return `
       <div class="shelter-paste-row">
         <strong>${escapeHtml(shelter?.name || id)}</strong>
         <span class="badge ${manual.status === "open" ? "green" : "gray"}">${manual.status === "open" ? "開設" : "閉鎖"}（手動）</span>
-        <span>${escapeHtml(manual.time ? `${manual.time} ` : "")}${escapeHtml(manual.source || "")} / ${escapeHtml(formatDateTime(toDateTimeLocal(manual.confirmedAt)))}確認</span>
+        <span>${escapeHtml(timeLabel ? `${timeLabel} ・ ` : "")}${escapeHtml(manual.source || "")} / ${escapeHtml(formatDateTime(toDateTimeLocal(manual.confirmedAt)))}確認</span>
+        <button type="button" class="text-button" data-manual-edit="${escapeAttribute(id)}">編集</button>
         <button type="button" class="text-button" data-manual-remove="${escapeAttribute(id)}">解除</button>
       </div>`;
   }).join("");
 }
 
+function findManualEditField(kind, id) {
+  return [...document.querySelectorAll(`[data-manual-edit-${kind}]`)]
+    .find(node => node.getAttribute(`data-manual-edit-${kind}`) === id) || null;
+}
+
 function handleShelterManualListClick(event) {
+  const editButton = event.target.closest("[data-manual-edit]");
+  if (editButton) {
+    editingManualShelterId = editButton.dataset.manualEdit;
+    renderShelterManualList();
+    return;
+  }
+  if (event.target.closest("[data-manual-cancel]")) {
+    editingManualShelterId = null;
+    renderShelterManualList();
+    return;
+  }
+  const saveButton = event.target.closest("[data-manual-save]");
+  if (saveButton) {
+    const id = saveButton.dataset.manualSave;
+    const previous = normalizeManualEntry(shelterManualOverrides[id]);
+    if (previous) {
+      shelterManualOverrides[id] = {
+        status: findManualEditField("status", id)?.value === "closed" ? "closed" : "open",
+        openedTime: String(findManualEditField("opened", id)?.value || "").trim(),
+        closedTime: String(findManualEditField("closed", id)?.value || "").trim(),
+        source: previous.source,
+        confirmedAt: new Date().toISOString()
+      };
+      saveShelterManualOverrides();
+    }
+    editingManualShelterId = null;
+    renderShelters();
+    renderShelterManualList();
+    return;
+  }
   const button = event.target.closest("[data-manual-remove]");
   if (!button) return;
+  if (editingManualShelterId === button.dataset.manualRemove) editingManualShelterId = null;
   delete shelterManualOverrides[button.dataset.manualRemove];
   saveShelterManualOverrides();
   renderShelters();
@@ -564,6 +647,7 @@ const roadDrawingLayer = L.layerGroup();
 const shelterLayer = L.layerGroup();
 const bunkazaiLayer = L.layerGroup();   // 平時参考: 文化財（メタバースと同じ bunkazai.json）
 const kominkanLayer = L.layerGroup();   // 平時参考: 公民館・交流館・文化ホール（kominkan.json）
+const pastFloodLayer = L.layerGroup();  // 過去の冠水実績（past-flood-points.json・対象日フィルタの対象外）
 const boundaryLayer = L.geoJSON(null, {
   style: {
     color: "#2365a8",
@@ -1084,7 +1168,7 @@ function buildShelterPopup(shelter, hazard) {
     </div>
     <div>${escapeHtml(shelter.kindLabel)} / ${escapeHtml(shelter.address)}</div>
     ${shelter.phone ? `<div class="detail-meta">電話 ${escapeHtml(shelter.phone)}</div>` : ""}
-    ${manual ? `<div class="shelter-evidence is-manual"><strong>手動入力（${escapeHtml(manual.source || "出典未記入")}）</strong><span>${escapeHtml(manual.time ? `${manual.time} ` : "")}${escapeHtml(formatDateTime(toDateTimeLocal(manual.confirmedAt)))}に運用者が確認・入力。公式発表ではありません。</span></div>` : ""}
+    ${manual ? `<div class="shelter-evidence is-manual"><strong>手動入力（${escapeHtml(manual.source || "出典未記入")}）</strong><span>${escapeHtml(manualTimeLabel(manual) ? `${manualTimeLabel(manual)} ・ ` : "")}${escapeHtml(formatDateTime(toDateTimeLocal(manual.confirmedAt)))}に運用者が確認・入力。公式発表ではありません。</span></div>` : ""}
     ${evidence ? `<div class="shelter-evidence"><strong>${escapeHtml(evidence.title || "印西市防災速報")}</strong><span>${escapeHtml(truncateText(evidence.message || "", 140))}</span><a href="${escapeAttribute(evidence.sourceUrl)}" target="_blank" rel="noreferrer">公式発表を確認</a></div>` : manual ? "" : '<div class="popup-contact-note">現在の開設を示す公式発表は確認されていません。</div>'}
     <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">出典: 印西市わが街ガイド オープンデータ</a>
   `;
@@ -2272,6 +2356,35 @@ async function ensureKominkanLayer() {
   }
 }
 
+let pastFloodLoaded = false;
+async function ensurePastFloodLayer() {
+  if (pastFloodLoaded) return;
+  pastFloodLoaded = true;
+  try {
+    const res = await fetch("past-flood-points.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`past-flood-points.json HTTP ${res.status}`);
+    const data = await res.json();
+    (data.points || []).forEach(p => {
+      if (!Number.isFinite(p.lat) || !Number.isFinite(p.lon)) return;
+      const marker = L.circleMarker([p.lat, p.lon], {
+        radius: 8, color: "#ffffff", weight: 1.5, fillColor: "#0d47a1", fillOpacity: 0.85
+      });
+      marker.bindPopup(
+        `<strong>🌊 ${escapeHtml(p.name || "冠水ポイント")}</strong><br>` +
+        `冠水確認日: ${escapeHtml((p.dates || []).join("、") || "不明")}<br>` +
+        (p.note ? `${escapeHtml(p.note)}<br>` : "") +
+        `出典: ${p.sourceUrl ? `<a href="${escapeAttribute(p.sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(p.source || "記録")}</a>` : escapeHtml(p.source || "運用者記録")}` +
+        (p.verifiedBy ? `（確認: ${escapeHtml(p.verifiedBy)}）` : "") +
+        `<br><span style="font-size:11px;">過去に冠水が確認された地点の実績です。ハザード想定や現在の冠水状況ではありません。</span>`
+      );
+      marker.addTo(pastFloodLayer);
+    });
+  } catch (error) {
+    pastFloodLoaded = false;
+    console.error("過去冠水実績データの読み込みに失敗:", error);
+  }
+}
+
 function toggleOverlay(name, checked) {
   if (name === "rainNowcast") {
     if (checked) refreshRainNowcast(true);
@@ -2286,6 +2399,11 @@ function toggleOverlay(name, checked) {
   if (name === "kominkan") {
     if (checked) { ensureKominkanLayer(); kominkanLayer.addTo(map); }
     else map.removeLayer(kominkanLayer);
+    return;
+  }
+  if (name === "pastFlood") {
+    if (checked) { ensurePastFloodLayer(); pastFloodLayer.addTo(map); }
+    else map.removeLayer(pastFloodLayer);
     return;
   }
   const layerMap = {

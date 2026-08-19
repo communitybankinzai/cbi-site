@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-08-19",
+          "title": "災害MAP: 過去冠水実績レイヤー新設＋避難所手動入力の開設/閉鎖時刻分離・編集UI追加 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/past-flood-points.json（新規。確認済み冠水地点の長期蓄積用データ。スキーマ定義入り・初期0件・追記はClaude経由でgit管理）",
+            "site/inzai-disaster-map/app.js（🌊過去冠水実績レイヤー: 対象日フィルタ対象外・出典/確認日/注記付きポップアップ。避難所手動入力: time→openedTime/closedTime分離・旧形式読み替え・貼り付け解析の2時刻抽出・閉鎖更新時の開設時刻保持・一覧のインライン編集ボタン）",
+            "site/inzai-disaster-map/index.html（レイヤー切替追加・プレビューの時刻入力2欄化）＋CLAUDE_HANDOFF.md更新＋site/admin/changelog.json 2件",
+            "回答: FB公開投稿検索API不在の説明（CrowdTangle終了・Content Library審査制→手動検索リンク運用が最適解）／避難所手動入力の仕様調査（errandに委譲）",
+            "検証: node --check・JSON検証・ローカル(localhost:8766)でparseShelterPasteText 2時刻抽出/旧形式変換/編集UI保存/ポップアップ「開設 9:00 → 閉鎖 17:00」表示/冠水レイヤーのトグルとテストデータ注入によるピン・ポップアップ内容を確認"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "「過去の冠水ポイントを長期で残したい」＋避難所開設/閉鎖時刻の手動修正要望（当日チャット指示）。session: ffcda098-652d-43b2-8eab-38e4d4158d17 / output: 124,784 / cost: $53.93（前回記録0.8h以降の差分0.4h）"
+        },
+        {
+          "date": "2026-08-19",
           "title": "メタバース: レベル別クイズを文化財ごと方式へ再実装（意図確認からのやり直し）0.2時間",
           "category": "実装",
           "outputs": [
