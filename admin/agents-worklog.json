@@ -3454,6 +3454,18 @@
       "actuals": [
         {
           "date": "2026-08-08",
+          "title": "CiDAOイベントカレンダー告知文の作成（LINEグループ向け3案＋FreeFree掲示板向け）0.1時間",
+          "category": "広報",
+          "outputs": [
+            "LINEグループ向け告知文3案（初回案内／短縮リマインド／主催者向け）",
+            "FreeFree掲示板掲載用文面（タイトル＋本文。SNS定期紹介の仕組みに載せる想定）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "イベントカレンダー（cidao.vercel.app/events）の閲覧・登録を促す告知。検証可能な事実のみで構成（閲覧ログイン不要はdevサーバーで実測済み）。hours はセッション累計0.7から実装2件分0.6を差し引いた差分。session: a9c4a1fa-063e-440d-ad58-d9e76b23b7ab / output: 66,601 / cost: $19.53（累計）"
+        },
+        {
+          "date": "2026-08-08",
           "title": "🖼️ A0告知ポスター2案・配布ページ・LPフッターQRを新規制作 1.8時間",
           "category": "広報",
           "outputs": [
