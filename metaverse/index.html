@@ -518,7 +518,7 @@
       <li>精霊は6系統（やしろ・ほとけ・もり・いせき・まつり・たから）。レア度は ★市指定 ★★県指定 <b>★★★国指定</b></li>
       <li>左上の「<b>🏛 印西市文化財</b>」で集めた精霊とパズルを確認。「<b>▶行く</b>」で精霊のすみかの近くまで飛べます。「<b>📍</b>」で地図上の文化財ピンの表示／非表示を切り替えられます</li>
       <li>「<b>🏫 避難所</b>」で印西市公式の避難所55施設のピンを表示できます（平時の場所確認用。開設状況は災害状況整合MAPで確認）</li>
-      <li>文化財ピンをクリックすると<b>写真・解説文・その文化財のクイズ</b>が見られます（写真・解説の出典は印西市ホームページ）。「🏛 印西市文化財」パネルの「<b>📜 年表</b>」で古い順の年表、「<b>🧠 クイズ</b>」で初級・中級・上級の3択クイズにも挑戦できます</li>
+      <li>文化財ピンやずかんの各文化財をクリックすると<b>詳細ページ</b>（写真・解説文つき。出典は印西市ホームページ）が開き、<b>その文化財のレベル別クイズ</b>（🔰初級・🥈中級・🥇上級 各5問程度・毎回問題がかわる）に挑戦できます。「🏛 印西市文化財」パネルの「<b>📜 年表</b>」で古い順の年表、「<b>🧠 クイズ</b>」で全文化財からのおまかせクイズも遊べます</li>
       <li>文化財50か所をすべて巡ってずかんを完成させると、<b>🏅 印西文化財マイスター認定証</b>（名前入り・画像保存可）が発行されます</li>
       <li>精霊をゲットするとパズルのピースも1枚開き、50体すべて集めると…<b>ひみつの絵が完成</b>し、合言葉が表示されます🏆</li>
     </ul>
@@ -557,7 +557,7 @@
     <p id="bmSrc"></p>
     <div id="bmQuizArea"></div>
     <a id="bmOfficial" class="bmBtn official" href="#" target="_blank" rel="noopener">🔎 市公式ページで詳しく見る</a>
-    <button class="bmBtn quiz" id="bmQuizBtn">🧠 この文化財のクイズ（3問）</button>
+    <button class="bmBtn quiz" id="bmQuizBtn">🧠 この文化財のクイズ（初級・中級・上級）</button>
     <button class="bmBtn go" id="bmGoBtn">▶ 現地へ行く</button>
   </div>
 </div>
@@ -1093,6 +1093,8 @@ function renderPuzzle() {
     const nm = document.createElement("span");
     nm.className = "nm";
     nm.innerHTML = b.name + ' <span class="desig">［' + b.designation + "・" + b.type + "］</span>";
+    nm.style.cursor = "pointer";
+    nm.onclick = function () { openBunkazaiDetail(i); }; // 名前クリックで詳細ページへ
     const mark = document.createElement("span");
     mark.className = "mark";
     mark.textContent = got ? "🧩" : "⚪";
@@ -1188,7 +1190,7 @@ function renderZukan() {
     cell.className = "zcell" + (got ? "" : " locked") + (stars === 3 ? " rare3" : "");
     const face = (got && b.cardImage) ? '<img class="zimg" src="' + b.cardImage + '" alt="">' : tribe.svg;
     cell.innerHTML = face + '<div class="stars">' + "★".repeat(stars) + "</div>";
-    cell.onclick = function () { showZukanDetail(i); };
+    cell.onclick = function () { openBunkazaiDetail(i); }; // 個別クリックで詳細ページ（写真・解説・レベル別クイズ）へ
     grid.appendChild(cell);
   });
 }
@@ -1275,24 +1277,11 @@ function qExpert(b) {
 }
 const QUIZ_MODES = {
   classic: { label: "おまかせ5問", build: () => shuffleArr(BUNKAZAI).slice(0, 5).map((b, i) => (i % 2 === 0 && b.era) ? qEra(b) : qDesig(b)) },
-  beginner: { label: "初級（5問）", build: () => {
-    const withPhoto = shuffleArr(BUNKAZAI.filter(b => b.photo)).slice(0, 2);
-    const rest = shuffleArr(BUNKAZAI.filter(b => !withPhoto.includes(b))).slice(0, 5 - withPhoto.length);
-    return shuffleArr([...withPhoto.map(qPhoto), ...rest.map((b, i) => i % 2 === 0 ? qDesig(b) : qType(b))]);
-  } },
-  intermediate: { label: "中級（5問）", build: () => shuffleArr(BUNKAZAI.filter(b => b.era)).slice(0, 5).map((b, i) => i % 2 === 0 ? qEra(b) : qPlace(b)) },
-  advanced: { label: "上級（5問）", build: () => shuffleArr(BUNKAZAI.filter(b => b.quiz)).slice(0, 5).map(qExpert) },
 };
 function renderQuizStart() {
   document.getElementById("quizBody").innerHTML =
-    '<p class="quizQ"><b>コースをえらんでください</b>（問題は毎回かわります）</p>' +
-    '<div class="quizLevelRow">' +
-    '<button class="quizBtn" onclick="startQuiz(\'beginner\')">🔰 初級</button>' +
-    '<button class="quizBtn" onclick="startQuiz(\'intermediate\')">🥈 中級</button>' +
-    '<button class="quizBtn" onclick="startQuiz(\'advanced\')">🥇 上級</button>' +
-    '<button class="quizBtn" onclick="startQuiz(\'classic\')">🎲 おまかせ</button>' +
-    "</div>" +
-    '<p class="quizNote">初級=区分・種別・写真あて／中級=時代・場所あて／上級=市公式ページの解説から出題。将来の文化財案内人をめざして挑戦しよう！</p>';
+    '<button class="quizBtn quizStart" onclick="startQuiz(\'classic\')">🎲 おまかせクイズをはじめる（全50文化財から5問）</button>' +
+    '<p class="quizNote">レベル別クイズ（🔰初級・🥈中級・🥇上級 各5問程度）は、ずかんやピンから<b>各文化財の詳細ページ</b>を開いて挑戦できます。将来の文化財案内人をめざそう！</p>';
 }
 function startQuiz(mode) {
   if (!BUNKAZAI.length) return;
@@ -1417,28 +1406,82 @@ function openBunkazaiDetail(i) {
   document.getElementById("bmOfficial").href = b.detailUrl;
   document.getElementById("bmQuizArea").innerHTML = "";
   document.getElementById("bmQuizBtn").style.display = "block";
-  document.getElementById("bmQuizBtn").onclick = function () { startSiteQuiz(i); };
+  document.getElementById("bmQuizBtn").onclick = function () { renderSiteQuizLevels(i); };
   document.getElementById("bmGoBtn").onclick = function () {
     document.getElementById("bunkazaiModal").classList.remove("show");
     teleportNear(b);
   };
   document.getElementById("bunkazaiModal").classList.add("show");
 }
-// 閲覧中の文化財についての3問（初級→中級→上級の順）
-function startSiteQuiz(i) {
+// ---- 閲覧中の文化財ごとのレベル別クイズ（初級・中級・上級 各5問程度・毎回ランダム）----
+// 問題はすべてその文化財のデータ（＝市公式ページの記載事実）から生成する
+let bmLevel = "beginner";
+function maskName(text, name) { return text.split(name).join("この文化財"); }
+function qNameFromDesc(b) {
+  const names = shuffleArr(BUNKAZAI.map(x => x.name).filter(n => n !== b.name)).slice(0, 2);
+  return { q: "『" + maskName((b.description || "").slice(0, 55), b.name) + "…』——この説明にあてはまるのは？", opts: shuffleArr([b.name, ...names]), a: b.name };
+}
+function qCentury(b) {
+  if (!(b.eraYear > 0)) return null;
+  const c = Math.ceil(b.eraYear / 100);
+  const wrong = shuffleArr([c - 1, c + 1, c - 2, c + 2].filter(x => x > 0 && x <= 21)).slice(0, 2);
+  return { q: "「" + b.name + "」ができたのは何世紀ごろ？（" + (b.era || "") + "）", opts: shuffleArr([c + "世紀", ...wrong.map(x => x + "世紀")]), a: c + "世紀" };
+}
+function qDesigWhen(b) {
+  if (!b.designatedEra) return null;
+  const eraWord = b.designatedEra.replace(/\d+年$/, "");
+  const wrong = shuffleArr(["明治", "大正", "昭和", "平成", "令和"].filter(x => x !== eraWord)).slice(0, 2);
+  return { q: "「" + b.name + "」が文化財に指定・登録されたのはいつの時代？", opts: shuffleArr([eraWord, ...wrong]), a: eraWord };
+}
+function qDesignatedYearExact(b) {
+  if (!b.designatedYear) return null;
+  const y = b.designatedYear;
+  const wrong = shuffleArr([y - 7, y + 6, y - 13, y + 11]).slice(0, 2);
+  return { q: "「" + b.name + "」が文化財に指定・登録されたのは西暦何年？（" + b.designatedEra + "）", opts: shuffleArr([y + "年", ...wrong.map(x => x + "年")]), a: y + "年" };
+}
+function qNumberCloze(b) {
+  const m = (b.description || "").match(/(像高|総高|樹高|全長|口径|径|根回り|幅|高さ)は?約?([0-9.]+)(cm|m)/);
+  if (!m) return null;
+  const label = m[1], num = parseFloat(m[2]), unit = m[3];
+  const fmt = v => (Math.round(v * 10) / 10) + unit;
+  return { q: "「" + b.name + "」の" + label + "はどれ？", opts: shuffleArr([fmt(num), fmt(num * 0.6), fmt(num * 1.7)]), a: fmt(num) };
+}
+function buildSiteQuiz(b, level) {
+  let pool;
+  if (level === "beginner") {
+    pool = [qDesig(b), qType(b), qPlace(b), qNameFromDesc(b)];
+    if (b.photo) pool.push(qPhoto(b));
+  } else if (level === "intermediate") {
+    pool = [b.era ? qEra(b) : null, qCentury(b), qDesigWhen(b), qPlace(b), qNameFromDesc(b)];
+  } else {
+    pool = [b.quiz ? qExpert(b) : null, qDesignatedYearExact(b), qNumberCloze(b), qCentury(b), b.era ? qEra(b) : null];
+  }
+  return shuffleArr(pool.filter(Boolean)).slice(0, 5);
+}
+const SITE_LEVELS = { beginner: "🔰初級", intermediate: "🥈中級", advanced: "🥇上級" };
+function renderSiteQuizLevels(i) {
+  document.getElementById("bmQuizBtn").style.display = "none";
+  document.getElementById("bmQuizArea").innerHTML =
+    '<p class="quizQ"><b>「' + BUNKAZAI[i].name + '」のクイズ — レベルをえらんでください</b>（問題は毎回かわります）</p>' +
+    '<div class="quizLevelRow">' +
+    '<button class="quizBtn" onclick="startSiteQuiz(bmIdx, \'beginner\')">🔰 初級</button>' +
+    '<button class="quizBtn" onclick="startSiteQuiz(bmIdx, \'intermediate\')">🥈 中級</button>' +
+    '<button class="quizBtn" onclick="startSiteQuiz(bmIdx, \'advanced\')">🥇 上級</button>' +
+    "</div>";
+}
+function startSiteQuiz(i, level) {
   const b = BUNKAZAI[i];
-  bmQs = [qDesig(b)];
-  bmQs.push(b.era ? qEra(b) : qPlace(b));
-  if (b.quiz) bmQs.push(qExpert(b));
+  bmLevel = level || "beginner";
+  bmQs = buildSiteQuiz(b, bmLevel);
   bmPos = 0; bmScore = 0;
   document.getElementById("bmQuizBtn").style.display = "none";
   renderSiteQuizQ();
 }
 function renderSiteQuizQ() {
   const q = bmQs[bmPos];
-  const lv = ["🔰初級", "🥈中級", "🥇上級"][bmPos] || "";
   document.getElementById("bmQuizArea").innerHTML =
-    '<p class="quizQ">' + lv + " 第" + (bmPos + 1) + "問／" + bmQs.length + "問<br><b>" + q.q + "</b></p>" +
+    '<p class="quizQ">' + SITE_LEVELS[bmLevel] + " 第" + (bmPos + 1) + "問／" + bmQs.length + "問<br><b>" + q.q + "</b></p>" +
+    (q.img ? '<img src="' + q.img + '" style="width:100%;border-radius:10px;margin-bottom:4px;" alt="問題写真"><p class="quizNote" style="text-align:right;margin:0 0 4px;">写真出典：印西市ホームページ</p>' : "") +
     q.opts.map(o => '<button class="quizBtn" onclick="answerSiteQuiz(this.textContent)">' + o + "</button>").join("");
 }
 function answerSiteQuiz(sel) {
@@ -1446,14 +1489,18 @@ function answerSiteQuiz(sel) {
   const ok = sel === q.a;
   if (ok) bmScore++;
   bmPos++;
-  const fb = '<p class="quizQ">' + (ok ? "⭕ 正解！" : "❌ ざんねん… 正解は「" + q.a + "」") + "</p>";
+  const b = BUNKAZAI[bmIdx];
+  const fb = '<p class="quizQ">' + (ok ? "⭕ 正解！" : "❌ ざんねん… 正解は「" + q.a + "」") + "</p>" +
+    '<p class="quizNote" style="font-size:10.5px;">出典：<a href="' + b.detailUrl + '" target="_blank" rel="noopener" style="color:#9fb2c8;">印西市ホームページ（文化財紹介ページ）</a></p>';
   if (bmPos < bmQs.length) {
     document.getElementById("bmQuizArea").innerHTML = fb +
       '<button class="quizBtn" onclick="renderSiteQuizQ()">つぎの問題へ ▶</button>';
   } else {
     document.getElementById("bmQuizArea").innerHTML = fb +
-      '<p class="quizQ"><b>けっか：' + bmQs.length + "問中 " + bmScore + "問正解！</b></p>" +
-      '<button class="quizBtn" onclick="startSiteQuiz(bmIdx)">🔁 もう一回（問題がかわるよ）</button>';
+      '<p class="quizQ"><b>' + SITE_LEVELS[bmLevel] + " けっか：" + bmQs.length + "問中 " + bmScore + "問正解！</b>" +
+      (bmScore === bmQs.length && bmLevel === "advanced" ? "<br>すばらしい！ 文化財案内人レベル！🎉" : "") + "</p>" +
+      '<button class="quizBtn" onclick="startSiteQuiz(bmIdx, bmLevel)">🔁 同じレベルをもう一回（問題がかわるよ）</button>' +
+      '<button class="quizBtn" onclick="renderSiteQuizLevels(bmIdx)">📋 レベルをえらびなおす</button>';
   }
 }
 
