@@ -1248,6 +1248,61 @@ function renderTimeline() {
     (undated.length ? '<li class="tlHead">年代未詳・伝承</li>' + undated.map(item).join("") : "");
 }
 
+// ---- クイズ成績の記録（端末内LocalStorageのみ・共有されない）----
+const QUIZ_LOG_KEY = "cbi-meta-quiz-log-v1";
+function loadQuizLog() {
+  try { return JSON.parse(localStorage.getItem(QUIZ_LOG_KEY)) || []; } catch (e) { return []; }
+}
+function recordQuizAnswer(mode, level, siteName, q, sel, ok) {
+  try {
+    const log = loadQuizLog();
+    log.push({ t: Date.now(), mode: mode, level: level, name: siteName, q: q.q, sel: sel, a: q.a, ok: ok });
+    localStorage.setItem(QUIZ_LOG_KEY, JSON.stringify(log.slice(-500))); // 直近500問まで保持
+  } catch (e) {}
+}
+const LEVEL_LABELS = { beginner: "🔰初級", intermediate: "🥈中級", advanced: "🥇上級", classic: "🎲おまかせ" };
+function renderQuizRecord() {
+  const log = loadQuizLog();
+  const body = document.getElementById("quizBody");
+  if (!log.length) {
+    body.innerHTML = '<p class="quizQ">まだ記録がありません。クイズに挑戦してみよう！</p>' +
+      '<button class="quizBtn" onclick="renderQuizStart()">← もどる</button>';
+    return;
+  }
+  // レベル別集計
+  const sums = {};
+  log.forEach(r => {
+    const k = r.level || "classic";
+    sums[k] = sums[k] || { n: 0, ok: 0 };
+    sums[k].n++; if (r.ok) sums[k].ok++;
+  });
+  const total = log.length, totalOk = log.filter(r => r.ok).length;
+  let html = '<p class="quizQ"><b>📒 これまでの成績</b>（この端末だけに保存されます）</p>' +
+    '<p class="quizNote">合計 ' + total + "問中 " + totalOk + "問正解（正答率 " + Math.round(totalOk / total * 100) + "%）</p>" +
+    Object.keys(LEVEL_LABELS).filter(k => sums[k]).map(k =>
+      '<p class="quizNote" style="margin:2px 0;">' + LEVEL_LABELS[k] + "：" + sums[k].n + "問中 " + sums[k].ok + "問正解（" + Math.round(sums[k].ok / sums[k].n * 100) + "%）</p>").join("");
+  // まちがえた問題の見直し（新しい順・最大30件）
+  const wrong = log.filter(r => !r.ok).slice(-30).reverse();
+  if (wrong.length) {
+    html += '<p class="quizQ" style="margin-top:10px;"><b>❌ まちがえた問題の見直し</b>（新しい順・最大30件）</p>';
+    wrong.forEach(r => {
+      const idx = BUNKAZAI.findIndex(b => b.name === r.name);
+      html += '<div style="border-bottom:1px solid rgba(255,255,255,0.12);padding:7px 0;font-size:12px;line-height:1.6;">' +
+        '<span style="color:#9fb2c8;">' + new Date(r.t).toLocaleDateString("ja-JP") + "・" + (LEVEL_LABELS[r.level] || "") + (r.name ? "・" + r.name : "") + "</span><br>" +
+        r.q + "<br>" +
+        '<span style="color:#e74c3c;">あなたの答え: ' + r.sel + "</span> → " +
+        '<span style="color:#2ecc71;">正解: ' + r.a + "</span>" +
+        (idx >= 0 ? ' <button style="margin-left:6px;padding:3px 8px;border:none;border-radius:6px;background:#3a7bd5;color:#fff;font-size:11px;cursor:pointer;" onclick="openBunkazaiDetail(' + idx + ')">📖 復習する</button>' : "") +
+        "</div>";
+    });
+  } else {
+    html += '<p class="quizNote" style="margin-top:10px;">まちがえた問題はありません。全問正解です！🎉</p>';
+  }
+  html += '<button class="quizBtn" style="margin-top:10px;" onclick="renderQuizStart()">← もどる</button>' +
+    '<button class="quizBtn" onclick="if(confirm(\'クイズの成績記録をすべて消します。よろしいですか？\')){localStorage.removeItem(QUIZ_LOG_KEY);renderQuizRecord();}">🗑 記録を消す</button>';
+  body.innerHTML = html;
+}
+
 // ---- クイズ（コース制・文化財データから毎回ランダム生成）----
 // 問題の出典はすべて bunkazai.json（＝各文化財の市公式ページ）の記載事実
 let quizQs = [], quizPos = 0, quizScore = 0, quizMode = "classic";
@@ -1276,11 +1331,16 @@ function qExpert(b) {
   return { q: b.quiz.q, opts: shuffleArr([b.quiz.a, ...b.quiz.wrong]), a: b.quiz.a, note: b.description, src: b.detailUrl };
 }
 const QUIZ_MODES = {
-  classic: { label: "おまかせ5問", build: () => shuffleArr(BUNKAZAI).slice(0, 5).map((b, i) => (i % 2 === 0 && b.era) ? qEra(b) : qDesig(b)) },
+  classic: { label: "おまかせ5問", build: () => shuffleArr(BUNKAZAI).slice(0, 5).map((b, i) => {
+    const q = (i % 2 === 0 && b.era) ? qEra(b) : qDesig(b);
+    q.siteName = b.name; // 成績記録・見直しの「復習する」ボタン用
+    return q;
+  }) },
 };
 function renderQuizStart() {
   document.getElementById("quizBody").innerHTML =
     '<button class="quizBtn quizStart" onclick="startQuiz(\'classic\')">🎲 おまかせクイズをはじめる（全50文化財から5問）</button>' +
+    '<button class="quizBtn" onclick="renderQuizRecord()">📒 成績と見直し（まちがえた問題）</button>' +
     '<p class="quizNote">レベル別クイズ（🔰初級・🥈中級・🥇上級 各5問程度）は、ずかんやピンから<b>各文化財の詳細ページ</b>を開いて挑戦できます。将来の文化財案内人をめざそう！</p>';
 }
 function startQuiz(mode) {
@@ -1300,6 +1360,7 @@ function answerQuiz(sel) {
   const q = quizQs[quizPos];
   const ok = sel === q.a;
   if (ok) quizScore++;
+  recordQuizAnswer("classic", "classic", q.siteName || "", q, sel, ok);
   document.getElementById("quizBody").innerHTML =
     '<p class="quizQ">' + (ok ? "⭕ 正解！" : "❌ ざんねん… 正解は「" + q.a + "」") + "</p>" +
     (q.note ? '<p class="quizNote">' + q.note.slice(0, 90) + "…</p>" : "") +
@@ -1488,6 +1549,7 @@ function answerSiteQuiz(sel) {
   const q = bmQs[bmPos];
   const ok = sel === q.a;
   if (ok) bmScore++;
+  recordQuizAnswer("site", bmLevel, BUNKAZAI[bmIdx].name, q, sel, ok);
   bmPos++;
   const b = BUNKAZAI[bmIdx];
   const fb = '<p class="quizQ">' + (ok ? "⭕ 正解！" : "❌ ざんねん… 正解は「" + q.a + "」") + "</p>" +
@@ -1500,8 +1562,15 @@ function answerSiteQuiz(sel) {
       '<p class="quizQ"><b>' + SITE_LEVELS[bmLevel] + " けっか：" + bmQs.length + "問中 " + bmScore + "問正解！</b>" +
       (bmScore === bmQs.length && bmLevel === "advanced" ? "<br>すばらしい！ 文化財案内人レベル！🎉" : "") + "</p>" +
       '<button class="quizBtn" onclick="startSiteQuiz(bmIdx, bmLevel)">🔁 同じレベルをもう一回（問題がかわるよ）</button>' +
-      '<button class="quizBtn" onclick="renderSiteQuizLevels(bmIdx)">📋 レベルをえらびなおす</button>';
+      '<button class="quizBtn" onclick="renderSiteQuizLevels(bmIdx)">📋 レベルをえらびなおす</button>' +
+      '<button class="quizBtn" onclick="openQuizRecordFromModal()">📒 成績と見直し</button>';
   }
+}
+function openQuizRecordFromModal() {
+  document.getElementById("bunkazaiModal").classList.remove("show");
+  document.getElementById("puzzlePanel").style.display = "block";
+  document.getElementById("tabQuiz").click();
+  renderQuizRecord();
 }
 
 // ---- 印西文化財マイスター認定証（ピース50枚達成で発行）----
