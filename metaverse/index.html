@@ -2148,16 +2148,6 @@ function applyMode(mode) {
 }
 function openModeSelect() { document.getElementById("modeSelect").classList.add("show"); }
 document.getElementById("modeSwitchBtn").addEventListener("click", openModeSelect);
-(function initMode() {
-  const params = new URLSearchParams(location.search);
-  const p = params.get("mode");
-  if (p === "event" || p === "bousai") { applyMode(p); return; } // リンク分け用（QR・サイト導線）
-  if (params.get("cinema")) { return; } // 撮影・告知モードでは選択画面を出さない
-  let saved = null;
-  try { saved = localStorage.getItem(MODE_KEY); } catch (e) {}
-  if (saved === "event" || saved === "bousai") { applyMode(saved); return; }
-  openModeSelect(); // 初回はモード選択から
-})();
 
 // 文化財データ読み込み＋看板設置
 async function loadBunkazai() {
@@ -2647,6 +2637,24 @@ else if (CINEMA_MODE === "2") startTeaser();
 // 開始
 // ============================================================
 loadTileset();
+
+// 用途モードの初期化は最後に行う（applyMode が参照する変数の宣言がすべて済んだ後。
+// ここより前で呼ぶと temporal dead zone の ReferenceError で loadTileset まで到達しない）。
+// 失敗しても 3D の表示は続けられるよう try/catch で握る
+try {
+  const modeParams = new URLSearchParams(location.search);
+  const modeParam = modeParams.get("mode");
+  if (modeParam === "event" || modeParam === "bousai") {
+    applyMode(modeParam); // リンク分け用（QR・サイト導線）
+  } else if (!modeParams.get("cinema")) { // 撮影・告知モードでは選択画面を出さない
+    let savedMode = null;
+    try { savedMode = localStorage.getItem(MODE_KEY); } catch (e) {}
+    if (savedMode === "event" || savedMode === "bousai") applyMode(savedMode);
+    else openModeSelect(); // 初回はモード選択から
+  }
+} catch (e) {
+  console.error("モード初期化に失敗:", e);
+}
 </script>
 </body>
 </html>
