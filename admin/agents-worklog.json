@@ -18,17 +18,18 @@
       "actuals": [
         {
           "date": "2026-08-20",
-          "title": "メタバース: タイムトライアル競技会仕様化（完走50か所・精霊通過演出・サーバー公式計測）0.35時間",
+          "title": "メタバース: タイムトライアル競技会仕様化（完走50か所・精霊通過演出・サーバー公式計測）0.45時間",
           "category": "実装",
           "outputs": [
             "site/metaverse/index.html（🏁完走コース=全50か所・最近傍＋2-opt順で約58km（×4飛行で移動のみ約8分）を全年齢で選択可／通過の合図を精霊出現に変更（encounterバナー自動クローズ・未入手ピース自動獲得＝トライアルがずかん集めを兼ねる）／サーバー公式計測クライアント（start/checkpoint/finish・不通時は参考記録へフォールバック・flagged表示）／エントリー画面に公式ランキング上位3表示（XSSエスケープ）／事務局メールを communitybankinzai@gmail.com へ変更。commit a19d68c）",
             "C:/Repos/cidao src/app/api/metaverse-tt/route.ts＋supabase/migrations/20260820120000_metaverse_time_trial.sql（サーバー時計でタイム確定・順序/速度異常のflags記録・記録コード発行・ランキングGET・CORS。commit 7245270・Vercelデプロイ済み）",
             "site/admin/changelog.json 1件＋CLAUDE_HANDOFF.md更新",
-            "検証: ローカルで完走コース50か所走破（精霊演出・ピース自動獲得・フォールバック参考記録・証明書・新宛先mailto）を確認／cidao npm run build成功／本番APIがテーブル未作成の想定エラー応答を確認。**残: Supabase SQL Editorでmigration適用（ユーザー作業）→適用後にサーバー計測の通し検証**"
+            "検証: ローカルで完走コース50か所走破（精霊演出・ピース自動獲得・フォールバック参考記録・証明書・新宛先mailto）を確認／cidao npm run build成功",
+            "追補（migration適用後のE2E）: curlでstart→通過3回（5秒間隔）→finish=サーバー計測20.475秒（スリープ合計と一致）→ランキング反映を確認／不正検出3種OK（順序違反409・高速通過flagged=true・flaggedはランキング除外・要件未達403）／通過報告の並行送信で順序が入れ替わりfinishが失敗する競合を発見→直列キュー化で修正（commit b2bf637）→本番サイトから公式計測の通し成功（記録ID発行・高速テスト移動には正しく事務局確認フラグ）。GitHub Pagesの旧HTMLキャッシュに注意（キャッシュバスターで確認）"
           ],
-          "hours": 0.35,
+          "hours": 0.45,
           "partnerApproved": false,
-          "note": "「精霊を通過判定に」「50か所全部回る想定」「厳密な競技会に」の3指摘への対応。session: 51b587ef-7426-442b-977e-b941cdd6e689 / output: 280,274 / cost: $167.18（前回記録2.45h以降の差分0.35h）"
+          "note": "「精霊を通過判定に」「50か所全部回る想定」「厳密な競技会に」の3指摘への対応。migrationはユーザーがSQL Editorで適用済み。テスト記録の削除SQLは提供済み。session: 51b587ef-7426-442b-977e-b941cdd6e689 / output: 292,644 / cost: $177.67（前回記録2.45h以降の差分0.45h）"
         },
         {
           "date": "2026-08-20",
