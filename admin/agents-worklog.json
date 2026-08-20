@@ -17,6 +17,21 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-21",
+          "title": "メタバース: 3D Tilesクォータ枯渇の診断訂正・上限バナー・SNS告知文 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "診断: 実タイル(.glb)取得で HTTP 429『3D Tiles renderer requests per day』超過を確定（前日の『課金と無関係』はroot.jsonのみ確認の誤診と訂正。root.jsonは枯渇時も200を返す）",
+            "site/metaverse/index.html（429検知で常時バナー『ただいま3D表示が混み合っています…夕方ごろ自動回復。時間をおいてアクセスを』＋✕で閉じる。実429で本番表示確認済み）",
+            "SNS告知定型文を作成（クリップボード提供・アクセス集中時に投稿する運用）",
+            "保管庫: 2026-08-21_GoogleMapTiles_1日クォータ枯渇と対策.md 新規（MOC_CiDAO登録・監視手順ノートへ関連リンク追記）",
+            "site/admin/changelog.json 2件"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "ユーザーの『本当に課金と無関係か』の追及が誤診の発見につながった。恒久対応（クォータ上限確認・引き上げ＋予算アラート、maximumScreenSpaceError調整）は判断待ち。session: 51b587ef-7426-442b-977e-b941cdd6e689"
+        },
+        {
           "date": "2026-08-20",
           "title": "メタバース: 同時利用者数表示・Google Mapリンク・ふりがな50件・名称照合 0.5時間",
           "category": "実装",
