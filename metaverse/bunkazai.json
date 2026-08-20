@@ -26,7 +26,8 @@
     ]
    },
    "designatedEra": "昭和9年",
-   "designatedYear": 1934
+   "designatedYear": 1934,
+   "facility": "宝珠院"
   },
   {
    "name": "泉福寺薬師堂",
@@ -50,7 +51,8 @@
     ]
    },
    "designatedEra": "昭和52年",
-   "designatedYear": 1977
+   "designatedYear": 1977,
+   "facility": "泉福寺"
   },
   {
    "name": "栄福寺薬師堂",
@@ -75,7 +77,8 @@
     ]
    },
    "designatedEra": "昭和29年",
-   "designatedYear": 1954
+   "designatedYear": 1954,
+   "facility": "栄福寺"
   },
   {
    "name": "銅造不動明王立像",
@@ -99,7 +102,8 @@
     ]
    },
    "designatedEra": "大正3年",
-   "designatedYear": 1914
+   "designatedYear": 1914,
+   "facility": "結縁寺"
   },
   {
    "name": "木造薬師如来坐像・立像（七仏薬師）",
@@ -123,7 +127,8 @@
     ]
    },
    "designatedEra": "昭和34年",
-   "designatedYear": 1959
+   "designatedYear": 1959,
+   "facility": "松虫寺"
   },
   {
    "name": "木下貝層",
@@ -174,7 +179,8 @@
     ]
    },
    "designatedEra": "昭和29年",
-   "designatedYear": 1954
+   "designatedYear": 1954,
+   "facility": "多聞院"
   },
   {
    "name": "木造延命地蔵菩薩坐像",
@@ -198,7 +204,8 @@
     ]
    },
    "designatedEra": "昭和30年",
-   "designatedYear": 1955
+   "designatedYear": 1955,
+   "facility": "泉倉寺"
   },
   {
    "name": "銅造十一面観音立像",
@@ -222,7 +229,8 @@
     ]
    },
    "designatedEra": "平成6年",
-   "designatedYear": 1994
+   "designatedYear": 1994,
+   "facility": "三宝院・上町観音堂"
   },
   {
    "name": "木造地蔵菩薩立像",
@@ -246,7 +254,8 @@
     ]
    },
    "designatedEra": "平成7年",
-   "designatedYear": 1995
+   "designatedYear": 1995,
+   "facility": "地蔵寺"
   },
   {
    "name": "木造不動明王立像及び毘沙門天立像",
@@ -270,7 +279,8 @@
     ]
    },
    "designatedEra": "平成25年",
-   "designatedYear": 2013
+   "designatedYear": 2013,
+   "facility": "西福寺"
   },
   {
    "name": "木造薬師如来坐像",
@@ -294,7 +304,8 @@
     ]
    },
    "designatedEra": "昭和42年",
-   "designatedYear": 1967
+   "designatedYear": 1967,
+   "facility": "来福寺"
   },
   {
    "name": "木造金剛力士像",
@@ -318,7 +329,8 @@
     ]
    },
    "designatedEra": "平成3年",
-   "designatedYear": 1991
+   "designatedYear": 1991,
+   "facility": "瀧水寺"
   },
   {
    "name": "梵鐘（応安二年在銘）",
@@ -342,7 +354,8 @@
     ]
    },
    "designatedEra": "昭和47年",
-   "designatedYear": 1972
+   "designatedYear": 1972,
+   "facility": "長楽寺"
   },
   {
    "name": "鋳銅孔雀文磬",
@@ -366,7 +379,8 @@
     ]
    },
    "designatedEra": "昭和60年",
-   "designatedYear": 1985
+   "designatedYear": 1985,
+   "facility": "松虫寺"
   },
   {
    "name": "梵鐘（竜腹寺）",
@@ -390,7 +404,8 @@
     ]
    },
    "designatedEra": "昭和47年",
-   "designatedYear": 1972
+   "designatedYear": 1972,
+   "facility": "龍腹寺"
   },
   {
    "name": "梵鐘（建武五年在銘）",
@@ -414,7 +429,8 @@
     ]
    },
    "designatedEra": "昭和47年",
-   "designatedYear": 1972
+   "designatedYear": 1972,
+   "facility": "瀧水寺"
   },
   {
    "name": "馬込遺跡出土瓦塔",
@@ -490,7 +506,8 @@
     ]
    },
    "designatedEra": "昭和30年",
-   "designatedYear": 1955
+   "designatedYear": 1955,
+   "facility": "鳥見神社"
   },
   {
    "name": "浦部の神楽",
@@ -516,7 +533,8 @@
     ]
    },
    "designatedEra": "昭和42年",
-   "designatedYear": 1967
+   "designatedYear": 1967,
+   "facility": "鳥見神社"
   },
   {
    "name": "鳥見神社の神楽",
@@ -542,7 +560,8 @@
     ]
    },
    "designatedEra": "昭和36年",
-   "designatedYear": 1961
+   "designatedYear": 1961,
+   "facility": "鳥見神社"
   },
   {
    "name": "将監のオニバス発生地",
@@ -588,7 +607,8 @@
     ]
    },
    "designatedEra": "昭和57年",
-   "designatedYear": 1982
+   "designatedYear": 1982,
+   "facility": "観音寺"
   },
   {
    "name": "弥陀三尊下総型板碑",
@@ -614,7 +634,8 @@
     ]
    },
    "designatedEra": "昭和57年",
-   "designatedYear": 1982
+   "designatedYear": 1982,
+   "facility": "光明寺"
   },
   {
    "name": "板石塔婆（吉高）",
@@ -664,7 +685,8 @@
     ]
    },
    "designatedEra": "平成3年",
-   "designatedYear": 1991
+   "designatedYear": 1991,
+   "facility": "印旛歴史民俗資料館"
   },
   {
    "name": "福聚院阿弥陀三尊立像",
@@ -688,7 +710,8 @@
     ]
    },
    "designatedEra": "平成5年",
-   "designatedYear": 1993
+   "designatedYear": 1993,
+   "facility": "福聚院"
   },
   {
    "name": "薬師如来立像",
@@ -712,7 +735,8 @@
     ]
    },
    "designatedEra": "平成22年",
-   "designatedYear": 2010
+   "designatedYear": 2010,
+   "facility": "瀧水寺"
   },
   {
    "name": "鋳銅鰐口（竹袋）",
@@ -736,7 +760,8 @@
     ]
    },
    "designatedEra": "昭和54年",
-   "designatedYear": 1979
+   "designatedYear": 1979,
+   "facility": "竹袋稲荷神社"
   },
   {
    "name": "観音寺鋳造鰐口",
@@ -760,7 +785,8 @@
     ]
    },
    "designatedEra": "昭和57年",
-   "designatedYear": 1982
+   "designatedYear": 1982,
+   "facility": "観音寺"
   },
   {
    "name": "鋳銅鰐口（松虫）",
@@ -786,7 +812,8 @@
     ]
    },
    "designatedEra": "昭和51年",
-   "designatedYear": 1976
+   "designatedYear": 1976,
+   "facility": "松虫寺"
   },
   {
    "name": "曼荼羅掛軸",
@@ -809,7 +836,8 @@
     ]
    },
    "designatedEra": "昭和54年",
-   "designatedYear": 1979
+   "designatedYear": 1979,
+   "facility": "南陽院"
   },
   {
    "name": "龍湖寺絵馬",
@@ -833,7 +861,8 @@
     ]
    },
    "designatedEra": "平成5年",
-   "designatedYear": 1993
+   "designatedYear": 1993,
+   "facility": "龍湖寺"
   },
   {
    "name": "吉岡家河岸関係文書",
@@ -881,7 +910,8 @@
     ]
    },
    "designatedEra": "昭和51年",
-   "designatedYear": 1976
+   "designatedYear": 1976,
+   "facility": "印旛歴史民俗資料館"
   },
   {
    "name": "小金牧鹿狩資料「村小旗」",
@@ -954,7 +984,8 @@
     ]
    },
    "designatedEra": "昭和41年",
-   "designatedYear": 1966
+   "designatedYear": 1966,
+   "facility": "地蔵寺"
   },
   {
    "name": "いなざき獅子舞",
@@ -978,7 +1009,8 @@
     ]
    },
    "designatedEra": "昭和41年",
-   "designatedYear": 1966
+   "designatedYear": 1966,
+   "facility": "鳥見神社"
   },
   {
    "name": "八幡神社の獅子舞",
@@ -1002,7 +1034,8 @@
     ]
    },
    "designatedEra": "昭和49年",
-   "designatedYear": 1974
+   "designatedYear": 1974,
+   "facility": "東漸寺"
   },
   {
    "name": "月影の井",

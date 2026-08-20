@@ -196,6 +196,7 @@
     font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; }
   .bmBtn.go { background: #3a7bd5; color: #fff; }
   .bmBtn.quiz { background: #e67e22; color: #fff; }
+  .bmBtn.gmap { background: rgba(127,200,255,0.14); border: 1px solid #7fc8ff; color: #7fc8ff; font-size: 12px; }
   .bmBtn.official { background: rgba(255,209,102,0.12); border: 1px solid #ffd166; color: #ffd166; font-size: 12px; }
   /* 認定証 */
   #certModal {
@@ -678,6 +679,7 @@
     <p id="bmSrc"></p>
     <div id="bmQuizArea"></div>
     <a id="bmOfficial" class="bmBtn official" href="#" target="_blank" rel="noopener">🔎 市公式ページで詳しく見る</a>
+    <a id="bmGmap" class="bmBtn gmap" href="#" target="_blank" rel="noopener">🗺 Google Mapで場所を見る</a>
     <button class="bmBtn quiz" id="bmQuizBtn">🧠 この文化財のクイズ（初級・中級・上級）</button>
     <button class="bmBtn go" id="bmGoBtn">▶ 現地へ行く</button>
   </div>
@@ -1623,6 +1625,13 @@ function openBunkazaiDetail(i) {
   document.getElementById("bmSrc").innerHTML =
     '解説出典：<a href="' + b.detailUrl + '" target="_blank" rel="noopener">印西市ホームページ（文化財紹介ページ）</a>';
   document.getElementById("bmOfficial").href = b.detailUrl;
+  // Google Mapは文化財名では見つからないことが多いため、所在の寺社名（facility）で検索する。
+  // 施設名が分からないものは住所で検索する
+  // 住所と施設名を併記する（施設名が地図に無い場合でも住所で開けるように）
+  const gmapQuery = "千葉県印西市" + b.address + (b.facility ? " " + b.facility : "");
+  const gmapEl = document.getElementById("bmGmap");
+  gmapEl.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(gmapQuery);
+  gmapEl.textContent = b.facility ? ("🗺 Google Mapで場所を見る（" + b.facility + "）") : "🗺 Google Mapで場所を見る（住所で検索）";
   document.getElementById("bmQuizArea").innerHTML = "";
   document.getElementById("bmQuizBtn").style.display = "block";
   document.getElementById("bmQuizBtn").onclick = function () { renderSiteQuizLevels(i); };
