@@ -248,13 +248,13 @@
   @media (pointer: coarse), (max-width: 640px) { #ttHud { top: 92px; } }
   /* 同時利用者数（在席表示） */
   #presenceChip {
-    position: absolute; top: 52px; left: 50%; transform: translateX(-50%);
-    z-index: 23; display: none; background: rgba(20, 30, 40, 0.82); color: #fff;
+    display: none; background: rgba(20, 30, 40, 0.82); color: #fff;
     border: 1px solid rgba(127, 200, 255, 0.55); border-radius: 999px;
     padding: 5px 13px; font-size: 12px; line-height: 1.4; white-space: nowrap;
-    pointer-events: none;
+    pointer-events: auto; margin: 0 8px; flex: 0 0 auto;
   }
   #presenceChip b { color: #7fc8ff; font-size: 14px; }
+  @media (max-width: 480px) { #presenceChip { display: none !important; } }
   /* 用途モード選択（イベント／防災） */
   #modeSelect {
     position: absolute; inset: 0; z-index: 80; background: rgba(10, 16, 24, 0.9);
@@ -519,10 +519,10 @@
 
 <div id="mvHeader">
   <div class="title">🌏 CBIメタバース印西<small>印西市3Dワールド</small></div>
+  <div id="presenceChip"></div>
   <a id="backLink" href="../index.html">← CBIサイトへ戻る</a>
 </div>
 
-<div id="presenceChip"></div>
 <button id="panelToggle">📍 スポット</button>
 <button id="menuToggle">☰ メニュー</button>
 
@@ -925,6 +925,10 @@ function showError(e) {
 // スポット看板（ビルボード＋ラベル）
 // ============================================================
 const SPOT_BILLBOARD_HEIGHT = 60; // 看板を建物より上に浮かせる高さ(m)
+// ピンの基準高さ(m)。3Dタイル表面へ吸着（CLAMP_TO_3D_TILE）するため通常は使われないが、
+// タイル未読込・吸着未対応の環境ではこの高さで描かれる。印西の台地は楕円体高で約60〜66mあり、
+// 40mだと地中に埋まって見えたため、地表より上になる値にしている
+const PIN_FALLBACK_HEIGHT = 95;
 
 SPOTS.forEach((spot, i) => {
   viewer.entities.add({
@@ -1563,7 +1567,7 @@ function addKominkanEntities() {
     viewer.entities.add({
       id: "kominkan-" + i,
       show: kominkanPinsVisible,
-      position: Cesium.Cartesian3.fromDegrees(k.lon, k.lat, 40),
+      position: Cesium.Cartesian3.fromDegrees(k.lon, k.lat, PIN_FALLBACK_HEIGHT),
       point: {
         pixelSize: 11,
         color: Cesium.Color.fromCssColorString("#00bcd4"),
@@ -2279,7 +2283,7 @@ async function loadBunkazai() {
   BUNKAZAI.forEach((b, i) => {
     viewer.entities.add({
       id: "bunkazai-" + i,
-      position: Cesium.Cartesian3.fromDegrees(b.lon, b.lat, 40),
+      position: Cesium.Cartesian3.fromDegrees(b.lon, b.lat, PIN_FALLBACK_HEIGHT),
       point: {
         pixelSize: 11,
         color: Cesium.Color.fromCssColorString(DESIG_COLOR[b.designation] || "#3498db"),
@@ -2339,7 +2343,7 @@ function addShelterEntities() {
     viewer.entities.add({
       id: "shelter-" + i,
       show: shelterPinsVisible,
-      position: Cesium.Cartesian3.fromDegrees(s.lon, s.lat, 40),
+      position: Cesium.Cartesian3.fromDegrees(s.lon, s.lat, PIN_FALLBACK_HEIGHT),
       point: {
         pixelSize: 11,
         color: Cesium.Color.fromCssColorString(SHELTER_KIND_COLOR[s.kind] || "#27ae60"),
@@ -2772,7 +2776,7 @@ function presenceRender(count) {
   // タイムトライアル中は計測表示と重なるため隠す
   if (!count || count < 1 || (typeof ttActive !== "undefined" && ttActive)) { el.style.display = "none"; return; }
   el.innerHTML = "👥 いま <b>" + count + "</b> 人が参加中";
-  el.style.display = "block";
+  el.style.display = "inline-block";
 }
 function presencePing() {
   fetch(PRESENCE_API, {
