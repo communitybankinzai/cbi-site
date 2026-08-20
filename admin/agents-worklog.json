@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-20",
+          "title": "メタバース: TT記録証明書の履歴保存・再表示機能 0.15時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（localStorage cbi-meta-tt-history-v1 に直近20件保存／エントリー画面に「📜 これまでの記録・証明書を見る」／一覧に日付・コース・タイム・公式/参考・記録ID＋受付案内／ttShowHistoryCert で証明書canvas再描画・画像保存・記録内容コピー・一覧へ戻る）",
+            "site/admin/changelog.json 1件",
+            "検証: node --check でJS構文OK／ローカルで走破→履歴保存→リロード後に再表示・DL用dataURL生成・一覧復帰を確認／本番でも履歴注入から証明書再表示まで確認"
+          ],
+          "hours": 0.15,
+          "partnerApproved": false,
+          "note": "表彰時の本人確認方法の相談から判明した弱点（保存し忘れで記録ID紛失）への対応。本人確認方式は3案提示済みでユーザー判断待ち。session: 51b587ef-7426-442b-977e-b941cdd6e689"
+        },
+        {
+          "date": "2026-08-20",
           "title": "メタバース: TT結果画面の報告導線を修正（mailto廃止・サーバー送信済み明示）0.1時間",
           "category": "保守",
           "outputs": [
