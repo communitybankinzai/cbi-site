@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-20",
+          "title": "CiDAO: タイムトライアル記録の管理ページ（/admin/timetrial）実装 0.15時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/admin/timetrial/（page.tsx=コース別公式ランキング上位20・フラグ付き記録一覧（fast-leg等の内容表示・ランキング対象外）・未完走一覧／actions.ts=個別削除・全リセット（requireAdmin＋service_role）／TrialControls.tsx=confirm付き削除ボタン・「リセット」入力＋confirmの2段階全リセット。管理トップにカード追加。commit e7e9ef7）",
+            "site/admin/changelog.json 1件＋metaverse/CLAUDE_HANDOFF.md更新",
+            "検証: npm run build成功（/admin/timetrialルート生成確認）・Vercelデプロイ後にページ応答200を確認。管理者ログイン後のUI実表示はユーザーのデモイベントテストで確認予定"
+          ],
+          "hours": 0.15,
+          "partnerApproved": false,
+          "note": "デモイベント開催準備の要望対応（ランキング・フラグ確認・手動リセット）。session: 51b587ef-7426-442b-977e-b941cdd6e689 / output: 305,293 / cost: $196.39（前回記録2.9h以降の差分0.15h）"
+        },
+        {
+          "date": "2026-08-20",
           "title": "メタバース: タイムトライアル競技会仕様化（完走50か所・精霊通過演出・サーバー公式計測）0.45時間",
           "category": "実装",
           "outputs": [
