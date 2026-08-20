@@ -207,6 +207,21 @@
       // 太陽(88px)と月(140px)でサイズが違うため、下端ではなく「中心」を軌道に乗せる。
       // そうしないと大きい月だけロゴより上にずれる。
       const ORBIT_HALF = 44; // 基準（太陽の半径）。この高さを軌道の中心とみなす
+      const logoEl = document.querySelector('.hero-logo');
+      const burstEls = document.querySelectorAll('.logo-burst');
+      // 軌道の頂点はロゴの中心に合わせる。
+      // ロゴは上からの積み上げ（padding + 各要素）で位置が決まるのに対し、
+      // 月・太陽は下端からの比率で置いていたため、ヒーローの高さが変わるとずれた。
+      const peakRatio = (H) => {
+        const fallback = window.innerWidth <= 860 ? 0.78 : 0.72;
+        if (!logoEl || !H) return fallback;
+        const hr = heroEl.getBoundingClientRect();
+        const lr = logoEl.getBoundingClientRect();
+        if (!lr.height) return fallback;
+        const centerFromBottom = hr.bottom - (lr.top + lr.height / 2);
+        const r = (centerFromBottom - ORBIT_HALF) / H;
+        return Math.min(0.95, Math.max(0.30, r));
+      };
       const place = (el, t, W, H, peak) => {
         const w = el.offsetWidth, h = el.offsetHeight;
         // 基準は left:0 / bottom:0。translate は基準からの相対移動で指定する
@@ -222,7 +237,12 @@
       const orbit = () => {
         const p = dayProgressNow();
         const W = heroEl.clientWidth, H = heroEl.clientHeight;
-        const peak = window.innerWidth <= 860 ? 0.78 : 0.72;
+        const peak = peakRatio(H);
+        // 光の演出（logo-burst）も軌道の頂点＝ロゴ中心に合わせる
+        const orbitCenterFromBottom = peak * H + ORBIT_HALF;
+        burstEls.forEach((b) => {
+          b.style.bottom = (orbitCenterFromBottom - b.offsetHeight / 2).toFixed(1) + 'px';
+        });
         const dayT = (p - 0.25) / 0.5;
         const nightT = p < 0.25 ? (p + 0.25) / 0.5 : (p - 0.75) / 0.5;
         if (dayT >= 0 && dayT <= 1) {
