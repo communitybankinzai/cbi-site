@@ -17,6 +17,24 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-20",
+          "title": "FreeFree掲載のURL自動入力（要約・リンク抽出・画像候補提示）実装 0.41時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260813120000_freefree_links.sql（新規・適用済み／links jsonb 最大5件のCHECK付き）",
+            "cidao: src/lib/url-guard.ts（新規／parseSafeUrl・toAbsoluteSafe・isBlockedHost。SSRF対策）",
+            "cidao: src/app/api/freefree/scan-url/route.ts（新規／HTML取得→テキスト化→Claudeで構造化抽出、og:image等の画像候補収集、AI提示リンクの再検証）",
+            "cidao: src/app/api/freefree/import-image/route.ts（新規／選択された画像1枚をfreefree-imagesへ取り込み。content-type検査・5MB上限）",
+            "cidao: src/app/freefree/new/_components/FreefreeUrlScan.tsx（新規／URL入力・権利確認チェック・画像候補選択UI）",
+            "cidao: NewFreefreeForm.tsx（links/importedImages state と hidden input）、new/page.tsx（links のパース）、actions.ts（CreateInput.links と保存）、freefree/[id]/page.tsx（関連リンク表示）",
+            "検証: npx tsc --noEmit エラー0件／npx next build 成功・2ルートの登録確認／url-guard を14ケース（localhost・10/172.16-31/192.168・169.254メタデータ・IPv6・file・javascript・172.32は許可・相対URL解決・dataURL除外）で実行し全件期待どおり",
+            "適用確認: ユーザーがSQL Editorで実行し mark_sns_spotlighted / pick_next_sns_targets / freefree_posts.links の3行が返ることをスクリーンショットで確認"
+          ],
+          "hours": 0.41,
+          "partnerApproved": false,
+          "note": "翔さんからの「URLのみで告知内容をAI要約し、リンク・画像貼り付けもできるか」への対応。画像の扱いは著作権リスクを説明して3択提示し、案A（候補提示＋本人が権利確認して選ぶ）を選択いただいた。イベント側の /api/events/scan-url が既にあったが抽出項目が別物で動作中の機能でもあるため触らず、FreeFree用に独立実装。SSRF判定はurl-guardへ切り出した（events側の直書きは温存）。⚠実在ページでの読み取りテストは未実施。⚠JavaScript描画ページは読めない制約あり。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 271,550 / cost: $117.19"
+        },
+        {
           "date": "2026-08-19",
           "title": "メタバース: クイズ成績記録・まちがい見直し機能の実装 0.15時間",
           "category": "実装",
