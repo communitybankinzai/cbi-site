@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-08-20",
+          "title": "メタバース: 読み込み停止バグの緊急修正（モード初期化のTDZ）0.15時間",
+          "category": "保守",
+          "outputs": [
+            "site/metaverse/index.html（モード初期化IIFEをスクリプト末尾へ移動＋try/catch。applyModeが参照する bunkazaiPinsVisible(2212行)/SHELTERS(2232)/shelterPinsVisible(2233) より前(2151行)で実行していたため temporal dead zone の ReferenceError が発生し、末尾の loadTileset() に到達せず「読み込み中…」で停止していた。commit bf2e3f6）",
+            "site/admin/changelog.json 1件",
+            "切り分け: Google 3D Tiles API は正常応答（root.json取得成功・クォータ超過なし、キー非出力で検証）／モード未選択の初回訪問は正常＝選択済み再訪問のみ再現条件と特定",
+            "検証: ローカルで event/bousai 両モード保存状態からのリロードで loadTileset 到達を確認／本番でモード保存状態から tilesetLoaded=true・overlay非表示を確認"
+          ],
+          "hours": 0.15,
+          "partnerApproved": false,
+          "note": "私が前セッションで入れたモード機能の実行順ミスによる回帰。ユーザーのスクショ報告で発覚。session: 51b587ef-7426-442b-977e-b941cdd6e689 / output: 357,663 / cost: $231.74（前回記録3.3h以降の差分0.15h）"
+        },
+        {
+          "date": "2026-08-20",
           "title": "メタバース: 参加要件のイベント別設定＋イベント/防災モード分離 0.25時間",
           "category": "実装",
           "outputs": [
