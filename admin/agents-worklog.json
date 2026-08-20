@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-08-20",
+          "title": "メタバース: 同時利用者数表示・Google Mapリンク・ふりがな50件・名称照合 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/metaverse-presence/route.ts＋migration 20260820150000（45秒ハートビート・直近90秒を参加中と判定・10分で自動削除・匿名セッションIDのみ・CORS。ユーザーがSQL実行済み）",
+            "site/metaverse/index.html（👥参加人数チップ=画面上部中央・TT計測中は非表示・通信不可なら非表示／🗺Google Mapリンク=住所＋寺社名で検索／ふりがな表示4か所=詳細/一覧/年表/精霊出現）",
+            "site/metaverse/bunkazai.json（facility 33件=市公式ページから所在寺社名を抽出／kana 50件=全文化財の読み／上宿古墳の位置修正71m=運用第3号）",
+            "調査: 全50件の名称を市公式ページと機械照合→相違ゼロ（「弥陀一尊武蔵型板碑」は誤記でなく指定名称）／OSM Overpassで印西市の寺社を全取得→17件のみ・文化財と一致5件（ずれ53〜60m）で一括修正は不可能と再確認（ODbL表記義務もあり取り込み見送り）",
+            "site/admin/changelog.json 5件",
+            "検証: node --check／ローカルで人数チップ表示・2人カウント・TT中非表示・スマホ重なりなし・ふりがな4か所・Google Mapクエリ生成を確認／本番でも人数2人・kana50件・facility33件を確認"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "「同時利用者数」「Google Map関連付け」「名称の誤字確認」「ふりがな」「位置修正」の5件対応。読み4件（上宿古墳/龍湖寺絵馬/押付の水塚/武西の百庚申塚）は確信度中でユーザー確認待ち。session: 51b587ef-7426-442b-977e-b941cdd6e689"
+        },
+        {
+          "date": "2026-08-20",
           "title": "メタバース: TT記録証明書の履歴保存・再表示機能 0.15時間",
           "category": "実装",
           "outputs": [
