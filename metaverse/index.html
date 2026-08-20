@@ -1997,20 +1997,26 @@ async function ttApiPost(payload) {
 }
 function ttServerStart() {
   ttTrialId = null;
-  ttApiPost({
+  // スタート登録をキューの先頭に置き、通過報告が必ずこの後に送られるようにする
+  ttCpQueue = ttApiPost({
     action: "start", name: ttEntry.name, ageKey: ttEntry.ageKey, courseKey: ttEntry.courseKey,
     quizRatePct: Math.round(ttEntry.rate * 100), quizAnswers: ttEntry.answers,
     checkpoints: ttCourse.length,
   }).then(d => { ttTrialId = d.trialId || null; })
     .catch(() => { ttTrialId = null; });
 }
+// 通過報告は直列キューで送る（並行送信だと到着順が入れ替わり、サーバーの順序チェックに弾かれるため）
+let ttCpQueue = Promise.resolve();
 function ttServerCheckpoint(pos) {
-  if (!ttTrialId) return;
-  ttApiPost({ action: "checkpoint", trialId: ttTrialId, pos: pos }).catch(() => {});
+  ttCpQueue = ttCpQueue.then(() => {
+    if (!ttTrialId) return;
+    return ttApiPost({ action: "checkpoint", trialId: ttTrialId, pos: pos });
+  }).catch(() => {});
 }
 async function ttServerFinish() {
-  if (!ttTrialId) return null;
   try {
+    await ttCpQueue; // すべての通過報告の完了を待ってからゴール報告
+    if (!ttTrialId) return null;
     return await ttApiPost({ action: "finish", trialId: ttTrialId });
   } catch (e) { return null; }
 }
