@@ -244,6 +244,27 @@
   #ttHud .ttAbort { margin-left: 10px; padding: 3px 10px; border: none; border-radius: 8px;
     background: #e74c3c; color: #fff; font-size: 11px; cursor: pointer; }
   @media (pointer: coarse), (max-width: 640px) { #ttHud { top: 92px; } }
+  /* 用途モード選択（イベント／防災） */
+  #modeSelect {
+    position: absolute; inset: 0; z-index: 80; background: rgba(10, 16, 24, 0.9);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  #modeSelect.show { display: flex; }
+  #modeSelect .inner {
+    background: linear-gradient(160deg, #2c3e50, #1a2533); color: #fff;
+    border: 2px solid #ffd166; border-radius: 18px; padding: 22px 20px;
+    max-width: 420px; width: 100%; text-align: center;
+  }
+  #modeSelect h2 { color: #ffd166; font-size: 17px; margin: 0 0 14px; }
+  .modeCard {
+    display: block; width: 100%; margin: 10px 0; padding: 16px 12px;
+    border: 2px solid rgba(255,255,255,0.25); border-radius: 14px;
+    background: rgba(255,255,255,0.08); color: #fff; font-size: 16px; font-weight: bold;
+    cursor: pointer; line-height: 1.5;
+  }
+  .modeCard:hover { background: rgba(255,255,255,0.18); }
+  .modeCard small { display: block; font-size: 12px; font-weight: normal; color: #c9d6e2; margin-top: 4px; }
+  #modeSelect .note { font-size: 11px; color: #9fb2c8; margin: 8px 0 0; }
   #pickModeBtn.on { background: #e67e22; }
   #pickResult {
     position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
@@ -507,7 +528,17 @@
   <button id="kominkanToggleBtn" class="off" title="印西市の公民館・交流館・文化ホールのピンを表示／非表示します（クリックで各施設の市公式ページへ）">🏢 公民館</button>
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
+  <button id="modeSwitchBtn" title="イベント用途と防災用途を切り替えます">🔀 モード切替</button>
   <button id="howtoBtn">❓ 使い方</button>
+</div>
+
+<div id="modeSelect">
+  <div class="inner">
+    <h2>🌏 CBIメタバース印西へようこそ！<br>利用目的をえらんでください</h2>
+    <button class="modeCard" onclick="applyMode('event')">🎪 イベント・文化財探検<small>文化財めぐり・ずかん・クイズ・タイムトライアル</small></button>
+    <button class="modeCard" onclick="applyMode('bousai')">🛟 防災・地形の理解<small>浸水シミュレーション・避難所の場所確認</small></button>
+    <p class="note">あとから「🔀 モード切替」（左上メニュー）でいつでも変更できます</p>
+  </div>
 </div>
 
 <div id="ttHud">
@@ -1804,13 +1835,29 @@ function ttHash(str) { // 証明書の簡易検証コード（改ざん抑止用
   for (let i = 0; i < str.length; i++) h = ((h * 33) ^ str.charCodeAt(i)) >>> 0;
   return h.toString(36).toUpperCase().padStart(7, "0");
 }
-function openTtModal() {
+// 参加要件はサーバー設定（管理画面で変更可）を優先し、取得できない場合は TT_CONFIG の既定値を使う
+let ttCurrentReq = null;
+async function ttGetServerInfo() {
+  try {
+    const res = await fetch(TT_API);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  } catch (e) { return null; }
+}
+async function openTtModal() {
+  document.getElementById("ttBody").innerHTML = '<p class="ttNote">イベント設定を確認中…</p>';
+  document.getElementById("ttModal").classList.add("show");
+  const info = await ttGetServerInfo();
+  const req = (info && info.requirements) ? info.requirements
+    : { minRatePct: Math.round(TT_CONFIG.minRate * 100), minAnswers: TT_CONFIG.minAnswers };
+  ttCurrentReq = req;
   const st = ttQuizStats();
-  const qualified = st.answers >= TT_CONFIG.minAnswers && st.rate >= TT_CONFIG.minRate;
+  const qualified = st.answers >= req.minAnswers && Math.round(st.rate * 100) >= req.minRatePct;
   const ratePct = Math.round(st.rate * 100);
   let html =
     '<p class="ttNote">家にいながらオンラインで競争！ 文化財を決められた順番に巡ってタイムを競います。文化財の場所と移動操作をマスターしよう。</p>' +
-    '<p class="ttNote">参加要件：クイズで<b>' + TT_CONFIG.minAnswers + '問以上解答し、正答率' + Math.round(TT_CONFIG.minRate * 100) + '%以上</b>であること。<br>' +
+    '<p class="ttNote">参加要件：クイズで<b>' + req.minAnswers + '問以上解答し、正答率' + req.minRatePct + '%以上</b>であること' +
+    (info ? "（今回のイベント設定）" : "（標準設定）") + '。<br>' +
     'あなたの成績：' + st.answers + '問解答・正答率' + ratePct + '% → ' +
     (qualified ? '<span class="ttOk">✅ 参加できます</span>' : '<span class="ttNg">❌ まだ参加できません（クイズタブで挑戦しよう）</span>') + "</p>";
   if (qualified) {
@@ -1829,28 +1876,26 @@ function openTtModal() {
   }
   html += '<div id="ttRanking" class="ttNote"></div>';
   document.getElementById("ttBody").innerHTML = html;
-  document.getElementById("ttModal").classList.add("show");
-  ttFetchRanking();
+  ttRenderRanking(info);
 }
 function ttEsc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
-function ttFetchRanking() {
-  fetch(TT_API).then(r => { if (!r.ok) throw new Error(); return r.json(); }).then(d => {
-    const el = document.getElementById("ttRanking");
-    if (!el || !d.ranking) return;
-    const rows = Object.keys(TT_CONFIG.courses).map(k => {
-      const list = (d.ranking[k] || []).slice(0, 3);
-      if (!list.length) return "";
-      return "<b>" + TT_CONFIG.courses[k].label.split("（")[0] + "</b>：" +
-        list.map((r, i) => (i + 1) + "位 " + ttEsc(r.name) + " " + ttFormat(r.elapsedMs)).join("　");
-    }).filter(Boolean).join("<br>");
-    el.innerHTML = rows ? "🏆 <b>ランキング（サーバー公式記録）</b><br>" + rows : "";
-  }).catch(() => {});
+function ttRenderRanking(info) {
+  const el = document.getElementById("ttRanking");
+  if (!el || !info || !info.ranking) return;
+  const rows = Object.keys(TT_CONFIG.courses).map(k => {
+    const list = (info.ranking[k] || []).slice(0, 3);
+    if (!list.length) return "";
+    return "<b>" + TT_CONFIG.courses[k].label.split("（")[0] + "</b>：" +
+      list.map((r, i) => (i + 1) + "位 " + ttEsc(r.name) + " " + ttFormat(r.elapsedMs)).join("　");
+  }).filter(Boolean).join("<br>");
+  el.innerHTML = rows ? "🏆 <b>ランキング（サーバー公式記録）</b><br>" + rows : "";
 }
 function ttSelectAge(key) {
   const age = TT_CONFIG.ages.find(a => a.key === key);
   const st = ttQuizStats();
   const course = TT_CONFIG.courses[age.level];
-  ttEntry = { ageKey: key, ageLabel: age.label, level: age.level, courseKey: age.level, rate: st.rate, answers: st.answers, name: "" };
+  const reqNow = ttCurrentReq || { minRatePct: Math.round(TT_CONFIG.minRate * 100), minAnswers: TT_CONFIG.minAnswers };
+  ttEntry = { ageKey: key, ageLabel: age.label, level: age.level, courseKey: age.level, rate: st.rate, answers: st.answers, name: "", reqRatePct: reqNow.minRatePct };
   document.getElementById("ttBody").innerHTML =
     '<p><b>' + age.label + "</b> → " + course.label + "</p>" +
     '<p class="ttNote">巡る順番：' + course.idx.map((i, n) => (n + 1) + ". " + BUNKAZAI[i].name).join(" → ") + "</p>" +
@@ -2047,7 +2092,7 @@ function ttDrawCert(entry, ms, dateStr, ratePct, code, official) {
   ctx.fillStyle = "#1a2533"; ctx.font = "26px serif";
   const course = TT_CONFIG.courses[entry.courseKey];
   ctx.fillText("年齢区分：" + entry.ageLabel + "　　コース：" + course.label.replace(/（.*/, ""), W / 2, 470);
-  ctx.fillText("クイズ正答率：" + ratePct + "%（" + entry.answers + "問解答・参加要件" + Math.round(TT_CONFIG.minRate * 100) + "%以上）", W / 2, 515);
+  ctx.fillText("クイズ正答率：" + ratePct + "%（" + entry.answers + "問解答・参加要件" + (entry.reqRatePct ?? Math.round(TT_CONFIG.minRate * 100)) + "%以上）", W / 2, 515);
   ctx.font = "20px serif"; ctx.fillStyle = "#444a55";
   const names = course.idx.map(i => BUNKAZAI[i].name);
   const courseLine = course.idx.length > 8
@@ -2064,6 +2109,55 @@ function ttDrawCert(entry, ms, dateStr, ratePct, code, official) {
   ctx.fillText("印西「このゆびとまれ」プロジェクト　／　記録ID: " + code, W / 2, 715);
 }
 document.getElementById("ttBtn").addEventListener("click", openTtModal);
+
+// ============================================================
+// 🔀 用途モード（イベント・文化財探検 ／ 防災・地形の理解）
+// 入り口: URLパラメータ ?mode=event / ?mode=bousai（リンクを分けられる）
+// パラメータなしの初回はモード選択画面を表示。選択は端末に記憶し、
+// ☰メニューの「🔀 モード切替」でいつでも変更できる
+// ============================================================
+const MODE_KEY = "cbi-meta-mode-v1";
+let currentMode = "event";
+function applyMode(mode) {
+  const ev = mode !== "bousai";
+  currentMode = ev ? "event" : "bousai";
+  try { localStorage.setItem(MODE_KEY, currentMode); } catch (e) {}
+  // イベント系UI（文化財ゲーム・タイムトライアル・位置修正）
+  ["puzzleBtn", "pinToggleBtn", "pickModeBtn", "ttBtn"].forEach(id => {
+    document.getElementById(id).style.display = ev ? "" : "none";
+  });
+  // 防災系UI（避難所トグル・浸水シミュレーション）
+  document.getElementById("shelterToggleBtn").style.display = ev ? "none" : "";
+  document.getElementById("floodControls").style.display = ev ? "none" : "";
+  if (ev) {
+    // 防災→イベント: 浸水面と避難所ピンを片づけ、文化財ピンを表示
+    const ft = document.getElementById("floodToggle");
+    if (ft.checked) { ft.checked = false; ft.dispatchEvent(new Event("change")); }
+    if (shelterPinsVisible) { shelterPinsVisible = false; applyShelterPinVisibility(); }
+    if (!bunkazaiPinsVisible) { bunkazaiPinsVisible = true; applyBunkazaiPinVisibility(); }
+  } else {
+    // イベント→防災: ゲーム系を片づけ、文化財ピンOFF・避難所ピンON
+    if (ttActive) ttAbort();
+    document.getElementById("puzzlePanel").style.display = "none";
+    document.getElementById("bunkazaiModal").classList.remove("show");
+    document.getElementById("ttModal").classList.remove("show");
+    if (bunkazaiPinsVisible) { bunkazaiPinsVisible = false; applyBunkazaiPinVisibility(); }
+    if (!shelterPinsVisible) document.getElementById("shelterToggleBtn").click(); // 初回は避難所データも取得
+  }
+  document.getElementById("modeSelect").classList.remove("show");
+}
+function openModeSelect() { document.getElementById("modeSelect").classList.add("show"); }
+document.getElementById("modeSwitchBtn").addEventListener("click", openModeSelect);
+(function initMode() {
+  const params = new URLSearchParams(location.search);
+  const p = params.get("mode");
+  if (p === "event" || p === "bousai") { applyMode(p); return; } // リンク分け用（QR・サイト導線）
+  if (params.get("cinema")) { return; } // 撮影・告知モードでは選択画面を出さない
+  let saved = null;
+  try { saved = localStorage.getItem(MODE_KEY); } catch (e) {}
+  if (saved === "event" || saved === "bousai") { applyMode(saved); return; }
+  openModeSelect(); // 初回はモード選択から
+})();
 
 // 文化財データ読み込み＋看板設置
 async function loadBunkazai() {
