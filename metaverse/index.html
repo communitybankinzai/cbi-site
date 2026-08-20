@@ -409,10 +409,11 @@
     width: 52px; height: 52px; border-radius: 50%;
     background: rgba(255,255,255,0.55);
   }
-  /* モバイル用 移動ボタン（右下）: モード切替＋上昇/下降（長押し） */
+  /* モバイル用 移動ボタン（右下・横一列）: モード切替＋上昇/下降（長押し）
+     縦積みは横画面で右上の「📍スポット」と重なるため、最下部に横並びで置く */
   #mobileMoveBar {
-    position: absolute; bottom: 96px; right: 16px; z-index: 30;
-    display: none; flex-direction: column; gap: 10px; align-items: flex-end;
+    position: absolute; bottom: 26px; right: 14px; z-index: 30;
+    display: none; flex-direction: row; gap: 10px; align-items: center;
   }
   #mobileMoveBar button {
     border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
@@ -436,6 +437,10 @@
     #joystick { display: block; }
     #mobileMoveBar { display: flex; }
     #helpBox { display: none; }
+    /* ヘッダーの折り返し・「戻る」との重なり対策（タイトルを短く・1行固定） */
+    #mvHeader .title { font-size: 12px; padding: 5px 10px; white-space: nowrap; }
+    #mvHeader .title small { display: none; }
+    #backLink { font-size: 11px; padding: 5px 9px; white-space: nowrap; }
     #controlPanel { display: none; top: 96px; width: min(64vw, 230px); max-height: calc(100dvh - 200px); }
     #panelToggle { display: block; }
     #floodNotice { top: 96px; font-size: 11px; }
