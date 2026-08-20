@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-08-20",
+          "title": "メタバース: 参加要件のイベント別設定＋イベント/防災モード分離 0.25時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao（/admin/timetrial に「⚙ 参加要件」設定フォーム=正答率%・最低解答数を app_settings（key: metaverse_tt_requirements）へ保存／APIのGETがrequirements返却・startの受付判定も同値使用。追加SQL不要。型エラー1件修正含む commit 7f1c2eb・0bac3bf）",
+            "site/metaverse/index.html（エントリー画面がサーバー設定を取得し「今回のイベント設定」として表示・参加判定・証明書の要件記載に反映。不通時は既定80%/10問／🔀用途モード: ?mode=event・?mode=bousai で入り口分岐＋初回モード選択画面＋☰メニューから切替。イベント=文化財系のみ、防災=避難所自動ON・浸水シミュのみ。commit 1f1fa74）",
+            "site/inzai-disaster-map/index.html（メタバースリンクを ?mode=bousai 直行に変更）",
+            "site/admin/changelog.json 2件＋CLAUDE_HANDOFF.md更新",
+            "検証: ローカルでモード切替の表示制御・URL分岐・初回選択・記憶を確認／本番で初回選択画面・イベント設定80%のサーバー取得表示・防災モードで避難所55件自動表示・ゲームUI非表示を確認。管理画面フォームの実操作はユーザーのデモテストで確認予定"
+          ],
+          "hours": 0.25,
+          "partnerApproved": false,
+          "note": "「80%がクリアできない→イベントごとに変更したい」「イベント/防災で用途を分けたい」の2要望への対応。session: 51b587ef-7426-442b-977e-b941cdd6e689 / output: 330,933 / cost: $215.74（前回記録3.05h以降の差分0.25h）"
+        },
+        {
+          "date": "2026-08-20",
           "title": "CiDAO: タイムトライアル記録の管理ページ（/admin/timetrial）実装 0.15時間",
           "category": "実装",
           "outputs": [
