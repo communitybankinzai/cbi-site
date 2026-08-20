@@ -33,6 +33,7 @@
     position: absolute; top: 52px; right: 10px; z-index: 20;
     background: rgba(20, 30, 40, 0.8); color: #fff; border-radius: 12px;
     padding: 10px; width: 190px; font-size: 12px;
+    max-height: calc(100dvh - 110px); overflow-y: auto; /* 縦長端末でも浸水シミュまで届くように */
   }
   #controlPanel h3 { margin: 0 0 6px; font-size: 13px; }
   #controlPanel button {
@@ -398,22 +399,52 @@
 
   /* 仮想ジョイスティック（モバイル） */
   #joystick {
-    position: absolute; bottom: 90px; left: 24px; z-index: 30;
-    width: 110px; height: 110px; border-radius: 50%;
+    position: absolute; bottom: 96px; left: 20px; z-index: 30;
+    width: 128px; height: 128px; border-radius: 50%;
     background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.3);
     display: none; touch-action: none;
   }
   #joystickKnob {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    width: 46px; height: 46px; border-radius: 50%;
+    width: 52px; height: 52px; border-radius: 50%;
     background: rgba(255,255,255,0.55);
   }
-  @media (pointer: coarse) {
+  /* モバイル用 移動ボタン（右下）: モード切替＋上昇/下降（長押し） */
+  #mobileMoveBar {
+    position: absolute; bottom: 96px; right: 16px; z-index: 30;
+    display: none; flex-direction: column; gap: 10px; align-items: flex-end;
+  }
+  #mobileMoveBar button {
+    border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
+    width: 54px; height: 54px; font-size: 20px; cursor: pointer;
+    background: rgba(20, 30, 40, 0.72); color: #fff;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+  #mobileModeBtn { width: auto !important; border-radius: 14px !important; padding: 0 14px; font-size: 13px !important; height: 44px !important; font-weight: bold; }
+  #mobileMoveBar button:active { background: rgba(58, 123, 213, 0.85); }
+  /* モバイル用メニュー（左上ボタン群を集約） */
+  #menuToggle {
+    position: absolute; top: 52px; left: 10px; z-index: 22; display: none;
+    background: rgba(20, 30, 40, 0.85); color: #fff; border: none;
+    border-radius: 10px; padding: 9px 13px; font-size: 13px; cursor: pointer;
+  }
+  #menuToggle .badge {
+    background: #e67e22; border-radius: 10px; padding: 1px 7px;
+    font-size: 11px; margin-left: 4px; font-weight: bold;
+  }
+  @media (pointer: coarse), (max-width: 640px) {
     #joystick { display: block; }
+    #mobileMoveBar { display: flex; }
     #helpBox { display: none; }
-    #controlPanel { display: none; }
+    #controlPanel { display: none; top: 96px; width: min(64vw, 230px); max-height: calc(100dvh - 200px); }
     #panelToggle { display: block; }
     #floodNotice { top: 96px; font-size: 11px; }
+    /* 左上ボタン群は☰メニューに集約（重なり対策） */
+    #menuToggle { display: block; }
+    #topLeftBar { display: none; flex-direction: column; align-items: flex-start; top: 96px; max-height: calc(100dvh - 210px); overflow-y: auto; }
+    #topLeftBar.open { display: flex; }
+    #topLeftBar button { width: max-content; }
+    #puzzlePanel { top: 96px; max-height: calc(100dvh - 200px); }
   }
 </style>
 </head>
@@ -426,6 +457,13 @@
 </div>
 
 <button id="panelToggle">📍 スポット</button>
+<button id="menuToggle">☰ メニュー</button>
+
+<div id="mobileMoveBar">
+  <button id="mobileModeBtn" title="歩行モードと飛行モードを切り替えます">🚁 飛行中</button>
+  <button id="mobileUpBtn" title="上昇（押している間）">⬆</button>
+  <button id="mobileDownBtn" title="下降（押している間）">⬇</button>
+</div>
 
 <div id="topLeftBar">
   <button id="puzzleBtn">🏛 印西市文化財<span class="badge" id="puzzleCount">0/50</span></button>
@@ -502,6 +540,9 @@
     <ul>
       <li>移動：画面左下の<b>丸いスティック</b>を指でたおす</li>
       <li>見回す：画面を<b>スワイプ</b></li>
+      <li>上昇／下降：右下の<b>⬆／⬇ボタン</b>を押している間（飛行モード時）</li>
+      <li>歩行／飛行の切替：右下の<b>🚶／🚁ボタン</b></li>
+      <li>文化財・避難所などのボタンは左上の「<b>☰ メニュー</b>」、スポット移動・浸水シミュレーションは右上の「<b>📍 スポット</b>」から（パネルは上下にスクロールできます）</li>
     </ul>
 
     <h3>🚶 2つのモード</h3>
@@ -1008,6 +1049,36 @@ function setMode(walk) {
 }
 walkBtn.onclick = () => setMode(true);
 flyBtn.onclick = () => setMode(false);
+
+// ---- モバイル用 移動ボタン（右下）----
+// モード切替はsetModeを共用。⬆⬇は押している間だけキー入力（KeyE/KeyQ）を疑似的に立てる
+const mobileModeBtn = document.getElementById("mobileModeBtn");
+function updateMobileMoveBar() {
+  mobileModeBtn.textContent = walkMode ? "🚶 歩行中" : "🚁 飛行中";
+  document.getElementById("mobileUpBtn").style.display = walkMode ? "none" : "block";
+  document.getElementById("mobileDownBtn").style.display = walkMode ? "none" : "block";
+}
+mobileModeBtn.addEventListener("click", () => { setMode(!walkMode); updateMobileMoveBar(); });
+const _origSetMode = setMode; // 他経路（パネルのモードボタン）からの切替にも表示を追従させる
+setMode = function (walk) { _origSetMode(walk); updateMobileMoveBar(); };
+[["mobileUpBtn", "KeyE"], ["mobileDownBtn", "KeyQ"]].forEach(([id, code]) => {
+  const el = document.getElementById(id);
+  el.addEventListener("pointerdown", (e) => { keys[code] = true; el.setPointerCapture(e.pointerId); e.preventDefault(); });
+  el.addEventListener("pointerup", () => { keys[code] = false; });
+  el.addEventListener("pointercancel", () => { keys[code] = false; });
+});
+updateMobileMoveBar();
+
+// ---- モバイル用 ☰メニュー（左上ボタン群の開閉。項目タップで自動的に閉じる）----
+const menuToggleBtn = document.getElementById("menuToggle");
+menuToggleBtn.addEventListener("click", () => {
+  document.getElementById("topLeftBar").classList.toggle("open");
+});
+document.getElementById("topLeftBar").addEventListener("click", (e) => {
+  if (e.target.tagName === "BUTTON" && document.getElementById("topLeftBar").classList.contains("open")) {
+    document.getElementById("topLeftBar").classList.remove("open");
+  }
+});
 
 // ============================================================
 // 印西市文化財パズルラリー（端末内完結・localStorage保存）
@@ -1985,7 +2056,8 @@ function cinemaCaption(text, ms) {
 async function startCinema() {
   // 通常UIを隠す
   ["mvHeader", "controlPanel", "helpBox", "puzzleBtn", "howtoBtn",
-   "panelToggle", "joystick", "spotInfo", "puzzlePanel"].forEach((id) => {
+   "panelToggle", "joystick", "spotInfo", "puzzlePanel",
+   "menuToggle", "mobileMoveBar", "topLeftBar"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
@@ -2065,7 +2137,8 @@ async function startCinema() {
 // 告知teaser用シーケンス（?cinema=2・約17秒）飛ぶ→歩く→精霊出現→ゲット
 async function startTeaser() {
   ["mvHeader", "controlPanel", "helpBox", "puzzleBtn", "howtoBtn",
-   "panelToggle", "joystick", "spotInfo", "puzzlePanel"].forEach((id) => {
+   "panelToggle", "joystick", "spotInfo", "puzzlePanel",
+   "menuToggle", "mobileMoveBar", "topLeftBar"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
