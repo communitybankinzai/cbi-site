@@ -246,6 +246,15 @@
   #ttHud .ttAbort { margin-left: 10px; padding: 3px 10px; border: none; border-radius: 8px;
     background: #e74c3c; color: #fff; font-size: 11px; cursor: pointer; }
   @media (pointer: coarse), (max-width: 640px) { #ttHud { top: 92px; } }
+  /* 同時利用者数（在席表示） */
+  #presenceChip {
+    position: absolute; top: 52px; left: 50%; transform: translateX(-50%);
+    z-index: 23; display: none; background: rgba(20, 30, 40, 0.82); color: #fff;
+    border: 1px solid rgba(127, 200, 255, 0.55); border-radius: 999px;
+    padding: 5px 13px; font-size: 12px; line-height: 1.4; white-space: nowrap;
+    pointer-events: none;
+  }
+  #presenceChip b { color: #7fc8ff; font-size: 14px; }
   /* 用途モード選択（イベント／防災） */
   #modeSelect {
     position: absolute; inset: 0; z-index: 80; background: rgba(10, 16, 24, 0.9);
@@ -513,6 +522,7 @@
   <a id="backLink" href="../index.html">← CBIサイトへ戻る</a>
 </div>
 
+<div id="presenceChip"></div>
 <button id="panelToggle">📍 スポット</button>
 <button id="menuToggle">☰ メニュー</button>
 
@@ -2736,6 +2746,49 @@ else if (CINEMA_MODE === "2") startTeaser();
 // ============================================================
 // 開始
 // ============================================================
+// ============================================================
+// 👥 同時利用者数（在席表示）
+// 一定間隔で匿名のセッションIDをサーバーへ送り、参加中の人数を受け取って表示する。
+// 個人情報は送らない。サーバーに繋がらないときは何も表示しない（機能を止めない）
+// ============================================================
+const PRESENCE_API = "https://cidao.vercel.app/api/metaverse-presence";
+const PRESENCE_INTERVAL_MS = 45000;
+let presenceSessionId = "";
+function presenceGetSessionId() {
+  if (presenceSessionId) return presenceSessionId;
+  try {
+    const saved = sessionStorage.getItem("cbi-meta-presence-id");
+    if (saved) { presenceSessionId = saved; return saved; }
+  } catch (e) {}
+  const buf = new Uint8Array(12);
+  (window.crypto || window.msCrypto).getRandomValues(buf);
+  presenceSessionId = Array.from(buf).map(function (n) { return n.toString(16).padStart(2, "0"); }).join("");
+  try { sessionStorage.setItem("cbi-meta-presence-id", presenceSessionId); } catch (e) {}
+  return presenceSessionId;
+}
+function presenceRender(count) {
+  const el = document.getElementById("presenceChip");
+  if (!el) return;
+  // タイムトライアル中は計測表示と重なるため隠す
+  if (!count || count < 1 || (typeof ttActive !== "undefined" && ttActive)) { el.style.display = "none"; return; }
+  el.innerHTML = "👥 いま <b>" + count + "</b> 人が参加中";
+  el.style.display = "block";
+}
+function presencePing() {
+  fetch(PRESENCE_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId: presenceGetSessionId(), mode: (typeof currentMode !== "undefined" ? currentMode : "event") }),
+  })
+    .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+    .then(function (d) { presenceRender(d.total); })
+    .catch(function () { presenceRender(0); });
+}
+if (!new URLSearchParams(location.search).get("cinema")) { // 撮影・告知モードでは表示しない
+  presencePing();
+  setInterval(presencePing, PRESENCE_INTERVAL_MS);
+}
+
 loadTileset();
 
 // 用途モードの初期化は最後に行う（applyMode が参照する変数の宣言がすべて済んだ後。
