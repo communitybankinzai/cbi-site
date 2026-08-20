@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-20",
+          "title": "メタバース: 移動速度の切替ボタン（⚡×1/×2/×4）追加 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（右下移動ボタン列に⚡速度切替を追加: タップで×1→×2→×4循環・speedMultiplierを移動計算に乗算・Shift加速と併用可。スマホには加速手段がなく飛行30m/s等速だったのが「遅い」の真因。使い方ガイド更新。commit 61ada5f）",
+            "site/admin/changelog.json 1件＋CLAUDE_HANDOFF.md更新",
+            "検証: 縦375x812・横667x375で×1→×2→×4→×1の循環とボタン配置（画面内・ジョイスティック/スポットと非重複）を確認／本番でも循環動作を確認"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "スマホの飛行速度が遅いという指摘への対応。session: 51b587ef-7426-442b-977e-b941cdd6e689 / output: 223,822 / cost: $139.54（前回記録2.15h以降の差分0.1h）"
+        },
+        {
+          "date": "2026-08-20",
           "title": "メタバース: スマホUI改善（メニュー集約・浸水シミュ到達性・移動ボタン）0.3時間",
           "category": "実装",
           "outputs": [
