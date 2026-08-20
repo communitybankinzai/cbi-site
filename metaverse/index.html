@@ -1111,9 +1111,37 @@ viewer.clock.onTick.addEventListener(function () {
       if (forward !== 0) cam.moveForward(forward * speed);
       if (right !== 0) cam.moveRight(right * speed);
       if (up !== 0) cam.moveUp(up * speed);
+      // 地面より下へ潜らないようにする。地球儀表示を切っているため、地下に入ると
+      // 画面が真っ黒になり「読み込み失敗」と誤解されるのを防ぐ（数フレームおきに確認）
+      keepAboveGround();
     }
   }
 });
+
+// 飛行モードで地表より下へ潜らないようにする（地下＝真っ黒対策）
+let groundCheckFrame = 0;
+let undergroundNoticeAt = 0;
+function keepAboveGround() {
+  groundCheckFrame++;
+  if (groundCheckFrame % 12 !== 0) return;          // 毎フレームだと重いので間引く
+  if (!viewer.scene.sampleHeightSupported) return;   // 3Dタイル未対応環境では何もしない
+  const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+  let ground;
+  try { ground = viewer.scene.sampleHeight(carto.clone()); } catch (e) { return; }
+  if (ground === undefined || ground === null) return; // タイル未読込のときは判定しない
+  const minHeight = ground + 2;                      // 地表から2m上を下限にする
+  if (carto.height >= minHeight) return;
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(
+      Cesium.Math.toDegrees(carto.longitude), Cesium.Math.toDegrees(carto.latitude), minHeight),
+    orientation: { heading: viewer.camera.heading, pitch: viewer.camera.pitch, roll: 0 },
+  });
+  const now = performance.now();
+  if (now - undergroundNoticeAt > 8000) {            // 案内は8秒に1回まで
+    undergroundNoticeAt = now;
+    showPickResult("地面の下には入れません。⬆（またはEキー）で上昇できます。", 4000);
+  }
+}
 
 // ============================================================
 // モード切替
