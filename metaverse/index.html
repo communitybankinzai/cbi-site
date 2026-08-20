@@ -215,6 +215,35 @@
     background: rgba(255,255,255,0.95); color: #1a2533; font-size: 14px; }
   #zukanCertBtn { display: none; width: 100%; margin: 0 0 8px; padding: 8px; border: 1px solid #ffd166;
     border-radius: 10px; background: rgba(255,209,102,0.15); color: #ffd166; font-weight: bold; font-size: 13px; cursor: pointer; }
+  /* タイムトライアル */
+  #ttModal {
+    position: absolute; inset: 0; z-index: 58; background: rgba(10, 16, 24, 0.88);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  #ttModal.show { display: flex; }
+  #ttModal .inner {
+    background: linear-gradient(160deg, #2c3e50, #1a2533); color: #fff;
+    border: 2px solid #7fc8ff; border-radius: 16px; padding: 16px;
+    max-width: 430px; width: 100%; max-height: 88%; overflow-y: auto; position: relative; font-size: 13px;
+  }
+  #ttModal h3 { margin: 0 24px 8px 0; color: #7fc8ff; font-size: 16px; }
+  #ttModal .close { position: absolute; top: 8px; right: 12px; cursor: pointer; opacity: 0.7; font-size: 16px; }
+  #ttModal .ttNote { font-size: 11.5px; color: #c9d6e2; line-height: 1.6; margin: 6px 0; }
+  #ttModal .ttOk { color: #2ecc71; font-weight: bold; }
+  #ttModal .ttNg { color: #e74c3c; font-weight: bold; }
+  #ttModal input[type="text"] { width: 100%; box-sizing: border-box; padding: 8px; border-radius: 8px;
+    border: 1px solid #7fc8ff; background: rgba(255,255,255,0.95); color: #1a2533; font-size: 14px; margin: 4px 0 8px; }
+  #ttCertCanvas { width: 100%; border-radius: 10px; box-shadow: 0 6px 30px rgba(0,0,0,0.5); }
+  #ttHud {
+    position: absolute; top: 52px; left: 50%; transform: translateX(-50%);
+    z-index: 36; display: none; background: rgba(20, 30, 40, 0.92); color: #fff;
+    border: 1px solid #7fc8ff; border-radius: 12px; padding: 8px 14px;
+    font-size: 13px; line-height: 1.5; text-align: center; max-width: min(92vw, 480px);
+  }
+  #ttHud .ttTime { font-size: 20px; font-weight: bold; color: #7fc8ff; font-variant-numeric: tabular-nums; }
+  #ttHud .ttAbort { margin-left: 10px; padding: 3px 10px; border: none; border-radius: 8px;
+    background: #e74c3c; color: #fff; font-size: 11px; cursor: pointer; }
+  @media (pointer: coarse), (max-width: 640px) { #ttHud { top: 92px; } }
   #pickModeBtn.on { background: #e67e22; }
   #pickResult {
     position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
@@ -477,7 +506,21 @@
   <button id="shelterToggleBtn" class="off" title="印西市の指定避難所・特別避難所・広域避難場所（公式55施設）のピンを表示／非表示します">🏫 避難所</button>
   <button id="kominkanToggleBtn" class="off" title="印西市の公民館・交流館・文化ホールのピンを表示／非表示します（クリックで各施設の市公式ページへ）">🏢 公民館</button>
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
+  <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
   <button id="howtoBtn">❓ 使い方</button>
+</div>
+
+<div id="ttHud">
+  <span class="ttTime" id="ttHudTime">0:00.0</span><button class="ttAbort" onclick="ttAbort()">中止</button><br>
+  <span id="ttHudNext"></span>
+</div>
+
+<div id="ttModal">
+  <div class="inner">
+    <span class="close" onclick="document.getElementById('ttModal').classList.remove('show')">✕</span>
+    <h3>⏱ 文化財タイムトライアル</h3>
+    <div id="ttBody"></div>
+  </div>
 </div>
 
 <div id="pickResult"></div>
@@ -1226,6 +1269,7 @@ function awardPiece(idx) {
 let encounterIdx = null;
 
 function showEncounter(idx) {
+  if (typeof ttActive !== "undefined" && ttActive) return; // タイムトライアル中は精霊出現を止める（計測の妨げ防止）
   encounterIdx = idx;
   const b = BUNKAZAI[idx];
   const tribe = SPIRIT_TRIBES[tribeOf(b)];
@@ -1719,6 +1763,208 @@ function drawCert(name, dateStr) {
   ctx.fillText("印西「このゆびとまれ」プロジェクト ／ 🏅 50/50", W / 2, 708);
   document.getElementById("certDl").href = cv.toDataURL("image/png");
 }
+
+// ============================================================
+// ⏱ 文化財タイムトライアル（オンラインイベント）
+// 家にいながら競争しつつ、文化財の位置と操作を覚えるイベント機能。
+// ルール・コースは TT_CONFIG にまとめてあり、ここを書き換えれば設定変更できる
+// ============================================================
+const TT_CONFIG = {
+  minAnswers: 10,   // 参加要件: クイズ解答数の下限
+  minRate: 0.8,     // 参加要件: クイズ正答率の下限（80%）
+  radius: 80,       // チェックポイント到達判定（m）＝ピース獲得と同じ
+  officeEmail: "you0810jmsdf@gmail.com", // 事務局（記録報告の宛先）
+  ages: [
+    { key: "kids", label: "小学生以下", level: "beginner" },
+    { key: "teens", label: "中学生・高校生", level: "intermediate" },
+    { key: "adult", label: "一般（18歳以上）", level: "advanced" },
+  ],
+  courses: {
+    beginner: { label: "🔰 初級コース（3か所・約2km）", idx: [44, 39, 0] },
+    intermediate: { label: "🥈 中級コース（5か所・約8km）", idx: [43, 3, 6, 44, 39] },
+    advanced: { label: "🥇 上級コース（7か所・約12km）", idx: [3, 6, 43, 41, 0, 44, 13] },
+  },
+};
+let ttActive = false, ttCourse = [], ttPos = 0, ttStartMs = 0, ttCountdownEnd = 0;
+let ttEntry = null; // {name, ageLabel, level, rate, answers}
+
+function ttQuizStats() {
+  const log = loadQuizLog();
+  const ok = log.filter(r => r.ok).length;
+  return { answers: log.length, ok: ok, rate: log.length ? ok / log.length : 0 };
+}
+function ttFormat(ms) {
+  const m = Math.floor(ms / 60000), s = Math.floor(ms % 60000 / 1000), d = Math.floor(ms % 1000 / 100);
+  return m + ":" + String(s).padStart(2, "0") + "." + d;
+}
+function ttHash(str) { // 証明書の簡易検証コード（改ざん抑止用）
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h * 33) ^ str.charCodeAt(i)) >>> 0;
+  return h.toString(36).toUpperCase().padStart(7, "0");
+}
+function openTtModal() {
+  const st = ttQuizStats();
+  const qualified = st.answers >= TT_CONFIG.minAnswers && st.rate >= TT_CONFIG.minRate;
+  const ratePct = Math.round(st.rate * 100);
+  let html =
+    '<p class="ttNote">家にいながらオンラインで競争！ 文化財を決められた順番に巡ってタイムを競います。文化財の場所と移動操作をマスターしよう。</p>' +
+    '<p class="ttNote">参加要件：クイズで<b>' + TT_CONFIG.minAnswers + '問以上解答し、正答率' + Math.round(TT_CONFIG.minRate * 100) + '%以上</b>であること。<br>' +
+    'あなたの成績：' + st.answers + '問解答・正答率' + ratePct + '% → ' +
+    (qualified ? '<span class="ttOk">✅ 参加できます</span>' : '<span class="ttNg">❌ まだ参加できません（クイズタブで挑戦しよう）</span>') + "</p>";
+  if (qualified) {
+    html += '<p style="margin:8px 0 2px;"><b>参加年齢をえらんでください</b>（年齢でレベルが決まります）</p>' +
+      '<div class="quizLevelRow">' +
+      TT_CONFIG.ages.map(a =>
+        '<button class="quizBtn" onclick="ttSelectAge(\'' + a.key + '\')">' + a.label + "</button>").join("") +
+      "</div>";
+  } else {
+    html += '<button class="quizBtn" onclick="document.getElementById(\'ttModal\').classList.remove(\'show\');document.getElementById(\'puzzleBtn\').click();document.getElementById(\'tabQuiz\').click();">🧠 クイズに挑戦する</button>';
+  }
+  const best = ttLoadBest();
+  if (Object.keys(best).length) {
+    html += '<p class="ttNote" style="margin-top:8px;">自己ベスト：' +
+      Object.keys(best).map(k => (TT_CONFIG.courses[k] ? TT_CONFIG.courses[k].label.split("（")[0] : k) + " " + ttFormat(best[k])).join(" ／ ") + "</p>";
+  }
+  document.getElementById("ttBody").innerHTML = html;
+  document.getElementById("ttModal").classList.add("show");
+}
+function ttSelectAge(key) {
+  const age = TT_CONFIG.ages.find(a => a.key === key);
+  const st = ttQuizStats();
+  const course = TT_CONFIG.courses[age.level];
+  ttEntry = { ageKey: key, ageLabel: age.label, level: age.level, rate: st.rate, answers: st.answers, name: "" };
+  document.getElementById("ttBody").innerHTML =
+    '<p><b>' + age.label + "</b> → " + course.label + "</p>" +
+    '<p class="ttNote">巡る順番：' + course.idx.map((i, n) => (n + 1) + ". " + BUNKAZAI[i].name).join(" → ") + "</p>" +
+    '<p class="ttNote">各文化財の80m以内まで近づくと通過。スタート地点（1か所目の近く）へ移動してカウントダウン後に計測開始。⚡速度切替・歩行/飛行は自由です。</p>' +
+    '<p style="margin:8px 0 0;"><b>ニックネーム</b>（証明書に記載されます）</p>' +
+    '<input type="text" id="ttNameInput" maxlength="20" placeholder="ニックネームを入力">' +
+    '<button class="quizBtn quizStart" onclick="ttStart()">🚀 スタート地点へ移動して開始</button>' +
+    '<button class="quizBtn" onclick="openTtModal()">← もどる</button>';
+}
+function ttStart() {
+  const name = document.getElementById("ttNameInput").value.trim();
+  if (!name) { document.getElementById("ttNameInput").focus(); return; }
+  ttEntry.name = name;
+  ttCourse = TT_CONFIG.courses[ttEntry.level].idx.slice();
+  ttPos = 0;
+  ttActive = true;
+  document.getElementById("ttModal").classList.remove("show");
+  document.getElementById("puzzlePanel").style.display = "none";
+  teleportNear(BUNKAZAI[ttCourse[0]]);
+  ttCountdownEnd = performance.now() + 6000; // テレポート約3秒＋カウントダウン3秒
+  ttStartMs = 0;
+  document.getElementById("ttHud").style.display = "block";
+}
+function ttAbort() {
+  ttActive = false;
+  document.getElementById("ttHud").style.display = "none";
+  showPickResult("タイムトライアルを中止しました。", 4000);
+}
+function ttLoadBest() {
+  try { return JSON.parse(localStorage.getItem("cbi-meta-tt-best-v1")) || {}; } catch (e) { return {}; }
+}
+function ttDistToNext() {
+  const b = BUNKAZAI[ttCourse[ttPos]];
+  const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+  const lat = Cesium.Math.toDegrees(carto.latitude), lon = Cesium.Math.toDegrees(carto.longitude);
+  const dy = (b.lat - lat) * 111320;
+  const dx = (b.lon - lon) * 111320 * Math.cos(carto.latitude);
+  return Math.hypot(dx, dy);
+}
+viewer.clock.onTick.addEventListener(function () {
+  if (!ttActive) return;
+  const now = performance.now();
+  const hudTime = document.getElementById("ttHudTime");
+  const hudNext = document.getElementById("ttHudNext");
+  if (now < ttCountdownEnd) {
+    hudTime.textContent = "🚦 " + Math.ceil((ttCountdownEnd - now) / 1000);
+    hudNext.textContent = "スタート準備中… 1か所目: " + BUNKAZAI[ttCourse[0]].name;
+    return;
+  }
+  if (!ttStartMs) ttStartMs = now;
+  const elapsed = now - ttStartMs;
+  hudTime.textContent = "⏱ " + ttFormat(elapsed);
+  const d = ttDistToNext();
+  hudNext.textContent = "つぎ（" + (ttPos + 1) + "/" + ttCourse.length + "）: " +
+    BUNKAZAI[ttCourse[ttPos]].name + " まで 約" + (d >= 1000 ? (d / 1000).toFixed(1) + "km" : Math.round(d) + "m");
+  if (d <= TT_CONFIG.radius) {
+    showStampToast("✅ " + (ttPos + 1) + "/" + ttCourse.length + " " + BUNKAZAI[ttCourse[ttPos]].name + " 通過！");
+    ttPos++;
+    if (ttPos >= ttCourse.length) ttFinish(elapsed);
+  }
+});
+function ttFinish(elapsedMs) {
+  ttActive = false;
+  document.getElementById("ttHud").style.display = "none";
+  const best = ttLoadBest();
+  const isBest = !best[ttEntry.level] || elapsedMs < best[ttEntry.level];
+  if (isBest) {
+    best[ttEntry.level] = Math.round(elapsedMs);
+    try { localStorage.setItem("cbi-meta-tt-best-v1", JSON.stringify(best)); } catch (e) {}
+  }
+  const now = new Date();
+  const dateStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+  const ratePct = Math.round(ttEntry.rate * 100);
+  const code = ttHash([ttEntry.name, ttEntry.level, Math.round(elapsedMs), dateStr, ratePct].join("|"));
+  ttDrawCert(ttEntry, elapsedMs, dateStr, ratePct, code);
+  const mailBody = encodeURIComponent(
+    "CBIメタバース印西 タイムトライアル記録報告\n\n" +
+    "ニックネーム: " + ttEntry.name + "\n年齢区分: " + ttEntry.ageLabel + "\n" +
+    "レベル: " + TT_CONFIG.courses[ttEntry.level].label + "\nタイム: " + ttFormat(elapsedMs) + "\n" +
+    "クイズ正答率: " + ratePct + "%（" + ttEntry.answers + "問解答）\n実施日: " + dateStr + "\n検証コード: " + code + "\n\n" +
+    "※保存した証明書画像をこのメールに添付して送信してください");
+  document.getElementById("ttBody").innerHTML =
+    '<p><b>🎉 ゴール！</b> タイム：<span style="color:#7fc8ff;font-size:20px;font-weight:bold;">' + ttFormat(elapsedMs) + "</span>" +
+    (isBest ? '　<span class="ttOk">自己ベスト更新！</span>' : "") + "</p>" +
+    '<canvas id="ttCertCanvas" width="1123" height="794"></canvas>' +
+    '<a id="ttCertDl" class="quizBtn quizStart" style="text-decoration:none;text-align:center;" download="タイムトライアル証明書_' + ttEntry.name + '.png" href="' + document.getElementById("ttCertTmp").toDataURL("image/png") + '">💾 証明書を画像で保存</a>' +
+    '<a class="quizBtn" style="text-decoration:none;text-align:center;" href="mailto:' + TT_CONFIG.officeEmail + '?subject=' + encodeURIComponent("タイムトライアル記録報告（" + ttEntry.name + "）") + '&body=' + mailBody + '">📮 事務局へメールで報告（証明書画像を添付）</a>' +
+    '<button class="quizBtn" onclick="openTtModal()">🔁 もう一度挑戦する</button>';
+  const shown = document.getElementById("ttCertCanvas");
+  shown.getContext("2d").drawImage(document.getElementById("ttCertTmp"), 0, 0);
+  document.getElementById("ttModal").classList.add("show");
+}
+function ttDrawCert(entry, ms, dateStr, ratePct, code) {
+  let cv = document.getElementById("ttCertTmp");
+  if (!cv) {
+    cv = document.createElement("canvas");
+    cv.id = "ttCertTmp"; cv.width = 1123; cv.height = 794; cv.style.display = "none";
+    document.body.appendChild(cv);
+  }
+  const ctx = cv.getContext("2d");
+  const W = cv.width, H = cv.height;
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, "#eef6fd"); grad.addColorStop(1, "#d8e9f7");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = "#2365a8"; ctx.lineWidth = 10; ctx.strokeRect(24, 24, W - 48, H - 48);
+  ctx.strokeStyle = "#7fc8ff"; ctx.lineWidth = 2; ctx.strokeRect(40, 40, W - 80, H - 80);
+  ctx.fillStyle = "#1a2533"; ctx.textAlign = "center";
+  ctx.font = "bold 46px serif";
+  ctx.fillText("タイムトライアル 記録証明書", W / 2, 120);
+  ctx.font = "bold 40px serif";
+  ctx.fillText(entry.name + " 殿", W / 2, 205);
+  ctx.font = "26px serif";
+  ctx.fillText("CBIメタバース印西「文化財タイムトライアル」において", W / 2, 270);
+  ctx.fillText("下記の記録を達成したことを証明します", W / 2, 312);
+  ctx.font = "bold 54px serif"; ctx.fillStyle = "#2365a8";
+  ctx.fillText("タイム　" + ttFormat(ms), W / 2, 405);
+  ctx.fillStyle = "#1a2533"; ctx.font = "26px serif";
+  const course = TT_CONFIG.courses[entry.level];
+  ctx.fillText("年齢区分：" + entry.ageLabel + "　　レベル：" + course.label.replace(/（.*/, ""), W / 2, 470);
+  ctx.fillText("クイズ正答率：" + ratePct + "%（" + entry.answers + "問解答・参加要件" + Math.round(TT_CONFIG.minRate * 100) + "%以上）", W / 2, 515);
+  ctx.font = "20px serif"; ctx.fillStyle = "#445;";
+  ctx.fillStyle = "#444a55";
+  ctx.fillText("コース：" + course.idx.map(i => BUNKAZAI[i].name).join(" → "), W / 2, 560);
+  const d = dateStr.split("-");
+  ctx.font = "24px serif"; ctx.fillStyle = "#1a2533";
+  ctx.fillText("実施日　" + d[0] + "年" + Number(d[1]) + "月" + Number(d[2]) + "日", W / 2, 625);
+  ctx.font = "bold 26px serif";
+  ctx.fillText("Community Bank INZAI", W / 2, 680);
+  ctx.font = "18px serif"; ctx.fillStyle = "#5a6a7a";
+  ctx.fillText("印西「このゆびとまれ」プロジェクト　／　検証コード: " + code, W / 2, 715);
+}
+document.getElementById("ttBtn").addEventListener("click", openTtModal);
 
 // 文化財データ読み込み＋看板設置
 async function loadBunkazai() {
