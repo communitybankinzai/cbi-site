@@ -183,6 +183,7 @@
     border: 2px solid #ffd166; border-radius: 16px; padding: 16px;
     max-width: 420px; width: 100%; max-height: 86%; overflow-y: auto; position: relative;
   }
+  .kana { display: block; font-size: 11px; color: #9fb2c8; font-weight: normal; line-height: 1.4; }
   #bunkazaiModal h3 { margin: 0 24px 8px 0; color: #ffd166; font-size: 16px; }
   #bunkazaiModal .close { position: absolute; top: 8px; right: 12px; cursor: pointer; opacity: 0.7; font-size: 16px; }
   #bmPhotoWrap img { width: 100%; border-radius: 10px; display: block; }
@@ -1251,7 +1252,7 @@ function renderPuzzle() {
     li.className = got ? "got" : "";
     const nm = document.createElement("span");
     nm.className = "nm";
-    nm.innerHTML = b.name + ' <span class="desig">［' + b.designation + "・" + b.type + "］</span>";
+    nm.innerHTML = (b.kana ? '<span class="kana">' + b.kana + "</span>" : "") + b.name + ' <span class="desig">［' + b.designation + "・" + b.type + "］</span>";
     nm.style.cursor = "pointer";
     nm.onclick = function () { openBunkazaiDetail(i); }; // 名前クリックで詳細ページへ
     const mark = document.createElement("span");
@@ -1401,7 +1402,7 @@ function renderTimeline() {
   const undated = BUNKAZAI.map((b, i) => ({ b, i })).filter(x => x.b.eraYear === undefined);
   const item = x =>
     '<li class="tlItem"><span class="tlEra">' + (x.b.era || "―") + "</span>" +
-    "<b>" + x.b.name + "</b>（" + x.b.designation + "・" + x.b.type + "）" +
+    (x.b.kana ? '<span class="kana">' + x.b.kana + "</span>" : "") + "<b>" + x.b.name + "</b>（" + x.b.designation + "・" + x.b.type + "）" +
     (x.b.description ? '<br><small>' + x.b.description.slice(0, 52) + "…</small>" : "") +
     '<button class="tlGo" onclick="teleportNear(BUNKAZAI[' + x.i + '])">▶ 行く</button></li>';
   el.innerHTML = dated.map(item).join("") +
@@ -1613,7 +1614,7 @@ function openBunkazaiDetail(i) {
   const b = BUNKAZAI[i];
   if (!b) return;
   bmIdx = i;
-  document.getElementById("bmTitle").textContent = "🏛 " + b.name;
+  document.getElementById("bmTitle").innerHTML = (b.kana ? '<span class="kana">' + b.kana + "</span>" : "") + "🏛 " + b.name;
   document.getElementById("bmPhotoWrap").innerHTML = b.photo
     ? '<img src="' + b.photo + '" alt="' + (b.photoAlt || b.name) + '">' +
       '<p class="credit">写真出典：<a href="' + b.detailUrl + '" target="_blank" rel="noopener">印西市ホームページ</a>（許可を得て転載）</p>'
@@ -1948,7 +1949,7 @@ function ttSpiritPass(idx) {
     probe.src = b.cardImage;
   }
   document.getElementById("encounterName").textContent = (b.spiritName || tribe.label) + " があらわれた！";
-  document.getElementById("encounterDesc").textContent = "✅ " + b.name + " を通過！";
+  document.getElementById("encounterDesc").innerHTML = (b.kana ? '<span class="kana">' + b.kana + "</span>" : "") + "✅ " + b.name + " を通過！";
   document.getElementById("encounterDetail").style.display = "none";
   const getBtn = document.querySelector("#encounter .getBtn");
   getBtn.style.display = "none"; // タイム計測を止めないよう自動で閉じる

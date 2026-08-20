@@ -27,7 +27,8 @@
    },
    "designatedEra": "昭和9年",
    "designatedYear": 1934,
-   "facility": "宝珠院"
+   "facility": "宝珠院",
+   "kana": "ほうしゅいんかんのんどう"
   },
   {
    "name": "泉福寺薬師堂",
@@ -52,7 +53,8 @@
    },
    "designatedEra": "昭和52年",
    "designatedYear": 1977,
-   "facility": "泉福寺"
+   "facility": "泉福寺",
+   "kana": "せんぷくじやくしどう"
   },
   {
    "name": "栄福寺薬師堂",
@@ -78,7 +80,8 @@
    },
    "designatedEra": "昭和29年",
    "designatedYear": 1954,
-   "facility": "栄福寺"
+   "facility": "栄福寺",
+   "kana": "えいふくじやくしどう"
   },
   {
    "name": "銅造不動明王立像",
@@ -103,7 +106,8 @@
    },
    "designatedEra": "大正3年",
    "designatedYear": 1914,
-   "facility": "結縁寺"
+   "facility": "結縁寺",
+   "kana": "どうぞうふどうみょうおうりゅうぞう"
   },
   {
    "name": "木造薬師如来坐像・立像（七仏薬師）",
@@ -128,7 +132,8 @@
    },
    "designatedEra": "昭和34年",
    "designatedYear": 1959,
-   "facility": "松虫寺"
+   "facility": "松虫寺",
+   "kana": "もくぞうやくしにょらいざぞう・りゅうぞう（しちぶつやくし）"
   },
   {
    "name": "木下貝層",
@@ -153,7 +158,8 @@
     ]
    },
    "designatedEra": "平成14年",
-   "designatedYear": 2002
+   "designatedYear": 2002,
+   "kana": "きおろしかいそう"
   },
   {
    "name": "木造毘沙門天及び両脇侍立像",
@@ -180,7 +186,8 @@
    },
    "designatedEra": "昭和29年",
    "designatedYear": 1954,
-   "facility": "多聞院"
+   "facility": "多聞院",
+   "kana": "もくぞうびしゃもんてんおよびりょうきょうじりゅうぞう"
   },
   {
    "name": "木造延命地蔵菩薩坐像",
@@ -205,7 +212,8 @@
    },
    "designatedEra": "昭和30年",
    "designatedYear": 1955,
-   "facility": "泉倉寺"
+   "facility": "泉倉寺",
+   "kana": "もくぞうえんめいじぞうぼさつざぞう"
   },
   {
    "name": "銅造十一面観音立像",
@@ -230,7 +238,8 @@
    },
    "designatedEra": "平成6年",
    "designatedYear": 1994,
-   "facility": "三宝院・上町観音堂"
+   "facility": "三宝院・上町観音堂",
+   "kana": "どうぞうじゅういちめんかんのんりゅうぞう"
   },
   {
    "name": "木造地蔵菩薩立像",
@@ -255,7 +264,8 @@
    },
    "designatedEra": "平成7年",
    "designatedYear": 1995,
-   "facility": "地蔵寺"
+   "facility": "地蔵寺",
+   "kana": "もくぞうじぞうぼさつりゅうぞう"
   },
   {
    "name": "木造不動明王立像及び毘沙門天立像",
@@ -280,7 +290,8 @@
    },
    "designatedEra": "平成25年",
    "designatedYear": 2013,
-   "facility": "西福寺"
+   "facility": "西福寺",
+   "kana": "もくぞうふどうみょうおうりゅうぞうおよびびしゃもんてんりゅうぞう"
   },
   {
    "name": "木造薬師如来坐像",
@@ -305,7 +316,8 @@
    },
    "designatedEra": "昭和42年",
    "designatedYear": 1967,
-   "facility": "来福寺"
+   "facility": "来福寺",
+   "kana": "もくぞうやくしにょらいざぞう"
   },
   {
    "name": "木造金剛力士像",
@@ -330,7 +342,8 @@
    },
    "designatedEra": "平成3年",
    "designatedYear": 1991,
-   "facility": "瀧水寺"
+   "facility": "瀧水寺",
+   "kana": "もくぞうこんごうりきしぞう"
   },
   {
    "name": "梵鐘（応安二年在銘）",
@@ -355,7 +368,8 @@
    },
    "designatedEra": "昭和47年",
    "designatedYear": 1972,
-   "facility": "長楽寺"
+   "facility": "長楽寺",
+   "kana": "ぼんしょう（おうあんにねんざいめい）"
   },
   {
    "name": "鋳銅孔雀文磬",
@@ -380,7 +394,8 @@
    },
    "designatedEra": "昭和60年",
    "designatedYear": 1985,
-   "facility": "松虫寺"
+   "facility": "松虫寺",
+   "kana": "ちゅうどうくじゃくもんけい"
   },
   {
    "name": "梵鐘（竜腹寺）",
@@ -405,7 +420,8 @@
    },
    "designatedEra": "昭和47年",
    "designatedYear": 1972,
-   "facility": "龍腹寺"
+   "facility": "龍腹寺",
+   "kana": "ぼんしょう（りゅうふくじ）"
   },
   {
    "name": "梵鐘（建武五年在銘）",
@@ -430,7 +446,8 @@
    },
    "designatedEra": "昭和47年",
    "designatedYear": 1972,
-   "facility": "瀧水寺"
+   "facility": "瀧水寺",
+   "kana": "ぼんしょう（けんむごねんざいめい）"
   },
   {
    "name": "馬込遺跡出土瓦塔",
@@ -456,7 +473,8 @@
     ]
    },
    "designatedEra": "平成20年",
-   "designatedYear": 2008
+   "designatedYear": 2008,
+   "kana": "まごめいせきしゅつどがとう"
   },
   {
    "name": "押付の水塚",
@@ -480,7 +498,8 @@
     ]
    },
    "designatedEra": "昭和53年",
-   "designatedYear": 1978
+   "designatedYear": 1978,
+   "kana": "おしつけのみづか"
   },
   {
    "name": "鳥見神社の獅子舞",
@@ -507,7 +526,8 @@
    },
    "designatedEra": "昭和30年",
    "designatedYear": 1955,
-   "facility": "鳥見神社"
+   "facility": "鳥見神社",
+   "kana": "とみじんじゃのししまい"
   },
   {
    "name": "浦部の神楽",
@@ -534,7 +554,8 @@
    },
    "designatedEra": "昭和42年",
    "designatedYear": 1967,
-   "facility": "鳥見神社"
+   "facility": "鳥見神社",
+   "kana": "うらべのかぐら"
   },
   {
    "name": "鳥見神社の神楽",
@@ -561,7 +582,8 @@
    },
    "designatedEra": "昭和36年",
    "designatedYear": 1961,
-   "facility": "鳥見神社"
+   "facility": "鳥見神社",
+   "kana": "とみじんじゃのかぐら"
   },
   {
    "name": "将監のオニバス発生地",
@@ -583,7 +605,8 @@
     ]
    },
    "designatedEra": "昭和52年",
-   "designatedYear": 1977
+   "designatedYear": 1977,
+   "kana": "しょうげんのおにばすはっせいち"
   },
   {
    "name": "弥陀一尊武蔵型板碑",
@@ -608,7 +631,8 @@
    },
    "designatedEra": "昭和57年",
    "designatedYear": 1982,
-   "facility": "観音寺"
+   "facility": "観音寺",
+   "kana": "みだいっそんむさしがたいたび"
   },
   {
    "name": "弥陀三尊下総型板碑",
@@ -635,7 +659,8 @@
    },
    "designatedEra": "昭和57年",
    "designatedYear": 1982,
-   "facility": "光明寺"
+   "facility": "光明寺",
+   "kana": "みださんぞんしもうさがたいたび"
   },
   {
    "name": "板石塔婆（吉高）",
@@ -659,7 +684,8 @@
     ]
    },
    "designatedEra": "昭和51年",
-   "designatedYear": 1976
+   "designatedYear": 1976,
+   "kana": "いたいしとうば（よしたか）"
   },
   {
    "name": "板石塔婆（岩戸）",
@@ -686,7 +712,8 @@
    },
    "designatedEra": "平成3年",
    "designatedYear": 1991,
-   "facility": "印旛歴史民俗資料館"
+   "facility": "印旛歴史民俗資料館",
+   "kana": "いたいしとうば（いわと）"
   },
   {
    "name": "福聚院阿弥陀三尊立像",
@@ -711,7 +738,8 @@
    },
    "designatedEra": "平成5年",
    "designatedYear": 1993,
-   "facility": "福聚院"
+   "facility": "福聚院",
+   "kana": "ふくじゅいんあみださんぞんりゅうぞう"
   },
   {
    "name": "薬師如来立像",
@@ -736,7 +764,8 @@
    },
    "designatedEra": "平成22年",
    "designatedYear": 2010,
-   "facility": "瀧水寺"
+   "facility": "瀧水寺",
+   "kana": "やくしにょらいりゅうぞう"
   },
   {
    "name": "鋳銅鰐口（竹袋）",
@@ -761,7 +790,8 @@
    },
    "designatedEra": "昭和54年",
    "designatedYear": 1979,
-   "facility": "竹袋稲荷神社"
+   "facility": "竹袋稲荷神社",
+   "kana": "ちゅうどうわにぐち（たけふくろ）"
   },
   {
    "name": "観音寺鋳造鰐口",
@@ -786,7 +816,8 @@
    },
    "designatedEra": "昭和57年",
    "designatedYear": 1982,
-   "facility": "観音寺"
+   "facility": "観音寺",
+   "kana": "かんのんじちゅうぞうわにぐち"
   },
   {
    "name": "鋳銅鰐口（松虫）",
@@ -813,7 +844,8 @@
    },
    "designatedEra": "昭和51年",
    "designatedYear": 1976,
-   "facility": "松虫寺"
+   "facility": "松虫寺",
+   "kana": "ちゅうどうわにぐち（まつむし）"
   },
   {
    "name": "曼荼羅掛軸",
@@ -837,7 +869,8 @@
    },
    "designatedEra": "昭和54年",
    "designatedYear": 1979,
-   "facility": "南陽院"
+   "facility": "南陽院",
+   "kana": "まんだらかけじく"
   },
   {
    "name": "龍湖寺絵馬",
@@ -862,7 +895,8 @@
    },
    "designatedEra": "平成5年",
    "designatedYear": 1993,
-   "facility": "龍湖寺"
+   "facility": "龍湖寺",
+   "kana": "りゅうこじえま"
   },
   {
    "name": "吉岡家河岸関係文書",
@@ -886,7 +920,8 @@
     ]
    },
    "designatedEra": "平成3年",
-   "designatedYear": 1991
+   "designatedYear": 1991,
+   "kana": "よしおかけかしかんけいもんじょ"
   },
   {
    "name": "常滑の大壺",
@@ -911,7 +946,8 @@
    },
    "designatedEra": "昭和51年",
    "designatedYear": 1976,
-   "facility": "印旛歴史民俗資料館"
+   "facility": "印旛歴史民俗資料館",
+   "kana": "とこなめのおおつぼ"
   },
   {
    "name": "小金牧鹿狩資料「村小旗」",
@@ -935,7 +971,8 @@
     ]
    },
    "designatedEra": "平成3年",
-   "designatedYear": 1991
+   "designatedYear": 1991,
+   "kana": "こがねまきししがりしりょう「むらこばた」"
   },
   {
    "name": "高札（五榜の掲示）",
@@ -959,7 +996,8 @@
     ]
    },
    "designatedEra": "平成17年",
-   "designatedYear": 2005
+   "designatedYear": 2005,
+   "kana": "こうさつ（ごぼうのけいじ）"
   },
   {
    "name": "別所の獅子舞",
@@ -985,7 +1023,8 @@
    },
    "designatedEra": "昭和41年",
    "designatedYear": 1966,
-   "facility": "地蔵寺"
+   "facility": "地蔵寺",
+   "kana": "べっしょのししまい"
   },
   {
    "name": "いなざき獅子舞",
@@ -1010,7 +1049,8 @@
    },
    "designatedEra": "昭和41年",
    "designatedYear": 1966,
-   "facility": "鳥見神社"
+   "facility": "鳥見神社",
+   "kana": "いなざきししまい"
   },
   {
    "name": "八幡神社の獅子舞",
@@ -1035,7 +1075,8 @@
    },
    "designatedEra": "昭和49年",
    "designatedYear": 1974,
-   "facility": "東漸寺"
+   "facility": "東漸寺",
+   "kana": "はちまんじんじゃのししまい"
   },
   {
    "name": "月影の井",
@@ -1061,15 +1102,16 @@
     ]
    },
    "designatedEra": "昭和43年",
-   "designatedYear": 1968
+   "designatedYear": 1968,
+   "kana": "つきかげのい"
   },
   {
    "name": "上宿古墳",
    "designation": "市指定",
    "type": "史跡",
    "address": "大森2346-2",
-   "lat": 35.832302,
-   "lon": 140.142044,
+   "lat": 35.831846,
+   "lon": 140.141497,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005073.html",
    "spiritName": "カミジュク",
    "cardImage": "spirits/カミジュク.webp",
@@ -1085,7 +1127,8 @@
     ]
    },
    "designatedEra": "昭和48年",
-   "designatedYear": 1973
+   "designatedYear": 1973,
+   "kana": "かみじゅくこふん"
   },
   {
    "name": "武西の百庚申塚",
@@ -1111,7 +1154,8 @@
     ]
    },
    "designatedEra": "平成11年",
-   "designatedYear": 1999
+   "designatedYear": 1999,
+   "kana": "むざいのひゃくこうしんづか"
   },
   {
    "name": "泉新田大木戸野馬堀遺跡",
@@ -1137,7 +1181,8 @@
     ]
    },
    "designatedEra": "平成17年",
-   "designatedYear": 2005
+   "designatedYear": 2005,
+   "kana": "いずみしんでんおおきどのまぼりいせき"
   },
   {
    "name": "道作古墳群",
@@ -1163,7 +1208,8 @@
     ]
    },
    "designatedEra": "平成26年",
-   "designatedYear": 2014
+   "designatedYear": 2014,
+   "kana": "どうさくこふんぐん"
   },
   {
    "name": "掩体壕",
@@ -1188,7 +1234,8 @@
     ]
    },
    "designatedEra": "平成28年",
-   "designatedYear": 2016
+   "designatedYear": 2016,
+   "kana": "えんたいごう"
   },
   {
    "name": "吉高の大桜",
@@ -1214,7 +1261,8 @@
     ]
    },
    "designatedEra": "昭和56年",
-   "designatedYear": 1981
+   "designatedYear": 1981,
+   "kana": "よしたかのおおざくら"
   },
   {
    "name": "藤の木",
@@ -1238,7 +1286,8 @@
     ]
    },
    "designatedEra": "昭和54年",
-   "designatedYear": 1979
+   "designatedYear": 1979,
+   "kana": "ふじのき"
   },
   {
    "name": "岩井家住宅主屋（旧武蔵屋店舗）",
@@ -1262,7 +1311,8 @@
     ]
    },
    "designatedEra": "平成19年",
-   "designatedYear": 2007
+   "designatedYear": 2007,
+   "kana": "いわいけじゅうたくおもや（きゅうむさしやてんぽ）"
   }
  ],
  "descriptionSource": "各エントリの detailUrl（印西市公式ページ）より要約。2026-08-19取得",
