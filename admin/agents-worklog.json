@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-20",
+          "title": "メタバース: TT結果画面の報告導線を修正（mailto廃止・サーバー送信済み明示）0.1時間",
+          "category": "保守",
+          "outputs": [
+            "site/metaverse/index.html（結果画面: official時は緑枠で「✅記録を事務局へ送信しました（記録ID）」＋メール不要を明示／未送信時は赤枠で警告と連絡先案内／mailtoボタンを廃止し ttCopyReport によるクリップボードコピーへ置換（execCommandフォールバック付き））",
+            "site/admin/changelog.json 1件",
+            "検証: 実サーバー往復で official 表示・コピーテキスト生成・mailto消滅を確認／本番反映を確認。CRLF混在で複数行置換が失敗→行単位置換でやり直し（一度 git checkout で復元）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "Outlook起動エラーで報告できない・届いたか不明との指摘への対応。記録自体はゴール時点でサーバー登録済みだった。session: 51b587ef-7426-442b-977e-b941cdd6e689"
+        },
+        {
+          "date": "2026-08-20",
           "title": "メタバース: 読み込み停止バグの緊急修正（モード初期化のTDZ）0.15時間",
           "category": "保守",
           "outputs": [
