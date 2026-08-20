@@ -1874,6 +1874,9 @@ async function openTtModal() {
     html += '<p class="ttNote" style="margin-top:8px;">自己ベスト：' +
       Object.keys(best).map(k => (TT_CONFIG.courses[k] ? TT_CONFIG.courses[k].label.split("（")[0] : k) + " " + ttFormat(best[k])).join(" ／ ") + "</p>";
   }
+  if (ttLoadHistory().length) {
+    html += '<button class="quizBtn" onclick="ttShowHistory()">📜 これまでの記録・証明書を見る</button>';
+  }
   html += '<div id="ttRanking" class="ttNote"></div>';
   document.getElementById("ttBody").innerHTML = html;
   ttRenderRanking(info);
@@ -2005,6 +2008,12 @@ async function ttFinish(clientElapsedMs) {
   const dateStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
   const ratePct = Math.round(ttEntry.rate * 100);
   const code = official ? server.recordCode : ttHash([ttEntry.name, courseKey, Math.round(elapsedMs), dateStr, ratePct].join("|"));
+  // 記録証をあとから見返せるよう端末に保存する（保存し忘れ・記録ID紛失の防止）
+  ttPushHistory({
+    name: ttEntry.name, ageLabel: ttEntry.ageLabel, courseKey: courseKey,
+    answers: ttEntry.answers, reqRatePct: ttEntry.reqRatePct,
+    ms: Math.round(elapsedMs), dateStr: dateStr, ratePct: ratePct, code: code, official: official,
+  });
   ttDrawCert(ttEntry, elapsedMs, dateStr, ratePct, code, official);
   // 記録はゴール時点でサーバーへ自動登録済み（事務局は管理画面で確認する）。
   // メールアプリ未設定の端末（Outlook起動エラー等）で詰まらないよう mailto は使わない。
@@ -2035,6 +2044,59 @@ async function ttFinish(clientElapsedMs) {
   const shown = document.getElementById("ttCertCanvas");
   shown.getContext("2d").drawImage(document.getElementById("ttCertTmp"), 0, 0);
   document.getElementById("ttModal").classList.add("show");
+}
+
+// ---- 記録証の履歴（端末内・直近20件）----
+// ゴール直後にしか証明書を出せないと、保存し忘れた人が記録IDを失うため
+const TT_HISTORY_KEY = "cbi-meta-tt-history-v1";
+function ttLoadHistory() {
+  try { return JSON.parse(localStorage.getItem(TT_HISTORY_KEY)) || []; } catch (e) { return []; }
+}
+function ttPushHistory(rec) {
+  try {
+    const h = ttLoadHistory();
+    h.unshift(rec);
+    localStorage.setItem(TT_HISTORY_KEY, JSON.stringify(h.slice(0, 20)));
+  } catch (e) {}
+}
+function ttShowHistory() {
+  const h = ttLoadHistory();
+  const body = document.getElementById("ttBody");
+  if (!h.length) {
+    body.innerHTML = '<p class="ttNote">まだ記録がありません。</p><button class="quizBtn" onclick="openTtModal()">← もどる</button>';
+    return;
+  }
+  body.innerHTML = '<p class="quizQ"><b>📜 これまでの記録</b>（この端末に保存されたもの）</p>' +
+    h.map(function (r, i) {
+      const course = TT_CONFIG.courses[r.courseKey] ? TT_CONFIG.courses[r.courseKey].label.split("（")[0] : r.courseKey;
+      return '<div style="border-bottom:1px solid rgba(255,255,255,0.12);padding:8px 0;font-size:12.5px;line-height:1.6;">' +
+        r.dateStr + "　" + course + "　<b>" + ttFormat(r.ms) + "</b>" +
+        (r.official ? ' <span class="ttOk">公式</span>' : ' <span class="ttNg">参考</span>') + "<br>" +
+        '<span style="color:#9fb2c8;">記録ID: ' + r.code + "（受付でこの番号をお伝えください）</span>" +
+        '<button class="quizBtn" style="margin-top:6px;text-align:center;" onclick="ttShowHistoryCert(' + i + ')">📄 証明書を表示・保存</button>' +
+        "</div>";
+    }).join("") +
+    '<button class="quizBtn" onclick="openTtModal()">← もどる</button>';
+}
+function ttShowHistoryCert(i) {
+  const r = ttLoadHistory()[i];
+  if (!r) return;
+  const entry = { name: r.name, ageLabel: r.ageLabel, courseKey: r.courseKey, answers: r.answers, reqRatePct: r.reqRatePct };
+  ttDrawCert(entry, r.ms, r.dateStr, r.ratePct, r.code, r.official);
+  ttReportText = "CBIメタバース印西 タイムトライアル記録" +
+    "\nニックネーム: " + r.name + "\n年齢区分: " + r.ageLabel +
+    "\nコース: " + (TT_CONFIG.courses[r.courseKey] ? TT_CONFIG.courses[r.courseKey].label : r.courseKey) +
+    "\nタイム: " + ttFormat(r.ms) + (r.official ? "（サーバー公式計測）" : "（端末計測・参考記録）") +
+    "\nクイズ正答率: " + r.ratePct + "%（" + r.answers + "問解答）" +
+    "\n実施日: " + r.dateStr + "\n記録ID: " + r.code;
+  document.getElementById("ttBody").innerHTML =
+    '<p class="quizQ"><b>📄 記録証明書</b>　' + r.dateStr + "　" + ttFormat(r.ms) + "</p>" +
+    '<p class="ttNote">記録ID: <b>' + r.code + '</b>' + (r.official ? "（サーバー公式記録・事務局でも確認できます）" : "（端末内の参考記録）") + "</p>" +
+    '<canvas id="ttCertCanvas" width="1123" height="794"></canvas>' +
+    '<a id="ttCertDl" class="quizBtn quizStart" style="text-decoration:none;text-align:center;" download="タイムトライアル証明書_' + r.name + '.png" href="' + document.getElementById("ttCertTmp").toDataURL("image/png") + '">💾 証明書を画像で保存</a>' +
+    '<button class="quizBtn" style="text-align:center;" onclick="ttCopyReport(this)">📋 記録内容をコピー</button>' +
+    '<button class="quizBtn" onclick="ttShowHistory()">← 記録一覧へ</button>';
+  document.getElementById("ttCertCanvas").getContext("2d").drawImage(document.getElementById("ttCertTmp"), 0, 0);
 }
 
 // 結果のコピー用テキスト（メールアプリが使えない端末向けの手動報告手段）
