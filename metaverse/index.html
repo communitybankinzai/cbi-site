@@ -879,6 +879,18 @@ async function loadTileset() {
       showCreditsOnScreen: true, // Google規約上クレジット表示は必須
     });
     viewer.scene.primitives.add(tileset);
+
+    // 3D Tilesの1日あたり利用上限（Google側クォータ）に達すると、詳細タイルの取得が
+    // 429で拒否され「ぼやけたまま」になる。故障と誤解されないよう1回だけ案内を出す
+    let tileQuotaNoticeShown = false;
+    tileset.tileFailed.addEventListener(function (err) {
+      if (tileQuotaNoticeShown) return;
+      const msg = String((err && err.message) || "");
+      if (msg.indexOf("429") !== -1 || msg.indexOf("Quota") !== -1 || msg.indexOf("quota") !== -1) {
+        tileQuotaNoticeShown = true;
+        showPickResult("⚠ 本日の3D表示の利用上限に達したため、街並みが粗い表示になっています。毎日夕方ごろ（日本時間）に自動で回復します。", 15000);
+      }
+    });
     document.getElementById("overlay").style.display = "none";
 
     // タイル読み込み中インジケータ（テレポート直後・歩行モードで「何も見えない」不安を防ぐ）
