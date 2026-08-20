@@ -421,7 +421,7 @@
     background: rgba(20, 30, 40, 0.72); color: #fff;
     touch-action: none; user-select: none; -webkit-user-select: none;
   }
-  #mobileModeBtn { width: auto !important; border-radius: 14px !important; padding: 0 14px; font-size: 13px !important; height: 44px !important; font-weight: bold; }
+  #mobileModeBtn, #mobileSpeedBtn { width: auto !important; border-radius: 14px !important; padding: 0 14px; font-size: 13px !important; height: 44px !important; font-weight: bold; }
   #mobileMoveBar button:active { background: rgba(58, 123, 213, 0.85); }
   /* モバイル用メニュー（左上ボタン群を集約） */
   #menuToggle {
@@ -466,6 +466,7 @@
 
 <div id="mobileMoveBar">
   <button id="mobileModeBtn" title="歩行モードと飛行モードを切り替えます">🚁 飛行中</button>
+  <button id="mobileSpeedBtn" title="移動の速さを切り替えます（×1→×2→×4）">⚡×1</button>
   <button id="mobileUpBtn" title="上昇（押している間）">⬆</button>
   <button id="mobileDownBtn" title="下降（押している間）">⬇</button>
 </div>
@@ -546,7 +547,7 @@
       <li>移動：画面左下の<b>丸いスティック</b>を指でたおす</li>
       <li>見回す：画面を<b>スワイプ</b></li>
       <li>上昇／下降：右下の<b>⬆／⬇ボタン</b>を押している間（飛行モード時）</li>
-      <li>歩行／飛行の切替：右下の<b>🚶／🚁ボタン</b></li>
+      <li>歩行／飛行の切替：右下の<b>🚶／🚁ボタン</b>、移動の速さは<b>⚡ボタン</b>（×1→×2→×4）</li>
       <li>文化財・避難所などのボタンは左上の「<b>☰ メニュー</b>」、スポット移動・浸水シミュレーションは右上の「<b>📍 スポット</b>」から（パネルは上下にスクロールできます）</li>
     </ul>
 
@@ -693,6 +694,7 @@ const WALK_EYE_HEIGHT = 1.7;   // 歩行モードの目線の高さ(m)
 const WALK_SPEED = 6;          // 歩行速度(m/s)
 const FLY_SPEED = 30;          // 飛行速度(m/s)
 const SPEED_BOOST = 4;         // Shift押下時の倍率
+let speedMultiplier = 1;       // ⚡ボタンの速度倍率（×1/×2/×4。スマホはShiftが無いためこれで加速する）
 
 // ============================================================
 // Cesium Viewer 初期化（Cesium ion 不使用・Google APIキーのみで動作）
@@ -971,7 +973,7 @@ viewer.clock.onTick.addEventListener(function () {
 
   const cam = viewer.camera;
   const baseSpeed = walkMode ? WALK_SPEED : FLY_SPEED;
-  const speed = baseSpeed * ((keys["ShiftLeft"] || keys["ShiftRight"]) ? SPEED_BOOST : 1) * dt;
+  const speed = baseSpeed * ((keys["ShiftLeft"] || keys["ShiftRight"]) ? SPEED_BOOST : 1) * speedMultiplier * dt;
 
   let forward = 0, right = 0, up = 0;
   if (keys["KeyW"] || keys["ArrowUp"]) forward += 1;
@@ -1066,6 +1068,11 @@ function updateMobileMoveBar() {
 mobileModeBtn.addEventListener("click", () => { setMode(!walkMode); updateMobileMoveBar(); });
 const _origSetMode = setMode; // 他経路（パネルのモードボタン）からの切替にも表示を追従させる
 setMode = function (walk) { _origSetMode(walk); updateMobileMoveBar(); };
+document.getElementById("mobileSpeedBtn").addEventListener("click", function () {
+  const steps = [1, 2, 4];
+  speedMultiplier = steps[(steps.indexOf(speedMultiplier) + 1) % steps.length];
+  this.textContent = "⚡×" + speedMultiplier;
+});
 [["mobileUpBtn", "KeyE"], ["mobileDownBtn", "KeyQ"]].forEach(([id, code]) => {
   const el = document.getElementById(id);
   el.addEventListener("pointerdown", (e) => { keys[code] = true; el.setPointerCapture(e.pointerId); e.preventDefault(); });
