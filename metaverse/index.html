@@ -1773,7 +1773,7 @@ const TT_CONFIG = {
   minAnswers: 10,   // 参加要件: クイズ解答数の下限
   minRate: 0.8,     // 参加要件: クイズ正答率の下限（80%）
   radius: 80,       // チェックポイント到達判定（m）＝ピース獲得と同じ
-  officeEmail: "you0810jmsdf@gmail.com", // 事務局（記録報告の宛先）
+  officeEmail: "communitybankinzai@gmail.com", // 事務局（記録報告の宛先）
   ages: [
     { key: "kids", label: "小学生以下", level: "beginner" },
     { key: "teens", label: "中学生・高校生", level: "intermediate" },
@@ -1783,6 +1783,8 @@ const TT_CONFIG = {
     beginner: { label: "🔰 初級コース（3か所・約2km）", idx: [44, 39, 0] },
     intermediate: { label: "🥈 中級コース（5か所・約8km）", idx: [43, 3, 6, 44, 39] },
     advanced: { label: "🥇 上級コース（7か所・約12km）", idx: [3, 6, 43, 41, 0, 44, 13] },
+    // 50か所すべてを巡る本戦コース（最近傍＋2-opt法で距離約58km・×4飛行で移動のみ約8分）
+    full: { label: "🏁 完走コース（全50か所・約58km）", idx: [44, 7, 0, 41, 20, 30, 23, 39, 13, 42, 49, 8, 17, 36, 34, 5, 29, 9, 38, 19, 45, 24, 10, 33, 12, 16, 28, 27, 48, 21, 40, 15, 2, 46, 3, 43, 6, 26, 35, 1, 11, 25, 47, 31, 14, 4, 18, 32, 22, 37] },
   },
 };
 let ttActive = false, ttCourse = [], ttPos = 0, ttStartMs = 0, ttCountdownEnd = 0;
@@ -1825,28 +1827,47 @@ function openTtModal() {
     html += '<p class="ttNote" style="margin-top:8px;">自己ベスト：' +
       Object.keys(best).map(k => (TT_CONFIG.courses[k] ? TT_CONFIG.courses[k].label.split("（")[0] : k) + " " + ttFormat(best[k])).join(" ／ ") + "</p>";
   }
+  html += '<div id="ttRanking" class="ttNote"></div>';
   document.getElementById("ttBody").innerHTML = html;
   document.getElementById("ttModal").classList.add("show");
+  ttFetchRanking();
+}
+function ttEsc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function ttFetchRanking() {
+  fetch(TT_API).then(r => { if (!r.ok) throw new Error(); return r.json(); }).then(d => {
+    const el = document.getElementById("ttRanking");
+    if (!el || !d.ranking) return;
+    const rows = Object.keys(TT_CONFIG.courses).map(k => {
+      const list = (d.ranking[k] || []).slice(0, 3);
+      if (!list.length) return "";
+      return "<b>" + TT_CONFIG.courses[k].label.split("（")[0] + "</b>：" +
+        list.map((r, i) => (i + 1) + "位 " + ttEsc(r.name) + " " + ttFormat(r.elapsedMs)).join("　");
+    }).filter(Boolean).join("<br>");
+    el.innerHTML = rows ? "🏆 <b>ランキング（サーバー公式記録）</b><br>" + rows : "";
+  }).catch(() => {});
 }
 function ttSelectAge(key) {
   const age = TT_CONFIG.ages.find(a => a.key === key);
   const st = ttQuizStats();
   const course = TT_CONFIG.courses[age.level];
-  ttEntry = { ageKey: key, ageLabel: age.label, level: age.level, rate: st.rate, answers: st.answers, name: "" };
+  ttEntry = { ageKey: key, ageLabel: age.label, level: age.level, courseKey: age.level, rate: st.rate, answers: st.answers, name: "" };
   document.getElementById("ttBody").innerHTML =
     '<p><b>' + age.label + "</b> → " + course.label + "</p>" +
     '<p class="ttNote">巡る順番：' + course.idx.map((i, n) => (n + 1) + ". " + BUNKAZAI[i].name).join(" → ") + "</p>" +
-    '<p class="ttNote">各文化財の80m以内まで近づくと通過。スタート地点（1か所目の近く）へ移動してカウントダウン後に計測開始。⚡速度切替・歩行/飛行は自由です。</p>' +
+    '<p class="ttNote">各文化財の80m以内まで近づくと精霊があらわれて通過となります（未入手のピースは自動でゲット）。スタート地点（1か所目の近く）へ移動してカウントダウン後に計測開始。⚡速度切替・歩行/飛行は自由です。</p>' +
     '<p style="margin:8px 0 0;"><b>ニックネーム</b>（証明書に記載されます）</p>' +
     '<input type="text" id="ttNameInput" maxlength="20" placeholder="ニックネームを入力">' +
-    '<button class="quizBtn quizStart" onclick="ttStart()">🚀 スタート地点へ移動して開始</button>' +
+    '<button class="quizBtn quizStart" onclick="ttStart(ttEntry.level)">🚀 ' + course.label.replace(/（.*/, "") + 'で開始</button>' +
+    '<button class="quizBtn" onclick="ttStart(\'full\')">🏁 完走コース（全50か所・約58km）で開始</button>' +
+    '<p class="ttNote">完走コースの目安：⚡×4の飛行で移動のみ約8分（操作込みで15〜30分程度）</p>' +
     '<button class="quizBtn" onclick="openTtModal()">← もどる</button>';
 }
-function ttStart() {
+function ttStart(courseKey) {
   const name = document.getElementById("ttNameInput").value.trim();
   if (!name) { document.getElementById("ttNameInput").focus(); return; }
   ttEntry.name = name;
-  ttCourse = TT_CONFIG.courses[ttEntry.level].idx.slice();
+  ttEntry.courseKey = courseKey;
+  ttCourse = TT_CONFIG.courses[courseKey].idx.slice();
   ttPos = 0;
   ttActive = true;
   document.getElementById("ttModal").classList.remove("show");
@@ -1855,6 +1876,31 @@ function ttStart() {
   ttCountdownEnd = performance.now() + 6000; // テレポート約3秒＋カウントダウン3秒
   ttStartMs = 0;
   document.getElementById("ttHud").style.display = "block";
+  // サーバー計測の開始登録はカウントダウン終了（計測開始）の瞬間に行う（onTick内）
+}
+// 通過演出: 精霊があらわれて通過の合図になる（未入手ならピースも自動ゲット）
+function ttSpiritPass(idx) {
+  const b = BUNKAZAI[idx];
+  const tribe = SPIRIT_TRIBES[tribeOf(b)];
+  if (pieces[idx] === undefined) awardPiece(idx); // 80m以内到達＝通常のピース獲得条件と同じ
+  const charEl = document.getElementById("encounterChar");
+  charEl.innerHTML = tribe.svg;
+  if (b.cardImage) {
+    const probe = new Image();
+    probe.onload = function () { charEl.innerHTML = '<img class="cardImg" src="' + b.cardImage + '" alt="' + b.name + '">'; };
+    probe.src = b.cardImage;
+  }
+  document.getElementById("encounterName").textContent = (b.spiritName || tribe.label) + " があらわれた！";
+  document.getElementById("encounterDesc").textContent = "✅ " + b.name + " を通過！";
+  document.getElementById("encounterDetail").style.display = "none";
+  const getBtn = document.querySelector("#encounter .getBtn");
+  getBtn.style.display = "none"; // タイム計測を止めないよう自動で閉じる
+  document.getElementById("encounter").classList.add("show");
+  clearTimeout(ttSpiritPass._t);
+  ttSpiritPass._t = setTimeout(function () {
+    document.getElementById("encounter").classList.remove("show");
+    getBtn.style.display = "";
+  }, 1600);
 }
 function ttAbort() {
   ttActive = false;
@@ -1882,41 +1928,51 @@ viewer.clock.onTick.addEventListener(function () {
     hudNext.textContent = "スタート準備中… 1か所目: " + BUNKAZAI[ttCourse[0]].name;
     return;
   }
-  if (!ttStartMs) ttStartMs = now;
+  if (!ttStartMs) { ttStartMs = now; ttServerStart(); } // 計測開始と同時にサーバーへ開始登録（厳密モード）
   const elapsed = now - ttStartMs;
   hudTime.textContent = "⏱ " + ttFormat(elapsed);
   const d = ttDistToNext();
   hudNext.textContent = "つぎ（" + (ttPos + 1) + "/" + ttCourse.length + "）: " +
     BUNKAZAI[ttCourse[ttPos]].name + " まで 約" + (d >= 1000 ? (d / 1000).toFixed(1) + "km" : Math.round(d) + "m");
   if (d <= TT_CONFIG.radius) {
-    showStampToast("✅ " + (ttPos + 1) + "/" + ttCourse.length + " " + BUNKAZAI[ttCourse[ttPos]].name + " 通過！");
+    const passedIdx = ttCourse[ttPos];
+    ttSpiritPass(passedIdx); // 精霊出現＝通過の合図
     ttPos++;
+    ttServerCheckpoint(ttPos); // サーバーへ通過を記録（厳密モード）
     if (ttPos >= ttCourse.length) ttFinish(elapsed);
   }
 });
-function ttFinish(elapsedMs) {
+async function ttFinish(clientElapsedMs) {
   ttActive = false;
   document.getElementById("ttHud").style.display = "none";
+  // サーバー計測（厳密モード）: サーバー時計の確定タイムを取得。失敗時は端末計測を参考記録として使う
+  const server = await ttServerFinish();
+  const official = server && typeof server.elapsedMs === "number";
+  const elapsedMs = official ? server.elapsedMs : clientElapsedMs;
+  const courseKey = ttEntry.courseKey;
   const best = ttLoadBest();
-  const isBest = !best[ttEntry.level] || elapsedMs < best[ttEntry.level];
+  const isBest = !best[courseKey] || elapsedMs < best[courseKey];
   if (isBest) {
-    best[ttEntry.level] = Math.round(elapsedMs);
+    best[courseKey] = Math.round(elapsedMs);
     try { localStorage.setItem("cbi-meta-tt-best-v1", JSON.stringify(best)); } catch (e) {}
   }
   const now = new Date();
   const dateStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
   const ratePct = Math.round(ttEntry.rate * 100);
-  const code = ttHash([ttEntry.name, ttEntry.level, Math.round(elapsedMs), dateStr, ratePct].join("|"));
-  ttDrawCert(ttEntry, elapsedMs, dateStr, ratePct, code);
+  const code = official ? server.recordCode : ttHash([ttEntry.name, courseKey, Math.round(elapsedMs), dateStr, ratePct].join("|"));
+  ttDrawCert(ttEntry, elapsedMs, dateStr, ratePct, code, official);
   const mailBody = encodeURIComponent(
     "CBIメタバース印西 タイムトライアル記録報告\n\n" +
     "ニックネーム: " + ttEntry.name + "\n年齢区分: " + ttEntry.ageLabel + "\n" +
-    "レベル: " + TT_CONFIG.courses[ttEntry.level].label + "\nタイム: " + ttFormat(elapsedMs) + "\n" +
-    "クイズ正答率: " + ratePct + "%（" + ttEntry.answers + "問解答）\n実施日: " + dateStr + "\n検証コード: " + code + "\n\n" +
+    "コース: " + TT_CONFIG.courses[courseKey].label + "\nタイム: " + ttFormat(elapsedMs) + (official ? "（サーバー公式計測）" : "（端末計測・参考記録）") + "\n" +
+    "クイズ正答率: " + ratePct + "%（" + ttEntry.answers + "問解答）\n実施日: " + dateStr + "\n記録ID: " + code + "\n\n" +
     "※保存した証明書画像をこのメールに添付して送信してください");
   document.getElementById("ttBody").innerHTML =
     '<p><b>🎉 ゴール！</b> タイム：<span style="color:#7fc8ff;font-size:20px;font-weight:bold;">' + ttFormat(elapsedMs) + "</span>" +
     (isBest ? '　<span class="ttOk">自己ベスト更新！</span>' : "") + "</p>" +
+    '<p class="ttNote">' + (official ? "✅ サーバー公式計測（記録ID: " + code + "）。記録は事務局側でも確認できます"
+      : "⚠ サーバーに接続できなかったため端末計測の参考記録です") +
+    (official && server.flagged ? '<br><span class="ttNg">⚠ 通過記録に確認事項があるため、事務局確認の対象となります</span>' : "") + "</p>" +
     '<canvas id="ttCertCanvas" width="1123" height="794"></canvas>' +
     '<a id="ttCertDl" class="quizBtn quizStart" style="text-decoration:none;text-align:center;" download="タイムトライアル証明書_' + ttEntry.name + '.png" href="' + document.getElementById("ttCertTmp").toDataURL("image/png") + '">💾 証明書を画像で保存</a>' +
     '<a class="quizBtn" style="text-decoration:none;text-align:center;" href="mailto:' + TT_CONFIG.officeEmail + '?subject=' + encodeURIComponent("タイムトライアル記録報告（" + ttEntry.name + "）") + '&body=' + mailBody + '">📮 事務局へメールで報告（証明書画像を添付）</a>' +
@@ -1925,7 +1981,40 @@ function ttFinish(elapsedMs) {
   shown.getContext("2d").drawImage(document.getElementById("ttCertTmp"), 0, 0);
   document.getElementById("ttModal").classList.add("show");
 }
-function ttDrawCert(entry, ms, dateStr, ratePct, code) {
+
+// ---- サーバー計測（厳密な競技会モード・CIDAO API）----
+// スタート/通過/ゴールをサーバーが受信時刻で記録し、タイムはサーバー時計で確定する。
+// 通信不可・未設定時は null を返し、端末計測（参考記録）へフォールバック
+const TT_API = "https://cidao.vercel.app/api/metaverse-tt";
+let ttTrialId = null;
+async function ttApiPost(payload) {
+  const res = await fetch(TT_API, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("TT API HTTP " + res.status);
+  return res.json();
+}
+function ttServerStart() {
+  ttTrialId = null;
+  ttApiPost({
+    action: "start", name: ttEntry.name, ageKey: ttEntry.ageKey, courseKey: ttEntry.courseKey,
+    quizRatePct: Math.round(ttEntry.rate * 100), quizAnswers: ttEntry.answers,
+    checkpoints: ttCourse.length,
+  }).then(d => { ttTrialId = d.trialId || null; })
+    .catch(() => { ttTrialId = null; });
+}
+function ttServerCheckpoint(pos) {
+  if (!ttTrialId) return;
+  ttApiPost({ action: "checkpoint", trialId: ttTrialId, pos: pos }).catch(() => {});
+}
+async function ttServerFinish() {
+  if (!ttTrialId) return null;
+  try {
+    return await ttApiPost({ action: "finish", trialId: ttTrialId });
+  } catch (e) { return null; }
+}
+function ttDrawCert(entry, ms, dateStr, ratePct, code, official) {
   let cv = document.getElementById("ttCertTmp");
   if (!cv) {
     cv = document.createElement("canvas");
@@ -1950,19 +2039,23 @@ function ttDrawCert(entry, ms, dateStr, ratePct, code) {
   ctx.font = "bold 54px serif"; ctx.fillStyle = "#2365a8";
   ctx.fillText("タイム　" + ttFormat(ms), W / 2, 405);
   ctx.fillStyle = "#1a2533"; ctx.font = "26px serif";
-  const course = TT_CONFIG.courses[entry.level];
-  ctx.fillText("年齢区分：" + entry.ageLabel + "　　レベル：" + course.label.replace(/（.*/, ""), W / 2, 470);
+  const course = TT_CONFIG.courses[entry.courseKey];
+  ctx.fillText("年齢区分：" + entry.ageLabel + "　　コース：" + course.label.replace(/（.*/, ""), W / 2, 470);
   ctx.fillText("クイズ正答率：" + ratePct + "%（" + entry.answers + "問解答・参加要件" + Math.round(TT_CONFIG.minRate * 100) + "%以上）", W / 2, 515);
-  ctx.font = "20px serif"; ctx.fillStyle = "#445;";
-  ctx.fillStyle = "#444a55";
-  ctx.fillText("コース：" + course.idx.map(i => BUNKAZAI[i].name).join(" → "), W / 2, 560);
+  ctx.font = "20px serif"; ctx.fillStyle = "#444a55";
+  const names = course.idx.map(i => BUNKAZAI[i].name);
+  const courseLine = course.idx.length > 8
+    ? "コース：全" + course.idx.length + "か所（" + names[0] + " から " + names[names.length - 1] + " まで）"
+    : "コース：" + names.join(" → ");
+  ctx.fillText(courseLine, W / 2, 560);
   const d = dateStr.split("-");
   ctx.font = "24px serif"; ctx.fillStyle = "#1a2533";
-  ctx.fillText("実施日　" + d[0] + "年" + Number(d[1]) + "月" + Number(d[2]) + "日", W / 2, 625);
+  ctx.fillText("実施日　" + d[0] + "年" + Number(d[1]) + "月" + Number(d[2]) + "日" +
+    (official ? "　（サーバー公式計測）" : "　（端末計測・参考記録）"), W / 2, 625);
   ctx.font = "bold 26px serif";
   ctx.fillText("Community Bank INZAI", W / 2, 680);
   ctx.font = "18px serif"; ctx.fillStyle = "#5a6a7a";
-  ctx.fillText("印西「このゆびとまれ」プロジェクト　／　検証コード: " + code, W / 2, 715);
+  ctx.fillText("印西「このゆびとまれ」プロジェクト　／　記録ID: " + code, W / 2, 715);
 }
 document.getElementById("ttBtn").addEventListener("click", openTtModal);
 
