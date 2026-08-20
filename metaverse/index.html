@@ -2006,25 +2006,53 @@ async function ttFinish(clientElapsedMs) {
   const ratePct = Math.round(ttEntry.rate * 100);
   const code = official ? server.recordCode : ttHash([ttEntry.name, courseKey, Math.round(elapsedMs), dateStr, ratePct].join("|"));
   ttDrawCert(ttEntry, elapsedMs, dateStr, ratePct, code, official);
-  const mailBody = encodeURIComponent(
-    "CBIメタバース印西 タイムトライアル記録報告\n\n" +
-    "ニックネーム: " + ttEntry.name + "\n年齢区分: " + ttEntry.ageLabel + "\n" +
-    "コース: " + TT_CONFIG.courses[courseKey].label + "\nタイム: " + ttFormat(elapsedMs) + (official ? "（サーバー公式計測）" : "（端末計測・参考記録）") + "\n" +
-    "クイズ正答率: " + ratePct + "%（" + ttEntry.answers + "問解答）\n実施日: " + dateStr + "\n記録ID: " + code + "\n\n" +
-    "※保存した証明書画像をこのメールに添付して送信してください");
+  // 記録はゴール時点でサーバーへ自動登録済み（事務局は管理画面で確認する）。
+  // メールアプリ未設定の端末（Outlook起動エラー等）で詰まらないよう mailto は使わない。
+  ttReportText = "CBIメタバース印西 タイムトライアル記録" +
+    "\nニックネーム: " + ttEntry.name +
+    "\n年齢区分: " + ttEntry.ageLabel +
+    "\nコース: " + TT_CONFIG.courses[courseKey].label +
+    "\nタイム: " + ttFormat(elapsedMs) + (official ? "（サーバー公式計測）" : "（端末計測・参考記録）") +
+    "\nクイズ正答率: " + ratePct + "%（" + ttEntry.answers + "問解答）" +
+    "\n実施日: " + dateStr + "\n記録ID: " + code;
   document.getElementById("ttBody").innerHTML =
     '<p><b>🎉 ゴール！</b> タイム：<span style="color:#7fc8ff;font-size:20px;font-weight:bold;">' + ttFormat(elapsedMs) + "</span>" +
     (isBest ? '　<span class="ttOk">自己ベスト更新！</span>' : "") + "</p>" +
-    '<p class="ttNote">' + (official ? "✅ サーバー公式計測（記録ID: " + code + "）。記録は事務局側でも確認できます"
-      : "⚠ サーバーに接続できなかったため端末計測の参考記録です") +
-    (official && server.flagged ? '<br><span class="ttNg">⚠ 通過記録に確認事項があるため、事務局確認の対象となります</span>' : "") + "</p>" +
+    (official
+      ? '<p style="margin:6px 0;padding:9px 11px;border-radius:10px;background:rgba(46,204,113,0.15);border:1px solid #2ecc71;font-size:12.5px;line-height:1.7;">' +
+        '<b class="ttOk">✅ 記録を事務局へ送信しました</b><br>' +
+        'サーバーに公式記録として登録済みです（記録ID: <b>' + code + '</b>）。<br>' +
+        '<b>メールでの報告は不要です。</b>証明書は記念と本人確認用にお持ちください。' +
+        (server.flagged ? '<br><span class="ttNg">⚠ 通過記録に確認事項があるため、事務局の確認対象になります</span>' : "") + '</p>'
+      : '<p style="margin:6px 0;padding:9px 11px;border-radius:10px;background:rgba(231,76,60,0.15);border:1px solid #e74c3c;font-size:12.5px;line-height:1.7;">' +
+        '<b class="ttNg">⚠ 事務局へ送信できませんでした</b><br>' +
+        '通信がつながらず、この端末内だけの参考記録です。<br>' +
+        '下の「📋 記録内容をコピー」でコピーし、事務局（' + TT_CONFIG.officeEmail + '）へお知らせください。</p>') +
     '<canvas id="ttCertCanvas" width="1123" height="794"></canvas>' +
     '<a id="ttCertDl" class="quizBtn quizStart" style="text-decoration:none;text-align:center;" download="タイムトライアル証明書_' + ttEntry.name + '.png" href="' + document.getElementById("ttCertTmp").toDataURL("image/png") + '">💾 証明書を画像で保存</a>' +
-    '<a class="quizBtn" style="text-decoration:none;text-align:center;" href="mailto:' + TT_CONFIG.officeEmail + '?subject=' + encodeURIComponent("タイムトライアル記録報告（" + ttEntry.name + "）") + '&body=' + mailBody + '">📮 事務局へメールで報告（証明書画像を添付）</a>' +
+    '<button class="quizBtn" style="text-align:center;" onclick="ttCopyReport(this)">📋 記録内容をコピー</button>' +
     '<button class="quizBtn" onclick="openTtModal()">🔁 もう一度挑戦する</button>';
   const shown = document.getElementById("ttCertCanvas");
   shown.getContext("2d").drawImage(document.getElementById("ttCertTmp"), 0, 0);
   document.getElementById("ttModal").classList.add("show");
+}
+
+// 結果のコピー用テキスト（メールアプリが使えない端末向けの手動報告手段）
+let ttReportText = "";
+function ttCopyReport(btn) {
+  const orig = btn.textContent;
+  const done = () => { btn.textContent = "✅ コピーしました"; setTimeout(() => { btn.textContent = orig; }, 2000); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ttReportText).then(done).catch(() => ttCopyFallback(done));
+  } else { ttCopyFallback(done); }
+}
+function ttCopyFallback(done) {
+  const ta = document.createElement("textarea");
+  ta.value = ttReportText;
+  ta.style.cssText = "position:fixed;opacity:0;";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); done(); } catch (e) { alert(ttReportText); }
+  document.body.removeChild(ta);
 }
 
 // ---- サーバー計測（厳密な競技会モード・CIDAO API）----
