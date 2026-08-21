@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-08-21",
+          "title": "Instagram告知の本番障害（カード画像500）復旧＋失敗投稿の再試行ボタン 0.4時間",
+          "category": "保守",
+          "outputs": "cidao: package.json(sharp 0.34.5固定+optionalDependencies), api/og/proposal・news(resvg廃止・動的import・?debug=1), admin/sns(RetryButton.tsx, actions.retryFailedLog), next.config.ts(workerThreads差し戻し)",
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "8/15以降本番で告知カード画像が全件500→IG投稿失敗。動的import+debug出力でsharp 0.35.3のlibvips未ロード(ERR_DLOPEN_FAILED)と特定、Next同梱版0.34.5に固定して復旧（本番HTTP200確認）。失敗行の🔁再試行ボタン追加。巻き込みコミットとビルド失敗pushの2事故を記録。session: 4c86305c-8dbf-4b0e-be8e-c362dfbb3ccd / output: 333,859 / cost: $234.37"
+        },
+        {
+          "date": "2026-08-21",
           "title": "3D Tiles root requests per day を30/日へ制限（費用ゼロ運用）完了確認 0.05時間",
           "category": "保守",
           "outputs": [
