@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-21",
+          "title": "月影の井の座標修正＋位置修正履歴ファイル新設 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "site/metaverse/bunkazai.json",
+            "site/metaverse/position-fixes.json",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "中司報告の座標（位置修正ボタン取得）を反映、差分44mを計算で照合。以後の修正は position-fixes.json に旧→新座標・距離・出典を記録する運用。session: d3e03b5e-fbd5-4d26-8291-3f065f2af890 / output: 39,351 / cost: $13.93"
+        },
+        {
+          "date": "2026-08-21",
           "title": "メタバース文化財ピン浮遊の原因調査＋吸着待ち実装＋本番検証 0.3時間",
           "category": "保守",
           "outputs": [
