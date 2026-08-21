@@ -971,8 +971,39 @@ function showError(e) {
 const SPOT_BILLBOARD_HEIGHT = 60; // 看板を建物より上に浮かせる高さ(m)
 // ピンの基準高さ(m)。3Dタイル表面へ吸着（CLAMP_TO_3D_TILE）するため通常は使われないが、
 // タイル未読込・吸着未対応の環境ではこの高さで描かれる。印西の台地は楕円体高で約60〜66mあり、
-// 40mだと地中に埋まって見えたため、地表より上になる値にしている
-const PIN_FALLBACK_HEIGHT = 95;
+// 40mだと地中に埋まって見えたため、地表より上になる値にしている。
+// 2026-08-21: 吸着前は非表示にする運用（watchPinClamp）に変えたため、95mだと吸着に失敗した
+// 低地のピンが50m以上浮いて見えた。台地・低地の中間寄りの70mに下げる
+const PIN_FALLBACK_HEIGHT = 70;
+
+// ---- ピンの吸着待ち（宙に浮く対策）----
+// CLAMP_TO_3D_TILE は足元の3Dタイルが読み込まれるまで効かず、その間は PIN_FALLBACK_HEIGHT
+// で空中に描かれてしまう。scene.sampleHeight が値を返す（＝タイルが読込済み）まで
+// エンティティを非表示にし、取得できた地表高＋2m を位置に書き込んでから表示する。
+// 各エンティティは __clampReady と __wantVisible を持ち、show は両方が真のときだけ true
+const pinClampQueue = [];
+let pinClampTimer = null;
+function refreshPinShow(e) { e.show = !!(e.__clampReady && e.__wantVisible); }
+function setPinVisible(e, visible) { e.__wantVisible = visible; refreshPinShow(e); }
+function watchPinClamp(e, lon, lat) {
+  e.__clampReady = false;
+  refreshPinShow(e);
+  pinClampQueue.push({ e: e, carto: Cesium.Cartographic.fromDegrees(lon, lat), lon: lon, lat: lat });
+  if (!pinClampTimer) pinClampTimer = setInterval(pinClampTick, 700);
+}
+function pinClampTick() {
+  for (let i = pinClampQueue.length - 1; i >= 0; i--) {
+    const q = pinClampQueue[i];
+    let h;
+    try { h = viewer.scene.sampleHeight(q.carto); } catch (err) { h = undefined; }
+    if (typeof h !== "number" || !isFinite(h)) continue;
+    q.e.position = Cesium.Cartesian3.fromDegrees(q.lon, q.lat, h + 2);
+    q.e.__clampReady = true;
+    refreshPinShow(q.e);
+    pinClampQueue.splice(i, 1);
+  }
+  if (pinClampQueue.length === 0) { clearInterval(pinClampTimer); pinClampTimer = null; }
+}
 
 SPOTS.forEach((spot, i) => {
   viewer.entities.add({
@@ -1636,9 +1667,9 @@ let kominkanLoadPromise = null;
 function addKominkanEntities() {
   const pinHeightRef = Cesium.HeightReference.CLAMP_TO_3D_TILE ?? Cesium.HeightReference.NONE;
   KOMINKAN.forEach((k, i) => {
-    viewer.entities.add({
+    const ent = viewer.entities.add({
       id: "kominkan-" + i,
-      show: kominkanPinsVisible,
+      show: false,
       position: Cesium.Cartesian3.fromDegrees(k.lon, k.lat, PIN_FALLBACK_HEIGHT),
       point: {
         pixelSize: 11,
@@ -1661,6 +1692,8 @@ function addKominkanEntities() {
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000),
       },
     });
+    ent.__wantVisible = kominkanPinsVisible;
+    watchPinClamp(ent, k.lon, k.lat);
   });
 }
 
@@ -1677,7 +1710,7 @@ function loadKominkan() {
 function applyKominkanPinVisibility() {
   for (let i = 0; i < KOMINKAN.length; i++) {
     const e = viewer.entities.getById("kominkan-" + i);
-    if (e) e.show = kominkanPinsVisible;
+    if (e) setPinVisible(e, kominkanPinsVisible);
   }
   document.getElementById("kominkanToggleBtn").classList.toggle("off", !kominkanPinsVisible);
 }
@@ -2361,7 +2394,7 @@ async function loadBunkazai() {
   // 斜め視点で実位置から大きくずれて見えるため）。未対応環境では従来の固定高で描画
   const pinHeightRef = Cesium.HeightReference.CLAMP_TO_3D_TILE ?? Cesium.HeightReference.NONE;
   BUNKAZAI.forEach((b, i) => {
-    viewer.entities.add({
+    const ent = viewer.entities.add({
       id: "bunkazai-" + i,
       position: Cesium.Cartesian3.fromDegrees(b.lon, b.lat, PIN_FALLBACK_HEIGHT),
       point: {
@@ -2386,6 +2419,8 @@ async function loadBunkazai() {
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2500),
       },
     });
+    ent.__wantVisible = bunkazaiPinsVisible;
+    watchPinClamp(ent, b.lon, b.lat);
   });
   renderPuzzle();
   applyBunkazaiPinVisibility(); // 読込前にトグル操作されていても状態を反映する
@@ -2397,7 +2432,7 @@ let bunkazaiPinsVisible = true;
 function applyBunkazaiPinVisibility() {
   for (let i = 0; i < BUNKAZAI.length; i++) {
     const e = viewer.entities.getById("bunkazai-" + i);
-    if (e) e.show = bunkazaiPinsVisible;
+    if (e) setPinVisible(e, bunkazaiPinsVisible);
   }
   const btn = document.getElementById("pinToggleBtn");
   btn.textContent = bunkazaiPinsVisible ? "📍 表示中" : "📍 非表示";
@@ -2420,9 +2455,9 @@ let shelterLoadPromise = null;
 function addShelterEntities() {
   const pinHeightRef = Cesium.HeightReference.CLAMP_TO_3D_TILE ?? Cesium.HeightReference.NONE;
   SHELTERS.forEach((s, i) => {
-    viewer.entities.add({
+    const ent = viewer.entities.add({
       id: "shelter-" + i,
-      show: shelterPinsVisible,
+      show: false,
       position: Cesium.Cartesian3.fromDegrees(s.lon, s.lat, PIN_FALLBACK_HEIGHT),
       point: {
         pixelSize: 11,
@@ -2445,6 +2480,8 @@ function addShelterEntities() {
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2500),
       },
     });
+    ent.__wantVisible = shelterPinsVisible;
+    watchPinClamp(ent, s.lon, s.lat);
   });
 }
 
@@ -2472,7 +2509,7 @@ function loadShelters() {
 function applyShelterPinVisibility() {
   for (let i = 0; i < SHELTERS.length; i++) {
     const e = viewer.entities.getById("shelter-" + i);
-    if (e) e.show = shelterPinsVisible;
+    if (e) setPinVisible(e, shelterPinsVisible);
   }
   document.getElementById("shelterToggleBtn").classList.toggle("off", !shelterPinsVisible);
 }
