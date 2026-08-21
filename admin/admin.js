@@ -1674,6 +1674,11 @@ const UNREAD_POLL_MS = 30000;
   // =========================================================
   // メタバース：アクセス・課金モニタ（CiDAO公開API）＋ 位置修正履歴（position-fixes.json）
   // =========================================================
+  // 補足：Google Photorealistic 3D Tiles の課金は root リクエスト（＝3Dワールドを開いた回数）単位。
+  // 無料枠は月1,000回のため 30回/日 に制限している（費用ゼロ運用）。
+  // タイル本体（renderer requests）は無償だが Google 既定 3万回/日の回数上限があり、
+  // 2026-08-21 に実際に枯渇して街並みが粗いままになった（現在は「割り当ての調整」で自動増加）。
+  // 詳細は保管庫のノート「2026-08-21_GoogleMapTiles_1日クォータ枯渇と対策」を参照
   const MV_PRESENCE_API = 'https://cidao.vercel.app/api/metaverse-presence';
   const MV_USAGE_API = 'https://cidao.vercel.app/api/metaverse-usage';
   const MV_REFRESH_MS = 60000;
@@ -1715,9 +1720,11 @@ const UNREAD_POLL_MS = 30000;
       const v = typeof usage.visitorsToday === 'number' ? usage.visitorsToday : null;
       $('mv-kpi-visitors').textContent = v === null ? '–' : (mvFmt(v) + ' 人');
       $('mv-kpi-tiles').textContent = mvFmt(usage.todayRequests);
-      $('mv-kpi-tiles-sub').textContent = usage.requestsFetchedAt
-        ? 'Cloud Monitoring 取得: ' + new Date(usage.requestsFetchedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) + '（2分キャッシュ）'
-        : 'root＋renderer リクエスト合計';
+      // タイル取得回数は費用に影響しない（課金は root リクエスト単位）が、無償の回数上限はある。
+      // 「費用ゼロ＝無制限」と誤解されないよう両方を毎回明記する
+      $('mv-kpi-tiles-sub').textContent = '無償・上限あり（既定3万回／日）' + (usage.requestsFetchedAt
+        ? '／取得 ' + new Date(usage.requestsFetchedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+        : '');
       const quotaEl = $('mv-kpi-quota');
       const bar = $('mv-kpi-quota-bar');
       if (v === null) { quotaEl.textContent = '–'; bar.style.width = '0'; }

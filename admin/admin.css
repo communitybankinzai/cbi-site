@@ -1175,6 +1175,15 @@ button { font-family: inherit; cursor: pointer; }
   border-radius: var(--radius); padding: 14px 16px;
 }
 .mv-kpi-label { font-size: 12px; color: var(--c-ink-sub); font-weight: 700; }
+.mv-kpi-cost { border-left-color: var(--c-gold); background: rgba(201, 165, 92, .06); }
+.mv-kpi-tag {
+  display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; color: #8a6a2a; background: rgba(201, 165, 92, .18);
+}
+.mv-cost-note {
+  margin: 0 0 12px; padding: 10px 12px;
+  background: var(--c-bg-alt); border-radius: var(--radius); font-size: 13px;
+}
 .mv-kpi-value { font-size: 26px; font-weight: 700; color: var(--c-navy); margin: 4px 0 2px; line-height: 1.2; }
 .mv-kpi-value.warn { color: var(--c-danger); }
 .mv-kpi-sub { font-size: 11px; color: var(--c-ink-sub); }

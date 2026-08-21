@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-08-21",
+      "type": "content",
+      "target": "admin/index.html, admin/admin.js, admin/admin.css",
+      "title": "メタバースタブの費用まわりの表記を訂正（「課金モニタ」→「利用状況モニタ」）",
+      "detail": "タイル取得回数を「課金モニタ」として大きく出していたが、実際に費用が発生するのは3Dワールドを開いた回数（root リクエスト）だけで、タイル取得回数は費用に影響しない。費用が出るカードを金色で強調し「費用が出るのはここだけ」と明示、タイル数には「無償・上限あり（既定3万回／日）」と注記した。無償でも回数上限があり8/21に実際に枯渇したため、上限の説明も併記している。",
+      "author": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-21",
       "type": "fix",
       "target": "admin/index.html, admin/admin.js, admin/admin.css（cidao: metaverse-usage API）",
       "title": "日別グラフの利用者数とタイル数の日付基準を日本時間に統一し、「1人あたりタイル数」を表示",
