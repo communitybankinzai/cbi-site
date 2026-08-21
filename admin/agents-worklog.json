@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-08-21",
+          "title": "メタバース文化財ピン浮遊の原因調査＋吸着待ち実装＋本番検証 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "site/metaverse/index.html",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "CLAMP_TO_3D_TILE がタイル未読込時に効かず固定高で浮く問題。sampleHeight 取得まで非表示にするヘルパ watchPinClamp を追加（文化財・公民館・避難所）、フォールバック高95→70m、粗タイル時の異常値(-11km)棄却ガードを追加。本番で50件全件が楕円体高28.6〜79.7mに吸着することをJSで確認。session: d3e03b5e-fbd5-4d26-8291-3f065f2af890 / output: 32,377 / cost: $11.32"
+        },
+        {
+          "date": "2026-08-21",
           "title": "メタバース: 画面上の利用状況表示（利用者数/枠・タイル数）＋公開API＋Git環境復旧 0.35時間",
           "category": "実装",
           "outputs": [
