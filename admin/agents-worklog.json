@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-08-21",
+          "title": "Vercel本番デプロイ失敗メールの原因調査（cidao）0.2時間",
+          "category": "調査",
+          "outputs": [],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "14:22着信の失敗通知は14:19の7b54209（news/route.ts に @resvg/resvg-js の import が残存しModule not found）に対するもので、14:21の ea94327 で修正済みと判定。ローカル next build 成功／npm ci --dry-run 整合／GitHub ea94327 が✓1/1／本番 cidao.vercel.app 正常表示 の4点で確認。コード変更なし。session: 3041761a-895b-49d4-a79c-2152aab46b59 / output: 15,104 / cost: $2.59"
+        },
+        {
+          "date": "2026-08-21",
           "title": "月影の井の座標修正＋位置修正履歴ファイル新設 0.1時間",
           "category": "保守",
           "outputs": [
