@@ -981,6 +981,7 @@ const PIN_FALLBACK_HEIGHT = 70;
 // で空中に描かれてしまう。scene.sampleHeight が値を返す（＝タイルが読込済み）まで
 // エンティティを非表示にし、取得できた地表高＋2m を位置に書き込んでから表示する。
 // 各エンティティは __clampReady と __wantVisible を持ち、show は両方が真のときだけ true
+const PIN_CLAMP_MIN_H = 20, PIN_CLAMP_MAX_H = 150; // 妥当とみなす楕円体高(m)の範囲
 const pinClampQueue = [];
 let pinClampTimer = null;
 function refreshPinShow(e) { e.show = !!(e.__clampReady && e.__wantVisible); }
@@ -997,6 +998,9 @@ function pinClampTick() {
     let h;
     try { h = viewer.scene.sampleHeight(q.carto); } catch (err) { h = undefined; }
     if (typeof h !== "number" || !isFinite(h)) continue;
+    // 粗い（全球レベルの）タイルしか無い段階では -11,000m 等の異常値が返る（2026-08-21 実測）。
+    // 印西市の楕円体高は概ね 35〜110m なので、その範囲外は未読込とみなして次回に回す
+    if (h < PIN_CLAMP_MIN_H || h > PIN_CLAMP_MAX_H) continue;
     q.e.position = Cesium.Cartesian3.fromDegrees(q.lon, q.lat, h + 2);
     q.e.__clampReady = true;
     refreshPinShow(q.e);
