@@ -1812,9 +1812,9 @@ const UNREAD_POLL_MS = 30000;
       const showLabel = i === 0 || i === rows.length - 1 || (rows.length > 6 && i === Math.floor(rows.length / 2));
       if (showLabel) bars += '<text x="' + (x(i) + bw / 2).toFixed(1) + '" y="' + (H - 10) + '" class="mv-axis" text-anchor="middle">' + short(r.day) + '</text>';
     });
-    // 直接ラベル：最大値と最新値のみ
+    // 直接ラベル：最大値と最新値のみ（同じ棒なら1回だけ描く）
     let labels = '';
-    [maxIdx, rows.length - 1].forEach(i => {
+    [...new Set([maxIdx, rows.length - 1])].forEach(i => {
       const v = vals[i];
       if (v <= 0) return;
       labels += '<text x="' + (x(i) + bw / 2).toFixed(1) + '" y="' + (y(v) - 5).toFixed(1) + '" class="mv-value" text-anchor="middle">' + mvFmt(v) + '</text>';
