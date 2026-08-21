@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-08-21",
+          "title": "日別グラフの日付基準を日本時間に統一＋1人あたりタイル数の実装 0.18時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/map-tiles-usage.ts",
+            "cidao: src/app/api/metaverse-usage/route.ts",
+            "site/admin/index.html",
+            "site/admin/admin.js",
+            "site/admin/admin.css",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.18,
+          "partnerApproved": false,
+          "note": "中司指摘（日付基準がずれていると1人あたり消費が出せない）を受けた修正。Monitoring の集計区間を JST 0時基準に変更（完了日分＋当日分の2クエリ、queryTimeSeries に共通化）。枠管理用 todayRequests は課金日基準のまま残し混同防止の注記を追加。本番で 51,822÷5=10,364回/人 の算出を確認。session: d3e03b5e-fbd5-4d26-8291-3f065f2af890 / output: 104,548 / cost: $35.07（本セッション累計。既存4件と合算で1.06h）"
+        },
+        {
+          "date": "2026-08-21",
           "title": "日別アクセスグラフ実装（CiDAO日別API追加＋管理画面SVGグラフ）0.33時間",
           "category": "実装",
           "outputs": [
