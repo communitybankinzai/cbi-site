@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-08-21",
+          "title": "管理画面メタバースタブ実装（アクセス・課金モニタ＋位置修正履歴）＋本番検証 0.15時間",
+          "category": "実装",
+          "outputs": [
+            "site/admin/index.html",
+            "site/admin/admin.js",
+            "site/admin/admin.css",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.15,
+          "partnerApproved": false,
+          "note": "CiDAO公開API（metaverse-presence / metaverse-usage）と metaverse/position-fixes.json を読む新タブ。cidao側のAPI・DB構造を読んで返却項目を確認（金額・日別推移は公開APIに無いため非表示）。本番で在席0人／本日5人／タイル11,564／枠17%／履歴1件の描画をJSで確認。session: d3e03b5e-fbd5-4d26-8291-3f065f2af890 / output: 54,120 / cost: $20.18（本セッション累計。前2件と合算で0.55h）"
+        },
+        {
+          "date": "2026-08-21",
           "title": "Vercel本番デプロイ失敗メールの原因調査（cidao）0.2時間",
           "category": "調査",
           "outputs": [],
