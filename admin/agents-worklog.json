@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-08-21",
+          "title": "3Dタイルのキャッシュ可否調査＋管理画面の費用表記訂正 0.35時間",
+          "category": "調査",
+          "outputs": [
+            "2026-08-21_Google3DTiles課金モデルとタイルキャッシュ.md（新規）",
+            "MOC_CiDAO.md",
+            "cidao/2026-08-16_GoogleMapTilesAPI課金の監視手順.md（末尾リンクのみ）",
+            "site/admin/index.html",
+            "site/admin/admin.js",
+            "site/admin/admin.css",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.35,
+          "partnerApproved": false,
+          "note": "中司の問い「タイルをローカルに記憶できないか」を調査。応答ヘッダー実測でタイル本体は max-age=14400（4時間）キャッシュ済み、root.json は max-age=0 と判明。規約上それ以上の保存は禁止。課金は root リクエスト単位でタイルは無償のため保存しても費用減にならないことを確認し、管理画面の「課金モニタ」表記を「利用状況モニタ」に訂正。追加の指摘を受けて renderer 3万回/日の上限（8/21に実枯渇）も併記。反省：課金構造は既存ノートに確定済みだったのにWeb調査から始め二度手間になった（保管庫の横断検索を先に行うルールを再確認）。session: d3e03b5e-fbd5-4d26-8291-3f065f2af890 / output: 139,833 / cost: $43.02（本セッション累計。既存5件と合算で1.41h）"
+        },
+        {
+          "date": "2026-08-21",
           "title": "日別グラフの日付基準を日本時間に統一＋1人あたりタイル数の実装 0.18時間",
           "category": "実装",
           "outputs": [
