@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>印西市文化財 学習レポート</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1d2312; --ink2:#4a5340; --line:#c9c3b4; --line2:#e3ded1;
+    --accent:#2c3a1e; --gold:#8a6a2a; --paper:#fff; --bg:#6f6a5e;
+  }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Noto Serif JP","Yu Mincho","游明朝",serif;
+    font-size:10.2pt; line-height:1.62; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+
+  /* ===== 画面用ツールバー ===== */
+  .toolbar{
+    position:sticky; top:0; z-index:20; background:var(--accent); color:#fff;
+    display:flex; align-items:center; gap:12px; padding:10px 18px;
+    font-family:"Noto Sans JP",sans-serif; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,.35);
+  }
+  .toolbar .tb-title{font-weight:700;}
+  .toolbar .tb-sub{font-size:11px; color:#b9cf9c;}
+  .toolbar .sp{margin-left:auto;}
+  .tb-btn{
+    font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;
+    background:#fff; color:var(--accent); border:none; border-radius:8px; padding:7px 15px;
+  }
+  .tb-btn:hover{background:#e9f0dd;}
+  .tb-btn.ghost{background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.35);}
+  .tb-note{font-size:11px; color:#d7e3c4;}
+
+  /* ===== 用紙 ===== */
+  .sheet{
+    width:210mm; height:297mm; background:var(--paper);
+    margin:14px auto; padding:0; position:relative; overflow:hidden;
+    box-shadow:0 6px 26px rgba(0,0,0,.42);
+  }
+  .sheet > .inner{
+    height:297mm; padding:12mm 14mm 10mm; box-sizing:border-box;
+    display:flex; flex-direction:column;
+  }
+  .sheet.over{outline:3px solid #d33; outline-offset:-3px;}
+
+  /* ヘッダ */
+  .rp-head{display:flex; align-items:flex-end; gap:10px; border-bottom:2.4px solid var(--accent); padding-bottom:4px;}
+  .rp-head .brand{font-family:"Noto Sans JP",sans-serif; font-size:8.6pt; color:var(--ink2); letter-spacing:.06em;}
+  .rp-head .brand b{color:var(--accent); font-size:9.6pt; letter-spacing:.02em;}
+  .rp-head .no{margin-left:auto; font-family:"Noto Sans JP",sans-serif; font-size:8.4pt; color:#fff;
+    background:var(--accent); border-radius:3px; padding:2px 9px; white-space:nowrap;}
+  .badge-desig{
+    font-family:"Noto Sans JP",sans-serif; font-size:8.4pt; font-weight:700; color:#fff;
+    background:var(--gold); border-radius:3px; padding:2px 9px; white-space:nowrap;
+  }
+
+  .rp-title{margin-top:7px;}
+  .rp-title h1{font-size:21pt; line-height:1.2; font-weight:700; letter-spacing:.01em;}
+  .rp-title .kana{font-size:9pt; color:var(--ink2); letter-spacing:.12em; margin-top:2px;}
+  .rp-title .alias{
+    display:inline-block; margin-top:4px; font-family:"Noto Sans JP",sans-serif; font-size:8.8pt;
+    color:var(--gold); border:1px solid var(--gold); border-radius:11px; padding:1px 10px;
+  }
+
+  /* 本文2カラム */
+  .cols{display:flex; gap:6.5mm; margin-top:6px; flex:1; min-height:0;}
+  .col-l{width:64mm; flex-shrink:0;}
+  .col-r{flex:1; min-width:0;}
+
+  .photo-box{border:1px solid var(--line); padding:3px; background:#faf8f3;}
+  .photo-box img{width:100%; display:block; object-fit:cover; max-height:47mm;}
+  .photo-cap{font-family:"Noto Sans JP",sans-serif; font-size:7.4pt; color:var(--ink2); margin-top:3px; line-height:1.4;}
+  .photo-none{
+    border:1px dashed var(--line); background:#faf8f3; color:#9a9384; text-align:center;
+    font-family:"Noto Sans JP",sans-serif; font-size:8pt; padding:14mm 4mm; line-height:1.7;
+  }
+
+  table.facts{width:100%; border-collapse:collapse; margin-top:6px; font-size:8.5pt; line-height:1.5;}
+  table.facts th,table.facts td{border:1px solid var(--line2); padding:3px 5px; vertical-align:top; text-align:left;}
+  table.facts th{background:#f2f0e7; width:23mm; font-weight:600; color:var(--ink2); font-family:"Noto Sans JP",sans-serif; font-size:8pt;}
+  table.facts td .fnote{display:block; color:#8a6a2a; font-size:7.4pt; line-height:1.45; margin-top:1px;}
+
+  h2.sec{
+    font-family:"Noto Sans JP",sans-serif; font-size:10.4pt; font-weight:700; color:var(--accent);
+    border-left:4px solid var(--gold); padding-left:7px; margin:6px 0 3px;
+  }
+  h2.sec:first-child{margin-top:0;}
+  .lead{
+    background:#f6f4ec; border:1px solid var(--line2); padding:6px 8px; text-align:justify;
+    font-size:9.6pt; line-height:1.72;
+  }
+  .body p{text-align:justify; margin-bottom:4.5px; text-indent:1em;}
+
+  sup.ref{font-size:6.8pt; color:var(--gold); font-weight:700; vertical-align:super; margin:0 .5px; font-family:"Noto Sans JP",sans-serif;}
+
+  /* 2ページ目 */
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:3px 6mm;}
+  .hl{margin-bottom:5px;}
+  .hl .t{font-family:"Noto Sans JP",sans-serif; font-weight:700; font-size:9pt; color:var(--accent);}
+  .hl .t::before{content:"◆ "; color:var(--gold);}
+  .hl .d{font-size:8.8pt; line-height:1.6; text-align:justify;}
+
+  ul.gloss{list-style:none; font-size:8.2pt; line-height:1.5; columns:2; column-gap:6mm; column-rule:1px dotted var(--line2);}
+  ul.gloss li{margin-bottom:2.5px; padding-left:1em; text-indent:-1em; break-inside:avoid; text-align:justify;}
+  ul.gloss b{font-family:"Noto Sans JP",sans-serif; font-weight:600;}
+
+  table.tl{width:100%; border-collapse:collapse; font-size:8.5pt;}
+  table.tl td{border-bottom:1px dotted var(--line); padding:2.5px 4px; vertical-align:top;}
+  table.tl td.y{width:26mm; white-space:nowrap; font-family:"Noto Sans JP",sans-serif; font-weight:600; color:var(--accent);}
+  table.tl td.e{width:22mm; white-space:nowrap; color:var(--ink2); font-size:7.8pt;}
+
+  ol.quiz{list-style:none; counter-reset:q; font-size:8.8pt;}
+  ol.quiz li{counter-increment:q; margin-bottom:4px; padding-left:6mm; position:relative; line-height:1.55;}
+  ol.quiz li::before{
+    content:"Q" counter(q); position:absolute; left:0; top:0;
+    font-family:"Noto Sans JP",sans-serif; font-weight:700; font-size:8pt; color:#fff;
+    background:var(--accent); border-radius:3px; padding:0 4px;
+  }
+  ol.quiz .a{display:block; margin-top:1px; color:var(--ink2); font-size:8.2pt;}
+  ol.quiz .a::before{content:"A. "; color:var(--gold); font-weight:700;}
+
+  .access{font-size:8.6pt; line-height:1.6;}
+  .access .note{color:var(--ink2); font-size:7.8pt;}
+
+  ol.src{list-style:none; font-size:7.9pt; line-height:1.5;}
+  ol.src li{margin-bottom:2.5px; padding-left:7mm; text-indent:-7mm; word-break:break-all;}
+  ol.src .n{font-family:"Noto Sans JP",sans-serif; font-weight:700; color:var(--gold);}
+  ol.src .tier{font-family:"Noto Sans JP",sans-serif; font-size:6.8pt; color:#fff; background:#8d9a7b; border-radius:2px; padding:0 4px; margin:0 3px;}
+  ol.src .tier.ref{background:#b0a68c;}
+  ol.src a{color:#2a4a7a; text-decoration:none;}
+
+  .notes{font-size:7.6pt; line-height:1.5; color:var(--ink2); background:#f7f6f0; border:1px solid var(--line2); padding:5px 7px;}
+  .notes li{margin-bottom:2px; padding-left:1em; text-indent:-1em; list-style:none;}
+  .notes li::before{content:"※ ";}
+
+  .rp-foot{
+    margin-top:auto; padding-top:4px; border-top:1px solid var(--line);
+    display:flex; align-items:baseline; gap:10px; flex-wrap:nowrap;
+    font-family:"Noto Sans JP",sans-serif; font-size:7.4pt; color:var(--ink2);
+  }
+  .rp-foot .txt{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .rp-foot .pg{flex-shrink:0; font-weight:700; color:var(--accent); white-space:nowrap;}
+
+  .err{background:#fff; max-width:640px; margin:40px auto; padding:24px; border-radius:10px; font-family:"Noto Sans JP",sans-serif;}
+
+  /* ===== 印刷 ===== */
+  @page{ size:A4 portrait; margin:0; }
+  @media print{
+    body{background:#fff;}
+    .toolbar{display:none !important;}
+    .sheet{margin:0; box-shadow:none; break-after:page; page-break-after:always; outline:none !important;}
+    .sheet:last-child{break-after:auto; page-break-after:auto;}
+    a{color:inherit; text-decoration:none;}
+  }
+  /* 画面が狭いときは縮小表示（印刷は常にA4実寸） */
+  @media screen and (max-width:840px){
+    .sheet{transform-origin:top center; transform:scale(.52); margin-bottom:-135mm;}
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div>
+    <div class="tb-title">📄 印西市文化財 学習レポート</div>
+    <div class="tb-sub">A4用紙1枚（両面）で1文化財が完結します</div>
+  </div>
+  <div class="sp"></div>
+  <span class="tb-note" id="tbNote"></span>
+  <button class="tb-btn ghost" id="btnBack">← もどる</button>
+  <button class="tb-btn" id="btnPrint">🖨 印刷 / PDF保存</button>
+</div>
+
+<div id="out"></div>
+
+<script>
+(function(){
+  var out = document.getElementById('out');
+  var params = new URLSearchParams(location.search);
+  var id = params.get('id') || '';
+
+  document.getElementById('btnPrint').addEventListener('click', function(){ window.print(); });
+  document.getElementById('btnBack').addEventListener('click', function(){
+    if (history.length > 1) history.back(); else location.href = 'reports.html';
+  });
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  // 本文中の [1] / [1][3] を上付きの出典番号に変換（エスケープ後に適用）
+  function refs(s){
+    return esc(s).replace(/\[(\d+(?:\]\[\d+)*)\]/g, function(m, inner){
+      return '<sup class="ref">' + inner.replace(/\]\[/g, ',') + '</sup>';
+    });
+  }
+  function refMark(arr){
+    if (!arr || !arr.length) return '';
+    return '<sup class="ref">' + arr.join(',') + '</sup>';
+  }
+  function fail(msg){
+    out.innerHTML = '<div class="err"><h2>レポートを表示できません</h2><p style="margin-top:10px">' + esc(msg) + '</p>' +
+      '<p style="margin-top:10px"><a href="reports.html">レポート一覧へ戻る</a></p></div>';
+  }
+
+  if (!id || !/^[a-z0-9-]+$/.test(id)) { fail('文化財が指定されていません（例: report.html?id=houjuin-kannondo）。'); return; }
+
+  fetch('reports/' + id + '.json', { cache: 'no-cache' })
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(render)
+    .catch(function(e){ fail('データを読み込めませんでした（' + e.message + '）。この文化財のレポートはまだ作成されていない可能性があります。'); });
+
+  function head(d, page){
+    return '<div class="rp-head">' +
+      '<div class="brand"><b>印西市文化財 学習レポート</b><br>CBIメタバース印西 ／ 印西「このゆびとまれ」プロジェクト</div>' +
+      '<span class="badge-desig">' + esc(d.designation || '') + '</span>' +
+      '<span class="no">No.' + String(d.no || 0).padStart(2, '0') + '　' + (page === 1 ? '表面' : '裏面') + '</span>' +
+      '</div>';
+  }
+  function foot(d, page){
+    return '<div class="rp-foot">' +
+      '<span class="txt">' + esc(d.title || '') + '　／　作成日 ' + esc(d.compiled || '') +
+      '　／　AIによるWeb調査に基づく学習資料。記述の根拠は裏面の出典一覧に記載。</span>' +
+      '<span class="pg">' + page + ' / 2</span>' +
+      '</div>';
+  }
+
+  function render(d){
+    document.title = (d.title || '文化財') + '｜印西市文化財 学習レポート';
+
+    /* ---------- 1ページ目（表面） ---------- */
+    var p1 = head(d, 1);
+    p1 += '<div class="rp-title"><h1>' + esc(d.title) + '</h1>' +
+          '<div class="kana">' + esc(d.kana || '') + '</div>' +
+          (d.alias ? '<span class="alias">通称：' + esc(d.alias) + '</span>' : '') + '</div>';
+
+    var left = '';
+    if (d.photo && d.photo.src) {
+      left += '<div class="photo-box"><img src="' + esc(d.photo.src) + '" alt="' + esc(d.photo.alt || d.title) + '"></div>' +
+              '<div class="photo-cap">写真出典：' + esc(d.photo.credit || '') + refMark(d.photo.creditRef ? [d.photo.creditRef] : []) + '</div>';
+    } else {
+      left += '<div class="photo-none">この文化財は<br>公開されている写真が<br>確認できませんでした<br>（現地で観察してみましょう）</div>';
+    }
+    left += '<table class="facts"><tbody>';
+    (d.facts || []).forEach(function(f){
+      left += '<tr><th>' + esc(f.label) + '</th><td>' + refs(f.value) + refMark(f.ref) +
+              (f.note ? '<span class="fnote">※' + esc(f.note) + '</span>' : '') + '</td></tr>';
+    });
+    left += '</tbody></table>';
+
+    var right = '<h2 class="sec">この文化財は何か</h2><div class="lead">' + refs(d.summary || '') + '</div>';
+    (d.sections || []).forEach(function(s){
+      right += '<h2 class="sec">' + esc(s.h) + '</h2><div class="body">';
+      (s.body || []).forEach(function(p){ right += '<p>' + refs(p) + '</p>'; });
+      right += '</div>';
+    });
+
+    p1 += '<div class="cols"><div class="col-l">' + left + '</div><div class="col-r">' + right + '</div></div>';
+    p1 += foot(d, 1);
+
+    /* ---------- 2ページ目（裏面） ---------- */
+    var p2 = head(d, 2);
+
+    p2 += '<h2 class="sec">見どころ・注目ポイント</h2><div class="grid2">';
+    (d.highlights || []).forEach(function(h){
+      p2 += '<div class="hl"><div class="t">' + esc(h.t) + '</div><div class="d">' + refs(h.d) + '</div></div>';
+    });
+    p2 += '</div>';
+
+    if (d.glossary && d.glossary.length) {
+      p2 += '<h2 class="sec">覚えておきたい用語</h2><ul class="gloss">';
+      d.glossary.forEach(function(g){ p2 += '<li><b>' + esc(g.t) + '</b>　' + refs(g.d) + '</li>'; });
+      p2 += '</ul>';
+    }
+
+    if (d.timeline && d.timeline.length) {
+      p2 += '<h2 class="sec">年表</h2><table class="tl"><tbody>';
+      d.timeline.forEach(function(t){
+        p2 += '<tr><td class="y">' + esc(t.year) + '</td><td class="e">' + esc(t.era || '') + '</td><td>' + refs(t.text) + '</td></tr>';
+      });
+      p2 += '</tbody></table>';
+    }
+
+    if (d.quiz && d.quiz.length) {
+      p2 += '<h2 class="sec">確認クイズ</h2><ol class="quiz">';
+      d.quiz.forEach(function(q){
+        p2 += '<li>' + refs(q.q) + '<span class="a">' + refs(q.a) + '</span></li>';
+      });
+      p2 += '</ol>';
+    }
+
+    if (d.access && d.access.text) {
+      p2 += '<h2 class="sec">行き方</h2><div class="access">' + refs(d.access.text) + refMark(d.access.ref) +
+            (d.access.note ? '<div class="note">※' + esc(d.access.note) + '</div>' : '') + '</div>';
+    }
+
+    p2 += '<h2 class="sec">出典一覧（このレポートの根拠）</h2><ol class="src">';
+    (d.sources || []).forEach(function(s){
+      p2 += '<li><span class="n">[' + s.n + ']</span>' +
+            '<span class="tier' + (s.tier === '参考' ? ' ref' : '') + '">' + esc(s.tier || '') + '</span>' +
+            esc(s.publisher || '') + '「' + esc(s.title || '') + '」' +
+            (s.updated ? '（' + esc(s.updated) + '更新）' : '') +
+            ' <a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.url) + '</a>' +
+            '（' + esc(s.accessed || '') + '取得）</li>';
+    });
+    p2 += '</ol>';
+
+    if (d.notes && d.notes.length) {
+      p2 += '<div class="notes" style="margin-top:5px"><ul>';
+      d.notes.forEach(function(n){ p2 += '<li>' + refs(n) + '</li>'; });
+      p2 += '</ul></div>';
+    }
+
+    p2 += foot(d, 2);
+
+    out.innerHTML =
+      '<div class="sheet" id="sheet1"><div class="inner">' + p1 + '</div></div>' +
+      '<div class="sheet" id="sheet2"><div class="inner">' + p2 + '</div></div>';
+
+    // 文化財ごとに分量が違うため、A4 1枚に収まるまで段階的に縮小する
+    function fitSheet(sheet){
+      var inner = sheet.firstElementChild;
+      var steps = [1, .97, .94, .91, .88, .85, .82];
+      for (var i = 0; i < steps.length; i++){
+        var z = steps[i];
+        inner.style.zoom = z;
+        inner.style.height = (sheet.clientHeight / z) + 'px';
+        if (sheet.scrollHeight <= sheet.clientHeight + 1) return z;
+      }
+      return steps[steps.length - 1];
+    }
+
+    // 紙面からのはみ出し検知（画面のみ・編集者向け）
+    function check(){
+      var over = [], zoomed = [];
+      ['sheet1','sheet2'].forEach(function(sid, i){
+        var el = document.getElementById(sid);
+        if (!el) return;
+        var z = fitSheet(el);
+        if (z < 1) zoomed.push((i + 1) + 'ページ目 ' + Math.round(z * 100) + '%');
+        if (el.scrollHeight > el.clientHeight + 2) { el.classList.add('over'); over.push(i + 1); }
+        else { el.classList.remove('over'); }
+      });
+      var msg = '';
+      if (over.length) msg = '⚠ ' + over.join('・') + 'ページ目が用紙に収まりません（本文の削減が必要）';
+      else if (zoomed.length) msg = '自動縮小: ' + zoomed.join(' / ');
+      document.getElementById('tbNote').textContent = msg;
+    }
+    setTimeout(check, 350);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ setTimeout(check, 60); });
+    window.addEventListener('beforeprint', check);
+
+    // 一覧の「🖨 印刷」から来た場合はレイアウト確定後に印刷ダイアログを開く
+    if (params.get('print') === '1') setTimeout(function(){ window.print(); }, 900);
+  }
+})();
+</script>
+</body>
+</html>

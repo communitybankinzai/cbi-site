@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-15",
+  "updatedAt": "2026-08-21",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
   "categories": [
@@ -16,6 +16,23 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-08-21",
+          "title": "文化財A4両面学習レポート基盤の実装＋宝珠院観音堂のWeb調査・パイロット作成 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "新規 site/metaverse/report.html（A4両面2ページ固定の印刷レイアウト・出典番号の上付き表示・用紙に収まらない場合の段階的自動縮小・?print=1で印刷ダイアログ）",
+            "新規 site/metaverse/reports.html（50件の一覧・検索・指定区分フィルタ・作成済み件数表示）",
+            "新規 site/metaverse/reports/houjuin-kannondo.json（宝珠院観音堂のレポート本文。基礎データ9項目・概要・歴史4段落・見どころ4・用語10・年表7・クイズ4・出典4件）",
+            "変更 site/metaverse/bunkazai.json（宝珠院観音堂に reportId を追加）",
+            "変更 site/metaverse/index.html（詳細モーダルに「📄 学習レポート」ボタン。reportIdがある文化財のみ表示）",
+            "Web調査: 印西市公式ページ／文化庁 文化遺産オンライン／伝匠舎 石川工務所（2022-23年保存修理）／ウィキペディア",
+            "検証: headless ChromeでPDF出力しA4×2ページ（595×842pt）を確認、裏面は自動縮小88%で収容、詳細モーダルの導線表示/非表示をブラウザ実行で確認"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "ユーザー方針=事前一括生成＋静的配信／まず1件で体裁確定／学習・自習向け構成。指定年月日が市公式（昭和9年1月3日）と文化庁DB（1934年1月30日）で食い違うため、レポート内に両論併記の注記を掲載。残り49件は体裁承認後に着手。session: 4ad9cacb-a4ad-47c4-b38a-fea23dd40bb4 / output: 46,990 / cost: $5.87"
+        },
         {
           "date": "2026-08-21",
           "title": "調査: 3D Tilesクォータの実測値確定（上限30,000/日・課金¥0の構造解明）0.1時間",

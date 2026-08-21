@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>印西市文化財 学習レポート一覧｜CBIメタバース印西</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:"Noto Sans JP",sans-serif; background:#f5f0e8; color:#2c3a1e;}
+  .header{background:#2c3a1e; color:#fff; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .header .sub{font-size:10px; color:#a8c08a; letter-spacing:2px;}
+  .header .main{font-size:18px; font-weight:700;}
+  .header .sp{margin-left:auto;}
+  .header a.back{color:#d4e8bc; font-size:12px; text-decoration:none; border:1px solid rgba(255,255,255,.35); border-radius:20px; padding:5px 13px;}
+  .header a.back:hover{background:rgba(255,255,255,.12);}
+
+  .intro{max-width:1080px; margin:16px auto 0; padding:0 18px; font-size:13px; line-height:1.8; color:#4a5340;}
+  .intro .box{background:#fff; border:1px solid #e0ddd6; border-radius:10px; padding:12px 16px;}
+  .intro b{color:#2c3a1e;}
+
+  .bar{max-width:1080px; margin:14px auto 0; padding:0 18px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .bar input{flex:1; min-width:180px; padding:7px 13px; border:1.5px solid #ddd; border-radius:20px; font-size:13px; font-family:inherit; outline:none;}
+  .bar input:focus{border-color:#2c3a1e;}
+  .fbtn{font-size:12px; background:#fff; border:1.5px solid #ddd; border-radius:20px; padding:5px 13px; cursor:pointer; font-family:inherit; color:#444;}
+  .fbtn.active{border-color:#2c3a1e; font-weight:700; background:#2c3a1e; color:#fff;}
+  .count{font-size:12px; color:#777;}
+
+  .grid{max-width:1080px; margin:14px auto 40px; padding:0 18px;
+        display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px;}
+  .card{background:#fff; border-radius:12px; padding:13px 15px; box-shadow:0 1px 4px rgba(0,0,0,.08); display:flex; flex-direction:column; gap:7px;}
+  .card.none{background:#faf8f3; box-shadow:none; border:1px dashed #dcd7c9;}
+  .c-top{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .desig{font-size:10px; font-weight:700; color:#fff; border-radius:20px; padding:2px 9px;}
+  .d0{background:#b3261e;} .d1{background:#8a6a2a;} .d2{background:#4a6b2a;} .d3{background:#5a6b7a;}
+  .type{font-size:10px; color:#555; background:#f0f0f0; border-radius:20px; padding:2px 8px;}
+  .c-name{font-size:15px; font-weight:700; line-height:1.35;}
+  .c-kana{font-size:10px; color:#8a8577; letter-spacing:.08em;}
+  .c-meta{font-size:11px; color:#666; line-height:1.6;}
+  .c-act{margin-top:auto; display:flex; gap:7px; padding-top:4px;}
+  .act{flex:1; text-align:center; font-size:12px; font-weight:700; text-decoration:none; border-radius:8px; padding:7px 6px;}
+  .act.view{background:#2c3a1e; color:#fff;}
+  .act.view:hover{background:#405326;}
+  .act.print{background:#f0ede4; color:#5a5340; border:1px solid #ddd8c8;}
+  .act.print:hover{background:#e6e2d4;}
+  .pending{font-size:11px; color:#9a9384; padding:7px 0 2px;}
+  footer{max-width:1080px; margin:0 auto 40px; padding:0 18px; font-size:11px; color:#8a8577; line-height:1.8;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="sub">INZAI CULTURAL PROPERTY REPORTS</div>
+    <div class="main">📄 印西市文化財 学習レポート</div>
+  </div>
+  <div class="sp"></div>
+  <a class="back" href="index.html">← メタバース印西へ</a>
+  <a class="back" href="../inzai-disaster-map/">災害MAPへ</a>
+</div>
+
+<div class="intro">
+  <div class="box">
+    各文化財について、AIがWeb上の公開情報（市公式ページ・文化庁 文化遺産オンライン等）を調査し、<b>A4用紙1枚の両面（2ページ）で完結する学習レポート</b>にまとめています。
+    「印刷」を押すとA4両面で印刷できます（プリンタ設定で<b>両面印刷・短辺/長辺とじ</b>を選び、倍率は「実際のサイズ/100%」にしてください）。
+    <b>本文の記述はすべて裏面の出典一覧に基づいています。</b>出典に書かれていない事柄は記載していません。
+  </div>
+</div>
+
+<div class="bar">
+  <input type="search" id="q" placeholder="文化財名・所在地・種別で検索">
+  <button class="fbtn active" data-f="all">すべて</button>
+  <button class="fbtn" data-f="ready">レポートあり</button>
+  <button class="fbtn" data-f="国指定">国指定</button>
+  <button class="fbtn" data-f="県指定">県指定</button>
+  <button class="fbtn" data-f="市指定">市指定</button>
+  <span class="count" id="count"></span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>
+  ※ 掲載内容はAIによるWeb調査に基づく学習資料であり、印西市の公式見解ではありません。正確な情報は各レポートに記載した出典（印西市教育委員会 生涯学習部文化振興課文化財係ほか）でご確認ください。<br>
+  ※ 写真は各文化財の印西市公式ページより転載しています（出典は各レポートに明記）。
+</footer>
+
+<script>
+(function(){
+  var grid = document.getElementById('grid'), qEl = document.getElementById('q'), cEl = document.getElementById('count');
+  var SPOTS = [], filter = 'all';
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  var DCLS = { '国指定':'d0', '国登録':'d1', '県指定':'d2', '市指定':'d3' };
+
+  fetch('bunkazai.json', { cache: 'no-cache' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ SPOTS = d.spots || []; draw(); })
+    .catch(function(e){ grid.innerHTML = '<p>文化財データを読み込めませんでした（' + esc(e.message) + '）</p>'; });
+
+  function draw(){
+    var q = (qEl.value || '').trim().toLowerCase();
+    var list = SPOTS.filter(function(s){
+      if (filter === 'ready' && !s.reportId) return false;
+      if (filter !== 'all' && filter !== 'ready' && s.designation !== filter) return false;
+      if (!q) return true;
+      return [s.name, s.kana, s.address, s.type, s.designation, s.era].join(' ').toLowerCase().indexOf(q) >= 0;
+    });
+    var ready = SPOTS.filter(function(s){ return s.reportId; }).length;
+    cEl.textContent = '表示 ' + list.length + '件 ／ レポート作成済み ' + ready + '件（全' + SPOTS.length + '件）';
+
+    grid.innerHTML = list.map(function(s){
+      var id = s.reportId;
+      var head =
+        '<div class="c-top">' +
+          '<span class="desig ' + (DCLS[s.designation] || 'd3') + '">' + esc(s.designation) + '</span>' +
+          '<span class="type">' + esc(s.type) + '</span>' +
+        '</div>' +
+        '<div><div class="c-name">' + esc(s.name) + '</div><div class="c-kana">' + esc(s.kana || '') + '</div></div>' +
+        '<div class="c-meta">' + esc(s.address || '') + (s.era ? '　／　' + esc(s.era) : '') + '</div>';
+      if (id) {
+        return '<div class="card">' + head +
+          '<div class="c-act">' +
+            '<a class="act view" href="report.html?id=' + encodeURIComponent(id) + '">📖 レポートを読む</a>' +
+            '<a class="act print" href="report.html?id=' + encodeURIComponent(id) + '&amp;print=1">🖨 印刷</a>' +
+          '</div></div>';
+      }
+      return '<div class="card none">' + head + '<div class="pending">レポートは準備中です</div></div>';
+    }).join('');
+  }
+
+  qEl.addEventListener('input', draw);
+  Array.prototype.forEach.call(document.querySelectorAll('.fbtn'), function(b){
+    b.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.fbtn'), function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      filter = b.dataset.f;
+      draw();
+    });
+  });
+})();
+</script>
+</body>
+</html>
