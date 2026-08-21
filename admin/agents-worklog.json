@@ -3588,6 +3588,13 @@
       ],
       "plans": [
         {
+          "due": "2026-09-01",
+          "title": "Map Tiles 割り当て自動調整（Quota adjuster）の動作確認と上限値の記録",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-08-21に有効化。Console「割り当て」で3D Tiles renderer requests per dayの現在値（既定30,000→自動増加後）を確認し、2026-08-21_GoogleMapTiles_1日クォータ枯渇と対策.md に追記。CiDAO管理画面の目安値（DAILY_QUOTA_BASELINE=30000）の更新要否も判断。"
+        },
+        {
           "due": "未定",
           "title": "📄 文化財A4学習レポート 残り49件の作成（市協議・提案計上後に着手）",
           "category": "実装",
@@ -4032,6 +4039,27 @@
         }
       ],
       "plans": [
+        {
+          "due": "2027-03-31",
+          "title": "【年次】Google Maps Platform 料金表の再確認と年間費用見積の更新（協働事業2年目予算の前提）",
+          "category": "事務",
+          "priority": "中",
+          "note": "料金改定（直近2025-03）・為替・実績セッション数を反映して 2026-08-21_MapTiles年間費用見積_協働事業算出根拠.md を改訂。SKU C6E1-98B2-DBD0。提案書の計上額（年6万円）の据置/増額を判断。"
+        },
+        {
+          "due": "2026-09-05",
+          "title": "【毎月初】Map Tiles API 請求額とセッション数の確認・記録",
+          "category": "事務",
+          "priority": "中",
+          "note": "Cloud Console「お支払い→レポート」で前月の実請求額（正はここのみ）と、CiDAO /admin/analytics の日別リクエスト・利用者数を確認。2026-08-21_MapTiles年間費用見積_協働事業算出根拠.md のシナリオ（A〜D）のどれに該当するか判定し、年6万円の計上額で足りるか毎月評価。完了したら翌月分のplanを再登録する（毎月繰り返し）。"
+        },
+        {
+          "due": "2026-08-28",
+          "title": "Google Cloud 予算アラート設定の完了確認（Map Tiles API・月5,000円・50/90/100%通知）",
+          "category": "事務",
+          "priority": "高",
+          "note": "2026-08-21にユーザーが設定予定。設定画面のスクショまたは通知先メールを確認し、cidao/2026-08-16_GoogleMapTilesAPI課金の監視手順.md のステータスを『設定済み』に更新する。未設定なら督促。"
+        },
         {
           "due": "未定",
           "title": "CBI 専用カード入手後 → Anthropic/Resend/Vercel を組織アカウントに移管（中長期課題・期限未定）",
