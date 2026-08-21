@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-19",
+          "title": "チラシ・URL読み取り中のスピナー＋進捗バー表示（AI処理中の視覚化）実装 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/events/new/_components/ImageScanField.tsx（loading状態を role=status の強調ブロックに変更、枠にリング追加）",
+            "cidao: src/app/globals.css（cidao-scan-spinner / cidao-scan-progress。既存 cidaoSpin を流用、reduced-motion対応）",
+            "検証: eslint 指摘0件／tsc は自ファイルにエラーなし（並行セッションの og/news/route.ts の @resvg/resvg-js 未インストールエラーのみ）",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "市民からの「AIで読込中のテキストはあるが処理中か分かりにくい」指摘への対応。ログイン後の実画面での表示確認はLINE認証が必要なため未実施。hours はセッション累計0.9から記録済み0.7を差し引いた差分（告知文の追加調整ターン分を含む）。session: a9c4a1fa-063e-440d-ad58-d9e76b23b7ab / output: 88,300 / cost: $28.45（累計）"
+        },
+        {
           "date": "2026-08-21",
           "title": "レポート: Map Tiles API年間費用見積（協働事業の費用算出根拠）0.2時間",
           "category": "レポート",
