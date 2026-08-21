@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-08-21",
+      "type": "content",
+      "target": "metaverse/bunkazai.json, metaverse/position-fixes.json",
+      "title": "文化財「月影の井」のピン位置を44m修正、位置修正履歴ファイルを新設",
+      "detail": "月影の井の座標を 35.822369/140.106567 → 35.822718/140.106339 に更新（メタバース「位置修正」ボタンで取得）。今後どの文化財をいつ直したか追えるよう metaverse/position-fixes.json に修正前後の座標・距離・出典を記録する運用を開始。",
+      "author": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-21",
       "type": "fix",
       "target": "metaverse/index.html",
       "title": "文化財・公民館・避難所ピンが空中に浮いて見える問題を修正",
