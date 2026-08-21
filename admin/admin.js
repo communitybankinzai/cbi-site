@@ -248,7 +248,7 @@ const UNREAD_POLL_MS = 30000;
       b.classList.toggle('active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports', 'ledger'].forEach(t => {
+    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports', 'ledger', 'metaverse'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
     document.body.classList.toggle('mail-fullwidth', name === 'mail');
@@ -263,6 +263,7 @@ const UNREAD_POLL_MS = 30000;
     if (name === 'sns' && !state.snsLoaded) { loadSnsConfig(); loadSnsQueue(); loadFreefreeSnsConfig(); }
     if (name === 'bug-reports') loadBugReports();
     if (name === 'ledger' && !state.ledger.loaded) initLedger();
+    if (name === 'metaverse') openMetaverseTab();
   }
 
   // =========================================================
@@ -1668,6 +1669,92 @@ const UNREAD_POLL_MS = 30000;
       }
     });
     return row;
+  }
+
+  // =========================================================
+  // メタバース：アクセス・課金モニタ（CiDAO公開API）＋ 位置修正履歴（position-fixes.json）
+  // =========================================================
+  const MV_PRESENCE_API = 'https://cidao.vercel.app/api/metaverse-presence';
+  const MV_USAGE_API = 'https://cidao.vercel.app/api/metaverse-usage';
+  const MV_REFRESH_MS = 60000;
+  let mvTimer = null;
+  let mvFixesLoaded = false;
+
+  function openMetaverseTab() {
+    loadMetaverseUsage();
+    if (!mvFixesLoaded) loadPositionFixes();
+    if (mvTimer) clearInterval(mvTimer);
+    // タブが表示されている間だけ自動更新（非表示になったら止める）
+    mvTimer = setInterval(() => {
+      if ($('tab-metaverse').hidden) { clearInterval(mvTimer); mvTimer = null; return; }
+      loadMetaverseUsage();
+    }, MV_REFRESH_MS);
+  }
+
+  function mvFmt(n) {
+    if (typeof n !== 'number' || !isFinite(n)) return '–';
+    return n.toLocaleString('ja-JP');
+  }
+
+  async function loadMetaverseUsage() {
+    const errEl = $('mv-usage-error');
+    const errors = [];
+    const [presence, usage] = await Promise.all([
+      fetch(MV_PRESENCE_API, { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error('presence HTTP ' + r.status); return r.json(); }).catch(e => { errors.push(e.message); return null; }),
+      fetch(MV_USAGE_API, { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error('usage HTTP ' + r.status); return r.json(); }).catch(e => { errors.push(e.message); return null; }),
+    ]);
+    if (presence) {
+      $('mv-kpi-now').textContent = mvFmt(presence.total) + ' 人';
+      $('mv-kpi-now-sub').textContent = 'イベント用途 ' + mvFmt(presence.event) + ' ／ 防災用途 ' + mvFmt(presence.bousai) + '（直近90秒以内）';
+    }
+    if (usage) {
+      const lim = usage.rootLimitPerDay || 30;
+      const v = typeof usage.visitorsToday === 'number' ? usage.visitorsToday : null;
+      $('mv-kpi-visitors').textContent = v === null ? '–' : (mvFmt(v) + ' 人');
+      $('mv-kpi-tiles').textContent = mvFmt(usage.todayRequests);
+      $('mv-kpi-tiles-sub').textContent = usage.requestsFetchedAt
+        ? 'Cloud Monitoring 取得: ' + new Date(usage.requestsFetchedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) + '（2分キャッシュ）'
+        : 'root＋renderer リクエスト合計';
+      const quotaEl = $('mv-kpi-quota');
+      const bar = $('mv-kpi-quota-bar');
+      if (v === null) { quotaEl.textContent = '–'; bar.style.width = '0'; }
+      else {
+        const rate = Math.min(100, Math.round(v / lim * 100));
+        quotaEl.textContent = mvFmt(v) + ' / ' + lim + '（' + rate + '%）';
+        bar.style.width = rate + '%';
+        bar.classList.toggle('warn', rate >= 80);
+        quotaEl.classList.toggle('warn', rate >= 80);
+      }
+      $('mv-usage-updated').textContent = '集計日 ' + (usage.date || '') + ' ／ 更新 ' + new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    errEl.style.display = errors.length ? '' : 'none';
+    errEl.textContent = errors.length ? ('取得できない項目があります: ' + errors.join(' / ')) : '';
+  }
+
+  async function loadPositionFixes() {
+    const body = $('mv-fixes-body');
+    try {
+      const res = await fetch('../metaverse/position-fixes.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const fixes = Array.isArray(data.fixes) ? data.fixes : [];
+      mvFixesLoaded = true;
+      $('mv-fixes-count').textContent = fixes.length + ' 件';
+      if (!fixes.length) { body.innerHTML = '<tr><td colspan="7" class="empty">位置修正はまだありません</td></tr>'; return; }
+      const fmtPt = pt => (pt && typeof pt.lat === 'number') ? (pt.lat.toFixed(6) + ', ' + pt.lon.toFixed(6)) : '–';
+      body.innerHTML = fixes.map(f =>
+        '<tr>' +
+          '<td class="mv-nowrap">' + escape(f.date || '') + '</td>' +
+          '<td><b>' + escape(f.name || '') + '</b></td>' +
+          '<td class="mv-mono">' + escape(fmtPt(f.before)) + '</td>' +
+          '<td class="mv-mono">' + escape(fmtPt(f.after)) + '</td>' +
+          '<td class="mv-nowrap">' + (typeof f.distanceM === 'number' ? (mvFmt(f.distanceM) + ' m') : '–') + '</td>' +
+          '<td>' + escape(f.source || '') + '</td>' +
+          '<td class="mv-nowrap">' + escape(f.by || '') + '</td>' +
+        '</tr>').join('');
+    } catch (err) {
+      body.innerHTML = '<tr><td colspan="7" class="empty">位置修正履歴を読み込めませんでした（' + escape(err.message) + '）</td></tr>';
+    }
   }
 
   async function loadChangelog() {

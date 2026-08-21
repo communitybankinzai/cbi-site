@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-08-21",
+      "type": "feature",
+      "target": "admin/index.html, admin/admin.js, admin/admin.css",
+      "title": "管理画面に「🌐 メタバース」タブを新設（アクセス・課金モニタ＋文化財ピン位置修正履歴）",
+      "detail": "3Dワールド画面右上の数字（いま参加中／本日の利用者／本日のタイル取得数／閲覧開始枠30回の消化率）を運営側で一覧できるようになった（60秒ごと自動更新、CiDAO公開APIから取得）。あわせて metaverse/position-fixes.json の内容を表で表示し、どの文化財をいつ・どこからどこへ直したかを追えるようになった。金額は API に無いため表示しない。",
+      "author": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-21",
       "type": "content",
       "target": "metaverse/bunkazai.json, metaverse/position-fixes.json",
       "title": "文化財「月影の井」のピン位置を44m修正、位置修正履歴ファイルを新設",

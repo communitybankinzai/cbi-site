@@ -1168,6 +1168,27 @@ button { font-family: inherit; cursor: pointer; }
 .badge.p-h2-2026  { color: #8a6a2a; background: rgba(201, 165, 92, .12); }
 .badge.p-fy-2027  { color: var(--c-ink-sub); background: var(--c-bg-alt); }
 
+/* ---------- メタバース：アクセス・課金モニタ／位置修正履歴 ---------- */
+.mv-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.mv-kpi {
+  background: var(--c-bg); border: 1px solid var(--c-line); border-left: 4px solid var(--c-navy);
+  border-radius: var(--radius); padding: 14px 16px;
+}
+.mv-kpi-label { font-size: 12px; color: var(--c-ink-sub); font-weight: 700; }
+.mv-kpi-value { font-size: 26px; font-weight: 700; color: var(--c-navy); margin: 4px 0 2px; line-height: 1.2; }
+.mv-kpi-value.warn { color: var(--c-danger); }
+.mv-kpi-sub { font-size: 11px; color: var(--c-ink-sub); }
+.mv-bar { height: 8px; background: var(--c-bg-alt); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+.mv-bar-fill { height: 100%; width: 0; background: var(--c-green); transition: width .4s; }
+.mv-bar-fill.warn { background: var(--c-danger); }
+.mv-fixes-wrap { overflow-x: auto; }
+.mv-fixes-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mv-fixes-table th, .mv-fixes-table td { padding: 8px 10px; border-bottom: 1px solid var(--c-line); text-align: left; vertical-align: top; }
+.mv-fixes-table th { font-size: 11px; color: var(--c-ink-sub); background: var(--c-bg-alt); white-space: nowrap; }
+.mv-fixes-table .empty { text-align: center; color: var(--c-ink-sub); }
+.mv-mono { font-family: ui-monospace, Consolas, monospace; font-size: 12px; white-space: nowrap; }
+.mv-nowrap { white-space: nowrap; }
+
 /* ---------- 更新履歴 ---------- */
 .changelog-list { display: flex; flex-direction: column; gap: 10px; }
 .cl-item {

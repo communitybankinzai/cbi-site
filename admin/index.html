@@ -75,6 +75,7 @@
       <button type="button" class="tab-btn" data-tab="sns" role="tab" aria-selected="false">📣 自動投稿</button>
       <button type="button" class="tab-btn" data-tab="bug-reports" role="tab" aria-selected="false">🐛 不具合レポート</button>
       <button type="button" class="tab-btn" data-tab="ledger" role="tab" aria-selected="false">💰 収支管理</button>
+      <button type="button" class="tab-btn" data-tab="metaverse" role="tab" aria-selected="false">🌐 メタバース</button>
     </nav>
 
     <!-- ===== タブ: アイデア ===== -->
@@ -988,6 +989,45 @@
       </section>
 
     </div><!-- /tab-ledger -->
+
+    <!-- ===== タブ: メタバース（アクセス・課金モニタ／位置修正履歴） ===== -->
+    <div class="tab-panel" id="tab-metaverse" role="tabpanel" hidden>
+      <section class="panel">
+        <div class="panel-head-row">
+          <h2 class="panel-title">🌐 メタバース印西 アクセス・課金モニタ</h2>
+          <span class="meta-note" id="mv-usage-updated"></span>
+        </div>
+        <p class="panel-desc">
+          3Dワールド画面の右上に出ている数字と同じものを、運営側で見やすく並べたものです（60秒ごとに自動更新）。
+          費用をかけずに運営するため、Google Map Tiles の「1日の閲覧開始枠（root リクエスト）」を <b>30回／日</b> に制限しています。
+          枠は<b>毎日 日本時間16時ごろ</b>（太平洋時間0時）に回復します。金額は Google Cloud の請求画面でのみ確認できます（この画面には出ません）。
+        </p>
+        <div class="mv-kpi-grid" id="mv-kpi-grid">
+          <div class="mv-kpi"><div class="mv-kpi-label">👥 いま参加中</div><div class="mv-kpi-value" id="mv-kpi-now">–</div><div class="mv-kpi-sub" id="mv-kpi-now-sub">直近90秒以内に合図のあった端末数</div></div>
+          <div class="mv-kpi"><div class="mv-kpi-label">📅 本日の利用者</div><div class="mv-kpi-value" id="mv-kpi-visitors">–</div><div class="mv-kpi-sub" id="mv-kpi-visitors-sub">1ブラウザ＝1人として集計</div></div>
+          <div class="mv-kpi"><div class="mv-kpi-label">🧱 本日のタイル取得</div><div class="mv-kpi-value" id="mv-kpi-tiles">–</div><div class="mv-kpi-sub" id="mv-kpi-tiles-sub">root＋renderer リクエスト合計</div></div>
+          <div class="mv-kpi"><div class="mv-kpi-label">🎯 閲覧開始枠の消化</div><div class="mv-kpi-value" id="mv-kpi-quota">–</div><div class="mv-kpi-sub"><div class="mv-bar"><div class="mv-bar-fill" id="mv-kpi-quota-bar"></div></div></div></div>
+        </div>
+        <p class="meta-note" id="mv-usage-error" style="display:none;color:var(--c-danger)"></p>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head-row">
+          <h2 class="panel-title">📍 文化財ピン 位置修正履歴</h2>
+          <span class="meta-note" id="mv-fixes-count"></span>
+        </div>
+        <p class="panel-desc">
+          3Dワールドの「位置修正」ボタンで取得した座標を <code>metaverse/bunkazai.json</code> に反映した記録です（新しい順）。
+          座標を変更するたびに <code>metaverse/position-fixes.json</code> へ1件追記しています。
+        </p>
+        <div class="mv-fixes-wrap">
+          <table class="mv-fixes-table">
+            <thead><tr><th>日付</th><th>文化財</th><th>修正前（lat, lon）</th><th>修正後（lat, lon）</th><th>移動</th><th>取得方法・出典</th><th>作業</th></tr></thead>
+            <tbody id="mv-fixes-body"><tr><td colspan="7" class="empty">読み込み中…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </div><!-- /tab-metaverse -->
 
   </main>
 
