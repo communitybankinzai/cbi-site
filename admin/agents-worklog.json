@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-08-21",
+          "title": "日別アクセスグラフ実装（CiDAO日別API追加＋管理画面SVGグラフ）0.33時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/map-tiles-usage.ts",
+            "cidao: src/app/api/metaverse-usage/route.ts",
+            "site/admin/index.html",
+            "site/admin/admin.js",
+            "site/admin/admin.css",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.33,
+          "partnerApproved": false,
+          "note": "CiDAO側に ?days=N の日別集計を追加（Cloud Monitoring を86400s単位で集計、課金日=太平洋時間基準）。実測で当日分が二重計上され42,635と出たためラベル基準を課金日に修正し11,564=todayRequestsで一致確認。管理画面は外部ライブラリなしのSVG棒グラフ2段（利用者/タイル、1軸ずつ）。色は dataviz スキルの validate_palette.js で全項目PASSの #2a78d6/#eb6834。admin.js のキャッシュバスター未更新で既存ユーザーに新機能が届かない問題も発見・修正。session: d3e03b5e-fbd5-4d26-8291-3f065f2af890 / output: 86,841 / cost: $30.72（本セッション累計。既存3件と合算で0.88h）"
+        },
+        {
+          "date": "2026-08-21",
           "title": "管理画面メタバースタブ実装（アクセス・課金モニタ＋位置修正履歴）＋本番検証 0.15時間",
           "category": "実装",
           "outputs": [
