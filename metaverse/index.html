@@ -2828,13 +2828,14 @@ let presenceSessionId = "";
 function presenceGetSessionId() {
   if (presenceSessionId) return presenceSessionId;
   try {
-    const saved = sessionStorage.getItem("cbi-meta-presence-id");
+  // localStorageで「1ブラウザ=1人」として数える（sessionStorageだとタブごとに別人扱いで水増しされる）
+    const saved = localStorage.getItem("cbi-meta-presence-id");
     if (saved) { presenceSessionId = saved; return saved; }
   } catch (e) {}
   const buf = new Uint8Array(12);
   (window.crypto || window.msCrypto).getRandomValues(buf);
   presenceSessionId = Array.from(buf).map(function (n) { return n.toString(16).padStart(2, "0"); }).join("");
-  try { sessionStorage.setItem("cbi-meta-presence-id", presenceSessionId); } catch (e) {}
+  try { localStorage.setItem("cbi-meta-presence-id", presenceSessionId); } catch (e) {}
   return presenceSessionId;
 }
 function presenceRender(count) {
