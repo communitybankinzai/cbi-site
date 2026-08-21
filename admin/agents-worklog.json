@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-08-21",
+          "title": "メタバース: 画面上の利用状況表示（利用者数/枠・タイル数）＋公開API＋Git環境復旧 0.35時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/lib/map-tiles-usage.ts（Cloud Monitoringから当日タイル数を取得・120秒キャッシュ・太平洋0時=日本16時のクォータ集計日に整合）＋src/app/api/metaverse-usage/route.ts（公開GET: todayRequests/visitorsToday/rootLimitPerDay=30・CORS限定・秘密情報なし）",
+            "site/metaverse/index.html（presenceChipを「👥 いま N 人 ｜ 本日 v/30人 ｜ タイル x」に拡張・8割で橙・5分更新・ツールチップに説明）",
+            "site/metaverse/index.html showError（root枠到達429時に『本日の3Dワールド利用枠に達しました』案内）",
+            "環境: Git for Windowsの usr/bin 欠損で push不能→ユーザー承認のうえ winget で再インストール（2.55.0）→push復旧",
+            "site/admin/changelog.json 1件＋CLAUDE_HANDOFF.md更新"
+          ],
+          "hours": 0.35,
+          "partnerApproved": false,
+          "note": "「リクエスト数は表示されないのか」への対応。管理画面だけだった消費状況を3D画面にも常時表示。検証: ローカル・本番で『いま1人｜本日3/30人｜タイル446（16:00リセット直後）』を確認、左上ボタンと非重複。session: 51b587ef-7426-442b-977e-b941cdd6e689"
+        },
+        {
+          "date": "2026-08-21",
           "title": "Instagram告知の本番障害（カード画像500）復旧＋失敗投稿の再試行ボタン 0.4時間",
           "category": "保守",
           "outputs": "cidao: package.json(sharp 0.34.5固定+optionalDependencies), api/og/proposal・news(resvg廃止・動的import・?debug=1), admin/sns(RetryButton.tsx, actions.retryFailedLog), next.config.ts(workerThreads差し戻し)",
