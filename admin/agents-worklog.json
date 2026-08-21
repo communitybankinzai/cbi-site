@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-21",
+          "title": "お知らせの絵文字文字化けの修正（候補メール生成時の非BMP除去＋掲載済み1件の修正） 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "cbi-admin-gas/NewsPublish.gs（sendNewsCandidate で絵文字・異体字セレクタ・U+FFFD を除去。除去ロジック5ケース実測。clasp push、トリガーはHEAD実行のため再デプロイ不要）",
+            "site/news-data.json（化けたまま掲載されていた「参加のお約束を改定」の文面を edit_news.js で修正）",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "原因は GAS のメール送信が非BMP文字（絵文字）を「������」に化けさせる既知の癖。changelog 検知の候補メール（📍付きタイトル）で発生し、化けた本文が「掲載」返信の抽出経由でサイトにも保存された。源流（候補生成時）での除去で恒久対応。工数は累計239,164から前回記録223,649の差分15,515 tokensで算出。session: af89ec89-850c-4bf1-ab89-ff6db279e54f / output: 239,164 / cost: $141.76"
+        },
+        {
+          "date": "2026-08-21",
           "title": "文化財A4両面学習レポートの基盤実装・パイロット作成・PDF配布対応 1.0時間",
           "category": "実装",
           "outputs": [
