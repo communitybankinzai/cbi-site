@@ -28,7 +28,9 @@ function fail(msg) {
 }
 
 function env(name) {
-  return (process.env[name] || '').trim();
+  // 候補メール経由で混入しうる置換文字 U+FFFD（絵文字の文字化け）は自動除去する。
+  // 正常な絵文字は残す（サイト表示自体は絵文字を正しく扱える）。
+  return (process.env[name] || '').replace(/�/g, '').replace(/\s+/g, ' ').trim();
 }
 
 const id = env('NEWS_ID');
