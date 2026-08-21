@@ -1679,9 +1679,12 @@ const UNREAD_POLL_MS = 30000;
   const MV_REFRESH_MS = 60000;
   let mvTimer = null;
   let mvFixesLoaded = false;
+  let mvDailyLoaded = false;
+  let mvDays = 14;
 
   function openMetaverseTab() {
     loadMetaverseUsage();
+    if (!mvDailyLoaded) loadMetaverseDaily(mvDays);
     if (!mvFixesLoaded) loadPositionFixes();
     if (mvTimer) clearInterval(mvTimer);
     // タブが表示されている間だけ自動更新（非表示になったら止める）
@@ -1729,6 +1732,97 @@ const UNREAD_POLL_MS = 30000;
     }
     errEl.style.display = errors.length ? '' : 'none';
     errEl.textContent = errors.length ? ('取得できない項目があります: ' + errors.join(' / ')) : '';
+  }
+
+  // ---- 日別アクセス推移（棒＝利用者数／棒＝タイル取得数の2段。1軸ずつ・外部ライブラリなし） ----
+  // 色は data-viz の検証済みパレット（validate_palette.js で全項目PASS）
+  const MV_C_VISITORS = '#2a78d6';
+  const MV_C_TILES = '#eb6834';
+
+  function bindMvRangeButtons() {
+    document.querySelectorAll('.mv-range-btn').forEach(b => {
+      if (b.dataset.bound) return;
+      b.dataset.bound = '1';
+      b.addEventListener('click', () => {
+        mvDays = Number(b.dataset.days) || 14;
+        document.querySelectorAll('.mv-range-btn').forEach(x => x.classList.toggle('active', x === b));
+        loadMetaverseDaily(mvDays);
+      });
+    });
+  }
+
+  async function loadMetaverseDaily(days) {
+    bindMvRangeButtons();
+    const wrap = $('mv-chart-wrap');
+    wrap.innerHTML = '<p class="empty">読み込み中…</p>';
+    try {
+      const res = await fetch(MV_USAGE_API + '?days=' + days, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const rows = Array.isArray(data.daily) ? data.daily : [];
+      mvDailyLoaded = true;
+      if (!rows.length) { wrap.innerHTML = '<p class="empty">日別データがまだありません</p>'; return; }
+      wrap.innerHTML =
+        mvBarChart(rows, { key: 'visitors', color: MV_C_VISITORS, title: '1日の利用者数', unit: '人',
+          limit: data.rootLimitPerDay || null, limitLabel: '閲覧開始枠 ' + (data.rootLimitPerDay || 30) + '回/日',
+          tip: r => r.day + '：' + r.visitors + '人（イベント ' + r.event + ' ／ 防災 ' + r.bousai + '）' }) +
+        mvBarChart(rows, { key: 'requests', color: MV_C_TILES, title: '3Dタイル取得回数', unit: '回',
+          tip: r => r.day + '：' + (r.requests === null ? '取得できず' : r.requests.toLocaleString('ja-JP') + '回') });
+      $('mv-daily-body').innerHTML = rows.slice().reverse().map(r =>
+        '<tr><td class="mv-nowrap">' + escape(r.day) + '</td><td>' + mvFmt(r.visitors) + '</td><td>' + mvFmt(r.event) +
+        '</td><td>' + mvFmt(r.bousai) + '</td><td>' + (r.requests === null ? '–' : mvFmt(r.requests)) + '</td></tr>').join('');
+    } catch (err) {
+      wrap.innerHTML = '<p class="empty">日別データを読み込めませんでした（' + escape(err.message) + '）</p>';
+    }
+  }
+
+  // 1本の棒グラフをSVG文字列で返す（y軸は0起点・1軸のみ。最新値と最大値だけ直接ラベル）
+  function mvBarChart(rows, opt) {
+    const W = 720, H = 190, padL = 46, padR = 12, padT = 16, padB = 30;
+    const vals = rows.map(r => (typeof r[opt.key] === 'number' ? r[opt.key] : 0));
+    const rawMax = Math.max(1, ...vals, opt.limit || 0);
+    const step = Math.pow(10, Math.floor(Math.log10(rawMax)));
+    const max = Math.ceil(rawMax / step) * step;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const bw = Math.max(2, plotW / rows.length - 2);
+    const x = i => padL + (plotW / rows.length) * i + (plotW / rows.length - bw) / 2;
+    const y = v => padT + plotH - (v / max) * plotH;
+    const maxIdx = vals.indexOf(Math.max(...vals));
+    const short = d => String(d).slice(5).replace('-', '/');
+    let g = '';
+    [0, 0.5, 1].forEach(f => {
+      const yy = padT + plotH - f * plotH;
+      g += '<line x1="' + padL + '" y1="' + yy.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + yy.toFixed(1) + '" class="mv-grid"/>' +
+           '<text x="' + (padL - 6) + '" y="' + (yy + 4).toFixed(1) + '" class="mv-axis" text-anchor="end">' + mvFmt(Math.round(max * f)) + '</text>';
+    });
+    if (opt.limit) {
+      const yy = y(opt.limit);
+      g += '<line x1="' + padL + '" y1="' + yy.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + yy.toFixed(1) + '" class="mv-limit"/>' +
+           '<text x="' + (W - padR) + '" y="' + (yy - 5).toFixed(1) + '" class="mv-axis" text-anchor="end">' + escape(opt.limitLabel || '') + '</text>';
+    }
+    let bars = '';
+    rows.forEach((r, i) => {
+      const v = typeof r[opt.key] === 'number' ? r[opt.key] : 0;
+      const h = Math.max(v > 0 ? 2 : 0, plotH - (y(v) - padT));
+      bars += '<g class="mv-bar-g"><title>' + escape(opt.tip(r)) + '</title>' +
+        '<rect x="' + x(i).toFixed(1) + '" y="' + (padT + plotH - h).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) +
+        '" rx="2" fill="' + opt.color + '"/>' +
+        '<rect x="' + x(i).toFixed(1) + '" y="' + padT + '" width="' + bw.toFixed(1) + '" height="' + plotH + '" fill="transparent"/></g>';
+      // x軸ラベルは端と中間だけ（密になりすぎないように）
+      const showLabel = i === 0 || i === rows.length - 1 || (rows.length > 6 && i === Math.floor(rows.length / 2));
+      if (showLabel) bars += '<text x="' + (x(i) + bw / 2).toFixed(1) + '" y="' + (H - 10) + '" class="mv-axis" text-anchor="middle">' + short(r.day) + '</text>';
+    });
+    // 直接ラベル：最大値と最新値のみ
+    let labels = '';
+    [maxIdx, rows.length - 1].forEach(i => {
+      const v = vals[i];
+      if (v <= 0) return;
+      labels += '<text x="' + (x(i) + bw / 2).toFixed(1) + '" y="' + (y(v) - 5).toFixed(1) + '" class="mv-value" text-anchor="middle">' + mvFmt(v) + '</text>';
+    });
+    return '<figure class="mv-figure">' +
+      '<figcaption><span class="mv-swatch" style="background:' + opt.color + '"></span>' + escape(opt.title) + '<span class="mv-unit">（' + escape(opt.unit) + '）</span></figcaption>' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + escape(opt.title) + 'の日別推移">' + g + bars + labels + '</svg>' +
+      '</figure>';
   }
 
   async function loadPositionFixes() {
