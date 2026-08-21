@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=20260821metaverse1">
+<link rel="stylesheet" href="admin.css?v=20260821metaverse2">
 </head>
 <body>
 
@@ -1021,16 +1021,18 @@
           </div>
         </div>
         <p class="panel-desc">
-          上段は1日の利用者数（1ブラウザ＝1人・日本時間の日付）、下段は同じ期間の3Dタイル取得回数です。
-          単位が違うため上下に分けています。タイル数は Google の課金日（日本時間16時区切り）単位で、
-          利用者数の日付とは最大16時間ずれます。棒にカーソルを合わせると内訳が出ます。
+          上段は1日の利用者数（1ブラウザ＝1人）、下段は同じ日の3Dタイル取得回数です。単位が違うため上下に分けています。
+          どちらも<b>日本時間の日付</b>で揃えてあるので、1人あたりの消費タイル数を計算できます。
+          棒にカーソルを合わせると内訳が出ます。
+          （上のカードの「本日のタイル取得」だけは Google の課金日＝日本時間16時区切りの数字で、枠の消化率を見るためのものです）
         </p>
+        <div class="mv-summary" id="mv-summary"></div>
         <div class="mv-chart-wrap" id="mv-chart-wrap"><p class="empty">読み込み中…</p></div>
         <details class="mv-table-details">
           <summary>数値で見る（表）</summary>
           <div class="mv-fixes-wrap">
             <table class="mv-fixes-table">
-              <thead><tr><th>日付</th><th>利用者</th><th>うちイベント</th><th>うち防災</th><th>タイル取得</th></tr></thead>
+              <thead><tr><th>日付</th><th>利用者</th><th>うちイベント</th><th>うち防災</th><th>タイル取得</th><th>1人あたり</th></tr></thead>
               <tbody id="mv-daily-body"></tbody>
             </table>
           </div>
@@ -1190,6 +1192,6 @@
   <div id="toast" class="toast" hidden></div>
 </section>
 
-<script src="admin.js?v=20260821metaverse1"></script>
+<script src="admin.js?v=20260821metaverse2"></script>
 </body>
 </html>

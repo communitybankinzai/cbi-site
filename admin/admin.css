@@ -1183,6 +1183,14 @@ button { font-family: inherit; cursor: pointer; }
 .mv-bar-fill.warn { background: var(--c-danger); }
 .mv-range { display: flex; gap: 6px; }
 .mv-range-btn.active { background: var(--c-navy); color: #fff; border-color: var(--c-navy); }
+.mv-summary {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline;
+  padding: 10px 14px; margin-bottom: 14px;
+  background: var(--c-bg-alt); border-radius: var(--radius); font-size: 13px; color: var(--c-ink-sub);
+}
+.mv-sum-item b { font-size: 17px; color: var(--c-navy); }
+.mv-sum-strong { margin-left: auto; }
+.mv-sum-note { font-size: 11px; margin-left: 4px; }
 .mv-chart-wrap { display: flex; flex-direction: column; gap: 18px; }
 .mv-figure { margin: 0; }
 .mv-figure figcaption {

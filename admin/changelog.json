@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-08-21",
+      "type": "fix",
+      "target": "admin/index.html, admin/admin.js, admin/admin.css（cidao: metaverse-usage API）",
+      "title": "日別グラフの利用者数とタイル数の日付基準を日本時間に統一し、「1人あたりタイル数」を表示",
+      "detail": "これまでタイル数だけ Google の課金日（日本時間16時区切り）で集計しており、利用者数の日付と最大16時間ずれていたため1人あたりの消費が計算できなかった。両方を日本時間の日付に揃え、グラフ上部に期間合計と1人あたり平均、表に「1人あたり」列、タイル棒のカーソル表示にもその日の1人あたり回数を追加した。カードの「本日のタイル取得」は枠の消化率を見るため課金日基準のまま。",
+      "author": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-21",
       "type": "feature",
       "target": "admin/index.html, admin/admin.js, admin/admin.css",
       "title": "メタバースタブに「日別アクセス推移」グラフを追加（14/30/90日切替）",

@@ -1767,13 +1767,39 @@ const UNREAD_POLL_MS = 30000;
           limit: data.rootLimitPerDay || null, limitLabel: '閲覧開始枠 ' + (data.rootLimitPerDay || 30) + '回/日',
           tip: r => r.day + '：' + r.visitors + '人（イベント ' + r.event + ' ／ 防災 ' + r.bousai + '）' }) +
         mvBarChart(rows, { key: 'requests', color: MV_C_TILES, title: '3Dタイル取得回数', unit: '回',
-          tip: r => r.day + '：' + (r.requests === null ? '取得できず' : r.requests.toLocaleString('ja-JP') + '回') });
+          tip: r => r.day + '：' + (r.requests === null ? '取得できず' : r.requests.toLocaleString('ja-JP') + '回') +
+            (mvPerUser(r) === null ? '' : '（1人あたり ' + mvFmt(mvPerUser(r)) + '回）') });
+      renderMvSummary(rows);
       $('mv-daily-body').innerHTML = rows.slice().reverse().map(r =>
         '<tr><td class="mv-nowrap">' + escape(r.day) + '</td><td>' + mvFmt(r.visitors) + '</td><td>' + mvFmt(r.event) +
-        '</td><td>' + mvFmt(r.bousai) + '</td><td>' + (r.requests === null ? '–' : mvFmt(r.requests)) + '</td></tr>').join('');
+        '</td><td>' + mvFmt(r.bousai) + '</td><td>' + (r.requests === null ? '–' : mvFmt(r.requests)) +
+        '</td><td>' + (mvPerUser(r) === null ? '–' : mvFmt(mvPerUser(r))) + '</td></tr>').join('');
     } catch (err) {
       wrap.innerHTML = '<p class="empty">日別データを読み込めませんでした（' + escape(err.message) + '）</p>';
     }
+  }
+
+  // その日の1人あたりタイル数。利用者0人・タイル未取得の日は出さない（0除算・誤解を避ける）
+  function mvPerUser(r) {
+    if (typeof r.requests !== 'number' || !r.visitors) return null;
+    return Math.round(r.requests / r.visitors);
+  }
+
+  // 期間合計と1人あたり平均。利用者が記録された日だけを対象にする
+  function renderMvSummary(rows) {
+    const el = $('mv-summary');
+    if (!el) return;
+    const withUsers = rows.filter(r => r.visitors > 0 && typeof r.requests === 'number');
+    const visitors = rows.reduce((a, r) => a + (r.visitors || 0), 0);
+    const tiles = rows.reduce((a, r) => a + (typeof r.requests === 'number' ? r.requests : 0), 0);
+    const usedTiles = withUsers.reduce((a, r) => a + r.requests, 0);
+    const usedVisitors = withUsers.reduce((a, r) => a + r.visitors, 0);
+    const per = usedVisitors ? Math.round(usedTiles / usedVisitors) : null;
+    el.innerHTML =
+      '<span class="mv-sum-item">期間合計 利用者 <b>' + mvFmt(visitors) + '</b> 人</span>' +
+      '<span class="mv-sum-item">タイル取得 <b>' + mvFmt(tiles) + '</b> 回</span>' +
+      '<span class="mv-sum-item mv-sum-strong">1人あたり <b>' + (per === null ? '–' : mvFmt(per)) + '</b> 回' +
+      (per === null ? '' : '<span class="mv-sum-note">（利用者の記録がある ' + withUsers.length + ' 日で算出）</span>') + '</span>';
   }
 
   // 1本の棒グラフをSVG文字列で返す（y軸は0起点・1軸のみ。最新値と最大値だけ直接ラベル）
