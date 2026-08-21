@@ -56,3 +56,4 @@
 - 保管庫ノート: `cidao/proposals/2026-08-16_印西市災害状況整合MAPとSNS巡回.md`（浸水シミュレーションの設計判断・メタバース節）
 - 課金監視: `cidao/2026-08-16_GoogleMapTilesAPI課金の監視手順.md`
 - 防災MAP側: `inzai-disaster-map/CLAUDE_HANDOFF.md`
+- **費用ゼロ運用**（2026-08-21）: Google側で 3D Tiles root requests per day=**30**（課金対象を無料枠1,000/月以下に構造的に抑える）。超過時は root.json が429→`showError` が「本日の3Dワールド利用枠に達しました」を表示（故障表示ではない）。renderer（タイル本体）は無償・自動調整。イベント日は当日朝に root を一時引き上げる運用（運営方針ノート参照）。予算アラートは月1,000円・10/50/100%

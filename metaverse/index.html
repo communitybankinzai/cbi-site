@@ -940,6 +940,19 @@ async function loadTileset() {
 }
 
 function showError(e) {
+  // 1日の閲覧開始枠（3D Tiles root requests per day・費用ゼロ運用のため30回/日に制限）に達した場合は
+  // 故障ではないことを伝える。Googleは429（RESOURCE_EXHAUSTED / Quota exceeded）を返す
+  const msg = String((e && e.message) || e || "");
+  const status = e && (e.statusCode || (e.error && e.error.code));
+  if (status === 429 || /429|quota|RESOURCE_EXHAUSTED/i.test(msg)) {
+    document.getElementById("overlay").innerHTML =
+      '<h2>🕒 本日の3Dワールド利用枠に達しました</h2>' +
+      '<p>費用をかけずに運営するため、1日に3Dワールドを開ける回数に上限を設けています。<br>' +
+      '枠は<b>毎日夕方ごろ（日本時間）</b>に回復します。お手数ですが、時間をおいてからもう一度アクセスしてください。<br><br>' +
+      '<small>イベント開催日は事前に枠を拡大して運用します。文化財ずかん・クイズは3D表示がなくてもご利用いただけます。</small></p>' +
+      '<p><button onclick="location.reload()" style="padding:10px 24px;border:none;border-radius:8px;background:#3a7bd5;color:#fff;font-size:14px;cursor:pointer;">再読み込み</button></p>';
+    return;
+  }
   const overlay = document.getElementById("overlay");
   overlay.innerHTML =
     '<h2>⚠️ 3D都市データの読み込みに失敗しました</h2>' +
