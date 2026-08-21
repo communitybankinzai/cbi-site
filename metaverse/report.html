@@ -146,6 +146,17 @@
 
   .err{background:#fff; max-width:640px; margin:40px auto; padding:24px; border-radius:10px; font-family:"Noto Sans JP",sans-serif;}
 
+  /* PDF書き出し専用（?pdfmode=1）。WebフォントはPDFに丸ごと埋め込まれ1件2.9MBになるため、
+     配布用PDFはWindows標準の書体で作る。画面表示とブラウザ印刷はNotoのまま。 */
+  html.pdfmode .sheet, html.pdfmode .sheet *{
+    font-family:"Yu Mincho","游明朝","MS Mincho",serif !important;
+  }
+  html.pdfmode .sheet .rp-head .brand, html.pdfmode .sheet .no, html.pdfmode .sheet .badge-desig,
+  html.pdfmode .sheet h2.sec, html.pdfmode .sheet table.facts th, html.pdfmode .sheet .hl .t,
+  html.pdfmode .sheet ol.quiz li::before, html.pdfmode .sheet .rp-foot{
+    font-family:"Yu Gothic UI","Yu Gothic","游ゴシック","Meiryo",sans-serif !important;
+  }
+
   /* ===== 印刷 ===== */
   @page{ size:A4 portrait; margin:0; }
   @media print{
@@ -170,6 +181,7 @@
   </div>
   <div class="sp"></div>
   <span class="tb-note" id="tbNote"></span>
+  <a class="tb-btn ghost" id="btnPdf" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none;">📄 PDF版</a>
   <button class="tb-btn ghost" id="btnBack">← もどる</button>
   <button class="tb-btn" id="btnPrint">🖨 印刷 / PDF保存</button>
 </div>
@@ -209,6 +221,9 @@
 
   if (!id || !/^[a-z0-9-]+$/.test(id)) { fail('文化財が指定されていません（例: report.html?id=houjuin-kannondo）。'); return; }
 
+  // PDF書き出し用モード（scripts/make-report-pdf.py が使う）
+  if (params.get('pdfmode') === '1') document.documentElement.classList.add('pdfmode');
+
   fetch('reports/' + id + '.json', { cache: 'no-cache' })
     .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(render)
@@ -231,6 +246,13 @@
 
   function render(d){
     document.title = (d.title || '文化財') + '｜印西市文化財 学習レポート';
+
+    // 完成PDFがある場合はツールバーに導線を出す（ブラウザの印刷設定に左右されず配布できる）
+    if (d.pdf) {
+      var pdfEl = document.getElementById('btnPdf');
+      pdfEl.href = d.pdf;
+      pdfEl.style.display = 'inline-block';
+    }
 
     /* ---------- 1ページ目（表面） ---------- */
     var p1 = head(d, 1);
