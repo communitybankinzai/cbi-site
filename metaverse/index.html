@@ -2851,13 +2851,34 @@ function presenceGetSessionId() {
   try { localStorage.setItem("cbi-meta-presence-id", presenceSessionId); } catch (e) {}
   return presenceSessionId;
 }
+// 本日の利用状況（タイルリクエスト数・利用者数・閲覧開始枠）。CIDAOの公開APIから5分ごとに取得
+const USAGE_API = "https://cidao.vercel.app/api/metaverse-usage";
+let usageInfo = null;
+let presenceCount = 0;
+function fmtK(n) { return n >= 10000 ? (Math.round(n / 1000) / 10) + "万" : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 function presenceRender(count) {
+  if (typeof count === "number") presenceCount = count;
   const el = document.getElementById("presenceChip");
   if (!el) return;
   // タイムトライアル中は計測表示と重なるため隠す
-  if (!count || count < 1 || (typeof ttActive !== "undefined" && ttActive)) { el.style.display = "none"; return; }
-  el.innerHTML = "👥 いま <b>" + count + "</b> 人が参加中";
+  if (!presenceCount || presenceCount < 1 || (typeof ttActive !== "undefined" && ttActive)) { el.style.display = "none"; return; }
+  let html = "👥 いま <b>" + presenceCount + "</b> 人";
+  if (usageInfo) {
+    if (typeof usageInfo.visitorsToday === "number") {
+      const v = usageInfo.visitorsToday, lim = usageInfo.rootLimitPerDay || 30;
+      const warn = v >= lim * 0.8;
+      html += ' ｜ 本日 <b style="' + (warn ? "color:#ff8a65" : "") + '">' + v + "</b>/" + lim + "人";
+    }
+    if (typeof usageInfo.todayRequests === "number") html += " ｜ タイル <b>" + fmtK(usageInfo.todayRequests) + "</b>";
+  }
+  el.innerHTML = html;
+  el.title = "いま参加中の人数 ｜ 本日の利用者数／1日の閲覧開始枠（費用ゼロ運用のため30回）｜ 本日の3Dタイル取得回数（無償枠・自動調整あり）";
   el.style.display = "inline-block";
+}
+function usageFetch() {
+  fetch(USAGE_API).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(function (d) { usageInfo = d; presenceRender(); })
+    .catch(function () { /* 取得できないときは人数だけ表示 */ });
 }
 function presencePing() {
   fetch(PRESENCE_API, {
@@ -2871,6 +2892,8 @@ function presencePing() {
 }
 if (!new URLSearchParams(location.search).get("cinema")) { // 撮影・告知モードでは表示しない
   presencePing();
+  usageFetch();
+  setInterval(usageFetch, 5 * 60 * 1000);
   setInterval(presencePing, PRESENCE_INTERVAL_MS);
 }
 
