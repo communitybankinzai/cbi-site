@@ -18,7 +18,7 @@
       "actuals": [
         {
           "date": "2026-08-22",
-          "title": "メタバース3D表示の鮮明化と描画精度の管理画面切替を実装 0.3時間",
+          "title": "メタバース3D表示の鮮明化・描画精度の管理画面切替・ピン浮き修正・スポット17か所化 0.6時間",
           "category": "実装",
           "outputs": [
             "site/metaverse/index.html（maximumScreenSpaceError=8を明示、applyRenderQuality()とpendingSseを追加しusageFetchから実行中のtilesetへ反映）",
@@ -26,11 +26,14 @@
             "site/admin/changelog.json（1件追記）",
             "cidao src/app/admin/timetrial/actions.ts（saveRenderQuality追加）",
             "cidao src/app/admin/timetrial/page.tsx＋_components/TrialControls.tsx（🖼 3Dの描画精度セクションとRenderQualityForm追加）",
-            "cidao src/app/api/metaverse-usage/route.ts（maximumScreenSpaceErrorを返すgetRenderQuality追加）"
+            "cidao src/app/api/metaverse-usage/route.ts（maximumScreenSpaceErrorを返すgetRenderQuality追加）",
+            "site/metaverse/index.html（SPOTS配列を6→17か所へ拡張しgroup付与、watchPinClampに高さオフセット引数を追加しSPOTSへ適用、タイムトライアル中は bmGoBtn を無効化、spotGroupLabel のCSSとグループ見出し生成）",
+            "site/metaverse/CLAUDE_HANDOFF.md（スポット固定高の未対応事項を対応済みに更新、17か所化と競技中テレポート禁止を追記）",
+            "site/admin/changelog.json（3件追記）"
           ],
-          "hours": 0.3,
+          "hours": 0.6,
           "partnerApproved": false,
-          "note": "ユーザー報告「タイルが粗い・立体的でない」の原因はmaximumScreenSpaceErrorが未指定でCesium既定の16だったこと。実機のブラウザペインではcanvas 0x0でWebGLが走らず描画検証は不可だったため、javascript_toolで設定値を実測して特定した。既定を8に下げ、さらに管理画面から4/8/16/32を切り替え可能にした（app_settings key: metaverse_render_quality）。設定は既存のusage APIに相乗りするため開いたままの画面にも5分以内に反映される。課金はrootリクエスト単位でタイル本体は無償のため費用は増えないが、renderer 1日上限（3万回）の消費が2〜4倍になる。検証：index.htmlのscriptブロックをnode --checkで構文OK、cidaoはnpx tsc --noEmitで自分の4ファイルに型エラーなしを確認。なお他セッションが編集中の src/app/api/cron/sns-token-refresh/route.ts に構文エラー（.join('\\n')が実改行で壊れている）があり、巻き込まないよう自分の4ファイルのみcommitした（未コミットのまま残置・要対応）。session: 7601b8f5-0d91-483c-afc7-15590edebc06 / output: 192,577 / cost: $36.93"
+          "note": "ユーザー報告「タイルが粗い・立体的でない」の原因はmaximumScreenSpaceErrorが未指定でCesium既定の16だったこと。実機のブラウザペインではcanvas 0x0でWebGLが走らず描画検証は不可だったため、javascript_toolで設定値を実測して特定した。既定を8に下げ、さらに管理画面から4/8/16/32を切り替え可能にした（app_settings key: metaverse_render_quality）。設定は既存のusage APIに相乗りするため開いたままの画面にも5分以内に反映される。課金はrootリクエスト単位でタイル本体は無償のため費用は増えないが、renderer 1日上限（3万回）の消費が2〜4倍になる。検証：index.htmlのscriptブロックをnode --checkで構文OK、cidaoはnpx tsc --noEmitで自分の4ファイルに型エラーなしを確認。なお他セッションが編集中の src/app/api/cron/sns-token-refresh/route.ts に構文エラー（.join('\\n')が実改行で壊れている）があり、巻き込まないよう自分の4ファイルのみcommitした（未コミットのまま残置・要対応）。 追加対応（同日）：ユーザー報告「木下駅が宙に浮く」の原因は SPOTS ピンが固定高60mで、文化財ピンにある地表吸着（watchPinClamp）が適用されていなかったこと。低地の木下駅では約20m浮く。watchPinClamp に offsetM 引数を足してSPOTSにも適用した。また、タイムトライアル中に文化財詳細の「▶ 現地へ行く」で目的地へ直接ワープできる抜け道があったため競技中は無効化した（主要施設へのテレポートは方針として許容）。スポットを6→17か所に拡張（東部・南東部の空白を解消）。座標は推測せずOSMとkominkan.jsonから取得。検証：node --check で構文OK、SPOTS 17件とグループ順を静的に確認。**3D描画の実機確認はブラウザペインで canvas 0x0 となり不可のため、見た目はユーザー確認待ち**。session: 7601b8f5-0d91-483c-afc7-15590edebc06 / output: 223,115 / cost: $44.34"
         },
         {
           "date": "2026-08-22",
