@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-08-22",
+          "title": "メタバース3D表示の鮮明化と描画精度の管理画面切替を実装 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（maximumScreenSpaceError=8を明示、applyRenderQuality()とpendingSseを追加しusageFetchから実行中のtilesetへ反映）",
+            "site/metaverse/CLAUDE_HANDOFF.md（描画精度の節を追加）",
+            "site/admin/changelog.json（1件追記）",
+            "cidao src/app/admin/timetrial/actions.ts（saveRenderQuality追加）",
+            "cidao src/app/admin/timetrial/page.tsx＋_components/TrialControls.tsx（🖼 3Dの描画精度セクションとRenderQualityForm追加）",
+            "cidao src/app/api/metaverse-usage/route.ts（maximumScreenSpaceErrorを返すgetRenderQuality追加）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "ユーザー報告「タイルが粗い・立体的でない」の原因はmaximumScreenSpaceErrorが未指定でCesium既定の16だったこと。実機のブラウザペインではcanvas 0x0でWebGLが走らず描画検証は不可だったため、javascript_toolで設定値を実測して特定した。既定を8に下げ、さらに管理画面から4/8/16/32を切り替え可能にした（app_settings key: metaverse_render_quality）。設定は既存のusage APIに相乗りするため開いたままの画面にも5分以内に反映される。課金はrootリクエスト単位でタイル本体は無償のため費用は増えないが、renderer 1日上限（3万回）の消費が2〜4倍になる。検証：index.htmlのscriptブロックをnode --checkで構文OK、cidaoはnpx tsc --noEmitで自分の4ファイルに型エラーなしを確認。なお他セッションが編集中の src/app/api/cron/sns-token-refresh/route.ts に構文エラー（.join('\\n')が実改行で壊れている）があり、巻き込まないよう自分の4ファイルのみcommitした（未コミットのまま残置・要対応）。session: 7601b8f5-0d91-483c-afc7-15590edebc06 / output: 192,577 / cost: $36.93"
+        },
+        {
+          "date": "2026-08-22",
           "title": "検討事項のplans登録漏れ検知（Stop hook）＋CLAUDE.mdルール11の追加 0.2時間",
           "category": "実装",
           "outputs": [
