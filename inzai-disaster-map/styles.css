@@ -2382,3 +2382,10 @@ body.embed-mode .cbi-home-link {
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: bold;
 }
+
+/* 市長・市公式など優先確認したい投稿（2026-08-23） */
+.sns-monitor-item.is-priority { border-left: 4px solid #d97706; background: #fffbeb; }
+.sns-monitor-priority {
+  background: #d97706; color: #fff; border-radius: 10px;
+  padding: 1px 8px; font-size: 10px; font-weight: bold;
+}

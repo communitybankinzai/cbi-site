@@ -974,14 +974,19 @@ function renderSnsMonitor(payload) {
     list.innerHTML = '<div class="detail-empty">対象日の新着候補はありません。</div>';
     return;
   }
-  list.innerHTML = snsMonitorItems.map((item, index) => {
+  // 市長・市公式の発信は災害時に最優先で確認したいので先頭へ並べ替える
+  const ordered = snsMonitorItems
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => (b.item.priorityLabel ? 1 : 0) - (a.item.priorityLabel ? 1 : 0));
+  list.innerHTML = ordered.map(({ item, index }) => {
     const duplicate = findExactDuplicate(item);
     const platform = platformLabels[item.platform] || item.platform;
     return `
-      <article class="sns-monitor-item ${duplicate ? "is-registered" : ""}">
+      <article class="sns-monitor-item ${duplicate ? "is-registered" : ""} ${item.priorityLabel ? "is-priority" : ""}">
         <a class="sns-monitor-link" href="${escapeAttribute(item.permalink)}" target="_blank" rel="noreferrer">
           <div class="sns-monitor-meta">
             <span class="sns-monitor-platform">${escapeHtml(platform)}</span>
+            ${item.priorityLabel ? `<span class="sns-monitor-priority">${escapeHtml(item.priorityLabel)}</span>` : ""}
             <span>${escapeHtml(item.username ? `@${item.username}` : "投稿者不明")}</span>
             <span>${escapeHtml(formatDateTime(toDateTimeLocal(item.timestamp)))}</span>
           </div>
