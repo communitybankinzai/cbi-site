@@ -2369,3 +2369,7 @@ body.embed-mode .cbi-home-link {
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: bold;
 }
+
+/* 利用者数チップ（2026-08-22） */
+.presence-chip { background: #eef6ff; border-color: #9dc3ea; color: #1f5c99; }
+.presence-chip.is-active { background: #e6f7ee; border-color: #7ac9a0; color: #1a6b45; }

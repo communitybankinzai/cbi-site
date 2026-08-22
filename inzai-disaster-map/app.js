@@ -645,6 +645,8 @@ const recordLayer = L.layerGroup();
 const roadFloodLayer = L.layerGroup();
 const roadDrawingLayer = L.layerGroup();
 const shelterLayer = L.layerGroup();
+const PRESENCE_SESSION_KEY = "cbi-disaster-presence-session-v1";
+let presenceTimer = null;
 const wellLayer = L.layerGroup();
 let officialWells = [];
 let wellPayload = null;
@@ -1069,6 +1071,7 @@ function initShelters() {
   shelterTimer = setInterval(() => refreshShelters(false, true), 5 * 60 * 1000);
   // 災害用井戸は静的データのため初回のみ取得する
   refreshWells();
+  initPresence();
 }
 
 async function refreshShelters(showStatus = false, quiet = false) {
@@ -1140,6 +1143,55 @@ function renderWells() {
     `);
     wellLayer.addLayer(marker);
   });
+}
+
+// いまMAPを開いている人数（在席確認）。メタバースと同じCiDAOのpresence APIを使い、
+// mode="disaster-map" で3Dワールド側と区別して数える。
+// 送るのは端末で生成した乱数のセッションIDのみ（個人情報は送らない）。
+function presenceSessionId() {
+  let id = localStorage.getItem(PRESENCE_SESSION_KEY);
+  if (!id || !/^[A-Za-z0-9_-]{8,64}$/.test(id)) {
+    id = `dm-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`.slice(0, 40);
+    localStorage.setItem(PRESENCE_SESSION_KEY, id);
+  }
+  return id;
+}
+
+function renderPresence(count) {
+  const chip = document.getElementById("presence-chip");
+  if (!chip) return;
+  if (typeof count !== "number") {
+    chip.textContent = "👥 人数未取得";
+    chip.classList.remove("is-active");
+    return;
+  }
+  chip.textContent = `👥 いま ${count}人が閲覧中`;
+  chip.classList.toggle("is-active", count > 1);
+}
+
+async function sendPresence() {
+  const endpoint = String(APP_CONFIG.presenceEndpoint || "").trim();
+  if (!endpoint) return;
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: presenceSessionId(), mode: "disaster-map" })
+    });
+    if (!response.ok) throw new Error(`presence HTTP ${response.status}`);
+    const payload = await response.json();
+    renderPresence(Number(payload.disasterMap ?? payload.total ?? 0));
+  } catch {
+    renderPresence(null);
+  }
+}
+
+function initPresence() {
+  if (!String(APP_CONFIG.presenceEndpoint || "").trim()) return;
+  sendPresence();
+  clearInterval(presenceTimer);
+  // 在席とみなされるのは直近90秒のため、その半分以下の間隔で合図を送る
+  presenceTimer = setInterval(sendPresence, 40 * 1000);
 }
 
 function getShelterFilters() {
