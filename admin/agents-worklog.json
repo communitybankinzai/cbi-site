@@ -48,7 +48,7 @@
         },
         {
           "date": "2026-08-22",
-          "title": "メタバース3D表示の鮮明化・描画精度の管理画面切替・ピン浮き修正・スポット17か所化 0.6時間",
+          "title": "メタバース：描画精度の管理画面切替・ピン浮き修正・スポット17か所化・タイル警告・撮影ボタン 1.2時間",
           "category": "実装",
           "outputs": [
             "site/metaverse/index.html（maximumScreenSpaceError=8を明示、applyRenderQuality()とpendingSseを追加しusageFetchから実行中のtilesetへ反映）",
@@ -59,11 +59,16 @@
             "cidao src/app/api/metaverse-usage/route.ts（maximumScreenSpaceErrorを返すgetRenderQuality追加）",
             "site/metaverse/index.html（SPOTS配列を6→17か所へ拡張しgroup付与、watchPinClampに高さオフセット引数を追加しSPOTSへ適用、タイムトライアル中は bmGoBtn を無効化、spotGroupLabel のCSSとグループ見出し生成）",
             "site/metaverse/CLAUDE_HANDOFF.md（スポット固定高の未対応事項を対応済みに更新、17か所化と競技中テレポート禁止を追記）",
-            "site/admin/changelog.json（3件追記）"
+            "site/admin/changelog.json（3件追記）",
+            "site/metaverse/index.html（pinReclampAll で詳細タイル到着後に再吸着、タイル取得の段階警告、📸撮影ボタンと captureScreenshot、preserveDrawingBuffer 有効化、CAPTURE_HIDE_IDS をシネマモードと共用）",
+            "site/admin/admin.js＋admin.css（メタバースタブに描画精度の設定UIとタイル取得の段階警告）",
+            "site/admin/index.html（🖼 3Dの描画精度セクション）",
+            "cidao src/app/api/metaverse-settings/route.ts（新規：管理画面パスワードで認証する保存API）",
+            "cidao src/app/api/metaverse-usage/route.ts（rendererLimitPerDay を追加）"
           ],
-          "hours": 0.6,
+          "hours": 1.2,
           "partnerApproved": false,
-          "note": "ユーザー報告「タイルが粗い・立体的でない」の原因はmaximumScreenSpaceErrorが未指定でCesium既定の16だったこと。実機のブラウザペインではcanvas 0x0でWebGLが走らず描画検証は不可だったため、javascript_toolで設定値を実測して特定した。既定を8に下げ、さらに管理画面から4/8/16/32を切り替え可能にした（app_settings key: metaverse_render_quality）。設定は既存のusage APIに相乗りするため開いたままの画面にも5分以内に反映される。課金はrootリクエスト単位でタイル本体は無償のため費用は増えないが、renderer 1日上限（3万回）の消費が2〜4倍になる。検証：index.htmlのscriptブロックをnode --checkで構文OK、cidaoはnpx tsc --noEmitで自分の4ファイルに型エラーなしを確認。なお他セッションが編集中の src/app/api/cron/sns-token-refresh/route.ts に構文エラー（.join('\\n')が実改行で壊れている）があり、巻き込まないよう自分の4ファイルのみcommitした（未コミットのまま残置・要対応）。 追加対応（同日）：ユーザー報告「木下駅が宙に浮く」の原因は SPOTS ピンが固定高60mで、文化財ピンにある地表吸着（watchPinClamp）が適用されていなかったこと。低地の木下駅では約20m浮く。watchPinClamp に offsetM 引数を足してSPOTSにも適用した。また、タイムトライアル中に文化財詳細の「▶ 現地へ行く」で目的地へ直接ワープできる抜け道があったため競技中は無効化した（主要施設へのテレポートは方針として許容）。スポットを6→17か所に拡張（東部・南東部の空白を解消）。座標は推測せずOSMとkominkan.jsonから取得。検証：node --check で構文OK、SPOTS 17件とグループ順を静的に確認。**3D描画の実機確認はブラウザペインで canvas 0x0 となり不可のため、見た目はユーザー確認待ち**。session: 7601b8f5-0d91-483c-afc7-15590edebc06 / output: 223,115 / cost: $44.34"
+          "note": "ユーザー報告「タイルが粗い・立体的でない」の原因はmaximumScreenSpaceErrorが未指定でCesium既定の16だったこと。実機のブラウザペインではcanvas 0x0でWebGLが走らず描画検証は不可だったため、javascript_toolで設定値を実測して特定した。既定を8に下げ、さらに管理画面から4/8/16/32を切り替え可能にした（app_settings key: metaverse_render_quality）。設定は既存のusage APIに相乗りするため開いたままの画面にも5分以内に反映される。課金はrootリクエスト単位でタイル本体は無償のため費用は増えないが、renderer 1日上限（3万回）の消費が2〜4倍になる。検証：index.htmlのscriptブロックをnode --checkで構文OK、cidaoはnpx tsc --noEmitで自分の4ファイルに型エラーなしを確認。なお他セッションが編集中の src/app/api/cron/sns-token-refresh/route.ts に構文エラー（.join('\\n')が実改行で壊れている）があり、巻き込まないよう自分の4ファイルのみcommitした（未コミットのまま残置・要対応）。 追加対応（同日）：ユーザー報告「木下駅が宙に浮く」の原因は SPOTS ピンが固定高60mで、文化財ピンにある地表吸着（watchPinClamp）が適用されていなかったこと。低地の木下駅では約20m浮く。watchPinClamp に offsetM 引数を足してSPOTSにも適用した。また、タイムトライアル中に文化財詳細の「▶ 現地へ行く」で目的地へ直接ワープできる抜け道があったため競技中は無効化した（主要施設へのテレポートは方針として許容）。スポットを6→17か所に拡張（東部・南東部の空白を解消）。座標は推測せずOSMとkominkan.jsonから取得。検証：node --check で構文OK、SPOTS 17件とグループ順を静的に確認。**3D描画の実機確認はブラウザペインで canvas 0x0 となり不可のため、見た目はユーザー確認待ち**。 追加対応：ピンの浮きは固定高だけでなく『粗いタイル段階で建物の塊の上を地表と誤測して確定する』のが真因で、読み込み完了ごとに最大3回まで再測定する方式にした。描画精度の設定はCBI管理画面のメタバースタブへ設置（ユーザー指摘により /admin/timetrial から移設。CiDAO側にも残置）。認証はVercel環境変数 CBI_ADMIN_PASSWORD による管理画面パスワード照合で、503→401→保存成功まで実測確認済み。タイル取得は上限70%で注意・85%で警告を両画面に追加（上限値はAPIから配布）。📸撮影ボタンを追加（preserveDrawingBuffer が必須のため viewer 初期化を変更）。小林駅周辺が粗いのはGoogleの3Dデータが都市部中心で郊外の解像度が低いためと確認、SSEを下げても改善しない。 session: 7601b8f5-0d91-483c-afc7-15590edebc06 / output: 302,524 / cost: $67.21"
         },
         {
           "date": "2026-08-22",
@@ -4049,6 +4054,17 @@
     },
     "A4": {
       "actuals": [
+        {
+          "date": "2026-08-22",
+          "title": "メタバース印西の紹介＋利用者への御礼 SNS告知文を4媒体分作成 0.2時間",
+          "category": "広報",
+          "outputs": [
+            "agents/a4-voice-out/knowledge/sns-drafts/2026-08-22_メタバース印西_紹介と御礼.md（新規：Threads／X／Facebook／Instagram の4媒体分＋撮影すべき画面4枚の指示＋投稿時の注意）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "ユーザー指示により『利用者が増えて嬉しい』を全媒体に盛り込んだ。数字は出典のあるものだけを使用（文化財件数＝市公式、県内12位＝千葉県の市町村別ページ集計）。利用者数の実数は誇張・過小どちらにも取られうるため記載せず。競技会は会期・後援・エントリー方法が未確定のため『計画しています』に留めた。画像は📸撮影ボタンでユーザーが撮る前提（3D描画はClaude側で撮影不可）。市街地推奨と明記。**未投稿・投稿はユーザーが実施**。 session: 7601b8f5-0d91-483c-afc7-15590edebc06 / output: 302,524 / cost: $67.21"
+        },
         {
           "date": "2026-08-08",
           "title": "CiDAOイベントカレンダー告知文の作成（LINEグループ向け3案＋FreeFree掲示板向け）0.1時間",
