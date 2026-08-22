@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-08-22",
+          "title": "課題記録の実態同期＋引継ぎ事故の再発防止（決定事項の集約）0.3時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（「調査済み・見送りを決定した案件（再提案しないこと）」節を新設。TOYOTA/JARTIC/X/揺れやすさ・液状化/冠水注意箇所の結論・理由・決定日を表化。接続状態は本番APIで実測してから書くルールも明記）",
+            "site/inzai-disaster-map/admin.js（シード記録6件を実態へ: 通行止め線表示・TOYOTA・JARTIC・わが街ガイドレイヤー化・Instagram/Threads広域API取込を対応済へ、Xは保留理由を明記。WORK_LOG_SEED_KEYをv7→v9へ。保存済み記録を最新シードへ自動更新する移行処理を追加〔手編集分は上書きしない〕）",
+            "site/inzai-disaster-map/README.md（TOYOTA/JARTICの結論と道路区間線の実装状況を同期）＋admin/changelog.json 2件",
+            "メモリ: verify-status-before-claiming-undone.md（「未実装」と言う前に本番APIとgrepで実測するルール）",
+            "実測: 本番sns-monitor APIで Threads/Instagram/Bluesky の3媒体すべて status=success を確認（Instagramは8/18認証・8/19実証済みで実装不要と判明）／IG検索トークンは有効だが既存cron方式 ig_refresh_token は不可（Facebook Login方式のためエンドポイント不一致）と実測で確定"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "祐樹さんの指摘「セッション間の申し継ぎが全然できていない」への対応。同一セッション内で3回、完了済み案件を未実装と誤認した（通行止め線表示は8/16実装済み・TOYOTAはREADMEに結論済み・Instagramは8/18接続済み）。原因は同じ案件が引継ぎ文書/シード記録/READMEの3か所に散在し更新が同期していなかったこと。検討中の課題は11件→3件に整理。Instagram検索トークンの自動延長はfb_exchange_tokenの可否をapp secret取得後に実測する方針で継続中。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 458,554 / cost: $227.14"
+        },
+        {
+          "date": "2026-08-22",
           "title": "plans棚卸し機能の実装（管理画面「要対応」パネル＋SessionStart hook）0.4時間",
           "category": "実装",
           "outputs": [
