@@ -1,13 +1,154 @@
 {
-  "_comment": "文化財ピンの位置修正履歴。bunkazai.json の lat/lon を変更したら必ず先頭へ1件追記する。distanceM は修正前後の水平距離(m)。source は座標の取得方法（例: メタバース「位置修正」ボタン、現地GPS、市公式地図）",
+  "_comment": "文化財ピンの位置修正履歴。bunkazai.json の lat/lon を変更したら必ず先頭へ1件追記する（.githooks/pre-commit が追記漏れを検知してコミットを止める）。distanceM は修正前後の水平距離(m)。source は座標の取得方法（例: メタバース「位置修正」ボタン、現地GPS、市公式地図）",
   "fixes": [
+    {
+      "date": "2026-08-23",
+      "name": "押付の水塚",
+      "before": {
+        "lat": 35.819302,
+        "lon": 140.211517
+      },
+      "after": {
+        "lat": 35.819336,
+        "lon": 140.21118
+      },
+      "distanceM": 31,
+      "source": "メタバース「位置修正」ボタンで取得（報告者: 中司）",
+      "by": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-22",
+      "name": "鳥見神社の神楽",
+      "before": {
+        "lat": 35.808392,
+        "lon": 140.197952
+      },
+      "after": {
+        "lat": 35.808048,
+        "lon": 140.196982
+      },
+      "distanceM": 96,
+      "source": "メタバース「位置修正」ボタンで取得（報告者: 中司）",
+      "by": "Claude Code (A1)"
+    },
     {
       "date": "2026-08-21",
       "name": "月影の井",
-      "before": { "lat": 35.822369, "lon": 140.106567 },
-      "after": { "lat": 35.822718, "lon": 140.106339 },
+      "before": {
+        "lat": 35.822369,
+        "lon": 140.106567
+      },
+      "after": {
+        "lat": 35.822718,
+        "lon": 140.106339
+      },
       "distanceM": 44,
       "source": "メタバース「位置修正」ボタンで取得（報告者: 中司）",
+      "by": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-20",
+      "name": "鋳銅鰐口（松虫）",
+      "before": {
+        "lat": 35.789604,
+        "lon": 140.215973
+      },
+      "after": {
+        "lat": 35.789879,
+        "lon": 140.215014
+      },
+      "distanceM": 92,
+      "source": "git履歴から復元（コミット 2c23c2c：Fix buried pins, presence chip overlap and apply GMap coordi）",
+      "by": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-20",
+      "name": "鋳銅孔雀文磬",
+      "before": {
+        "lat": 35.789604,
+        "lon": 140.215973
+      },
+      "after": {
+        "lat": 35.789879,
+        "lon": 140.215014
+      },
+      "distanceM": 92,
+      "source": "git履歴から復元（コミット 2c23c2c：Fix buried pins, presence chip overlap and apply GMap coordi）",
+      "by": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-20",
+      "name": "泉福寺薬師堂",
+      "before": {
+        "lat": 35.763531,
+        "lon": 140.168365
+      },
+      "after": {
+        "lat": 35.763841,
+        "lon": 140.168596
+      },
+      "distanceM": 40,
+      "source": "git履歴から復元（コミット 2c23c2c：Fix buried pins, presence chip overlap and apply GMap coordi）",
+      "by": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-20",
+      "name": "木造薬師如来坐像・立像（七仏薬師）",
+      "before": {
+        "lat": 35.789604,
+        "lon": 140.215973
+      },
+      "after": {
+        "lat": 35.789879,
+        "lon": 140.215014
+      },
+      "distanceM": 92,
+      "source": "git履歴から復元（コミット 2c23c2c：Fix buried pins, presence chip overlap and apply GMap coordi）",
+      "by": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-20",
+      "name": "上宿古墳",
+      "before": {
+        "lat": 35.832302,
+        "lon": 140.142044
+      },
+      "after": {
+        "lat": 35.831846,
+        "lon": 140.141497
+      },
+      "distanceM": 71,
+      "source": "git履歴から復元（コミット 3f9634d：Add furigana to all bunkazai names and fix Kamijuku kofun po）",
+      "by": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-19",
+      "name": "道作古墳群",
+      "before": {
+        "lat": 35.829266,
+        "lon": 140.179489
+      },
+      "after": {
+        "lat": 35.827804,
+        "lon": 140.179094
+      },
+      "distanceM": 167,
+      "source": "git履歴から復元（コミット 6c12bd6：Add photos, leveled quizzes and meister certificate to metav）",
+      "by": "Claude Code (A1)"
+    },
+    {
+      "date": "2026-08-18",
+      "name": "銅造不動明王立像",
+      "before": {
+        "lat": 35.791004,
+        "lon": 140.134369
+      },
+      "after": {
+        "lat": 35.790338,
+        "lon": 140.135068
+      },
+      "distanceM": 97,
+      "source": "git履歴から復元（コミット 26afa04：Fix Fudo Myoo pin position, add metaverse handoff doc）",
       "by": "Claude Code (A1)"
     }
   ]

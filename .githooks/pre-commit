@@ -1,0 +1,48 @@
+#!/bin/sh
+# 文化財ピンの座標を変更したのに修正履歴を残し忘れるのを防ぐフック。
+#
+# metaverse/bunkazai.json の lat / lon を変更しているのに
+# metaverse/position-fixes.json が一緒にステージされていなければ、コミットを止める。
+# 管理画面「メタバース」タブの『文化財ピン 位置修正履歴』はこのファイルを読んでいるため、
+# 追記を忘れると修正の記録が残らない（2026-08-23 に実際に3件の記録漏れが発生した）。
+#
+# 有効化（PCごとに1回）: git config core.hooksPath .githooks
+# どうしても止めたくないときだけ: git commit --no-verify
+
+staged=$(git diff --cached --name-only)
+
+case "$staged" in
+  *metaverse/bunkazai.json*) ;;
+  *) exit 0 ;;
+esac
+
+# 座標行の追加・削除があるかを見る（説明文や写真だけの変更では止めない）
+if git diff --cached -U0 -- metaverse/bunkazai.json | grep -qE '^[+-][[:space:]]*"(lat|lon)":'; then
+  case "$staged" in
+    *metaverse/position-fixes.json*) exit 0 ;;
+  esac
+
+  echo ""
+  echo "❌ コミットを中止しました（pre-commit フック）"
+  echo ""
+  echo "   metaverse/bunkazai.json の座標（lat / lon）を変更していますが、"
+  echo "   metaverse/position-fixes.json が更新されていません。"
+  echo ""
+  echo "   位置を直したら、修正履歴を1件追記してから commit してください。"
+  echo "   管理画面『メタバース』タブの「文化財ピン 位置修正履歴」に表示されます。"
+  echo ""
+  echo "   追記する形式（fixes の先頭へ）:"
+  echo '     {'
+  echo '       "date": "YYYY-MM-DD",'
+  echo '       "name": "文化財名",'
+  echo '       "before": { "lat": 0.000000, "lon": 0.000000 },'
+  echo '       "after":  { "lat": 0.000000, "lon": 0.000000 },'
+  echo '       "distanceM": 0,'
+  echo '       "source": "メタバース「位置修正」ボタンで取得（報告者: ○○）",'
+  echo '       "by": "Claude Code (A1)"'
+  echo '     }'
+  echo ""
+  exit 1
+fi
+
+exit 0
