@@ -68,7 +68,7 @@
   /* 本文2カラム */
   .cols{display:flex; gap:6.5mm; margin-top:6px; flex:1; min-height:0;}
   .col-l{width:64mm; flex-shrink:0;}
-  .col-r{flex:1; min-width:0;}
+  .col-r{flex:1; min-width:0; display:flex; flex-direction:column;}
 
   .photo-box{border:1px solid var(--line); padding:3px; background:#faf8f3;}
   .photo-box img{width:100%; display:block; object-fit:cover; max-height:47mm;}
@@ -131,6 +131,18 @@
   ol.src .tier{font-family:"Noto Sans JP",sans-serif; font-size:6.8pt; color:#fff; background:#8d9a7b; border-radius:2px; padding:0 4px; margin:0 3px;}
   ol.src .tier.ref{background:#b0a68c;}
   ol.src a{color:#2a4a7a; text-decoration:none;}
+
+  /* 現地で確かめること＋学習メモ欄。資料が少ない文化財でも紙面が成立するように、
+     余った高さをメモ欄が吸収して伸びる（罫線は背景で描くので高さ可変） */
+  ul.obs{list-style:none; font-size:8.6pt; line-height:1.55;}
+  ul.obs li{margin-bottom:2.5px; padding-left:5.5mm; text-indent:-5.5mm;}
+  ul.obs li::before{content:"□ "; color:var(--gold); font-weight:700;}
+  ul.obs b{font-family:"Noto Sans JP",sans-serif; font-weight:600;}
+  .memo-block{flex:1 1 auto; display:flex; flex-direction:column; min-height:0;}
+  .memo{
+    flex:1 1 auto; min-height:16mm; margin-top:2px; border:1px solid var(--line2); border-radius:2px;
+    background:repeating-linear-gradient(to bottom, transparent 0 6.2mm, var(--line2) 6.2mm 6.3mm);
+  }
 
   .notes{font-size:7.6pt; line-height:1.5; color:var(--ink2); background:#f7f6f0; border:1px solid var(--line2); padding:5px 7px;}
   .notes li{margin-bottom:2px; padding-left:1em; text-indent:-1em; list-style:none;}
@@ -280,6 +292,8 @@
       (s.body || []).forEach(function(p){ right += '<p>' + refs(p) + '</p>'; });
       right += '</div>';
     });
+    // 資料が少ない文化財は表面の本文が短く下が空くため、そこをメモ欄にあてる
+    if (d.memo) right += '<div class="memo-block"><h2 class="sec">気づいたこと・調べたいこと</h2><div class="memo"></div></div>';
 
     p1 += '<div class="cols"><div class="col-l">' + left + '</div><div class="col-r">' + right + '</div></div>';
     p1 += foot(d, 1);
@@ -315,6 +329,14 @@
       p2 += '</ol>';
     }
 
+    if (d.observation && d.observation.length) {
+      p2 += '<h2 class="sec">現地で確かめること</h2><ul class="obs">';
+      d.observation.forEach(function(o){
+        p2 += '<li>' + (o.t ? '<b>' + esc(o.t) + '</b>　' : '') + refs(o.d) + '</li>';
+      });
+      p2 += '</ul>';
+    }
+
     if (d.access && d.access.text) {
       p2 += '<h2 class="sec">行き方</h2><div class="access">' + refs(d.access.text) + refMark(d.access.ref) +
             (d.access.note ? '<div class="note">※' + esc(d.access.note) + '</div>' : '') + '</div>';
@@ -337,6 +359,10 @@
       p2 += '</ul></div>';
     }
 
+    // 学習メモ欄（資料が少ない文化財では余白を吸収して大きくなる。
+    // 余白が足りないときは check() が丸ごと取り除く）
+    if (d.memo) p2 += '<div class="memo-block"><h2 class="sec">学習メモ</h2><div class="memo"></div></div>';
+
     p2 += foot(d, 2);
 
     out.innerHTML =
@@ -356,6 +382,15 @@
       return steps[steps.length - 1];
     }
 
+    // 学習メモ欄は、最低限の高さ（16mm＝2行強）を確保できるときだけ残す。
+    // それ未満に潰れる場合は、見出しごと取り除いたほうが紙面が締まる。
+    function trimMemo(sheet){
+      var block = sheet.querySelector('.memo-block');
+      if (!block) return;
+      var memo = block.querySelector('.memo');
+      if (memo && memo.getBoundingClientRect().height < 75) block.remove();
+    }
+
     // 紙面からのはみ出し検知（画面のみ・編集者向け）
     function check(){
       var over = [], zoomed = [];
@@ -363,6 +398,8 @@
         var el = document.getElementById(sid);
         if (!el) return;
         var z = fitSheet(el);
+        trimMemo(el);
+        z = fitSheet(el);
         if (z < 1) zoomed.push((i + 1) + 'ページ目 ' + Math.round(z * 100) + '%');
         if (el.scrollHeight > el.clientHeight + 2) { el.classList.add('over'); over.push(i + 1); }
         else { el.classList.remove('over'); }
