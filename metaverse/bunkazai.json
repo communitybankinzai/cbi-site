@@ -55,7 +55,8 @@
    "designatedEra": "昭和52年",
    "designatedYear": 1977,
    "facility": "泉福寺",
-   "kana": "せんぷくじやくしどう"
+   "kana": "せんぷくじやくしどう",
+   "reportId": "senpukuji-yakushido"
   },
   {
    "name": "栄福寺薬師堂",
@@ -82,7 +83,8 @@
    "designatedEra": "昭和29年",
    "designatedYear": 1954,
    "facility": "栄福寺",
-   "kana": "えいふくじやくしどう"
+   "kana": "えいふくじやくしどう",
+   "reportId": "eifukuji-yakushido"
   },
   {
    "name": "銅造不動明王立像",
@@ -108,7 +110,8 @@
    "designatedEra": "大正3年",
    "designatedYear": 1914,
    "facility": "結縁寺",
-   "kana": "どうぞうふどうみょうおうりゅうぞう"
+   "kana": "どうぞうふどうみょうおうりゅうぞう",
+   "reportId": "dozo-fudo-myoo"
   },
   {
    "name": "木造薬師如来坐像・立像（七仏薬師）",
@@ -134,7 +137,8 @@
    "designatedEra": "昭和34年",
    "designatedYear": 1959,
    "facility": "松虫寺",
-   "kana": "もくぞうやくしにょらいざぞう・りゅうぞう（しちぶつやくし）"
+   "kana": "もくぞうやくしにょらいざぞう・りゅうぞう（しちぶつやくし）",
+   "reportId": "shichibutsu-yakushi"
   },
   {
    "name": "木下貝層",
@@ -160,7 +164,8 @@
    },
    "designatedEra": "平成14年",
    "designatedYear": 2002,
-   "kana": "きおろしかいそう"
+   "kana": "きおろしかいそう",
+   "reportId": "kioroshi-kaiso"
   },
   {
    "name": "木造毘沙門天及び両脇侍立像",
@@ -188,7 +193,8 @@
    "designatedEra": "昭和29年",
    "designatedYear": 1954,
    "facility": "多聞院",
-   "kana": "もくぞうびしゃもんてんおよびりょうきょうじりゅうぞう"
+   "kana": "もくぞうびしゃもんてんおよびりょうきょうじりゅうぞう",
+   "reportId": "bishamonten-ryowakiji"
   },
   {
    "name": "木造延命地蔵菩薩坐像",
@@ -370,7 +376,8 @@
    "designatedEra": "昭和47年",
    "designatedYear": 1972,
    "facility": "長楽寺",
-   "kana": "ぼんしょう（おうあんにねんざいめい）"
+   "kana": "ぼんしょう（おうあんにねんざいめい）",
+   "reportId": "bonsho-oan"
   },
   {
    "name": "鋳銅孔雀文磬",
@@ -475,7 +482,8 @@
    },
    "designatedEra": "平成20年",
    "designatedYear": 2008,
-   "kana": "まごめいせきしゅつどがとう"
+   "kana": "まごめいせきしゅつどがとう",
+   "reportId": "magome-gato"
   },
   {
    "name": "押付の水塚",
@@ -528,7 +536,8 @@
    "designatedEra": "昭和30年",
    "designatedYear": 1955,
    "facility": "鳥見神社",
-   "kana": "とみじんじゃのししまい"
+   "kana": "とみじんじゃのししまい",
+   "reportId": "tomi-jinja-shishimai"
   },
   {
    "name": "浦部の神楽",
@@ -563,8 +572,8 @@
    "designation": "県指定",
    "type": "無形民俗文化財",
    "address": "中根1339",
-   "lat": 35.808392,
-   "lon": 140.197952,
+   "lat": 35.808048,
+   "lon": 140.196982,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005051.html",
    "spiritName": "カグライ",
    "cardImage": "spirits/カグライ.webp",
@@ -607,7 +616,8 @@
    },
    "designatedEra": "昭和52年",
    "designatedYear": 1977,
-   "kana": "しょうげんのおにばすはっせいち"
+   "kana": "しょうげんのおにばすはっせいち",
+   "reportId": "shogen-onibasu"
   },
   {
    "name": "弥陀一尊武蔵型板碑",
