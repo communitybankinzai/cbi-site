@@ -818,6 +818,9 @@ function bindEvents() {
     button.addEventListener("click", () => button.closest("dialog").close());
   });
 
+  // 大量データのレイヤー（土砂災害区域）は表示範囲が変わるたびに描き直す
+  map.on("moveend", refreshVisibleOpenDataLayers);
+  map.on("zoomend", refreshVisibleOpenDataLayers);
   map.on("click", event => {
     if (roadDrawingMode) {
       addRoadSectionPoint(event.latlng);
@@ -1192,6 +1195,87 @@ function initPresence() {
   clearInterval(presenceTimer);
   // 在席とみなされるのは直近90秒のため、その半分以下の間隔で合図を送る
   presenceTimer = setInterval(sendPresence, 40 * 1000);
+}
+
+// 印西市公式オープンデータの追加レイヤー（消防・警察・市役所・緊急輸送路・鉄道・市版土砂災害）。
+// 国土地理院版の土砂災害レイヤーとは別に「印西市公表」として並記する。
+// 指定時期のずれで境界が異なる場合があるため、どちらかに寄せず両方を出典つきで示す方針。
+const OPEN_DATA_LAYERS = {
+  fire: { label: "消防署", marker: "消", color: "#d9534f", zoomLimit: 0 },
+  police: { label: "警察機関", marker: "警", color: "#3b6fb6", zoomLimit: 0 },
+  cityOffice: { label: "市役所・支所", marker: "市", color: "#2f855a", zoomLimit: 0 },
+  emergencyRoute: { label: "緊急輸送路", marker: "路", color: "#b7791f", zoomLimit: 0 },
+  railway: { label: "鉄道", marker: "鉄", color: "#6b7280", zoomLimit: 0 },
+  // 土砂災害は点数が多いため、広域表示では描画せず拡大時のみ出す（描画負荷対策）
+  landslideWarning: { label: "土砂災害警戒区域（市公表）", marker: "土", color: "#c05621", zoomLimit: 13 },
+  landslideSpecial: { label: "土砂災害特別警戒区域（市公表）", marker: "特", color: "#9b2c2c", zoomLimit: 13 }
+};
+const openDataLayers = {};
+const openDataCache = {};
+
+Object.keys(OPEN_DATA_LAYERS).forEach(key => { openDataLayers[key] = L.layerGroup(); });
+
+async function ensureOpenDataLayer(key) {
+  const base = String(APP_CONFIG.openDataEndpoint || "").trim();
+  if (!base || openDataCache[key]) return;
+  try {
+    const response = await fetch(`${base}?set=${encodeURIComponent(key)}`, {
+      headers: { Accept: "application/json" }, cache: "no-store"
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    openDataCache[key] = payload;
+    renderOpenDataLayer(key);
+  } catch (error) {
+    document.getElementById("map-status").textContent =
+      `${OPEN_DATA_LAYERS[key].label}を取得できませんでした（${error?.message || "接続エラー"}）。`;
+  }
+}
+
+function renderOpenDataLayer(key) {
+  const payload = openDataCache[key];
+  const spec = OPEN_DATA_LAYERS[key];
+  const layer = openDataLayers[key];
+  if (!payload || !layer) return;
+  layer.clearLayers();
+  // 拡大時のみ表示する設定のレイヤーは、ズームが浅いうちは描画しない
+  if (spec.zoomLimit && map.getZoom() < spec.zoomLimit) return;
+  const bounds = map.getBounds();
+  const wide = !spec.zoomLimit;
+  (payload.features || []).forEach(feature => {
+    const lat = Number(feature.latitude);
+    const lng = Number(feature.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    // 大量データは画面内だけ描画する
+    if (!wide && !bounds.contains([lat, lng])) return;
+    const marker = L.marker([lat, lng], {
+      icon: L.divIcon({
+        className: "",
+        html: `<div class="opendata-marker" style="background:${spec.color}" aria-label="${escapeAttribute(feature.name)}"><span>${escapeHtml(spec.marker)}</span></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      })
+    });
+    marker.bindPopup(`
+      <div class="popup-title">${escapeHtml(feature.name)}</div>
+      <div class="shelter-popup-badges"><span class="badge blue">${escapeHtml(feature.category || spec.label)}</span></div>
+      ${feature.address ? `<div>${escapeHtml(feature.address)}</div>` : ""}
+      ${feature.phone ? `<div class="detail-meta">電話 ${escapeHtml(feature.phone)}</div>` : ""}
+      ${feature.detail ? `<div class="detail-meta">${escapeHtml(feature.detail)}</div>` : ""}
+      ${payload.note ? `<div class="popup-contact-note">${escapeHtml(payload.note)}</div>` : ""}
+      <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">出典: 印西市わが街ガイド オープンデータ（CC BY 2.1 JP）</a>
+    `);
+    layer.addLayer(marker);
+  });
+}
+
+// 表示中の大量データレイヤーを、地図移動のたびに描き直す
+function refreshVisibleOpenDataLayers() {
+  Object.keys(OPEN_DATA_LAYERS).forEach(key => {
+    if (OPEN_DATA_LAYERS[key].zoomLimit && map.hasLayer(openDataLayers[key])) {
+      renderOpenDataLayer(key);
+    }
+  });
 }
 
 function getShelterFilters() {
@@ -2518,12 +2602,21 @@ function toggleOverlay(name, checked) {
     roadFlood: roadFloodLayer,
     shelters: shelterLayer,
     wells: wellLayer,
+    fire: openDataLayers.fire,
+    police: openDataLayers.police,
+    cityOffice: openDataLayers.cityOffice,
+    emergencyRoute: openDataLayers.emergencyRoute,
+    railway: openDataLayers.railway,
+    landslideWarning: openDataLayers.landslideWarning,
+    landslideSpecial: openDataLayers.landslideSpecial,
     records: recordLayer
   };
   const layer = layerMap[name];
   if (!layer) return;
   if (checked) layer.addTo(map);
   else map.removeLayer(layer);
+  // 市オープンデータのレイヤーは、最初にONにされた時だけ取得する
+  if (checked && OPEN_DATA_LAYERS[name]) ensureOpenDataLayer(name);
   if (jshisLayers[name]) {
     setJshisLayerStatus(name, checked ? "読込中" : jshisLayerMeta[name].idle);
     updateJshisLegend(name, checked);
