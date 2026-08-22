@@ -1,5 +1,5 @@
 const WORK_LOG_KEY = "inzai-disaster-work-log-v1";
-const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260822-v7";
+const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260822-v9";
 const statusLabels = {
   planned: "検討中",
   testing: "試験中",
@@ -11,22 +11,22 @@ const initialRecords = [
   {
     id: "seed-meta-api",
     feature: "Instagram・Threadsの広域API取込",
-    status: "blocked",
+    status: "completed",
     owner: "",
-    loggedAt: "2026-08-15T09:00:00+09:00",
-    summary: "現在の構成では、印西市に関する第三者の公開投稿を公式APIから横断取得する接続・権限を用意できていない。投稿リンク、本文要約、画面証跡で候補登録する。",
-    nextAction: "Meta側の利用可能な検索範囲、審査、アプリ権限を確認し、CBI側サーバーで扱える場合のみ連携する。",
+    loggedAt: "2026-08-22T19:00:00+09:00",
+    summary: "Threadsは2026-08-17に検索専用アプリ方式（threads_keyword_search・投稿用トークンと分離）で解決。Instagramは2026-08-18にFacebook Login方式（FBページ「Community Bank INZAI」＋IGプロアカウントID）のハッシュタグ検索で接続し、08-19に公開投稿の取得を実証済み。2026-08-22時点の本番巡回でThreads・Instagram・Blueskyの3媒体すべてstatus=successを確認。",
+    nextAction: "Instagram検索用トークンは自動リフレッシュがなく2026-10-17に失効するため、期限前に再発行する（手順は保管庫「SNS検索権限の設定手順」とcredentials.md）。Threads検索がApp Review未承認でも公開投稿を取得できているかは実データで継続確認する。",
     referenceUrl: "https://developers.facebook.com/",
     origin: "seed"
   },
   {
     id: "seed-x-api",
     feature: "X投稿の自動検索API取込",
-    status: "blocked",
+    status: "planned",
     owner: "",
-    loggedAt: "2026-08-15T09:05:00+09:00",
-    summary: "検索画面は利用できるが、APIによる継続的な自動取得は契約プラン、利用料、取得条件を確認できていないため未接続。",
-    nextAction: "想定件数と頻度を決め、X APIの現行プランと費用を確認する。",
+    loggedAt: "2026-08-22T18:30:00+09:00",
+    summary: "X APIの有料プラン（Basic 月200ドル程度〜）が必要で、印西市規模の巡回用途には費用が見合わないため保留と判断した。技術的に不可能なのではなく、費用対効果による見送り。",
+    nextAction: "当面は保留。無料枠の拡大や自治体向け条件が出た場合、または他媒体で情報が不足すると判明した場合に再検討する。",
     referenceUrl: "https://developer.x.com/",
     origin: "seed"
   },
@@ -44,33 +44,33 @@ const initialRecords = [
   {
     id: "seed-jartic",
     feature: "JARTIC道路情報の地図反映",
-    status: "planned",
+    status: "completed",
     owner: "",
-    loggedAt: "2026-08-15T09:15:00+09:00",
-    summary: "公式サイトへの参照は可能。リアルタイムデータを直接取り込む場合は、提供条件、利用許諾、契約方法、対象道路の粒度を確認する必要がある。",
-    nextAction: "JARTICへ二次利用とデータ提供条件を照会し、利用可能な形式を確認する。",
+    loggedAt: "2026-08-22T18:40:00+09:00",
+    summary: "調査の結果、公式サイトへの参照リンク表示に留める方針で確定した。一般公開されているのは月次のオープンデータで、リアルタイム情報の取込には提供条件と契約の確認が必要なうえ、月次データをリアルタイム情報と誤認させる危険がある。",
+    nextAction: "方針変更の必要はない。リアルタイムAPIの一般提供条件が公開された場合に再検討する。",
     referenceUrl: "https://www.jartic.or.jp/",
     origin: "seed"
   },
   {
     id: "seed-toyota",
     feature: "TOYOTA通れた道データの取込",
-    status: "planned",
+    status: "completed",
     owner: "",
-    loggedAt: "2026-08-15T09:20:00+09:00",
-    summary: "参考リンクの表示に留まり、走行実績データそのものを取り込む公開API・利用許諾は未確認。通れた実績は現在の安全を保証しないため、表示時刻と注意書きも必要。",
-    nextAction: "データ提供窓口、災害時利用条件、更新頻度、二次表示可否を確認する。",
+    loggedAt: "2026-08-22T18:40:00+09:00",
+    summary: "調査の結果、走行実績データの取込は行わないと決定した。公開APIと二次利用許諾が確認できないことに加え、「通れた実績」は記録時点の情報であり現在の通行可否を保証しないため、災害時に誤解を生む危険がある。公式サイトへの参照リンクのみを提供する方針とし、READMEにも「参考リンク。データ連携は行わない」と明記済み。",
+    nextAction: "方針変更の必要はない。トヨタ側が自治体向けの提供条件を公開した場合に限り再検討する。",
     referenceUrl: "https://www.toyota.co.jp/jpn/auto/passable_route/map/",
     origin: "seed"
   },
   {
     id: "seed-road-line",
     feature: "通行止め・通行不能区間の線表示",
-    status: "planned",
+    status: "completed",
     owner: "",
-    loggedAt: "2026-08-15T09:25:00+09:00",
-    summary: "現在は地点と通行状態の登録が中心。道路区間を始点・経由点・終点で線として登録する編集機能は未実装。",
-    nextAction: "道路線形の入力方法、同一路線の更新、解除時の履歴保持を設計して実装する。",
+    loggedAt: "2026-08-16T18:00:00+09:00",
+    summary: "始点・経由点・終点を地図上でクリックして通行止め区間を折れ線として登録できる。経由点は何点でも追加でき、2点だけの既存データとも互換。地図には区間の線と、地点のみの登録には×印を表示する。",
+    nextAction: "区間データを道路中心線へ吸着させる自動スナップは未実装。必要になれば道路中心線データの取得から検討する。",
     referenceUrl: "",
     origin: "seed"
   },
