@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-08-22",
+          "title": "検討事項のplans登録漏れ検知（Stop hook）＋CLAUDE.mdルール11の追加 0.2時間",
+          "category": "実装",
+          "outputs": [
+            ".claude/check-plans-registration.sh（新規Stop hook。開始時スナップショットと比較し、実績だけ記録して予定が増えていない場合／6ターン何も記録がない場合に1セッション1回だけ確認を促す）",
+            ".claude/check-plans.sh（SessionStart時に plans/actuals のmd5と turns を .claude/.session-state/<session_id>.json へ保存する処理を追加。7日超のstateは自動削除）",
+            ".claude/settings.local.json（Stop に check-plans-registration.sh を登録。hookは SessionStart2本・Stop2本の構成に）",
+            "CLAUDE.md（作業ルール11を追加：セッション中に出た検討事項の plans 登録義務、due:未定の許容、status/blockedBy の付与基準と誤用の禁止）",
+            "agents/a1-core/knowledge/runbooks/plans-triage.md（登録漏れ検知の節を追記）",
+            "検証: 6パターンを実行確認（①開始直後=無音 ②actualsのみ変更=問いかけ発火 ③同一セッション2回目=無音 ④plans増加済み=無音でnotified=True ⑤何も記録せず6ターン目に発火 ⑥state無しセッション=無音）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "祐樹さんの質問「要対応案件はセッション検討中に自動的に登録される仕組みになっているか？」への回答と対処。回答は『なっていない』で、登録経路は私の手作業とメンバーの管理画面入力の2つのみ、Stop hookも検討事項の取りこぼしは検知していなかった。A案（hookで機械的に検知）＋B案（CLAUDE.mdにルール明文化）を実施。設計判断: Stop hookは毎ターン発火するためノイズになりやすく、『実績を記録した＝作業が完了したタイミング』と『6ターン何も記録がない』の2条件に絞り、1セッション1回だけ出す方式にした。判定できるのは『plansが増えたか』だけで内容の妥当性は見ていない（登録要否の判断はClaude側に委ねる設計）。session: ce2dc67e-b901-4300-9a90-f8b6f32a433d / output: 90,315 / cost: $11.35"
+        },
+        {
+          "date": "2026-08-22",
           "title": "要対応パネルに着手プロンプトのコピーボタンを追加 0.3時間",
           "category": "実装",
           "outputs": [
@@ -3895,6 +3911,22 @@
           "category": "保守",
           "priority": "中",
           "note": "Update DAO/members data が5分毎に generatedAt のみの空コミットを約576件/日積んでいる（7/29運用停止後も継続）。推奨案A: 発火元GASトリガーを間引き＋workflow側に差分ガード追加。詳細は agents/a1-core/knowledge/ops-report-github-actions-2026-08-02.md"
+        },
+        {
+          "due": "未定",
+          "title": "🔁 plans判定しきい値の二重管理を解消（admin.js と check-plans.sh）",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-08-22の要対応パネル実装で、期限間近7日（ALERT_SOON_DAYS）と停滞60日（ALERT_STALL_DAYS）のしきい値および判定ロジックを site/admin/admin.js と .claude/check-plans.sh の2か所に持たせた。hook は管理画面を開かずに動く必要があるため意図的な重複だが、片方だけ直すとセッション冒頭の表示と管理画面の表示がズレる。共通のJSONに定数を出す／hook側がadmin.jsを読む等の案があるが、現状ズレても実害が小さいため優先度低。判断材料は agents/a1-core/knowledge/runbooks/plans-triage.md。"
+        },
+        {
+          "due": "未定",
+          "title": "📄 提出用PDFに予定の期限切れ・待ち状態を出すかの判断",
+          "category": "レポート",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "市・企業向け提出資料に内部の期限管理を載せる是非の方針決定",
+          "note": "管理画面の openPrintView（提出用PDF）の予定テーブルは独自描画で、2026-08-22に追加した期限切れ強調・status（待ち/保留）・blockedBy が反映されない。市・企業への提出資料に内部の期限管理をどこまで載せるかは方針判断が要るため実装を保留している。載せない方が適切という結論なら、この予定は取り下げてよい。"
         }
       ]
     },
