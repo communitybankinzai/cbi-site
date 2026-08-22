@@ -1193,6 +1193,10 @@ button { font-family: inherit; cursor: pointer; }
 }
 .mv-kpi-value { font-size: 26px; font-weight: 700; color: var(--c-navy); margin: 4px 0 2px; line-height: 1.2; }
 .mv-kpi-value.warn { color: var(--c-danger); }
+/* タイル取得が1日の上限に近づいたときの段階表示（70%で注意・85%で警告） */
+.mv-kpi-value.caution { color: #b8860b; }
+.mv-kpi-sub.caution { color: #b8860b; font-weight: 600; }
+.mv-kpi-sub.warn { color: var(--c-danger); font-weight: 600; }
 .mv-kpi-sub { font-size: 11px; color: var(--c-ink-sub); }
 .mv-bar { height: 8px; background: var(--c-bg-alt); border-radius: 999px; overflow: hidden; margin-top: 8px; }
 .mv-bar-fill { height: 100%; width: 0; background: var(--c-green); transition: width .4s; }

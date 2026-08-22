@@ -558,6 +558,7 @@
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
   <button id="modeSwitchBtn" title="イベント用途と防災用途を切り替えます">🔀 モード切替</button>
+  <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 画面を保存</button>
   <button id="howtoBtn">❓ 使い方</button>
 </div>
 
@@ -856,6 +857,8 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
   infoBox: false,
   selectionIndicator: false,
   requestRenderMode: false,
+  // 📸 画面保存（canvas.toDataURL）に必要。false のままだと描画直後でも空の画像になる
+  contextOptions: { webgl: { preserveDrawingBuffer: true } },
 });
 viewer.scene.globe.show = false;          // 地表はGoogle 3D Tilesに含まれるため非表示
 viewer.scene.skyAtmosphere.show = true;
@@ -2794,6 +2797,50 @@ try { howtoSeen = localStorage.getItem(HOWTO_SEEN_KEY) === "1"; } catch (e) {}
 if (!howtoSeen) openHowto();
 
 // ============================================================
+// 撮影時に隠す通常UIのID。📸ボタンとシネマモードで共用する
+const CAPTURE_HIDE_IDS = [
+  "mvHeader", "controlPanel", "helpBox", "puzzleBtn", "howtoBtn",
+  "panelToggle", "joystick", "spotInfo", "puzzlePanel",
+  "menuToggle", "mobileMoveBar", "topLeftBar",
+  "presenceChip", "quotaBanner", "tileLoading",
+];
+
+// 📸 いまの画面をPNGで保存する（SNS告知や報告書の素材づくり用）。
+// UIを隠して2フレーム待ってから取り込む（Cesiumの描画が終わってからでないと前の絵が写る）。
+// viewer 初期化の preserveDrawingBuffer: true が前提
+async function captureScreenshot() {
+  const restored = [];
+  CAPTURE_HIDE_IDS.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el && el.style.display !== "none") {
+      restored.push([el, el.style.display]);
+      el.style.display = "none";
+    }
+  });
+  try {
+    viewer.scene.requestRender();
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const url = viewer.canvas.toDataURL("image/png");
+    if (!url || url.length < 1000) throw new Error("画面を取り込めませんでした");
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    const a = document.createElement("a");
+    a.download = "メタバース印西_" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate())
+      + "_" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + ".png";
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (e) {
+    alert("画面を保存できませんでした：" + (e && e.message ? e.message : e));
+  } finally {
+    restored.forEach(function (pair) { pair[0].style.display = pair[1]; });
+  }
+}
+
+const shotBtnEl = document.getElementById("shotBtn");
+if (shotBtnEl) shotBtnEl.onclick = captureScreenshot;
+
 // シネマティックモード（PR動画撮影用・?cinema=1 で起動）
 // カメラ自動運転＋テロップを表示する。通常利用には影響しない。
 // ============================================================
@@ -2825,9 +2872,7 @@ function cinemaCaption(text, ms) {
 
 async function startCinema() {
   // 通常UIを隠す
-  ["mvHeader", "controlPanel", "helpBox", "puzzleBtn", "howtoBtn",
-   "panelToggle", "joystick", "spotInfo", "puzzlePanel",
-   "menuToggle", "mobileMoveBar", "topLeftBar"].forEach((id) => {
+  CAPTURE_HIDE_IDS.forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
@@ -3004,10 +3049,20 @@ function presenceRender(count) {
       const warn = v >= lim * 0.8;
       html += ' ｜ 本日 <b style="' + (warn ? "color:#ff8a65" : "") + '">' + v + "</b>/" + lim + "人";
     }
-    if (typeof usageInfo.todayRequests === "number") html += " ｜ タイル <b>" + fmtK(usageInfo.todayRequests) + "</b>";
+    if (typeof usageInfo.todayRequests === "number") {
+      // タイル取得が1日の上限に近づくと詳細タイルの取得が止まり、街並みが粗いままになる。
+      // 費用ではなく表示品質の問題だが、イベント中に気づけるよう色と⚠で知らせる（2026-08-22追加）
+      const t = usageInfo.todayRequests;
+      const tl = usageInfo.rendererLimitPerDay || 30000;
+      const rate = t / tl;
+      const col = rate >= 0.85 ? "#ff5252" : (rate >= 0.7 ? "#ffd166" : "");
+      html += " ｜ " + (rate >= 0.85 ? "⚠ " : "") +
+        'タイル <b style="' + (col ? "color:" + col : "") + '">' + fmtK(t) + "</b>";
+    }
   }
   el.innerHTML = html;
-  el.title = "いま参加中の人数 ｜ 本日の利用者数／1日の閲覧開始枠（費用ゼロ運用のため30回）｜ 本日の3Dタイル取得回数（無償枠・自動調整あり）";
+  el.title = "いま参加中の人数 ｜ 本日の利用者数／1日の閲覧開始枠（費用ゼロ運用のため30回）｜ 本日の3Dタイル取得回数"
+    + "（無償だが1日の上限あり。上限に近づくと黄色、超えそうだと⚠が付きます。上限に達すると街並みが粗いままになります）";
   el.style.display = "inline-block";
 }
 // 管理画面（CiDAO /admin/timetrial「🖼 3Dの描画精度」）で設定した値を画面へ反映する。

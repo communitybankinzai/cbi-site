@@ -2071,12 +2071,33 @@ const UNREAD_POLL_MS = 30000;
       const lim = usage.rootLimitPerDay || 30;
       const v = typeof usage.visitorsToday === 'number' ? usage.visitorsToday : null;
       $('mv-kpi-visitors').textContent = v === null ? '–' : (mvFmt(v) + ' 人');
-      $('mv-kpi-tiles').textContent = mvFmt(usage.todayRequests);
+      const tilesEl = $('mv-kpi-tiles');
+      const tilesSub = $('mv-kpi-tiles-sub');
+      const t = usage.todayRequests;
+      const tLim = usage.rendererLimitPerDay || 30000;
+      tilesEl.textContent = mvFmt(t);
       // タイル取得回数は費用に影響しない（課金は root リクエスト単位）が、無償の回数上限はある。
-      // 「費用ゼロ＝無制限」と誤解されないよう両方を毎回明記する
-      $('mv-kpi-tiles-sub').textContent = '無償・上限あり（既定3万回／日）' + (usage.requestsFetchedAt
+      // 「費用ゼロ＝無制限」と誤解されないよう両方を毎回明記し、上限に近づいたら対処法まで出す
+      const tookAt = usage.requestsFetchedAt
         ? '／取得 ' + new Date(usage.requestsFetchedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
-        : '');
+        : '';
+      const tRate = (typeof t === 'number' && tLim) ? t / tLim : null;
+      tilesEl.classList.remove('warn', 'caution');
+      tilesSub.classList.remove('warn', 'caution');
+      if (tRate === null) {
+        tilesSub.textContent = '無償・上限あり（既定3万回／日）' + tookAt;
+      } else if (tRate >= 0.85) {
+        tilesEl.classList.add('warn');
+        tilesSub.classList.add('warn');
+        tilesSub.textContent = '⚠ 上限の' + Math.round(tRate * 100) + '%。まもなく街並みが粗いままになります。'
+          + '下の「3Dの描画精度」を16〜32に上げて消費を抑えてください' + tookAt;
+      } else if (tRate >= 0.7) {
+        tilesEl.classList.add('caution');
+        tilesSub.classList.add('caution');
+        tilesSub.textContent = '⚡ 上限の' + Math.round(tRate * 100) + '%。そろそろ上限です（既定3万回／日）' + tookAt;
+      } else {
+        tilesSub.textContent = '無償・上限あり（既定3万回／日・' + Math.round(tRate * 100) + '%）' + tookAt;
+      }
       const quotaEl = $('mv-kpi-quota');
       const bar = $('mv-kpi-quota-bar');
       if (v === null) { quotaEl.textContent = '–'; bar.style.width = '0'; }
