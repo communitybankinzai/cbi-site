@@ -403,6 +403,18 @@
   #zukanGrid .zcell {
     background: rgba(255,255,255,0.08); border-radius: 10px; padding: 5px 2px;
     text-align: center; cursor: pointer; line-height: 1.2;
+    position: relative; /* 位置修正済みバッジの基準 */
+  }
+  /* ピンの位置を直した文化財の目印（位置修正作業中の進捗確認用・暫定表示） */
+  #zukanGrid .zcell .fixmark {
+    position: absolute; top: 2px; right: 2px;
+    font-size: 9px; background: rgba(46,139,87,0.92); color: #fff;
+    border-radius: 4px; padding: 1px 3px; line-height: 1.2; pointer-events: none;
+  }
+  .fixTag {
+    display: inline-block; font-size: 11px; font-weight: normal;
+    background: rgba(46,139,87,0.92); color: #fff;
+    border-radius: 5px; padding: 2px 6px; margin-left: 6px; vertical-align: middle;
   }
   #zukanGrid .zcell svg { width: 40px; height: 40px; display: block; margin: 0 auto; }
   #zukanGrid .zcell img.zimg { width: 100%; height: 52px; object-fit: contain; display: block; border-radius: 6px; }
@@ -1552,6 +1564,29 @@ function dismissEncounter() {
   document.getElementById("encounter").classList.remove("show");
 }
 
+// ---- 位置修正済みの表示（位置修正作業が終わるまでの暫定表示・2026-08-23 ユーザー依頼）----
+// どの文化財のピンを直したかを、ずかんと詳細画面で見分けられるようにする。
+// 作業が完了したら SHOW_POSITION_FIX_BADGE を false にすればバッジも注記も消える。
+// データは position-fixes.json（管理画面の「文化財ピン 位置修正履歴」と同じもの）
+const SHOW_POSITION_FIX_BADGE = true;
+const positionFixes = {}; // 文化財名 -> { date, distanceM }
+if (SHOW_POSITION_FIX_BADGE) {
+  fetch("position-fixes.json", { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d || !Array.isArray(d.fixes)) return;
+      // 同じ文化財を複数回直している場合は、新しい方（先頭に近い方）を採用する
+      d.fixes.forEach(function (f) {
+        if (f && f.name && !positionFixes[f.name]) {
+          positionFixes[f.name] = { date: f.date, distanceM: f.distanceM };
+        }
+      });
+      const panel = document.getElementById("puzzlePanel");
+      if (panel && panel.style.display !== "none") renderZukan(); // 開いていれば描き直す
+    })
+    .catch(function () { /* 取得できないときはバッジを出さないだけ（機能は止めない） */ });
+}
+
 // ---- ずかん表示 ----
 function renderZukan() {
   const grid = document.getElementById("zukanGrid");
@@ -1563,7 +1598,10 @@ function renderZukan() {
     const cell = document.createElement("div");
     cell.className = "zcell" + (got ? "" : " locked") + (stars === 3 ? " rare3" : "");
     const face = (got && b.cardImage) ? '<img class="zimg" src="' + b.cardImage + '" alt="">' : tribe.svg;
-    cell.innerHTML = face + '<div class="stars">' + "★".repeat(stars) + "</div>";
+    const fix = positionFixes[b.name];
+    cell.innerHTML = face + '<div class="stars">' + "★".repeat(stars) + "</div>"
+      + (fix ? '<div class="fixmark">📍済</div>' : "");
+    if (fix) cell.title = "ピンの位置を修正済み（" + fix.date + "・" + fix.distanceM + "m移動）";
     cell.onclick = function () { openBunkazaiDetail(i); }; // 個別クリックで詳細ページ（写真・解説・レベル別クイズ）へ
     grid.appendChild(cell);
   });
@@ -1829,7 +1867,10 @@ function openBunkazaiDetail(i) {
   const b = BUNKAZAI[i];
   if (!b) return;
   bmIdx = i;
-  document.getElementById("bmTitle").innerHTML = (b.kana ? '<span class="kana">' + b.kana + "</span>" : "") + "🏛 " + b.name;
+  const bmFix = positionFixes[b.name];
+  document.getElementById("bmTitle").innerHTML = (b.kana ? '<span class="kana">' + b.kana + "</span>" : "") + "🏛 " + b.name
+    + (bmFix ? '<span class="fixTag" title="住所の代表点から現地の位置へ直しました">📍 位置修正済（'
+        + bmFix.date + "・" + bmFix.distanceM + "m）</span>" : "");
   document.getElementById("bmPhotoWrap").innerHTML = b.photo
     ? '<img src="' + b.photo + '" alt="' + (b.photoAlt || b.name) + '">' +
       '<p class="credit">写真出典：<a href="' + b.detailUrl + '" target="_blank" rel="noopener">印西市ホームページ</a>（許可を得て転載）</p>'
