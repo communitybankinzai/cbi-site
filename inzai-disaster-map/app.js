@@ -3013,6 +3013,7 @@ function renderDetail() {
       <button class="tool-button" type="button" data-action="resolved">解消済</button>
       ${record.evidenceImage ? `<button class="tool-button" type="button" data-action="download-evidence">証跡画像DL</button>` : ""}
       ${record.sourceUrl ? `<a class="tool-button" href="${escapeAttribute(record.sourceUrl)}" target="_blank" rel="noreferrer">根拠を開く</a>` : ""}
+      <button class="tool-button danger" type="button" data-action="delete">🗑 削除</button>
     </div>`}
   `;
   detail.querySelectorAll("[data-action]").forEach(button => {
@@ -3259,6 +3260,15 @@ function handleDetailAction(action) {
   }
   if (action === "locate") {
     startLocationPick(record.id);
+    return;
+  }
+  if (action === "delete") {
+    // 誤登録の取り消し用。取り消し（アンドゥ）はないため必ず確認を挟む
+    if (!confirm(`「${record.title || "この地点"}」を削除しますか。元に戻せません。`)) return;
+    records = records.filter(item => item.id !== record.id);
+    selectedId = null;
+    persistRecords();
+    renderAll();
     return;
   }
   if (action === "photo") {
