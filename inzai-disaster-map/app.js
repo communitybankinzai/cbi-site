@@ -564,6 +564,15 @@ const baseLayers = {
 };
 
 const hazardLayers = {
+  // 色別標高図。低い土地ほど青〜緑で描かれる。
+  // 内水氾濫はハザード想定区域の外でも起きるため（2026年8月の千葉豪雨では
+  // 浸水報告の55.7%が想定区域外・ウェザーニューズ社調査）、
+  // 「周囲より低い場所」を平面で把握する手掛かりとして重ねられるようにする。
+  relief: L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png", {
+    attribution: "地理院タイル（色別標高図）",
+    opacity: 0.56,
+    maxZoom: 15
+  }),
   floodMax: L.tileLayer("https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin_data/{z}/{x}/{y}.png", {
     attribution: "ハザードマップポータルサイト",
     opacity: 0.56,
@@ -2697,6 +2706,7 @@ function toggleOverlay(name, checked) {
   }
   const layerMap = {
     boundary: boundaryLayer,
+    relief: hazardLayers.relief,
     floodMax: hazardLayers.floodMax,
     floodPlan: hazardLayers.floodPlan,
     inland: hazardLayers.inland,

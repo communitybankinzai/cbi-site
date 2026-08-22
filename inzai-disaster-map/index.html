@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260823b">
+    <link rel="stylesheet" href="./styles.css?v=20260823c">
   </head>
   <body>
     <div class="app-shell">
@@ -69,6 +69,7 @@
 
             <div class="check-list" id="overlay-controls">
               <label><input type="checkbox" data-overlay="boundary" checked> 印西市境界</label>
+              <label class="live-layer-label"><input type="checkbox" data-overlay="relief"> 🗻 土地の高さ（色別標高図）<span>低い土地ほど青々しい。想定区域の外の窪地を探す目安</span></label>
               <label><input type="checkbox" data-overlay="floodMax" checked> 洪水浸水想定 最大規模</label>
               <label><input type="checkbox" data-overlay="floodPlan"> 洪水浸水想定 計画規模</label>
               <label><input type="checkbox" data-overlay="inland" checked> 内水浸水想定</label>
@@ -1126,7 +1127,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
-    <script src="./config.js?v=20260823b"></script>
-    <script src="./app.js?v=20260823b"></script>
+    <script src="./config.js?v=20260823c"></script>
+    <script src="./app.js?v=20260823c"></script>
   </body>
 </html>
