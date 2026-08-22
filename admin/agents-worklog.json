@@ -3946,6 +3946,20 @@
           "status": "保留",
           "blockedBy": "市・企業向け提出資料に内部の期限管理を載せる是非の方針決定",
           "note": "管理画面の openPrintView（提出用PDF）の予定テーブルは独自描画で、2026-08-22に追加した期限切れ強調・status（待ち/保留）・blockedBy が反映されない。市・企業への提出資料に内部の期限管理をどこまで載せるかは方針判断が要るため実装を保留している。載せない方が適切という結論なら、この予定は取り下げてよい。"
+        },
+        {
+          "due": "2026-08-29",
+          "title": "🔗 SNS告知リンクの utm_source をイベント・FreeFree告知にも付与",
+          "category": "実装",
+          "priority": "高",
+          "note": "2026-08-22 A2 週次アクセス分析 第1回で実測。sns_post_logs の投稿本文を確認したところ、utm_source=threads&utm_medium=social&utm_campaign=proposal_announce が付いているのは提案（proposal）告知のリンクだけで、イベント告知（/events/[id]）・FreeFree告知（/freefree/[id]・/freefree）のリンクには未付与。このため page_views.source が null になり、イベント告知経由の流入が「直接訪問」に混ざって効果測定が原理的にできない。投稿生成側（sns rotation）で target_type 別に utm を付ける。Instagram は本文リンク不可のためプロフィールリンク側（instagram / threads-profile）の扱いもあわせて確認。根拠: agents/a2-voice/knowledge/access-reports/2026-08-22_週次アクセス分析_第1回.md §5"
+        },
+        {
+          "due": "2026-09-05",
+          "title": "📊 /admin/analytics に「実訪問（同日2PV以上の端末）」指標を追加",
+          "category": "実装",
+          "priority": "高",
+          "note": "2026-08-22 A2 週次アクセス分析 第1回で判明。現行の VV（page_view_daily / page_view_by_path の count(distinct visitor_key)）は「その日1PVだけで離脱した端末」に支配され、週次判断に使えない（前週VV121のうち103が1PV離脱、8/14-8/15に新規端末が82出現）。同日2PV以上の端末を数える指標をRPCに追加し、サマリカードと日別グラフに併記する。/api/admin/analytics/analyze が Claude に渡す集計にも同指標を含める（現状の集計だけでは1PV離脱の分離ができず、AI分析ボタンでは今回の主要な発見に到達できない）。注意: page_views は設計上 UA・IP を保存しないため、UAベースのボット判定はできない。根拠: agents/a2-voice/knowledge/access-reports/2026-08-22_週次アクセス分析_第1回.md §0・§7"
         }
       ]
     },
@@ -3955,10 +3969,10 @@
           "date": "2026-08-22",
           "title": "週次アクセス増減分析レポート 第1回（08/16-08/22）作成 0.4時間",
           "category": "分析",
-          "outputs": "agents/a2-voice/knowledge/access-reports/2026-08-22_週次アクセス分析_第1回.md（新規）／MOC_エージェント.md（登録2箇所）／agents/a2-voice/worklog.md／site/admin/changelog.json",
+          "outputs": "agents/a2-voice/knowledge/access-reports/2026-08-22_週次アクセス分析_第1回.md（新規）／MOC_エージェント.md（登録2箇所）／agents/a2-voice/worklog.md／site/admin/changelog.json／site/admin/agents-worklog.json（A2実績・次回予定、A1へ実装依頼2件）",
           "hours": 0.4,
           "partnerApproved": false,
-          "note": "Supabase の page_views 生ログ1,020件を直接集計し、SNS投稿ログ（sns_post_logs）・イベント開催日・会員登録と突合。管理画面の VV が「その日1PVだけの端末」に支配され過大であることを特定し、1PV離脱を除いた実訪問（14→18→22で3週連続増）を新指標として提示。SNS告知リンクの utm_source が提案告知にしか付いていない実測上の不備も検出し、A1／A4 への推奨アクション3件を提示。管理画面の「AI分析」ボタンは非対話セッションで管理者ログインできず未実行、同APIと同じ集計軸＋生ログ分析で代替（レポート§7に限界として明記）。session: fdfd26ed-e753-4c6b-8941-78b1f8c553fc / output: 32,068 / cost: $3.70"
+          "note": "Supabase の page_views 生ログ1,020件を直接集計し、SNS投稿ログ（sns_post_logs）・イベント開催日・会員登録と突合。管理画面の VV が「その日1PVだけの端末」に支配され過大であることを特定し、1PV離脱を除いた実訪問（14→18→22で3週連続増）を新指標として提示。SNS告知リンクの utm_source が提案告知にしか付いていない実測上の不備も検出し、A1／A4 への推奨アクション3件を提示。管理画面の「AI分析」ボタンは非対話セッションで管理者ログインできず未実行、同APIと同じ集計軸＋生ログ分析で代替（レポート§7に限界として明記）。推奨アクションのうち実装2件（実訪問指標の追加・イベント/FreeFree告知へのutm付与）は A1 Core の plans に登録済み。session: fdfd26ed-e753-4c6b-8941-78b1f8c553fc / output: 40,769 / cost: $4.98"
         }
       ],
       "plans": [
