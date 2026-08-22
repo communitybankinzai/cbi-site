@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-08-22",
+          "title": "要対応パネルに着手プロンプトのコピーボタンを追加 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/admin/admin.js（buildPlanPrompt/buildStalledPrompt/copyPromptToClipboard/fallbackCopy を新設。alertRowHtml を <button> から <div role=button> へ組み替えてボタンを入れ子可能にし、📋ボタンを追加。プロンプト本文は note が長いため state.alertPrompts に持ち行には添字のみ埋める）",
+            "site/admin/admin.css（.aa-copy のスタイル、グリッドを5列へ、640px以下は行内右上へ配置）",
+            "agents/a1-core/knowledge/runbooks/plans-triage.md（コピーボタンの節を追記）",
+            "検証: node --check OK／writeText を差し替えて3種のプロンプト全文を確認（期限切れ=着手指示・待ち=解除条件つき条件付き指示・停滞=4択の棚卸し指示）／📋クリックでは移動せず行クリックとEnterでは移動することを確認／1280pxで5列・行右端に配置、595pxで3列・行内右上に折返し、いずれも横スクロールなし／console エラー0件"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "祐樹さんの依頼「要対応の各項目にセッション貼り付け用プロンプトのコピーボタンを」。プロンプトの型は着手指示型・棚卸し相談型・両方の3択から着手指示型を選択（停滞エージェント行だけは対象タスクが特定できないため棚卸し型にした）。判明事項: Browser pane が非表示だと document がフォーカスされず navigator.clipboard.writeText も execCommand も失敗するため、コピー動作そのものは実ブラウザ操作でしか検証できない（writeText を差し替えて引数を検証する形に切り替えた。実環境ではクリック＝フォーカスありのため成功する見込み・確信度中）。session: ce2dc67e-b901-4300-9a90-f8b6f32a433d / output: 70,568 / cost: $9.28"
+        },
+        {
+          "date": "2026-08-22",
           "title": "課題記録の実態同期＋引継ぎ事故の再発防止（決定事項の集約）0.3時間",
           "category": "保守",
           "outputs": [

@@ -920,13 +920,76 @@ const UNREAD_POLL_MS = 30000;
     return out;
   }
 
-  function alertRowHtml(r, cls, badge) {
-    return '<button type="button" class="aa-row ' + cls + '" data-agent="' + escape(r.agentId) + '">' +
+  // 予定1件から、Claude Code セッションへ貼り付けて着手させるプロンプトを作る
+  function buildPlanPrompt(r, badge) {
+    const p = r.plan;
+    const lines = [];
+    lines.push('【' + r.agentId + ' ' + r.codename + ' の予定に着手してください】');
+    lines.push('');
+    lines.push('タスク: ' + (p.title || ''));
+    const meta = ['期限: ' + (p.due || '未定') + (badge ? '（' + badge + '）' : '')];
+    if (p.priority) meta.push('優先度: ' + p.priority);
+    if (p.category) meta.push('区分: ' + p.category);
+    lines.push(meta.join('／'));
+    if (p.status) {
+      lines.push('状態: ' + p.status + (p.blockedBy ? '（解除条件: ' + p.blockedBy + '）' : ''));
+    }
+    lines.push('');
+    if (p.note) {
+      lines.push('背景・指示内容:');
+      lines.push(p.note);
+      lines.push('');
+    }
+    if (p.status === '待ち' || p.status === '保留') {
+      lines.push('※ この予定は上記の解除条件を待っている状態です。まず解除条件が満たされたかを確認し、');
+      lines.push('　 まだなら着手せず現状だけ報告してください。満たされていれば着手してください。');
+      lines.push('');
+    }
+    lines.push('完了したら CLAUDE.md ルール5・7に従い site/admin/changelog.json と');
+    lines.push('site/admin/agents-worklog.json（' + r.agentId + ' の actuals）を更新し、');
+    lines.push('この予定を plans から削除して git push まで実行してください。');
+    return lines.join('\n');
+  }
+
+  // 停滞エージェント1体から、未消化の予定を棚卸しさせるプロンプトを作る
+  function buildStalledPrompt(r, plans, today) {
+    const lines = [];
+    lines.push('【' + r.agentId + ' ' + r.codename + ' の未消化の予定を棚卸ししてください】');
+    lines.push('');
+    lines.push('このエージェントは予定 ' + plans.length + ' 件を持ちながら、' +
+      (r.last ? '最終実績が ' + r.last + '（' + r.idle + '日経過）' : '実績が1件もありません') + '。');
+    lines.push('');
+    lines.push('未消化の予定:');
+    plans.forEach((p, i) => {
+      const al = planAlert(p, today);
+      const mark = (al.level === 'overdue') ? '・' + al.days + '日超過'
+                 : (al.level === 'soon')    ? '・あと' + al.days + '日'
+                 : (p.status)               ? '・' + p.status : '';
+      lines.push((i + 1) + '. ' + (p.title || '') +
+        '（〜' + (p.due || '未定') + '・優先度' + (p.priority || '—') + mark + '）');
+      if (p.blockedBy) lines.push('    解除条件: ' + p.blockedBy);
+    });
+    lines.push('');
+    lines.push('各予定について、次のどれが妥当か根拠付きで提案してください。');
+    lines.push('① 今すぐ着手する ② 期限を引き直す ③ status:"待ち" にする（blockedBy に解除条件を明示）④ 取り下げる');
+    lines.push('提案後、私の指示を待たずに着手できるものがあれば続けて実行してください。');
+    lines.push('判断を変えた予定は site/admin/agents-worklog.json に反映し git push まで実行してください。');
+    return lines.join('\n');
+  }
+
+  // プロンプト本文は state に持ち、行には添字だけ埋める（note が長く HTML が肥大するため）
+  function alertRowHtml(r, cls, badge, prompt) {
+    const idx = state.alertPrompts.push(prompt) - 1;
+    return '<div class="aa-row ' + cls + '" data-agent="' + escape(r.agentId) + '" role="button" tabindex="0">' +
       '<span class="aa-badge">' + escape(badge) + '</span>' +
-      '<span class="aa-agent">' + escape(r.agentId + ' ' + r.codename) + '</span>' +
-      '<span class="aa-title">' + escape(r.plan.title || '') + '</span>' +
-      '<span class="aa-due">〜' + escape(r.plan.due || '未定') + '</span>' +
-    '</button>';
+      '<span class="aa-agent">' + escape(r.agentId + ' ' + (r.codename || '')) + '</span>' +
+      '<span class="aa-title">' + escape((r.plan && r.plan.title) || r.titleHtml || '') +
+        ((r.plan && r.plan.blockedBy) ? '<em class="aa-blocked">解除条件: ' + escape(r.plan.blockedBy) + '</em>' : '') +
+      '</span>' +
+      '<span class="aa-due">' + (r.plan ? '〜' + escape(r.plan.due || '未定') : '') + '</span>' +
+      '<button type="button" class="aa-copy" data-prompt-idx="' + idx + '" ' +
+        'title="このセッションに貼り付けるプロンプトをコピー">📋</button>' +
+    '</div>';
   }
 
   function renderAgentAlerts() {
@@ -934,6 +997,7 @@ const UNREAD_POLL_MS = 30000;
     if (!box) return;
     const al = computeAgentAlerts();
     state.agentAlerts = al;
+    state.alertPrompts = [];   // 行に対応する貼り付け用プロンプト（添字で参照）
     let html = '';
 
     const head = '<div class="aa-head">' +
@@ -947,32 +1011,35 @@ const UNREAD_POLL_MS = 30000;
 
     if (al.overdue.length) {
       html += '<div class="aa-group aa-g-bad"><div class="aa-g-title">⚠️ 期限切れ（' + al.overdue.length + '件）</div>' +
-        al.overdue.map(r => alertRowHtml(r, 'is-bad', r.days + '日超過')).join('') + '</div>';
+        al.overdue.map(r => {
+          const badge = r.days + '日超過';
+          return alertRowHtml(r, 'is-bad', badge, buildPlanPrompt(r, badge));
+        }).join('') + '</div>';
     }
     if (al.soon.length) {
       html += '<div class="aa-group aa-g-warn"><div class="aa-g-title">⏳ 期限間近（' + al.soon.length + '件）</div>' +
-        al.soon.map(r => alertRowHtml(r, 'is-warn', r.days === 0 ? '本日' : 'あと' + r.days + '日')).join('') + '</div>';
+        al.soon.map(r => {
+          const badge = (r.days === 0) ? '本日' : 'あと' + r.days + '日';
+          return alertRowHtml(r, 'is-warn', badge, buildPlanPrompt(r, badge));
+        }).join('') + '</div>';
     }
     if (al.stalled.length) {
       html += '<div class="aa-group aa-g-warn"><div class="aa-g-title">💤 停滞エージェント（' + al.stalled.length + '体・予定はあるが直近' + ALERT_STALL_DAYS + '日の実績なし）</div>' +
-        al.stalled.map(r =>
-          '<button type="button" class="aa-row is-warn" data-agent="' + escape(r.agentId) + '">' +
-            '<span class="aa-badge">' + (r.idle === null ? '実績なし' : r.idle + '日') + '</span>' +
-            '<span class="aa-agent">' + escape(r.agentId + ' ' + r.codename) + '</span>' +
-            '<span class="aa-title">予定 ' + r.planCount + ' 件が未消化' + (r.last ? '（最終実績 ' + escape(r.last) + '）' : '') + '</span>' +
-            '<span class="aa-due"></span>' +
-          '</button>').join('') + '</div>';
+        al.stalled.map(r => {
+          const plans = collectPlans(r.agentId);
+          const row = {
+            agentId: r.agentId, codename: r.codename, plan: null,
+            titleHtml: '予定 ' + r.planCount + ' 件が未消化' + (r.last ? '（最終実績 ' + r.last + '）' : ''),
+          };
+          return alertRowHtml(row, 'is-warn', (r.idle === null ? '実績なし' : r.idle + '日'),
+            buildStalledPrompt(r, plans, al.today));
+        }).join('') + '</div>';
     }
     if (al.waiting.length) {
       html += '<details class="aa-group aa-g-wait"><summary class="aa-g-title">⛔ 待ち・保留（' + al.waiting.length + '件・着手条件の解除待ち）</summary>' +
         al.waiting.map(r =>
-          '<button type="button" class="aa-row is-wait" data-agent="' + escape(r.agentId) + '">' +
-            '<span class="aa-badge">' + escape(r.plan.status || '待ち') + '</span>' +
-            '<span class="aa-agent">' + escape(r.agentId + ' ' + r.codename) + '</span>' +
-            '<span class="aa-title">' + escape(r.plan.title || '') +
-              (r.plan.blockedBy ? '<em class="aa-blocked">解除条件: ' + escape(r.plan.blockedBy) + '</em>' : '') + '</span>' +
-            '<span class="aa-due">〜' + escape(r.plan.due || '未定') + '</span>' +
-          '</button>').join('') + '</details>';
+          alertRowHtml(r, 'is-wait', r.plan.status || '待ち', buildPlanPrompt(r, ''))
+        ).join('') + '</details>';
     }
     if (!html) {
       html = '<div class="aa-group aa-g-ok"><div class="aa-g-title">✅ 期限切れ・期限間近・停滞はありません</div></div>';
@@ -980,12 +1047,63 @@ const UNREAD_POLL_MS = 30000;
 
     box.innerHTML = head + html;
     box.querySelectorAll('.aa-row').forEach(b => {
-      b.addEventListener('click', () => {
+      const jump = () => {
         selectAgent(b.dataset.agent);
         const d = $('agent-detail');
         if (d && d.scrollIntoView) d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+      b.addEventListener('click', e => {
+        if (e.target.closest('.aa-copy')) return;   // コピーボタンは移動させない
+        jump();
+      });
+      b.addEventListener('keydown', e => {
+        if (e.target.closest('.aa-copy')) return;
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jump(); }
       });
     });
+    box.querySelectorAll('.aa-copy').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const text = state.alertPrompts[Number(btn.dataset.promptIdx)];
+        if (text == null) return;
+        copyPromptToClipboard(text, btn);
+      });
+    });
+  }
+
+  // プロンプトをクリップボードへ。navigator.clipboard は https / localhost でのみ使えるため
+  // 非対応環境では隠し textarea + execCommand にフォールバックする
+  function copyPromptToClipboard(text, btn) {
+    const done = ok => {
+      const orig = btn.textContent;
+      btn.textContent = ok ? '✓' : '✕';
+      btn.classList.add(ok ? 'is-copied' : 'is-failed');
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.classList.remove('is-copied', 'is-failed');
+      }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => done(true), () => done(fallbackCopy(text)));
+      return;
+    }
+    done(fallbackCopy(text));
+  }
+
+  function fallbackCopy(text) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (_) {
+      return false;
+    }
   }
 
   function renderAgentTabs() {
