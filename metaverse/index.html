@@ -42,6 +42,12 @@
     background: #3a7bd5; color: #fff; text-align: left;
   }
   #controlPanel button:hover { background: #2f66b3; }
+  /* スポット移動のグループ見出し（駅／商業・公園／公共施設） */
+  .spotGroupLabel {
+    margin: 8px 0 2px; font-size: 11px; font-weight: bold;
+    color: #9fc6f0; letter-spacing: 0.04em;
+  }
+  .spotGroupLabel:first-child { margin-top: 0; }
   #controlPanel button.modeBtn { background: #2e8b57; }
   #controlPanel button.modeBtn.active { background: #e67e22; }
   #controlPanel .controlSection {
@@ -780,19 +786,49 @@ const GOOGLE_MAPS_API_KEY = "AIzaSyA9NAb0XATmwwr7Z0gkl_3hAkSjJRh2c2E"; // COCoLa
 const GOOGLE_3DTILES_URL = "https://tile.googleapis.com/v1/3dtiles/root.json?key=" + GOOGLE_MAPS_API_KEY;
 
 // 印西市の主要スポット（座標は国土地理院 住所検索API / OpenStreetMap Nominatim で取得）
+// 移動の起点になる主要施設。SPOTS[0] は初期表示位置（START_SPOT）なので先頭を入れ替えないこと。
+// group はパネルの見出しに使う（同じ group は連続して並べる）。
+// 2026-08-22 に11か所追加。既存6か所が市の西部・北部に偏っており、東部（小林・本埜）と
+// 南東部（印旛）から文化財を探す起点がなかったため。タイムトライアル中も
+// 「主要施設まで飛んでそこから自力で探す」ことは許容する方針（文化財への直行は禁止）。
+// 座標の出典：駅・公園・商業施設は OpenStreetMap（2026-08-22取得）、公民館7施設は kominkan.json（市公式の施設一覧）
 const SPOTS = [
-  { name: "千葉ニュータウン中央駅", lat: 35.799983, lon: 140.116119,
+  { name: "千葉ニュータウン中央駅", group: "駅", lat: 35.799983, lon: 140.116119,
     desc: "印西市の玄関口となる北総線の駅。駅周辺はCBIの活動エリアの中心です。" },
-  { name: "イオンモール千葉ニュータウン", lat: 35.800167, lon: 140.111502,
-    desc: "千葉ニュータウン中央駅前の大型ショッピングモール。地域の暮らしの拠点です。" },
-  { name: "印西牧の原駅", lat: 35.803497, lon: 140.166716,
+  { name: "印西牧の原駅", group: "駅", lat: 35.803497, lon: 140.166716,
     desc: "北総線の駅。周辺には大型商業施設が集まり、家族連れで賑わうエリアです。" },
-  { name: "BIG HOPガーデンモール印西", lat: 35.803195, lon: 140.162553,
-    desc: "印西牧の原駅前のアウトレットモール。観覧車がランドマークです。" },
-  { name: "印西市役所", lat: 35.832338, lon: 140.145795,
-    desc: "印西市の行政の中心。CiDAO（市民投票PoC）など行政連携の取り組みも進行中です。" },
-  { name: "木下駅（木下河岸）", lat: 35.838908, lon: 140.148377,
+  { name: "印旛日本医大駅", group: "駅", lat: 35.787590, lon: 140.203402,
+    desc: "北総線の終着駅。市の南東部の玄関口で、松虫寺など南部の文化財をめぐる起点になります。" },
+  { name: "木下駅（木下河岸）", group: "駅", lat: 35.838908, lon: 140.148377,
     desc: "JR成田線の駅。利根川の舟運で栄えた木下河岸の歴史が残る、印西の旧市街エリアです。" },
+  { name: "小林駅", group: "駅", lat: 35.830578, lon: 140.193301,
+    desc: "JR成田線の駅。市の東部、小林地区の玄関口です。" },
+
+  { name: "イオンモール千葉ニュータウン", group: "商業・公園", lat: 35.800167, lon: 140.111502,
+    desc: "千葉ニュータウン中央駅前の大型ショッピングモール。地域の暮らしの拠点です。" },
+  { name: "BIG HOPガーデンモール印西", group: "商業・公園", lat: 35.803195, lon: 140.162553,
+    desc: "印西牧の原駅前のアウトレットモール。観覧車がランドマークです。" },
+  { name: "ジョイフル本田千葉ニュータウン店", group: "商業・公園", lat: 35.807083, lon: 140.155674,
+    desc: "牧の原エリアの大型ホームセンター。広い駐車場が上空からの目印になります。" },
+  { name: "松山下公園", group: "商業・公園", lat: 35.824677, lon: 140.114947,
+    desc: "市の総合公園。体育施設が集まる、市民スポーツの拠点です。" },
+
+  { name: "印西市役所", group: "公共施設", lat: 35.832338, lon: 140.145795,
+    desc: "印西市の行政の中心。CiDAO（市民投票PoC）など行政連携の取り組みも進行中です。" },
+  { name: "印西市文化ホール", group: "公共施設", lat: 35.833294, lon: 140.145981,
+    desc: "市役所に隣接する文化施設。市民の発表や催しの会場です。" },
+  { name: "中央公民館", group: "公共施設", lat: 35.841534, lon: 140.145203,
+    desc: "木下地区にある印西市立の公民館。地域の学習・活動の拠点です。" },
+  { name: "中央駅前地域交流館（コスモスパレット）", group: "公共施設", lat: 35.799309, lon: 140.119659,
+    desc: "千葉ニュータウン中央駅前の交流施設。市民活動の打ち合わせにも使われます。" },
+  { name: "そうふけ公民館", group: "公共施設", lat: 35.799629, lon: 140.165695,
+    desc: "そうふけ地区の印西市立公民館。牧の原エリアの南側にあります。" },
+  { name: "本埜公民館", group: "公共施設", lat: 35.808392, lon: 140.197952,
+    desc: "本埜地区の印西市立公民館。市の東部から文化財をめぐる起点になります。" },
+  { name: "小林公民館", group: "公共施設", lat: 35.831291, lon: 140.197220,
+    desc: "小林地区の印西市立公民館。小林駅の近くにあります。" },
+  { name: "印旛公民館", group: "公共施設", lat: 35.780167, lon: 140.224731,
+    desc: "印旛地区の印西市立公民館。市の最も南東にあり、南部の文化財に近い施設です。" },
 ];
 
 const START_SPOT = SPOTS[0]; // 初期位置：千葉ニュータウン中央駅
@@ -1066,7 +1102,16 @@ function flyToSpot(spot, height) {
 }
 
 const spotButtonsEl = document.getElementById("spotButtons");
+// 17か所あるため、group ごとに見出しを挟んで探しやすくする（同じ group は連続して並んでいる前提）
+let lastSpotGroup = null;
 SPOTS.forEach((spot) => {
+  if (spot.group && spot.group !== lastSpotGroup) {
+    const head = document.createElement("div");
+    head.className = "spotGroupLabel";
+    head.textContent = spot.group;
+    spotButtonsEl.appendChild(head);
+    lastSpotGroup = spot.group;
+  }
   const btn = document.createElement("button");
   btn.textContent = "📍 " + spot.name;
   btn.onclick = () => flyToSpot(spot);
