@@ -1204,8 +1204,9 @@ const OPEN_DATA_LAYERS = {
   fire: { label: "消防署", marker: "消", color: "#d9534f", zoomLimit: 0 },
   police: { label: "警察機関", marker: "警", color: "#3b6fb6", zoomLimit: 0 },
   cityOffice: { label: "市役所・支所", marker: "市", color: "#2f855a", zoomLimit: 0 },
-  emergencyRoute: { label: "緊急輸送路", marker: "路", color: "#b7791f", zoomLimit: 0 },
-  railway: { label: "鉄道", marker: "鉄", color: "#6b7280", zoomLimit: 0 },
+  // 道路・鉄道は線データ（KML由来）。点で置くと路線として読めないため線で描く
+  emergencyRoute: { label: "緊急輸送路", marker: "路", color: "#b7791f", zoomLimit: 0, line: { weight: 5, opacity: 0.85 } },
+  railway: { label: "鉄道", marker: "鉄", color: "#4b5563", zoomLimit: 0, line: { weight: 3, opacity: 0.8, dashArray: "8 5" } },
   // 土砂災害は点数が多いため、広域表示では描画せず拡大時のみ出す（描画負荷対策）
   landslideWarning: { label: "土砂災害警戒区域（市公表）", marker: "土", color: "#c05621", zoomLimit: 13 },
   landslideSpecial: { label: "土砂災害特別警戒区域（市公表）", marker: "特", color: "#9b2c2c", zoomLimit: 13 }
@@ -1240,6 +1241,28 @@ function renderOpenDataLayer(key) {
   layer.clearLayers();
   // 拡大時のみ表示する設定のレイヤーは、ズームが浅いうちは描画しない
   if (spec.zoomLimit && map.getZoom() < spec.zoomLimit) return;
+
+  // 線データ（緊急輸送路・鉄道）はポリラインで描く
+  if (spec.line && Array.isArray(payload.lines) && payload.lines.length) {
+    payload.lines.forEach(line => {
+      if (!Array.isArray(line.path) || line.path.length < 2) return;
+      const polyline = L.polyline(line.path, {
+        color: spec.color,
+        weight: spec.line.weight,
+        opacity: spec.line.opacity,
+        dashArray: spec.line.dashArray
+      });
+      polyline.bindPopup(`
+        <div class="popup-title">${escapeHtml(line.name || spec.label)}</div>
+        <div class="shelter-popup-badges"><span class="badge blue">${escapeHtml(spec.label)}</span></div>
+        ${payload.note ? `<div class="popup-contact-note">${escapeHtml(payload.note)}</div>` : ""}
+        <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">出典: 印西市わが街ガイド オープンデータ（CC BY 2.1 JP）</a>
+      `);
+      layer.addLayer(polyline);
+    });
+    return;
+  }
+
   const bounds = map.getBounds();
   const wide = !spec.zoomLimit;
   (payload.features || []).forEach(feature => {
