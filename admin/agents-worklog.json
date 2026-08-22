@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-22",
+  "updatedAt": "2026-08-21",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。 2026-08-22 以降: plans に status（進行中/待ち/保留）と blockedBy（待ちの理由）を追加。status 未設定は「進行中」扱いで、期限超過すると管理画面エージェントタブ先頭の「要対応」パネルに赤で出る。着手できない事情があるものだけ status:\"待ち\" にして blockedBy に解除条件を書く（忘れによる放置と区別するため）。",
   "categories": [
@@ -16,6 +16,36 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-08-22",
+          "title": "IG検索トークンの自動延長可否を実測＋失効前アラート実装 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "実測: fb_exchange_token はAPI成功するが expires_at が延びない（交換前後とも2026-10-17 08:34）と確定。ig_refresh_token は Cannot parse access token でそもそも不可（Facebook Login方式のため）。祐樹さんの「できなかった記憶」が正しかったことを実証",
+            "C:/Repos/cidao src/app/api/cron/sns-token-refresh/route.ts（EXPIRY_WATCH方式を追加。sns_instagram_discovery_auth を延長対象でなく監視対象とし、残り30/14/7/3/1日でResendメール通知。alerted_threshold で重複送信防止。commit 1ae92af）",
+            "agents/a1-core/credentials.md（app secret 941d0c…を記録＋「自動リフレッシュは不可」節を新設。cronに追加してはいけない理由を実測結果つきで明記）",
+            "検証: 型チェック通過／Vercelデプロイ後にcronエンドポイントが401（認証必須で正常）を確認／通知タイミングを週次実行でシミュレーションし、当初の『残り日数がちょうどN日』方式では通知が1回も飛ばない欠陥を発見→閾値以下方式へ修正し9/21・10/5・10/12の3回発火を確認"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "祐樹さんの「機能実施してできなかった記憶がある」という指摘から実測で決着。私は記憶を確認せず自動延長を提案していた。実装中に自作の欠陥（週次cronでは節目日に当たらず通知ゼロ）も検証で発見・修正。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341"
+        },
+        {
+          "date": "2026-08-21",
+          "title": "文化財学習レポート10件のWeb調査・執筆・PDF化（国指定5＋県指定5）2.2時間",
+          "category": "実装",
+          "outputs": [
+            "新規レポート10件: senpukuji-yakushido／eifukuji-yakushido／dozo-fudo-myoo／shichibutsu-yakushi／kioroshi-kaiso／bishamonten-ryowakiji／bonsho-oan／magome-gato／tomi-jinja-shishimai／shogen-onibasu（各: 基礎データ表・概要・歴史・見どころ4・用語10・年表・クイズ4・観察4・出典2〜3）",
+            "Web調査17リクエスト: 印西市公式10件、千葉県教育委員会7件（うち2件404）、補足検索3件（松虫寺縁起・瓦塔一般・オニバス再生事業）",
+            "report.html 機能追加: observation（現地で確かめること）、memo（余白に合わせて伸びる罫線メモ欄。表面は「気づいたこと・調べたいこと」、裏面は「学習メモ」。16mm未満に潰れる場合は見出しごと自動削除）",
+            "変更 bunkazai.json: 10件に reportId を追加（メタバース詳細モーダルと一覧の表示スイッチ）",
+            "PDF11件を生成（scripts/make-report-pdf.py・全件A4×2ページを自動検査済み・277〜413KB）",
+            "保管庫ノート更新: 2026-08-21_文化財A4学習レポートの仕様と展開計画.md に作成済み一覧と資料不足時の方針を追記"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "ユーザー判断により、市協議前に先行して10件のみ作成（残り39件は引き続き協議待ち）。資料が乏しい文化財は「出典にある事実＋観察の視点＋メモ欄」で構成し推測を書かない方針を採用。調査中に記載の食い違いを2件発見しレポートに併記: 木下貝層の国指定日（市=平成14年3月19日／県=3月29日）と所在地表記、銅造不動明王の願主名（市=瀧尊／県=滝尊）。【単価の実測】この10件の増分は output 97,645 / cost $21.36 ＝ 1件あたり約$2.1。事前見積もり（1件$0.5〜1.0）の約2倍で、原因は長い会話の中で連続処理したことによるキャッシュ読み込みの増大。残り39件は会話（セッション）を分けて10件ずつ処理すれば単価を下げられる見込み。session: 4ad9cacb-a4ad-47c4-b38a-fea23dd40bb4 / output: 194,700 / cost: $35.24（セッション累計）"
+        },
         {
           "date": "2026-08-22",
           "title": "メタバース3D表示の鮮明化・描画精度の管理画面切替・ピン浮き修正・スポット17か所化 0.6時間",
