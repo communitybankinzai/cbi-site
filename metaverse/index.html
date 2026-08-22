@@ -896,7 +896,15 @@ async function loadTileset() {
   try {
     tileset = await Cesium.Cesium3DTileset.fromUrl(GOOGLE_3DTILES_URL, {
       showCreditsOnScreen: true, // Google規約上クレジット表示は必須
+      // 描画精度。Cesiumの既定は16で、建物が平べったく見える粗さだった（2026-08-22ユーザー指摘）。
+      // 値を下げるほど細かいタイルを読むため鮮明になる。タイル本体（renderer requests）は
+      // 無償のため課金は増えないが、取得数が2〜4倍になり renderer の1日上限に早く達する。
+      // 上限に達すると429で詳細タイルが止まり quotaBanner が出る（枯渇の実績あり）。
+      // イベントで同時利用が増えるときは、この値を戻すかCloud Consoleで上限を引き上げること。
+      maximumScreenSpaceError: 8,
     });
+    // 管理画面の設定が先に届いていれば、それを優先する（上の8は通信できないときの既定値）
+    if (pendingSse !== null) tileset.maximumScreenSpaceError = pendingSse;
     viewer.scene.primitives.add(tileset);
 
     // 3D Tilesの1日あたり利用上限（Google側クォータ）に達すると、詳細タイルの取得が
@@ -2916,10 +2924,22 @@ function presenceRender(count) {
   el.title = "いま参加中の人数 ｜ 本日の利用者数／1日の閲覧開始枠（費用ゼロ運用のため30回）｜ 本日の3Dタイル取得回数（無償枠・自動調整あり）";
   el.style.display = "inline-block";
 }
+// 管理画面（CiDAO /admin/timetrial「🖼 3Dの描画精度」）で設定した値を画面へ反映する。
+// Cesium は maximumScreenSpaceError の変更を次のフレームから反映するため、再読み込みは要らない。
+// usageFetch は loadTileset より先に走ることがあるので、届いた値を保持して読み込み完了後にも適用する
+let pendingSse = null;
+function applyRenderQuality(sse) {
+  const v = Number(sse);
+  if (!isFinite(v) || v < 2 || v > 64) return;
+  pendingSse = v;
+  if (!tileset || tileset.maximumScreenSpaceError === v) return;
+  tileset.maximumScreenSpaceError = v;
+  viewer.scene.requestRender();
+}
 function usageFetch() {
   fetch(USAGE_API).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-    .then(function (d) { usageInfo = d; presenceRender(); })
-    .catch(function () { /* 取得できないときは人数だけ表示 */ });
+    .then(function (d) { usageInfo = d; applyRenderQuality(d.maximumScreenSpaceError); presenceRender(); })
+    .catch(function () { /* 取得できないときは人数だけ表示。精度は既定値のまま */ });
 }
 function presencePing() {
   fetch(PRESENCE_API, {
