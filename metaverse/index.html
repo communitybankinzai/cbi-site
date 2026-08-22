@@ -157,6 +157,8 @@
   #topLeftBar {
     position: absolute; top: 52px; left: 10px; z-index: 21;
     display: flex; gap: 6px; flex-wrap: wrap;
+    /* 右のスポットパネル（約210px）に潜り込ませない。ボタンが増えたら折り返す */
+    max-width: calc(100vw - 240px);
   }
   #topLeftBar button {
     background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
@@ -558,7 +560,8 @@
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
   <button id="modeSwitchBtn" title="イベント用途と防災用途を切り替えます">🔀 モード切替</button>
-  <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 画面を保存</button>
+  <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 撮影</button>
+  <button id="recBtn" title="画面を動画（WebM）で録画します。もう一度押すと停止して保存されます">🎥 録画</button>
   <button id="howtoBtn">❓ 使い方</button>
 </div>
 
@@ -2494,6 +2497,16 @@ async function loadBunkazai() {
   // ピンは3D Tilesの地表面に吸着させる（固定高だと台地で地中に埋まり、
   // 斜め視点で実位置から大きくずれて見えるため）。未対応環境では従来の固定高で描画
   const pinHeightRef = Cesium.HeightReference.CLAMP_TO_3D_TILE ?? Cesium.HeightReference.NONE;
+  // 同じ住所の文化財は座標が完全に一致する（松虫寺に3件、木下交流の杜に2件など計8組）。
+  // そのままだと看板が同じ位置に重なって文字が読めないため、同じ地点のものは縦にずらして並べる。
+  // 座標を動かすのは実態と合わないので、ずらすのは表示位置（pixelOffset）だけにする。2026-08-23
+  const bzSlotCount = {};
+  const bzSlot = BUNKAZAI.map((b) => {
+    const key = b.lat.toFixed(5) + "," + b.lon.toFixed(5);
+    const n = bzSlotCount[key] || 0;
+    bzSlotCount[key] = n + 1;
+    return n;
+  });
   BUNKAZAI.forEach((b, i) => {
     const ent = viewer.entities.add({
       id: "bunkazai-" + i,
@@ -2514,7 +2527,8 @@ async function loadBunkazai() {
         outlineColor: Cesium.Color.fromCssColorString("#1a2533"),
         outlineWidth: 4,
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        pixelOffset: new Cesium.Cartesian2(0, -18),
+        // 同じ地点に複数ある場合は 16px ずつ上へ積む（重なり防止）
+        pixelOffset: new Cesium.Cartesian2(0, -18 - bzSlot[i] * 16),
         heightReference: pinHeightRef,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2500),
@@ -2840,6 +2854,85 @@ async function captureScreenshot() {
 
 const shotBtnEl = document.getElementById("shotBtn");
 if (shotBtnEl) shotBtnEl.onclick = captureScreenshot;
+
+// 🎥 画面録画（WebM）。もう一度押すと停止して保存する。
+// canvas.captureStream + MediaRecorder を使う。音声は入らない。
+// UIを隠すのは撮影と同じだが、録画中は操作できる必要があるため
+// 「隠したまま録画 → 停止で元に戻す」形にする（録画中の操作はキーボードとドラッグで行う）
+let mediaRecorder = null;
+let recChunks = [];
+let recRestored = [];
+let recIndicator = null;
+function recSetIndicator(on) {
+  if (on) {
+    if (!recIndicator) {
+      recIndicator = document.createElement("div");
+      recIndicator.style.cssText =
+        "position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:90;" +
+        "background:rgba(200,30,30,0.9);color:#fff;border-radius:20px;padding:6px 16px;" +
+        "font-size:13px;font-weight:bold;pointer-events:none;";
+      document.body.appendChild(recIndicator);
+    }
+    recIndicator.textContent = "🔴 録画中（もう一度「🎥 録画」で停止）";
+    recIndicator.style.display = "block";
+  } else if (recIndicator) {
+    recIndicator.style.display = "none";
+  }
+}
+function recStart() {
+  if (!window.MediaRecorder || !viewer.canvas.captureStream) {
+    alert("このブラウザは画面録画に対応していません（Chrome / Edge をお使いください）");
+    return;
+  }
+  recRestored = [];
+  CAPTURE_HIDE_IDS.forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el && el.style.display !== "none") {
+      recRestored.push([el, el.style.display]);
+      el.style.display = "none";
+    }
+  });
+  // 録画中も操作できるよう、録画ボタンだけは戻して見せる
+  const bar = document.getElementById("topLeftBar");
+  if (bar) bar.style.display = "";
+  ["puzzleBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
+   "pickModeBtn", "ttBtn", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
+  });
+
+  const stream = viewer.canvas.captureStream(30);
+  const types = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+  const mime = types.find(function (t) { return MediaRecorder.isTypeSupported(t); }) || "";
+  recChunks = [];
+  mediaRecorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+  mediaRecorder.ondataavailable = function (e) { if (e.data && e.data.size) recChunks.push(e.data); };
+  mediaRecorder.onstop = function () {
+    const blob = new Blob(recChunks, { type: "video/webm" });
+    const d = new Date();
+    const p = function (n) { return String(n).padStart(2, "0"); };
+    const a = document.createElement("a");
+    a.download = "メタバース印西_" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate())
+      + "_" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + ".webm";
+    a.href = URL.createObjectURL(blob);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
+    recRestored.forEach(function (pair) { pair[0].style.display = pair[1]; });
+    recRestored = [];
+    recSetIndicator(false);
+    document.getElementById("recBtn").textContent = "🎥 録画";
+  };
+  mediaRecorder.start();
+  recSetIndicator(true);
+  document.getElementById("recBtn").textContent = "⏹ 停止";
+}
+const recBtnEl = document.getElementById("recBtn");
+if (recBtnEl) recBtnEl.onclick = function () {
+  if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); mediaRecorder = null; }
+  else recStart();
+};
 
 // シネマティックモード（PR動画撮影用・?cinema=1 で起動）
 // カメラ自動運転＋テロップを表示する。通常利用には影響しない。
