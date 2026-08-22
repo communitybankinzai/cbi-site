@@ -612,8 +612,8 @@
    "designation": "県指定",
    "type": "天然記念物",
    "address": "将監",
-   "lat": 35.834389,
-   "lon": 140.208435,
+   "lat": 35.835157,
+   "lon": 140.209880,
    "detailUrl": "https://www.city.inzai.lg.jp/0000005052.html",
    "spiritName": "オニバス",
    "cardImage": "spirits/オニバス.webp",
@@ -655,7 +655,8 @@
    "designatedEra": "昭和57年",
    "designatedYear": 1982,
    "facility": "観音寺",
-   "kana": "みだいっそんむさしがたいたび"
+   "kana": "みだいっそんむさしがたいたび",
+   "reportId": "mida-isson-musashi-itabi"
   },
   {
    "name": "弥陀三尊下総型板碑",
@@ -683,7 +684,8 @@
    "designatedEra": "昭和57年",
    "designatedYear": 1982,
    "facility": "光明寺",
-   "kana": "みださんぞんしもうさがたいたび"
+   "kana": "みださんぞんしもうさがたいたび",
+   "reportId": "mida-sanzon-shimousa-itabi"
   },
   {
    "name": "板石塔婆（吉高）",
@@ -708,7 +710,8 @@
    },
    "designatedEra": "昭和51年",
    "designatedYear": 1976,
-   "kana": "いたいしとうば（よしたか）"
+   "kana": "いたいしとうば（よしたか）",
+   "reportId": "itaishi-toba-yoshitaka"
   },
   {
    "name": "板石塔婆（岩戸）",
@@ -736,7 +739,8 @@
    "designatedEra": "平成3年",
    "designatedYear": 1991,
    "facility": "印旛歴史民俗資料館",
-   "kana": "いたいしとうば（いわと）"
+   "kana": "いたいしとうば（いわと）",
+   "reportId": "itaishi-toba-iwato"
   },
   {
    "name": "福聚院阿弥陀三尊立像",
@@ -944,7 +948,8 @@
    },
    "designatedEra": "平成3年",
    "designatedYear": 1991,
-   "kana": "よしおかけかしかんけいもんじょ"
+   "kana": "よしおかけかしかんけいもんじょ",
+   "reportId": "yoshiokake-kashi-monjo"
   },
   {
    "name": "常滑の大壺",
@@ -995,7 +1000,8 @@
    },
    "designatedEra": "平成3年",
    "designatedYear": 1991,
-   "kana": "こがねまきししがりしりょう「むらこばた」"
+   "kana": "こがねまきししがりしりょう「むらこばた」",
+   "reportId": "koganemaki-murakobata"
   },
   {
    "name": "高札（五榜の掲示）",
@@ -1020,7 +1026,8 @@
    },
    "designatedEra": "平成17年",
    "designatedYear": 2005,
-   "kana": "こうさつ（ごぼうのけいじ）"
+   "kana": "こうさつ（ごぼうのけいじ）",
+   "reportId": "kosatsu-gobo-keiji"
   },
   {
    "name": "別所の獅子舞",
