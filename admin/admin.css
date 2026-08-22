@@ -2511,3 +2511,159 @@ body.mail-splitting { cursor: col-resize; user-select: none; }
 .ledger-note-body { font-size: 0.9rem; white-space: pre-wrap; word-break: break-word; }
 .ledger-note-meta { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 6px; font-size: 0.78rem; color: var(--c-ink-sub); }
 .ledger-note-actions { display: flex; gap: 10px; white-space: nowrap; }
+
+/* =========================================================
+   plans 棚卸し — 要対応パネル（エージェントタブ先頭）
+   期限切れの予定が一覧に埋もれるのを防ぐための横断表示
+   ========================================================= */
+.agent-alerts {
+  margin: 0 0 18px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  background: var(--c-paper);
+  overflow: hidden;
+}
+.aa-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--c-bg-alt);
+  border-bottom: 1px solid var(--c-line);
+}
+.aa-h-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--c-navy);
+  margin-right: 4px;
+}
+.aa-h-chip {
+  font-size: 11px;
+  color: var(--c-ink-sub);
+  background: var(--c-paper);
+  border: 1px solid var(--c-line);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+.aa-h-chip strong { font-size: 13px; color: var(--c-ink); }
+.aa-h-chip.is-bad  { border-color: var(--c-danger); color: var(--c-danger); }
+.aa-h-chip.is-bad strong  { color: var(--c-danger); }
+.aa-h-chip.is-warn { border-color: #8a6a2a; color: #8a6a2a; }
+.aa-h-chip.is-warn strong { color: #8a6a2a; }
+.aa-h-note { margin-left: auto; font-size: 11px; color: var(--c-ink-sub); }
+
+.aa-group { padding: 8px 14px 12px; border-bottom: 1px solid var(--c-line); }
+.aa-group:last-child { border-bottom: 0; }
+.aa-g-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-ink-sub);
+  margin: 4px 0 6px;
+}
+.aa-g-bad  { background: rgba(181, 58, 58, .04); }
+.aa-g-warn { background: rgba(138, 106, 42, .04); }
+.aa-g-ok   { background: rgba(45, 90, 61, .05); }
+.aa-g-ok .aa-g-title { color: var(--c-green); }
+details.aa-g-wait > summary {
+  cursor: pointer;
+  list-style: revert;
+}
+details.aa-g-wait > summary::marker { color: var(--c-ink-sub); }
+
+.aa-row {
+  width: 100%;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 88px 132px 1fr auto;
+  gap: 10px;
+  align-items: baseline;
+  background: var(--c-paper);
+  border: 1px solid var(--c-line);
+  border-left: 4px solid var(--c-line);
+  border-radius: 6px;
+  padding: 7px 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s, transform .1s;
+}
+.aa-row:last-child { margin-bottom: 0; }
+.aa-row:hover { box-shadow: var(--shadow-sm); transform: translateX(2px); }
+.aa-row.is-bad  { border-left-color: var(--c-danger); }
+.aa-row.is-warn { border-left-color: #8a6a2a; }
+.aa-row.is-wait { border-left-color: var(--c-ink-sub); opacity: .82; }
+.aa-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  border-radius: 999px;
+  padding: 2px 6px;
+  color: var(--c-ink-sub);
+  border: 1px solid var(--c-line);
+  white-space: nowrap;
+}
+.aa-row.is-bad  .aa-badge { color: var(--c-danger); border-color: var(--c-danger); }
+.aa-row.is-warn .aa-badge { color: #8a6a2a; border-color: #8a6a2a; }
+.aa-agent { font-size: 12px; font-weight: 700; color: var(--c-navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aa-title { font-size: 13px; color: var(--c-ink); line-height: 1.45; }
+.aa-blocked { display: block; font-size: 11px; font-style: normal; color: var(--c-ink-sub); margin-top: 2px; }
+.aa-due { font-size: 11px; color: var(--c-ink-sub); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .aa-row { grid-template-columns: 72px 1fr; }
+  .aa-row .aa-due { grid-column: 1 / -1; }
+}
+
+/* 一覧タブの期限切れバッジ */
+.agent-tab { position: relative; }
+.agent-tab.has-overdue { border-color: var(--c-danger); }
+.agent-tab .at-alert {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  border-radius: 999px;
+  background: var(--c-danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 5px;
+}
+
+/* 予定1件ごとの期限強調・状態バッジ */
+.wl-item.is-plan.is-overdue { border-left-color: var(--c-danger); background: rgba(181, 58, 58, .04); }
+.wl-item.is-plan.is-soon    { border-left-color: #8a6a2a; }
+.wl-item.is-plan.is-waiting { opacity: .78; }
+.wl-alert {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+.wl-alert.a-overdue { color: #fff; background: var(--c-danger); }
+.wl-alert.a-soon    { color: #fff; background: #8a6a2a; }
+.wl-status {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--c-line);
+  color: var(--c-ink-sub);
+}
+.wl-status.s-待ち { border-color: var(--c-navy-soft); color: var(--c-navy-soft); }
+.wl-status.s-保留 { border-color: var(--c-ink-sub); color: var(--c-ink-sub); }
+.wl-blocked {
+  font-size: 11px;
+  color: var(--c-navy-soft);
+  background: var(--c-bg-alt);
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-top: 4px;
+  display: inline-block;
+}

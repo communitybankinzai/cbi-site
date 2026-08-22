@@ -746,6 +746,7 @@ const UNREAD_POLL_MS = 30000;
       populateCategorySelects();
       // 以下はエージェントタブ用UI（DOM存在時のみ）
       if ($('agent-tabs')) {
+        renderAgentAlerts();   // 先に集計してから一覧を描く（タブの期限切れバッジが集計結果を使うため）
         renderAgentTabs();
         if (state.agents.length) selectAgent(state.agents[0].id);
       }
@@ -833,6 +834,160 @@ const UNREAD_POLL_MS = 30000;
     return state.agents.find(a => agentAuthorLabel(a) === name) || null;
   }
 
+  // ===== plans 棚卸し（要対応パネル） =====
+  // 予定が期限切れのまま埋もれるのを防ぐため、エージェントタブ先頭に横断集計を出す。
+  const ALERT_SOON_DAYS  = 7;   // 期限まで何日以内を「期限間近」とするか
+  const ALERT_STALL_DAYS = 60;  // 直近の実績が何日ないエージェントを「停滞」とするか
+
+  function todayISO() {
+    const d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+
+  function daysBetween(fromISO, toISO) {
+    const a = Date.parse(fromISO + 'T00:00:00');
+    const b = Date.parse(toISO + 'T00:00:00');
+    if (isNaN(a) || isNaN(b)) return null;
+    return Math.round((b - a) / 86400000);
+  }
+
+  // 静的 plans（json）と動的 plans（GAS）を合成して期限順に返す
+  function collectPlans(agentId) {
+    const wl = getWorklogFor(agentId);
+    const stat = (wl.plans || []).map(x => Object.assign({ _source: 'json' }, x));
+    const dyn = (state.plansDynamic || [])
+      .filter(x => x.agentId === agentId)
+      .map(x => Object.assign({}, x, { _source: 'dynamic' }));
+    return [].concat(dyn, stat)
+      .sort((a, b) => String(a.due || '9999').localeCompare(String(b.due || '9999')));
+  }
+
+  // 静的 actuals（json）と動的 actuals（GAS）を合成して新しい順に返す
+  function collectActuals(agentId) {
+    const wl = getWorklogFor(agentId);
+    const stat = (wl.actuals || []).map(x => Object.assign({ _source: 'json' }, x));
+    const dyn = (state.actualsDynamic || [])
+      .filter(x => x.agentId === agentId)
+      .map(x => Object.assign({}, x, {
+        _source: 'dynamic',
+        outputs: typeof x.outputs === 'string' && x.outputs ? x.outputs.split(' / ') : (x.outputs || []),
+      }));
+    return [].concat(dyn, stat)
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  }
+
+  // 予定1件の状態を判定する。status:待ち/保留 は着手不能なので期限切れ扱いにしない
+  function planAlert(plan, today) {
+    const st = String(plan.status || '').trim();
+    if (st === '待ち')  return { level: 'waiting', days: null };
+    if (st === '保留')  return { level: 'held',    days: null };
+    const due = String(plan.due || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(due)) return { level: 'nodate', days: null };
+    const d = daysBetween(today, due);
+    if (d === null) return { level: 'nodate', days: null };
+    if (d < 0) return { level: 'overdue', days: -d };
+    if (d <= ALERT_SOON_DAYS) return { level: 'soon', days: d };
+    return { level: 'ok', days: d };
+  }
+
+  // 全エージェント横断で 期限切れ／期限間近／待ち／停滞 を集計する
+  function computeAgentAlerts() {
+    const today = todayISO();
+    const out = { today: today, overdue: [], soon: [], waiting: [], stalled: [], total: 0 };
+    (state.agents || []).forEach(a => {
+      const plans = collectPlans(a.id);
+      out.total += plans.length;
+      plans.forEach(p => {
+        const al = planAlert(p, today);
+        const row = { agentId: a.id, codename: a.codename || '', plan: p, days: al.days };
+        if (al.level === 'overdue') out.overdue.push(row);
+        else if (al.level === 'soon') out.soon.push(row);
+        else if (al.level === 'waiting' || al.level === 'held') out.waiting.push(row);
+      });
+      const actuals = collectActuals(a.id);
+      const last = actuals.length ? String(actuals[0].date || '') : '';
+      const idle = last ? daysBetween(last, today) : null;
+      // 予定を持っているのに直近実績が ALERT_STALL_DAYS 以上ない（or 実績ゼロ）
+      if (plans.length && (idle === null || idle >= ALERT_STALL_DAYS)) {
+        out.stalled.push({ agentId: a.id, codename: a.codename || '', last: last, idle: idle, planCount: plans.length });
+      }
+    });
+    out.overdue.sort((x, y) => (y.days || 0) - (x.days || 0));
+    out.soon.sort((x, y) => (x.days || 0) - (y.days || 0));
+    out.stalled.sort((x, y) => (y.idle === null ? 99999 : y.idle) - (x.idle === null ? 99999 : x.idle));
+    return out;
+  }
+
+  function alertRowHtml(r, cls, badge) {
+    return '<button type="button" class="aa-row ' + cls + '" data-agent="' + escape(r.agentId) + '">' +
+      '<span class="aa-badge">' + escape(badge) + '</span>' +
+      '<span class="aa-agent">' + escape(r.agentId + ' ' + r.codename) + '</span>' +
+      '<span class="aa-title">' + escape(r.plan.title || '') + '</span>' +
+      '<span class="aa-due">〜' + escape(r.plan.due || '未定') + '</span>' +
+    '</button>';
+  }
+
+  function renderAgentAlerts() {
+    const box = $('agent-alerts');
+    if (!box) return;
+    const al = computeAgentAlerts();
+    state.agentAlerts = al;
+    let html = '';
+
+    const head = '<div class="aa-head">' +
+      '<span class="aa-h-title">🔔 要対応</span>' +
+      '<span class="aa-h-chip' + (al.overdue.length ? ' is-bad' : '') + '">期限切れ <strong>' + al.overdue.length + '</strong></span>' +
+      '<span class="aa-h-chip' + (al.soon.length ? ' is-warn' : '') + '">' + ALERT_SOON_DAYS + '日以内 <strong>' + al.soon.length + '</strong></span>' +
+      '<span class="aa-h-chip">待ち <strong>' + al.waiting.length + '</strong></span>' +
+      '<span class="aa-h-chip' + (al.stalled.length ? ' is-warn' : '') + '">停滞 <strong>' + al.stalled.length + '</strong></span>' +
+      '<span class="aa-h-note">予定 ' + al.total + ' 件 / 基準日 ' + escape(al.today) + '</span>' +
+    '</div>';
+
+    if (al.overdue.length) {
+      html += '<div class="aa-group aa-g-bad"><div class="aa-g-title">⚠️ 期限切れ（' + al.overdue.length + '件）</div>' +
+        al.overdue.map(r => alertRowHtml(r, 'is-bad', r.days + '日超過')).join('') + '</div>';
+    }
+    if (al.soon.length) {
+      html += '<div class="aa-group aa-g-warn"><div class="aa-g-title">⏳ 期限間近（' + al.soon.length + '件）</div>' +
+        al.soon.map(r => alertRowHtml(r, 'is-warn', r.days === 0 ? '本日' : 'あと' + r.days + '日')).join('') + '</div>';
+    }
+    if (al.stalled.length) {
+      html += '<div class="aa-group aa-g-warn"><div class="aa-g-title">💤 停滞エージェント（' + al.stalled.length + '体・予定はあるが直近' + ALERT_STALL_DAYS + '日の実績なし）</div>' +
+        al.stalled.map(r =>
+          '<button type="button" class="aa-row is-warn" data-agent="' + escape(r.agentId) + '">' +
+            '<span class="aa-badge">' + (r.idle === null ? '実績なし' : r.idle + '日') + '</span>' +
+            '<span class="aa-agent">' + escape(r.agentId + ' ' + r.codename) + '</span>' +
+            '<span class="aa-title">予定 ' + r.planCount + ' 件が未消化' + (r.last ? '（最終実績 ' + escape(r.last) + '）' : '') + '</span>' +
+            '<span class="aa-due"></span>' +
+          '</button>').join('') + '</div>';
+    }
+    if (al.waiting.length) {
+      html += '<details class="aa-group aa-g-wait"><summary class="aa-g-title">⛔ 待ち・保留（' + al.waiting.length + '件・着手条件の解除待ち）</summary>' +
+        al.waiting.map(r =>
+          '<button type="button" class="aa-row is-wait" data-agent="' + escape(r.agentId) + '">' +
+            '<span class="aa-badge">' + escape(r.plan.status || '待ち') + '</span>' +
+            '<span class="aa-agent">' + escape(r.agentId + ' ' + r.codename) + '</span>' +
+            '<span class="aa-title">' + escape(r.plan.title || '') +
+              (r.plan.blockedBy ? '<em class="aa-blocked">解除条件: ' + escape(r.plan.blockedBy) + '</em>' : '') + '</span>' +
+            '<span class="aa-due">〜' + escape(r.plan.due || '未定') + '</span>' +
+          '</button>').join('') + '</details>';
+    }
+    if (!html) {
+      html = '<div class="aa-group aa-g-ok"><div class="aa-g-title">✅ 期限切れ・期限間近・停滞はありません</div></div>';
+    }
+
+    box.innerHTML = head + html;
+    box.querySelectorAll('.aa-row').forEach(b => {
+      b.addEventListener('click', () => {
+        selectAgent(b.dataset.agent);
+        const d = $('agent-detail');
+        if (d && d.scrollIntoView) d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+
   function renderAgentTabs() {
     const nav = $('agent-tabs');
     nav.innerHTML = '';
@@ -841,8 +996,12 @@ const UNREAD_POLL_MS = 30000;
       btn.type = 'button';
       btn.className = 'agent-tab' + (a.phase === 'active' ? ' is-active-phase' : '');
       btn.dataset.id = a.id;
+      const od = ((state.agentAlerts && state.agentAlerts.overdue) || [])
+        .filter(r => r.agentId === a.id).length;
+      if (od) btn.classList.add('has-overdue');
       btn.innerHTML =
         '<span class="at-id">' + escape(a.id) + '</span>' +
+        (od ? '<span class="at-alert" title="期限切れの予定">' + od + '</span>' : '') +
         '<span class="at-name">' + escape(a.codename) + '</span>' +
         '<span class="at-role">' + escape(a.role) + '</span>';
       btn.addEventListener('click', () => selectAgent(a.id));
@@ -1407,16 +1566,32 @@ const UNREAD_POLL_MS = 30000;
       ? '<button type="button" class="wl-complete-plan" data-plan-id="' + escape(x.id || '') + '" title="完了として記録（実績に移動）">✅</button>' +
         '<button type="button" class="wl-del-plan" data-plan-id="' + escape(x.id || '') + '" title="この予定を削除">✕</button>'
       : '';
-    return '<div class="wl-item is-plan' + (isDynamic ? ' is-dynamic' : '') + '">' +
-      '<span class="wl-date">〜' + escape(x.due || '') + '</span>' +
+    // 期限状態（期限切れ／間近／待ち）を行そのものに反映して埋もれさせない
+    const al = planAlert(x, todayISO());
+    const alClass = (al.level === 'overdue') ? ' is-overdue'
+                  : (al.level === 'soon')    ? ' is-soon'
+                  : (al.level === 'waiting' || al.level === 'held') ? ' is-waiting' : '';
+    const alBadge = (al.level === 'overdue') ? '<span class="wl-alert a-overdue">' + al.days + '日超過</span>'
+                  : (al.level === 'soon')    ? '<span class="wl-alert a-soon">' + (al.days === 0 ? '本日期限' : 'あと' + al.days + '日') + '</span>'
+                  : '';
+    const statusBadge = x.status
+      ? '<span class="wl-status s-' + escape(x.status) + '">' + escape(x.status) + '</span>'
+      : '';
+    const blockedHtml = x.blockedBy
+      ? '<div class="wl-blocked">⛔ 解除条件: ' + escape(x.blockedBy) + '</div>'
+      : '';
+    return '<div class="wl-item is-plan' + (isDynamic ? ' is-dynamic' : '') + alClass + '">' +
+      '<span class="wl-date">〜' + escape(x.due || '') + alBadge + '</span>' +
       '<div class="wl-main">' +
         '<div class="wl-title">' + escape(x.title || '') + ' ' + sourceBadge + '</div>' +
+        blockedHtml +
         (x.note ? '<div class="wl-note">' + escape(x.note) + '</div>' : '') +
         createdByHtml +
       '</div>' +
       '<div class="wl-tags">' +
         '<span class="wl-tag c-' + escape(x.category || 'その他') + '">' + escape(x.category || 'その他') + '</span>' +
         (x.priority ? '<span class="wl-prio p-' + escape(x.priority) + '">優先度 ' + escape(x.priority) + '</span>' : '') +
+        statusBadge +
         actionsHtml +
       '</div>' +
     '</div>';

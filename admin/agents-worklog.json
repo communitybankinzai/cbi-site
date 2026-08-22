@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-08-21",
+  "updatedAt": "2026-08-22",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
-  "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。",
+  "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。 2026-08-22 以降: plans に status（進行中/待ち/保留）と blockedBy（待ちの理由）を追加。status 未設定は「進行中」扱いで、期限超過すると管理画面エージェントタブ先頭の「要対応」パネルに赤で出る。着手できない事情があるものだけ status:\"待ち\" にして blockedBy に解除条件を書く（忘れによる放置と区別するため）。",
   "categories": [
     "実装",
     "保守",
@@ -16,6 +16,23 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-08-22",
+          "title": "plans棚卸し機能の実装（管理画面「要対応」パネル＋SessionStart hook）0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/admin/admin.js（planAlert/computeAgentAlerts/renderAgentAlerts/collectPlans/collectActuals を新設。renderWorklogPlan に期限切れ強調・状態バッジ・解除条件表示を追加。renderAgentTabs に期限切れ件数バッジ。+179行）",
+            "site/admin/admin.css（要対応パネル・行の期限強調・状態バッジ・タブ赤バッジのスタイル。640px以下は2カラムに折り返し。+156行）",
+            "site/admin/index.html（#agent-alerts の器を1行追加）",
+            "site/admin/agents-worklog.json（plans に status/blockedBy を追加。着手不能な3件〔A1文化財レポート49件=市協議待ち／A1団体情報拡充220件=Anthropicクレジット待ち／A8SaaS組織移管=CBIカード待ち〕へ付与）",
+            ".claude/check-plans.sh（新規。期限切れ・期限間近・停滞・待ちをセッション冒頭に出力する SessionStart hook）",
+            ".claude/settings.local.json（SessionStart に check-plans.sh を登録）",
+            "検証: node --check で admin.js 構文OK／実データを読ませた検証ページで描画確認（期限切れ3件・停滞6体・待ち3件が管理画面とhookで一致）／getComputedStyle で全クラスのCSS適用を確認（赤 rgb(181,58,58)・タブバッジ position:absolute 等）／行クリックで selectAgent 発火／640px以下で横スクロールなし／console エラー0件／hook 単体実行の出力を目視"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "「各エージェントの検討事項が放置されて埋もれる」への対処。A案（管理画面で可視化）とC案（SessionStart hookで強制表示）を祐樹さんが選択、B案（GitHub Actions週次レポート）は今回見送り。判明事項: 予定49件のうち期限切れ3件（A8のAI費モニタリング22日超過・A2の週次アクセス分析15日超過・A1のdispatch空コミット対処7日超過）、実績ゼロのまま予定だけ持つエージェントがA2/A3/A5/A6/A7の5体。放置の主因は「期限切れでも見た目が変わらない」ことと「着手不能な待ちと忘れの区別がない」ことだったため、両方を実装で解消した。A1の既存plan『🔄 エージェント週次自動巡回の仕組み構築（plans点検→自動レポート）』の(1)にあたる部分を先行実装した形（残りの(2)週次サマリ自動生成・(3)定型タスク自動起票は未着手）。管理画面のログインパスワードは入力せず、実コードを抽出した検証ページで描画確認した。session: ce2dc67e-b901-4300-9a90-f8b6f32a433d / output: 42,075 / cost: $5.39"
+        },
         {
           "date": "2026-08-22",
           "title": "防災MAP: 市オープンデータ全11種取込＋線描画＋利用者数表示＋SNS地名辞書68語化＋削除UI 0.9時間",
@@ -3768,6 +3785,8 @@
           "title": "📄 文化財A4学習レポート 残り49件の作成（市協議・提案計上後に着手）",
           "category": "実装",
           "priority": "高",
+          "status": "待ち",
+          "blockedBy": "印西市役所との追加コスト協議（$25〜50）",
           "note": "2026-08-21にパイロット1件（宝珠院観音堂）を公開し体裁は承認済み。残り49件のAI調査・作成費は $25〜50（4,000〜8,000円）・作業4〜6時間相当の見積もり。ユーザー指示により追加コストは印西市役所と協議してから決定するため、先行生成しない。【重要】今後、印西市との協働事業の提案内容（事業計画・予算）を作成する際は、本件を必ず項目として計上すること。作成手順・出典ルール・データ構造は保管庫ノート 2026-08-21_文化財A4学習レポートの仕様と展開計画.md を参照。"
         },
         {
@@ -3831,6 +3850,8 @@
           "title": "🔎 団体情報の自動拡充：220件バッチ実行（Anthropic クレジット追加後）",
           "category": "実装",
           "priority": "中",
+          "status": "待ち",
+          "blockedBy": "Anthropic Console へのクレジット追加（最低$30推奨）",
           "note": "2026-06-27 にコード一式（migration＋scripts/enrich-organizations.mjs＋/orgs/[id] 表示＋edit ページ＋can_edit_org RLS）完成して 3 件で動作確認済み。残り 217 件は実測 $0.12/件 × 217件 = $26 で残高 $4.61 を超過するため見送り。Anthropic Console にクレジット追加（最低 $30 推奨）後に：(1) civic 32件のみ先行（重要度高、~$3.8）→ サンプル目視で品質チェック、(2) voluntary 残り 185 件をバッチ実行（~$22）。実行コマンド：node scripts/enrich-organizations.mjs --all（civic 先行は --org UUID 個別指定 or 一時的に SQL で type=civic 絞り込みクエリへ修正）。途中で API 失敗しても enriched_at で再開できる設計済み（未拡充だけ拾う）。コスト削減オプション：scripts 内の WEB_SEARCH_TOOL.max_uses を 5→2 にすれば in tokens 半減で $13 程度まで下げられるが精度低下リスクあり、--limit 5 で試走して判断。"
         },
         {
@@ -4239,6 +4260,8 @@
           "title": "CBI 専用カード入手後 → Anthropic/Resend/Vercel を組織アカウントに移管（中長期課題・期限未定）",
           "category": "事務",
           "priority": "低",
+          "status": "待ち",
+          "blockedBy": "CBI 専用クレジットカードの入手",
           "note": "現状：CBI 専用カード入手はまだ先（数ヶ月〜1年以上先）の見込み。それまでは Anthropic / Resend / Vercel の SaaS 課金は中司個人カードで立替→ CBI 請求の運用を継続。カード入手後、各 SaaS の Organization 機能で組織移管。期限を切らず、CBI 体制安定後に着手判断する備忘記録。"
         },
         {
