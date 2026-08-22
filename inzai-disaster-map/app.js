@@ -645,6 +645,9 @@ const recordLayer = L.layerGroup();
 const roadFloodLayer = L.layerGroup();
 const roadDrawingLayer = L.layerGroup();
 const shelterLayer = L.layerGroup();
+const wellLayer = L.layerGroup();
+let officialWells = [];
+let wellPayload = null;
 const bunkazaiLayer = L.layerGroup();   // 平時参考: 文化財（メタバースと同じ bunkazai.json）
 const kominkanLayer = L.layerGroup();   // 平時参考: 公民館・交流館・文化ホール（kominkan.json）
 const pastFloodLayer = L.layerGroup();  // 過去の冠水実績（past-flood-points.json・対象日フィルタの対象外）
@@ -1064,6 +1067,8 @@ function initShelters() {
   refreshShelters(false);
   clearInterval(shelterTimer);
   shelterTimer = setInterval(() => refreshShelters(false, true), 5 * 60 * 1000);
+  // 災害用井戸は静的データのため初回のみ取得する
+  refreshWells();
 }
 
 async function refreshShelters(showStatus = false, quiet = false) {
@@ -1091,6 +1096,50 @@ async function refreshShelters(showStatus = false, quiet = false) {
   } finally {
     button.disabled = false;
   }
+}
+
+// 印西市公式オープンデータの災害用井戸（断水時の生活用水）。
+// 飲用可否は公表されていないため、ポップアップでも必ずその旨を表示する。
+async function refreshWells(showStatus = false) {
+  const endpoint = String(APP_CONFIG.wellEndpoint || "").trim();
+  if (!endpoint) return;
+  try {
+    const response = await fetch(endpoint, { headers: { Accept: "application/json" }, cache: "no-store" });
+    if (!response.ok) throw new Error(`災害用井戸API HTTP ${response.status}`);
+    const payload = await response.json();
+    officialWells = Array.isArray(payload.wells) ? payload.wells.filter(well => (
+      Number.isFinite(Number(well.latitude)) && Number.isFinite(Number(well.longitude))
+    )) : [];
+    wellPayload = payload;
+    renderWells();
+  } catch (error) {
+    if (showStatus) {
+      document.getElementById("map-status").textContent = `災害用井戸を取得できませんでした（${error?.message || "接続エラー"}）。`;
+    }
+  }
+}
+
+function renderWells() {
+  wellLayer.clearLayers();
+  const note = wellPayload?.usageNote || "飲用の可否は公表されていません。";
+  officialWells.forEach(well => {
+    const marker = L.marker([Number(well.latitude), Number(well.longitude)], {
+      icon: L.divIcon({
+        className: "",
+        html: `<div class="well-marker" aria-label="${escapeAttribute(well.name)}"><span>井</span></div>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
+      })
+    });
+    marker.bindPopup(`
+      <div class="popup-title">${escapeHtml(well.name)}</div>
+      <div class="shelter-popup-badges"><span class="badge blue">災害用井戸</span></div>
+      ${well.address ? `<div>${escapeHtml(well.address)}</div>` : ""}
+      <div class="popup-contact-note">${escapeHtml(note)}</div>
+      <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">出典: 印西市わが街ガイド オープンデータ（CC BY 2.1 JP）</a>
+    `);
+    wellLayer.addLayer(marker);
+  });
 }
 
 function getShelterFilters() {
@@ -2416,6 +2465,7 @@ function toggleOverlay(name, checked) {
     landslide: landslideGroup,
     roadFlood: roadFloodLayer,
     shelters: shelterLayer,
+    wells: wellLayer,
     records: recordLayer
   };
   const layer = layerMap[name];
