@@ -974,6 +974,8 @@ async function loadTileset() {
         tileLoadingTimer = setTimeout(function () { tileLoading.style.display = "none"; }, 8000);
       } else {
         tileLoading.style.display = "none";
+        // 詳細タイルが揃った状態で測り直す（粗いタイルの高さで確定したピンの浮きを直す）
+        pinReclampAll();
       }
     });
 
@@ -1032,6 +1034,11 @@ const PIN_FALLBACK_HEIGHT = 70;
 // 各エンティティは __clampReady と __wantVisible を持ち、show は両方が真のときだけ true
 const PIN_CLAMP_MIN_H = 20, PIN_CLAMP_MAX_H = 150; // 妥当とみなす楕円体高(m)の範囲
 const pinClampQueue = [];
+// 確定済みのピン。粗いタイルの段階では建物の塊の上を地表と誤って測ることがあり、
+// 詳細タイルが届くとピンだけ宙に残る（2026-08-22 小林駅で発生）。
+// 読み込みが落ち着くたびに測り直せるよう保持する
+const pinClampSettled = [];
+const PIN_RECLAMP_MAX = 3; // 1ピンあたりの測り直し回数の上限（負荷対策）
 let pinClampTimer = null;
 function refreshPinShow(e) { e.show = !!(e.__clampReady && e.__wantVisible); }
 function setPinVisible(e, visible) { e.__wantVisible = visible; refreshPinShow(e); }
@@ -1059,8 +1066,20 @@ function pinClampTick() {
     q.e.__clampReady = true;
     refreshPinShow(q.e);
     pinClampQueue.splice(i, 1);
+    if ((q.tries || 0) < PIN_RECLAMP_MAX) pinClampSettled.push(q);
   }
   if (pinClampQueue.length === 0) { clearInterval(pinClampTimer); pinClampTimer = null; }
+}
+// タイルの読み込みが落ち着いたときに呼ぶ。確定済みのピンを測り直しキューへ戻す。
+// 表示したまま位置だけ更新するのでちらつかない
+function pinReclampAll() {
+  if (!pinClampSettled.length) return;
+  while (pinClampSettled.length) {
+    const q = pinClampSettled.pop();
+    q.tries = (q.tries || 0) + 1;
+    pinClampQueue.push(q);
+  }
+  if (!pinClampTimer) pinClampTimer = setInterval(pinClampTick, 700);
 }
 
 SPOTS.forEach((spot, i) => {
