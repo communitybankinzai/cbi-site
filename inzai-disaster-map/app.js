@@ -1301,6 +1301,82 @@ function refreshVisibleOpenDataLayers() {
   });
 }
 
+// 気象庁の震源・震度情報を地図に表示する。
+// list.json の cod（例 "+32.5+130.6+0/"）に震源座標と深さが含まれるため、
+// 詳細JSONを追加取得せずに描画できる。印西市に震度記録がある地震を優先表示する。
+const quakeLayer = L.layerGroup();
+let quakeEvents = [];
+
+// "+35.8+140.1-10000/" 形式を {lat, lng, depthKm} へ。深さはm単位で入ることがある
+function parseJmaCoordinate(cod) {
+  const m = String(cod || "").match(/([+-]\d+(?:\.\d+)?)([+-]\d+(?:\.\d+)?)([+-]\d+(?:\.\d+)?)?/);
+  if (!m) return null;
+  const lat = Number(m[1]);
+  const lng = Number(m[2]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  let depthKm = null;
+  if (m[3] !== undefined) {
+    const raw = Math.abs(Number(m[3]));
+    // 1000以上はメートル表記とみなす（気象庁は深さをmで出す場合がある）
+    depthKm = Number.isFinite(raw) ? (raw >= 1000 ? Math.round(raw / 1000) : raw) : null;
+  }
+  return { lat, lng, depthKm };
+}
+
+// 震度は "5-"（5弱）"6+"（6強）等の表記。地図の丸の大きさ・色に使う
+function intensityRank(value) {
+  const table = { "1": 1, "2": 2, "3": 3, "4": 4, "5-": 5, "5+": 6, "6-": 7, "6+": 8, "7": 9 };
+  return table[String(value || "").trim()] ?? 0;
+}
+
+function intensityLabel(value) {
+  const v = String(value || "").trim();
+  if (v === "5-") return "5弱";
+  if (v === "5+") return "5強";
+  if (v === "6-") return "6弱";
+  if (v === "6+") return "6強";
+  return v || "-";
+}
+
+function quakeColor(rank) {
+  if (rank >= 7) return "#7f1d1d";
+  if (rank >= 5) return "#dc2626";
+  if (rank >= 4) return "#ea580c";
+  if (rank >= 3) return "#d97706";
+  return "#0f766e";
+}
+
+function renderQuakeLayer() {
+  quakeLayer.clearLayers();
+  quakeEvents.forEach((event, index) => {
+    const pos = event.position;
+    const rank = intensityRank(event.maxi);
+    const color = quakeColor(rank);
+    // 最新の1件だけ大きく描き、それ以前は小さく薄く（履歴として残す）
+    const isLatest = index === 0;
+    const radius = isLatest ? 10 + rank * 1.6 : 6 + rank;
+    const marker = L.circleMarker([pos.lat, pos.lng], {
+      radius,
+      color: "#ffffff",
+      weight: isLatest ? 2 : 1,
+      fillColor: color,
+      fillOpacity: isLatest ? 0.85 : 0.45
+    });
+    marker.bindPopup(`
+      <div class="popup-title">震源: ${escapeHtml(event.name || "不明")}</div>
+      <div class="shelter-popup-badges">
+        <span class="badge ${rank >= 4 ? "red" : "blue"}">最大震度 ${escapeHtml(intensityLabel(event.maxi))}</span>
+        <span class="badge blue">M${escapeHtml(event.mag || "-")}</span>
+      </div>
+      <div>${escapeHtml(formatJmaDateTime(event.at))}</div>
+      ${pos.depthKm !== null ? `<div class="detail-meta">深さ 約${escapeHtml(String(pos.depthKm))}km</div>` : ""}
+      ${event.inzaiIntensity ? `<div class="shelter-evidence"><strong>印西市の震度 ${escapeHtml(intensityLabel(event.inzaiIntensity))}</strong><span>市内の観測点で記録された震度です。</span></div>` : '<div class="popup-contact-note">印西市の震度記録はありません。</div>'}
+      <a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">出典: 気象庁 震源・震度情報</a>
+    `);
+    quakeLayer.addLayer(marker);
+  });
+}
+
 function getShelterFilters() {
   return {
     hazard: getFormValue("shelter-hazard-filter") || "windFlood",
@@ -2625,6 +2701,7 @@ function toggleOverlay(name, checked) {
     roadFlood: roadFloodLayer,
     shelters: shelterLayer,
     wells: wellLayer,
+    quakes: quakeLayer,
     fire: openDataLayers.fire,
     police: openDataLayers.police,
     cityOffice: openDataLayers.cityOffice,
@@ -2704,6 +2781,25 @@ async function refreshEarthquakeSummary(manual) {
     ));
     if (!latest) throw new Error("表示対象の地震情報がありません");
     const inzaiIntensity = inzai ? findCityIntensity(inzai, "1223100") : "";
+
+    // 地図用: 座標が取れた地震を新しい順に最大20件保持する。
+    // 印西市に震度記録がある地震は、市内への影響が分かるよう優先して残す
+    quakeEvents = reports
+      .map(item => {
+        const position = parseJmaCoordinate(item.cod);
+        if (!position) return null;
+        return {
+          at: item.at,
+          name: item.anm || "",
+          mag: item.mag || "",
+          maxi: item.maxi || "",
+          position,
+          inzaiIntensity: findCityIntensity(item, "1223100") || ""
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 20);
+    renderQuakeLayer();
     node.innerHTML = `
       <div class="earthquake-event">
         <strong>最新: ${escapeHtml(latest.anm || "震源地不明")} M${escapeHtml(latest.mag || "-")}</strong>
