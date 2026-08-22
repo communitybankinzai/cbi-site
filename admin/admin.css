@@ -1170,6 +1170,13 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- メタバース：アクセス・課金モニタ／位置修正履歴 ---------- */
 .mv-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+/* 3Dの描画精度の設定行 */
+.mv-sse-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; }
+.mv-sse-row label { font-size: 13px; color: var(--c-text-sub, #667); }
+.mv-sse-row select {
+  padding: 6px 10px; border-radius: 6px; font-size: 13px;
+  border: 1px solid var(--c-border, #ccd); background: var(--c-bg, #fff); color: inherit;
+}
 .mv-kpi {
   background: var(--c-bg); border: 1px solid var(--c-line); border-left: 4px solid var(--c-navy);
   border-radius: var(--radius); padding: 14px 16px;

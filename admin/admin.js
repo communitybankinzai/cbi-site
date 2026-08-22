@@ -1981,6 +1981,7 @@ const UNREAD_POLL_MS = 30000;
   let mvDays = 14;
 
   function openMetaverseTab() {
+    mvBindSseSave();
     loadMetaverseUsage();
     if (!mvDailyLoaded) loadMetaverseDaily(mvDays);
     if (!mvFixesLoaded) loadPositionFixes();
@@ -1995,6 +1996,64 @@ const UNREAD_POLL_MS = 30000;
   function mvFmt(n) {
     if (typeof n !== 'number' || !isFinite(n)) return '–';
     return n.toLocaleString('ja-JP');
+  }
+
+  // ---- 3Dの描画精度（maximumScreenSpaceError）----
+  // 読み取りは /api/metaverse-usage、保存は /api/metaverse-settings（管理画面のログインパスワードで認証）。
+  // 保存すると app_settings に入り、3Dワールド側が5分ごとの取得で拾って実行中の画面に反映する
+  const MV_SETTINGS_API = 'https://cidao.vercel.app/api/metaverse-settings';
+  let mvSseBound = false;
+
+  function mvSyncSse(value) {
+    const sel = $('mv-sse-select');
+    const cur = $('mv-sse-current');
+    if (!sel) return;
+    const v = Number(value);
+    if (isFinite(v) && v >= 2 && v <= 64) {
+      // 選択肢にない値（APIで直接変えた場合など）でも現在値は表示する
+      if (!Array.prototype.some.call(sel.options, o => Number(o.value) === v)) {
+        const opt = document.createElement('option');
+        opt.value = String(v);
+        opt.textContent = v + ' — 現在の設定';
+        sel.appendChild(opt);
+      }
+      sel.value = String(v);
+      if (cur) cur.textContent = '現在の設定：' + v;
+    } else if (cur) {
+      cur.textContent = '現在の設定：取得できませんでした';
+    }
+  }
+
+  function mvBindSseSave() {
+    if (mvSseBound) return;
+    const btn = $('mv-sse-save');
+    if (!btn) return;
+    mvSseBound = true;
+    btn.addEventListener('click', async () => {
+      const msg = $('mv-sse-msg');
+      const sse = Number($('mv-sse-select').value);
+      if (!state.password) { msg.textContent = 'ログインし直してください'; return; }
+      btn.disabled = true;
+      msg.textContent = '保存中…';
+      try {
+        const res = await fetch(MV_SETTINGS_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: state.password, maximumScreenSpaceError: sse }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          msg.textContent = '保存できませんでした：' + (data.error || ('HTTP ' + res.status));
+          return;
+        }
+        msg.textContent = '✅ 保存しました（開いている画面にも5分以内に反映）';
+        mvSyncSse(data.maximumScreenSpaceError);
+      } catch (e) {
+        msg.textContent = '通信に失敗しました：' + (e && e.message ? e.message : e);
+      } finally {
+        btn.disabled = false;
+      }
+    });
   }
 
   async function loadMetaverseUsage() {
@@ -2029,6 +2088,8 @@ const UNREAD_POLL_MS = 30000;
         quotaEl.classList.toggle('warn', rate >= 80);
       }
       $('mv-usage-updated').textContent = '集計日 ' + (usage.date || '') + ' ／ 更新 ' + new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      // 3Dの描画精度。保存直後の再取得でも現在値が正しく出るよう、毎回サーバーの値に合わせる
+      mvSyncSse(usage.maximumScreenSpaceError);
     }
     errEl.style.display = errors.length ? '' : 'none';
     errEl.textContent = errors.length ? ('取得できない項目があります: ' + errors.join(' / ')) : '';

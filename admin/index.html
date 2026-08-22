@@ -1023,6 +1023,33 @@
 
       <section class="panel">
         <div class="panel-head-row">
+          <h2 class="panel-title">🖼 3Dの描画精度</h2>
+          <span class="meta-note" id="mv-sse-current"></span>
+        </div>
+        <p class="panel-desc">
+          街並みの細かさを切り替えます。<b>小さい値ほど鮮明</b>になりますが、タイルの取得回数が増えて
+          上の「本日のタイル取得」が早く上限に達します。上限に達すると街並みが粗いままになります。
+          <b>費用は増えません</b>（支払いが発生するのは閲覧開始の回数だけで、タイル本体は無償のため）。
+        </p>
+        <p class="panel-desc">
+          保存すると、<b>すでに3Dワールドを開いている人の画面にも5分以内に反映</b>されます（再読み込み不要）。
+          イベントで同時に使う人が多い日は 16〜32 に上げてください。
+        </p>
+        <div class="mv-sse-row">
+          <label for="mv-sse-select">描画精度</label>
+          <select id="mv-sse-select">
+            <option value="4">4 — 最も鮮明（上限に達しやすい）</option>
+            <option value="8">8 — 鮮明（ふだんはこれ）</option>
+            <option value="16">16 — 粗め（Cesium標準）</option>
+            <option value="32">32 — かなり粗い（上限に強い）</option>
+          </select>
+          <button type="button" class="btn btn-primary btn-sm" id="mv-sse-save">保存</button>
+          <span class="meta-note" id="mv-sse-msg"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head-row">
           <h2 class="panel-title">📈 日別アクセス推移</h2>
           <div class="mv-range" role="group" aria-label="表示期間">
             <button type="button" class="btn btn-ghost btn-sm mv-range-btn active" data-days="14">14日</button>
