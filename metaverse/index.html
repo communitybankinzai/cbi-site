@@ -976,7 +976,8 @@ function showError(e) {
 // ============================================================
 // スポット看板（ビルボード＋ラベル）
 // ============================================================
-const SPOT_BILLBOARD_HEIGHT = 60; // 看板を建物より上に浮かせる高さ(m)
+const SPOT_BILLBOARD_HEIGHT = 60; // 吸着前の仮の高さ(m)。吸着後は SPOT_BILLBOARD_OFFSET が使われる
+const SPOT_BILLBOARD_OFFSET = 40; // 地表から看板までの高さ(m)。駅ビル・モール（20〜30m）に隠れない値
 // ピンの基準高さ(m)。3Dタイル表面へ吸着（CLAMP_TO_3D_TILE）するため通常は使われないが、
 // タイル未読込・吸着未対応の環境ではこの高さで描かれる。印西の台地は楕円体高で約60〜66mあり、
 // 40mだと地中に埋まって見えたため、地表より上になる値にしている。
@@ -994,10 +995,15 @@ const pinClampQueue = [];
 let pinClampTimer = null;
 function refreshPinShow(e) { e.show = !!(e.__clampReady && e.__wantVisible); }
 function setPinVisible(e, visible) { e.__wantVisible = visible; refreshPinShow(e); }
-function watchPinClamp(e, lon, lat) {
+// offsetM: 地表からどれだけ上に置くか(m)。文化財ピンは足元に置きたいので既定2m、
+// スポット看板は建物に隠れないよう大きめの値を渡す
+function watchPinClamp(e, lon, lat, offsetM) {
   e.__clampReady = false;
   refreshPinShow(e);
-  pinClampQueue.push({ e: e, carto: Cesium.Cartographic.fromDegrees(lon, lat), lon: lon, lat: lat });
+  pinClampQueue.push({
+    e: e, carto: Cesium.Cartographic.fromDegrees(lon, lat), lon: lon, lat: lat,
+    offset: (typeof offsetM === "number" && isFinite(offsetM)) ? offsetM : 2,
+  });
   if (!pinClampTimer) pinClampTimer = setInterval(pinClampTick, 700);
 }
 function pinClampTick() {
@@ -1009,7 +1015,7 @@ function pinClampTick() {
     // 粗い（全球レベルの）タイルしか無い段階では -11,000m 等の異常値が返る（2026-08-21 実測）。
     // 印西市の楕円体高は概ね 35〜110m なので、その範囲外は未読込とみなして次回に回す
     if (h < PIN_CLAMP_MIN_H || h > PIN_CLAMP_MAX_H) continue;
-    q.e.position = Cesium.Cartesian3.fromDegrees(q.lon, q.lat, h + 2);
+    q.e.position = Cesium.Cartesian3.fromDegrees(q.lon, q.lat, h + q.offset);
     q.e.__clampReady = true;
     refreshPinShow(q.e);
     pinClampQueue.splice(i, 1);
@@ -1018,7 +1024,7 @@ function pinClampTick() {
 }
 
 SPOTS.forEach((spot, i) => {
-  viewer.entities.add({
+  const spotEntity = viewer.entities.add({
     id: "spot-" + i,
     position: Cesium.Cartesian3.fromDegrees(spot.lon, spot.lat, SPOT_BILLBOARD_HEIGHT),
     point: { pixelSize: 14, color: Cesium.Color.fromCssColorString("#ffd166"),
@@ -1035,6 +1041,10 @@ SPOTS.forEach((spot, i) => {
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
     },
   });
+  // 固定高だと低地（木下駅など利根川沿い）で20m以上宙に浮いて見えた（2026-08-22ユーザー報告）。
+  // 文化財ピンと同じ地表吸着に統一する。吸着できるまでは非表示（浮いた状態を見せない）
+  setPinVisible(spotEntity, true);
+  watchPinClamp(spotEntity, spot.lon, spot.lat, SPOT_BILLBOARD_OFFSET);
 });
 
 // 看板クリックの説明表示は文化財看板と共通のハンドラで行う
@@ -1775,7 +1785,15 @@ function openBunkazaiDetail(i) {
   document.getElementById("bmQuizArea").innerHTML = "";
   document.getElementById("bmQuizBtn").style.display = "block";
   document.getElementById("bmQuizBtn").onclick = function () { renderSiteQuizLevels(i); };
-  document.getElementById("bmGoBtn").onclick = function () {
+  // タイムトライアル中にこのボタンで目的地へ直接飛べると移動時間が計測されず競技が成立しない
+  // （サーバー側は速すぎる区間をフラグするが、そもそも導線を塞ぐ）。
+  // 主要施設（左パネルのスポット移動）へのテレポートは、そこから自力で探す前提のため許容する。2026-08-22
+  const bmGoBtn = document.getElementById("bmGoBtn");
+  const bmInTrial = (typeof ttActive !== "undefined" && ttActive);
+  bmGoBtn.textContent = bmInTrial ? "⏱ 競技中は現地へ飛べません" : "▶ 現地へ行く";
+  bmGoBtn.disabled = bmInTrial;
+  bmGoBtn.onclick = function () {
+    if (typeof ttActive !== "undefined" && ttActive) return;
     document.getElementById("bunkazaiModal").classList.remove("show");
     teleportNear(b);
   };
