@@ -220,7 +220,8 @@
    "designatedEra": "昭和30年",
    "designatedYear": 1955,
    "facility": "泉倉寺",
-   "kana": "もくぞうえんめいじぞうぼさつざぞう"
+   "kana": "もくぞうえんめいじぞうぼさつざぞう",
+   "reportId": "enmei-jizo-senzoji"
   },
   {
    "name": "銅造十一面観音立像",
@@ -246,7 +247,8 @@
    "designatedEra": "平成6年",
    "designatedYear": 1994,
    "facility": "三宝院・上町観音堂",
-   "kana": "どうぞうじゅういちめんかんのんりゅうぞう"
+   "kana": "どうぞうじゅういちめんかんのんりゅうぞう",
+   "reportId": "dozo-juichimen-kannon"
   },
   {
    "name": "木造地蔵菩薩立像",
@@ -272,7 +274,8 @@
    "designatedEra": "平成7年",
    "designatedYear": 1995,
    "facility": "地蔵寺",
-   "kana": "もくぞうじぞうぼさつりゅうぞう"
+   "kana": "もくぞうじぞうぼさつりゅうぞう",
+   "reportId": "jizo-bosatsu-ryuzo-bessho"
   },
   {
    "name": "木造不動明王立像及び毘沙門天立像",
@@ -298,7 +301,8 @@
    "designatedEra": "平成25年",
    "designatedYear": 2013,
    "facility": "西福寺",
-   "kana": "もくぞうふどうみょうおうりゅうぞうおよびびしゃもんてんりゅうぞう"
+   "kana": "もくぞうふどうみょうおうりゅうぞうおよびびしゃもんてんりゅうぞう",
+   "reportId": "fudo-bishamon-saifukuji"
   },
   {
    "name": "木造薬師如来坐像",
@@ -324,7 +328,8 @@
    "designatedEra": "昭和42年",
    "designatedYear": 1967,
    "facility": "来福寺",
-   "kana": "もくぞうやくしにょらいざぞう"
+   "kana": "もくぞうやくしにょらいざぞう",
+   "reportId": "yakushi-nyorai-raifukuji"
   },
   {
    "name": "木造金剛力士像",
@@ -350,7 +355,8 @@
    "designatedEra": "平成3年",
    "designatedYear": 1991,
    "facility": "瀧水寺",
-   "kana": "もくぞうこんごうりきしぞう"
+   "kana": "もくぞうこんごうりきしぞう",
+   "reportId": "kongo-rikishi-ryusuiji"
   },
   {
    "name": "梵鐘（応安二年在銘）",
@@ -403,7 +409,8 @@
    "designatedEra": "昭和60年",
    "designatedYear": 1985,
    "facility": "松虫寺",
-   "kana": "ちゅうどうくじゃくもんけい"
+   "kana": "ちゅうどうくじゃくもんけい",
+   "reportId": "chudo-kujakumon-kei"
   },
   {
    "name": "梵鐘（竜腹寺）",
@@ -429,7 +436,8 @@
    "designatedEra": "昭和47年",
    "designatedYear": 1972,
    "facility": "龍腹寺",
-   "kana": "ぼんしょう（りゅうふくじ）"
+   "kana": "ぼんしょう（りゅうふくじ）",
+   "reportId": "bonsho-ryufukuji"
   },
   {
    "name": "梵鐘（建武五年在銘）",
@@ -455,7 +463,8 @@
    "designatedEra": "昭和47年",
    "designatedYear": 1972,
    "facility": "瀧水寺",
-   "kana": "ぼんしょう（けんむごねんざいめい）"
+   "kana": "ぼんしょう（けんむごねんざいめい）",
+   "reportId": "bonsho-kenmu"
   },
   {
    "name": "馬込遺跡出土瓦塔",
@@ -508,7 +517,8 @@
    },
    "designatedEra": "昭和53年",
    "designatedYear": 1978,
-   "kana": "おしつけのみづか"
+   "kana": "おしつけのみづか",
+   "reportId": "oshitsuke-mizuka"
   },
   {
    "name": "鳥見神社の獅子舞",
@@ -565,7 +575,8 @@
    "designatedEra": "昭和42年",
    "designatedYear": 1967,
    "facility": "鳥見神社",
-   "kana": "うらべのかぐら"
+   "kana": "うらべのかぐら",
+   "reportId": "urabe-kagura"
   },
   {
    "name": "鳥見神社の神楽",
@@ -593,7 +604,8 @@
    "designatedEra": "昭和36年",
    "designatedYear": 1961,
    "facility": "鳥見神社",
-   "kana": "とみじんじゃのかぐら"
+   "kana": "とみじんじゃのかぐら",
+   "reportId": "tomi-jinja-kagura"
   },
   {
    "name": "将監のオニバス発生地",
