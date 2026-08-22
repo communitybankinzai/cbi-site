@@ -1,5 +1,5 @@
 const WORK_LOG_KEY = "inzai-disaster-work-log-v1";
-const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260815-v6";
+const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260822-v7";
 const statusLabels = {
   planned: "検討中",
   testing: "試験中",
@@ -99,11 +99,11 @@ const initialRecords = [
   {
     id: "seed-inzai-open-data",
     feature: "印西市わが街ガイド公開データのレイヤー化",
-    status: "planned",
+    status: "completed",
     owner: "",
-    loggedAt: "2026-08-15T13:30:00+09:00",
-    summary: "土砂災害区域、広域避難場所、指定・特別避難所、災害用井戸はCSV・Shapefile・KMLで公開されていることを確認。洪水・内水の全面図は同一覧にダウンロード対象として見当たらない。",
-    nextAction: "公開ファイルの利用条件、文字コード、座標系、更新検知を確認し、出典・掲載日・取得日付きのチェックボックスレイヤーとして取り込む。",
+    loggedAt: "2026-08-22T18:00:00+09:00",
+    summary: "公開11データセットをすべて取り込み。避難所55（既存）に加え、災害用井戸8、消防署6、警察機関10、市役所・支所3、市公表の土砂災害警戒区域634・特別警戒区域648を点で、緊急輸送路5本・鉄道43本をKMLの線で表示。利用条件はCC BY 2.1 JP、文字コードUTF-8（BOM）、座標は緯度経度でそのまま利用可を確認し、出典・ライセンスをポップアップに明記した。土砂災害は件数が多いためズーム13以上かつ画面内のみ描画。国土地理院版と市公表版は指定時期のずれで境界が異なりうるため、どちらかに寄せず別レイヤーで並記する方針とした。",
+    nextAction: "揺れやすさマップ・液状化マップはカテゴリ名のみでダウンロード可能なファイルが存在せず、J-SHISでの代替表示を継続する。市がファイルを公開した時点で取り込む。更新検知は未実装のため、市の掲載日を定期確認する。",
     referenceUrl: "https://www2.wagmap.jp/inzai/OpenData",
     origin: "seed"
   },
@@ -245,8 +245,15 @@ function ensureInitialRecords() {
   const missing = initialRecords.filter(item => !ids.has(item.id));
   if (missing.length) {
     records = [...records, ...missing];
-    persistRecords();
   }
+  // 既に端末へ保存済みのシード記録は、運営が手で編集していない限り最新のシード内容へ更新する。
+  // 完了した課題が「検討中」のまま残り続けるのを防ぐため（手編集分は origin が seed 以外になる）。
+  records = records.map(record => {
+    if (record.origin !== "seed") return record;
+    const latest = initialRecords.find(item => item.id === record.id);
+    return latest ? { ...record, ...latest } : record;
+  });
+  persistRecords();
   localStorage.setItem(WORK_LOG_SEED_KEY, "true");
 }
 
