@@ -17,6 +17,21 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-23",
+          "title": "防災MAP: 地震震源の地図表示＋冠水データの調査（有償と判明・見送り確定）0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（震源レイヤー実装: parseJmaCoordinate〔+32.5+130.6+0/形式・m表記はkm換算〕／intensityRank・intensityLabel〔5-→5弱、6+→6強〕／quakeColor／renderQuakeLayer。既存のrefreshEarthquakeSummaryにquakeEvents蓄積を追加し直近20件を保持。最新は大きく濃く、以前は小さく薄く描画）",
+            "site/inzai-disaster-map/index.html（レイヤーチェックボックス「🌍 地震の震源（気象庁・直近20件）」）＋config.js v2026.08.23.1（commit c3de44f）",
+            "調査: 冠水・河川水位のリアルタイム公開データを探索→無償APIは存在せず、国交省の水位・雨量は河川情報センターの有償配信（水防災オープンデータ提供サービス）のみと判明。見送りを決定しCLAUDE_HANDOFF.mdの「調査済み・見送りを決定した案件」表に追記",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（震源レイヤーの仕様追記／未実装リストが古かったため実態へ更新〔Instagram・Bluesky解決済みを反映、SNS3媒体稼働中の注記を冒頭に追加〕。commit ba238ae）＋admin/changelog.json 2件",
+            "検証: 実データ20件で座標パース（通常/メートル表記/不正値）・震度ランク・表記変換・レイヤーON/OFF・ポップアップの出典表示を確認。直近20件中2件に印西市の震度記録があることも実データで確認／本番反映確認"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "祐樹さんの依頼「地震情報をMAPに掲載したい。あと公開されている冠水情報も」。地震は気象庁list.jsonのcodフィールドに震源座標が含まれており追加API不要・費用ゼロで実装できた。冠水は当初A案（地震＋河川水位）で合意したが、調査で水位データが有償配信のみと判明したためBに縮退し、理由を記録して見送り確定。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 494,191 / cost: $256.51"
+        },
+        {
           "date": "2026-08-22",
           "title": "文化財A4学習レポート 県指定12件の調査・作成・PDF生成 0.7時間",
           "category": "実装",
