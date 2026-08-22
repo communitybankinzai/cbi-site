@@ -766,7 +766,8 @@
    "designatedEra": "平成5年",
    "designatedYear": 1993,
    "facility": "福聚院",
-   "kana": "ふくじゅいんあみださんぞんりゅうぞう"
+   "kana": "ふくじゅいんあみださんぞんりゅうぞう",
+   "reportId": "fukujuin-amida-sanzon"
   },
   {
    "name": "薬師如来立像",
@@ -792,7 +793,8 @@
    "designatedEra": "平成22年",
    "designatedYear": 2010,
    "facility": "瀧水寺",
-   "kana": "やくしにょらいりゅうぞう"
+   "kana": "やくしにょらいりゅうぞう",
+   "reportId": "yakushi-nyorai-takisuiji"
   },
   {
    "name": "鋳銅鰐口（竹袋）",
@@ -818,7 +820,8 @@
    "designatedEra": "昭和54年",
    "designatedYear": 1979,
    "facility": "竹袋稲荷神社",
-   "kana": "ちゅうどうわにぐち（たけふくろ）"
+   "kana": "ちゅうどうわにぐち（たけふくろ）",
+   "reportId": "chudo-waniguchi-takefukuro"
   },
   {
    "name": "観音寺鋳造鰐口",
@@ -844,7 +847,8 @@
    "designatedEra": "昭和57年",
    "designatedYear": 1982,
    "facility": "観音寺",
-   "kana": "かんのんじちゅうぞうわにぐち"
+   "kana": "かんのんじちゅうぞうわにぐち",
+   "reportId": "kannonji-chuzo-waniguchi"
   },
   {
    "name": "鋳銅鰐口（松虫）",
@@ -872,7 +876,8 @@
    "designatedEra": "昭和51年",
    "designatedYear": 1976,
    "facility": "松虫寺",
-   "kana": "ちゅうどうわにぐち（まつむし）"
+   "kana": "ちゅうどうわにぐち（まつむし）",
+   "reportId": "chudo-waniguchi-matsumushi"
   },
   {
    "name": "曼荼羅掛軸",
@@ -897,7 +902,8 @@
    "designatedEra": "昭和54年",
    "designatedYear": 1979,
    "facility": "南陽院",
-   "kana": "まんだらかけじく"
+   "kana": "まんだらかけじく",
+   "reportId": "mandara-kakejiku"
   },
   {
    "name": "龍湖寺絵馬",
@@ -923,7 +929,8 @@
    "designatedEra": "平成5年",
    "designatedYear": 1993,
    "facility": "龍湖寺",
-   "kana": "りゅうこじえま"
+   "kana": "りゅうこじえま",
+   "reportId": "ryukoji-ema"
   },
   {
    "name": "吉岡家河岸関係文書",
@@ -975,7 +982,8 @@
    "designatedEra": "昭和51年",
    "designatedYear": 1976,
    "facility": "印旛歴史民俗資料館",
-   "kana": "とこなめのおおつぼ"
+   "kana": "とこなめのおおつぼ",
+   "reportId": "tokoname-otsubo"
   },
   {
    "name": "小金牧鹿狩資料「村小旗」",
