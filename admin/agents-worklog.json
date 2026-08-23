@@ -3950,6 +3950,13 @@
       ],
       "plans": [
         {
+          "due": "2026-08-31",
+          "title": "Map Tiles API のタイル取得上限を3万→50万回/日へ引き上げ申請",
+          "category": "事務",
+          "priority": "高",
+          "note": "Cloud Console（プロジェクト creators-map）の割り当て画面から申請。手順と申請文面（日英）は保管庫ノート 2026-08-23_MapTilesクォータ引き上げ申請.md。タイル本体は無償のため費用は増えない。root requests per day（課金対象・30/日）は絶対に上げないこと。承認されたらCiDAOのRENDERER_LIMIT_PER_DAYと管理画面の説明文も更新する。"
+        },
+        {
           "due": "未定",
           "title": "📄 全50件そろった学習レポートの活用方法を決める（一括PDF配布・冊子化・提案書への計上額の確定）",
           "category": "調査",
