@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260823c">
+    <link rel="stylesheet" href="./styles.css?v=20260823d">
   </head>
   <body>
     <div class="app-shell">
@@ -262,6 +262,29 @@
             <div id="weather-warning-content" class="weather-warning-content" role="status" aria-live="polite">
               気象庁の最新情報を確認中です。
             </div>
+          </section>
+
+          <section class="panel-section timeline-panel" id="timeline-panel">
+            <div class="section-title">
+              <div>
+                <h2>📰 公式発表・市長発信</h2>
+                <p class="section-subtitle">時系列で読む（出典つき）</p>
+              </div>
+              <div class="timeline-controls">
+                <select id="timeline-days" aria-label="表示する期間">
+                  <option value="1">対象日のみ</option>
+                  <option value="3">3日分</option>
+                  <option value="7">7日分</option>
+                </select>
+                <button class="text-button" id="refresh-timeline-button" type="button">更新</button>
+              </div>
+            </div>
+            <div class="timeline-status" id="timeline-status" role="status" aria-live="polite">公式発表を確認中です。</div>
+            <div class="timeline-list" id="timeline-list"></div>
+            <p class="timeline-note">
+              印西市の公式ページ・防災速報、気象庁、市長のSNS発信を自動で集めています。避難の判断は必ず<a href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">印西市の公式情報</a>で確認してください。
+              情報源の追加は<a href="https://cidao.vercel.app/admin/disaster-sources" target="_blank" rel="noreferrer">CiDAO管理画面</a>から行えます。
+            </p>
           </section>
 
           <section class="panel-section shelter-status-panel" id="shelter-status-panel">
@@ -1127,7 +1150,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
-    <script src="./config.js?v=20260823c"></script>
-    <script src="./app.js?v=20260823c"></script>
+    <script src="./config.js?v=20260823d"></script>
+    <script src="./app.js?v=20260823d"></script>
   </body>
 </html>

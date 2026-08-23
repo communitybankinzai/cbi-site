@@ -654,6 +654,11 @@ const recordLayer = L.layerGroup();
 const roadFloodLayer = L.layerGroup();
 const roadDrawingLayer = L.layerGroup();
 const shelterLayer = L.layerGroup();
+// 公式発表タイムライン（initTimeline は起動時に呼ばれるため、宣言は必ずこの位置より前に置く）
+let timelinePayload = null;
+let timelineTimer = null;
+const TIMELINE_TRUST_LABEL = { official: "公式", "semi-official": "準公式", unverified: "未確認" };
+const TIMELINE_CHANGE_LABEL = { update: "更新", cancel: "取消・解除" };
 const PRESENCE_SESSION_KEY = "cbi-disaster-presence-session-v1";
 let presenceTimer = null;
 const wellLayer = L.layerGroup();
@@ -684,6 +689,7 @@ initBoundary();
 refreshRainNowcast(false);
 refreshWeatherWarnings(false);
 refreshEarthquakeSummary(false);
+initTimeline();
 renderRoadFloodSites();
 initIntegration();
 applyTrialRecordFromQuery();
@@ -718,7 +724,11 @@ function bindEvents() {
     selectedId = null;
     renderAll();
     refreshSnsMonitor(false);
+    refreshTimeline(false);
   });
+  document.getElementById("timeline-days").addEventListener("change", () => refreshTimeline(false));
+  document.getElementById("refresh-timeline-button").addEventListener("click", () => refreshTimeline(true));
+  document.getElementById("timeline-list").addEventListener("click", handleTimelineListClick);
   document.getElementById("show-all-dates").addEventListener("change", () => {
     selectedId = null;
     renderAll();
@@ -1389,6 +1399,121 @@ function renderQuakeLayer() {
     `);
     quakeLayer.addLayer(marker);
   });
+}
+
+// ============================================================
+// 📰 公式発表・市長発信タイムライン
+// CiDAO の /api/disaster/timeline（市公式ページ・防災速報・気象庁・市長SNSを
+// 10分ごとに巡回し保存したもの）を、対象日を起点に時系列で読める形にする。
+// 情報源の追加は CiDAO 管理画面（/admin/disaster-sources）で行い、ここでは表示だけを担う。
+// ============================================================
+
+async function refreshTimeline(manual = false) {
+  const endpoint = String(APP_CONFIG.timelineEndpoint || "").trim();
+  const status = document.getElementById("timeline-status");
+  const list = document.getElementById("timeline-list");
+  if (!endpoint || !status || !list) return;
+  const date = getFormValue("incident-date") || dateStamp().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
+  const days = Number(getFormValue("timeline-days") || 1);
+  if (manual) status.textContent = "公式発表を更新中です。";
+  try {
+    const params = new URLSearchParams({ date, days: String(days), _: String(Date.now()) });
+    const response = await fetch(`${endpoint}?${params}`, { headers: { Accept: "application/json" }, cache: "no-store" });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      // 503 はテーブル未作成・未設定の案内。故障ではないので文言をそのまま出す
+      throw new Error(payload?.error || `HTTP ${response.status}`);
+    }
+    timelinePayload = payload;
+    renderTimeline(payload);
+  } catch (error) {
+    status.classList.add("is-error");
+    status.textContent = `公式発表を取得できませんでした（${error?.message || "接続エラー"}）。印西市の公式ページで確認してください。`;
+    if (manual) appendSystemWorkLog("公式発表タイムライン", "blocked", `取得失敗: ${error?.message || "不明"}`, "CiDAOのタイムラインAPIと情報源の状態を確認する");
+  }
+}
+
+function timelineDayKey(iso) {
+  const d = toDateTimeLocal(iso);
+  return d ? d.slice(0, 10) : "";
+}
+
+function timelineTime(iso) {
+  const d = toDateTimeLocal(iso);
+  return d ? d.slice(11, 16) : "--:--";
+}
+
+function renderTimeline(payload) {
+  const status = document.getElementById("timeline-status");
+  const list = document.getElementById("timeline-list");
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  const sources = Array.isArray(payload?.sources) ? payload.sources : [];
+  const enabledSources = sources.filter(s => s.enabled);
+  const failed = enabledSources.filter(s => s.lastStatus && s.lastStatus !== "success");
+  const lastFetched = enabledSources.map(s => s.lastFetchedAt).filter(Boolean).sort().pop();
+
+  status.classList.remove("is-error");
+  status.textContent = [
+    `${items.length}件`,
+    lastFetched ? `最終巡回 ${formatDateTime(toDateTimeLocal(lastFetched))}` : "",
+    `情報源 ${enabledSources.length}`,
+    failed.length ? `（取得失敗 ${failed.length}: ${failed.map(s => s.label).join("・")}）` : ""
+  ].filter(Boolean).join(" ・ ");
+
+  if (!items.length) {
+    list.innerHTML = '<div class="detail-empty">この期間の公式発表・発信はありません。</div>';
+    return;
+  }
+
+  // 日付ごとに見出しを挟み、同じ日の中は新しい順（上から最新を追う）
+  const sorted = [...items].sort((a, b) => String(b.occurredAt).localeCompare(String(a.occurredAt)));
+  let currentDay = "";
+  const html = [];
+  sorted.forEach((item, index) => {
+    const day = timelineDayKey(item.occurredAt);
+    if (day !== currentDay) {
+      currentDay = day;
+      html.push(`<div class="timeline-day">${escapeHtml(day || "日時不明")}</div>`);
+    }
+    const trust = item.trust || "unverified";
+    const trustCls = trust === "official" ? "is-official" : trust === "semi-official" ? "is-semi" : "";
+    const change = item.changeType && item.changeType !== "new" ? item.changeType : "";
+    const body = String(item.body || "").trim();
+    const long = body.length > 160;
+    html.push(`
+      <article class="timeline-item ${trustCls} ${change === "cancel" ? "is-cancel" : ""}">
+        <div class="timeline-time">${escapeHtml(timelineTime(item.occurredAt))}</div>
+        <div class="timeline-body">
+          <div class="timeline-source">
+            <span class="timeline-trust ${trustCls}">${escapeHtml(TIMELINE_TRUST_LABEL[trust] || trust)}</span>
+            <span>${escapeHtml(item.sourceLabel || item.sourceKind || "情報源不明")}</span>
+            ${change ? `<span class="timeline-change ${change === "cancel" ? "is-cancel" : ""}">${escapeHtml(TIMELINE_CHANGE_LABEL[change] || change)}</span>` : ""}
+          </div>
+          <p class="timeline-title">${escapeHtml(item.title || "（見出しなし）")}</p>
+          ${body ? `<p class="timeline-text ${long ? "is-clamped" : ""}" data-timeline-text="${index}">${escapeHtml(body)}</p>` : ""}
+          ${long ? `<button class="timeline-more" type="button" data-timeline-more="${index}">続きを読む</button>` : ""}
+          ${isHttpUrl(item.url) ? `<a class="timeline-link" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典を開く</a>` : ""}
+        </div>
+      </article>`);
+  });
+  list.innerHTML = html.join("");
+}
+
+function handleTimelineListClick(event) {
+  const button = event.target.closest("[data-timeline-more]");
+  if (!button) return;
+  const text = document.querySelector(`[data-timeline-text="${button.dataset.timelineMore}"]`);
+  if (!text) return;
+  const clamped = text.classList.toggle("is-clamped");
+  button.textContent = clamped ? "続きを読む" : "閉じる";
+}
+
+function initTimeline() {
+  if (!String(APP_CONFIG.timelineEndpoint || "").trim()) return;
+  refreshTimeline(false);
+  clearInterval(timelineTimer);
+  // 巡回は10分ごとなので、表示側は5分ごとに追従すれば十分
+  timelineTimer = setInterval(() => refreshTimeline(false), 5 * 60 * 1000);
 }
 
 function getShelterFilters() {

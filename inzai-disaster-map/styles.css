@@ -2389,3 +2389,29 @@ body.embed-mode .cbi-home-link {
   background: #d97706; color: #fff; border-radius: 10px;
   padding: 1px 8px; font-size: 10px; font-weight: bold;
 }
+
+/* 📰 公式発表・市長発信タイムライン（2026-08-23） */
+.timeline-controls { display: flex; align-items: center; gap: 6px; }
+.timeline-controls select { font-size: 12px; padding: 3px 6px; border: 1px solid #c8d2dc; border-radius: 6px; background: #fff; }
+.timeline-status { font-size: 12px; color: #556; margin: 6px 0 8px; }
+.timeline-status.is-error { color: #9c4221; }
+.timeline-list { display: flex; flex-direction: column; gap: 0; max-height: 46vh; overflow-y: auto; padding-right: 4px; }
+.timeline-day { font-size: 12px; font-weight: bold; color: #1f5c99; background: #eef6ff; border-radius: 6px; padding: 3px 8px; margin: 8px 0 4px; position: sticky; top: 0; }
+.timeline-item { display: grid; grid-template-columns: 46px 1fr; gap: 8px; padding: 8px 6px; border-left: 3px solid #cbd5e0; margin-left: 4px; }
+.timeline-item.is-official { border-left-color: #2f855a; }
+.timeline-item.is-semi { border-left-color: #d97706; }
+.timeline-item.is-cancel { opacity: 0.7; }
+.timeline-time { font-size: 12px; font-weight: bold; color: #334; padding-top: 2px; }
+.timeline-body { min-width: 0; }
+.timeline-source { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #5b6b7f; margin-bottom: 2px; flex-wrap: wrap; }
+.timeline-trust { border-radius: 8px; padding: 1px 7px; font-weight: bold; font-size: 10px; background: #e2e8f0; color: #445; }
+.timeline-trust.is-official { background: #2f855a; color: #fff; }
+.timeline-trust.is-semi { background: #d97706; color: #fff; }
+.timeline-change { border-radius: 8px; padding: 1px 7px; font-size: 10px; background: #fff3d6; color: #8a5a00; }
+.timeline-change.is-cancel { background: #e2e8f0; color: #445; text-decoration: none; }
+.timeline-title { font-size: 13px; font-weight: bold; color: #17324d; margin: 0; }
+.timeline-text { font-size: 12px; color: #334; margin: 3px 0 0; white-space: pre-wrap; word-break: break-word; }
+.timeline-text.is-clamped { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.timeline-more { font-size: 11px; color: #1f5c99; background: none; border: none; padding: 0; cursor: pointer; margin-top: 2px; }
+.timeline-link { font-size: 11px; margin-top: 3px; display: inline-block; }
+.timeline-note { font-size: 11px; color: #667; margin: 8px 0 0; line-height: 1.6; }
