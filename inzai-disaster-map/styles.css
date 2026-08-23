@@ -2415,3 +2415,10 @@ body.embed-mode .cbi-home-link {
 .timeline-more { font-size: 11px; color: #1f5c99; background: none; border: none; padding: 0; cursor: pointer; margin-top: 2px; }
 .timeline-link { font-size: 11px; margin-top: 3px; display: inline-block; }
 .timeline-note { font-size: 11px; color: #667; margin: 8px 0 0; line-height: 1.6; }
+
+/* 過去の冠水実績：日付の複数選択フィルタ */
+.past-flood-dates { display: flex; flex-wrap: wrap; gap: 4px 8px; margin: 2px 0 6px 22px; font-size: 12px; align-items: center; }
+.past-flood-date { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border: 1px solid #b3c6e0; border-radius: 10px; background: #f3f7fc; }
+.past-flood-count { font-size: 10px; color: #0d47a1; background: #dbe7f7; border-radius: 8px; padding: 0 5px; }
+.past-flood-all { font-size: 11px; padding: 1px 8px; border: 1px solid #b3c6e0; border-radius: 10px; background: #fff; cursor: pointer; }
+.past-flood-empty { color: #777; font-size: 11px; }

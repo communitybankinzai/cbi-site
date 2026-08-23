@@ -729,6 +729,8 @@ function bindEvents() {
   document.getElementById("timeline-days").addEventListener("change", () => refreshTimeline(false));
   document.getElementById("refresh-timeline-button").addEventListener("click", () => refreshTimeline(true));
   document.getElementById("timeline-list").addEventListener("click", handleTimelineListClick);
+  document.getElementById("past-flood-dates")?.addEventListener("change", handlePastFloodDateChange);
+  document.getElementById("past-flood-dates")?.addEventListener("click", (e) => { if (e.target.closest("[data-past-flood-all]")) handlePastFloodDateChange(e); });
   document.getElementById("show-all-dates").addEventListener("change", () => {
     selectedId = null;
     renderAll();
@@ -2780,6 +2782,8 @@ async function ensureKominkanLayer() {
 }
 
 let pastFloodLoaded = false;
+let pastFloodPoints = [];           // past-flood-points.json の全地点（日付フィルタ用に保持）
+let pastFloodSelectedDates = null;  // null=全日付、Set=選択中の日付
 async function ensurePastFloodLayer() {
   if (pastFloodLoaded) return;
   pastFloodLoaded = true;
@@ -2787,25 +2791,60 @@ async function ensurePastFloodLayer() {
     const res = await fetch("past-flood-points.json", { cache: "no-store" });
     if (!res.ok) throw new Error(`past-flood-points.json HTTP ${res.status}`);
     const data = await res.json();
-    (data.points || []).forEach(p => {
-      if (!Number.isFinite(p.lat) || !Number.isFinite(p.lon)) return;
-      const marker = L.circleMarker([p.lat, p.lon], {
-        radius: 8, color: "#ffffff", weight: 1.5, fillColor: "#0d47a1", fillOpacity: 0.85
-      });
-      marker.bindPopup(
-        `<strong>🌊 ${escapeHtml(p.name || "冠水ポイント")}</strong><br>` +
-        `冠水確認日: ${escapeHtml((p.dates || []).join("、") || "不明")}<br>` +
-        (p.note ? `${escapeHtml(p.note)}<br>` : "") +
-        `出典: ${p.sourceUrl ? `<a href="${escapeAttribute(p.sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(p.source || "記録")}</a>` : escapeHtml(p.source || "運用者記録")}` +
-        (p.verifiedBy ? `（確認: ${escapeHtml(p.verifiedBy)}）` : "") +
-        `<br><span style="font-size:11px;">過去に冠水が確認された地点の実績です。ハザード想定や現在の冠水状況ではありません。</span>`
-      );
-      marker.addTo(pastFloodLayer);
-    });
+    pastFloodPoints = (data.points || []).filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lon));
+    renderPastFloodDateFilter();
+    renderPastFloodMarkers();
   } catch (error) {
     pastFloodLoaded = false;
     console.error("過去冠水実績データの読み込みに失敗:", error);
   }
+}
+
+// 記録にある日付を列挙し、複数選択で振り返りできるようにする（既定は全日付ON）
+function renderPastFloodDateFilter() {
+  const box = document.getElementById("past-flood-dates");
+  if (!box) return;
+  const dates = [...new Set(pastFloodPoints.flatMap(p => p.dates || []))].sort().reverse();
+  if (!dates.length) { box.innerHTML = '<span class="past-flood-empty">記録なし</span>'; return; }
+  box.innerHTML = dates.map(d => {
+    const count = pastFloodPoints.filter(p => (p.dates || []).includes(d)).length;
+    const checked = !pastFloodSelectedDates || pastFloodSelectedDates.has(d);
+    return `<label class="past-flood-date"><input type="checkbox" data-past-flood-date="${escapeAttribute(d)}" ${checked ? "checked" : ""}> ${escapeHtml(d)}<span class="past-flood-count">${count}</span></label>`;
+  }).join("") + '<button type="button" class="past-flood-all" data-past-flood-all>全日付</button>';
+}
+
+function handlePastFloodDateChange(event) {
+  const box = document.getElementById("past-flood-dates");
+  if (!box) return;
+  if (event.target.closest("[data-past-flood-all]")) {
+    pastFloodSelectedDates = null;
+    box.querySelectorAll("[data-past-flood-date]").forEach(input => { input.checked = true; });
+  } else if (event.target.matches("[data-past-flood-date]")) {
+    pastFloodSelectedDates = new Set([...box.querySelectorAll("[data-past-flood-date]:checked")].map(i => i.dataset.pastFloodDate));
+  } else {
+    return;
+  }
+  renderPastFloodMarkers();
+}
+
+function renderPastFloodMarkers() {
+  pastFloodLayer.clearLayers();
+  pastFloodPoints.forEach(p => {
+    const dates = p.dates || [];
+    if (pastFloodSelectedDates && !dates.some(d => pastFloodSelectedDates.has(d))) return;
+    const marker = L.circleMarker([p.lat, p.lon], {
+      radius: 8, color: "#ffffff", weight: 1.5, fillColor: "#0d47a1", fillOpacity: 0.85
+    });
+    marker.bindPopup(
+      `<strong>🌊 ${escapeHtml(p.name || "冠水ポイント")}</strong><br>` +
+      `冠水確認日: ${escapeHtml(dates.join("、") || "不明")}<br>` +
+      (p.note ? `${escapeHtml(p.note)}<br>` : "") +
+      `出典: ${p.sourceUrl ? `<a href="${escapeAttribute(p.sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(p.source || "記録")}</a>` : escapeHtml(p.source || "運用者記録")}` +
+      (p.verifiedBy ? `（確認: ${escapeHtml(p.verifiedBy)}）` : "") +
+      `<br><span style="font-size:11px;">過去に冠水が確認された地点の実績です。ハザード想定や現在の冠水状況ではありません。</span>`
+    );
+    marker.addTo(pastFloodLayer);
+  });
 }
 
 function toggleOverlay(name, checked) {
