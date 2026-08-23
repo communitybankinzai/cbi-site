@@ -257,8 +257,27 @@
 // 設定・データ
 // ============================================================
 const CATCH_RADIUS_M = 100;            // リアル版の獲得判定距離(m)。敷地外の道路からでも取れる距離
-const STORAGE_KEY = "cocola-real-zukan-v1";
-const SAFETY_KEY = "cocola-real-safety-agreed";
+const STORAGE_KEY = "cbi-adventure-zukan-v1";
+const SAFETY_KEY = "cbi-adventure-safety-agreed";
+// COCoLa時代の保存キー。集めた精霊の記録を引き継ぐためだけに参照する（書き込みはしない）
+const LEGACY_STORAGE_KEY = "cocola-real-zukan-v1";
+const LEGACY_SAFETY_KEY = "cocola-real-safety-agreed";
+
+// 旧キー → 新キーの引き継ぎ。新キーが未作成のときだけコピーする。
+// 旧キーは消さない（万一戻す必要が出たときのため）。
+function migrateLegacyKeys() {
+  try {
+    if (localStorage.getItem(STORAGE_KEY) === null) {
+      const old = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (old !== null) localStorage.setItem(STORAGE_KEY, old);
+    }
+    if (localStorage.getItem(SAFETY_KEY) === null) {
+      const oldSafety = localStorage.getItem(LEGACY_SAFETY_KEY);
+      if (oldSafety !== null) localStorage.setItem(SAFETY_KEY, oldSafety);
+    }
+  } catch (e) {}
+}
+migrateLegacyKeys();
 const DEBUG = new URLSearchParams(location.search).get("debug") === "1"; // 地図タップ＝仮想移動
 
 // 精霊6系統（メタバース版 metaverse/index.html と同一定義）

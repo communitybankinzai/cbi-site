@@ -1,7 +1,7 @@
 // いんざい冒険図鑑リアル Service Worker
 // 方針: network-first（常に最新を優先し、オフライン時のみキャッシュで起動できるようにする）
 // ⚠️ adventure/ 配下を修正したら CACHE_NAME を必ずバンプすること
-const CACHE_NAME = "cbi-adventure-v2";
+const CACHE_NAME = "cbi-adventure-v3";
 const PRECACHE = [
   "./",
   "./index.html",
