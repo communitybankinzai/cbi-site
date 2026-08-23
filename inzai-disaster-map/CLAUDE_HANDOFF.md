@@ -7,7 +7,7 @@
 - MAPリポジトリ: `C:\Users\nsfactory\OneDrive\CBI\site`
 - MAP本体: `inzai-disaster-map/`
 - 本番: https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/
-- MAP最新コミット: `df17e4a` (`Add shelter layer and SNS search term UI to disaster map`)
+- MAP最新コミット: `2250236` (`引継ぎ文書にタイムラインの実装内容を追記`)
 - CIDAOリポジトリ: `C:\Repos\cidao`
 - CIDAO本番: https://cidao.vercel.app
 - CIDAO最新コミット: `ac6dbb0` (`災害タイムラインAPI・情報源管理画面・migrationを追加`)
