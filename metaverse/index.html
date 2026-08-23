@@ -269,7 +269,12 @@
     pointer-events: auto; margin: 0 8px; flex: 0 0 auto;
   }
   #presenceChip b { color: #7fc8ff; font-size: 14px; }
-  @media (max-width: 480px) { #presenceChip { display: none !important; } }
+  /* 狭い画面では小さく出す（以前は非表示にしていたが、街並みが出ないときの手がかりが
+     スマホ利用者に何も残らないため 2026-08-24 に表示へ変更）。display は JS が制御するので触らない */
+  @media (max-width: 480px) {
+    #presenceChip { font-size: 10px; padding: 3px 8px; margin: 0 4px; }
+    #presenceChip b { font-size: 11px; }
+  }
   /* 3D表示の利用上限バナー */
   /* 3D表示の枠を使い切ったときの案内。街並みが真っ暗になり「壊れた」と受け取られるため、
      気づかれない上部ではなく画面中央に出す（2026-08-23・利用者からの指摘による） */
@@ -326,7 +331,19 @@
     padding: 12px 14px; width: min(92vw, 420px); font-size: 12px; display: none;
     max-height: calc(100vh - 140px); overflow-y: auto;
   }
-  #puzzlePanel h3 { margin: 0 0 8px; font-size: 14px; color: #ffd166; }
+  /* 見出しは上に貼り付けておく（スクロールしても「✕ 閉じる」が隠れないように。2026-08-24） */
+  #puzzlePanel h3 {
+    margin: 0 0 8px; font-size: 14px; color: #ffd166;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    position: sticky; top: -12px; z-index: 3;
+    background: rgba(20, 30, 40, 0.97); padding: 10px 0 6px; margin-top: -10px;
+  }
+  #puzzleCloseBtn {
+    background: rgba(255, 255, 255, 0.14); border: none; color: #fff;
+    font-size: 13px; line-height: 1; cursor: pointer;
+    border-radius: 8px; padding: 6px 10px; flex: 0 0 auto; white-space: nowrap;
+  }
+  #puzzleCloseBtn:hover { background: rgba(255, 255, 255, 0.28); }
   #puzzleBoard {
     position: relative; width: 100%; aspect-ratio: 2 / 1;
     border-radius: 8px; overflow: hidden; background: #111;
@@ -621,7 +638,7 @@
 
 <div id="pickResult"></div>
 <div id="puzzlePanel">
-  <h3>🏛 印西市文化財ずかん</h3>
+  <h3><span>🏛 印西市文化財ずかん</span><button id="puzzleCloseBtn" title="ずかんを閉じます">✕ 閉じる</button></h3>
   <div class="tabRow">
     <button id="tabZukan" class="active">🐾 ずかん</button>
     <button id="tabPuzzle">🧩 パズル</button>
@@ -2860,6 +2877,11 @@ document.getElementById("puzzleBtn").onclick = function () {
   const panel = document.getElementById("puzzlePanel");
   panel.style.display = (panel.style.display === "block") ? "none" : "block";
 };
+// パネル内の「✕ 閉じる」。スマホでは開くとメニューが閉じるため、
+// 「🏛 印西市文化財」を押し直す方法に気づけなかった（2026-08-24 ユーザー指摘）
+document.getElementById("puzzleCloseBtn").onclick = function () {
+  document.getElementById("puzzlePanel").style.display = "none";
+};
 document.getElementById("desigFilter").addEventListener("click", function (e) {
   if (e.target.tagName !== "BUTTON") return;
   desigFilterVal = e.target.getAttribute("data-f");
@@ -3222,12 +3244,17 @@ function presenceRender(count) {
   if (!el) return;
   // タイムトライアル中は計測表示と重なるため隠す
   if (!presenceCount || presenceCount < 1 || (typeof ttActive !== "undefined" && ttActive)) { el.style.display = "none"; return; }
-  let html = "👥 いま <b>" + presenceCount + "</b> 人";
+  // 狭い画面（スマホ）は横幅が足りないため、人数だけを出し、
+  // 枠が減ってきたときにだけ警告を足す（2026-08-24。以前はスマホでは何も出していなかった）
+  const narrow = window.innerWidth <= 480;
+  let html = narrow ? ("👥 <b>" + presenceCount + "</b>") : ("👥 いま <b>" + presenceCount + "</b> 人");
   if (usageInfo) {
     if (typeof usageInfo.visitorsToday === "number") {
       const v = usageInfo.visitorsToday, lim = usageInfo.rootLimitPerDay || 30;
       const warn = v >= lim * 0.8;
-      html += ' ｜ 本日 <b style="' + (warn ? "color:#ff8a65" : "") + '">' + v + "</b>/" + lim + "人";
+      // 狭い画面では、残りが少ないときだけ出す
+      if (!narrow) html += ' ｜ 本日 <b style="' + (warn ? "color:#ff8a65" : "") + '">' + v + "</b>/" + lim + "人";
+      else if (warn) html += ' ｜ <b style="color:#ff8a65">' + v + "/" + lim + "</b>";
     }
     if (typeof usageInfo.todayRequests === "number") {
       // タイル取得が1日の上限に近づくと詳細タイルの取得が止まり、街並みが粗いままになる。
@@ -3236,8 +3263,13 @@ function presenceRender(count) {
       const tl = usageInfo.rendererLimitPerDay || 500000;
       const rate = t / tl;
       const col = rate >= 0.85 ? "#ff5252" : (rate >= 0.7 ? "#ffd166" : "");
-      html += " ｜ " + (rate >= 0.85 ? "⚠ " : "") +
-        'タイル <b style="' + (col ? "color:" + col : "") + '">' + fmtK(t) + "</b>";
+      if (narrow) {
+        // 平常時は数字を出さず場所を空ける。上限に近づいたときだけ知らせる
+        if (rate >= 0.7) html += ' <b style="color:' + col + '">' + (rate >= 0.85 ? "⚠" : "⚡") + fmtK(t) + "</b>";
+      } else {
+        html += " ｜ " + (rate >= 0.85 ? "⚠ " : "") +
+          'タイル <b style="' + (col ? "color:" + col : "") + '">' + fmtK(t) + "</b>";
+      }
       // 上限に達したら、街並みが出ない理由を画面中央で知らせる（429を捕まえられない場合の保険）
       if (t >= tl) showQuotaAlert();
     }
