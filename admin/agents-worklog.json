@@ -4109,13 +4109,11 @@
       ],
       "plans": [
         {
-          "due": "未定",
-          "title": "🗄 公式発表タイムラインの保持期間を決める（現状90日で自動削除。振り返り用途なら削除しない／365日へ）",
-          "category": "分析",
+          "due": "2026-08-24",
+          "title": "🗄 タイムライン永続保存の migration を Supabase SQL Editor で実行（案A・SQLはクリップボード／20260823150000_disaster_timeline_keep_forever.sql）",
+          "category": "事務",
           "priority": "高",
-          "status": "保留",
-          "blockedBy": "ユーザーの判断（案A 削除しない／案B 365日／案C 90日のまま手動転記）。令和8年8月千葉豪雨の発表は 2026-11-11 に消える",
-          "note": "整理ノート cidao/2026-08-23_災害情報の置き場整理_ナラティブと記録.md §3-1。変更は migration 1本（cleanup cron の unschedule または interval 変更）でユーザーがSQL Editor実行"
+          "note": "ユーザー実行。実行後に cron.job に cidao_disaster_timeline_cleanup が無いことを確認（SQL末尾のselectで表示されるのは cidao_disaster_timeline の1行だけになる）"
         },
         {
           "due": "未定",
