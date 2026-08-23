@@ -1062,7 +1062,8 @@
    "designatedEra": "昭和41年",
    "designatedYear": 1966,
    "facility": "地蔵寺",
-   "kana": "べっしょのししまい"
+   "kana": "べっしょのししまい",
+   "reportId": "bessho-shishimai"
   },
   {
    "name": "いなざき獅子舞",
@@ -1088,7 +1089,8 @@
    "designatedEra": "昭和41年",
    "designatedYear": 1966,
    "facility": "鳥見神社",
-   "kana": "いなざきししまい"
+   "kana": "いなざきししまい",
+   "reportId": "inazaki-shishimai"
   },
   {
    "name": "八幡神社の獅子舞",
@@ -1114,7 +1116,8 @@
    "designatedEra": "昭和49年",
    "designatedYear": 1974,
    "facility": "東漸寺",
-   "kana": "はちまんじんじゃのししまい"
+   "kana": "はちまんじんじゃのししまい",
+   "reportId": "hachiman-jinja-shishimai"
   },
   {
    "name": "月影の井",
@@ -1141,7 +1144,8 @@
    },
    "designatedEra": "昭和43年",
    "designatedYear": 1968,
-   "kana": "つきかげのい"
+   "kana": "つきかげのい",
+   "reportId": "tsukikage-no-i"
   },
   {
    "name": "上宿古墳",
@@ -1166,7 +1170,8 @@
    },
    "designatedEra": "昭和48年",
    "designatedYear": 1973,
-   "kana": "かみじゅくこふん"
+   "kana": "かみじゅくこふん",
+   "reportId": "kamijuku-kofun"
   },
   {
    "name": "武西の百庚申塚",
@@ -1193,7 +1198,8 @@
    },
    "designatedEra": "平成11年",
    "designatedYear": 1999,
-   "kana": "むざいのひゃくこうしんづか"
+   "kana": "むざいのひゃくこうしんづか",
+   "reportId": "takenishi-hyakukoshin-zuka"
   },
   {
    "name": "泉新田大木戸野馬堀遺跡",
@@ -1220,7 +1226,8 @@
    },
    "designatedEra": "平成17年",
    "designatedYear": 2005,
-   "kana": "いずみしんでんおおきどのまぼりいせき"
+   "kana": "いずみしんでんおおきどのまぼりいせき",
+   "reportId": "izumishinden-nomabori-iseki"
   },
   {
    "name": "道作古墳群",
@@ -1247,7 +1254,8 @@
    },
    "designatedEra": "平成26年",
    "designatedYear": 2014,
-   "kana": "どうさくこふんぐん"
+   "kana": "どうさくこふんぐん",
+   "reportId": "dosaku-kofungun"
   },
   {
    "name": "掩体壕",
@@ -1273,7 +1281,8 @@
    },
    "designatedEra": "平成28年",
    "designatedYear": 2016,
-   "kana": "えんたいごう"
+   "kana": "えんたいごう",
+   "reportId": "entaigou"
   },
   {
    "name": "吉高の大桜",
@@ -1300,7 +1309,8 @@
    },
    "designatedEra": "昭和56年",
    "designatedYear": 1981,
-   "kana": "よしたかのおおざくら"
+   "kana": "よしたかのおおざくら",
+   "reportId": "yoshitaka-no-ozakura"
   },
   {
    "name": "藤の木",
@@ -1325,7 +1335,8 @@
    },
    "designatedEra": "昭和54年",
    "designatedYear": 1979,
-   "kana": "ふじのき"
+   "kana": "ふじのき",
+   "reportId": "fuji-no-ki-nakane"
   },
   {
    "name": "岩井家住宅主屋（旧武蔵屋店舗）",
@@ -1350,7 +1361,8 @@
    },
    "designatedEra": "平成19年",
    "designatedYear": 2007,
-   "kana": "いわいけじゅうたくおもや（きゅうむさしやてんぽ）"
+   "kana": "いわいけじゅうたくおもや（きゅうむさしやてんぽ）",
+   "reportId": "iwaike-jutaku-omoya"
   }
  ],
  "descriptionSource": "各エントリの detailUrl（印西市公式ページ）より要約。2026-08-19取得",
