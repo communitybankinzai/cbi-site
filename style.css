@@ -306,6 +306,38 @@ h1, h2, h3 {
 .section-report  { background: var(--c-paper); }
 .section-docs    { background: var(--c-bg-alt); }
 .section-contact { background: var(--c-paper); }
+.section-projects { background: var(--c-bg-alt); }
+
+/* プロジェクト一覧のカード（カード全体がリンク） */
+.project-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.project-card:hover { text-decoration: none; }
+.project-icon {
+  display: block;
+  font-size: 34px;
+  line-height: 1;
+  margin: 0 auto 14px;
+}
+.project-tag {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 3px 14px;
+  border-radius: 999px;
+  background: var(--c-navy);
+  color: var(--c-gold-soft);
+  font-size: 12px;
+  letter-spacing: .12em;
+}
+.project-go {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-navy);
+}
 
 .section-eyebrow {
   font-size: 12px;

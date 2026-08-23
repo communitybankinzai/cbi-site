@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>いんざい文化財ずかん｜Community Bank INZAI（CBI）</title>
+<meta name="description" content="印西市の指定・登録文化財50件を「歩いて、見て、読む」3つの方法で知るプロジェクト。現地を歩くGPS冒険図鑑、3Dメタバース、A4両面の学習レポート50件を公開しています。">
+<meta property="og:title" content="いんざい文化財ずかん｜歩いて、見て、読む。印西の文化財50件。">
+<meta property="og:description" content="印西市の指定・登録文化財は50件。現地で歩く／3Dで見る／A4で読む の3つの入口を用意しています。">
+<meta property="og:image" content="../assets/cbi-logo.png">
+<meta property="og:type" content="article">
+<link rel="icon" type="image/png" href="../assets/cbi-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+  /* ===== いんざい文化財ずかん page only ===== */
+  .bz-hero {
+    background:
+      radial-gradient(ellipse at top, rgba(201,165,92,0.20), transparent 62%),
+      linear-gradient(180deg, var(--c-navy-dark) 0%, var(--c-navy) 100%);
+    color: #fff;
+    padding: 96px 0 76px;
+    text-align: center;
+  }
+  .bz-hero .breadcrumb { font-size: 13px; color: rgba(255,255,255,0.72); margin: 0 0 26px; }
+  .bz-hero .breadcrumb a { color: var(--c-gold-soft); }
+  .bz-badge {
+    display: inline-block; padding: 6px 18px;
+    border: 1px solid var(--c-gold); border-radius: 999px;
+    color: var(--c-gold-soft); font-size: 12px; letter-spacing: .12em;
+    margin-bottom: 22px;
+  }
+  .bz-title { font-size: clamp(30px, 6vw, 52px); margin: 0 0 18px; line-height: 1.25; }
+  .bz-catch { font-size: clamp(16px, 2.6vw, 22px); color: var(--c-gold-soft); margin: 0 0 26px; font-weight: 700; }
+  .bz-lead { max-width: 760px; margin: 0 auto; line-height: 2; color: rgba(255,255,255,0.9); font-size: 15px; text-align: left; }
+
+  .section-ways { background: var(--c-paper); }
+  .section-data { background: var(--c-bg-alt); }
+  .section-notes { background: var(--c-paper); }
+
+  /* カード全体をリンクにする（既存 .card の見た目を流用） */
+  a.card { display: block; text-decoration: none; color: inherit; }
+  a.card:hover { text-decoration: none; }
+  .way-icon { font-size: 34px; line-height: 1; margin: 0 auto 16px; display: block; }
+  .way-verb {
+    display: inline-block; margin-bottom: 10px; padding: 3px 14px;
+    border-radius: 999px; background: var(--c-navy); color: var(--c-gold-soft);
+    font-size: 12px; letter-spacing: .12em;
+  }
+  .way-meta { margin-top: 14px; font-size: 12px; color: var(--c-ink-sub); line-height: 1.9; }
+  .way-go { display: inline-block; margin-top: 16px; font-size: 13px; font-weight: 700; color: var(--c-navy); }
+
+  /* 内訳の数字 */
+  .bz-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 0 0 34px; }
+  .bz-stat {
+    background: var(--c-bg); border: 1px solid var(--c-line);
+    border-radius: var(--radius); padding: 22px 10px; text-align: center;
+  }
+  .bz-stat b { display: block; font-family: var(--font-serif); font-size: 30px; color: var(--c-navy); line-height: 1.2; }
+  .bz-stat span { font-size: 12px; color: var(--c-ink-sub); }
+  .bz-types { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .bz-type {
+    background: var(--c-bg); border: 1px solid var(--c-line); border-radius: 999px;
+    padding: 6px 14px; font-size: 13px;
+  }
+  .bz-type b { color: var(--c-navy); font-family: var(--font-serif); }
+
+  .bz-notes { max-width: 820px; margin: 0 auto; padding-left: 1.2em; line-height: 2; font-size: 14px; }
+  .bz-notes li { margin-bottom: 10px; }
+  .bz-back { text-align: center; margin-top: 40px; }
+
+  @media (max-width: 860px) {
+    .bz-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="site-header">
+  <div class="container header-inner">
+    <a href="../index.html" class="brand">
+      <img src="../assets/cbi-logo.png" alt="CBI ロゴ" class="brand-logo">
+      <span class="brand-text">Community Bank INZAI</span>
+    </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開く" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="site-nav">
+      <a href="../index.html#about">事業概要</a>
+      <a href="../index.html#join">参加方法</a>
+      <a href="../index.html#report">活動報告</a>
+      <a href="../index.html#projects">プロジェクト</a>
+      <a href="../index.html#contact">団体情報</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== HERO ===== -->
+  <section class="bz-hero">
+    <div class="container">
+      <p class="breadcrumb"><a href="../index.html">トップ</a> ／ <a href="../index.html#projects">プロジェクト</a> ／ いんざい文化財ずかん</p>
+      <p class="bz-badge">CBI PROJECT</p>
+      <h1 class="bz-title">いんざい文化財ずかん</h1>
+      <p class="bz-catch">歩いて、見て、読む。印西の文化財50件。</p>
+      <p class="bz-lead">
+        印西市が指定・登録している文化財は50件あります。神社の獅子舞、古墳、樹齢を重ねた桜、戦時中の掩体壕まで、種類も場所もさまざまです。
+        ただ、「どこにあるか」「何が価値なのか」を知る手がかりは多くありません。
+        このプロジェクトでは、その50件に触れる方法を3つ用意しました。現地を<b>歩く</b>、3Dで<b>見る</b>、A4にまとめて<b>読む</b>。
+        どれも無料で、登録もアプリのインストールも必要ありません。
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== 3つの入口 ===== -->
+  <section class="section section-ways">
+    <div class="container">
+      <p class="section-eyebrow">3 WAYS</p>
+      <h2 class="section-title">3つの入口</h2>
+      <p class="section-lead">
+        同じ50件のデータをもとに、目的に合わせて3つの入口を用意しています。
+        「子どもと外を歩きたい」「家で調べたい」「印刷して配りたい」で選べます。
+      </p>
+
+      <div class="grid-3">
+        <a class="card" href="../adventure/">
+          <span class="way-icon" aria-hidden="true">🚶</span>
+          <span class="way-verb">歩く</span>
+          <h3>いんざい冒険図鑑リアル</h3>
+          <p>文化財のある場所へ実際に行くと、その文化財の精霊が図鑑に加わります。50件それぞれに精霊がいます。</p>
+          <p class="way-meta">
+            GPSで判定（100m以内）／アプリのインストール不要<br>
+            スマートフォン向け・記録は端末内に保存
+          </p>
+          <span class="way-go">▶ 冒険をはじめる</span>
+        </a>
+
+        <a class="card" href="../metaverse/?mode=event">
+          <span class="way-icon" aria-hidden="true">🌏</span>
+          <span class="way-verb">見る</span>
+          <h3>メタバース印西（3D）</h3>
+          <p>印西市の街並みを3Dで再現した空間を歩き、50件の場所を上空から確かめられます。ずかん・年表・レベル別クイズつき。</p>
+          <p class="way-meta">
+            50件すべてのピンとクイズ／年表で時代順に並べ替え<br>
+            50件そろえると認定証を発行
+          </p>
+          <span class="way-go">▶ 3Dで見る</span>
+        </a>
+
+        <a class="card" href="../metaverse/reports.html">
+          <span class="way-icon" aria-hidden="true">📄</span>
+          <span class="way-verb">読む</span>
+          <h3>学習レポート 50件</h3>
+          <p>1件がA4用紙1枚の両面で完結します。基礎データ、歴史、見どころ、用語、年表、クイズ、現地で確かめること、出典一覧。</p>
+          <p class="way-meta">
+            全50件を公開済み／PDFでダウンロード・印刷できる<br>
+            本文の記述すべてに出典番号つき
+          </p>
+          <span class="way-go">▶ レポートを読む</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 50件の内訳 ===== -->
+  <section class="section section-data">
+    <div class="container">
+      <p class="section-eyebrow">DATA</p>
+      <h2 class="section-title">50件の内訳</h2>
+      <p class="section-lead">
+        印西市が公開している「指定・登録文化財」の一覧にもとづく件数です。
+      </p>
+
+      <div class="bz-stats">
+        <div class="bz-stat"><b>6</b><span>国指定</span></div>
+        <div class="bz-stat"><b>17</b><span>県指定</span></div>
+        <div class="bz-stat"><b>26</b><span>市指定</span></div>
+        <div class="bz-stat"><b>1</b><span>国登録</span></div>
+      </div>
+
+      <div class="bz-types">
+        <span class="bz-type">彫刻 <b>11</b></span>
+        <span class="bz-type">工芸品 <b>9</b></span>
+        <span class="bz-type">史跡 <b>6</b></span>
+        <span class="bz-type">無形民俗文化財 <b>6</b></span>
+        <span class="bz-type">歴史資料 <b>6</b></span>
+        <span class="bz-type">建造物 <b>4</b></span>
+        <span class="bz-type">天然記念物 <b>4</b></span>
+        <span class="bz-type">考古資料 <b>2</b></span>
+        <span class="bz-type">有形民俗文化財 <b>1</b></span>
+        <span class="bz-type">古文書 <b>1</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 出典と注意 ===== -->
+  <section class="section section-notes">
+    <div class="container">
+      <p class="section-eyebrow">SOURCES &amp; NOTES</p>
+      <h2 class="section-title">出典と、見学するときのお願い</h2>
+
+      <ul class="bz-notes">
+        <li><b>解説とレポートの根拠</b>：記述はすべて印西市および千葉県教育委員会の公式ページの記載にもとづいています。出典に書かれていない事柄は記載していません。学習レポートは本文の記述ごとに出典番号を振り、裏面の出典一覧と対応させています。</li>
+        <li><b>写真</b>：印西市ホームページ掲載の写真を使用しています（掲載の許可を得ています）。表示のあるページには出典を明記しています。50件のうち写真があるのは20件で、残りは市のページにも写真がありません。</li>
+        <li><b>個人のお宅・私有地にあるものがあります</b>：上宿古墳、吉高の大桜、藤の木、岩井家住宅主屋などは個人の所有です。無断で敷地に立ち入らないでください。</li>
+        <li><b>お祭りや獅子舞は、実施が変わることがあります</b>：無形民俗文化財は、その年の担い手や地域の状況によって内容や日程が変わります。開催の有無・時間は事前にご確認ください。</li>
+        <li><b>ピンの位置について</b>：地図上の位置は住所の代表点をもとにしているため、広い敷地や山林では実際の場所とずれることがあります。現地で気づいた点はCBIまでお知らせください。</li>
+        <li><b>問い合わせ先</b>：文化財そのものについては、印西市教育委員会 生涯学習部文化振興課文化財係（0476-33-4714）へお願いします。</li>
+      </ul>
+
+      <p class="bz-back">
+        <a href="../index.html#projects" class="btn btn-ghost">← プロジェクト一覧へ戻る</a>
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/cbi-logo.png" alt="CBI" class="footer-logo">
+      <div>
+        <p class="footer-name">Community Bank INZAI</p>
+        <p class="footer-tagline">いんざい文化財ずかん</p>
+      </div>
+    </div>
+    <div>
+      <p class="footer-copy">
+        © 2026 Community Bank INZAI ｜ 印西市市民活動団体 ０８－００１
+        <span class="footer-sep">／</span>
+        <a href="../admin/" class="footer-admin-link">admin</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script src="../script.js"></script>
+</body>
+</html>
