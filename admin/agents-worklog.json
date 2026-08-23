@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-08-23",
+          "title": "8/23地震の公開情報の調査＋市長SNS取りこぼし修正＋千葉県防災ポータルのパーサ追加 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao: src/lib/disaster-timeline.ts, src/lib/disaster-sns-monitor.ts（1612946）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（1e484f7）",
+            "cidao/2026-08-23_災害公式情報の情報源調査とタイムライン設計.md（県ポータルの誤記訂正）",
+            "plans 2件（IG上限対策・手動ラベル）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "市長IG投稿2件が優先判定実装前の保存で未フラグ→読み出し時判定で1件復活（署名なしの1件は自動判定不可）。千葉県防災ポータルは緊急情報2件＋被害情報PDF第1・2報を検出（パーサ実測5件）。IG巡回はMeta #4 上限で停止中。前回記録(622,992)以降の差分 26,636 で 0.3h。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 649,628 / cost: $365.03"
+        },
+        {
+          "date": "2026-08-23",
           "title": "防災MAP: 公式発表・市長発信タイムライン（情報源調査＋CiDAO基盤をFable5委譲＋MAP表示＋本番検証＋地震重複バグ修正）＋NIEDレイヤー調査 1.3時間",
           "category": "実装",
           "outputs": [
