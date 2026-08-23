@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-08-23",
+          "title": "防災MAP: 公式発表・市長発信タイムライン（情報源調査＋CiDAO基盤をFable5委譲＋MAP表示＋本番検証＋地震重複バグ修正）＋NIEDレイヤー調査 1.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao: supabase/migrations/20260823120000_disaster_timeline.sql, src/lib/disaster-timeline.ts, src/lib/inzai-city-alerts.ts, src/app/api/disaster/timeline/route.ts, src/app/admin/disaster-sources/*, src/app/admin/page.tsx（ac6dbb0, b7643fb）",
+            "site/inzai-disaster-map/app.js, index.html, config.js, styles.css, CLAUDE_HANDOFF.md（7a33ece〜1b95c7a）",
+            "site/admin/changelog.json, agents-worklog.json（plans: NIED許諾待ち）",
+            "cidao/2026-08-23_災害公式情報の情報源調査とタイムライン設計.md, MOC_CiDAO.md",
+            "memory: codex-hang-fallback-to-fable（cidao向けCodexは書込ルート外）"
+          ],
+          "hours": 1.3,
+          "partnerApproved": false,
+          "note": "13情報源の可否を実測（市RSS無し・LINE/X不可）。Codexは C:\\Repos\\cidao への書込不可で変更ゼロ→Fable5へ切替。migrationはユーザーがSQL Editorで適用、本番巡回7源success・7日分6件を確認。NIEDはArcGIS export 200だが二次利用未明記→リンクのみ＋問い合わせ文作成（A案）。前回記録(output 494,191)以降の差分 128,801 で 1.3h。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 622,992 / cost: $358.27"
+        },
+        {
+          "date": "2026-08-23",
           "title": "「いんざい冒険図鑑リアル」の動作検証（GPS判定・獲得・図鑑・PWA）0.2時間",
           "category": "調査",
           "outputs": [
