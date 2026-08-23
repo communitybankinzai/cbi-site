@@ -18,16 +18,16 @@
       "actuals": [
         {
           "date": "2026-08-24",
-          "title": "タイムライン永続保存（案A）の migration 作成・適用＋ナラティブと記録の置き場整理ノート作成 0.3時間",
+          "title": "タイムライン永続保存（案A）の migration 作成・適用＋ナラティブと記録の置き場整理ノート作成 0.1時間",
           "category": "実装",
           "outputs": [
             "C:\\Repos\\cidao: supabase/migrations/20260823150000_disaster_timeline_keep_forever.sql（54a9f6b）",
             "cidao/2026-08-23_災害情報の置き場整理_ナラティブと記録.md（新規・MOC登録）",
             "site/inzai-disaster-map/CLAUDE_HANDOFF.md"
           ],
-          "hours": 0.3,
+          "hours": 0.1,
           "partnerApproved": false,
-          "note": "90日自動削除のcronを解除し関数を無効化（適用はユーザーが2026-08-24にSQL Editorで実行済み）。置き場整理：「いつ誰が何を発表したか」=タイムライン（永続）、「どこで何が起きたか」=記録（past-flood-points.json等）。前回記録(671,574)以降の差分で算出。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341"
+          "note": "90日自動削除のcronを解除し関数を無効化（適用はユーザーが2026-08-24にSQL Editorで実行済み）。置き場整理：「いつ誰が何を発表したか」=タイムライン（永続）、「どこで何が起きたか」=記録（past-flood-points.json等）。前回記録(671,574)以降の差分 12,241 で 0.1h。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 683,815 / cost: $401.14"
         },
         {
           "date": "2026-08-23",
