@@ -10,7 +10,7 @@
 - MAP最新コミット: `df17e4a` (`Add shelter layer and SNS search term UI to disaster map`)
 - CIDAOリポジトリ: `C:\Repos\cidao`
 - CIDAO本番: https://cidao.vercel.app
-- CIDAO最新コミット: `429e717` (`Add Inzai shelters API and SNS monitor rules admin`)
+- CIDAO最新コミット: `ac6dbb0` (`災害タイムラインAPI・情報源管理画面・migrationを追加`)
 
 ## プロダクトの位置付け
 
@@ -35,6 +35,14 @@
 - 過去の冠水実績レイヤー（2026-08-19追加）: `past-flood-points.json`（リポジトリ管理・スキーマはファイル内に記載）を「🌊 過去の冠水実績」トグル（デフォルトOFF）で表示。**対象日フィルタの対象外**で、日付によらず常に全点を表示する長期蓄積用。ポップアップに地点名・冠水確認日（複数日可）・出典リンク・確認者と「ハザード想定や現在の冠水状況ではない」注記。**追記運用: 確認済みの冠水記録をユーザーがチャットで伝える → Claude が points 配列に追記して commit・push**（同一地点の再発は dates に日付を追加）。現在は0件。
 - ヘッダーに「メタバース印西（3D）」リンク（別タブ）。3D浸水シミュレーション（水位0〜40m）は `site/metaverse/` 側にあり、平時の地形理解用。災害時利用は想定しない。
 - 平時参考レイヤー（2026-08-19追加）: 「参考: 文化財50件」「参考: 公民館・交流館・文化ホール」チェックボックス（初期OFF）。データはメタバースと共有の `../metaverse/bunkazai.json`／`../metaverse/kominkan.json` を初回ONで遅延読み込み。ポップアップに解説・出典（市公式ページ）リンク・「3Dで見る」リンク。メタバース側でデータ構成を変える場合は `ensureBunkazaiLayer`／`ensureKominkanLayer` も追従させる。
+
+### 公式発表・市長発信タイムライン（2026-08-23追加）
+
+- 右カラム「📰 公式発表・市長発信」カード。CIDAO `GET /api/disaster/timeline?date=YYYY-MM-DD&days=1|3|7` を5分ごとに取得し、日付見出し＋時刻順（新しい順）で表示。公式／準公式／未確認バッジ、更新・取消解除の表示、160字超は「続きを読む」、出典リンク。状態行に件数・最終巡回・情報源数・取得失敗源。
+- **情報源はコードに固定せず DB レジストリ**（`disaster_info_sources`）。CIDAO管理画面 `/admin/disaster-sources` で追加・有効/無効・削除・**テスト取得（DB未書込でプレビュー）**・今すぐ巡回・**手動項目の追加**（公式LINE本文の貼り付け用）。新しい情報源を見つけたらここに登録する。
+- kind 別パーサ（`src/lib/disaster-timeline.ts`）: city-category-html（市の災害情報16-5-2・避難情報16-5-1）／city-alert-xml（防災速報。`src/lib/inzai-city-alerts.ts` に共通化し避難所APIと共用）／jma-warning（印西市 1223100・解除は cancel）／jma-overview（千葉県概況）／jma-quake（印西市の震度を題名に）／sns-priority（`disaster_sns_candidates.raw_payload.priority_label` 付き＝市長・市公式）／manual。新種は関数表に1つ足す。
+- pg_cron 10分ごと POST（app_settings の4分クレームで多重実行防止）、90日で自動削除。migration `supabase/migrations/20260823120000_disaster_timeline.sql`（**適用はユーザーが SQL Editor で実行**。未適用の間 API は 503 と案内文を返し、MAP側は「取得できませんでした」を表示する）。
+- 取れない情報源（再調査不要）: 市公式LINE（API無し→手動）、市長X（有料・予算タブ）、千葉県公式（日付付き一覧なし）、市RSS（存在しない）。詳細は保管庫 `cidao/2026-08-23_災害公式情報の情報源調査とタイムライン設計.md`。
 
 ### SNS・写真・場所確認
 
