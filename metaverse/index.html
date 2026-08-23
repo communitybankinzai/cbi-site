@@ -265,13 +265,18 @@
   #presenceChip b { color: #7fc8ff; font-size: 14px; }
   @media (max-width: 480px) { #presenceChip { display: none !important; } }
   /* 3D表示の利用上限バナー */
+  /* 3D表示の枠を使い切ったときの案内。街並みが真っ暗になり「壊れた」と受け取られるため、
+     気づかれない上部ではなく画面中央に出す（2026-08-23・利用者からの指摘による） */
   #quotaBanner {
-    position: absolute; top: 96px; left: 50%; transform: translateX(-50%);
-    z-index: 42; display: none; width: min(94vw, 560px); box-sizing: border-box;
-    background: rgba(40, 30, 10, 0.95); color: #ffe6b3;
-    border: 2px solid #e6a23c; border-radius: 12px; padding: 12px 36px 12px 14px;
-    font-size: 13px; line-height: 1.7;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 60; display: none; width: min(92vw, 520px); box-sizing: border-box;
+    background: rgba(38, 28, 10, 0.97); color: #ffe6b3;
+    border: 2px solid #e6a23c; border-radius: 14px; padding: 20px 40px 18px 20px;
+    font-size: 14px; line-height: 1.8;
+    box-shadow: 0 12px 44px rgba(0, 0, 0, 0.65);
   }
+  #quotaBanner .big { display: block; font-size: 17px; margin-bottom: 8px; color: #ffd166; }
+  #quotaBanner .sub { display: block; margin-top: 10px; font-size: 12.5px; color: #d9c9a5; }
   #quotaBanner b { color: #ffd166; }
   #quotaBanner .close { position: absolute; top: 6px; right: 10px; cursor: pointer; opacity: 0.8; font-size: 15px; }
   /* 用途モード選択（イベント／防災） */
@@ -578,11 +583,12 @@
 </div>
 
 <div id="quotaBanner">
-  <span class="close" onclick="document.getElementById('quotaBanner').style.display='none'">✕</span>
-  <b>⚠ ただいま3D表示が混み合っています</b><br>
-  本日の3D街並みデータの利用上限に達したため、粗い表示のままになります。
-  上限は<b>毎日夕方ごろ（日本時間）</b>に自動で回復します。
-  お手数ですが、時間をおいてからもう一度アクセスしてください。
+  <span class="close" onclick="closeQuotaAlert()">✕</span>
+  <b class="big">🌏 本日の3D表示の枠を使い切りました</b>
+  <b>故障ではありません。</b>Googleの3D地図データを1日に読み込める回数の上限に達したため、街並みが表示できなくなっています。<br>
+  上限は<b>日本時間の16時ごろ</b>に自動で回復します。それまでは画面が暗いまま、または粗いままになります。<br>
+  <span class="sub">🏛 文化財のずかん・クイズ・年表は、このままご利用いただけます。<br>
+  ご不便をおかけします。時間をおいてからまたお越しください。</span>
 </div>
 <div id="modeSelect">
   <div class="inner">
@@ -963,13 +969,10 @@ async function loadTileset() {
 
     // 3D Tilesの1日あたり利用上限（Google側クォータ）に達すると、詳細タイルの取得が
     // 429で拒否され「ぼやけたまま」になる。故障と誤解されないよう1回だけ案内を出す
-    let tileQuotaNoticeShown = false;
     tileset.tileFailed.addEventListener(function (err) {
-      if (tileQuotaNoticeShown) return;
       const msg = String((err && err.message) || "");
       if (msg.indexOf("429") !== -1 || msg.indexOf("Quota") !== -1 || msg.indexOf("quota") !== -1) {
-        tileQuotaNoticeShown = true;
-        document.getElementById("quotaBanner").style.display = "block";
+        showQuotaAlert();
       }
     });
     document.getElementById("overlay").style.display = "none";
@@ -3192,6 +3195,8 @@ function presenceRender(count) {
       const col = rate >= 0.85 ? "#ff5252" : (rate >= 0.7 ? "#ffd166" : "");
       html += " ｜ " + (rate >= 0.85 ? "⚠ " : "") +
         'タイル <b style="' + (col ? "color:" + col : "") + '">' + fmtK(t) + "</b>";
+      // 上限に達したら、街並みが出ない理由を画面中央で知らせる（429を捕まえられない場合の保険）
+      if (t >= tl) showQuotaAlert();
     }
   }
   el.innerHTML = html;
@@ -3199,6 +3204,21 @@ function presenceRender(count) {
     + "（無償だが1日の上限あり。上限に近づくと黄色、超えそうだと⚠が付きます。上限に達すると街並みが粗いままになります）";
   el.style.display = "inline-block";
 }
+// 3D表示の枠を使い切ったときの案内を画面中央に出す。
+// 429を捕まえられないことがある（root.json は200のまま返り、失敗するのはタイル本体で、
+// エラー文に429が含まれないケース）ため、利用状況APIの取得回数でも判定する。2026-08-23
+let quotaAlertClosed = false;
+function showQuotaAlert() {
+  if (quotaAlertClosed) return;
+  const el = document.getElementById("quotaBanner");
+  if (el) el.style.display = "block";
+}
+function closeQuotaAlert() {
+  quotaAlertClosed = true;
+  const el = document.getElementById("quotaBanner");
+  if (el) el.style.display = "none";
+}
+
 // 管理画面（CiDAO /admin/timetrial「🖼 3Dの描画精度」）で設定した値を画面へ反映する。
 // Cesium は maximumScreenSpaceError の変更を次のフレームから反映するため、再読み込みは要らない。
 // usageFetch は loadTileset より先に走ることがあるので、届いた値を保持して読み込み完了後にも適用する
