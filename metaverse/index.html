@@ -207,6 +207,12 @@
   .bmBtn.quiz { background: #e67e22; color: #fff; }
   .bmBtn.gmap { background: rgba(127,200,255,0.14); border: 1px solid #7fc8ff; color: #7fc8ff; font-size: 12px; }
   .bmBtn.official { background: rgba(255,209,102,0.12); border: 1px solid #ffd166; color: #ffd166; font-size: 12px; }
+  /* 関連サイト（外部記事）。解説の出典ではないのでボタンとは見た目を分ける */
+  #bmRelated { margin-top: 10px; padding-top: 9px; border-top: 1px dashed rgba(255,255,255,0.22); }
+  .bmRelHead { font-size: 11px; color: #9fb2c8; margin-bottom: 5px; }
+  .bmRelLink { display: block; font-size: 12px; color: #8fd3a0; text-decoration: underline; margin-bottom: 4px; line-height: 1.5; }
+  .bmRelLink:hover { color: #b6e6c2; }
+  .bmRelNote { font-size: 10px; color: #7d8a99; line-height: 1.5; margin-top: 4px; }
   .bmBtn.report { background: #4a6b2a; color: #fff; }
   /* 認定証 */
   #certModal {
@@ -738,6 +744,7 @@
     <div id="bmQuizArea"></div>
     <a id="bmReport" class="bmBtn report" href="#" target="_blank" rel="noopener" style="display:none;">📄 学習レポート（A4両面）を見る・印刷する</a>
     <a id="bmOfficial" class="bmBtn official" href="#" target="_blank" rel="noopener">🔎 市公式ページで詳しく見る</a>
+    <div id="bmRelated" style="display:none;"></div>
     <a id="bmGmap" class="bmBtn gmap" href="#" target="_blank" rel="noopener">🗺 Google Mapで場所を見る</a>
     <button class="bmBtn quiz" id="bmQuizBtn">🧠 この文化財のクイズ（初級・中級・上級）</button>
     <button class="bmBtn go" id="bmGoBtn">▶ 現地へ行く</button>
@@ -1899,6 +1906,22 @@ function openBunkazaiDetail(i) {
   } else {
     bmReport.style.display = "none";
   }
+  // 関連サイト（いんざいパルケの記事。掲載の承諾を得ている）。
+  // 解説の出典ではないので、市公式ページのボタンとは分けて小さく並べる
+  const bmRelated = document.getElementById("bmRelated");
+  const relEntry = b.reportId && PARQUE_LINKS[b.reportId];
+  if (relEntry && relEntry.links && relEntry.links.length) {
+    bmRelated.innerHTML = '<div class="bmRelHead">🔗 関連サイト（参考）</div>' +
+      relEntry.links.map(function (r) {
+        return '<a class="bmRelLink" href="' + bzEsc(r.url) + '" target="_blank" rel="noopener">' +
+               bzEsc(r.title) + '</a>';
+      }).join("") +
+      '<div class="bmRelNote">いんざいパルケ様の記事です（掲載承諾済み）。解説の出典ではありません。</div>';
+    bmRelated.style.display = "block";
+  } else {
+    bmRelated.style.display = "none";
+    bmRelated.innerHTML = "";
+  }
   // Google Mapは文化財名では見つからないことが多いため、所在の寺社名（facility）で検索する。
   // 施設名が分からないものは住所で検索する
   // 住所と施設名を併記する（施設名が地図に無い場合でも住所で開けるように）
@@ -2531,6 +2554,11 @@ function openModeSelect() { document.getElementById("modeSelect").classList.add(
 document.getElementById("modeSwitchBtn").addEventListener("click", openModeSelect);
 
 // 文化財データ読み込み＋看板設置
+// 関連サイト（いんざいパルケの記事。reportId をキーにした対応表）。
+// 取得できなくても文化財の表示は止めない
+let PARQUE_LINKS = {};
+const bzEsc = ttEsc;
+
 async function loadBunkazai() {
   try {
     const res = await fetch("bunkazai.json");
@@ -2539,6 +2567,15 @@ async function loadBunkazai() {
   } catch (e) {
     console.error("bunkazai.json の読み込みに失敗:", e);
     return;
+  }
+  try {
+    const pres = await fetch("parque-links.json");
+    if (pres.ok) {
+      const pdata = await pres.json();
+      PARQUE_LINKS = (pdata && pdata.links) || {};
+    }
+  } catch (e) {
+    console.warn("parque-links.json の読み込みに失敗（関連サイトは非表示）:", e);
   }
   const DESIG_COLOR = {
     "国指定": "#e74c3c", "国登録": "#e67e22",

@@ -130,6 +130,11 @@
   ol.src .n{font-family:"Noto Sans JP",sans-serif; font-weight:700; color:var(--gold);}
   ol.src .tier{font-family:"Noto Sans JP",sans-serif; font-size:6.8pt; color:#fff; background:#8d9a7b; border-radius:2px; padding:0 4px; margin:0 3px;}
   ol.src .tier.ref{background:#b0a68c;}
+  /* 関連サイト（参考）。出典一覧と見分けがつくよう番号を振らず、タグの色も変える */
+  .rel{font-size:7.9pt; line-height:1.5;}
+  .rel .tag{font-family:"Noto Sans JP",sans-serif; font-size:6.8pt; color:#fff; background:#a8896b; border-radius:2px; padding:0 4px; margin-right:3px;}
+  .rel a{color:inherit;}
+  .rel-note{font-size:7.2pt; line-height:1.45; color:var(--ink2);}
   ol.src a{color:#2a4a7a; text-decoration:none;}
 
   /* 現地で確かめること＋学習メモ欄。資料が少ない文化財でも紙面が成立するように、
@@ -236,9 +241,22 @@
   // PDF書き出し用モード（scripts/make-report-pdf.py が使う）
   if (params.get('pdfmode') === '1') document.documentElement.classList.add('pdfmode');
 
-  fetch('reports/' + id + '.json', { cache: 'no-cache' })
-    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(render)
+  // 関連サイト（外部記事）。本文の根拠ではないので出典一覧とは分けて描画する。
+  // 取得できなくてもレポート本体の表示は止めない。
+  var RELATED = null;
+
+  Promise.all([
+    fetch('reports/' + id + '.json', { cache: 'no-cache' })
+      .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }),
+    fetch('parque-links.json', { cache: 'no-cache' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })
+  ])
+    .then(function(res){
+      var pl = res[1];
+      if (pl && pl.links && pl.links[id]) RELATED = pl.links[id].links || null;
+      render(res[0]);
+    })
     .catch(function(e){ fail('データを読み込めませんでした（' + e.message + '）。この文化財のレポートはまだ作成されていない可能性があります。'); });
 
   function head(d, page){
@@ -352,6 +370,21 @@
             '（' + esc(s.accessed || '') + '取得）</li>';
     });
     p2 += '</ol>';
+
+    // 関連サイト（参考）。出典＝本文の根拠 とは性質が違うので、番号を振らず別枠にする
+    if (RELATED && RELATED.length) {
+      // 紙面が溢れるため、各行にフルURLは載せない（画面ではタイトルが記事へのリンクになる）。
+      // 印刷物からはサイトのトップURLだけを頼りに辿れるようにする。
+      // 紙面の余白が少ないため、記事名を1行に連ねる（各行にフルURLは載せない）。
+      // 画面では記事名がそのままリンクになる。印刷物からはサイトのトップURLで辿れる。
+      p2 += '<h2 class="sec">関連サイト（参考）</h2><div class="rel">' +
+            '<span class="tag">参考</span>' +
+            RELATED.map(function(r){
+              return '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.title) + '</a>';
+            }).join('／') +
+            '<span class="rel-note">　※ いんざいパルケ（https://www.inzaiparque.com/）の記事です（掲載承諾済み）。' +
+            '本文の根拠ではありません。</span></div>';
+    }
 
     if (d.notes && d.notes.length) {
       p2 += '<div class="notes" style="margin-top:5px"><ul>';

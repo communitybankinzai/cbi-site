@@ -1,0 +1,284 @@
+{
+ "source": "いんざいパルケ https://www.inzaiparque.com/",
+ "note": "各文化財の「関連サイト（参考）」として掲載する外部記事。掲載の承諾を得ています（2026-08-23）。本文の記述の根拠（出典）ではありません。",
+ "permission": "ほくそうパルケ様より掲載承諾（2026-08-23）",
+ "updated": "2026-08-23",
+ "links": {
+  "houjuin-kannondo": {
+   "name": "宝珠院観音堂",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-cultural-property/",
+     "title": "印西の国指定文化財・記念物ギャラリー"
+    }
+   ]
+  },
+  "senpukuji-yakushido": {
+   "name": "泉福寺薬師堂",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-cultural-property/",
+     "title": "印西の国指定文化財・記念物ギャラリー"
+    }
+   ]
+  },
+  "eifukuji-yakushido": {
+   "name": "栄福寺薬師堂",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-cultural-property/",
+     "title": "印西の国指定文化財・記念物ギャラリー"
+    }
+   ]
+  },
+  "dozo-fudo-myoo": {
+   "name": "銅造不動明王立像",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-cultural-property/",
+     "title": "印西の国指定文化財・記念物ギャラリー"
+    },
+    {
+     "url": "https://inzaiparque.com/sampo-kechienji/",
+     "title": "結縁寺(けちえんじ)にほんの里100選の里山を歩く"
+    }
+   ]
+  },
+  "shichibutsu-yakushi": {
+   "name": "木造薬師如来坐像・立像（七仏薬師）",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-cultural-property/",
+     "title": "印西の国指定文化財・記念物ギャラリー"
+    },
+    {
+     "url": "https://inzaiparque.com/matsumushi/",
+     "title": "松虫寺と松虫姫の伝説や松虫姫神社と杉自塚"
+    }
+   ]
+  },
+  "kioroshi-kaiso": {
+   "name": "木下貝層",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-cultural-property/",
+     "title": "印西の国指定文化財・記念物ギャラリー"
+    },
+    {
+     "url": "https://inzaiparque.com/inzai-park-kioroshi/",
+     "title": "木下万葉公園・木下交流の杜公園"
+    }
+   ]
+  },
+  "bishamonten-ryowakiji": {
+   "name": "木造毘沙門天及び両脇侍立像",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "enmei-jizo-senzoji": {
+   "name": "木造延命地蔵菩薩坐像",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "dozo-juichimen-kannon": {
+   "name": "銅造十一面観音立像",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "jizo-bosatsu-ryuzo-bessho": {
+   "name": "木造地蔵菩薩立像",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "fudo-bishamon-saifukuji": {
+   "name": "木造不動明王立像及び毘沙門天立像",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "yakushi-nyorai-raifukuji": {
+   "name": "木造薬師如来坐像",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "kongo-rikishi-ryusuiji": {
+   "name": "木造金剛力士像",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "bonsho-oan": {
+   "name": "梵鐘（応安二年在銘）",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "chudo-kujakumon-kei": {
+   "name": "鋳銅孔雀文磬",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "bonsho-ryufukuji": {
+   "name": "梵鐘（竜腹寺）",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "bonsho-kenmu": {
+   "name": "梵鐘（建武五年在銘）",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "magome-gato": {
+   "name": "馬込遺跡出土瓦塔",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    },
+    {
+     "url": "https://inzaiparque.com/inzai-park-kioroshi/",
+     "title": "木下万葉公園・木下交流の杜公園"
+    }
+   ]
+  },
+  "oshitsuke-mizuka": {
+   "name": "押付の水塚",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "tomi-jinja-shishimai": {
+   "name": "鳥見神社の獅子舞",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "urabe-kagura": {
+   "name": "浦部の神楽",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "tomi-jinja-kagura": {
+   "name": "鳥見神社の神楽",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "shogen-onibasu": {
+   "name": "将監のオニバス発生地",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-chiba-cultural-property/",
+     "title": "印西の千葉県指定文化財ギャラリー"
+    }
+   ]
+  },
+  "tokoname-otsubo": {
+   "name": "常滑の大壺",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/rekishishiryokan-imba/",
+     "title": "印旛歴史民俗資料館で印西の昔を見学しよう"
+    }
+   ]
+  },
+  "koganemaki-murakobata": {
+   "name": "小金牧鹿狩資料「村小旗」",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-park-kioroshi/",
+     "title": "木下万葉公園・木下交流の杜公園"
+    }
+   ]
+  },
+  "bessho-shishimai": {
+   "name": "別所の獅子舞",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/bessho-shishimai/",
+     "title": "別所の獅子舞（地藏寺）｜千葉県印西市無形文化財"
+    }
+   ]
+  },
+  "yoshitaka-no-ozakura": {
+   "name": "吉高の大桜",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-park-yoshitaka/",
+     "title": "吉高の大桜と桜まつり｜千葉県印西市"
+    }
+   ]
+  },
+  "iwaike-jutaku-omoya": {
+   "name": "岩井家住宅主屋（旧武蔵屋店舗）",
+   "links": [
+    {
+     "url": "https://inzaiparque.com/inzai-cultural-property/",
+     "title": "印西の国指定文化財・記念物ギャラリー"
+    },
+    {
+     "url": "https://inzaiparque.com/inzai-kioroshi-workshop-musashiya/",
+     "title": "国登録有形文化財「武蔵屋」千葉県印西市の歴史文化体験"
+    },
+    {
+     "url": "https://inzaiparque.com/musashiya-hinamatsuri/",
+     "title": "武蔵屋町家ひな祭り"
+    }
+   ]
+  }
+ }
+}

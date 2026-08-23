@@ -45,6 +45,11 @@
   .act.print:hover{background:#e6e2d4;}
   .act.pdf{background:#fff4e6; color:#8a5a1a; border:1px solid #e8c89a;}
   .act.pdf:hover{background:#fbe9d2;}
+  /* 関連サイト（外部記事）。ボタンではなく細いリンク行にしてカードを混み合わせない */
+  .c-rel{margin-top:8px; padding-top:7px; border-top:1px dashed #ddd8c8; font-size:11px; line-height:1.6; color:#6b6455;}
+  .c-rel .lbl{color:#8a5a1a; font-weight:700;}
+  .c-rel a{color:#3a5a2a; text-decoration:underline;}
+  .c-rel a:hover{color:#2c3a1e;}
   .c-act{gap:5px;}
   .act{padding:7px 4px; font-size:11.5px;}
   .pending{font-size:11px; color:#9a9384; padding:7px 0 2px;}
@@ -100,9 +105,20 @@
   }
   var DCLS = { '国指定':'d0', '国登録':'d1', '県指定':'d2', '市指定':'d3' };
 
-  fetch('bunkazai.json', { cache: 'no-cache' })
-    .then(function(r){ return r.json(); })
-    .then(function(d){ SPOTS = d.spots || []; draw(); })
+  // 関連サイト（外部記事）。取得できなくても一覧の表示は止めない
+  var REL = {};
+
+  Promise.all([
+    fetch('bunkazai.json', { cache: 'no-cache' }).then(function(r){ return r.json(); }),
+    fetch('parque-links.json', { cache: 'no-cache' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })
+  ])
+    .then(function(res){
+      SPOTS = res[0].spots || [];
+      if (res[1] && res[1].links) REL = res[1].links;
+      draw();
+    })
     .catch(function(e){ grid.innerHTML = '<p>文化財データを読み込めませんでした（' + esc(e.message) + '）</p>'; });
 
   function draw(){
@@ -126,12 +142,19 @@
         '<div><div class="c-name">' + esc(s.name) + '</div><div class="c-kana">' + esc(s.kana || '') + '</div></div>' +
         '<div class="c-meta">' + esc(s.address || '') + (s.era ? '　／　' + esc(s.era) : '') + '</div>';
       if (id) {
+        var rel = '';
+        if (REL[id] && REL[id].links && REL[id].links.length) {
+          rel = '<div class="c-rel"><span class="lbl">🔗 関連サイト</span>　' +
+            REL[id].links.map(function(r){
+              return '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.title) + '</a>';
+            }).join('／') + '（いんざいパルケ）</div>';
+        }
         return '<div class="card">' + head +
           '<div class="c-act">' +
             '<a class="act view" href="report.html?id=' + encodeURIComponent(id) + '">📖 読む</a>' +
             '<a class="act print" href="report.html?id=' + encodeURIComponent(id) + '&amp;print=1">🖨 印刷</a>' +
             '<a class="act pdf" href="reports/' + encodeURIComponent(id) + '.pdf" target="_blank" rel="noopener">📄 PDF</a>' +
-          '</div></div>';
+          '</div>' + rel + '</div>';
       }
       return '<div class="card none">' + head + '<div class="pending">レポートは準備中です</div></div>';
     }).join('');
