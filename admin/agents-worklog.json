@@ -18,6 +18,25 @@
       "actuals": [
         {
           "date": "2026-08-23",
+          "title": "Map Tilesのタイル取得上限を3万→50万回/日へ引き上げ、関係箇所を全整合 0.5時間",
+          "category": "保守",
+          "outputs": [
+            "Cloud Console（creators-map）で 3D Tiles renderer requests per day を 30,000→500,000 に変更（即時承認・ユーザー操作）",
+            "cidao src/app/api/metaverse-usage/route.ts（RENDERER_LIMIT_PER_DAY を 500000 に）",
+            "site/admin/index.html（タイル取得回数の見方を書き換え・1日60人が目安と明記）",
+            "site/admin/admin.js（警告文言3か所とフォールバック値 || 30000 → || 500000、コメント）",
+            "site/metaverse/index.html（フォールバック値 || 30000 → || 500000）",
+            "2026-08-23_MapTilesクォータ引き上げ申請.md（新規→結果と整合箇所一覧・運用方針の変化を追記）",
+            "保管庫ノート4件の冒頭に更新注記（クォータ枯渇と対策／課金モデル／課金監視手順／タイムトライアル運営方針）",
+            "agents/a9-stage/knowledge/event-plans/2026q4_文化財タイムトライアル競技会.md（スケジュール完了化・リスク表・費目を更新）",
+            "site/metaverse/CLAUDE_HANDOFF.md（費用ゼロ運用の節を更新、同期すべき4箇所を明記）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "実測（1人あたり中央値4,126タイル・描画精度8では8,217）から50人規模には41万回必要と算出し、50万回で申請。審査なしで即時承認された。タイル本体は無償のため費用は増えない（課金は root リクエスト単位・30/日は据え置き）。**運用方針が変わった点**：これまで『イベント当日は描画精度を16〜32に上げる』必要があったが、50万回なら描画精度8のまま1日60人程度まで耐えるため不要になった。root枠の当日引き上げは従来どおり継続。Console側の値を変えたら CiDAO の RENDERER_LIMIT_PER_DAY・admin.js・metaverse/index.html のフォールバックを必ず合わせること（警告の閾値がずれる）。既存の保管庫ノートは本文改変禁止のルールに従い冒頭注記のみ追加した。session: 7601b8f5-0d91-483c-afc7-15590edebc06 / output: 384,376 / cost: $106.78"
+        },
+        {
+          "date": "2026-08-23",
           "title": "メタバース☰メニューへ学習レポート一覧の導線を追加（導線調査＋実装＋検証）0.2時間",
           "category": "実装",
           "outputs": [
@@ -3964,13 +3983,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-08-31",
-          "title": "Map Tiles API のタイル取得上限を3万→50万回/日へ引き上げ申請",
-          "category": "事務",
-          "priority": "高",
-          "note": "Cloud Console（プロジェクト creators-map）の割り当て画面から申請。手順と申請文面（日英）は保管庫ノート 2026-08-23_MapTilesクォータ引き上げ申請.md。タイル本体は無償のため費用は増えない。root requests per day（課金対象・30/日）は絶対に上げないこと。承認されたらCiDAOのRENDERER_LIMIT_PER_DAYと管理画面の説明文も更新する。"
-        },
         {
           "due": "未定",
           "title": "📄 全50件そろった学習レポートの活用方法を決める（一括PDF配布・冊子化・提案書への計上額の確定）",

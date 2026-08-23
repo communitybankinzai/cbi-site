@@ -3196,7 +3196,7 @@ function presenceRender(count) {
       // タイル取得が1日の上限に近づくと詳細タイルの取得が止まり、街並みが粗いままになる。
       // 費用ではなく表示品質の問題だが、イベント中に気づけるよう色と⚠で知らせる（2026-08-22追加）
       const t = usageInfo.todayRequests;
-      const tl = usageInfo.rendererLimitPerDay || 30000;
+      const tl = usageInfo.rendererLimitPerDay || 500000;
       const rate = t / tl;
       const col = rate >= 0.85 ? "#ff5252" : (rate >= 0.7 ? "#ffd166" : "");
       html += " ｜ " + (rate >= 0.85 ? "⚠ " : "") +

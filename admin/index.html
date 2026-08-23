@@ -1030,15 +1030,16 @@
           枠は<b>毎日 日本時間16時ごろ</b>（太平洋時間0時）に回復します。請求額の正は Google Cloud の請求画面です（この画面には金額を出しません）。
         </p>
         <p class="panel-desc mv-cost-note">
-          <b>タイル取得回数の見方</b>：タイル本体は<b>無償ですが回数の上限があります</b>（renderer requests。Google既定は3万回／日で、
-          2026-08-21 に「割り当ての調整」を有効化したため使用量に応じて自動で増えます）。
-          上限に達すると街並みが粗いままになり、費用ではなく<b>表示品質の問題</b>として現れます。
-          8/21には3万回を超えて実際に枯渇しました。イベント前は必ず残量を確認してください。
+          <b>タイル取得回数の見方</b>：タイル本体は<b>無償ですが回数の上限があります</b>（renderer requests）。
+          Google既定の3万回／日では8/20・8/23に実際に枯渇して街並みが表示できなくなったため、
+          <b>2026-08-23に50万回／日へ引き上げました</b>（即時承認・タイル本体は無償のため費用は増えません）。
+          上限に達すると街並みが粗いまま、または暗いままになり、費用ではなく<b>表示品質の問題</b>として現れます。
+          実測で1人あたり4,000〜8,000回を使うため、50万回なら<b>1日60人程度</b>が目安です。
         </p>
         <div class="mv-kpi-grid" id="mv-kpi-grid">
           <div class="mv-kpi"><div class="mv-kpi-label">👥 いま参加中</div><div class="mv-kpi-value" id="mv-kpi-now">–</div><div class="mv-kpi-sub" id="mv-kpi-now-sub">直近90秒以内に合図のあった端末数</div></div>
           <div class="mv-kpi"><div class="mv-kpi-label">📅 本日の利用者</div><div class="mv-kpi-value" id="mv-kpi-visitors">–</div><div class="mv-kpi-sub" id="mv-kpi-visitors-sub">1ブラウザ＝1人として集計</div></div>
-          <div class="mv-kpi"><div class="mv-kpi-label">🧱 本日のタイル取得</div><div class="mv-kpi-value" id="mv-kpi-tiles">–</div><div class="mv-kpi-sub" id="mv-kpi-tiles-sub">無償だが回数上限あり（既定3万回／日・自動調整中）。費用には影響しません</div></div>
+          <div class="mv-kpi"><div class="mv-kpi-label">🧱 本日のタイル取得</div><div class="mv-kpi-value" id="mv-kpi-tiles">–</div><div class="mv-kpi-sub" id="mv-kpi-tiles-sub">無償だが回数上限あり（50万回／日）。費用には影響しません</div></div>
           <div class="mv-kpi mv-kpi-cost"><div class="mv-kpi-label">💰 閲覧開始枠の消化<span class="mv-kpi-tag">費用が出るのはここだけ</span></div><div class="mv-kpi-value" id="mv-kpi-quota">–</div><div class="mv-kpi-sub"><div class="mv-bar"><div class="mv-bar-fill" id="mv-kpi-quota-bar"></div></div>3Dワールドを開いた回数／1日の上限</div></div>
         </div>
         <p class="meta-note" id="mv-usage-error" style="display:none;color:var(--c-danger)"></p>
