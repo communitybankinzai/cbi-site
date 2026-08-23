@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-08-23",
+          "title": "「いんざい冒険図鑑リアル」の動作検証（GPS判定・獲得・図鑑・PWA）0.2時間",
+          "category": "調査",
+          "outputs": [
+            "検証対象: site/adventure/index.html（コード変更なし）",
+            "実測1: ../metaverse/bunkazai.json から50件読み込み成功。Leaflet読み込み・地図生成・secure context を確認",
+            "実測2: 起動順序＝安全確認モーダル→agreeSafety()→startGps() の順で、同意前はGPSが起動しない設計であることを確認",
+            "実測3: 距離判定。122m地点では出現せず、55m地点で出現。CATCH_RADIUS_M=100 が正確に効いている",
+            "実測4: 出現→獲得→localStorage保存→トースト「1/50」→ずかん反映（未取得は「？」・★等級表示）の一連を確認",
+            "実測5: tribeOf による精霊6系統の分類が50件すべてに漏れなく適用（ほとけ11・たから18・まつり7・いせき6・やしろ4・もり4＝計50）",
+            "実測6: manifest.json / service-worker.js とも200、Service Worker 登録済み。?debug=1 のテストモードで地図タップ＝仮想移動が機能することを確認",
+            "検証で作成した localStorage の記録（cocola-real-zukan-v1 / cocola-real-safety-agreed）は削除して初期状態へ復元"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "祐樹さんから「いんざい冒険図鑑リアルは機能として活きているか。GPSを試していないので不安」との確認。前タスクで /bunkazai/ からリンクを張って到達可能にした直後だったため、動作を実測した。GPS到達後の処理は全て正常。ただし実機の衛星測位そのものはブラウザ自動化では位置情報の許可プロンプトを出せず再現できないため未確認で、現地での実機確認が必要である旨を報告した。あわせて ?debug=1 のテストモード（地図タップで仮想移動）を案内。注意点として、service-worker の CACHE_NAME=cbi-adventure-v2 が古い版を返し続ける可能性と、localStorage キーが cocola-real-* のままである点（表記統一時に記録が消えるリスク）を伝えた。hours はセッション累計 output 159,823 から前タスク記録時点の 143,801 を引いた 16,022 で算出。session: 23c7a3be-6c61-4cb9-9a96-9269b46b2070 / output: 159,823 / cost: $29.88"
+        },
+        {
+          "date": "2026-08-23",
           "title": "「いんざい文化財ずかん」プロジェクトの立ち上げ（命名・キャッチ設計・専用ページ新設・トップのプロジェクト導線とナビ再編）0.4時間",
           "category": "実装",
           "outputs": [
