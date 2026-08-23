@@ -2700,3 +2700,29 @@ details.aa-g-wait > summary::marker { color: var(--c-ink-sub); }
 .aa-copy.is-failed { border-color: var(--c-danger); color: var(--c-danger); }
 .aa-row[role="button"] { cursor: pointer; }
 .aa-row[role="button"]:focus-visible { outline: 2px solid var(--c-navy); outline-offset: 2px; }
+
+/* 💰 予算計上アイテム（2026-08-23） */
+.budget-summary { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0 18px; }
+.budget-card { flex: 1 1 190px; background: #f5f8fc; border: 1px solid #d9e3ef; border-radius: 10px; padding: 12px 14px; }
+.budget-card-label { display: block; font-size: 12px; color: #5b6b7f; margin-bottom: 4px; }
+.budget-card-value { font-size: 22px; color: #17324d; }
+.budget-card-value small { font-size: 12px; color: #5b6b7f; margin-left: 3px; }
+.budget-card-value.is-muted { color: #8899aa; }
+.budget-list { display: flex; flex-direction: column; gap: 12px; }
+.budget-item { border: 1px solid #dfe6ee; border-left: 5px solid #9aa8b8; border-radius: 10px; padding: 14px 16px; background: #fff; }
+.budget-item.is-active { border-left-color: #2f855a; }
+.budget-item.is-planned { border-left-color: #b7791f; }
+.budget-item.is-deferred { border-left-color: #a0aec0; background: #fafbfc; }
+.budget-item-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.budget-item-head h3 { font-size: 15px; margin: 0; flex: 1 1 auto; }
+.budget-badge { font-size: 11px; font-weight: bold; border-radius: 10px; padding: 2px 9px; background: #e2e8f0; color: #445; }
+.budget-badge.is-active { background: #2f855a; color: #fff; }
+.budget-badge.is-planned { background: #b7791f; color: #fff; }
+.budget-badge.is-deferred { background: #cbd5e0; color: #445; }
+.budget-amount { font-size: 18px; font-weight: bold; color: #17324d; white-space: nowrap; }
+.budget-amount small { font-size: 11px; font-weight: normal; color: #5b6b7f; }
+.budget-detail { display: grid; grid-template-columns: 84px 1fr; gap: 4px 12px; margin: 10px 0 0; font-size: 13px; }
+.budget-detail dt { color: #5b6b7f; }
+.budget-detail dd { margin: 0; color: #223; word-break: break-word; }
+.budget-detail dd.budget-risk { color: #9c4221; }
+.budget-basis { display: inline-block; margin-left: 8px; font-size: 11px; color: #5b6b7f; background: #edf2f7; border-radius: 8px; padding: 1px 7px; }

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=20260821metaverse3">
+<link rel="stylesheet" href="admin.css?v=20260823budget">
 </head>
 <body>
 
@@ -76,6 +76,7 @@
       <button type="button" class="tab-btn" data-tab="bug-reports" role="tab" aria-selected="false">🐛 不具合レポート</button>
       <button type="button" class="tab-btn" data-tab="ledger" role="tab" aria-selected="false">💰 収支管理</button>
       <button type="button" class="tab-btn" data-tab="metaverse" role="tab" aria-selected="false">🌐 メタバース</button>
+      <button type="button" class="tab-btn" data-tab="budget" role="tab" aria-selected="false">💰 予算</button>
     </nav>
 
     <!-- ===== タブ: アイデア ===== -->
@@ -992,6 +993,28 @@
     </div><!-- /tab-ledger -->
 
     <!-- ===== タブ: メタバース（アクセス・課金モニタ／位置修正履歴） ===== -->
+    <div class="tab-panel" id="tab-budget" role="tabpanel" hidden>
+      <section class="panel">
+        <div class="panel-head-row">
+          <h2 class="panel-title">💰 予算計上アイテム（協働事業の費用算出根拠）</h2>
+          <span class="meta-note" id="budget-updated"></span>
+        </div>
+        <p class="panel-desc">
+          市への提案書に載せる費用の一覧です。<b>実測にもとづく額</b>と<b>試算にとどまる額</b>を区別して表示します。
+          金額の根拠が確認できないものは「要見積」と表示し、数字を作りません。
+        </p>
+        <div class="budget-summary" id="budget-summary"></div>
+        <div class="budget-list" id="budget-list"></div>
+        <div class="panel-actions">
+          <button type="button" class="btn" id="budget-copy-md">📋 提案書用の表をコピー（Markdown）</button>
+          <button type="button" class="btn" id="budget-copy-csv">📊 CSVでコピー</button>
+          <span class="meta-note" id="budget-copy-status"></span>
+        </div>
+        <p class="panel-desc">
+          データの実体は <code>site/admin/budget-items.json</code> です。項目の追加・金額の更新はこのファイルを編集してください。
+        </p>
+      </section>
+    </div>
     <div class="tab-panel" id="tab-metaverse" role="tabpanel" hidden>
       <section class="panel">
         <div class="panel-head-row">
@@ -1230,6 +1253,6 @@
   <div id="toast" class="toast" hidden></div>
 </section>
 
-<script src="admin.js?v=20260821metaverse3"></script>
+<script src="admin.js?v=20260823budget"></script>
 </body>
 </html>

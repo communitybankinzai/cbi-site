@@ -1,0 +1,93 @@
+{
+  "updatedAt": "2026-08-23",
+  "_comment": "協働事業の予算計上・費用管理アイテム。市への提案書の費用算出根拠として使う。実測値と推定値を必ず区別し、根拠のない金額を書かないこと。",
+  "note": "金額は年額（円）。status=active は現在発生中、planned は採択後に発生見込み、deferred は費用対効果で見送り中。",
+  "categories": {
+    "api": "外部API・データ配信",
+    "ai": "AI利用料",
+    "infra": "インフラ・ホスティング",
+    "data": "データ購入・利用許諾"
+  },
+  "items": [
+    {
+      "id": "map-tiles",
+      "name": "3D地図データ配信（Google Map Tiles API）",
+      "category": "api",
+      "status": "active",
+      "annualYen": 60000,
+      "basis": "measured",
+      "currentActualYen": 0,
+      "usedFor": "メタバース印西（3Dワールド）の地図表示",
+      "pricing": "月1,000セッション無料、超過分 $6.00/1,000セッション（1ドル=163.75円）",
+      "calculation": "シナリオC（毎月イベント開催・月5,000閲覧）約47,000円に、為替変動・料金改定への安全率約25%を加算",
+      "measuredNote": "2026-08-15〜21の実測でセッションは1日20回未満（無料枠の2〜5%）。公開以来の実請求は0円。採択前はroot requests上限を30回/日に制限し構造的に0円",
+      "riskNote": "ドル建てのため為替変動あり。Googleは料金改定の実績あり（直近2025年3月）。年1回料金表を再確認する",
+      "sourceUrl": "https://developers.google.com/maps/documentation/tile/usage-and-billing",
+      "docRef": "2026-08-21_MapTiles年間費用見積_協働事業算出根拠.md"
+    },
+    {
+      "id": "gemini-api",
+      "name": "AI利用料（Gemini API）",
+      "category": "ai",
+      "status": "active",
+      "annualYen": 24000,
+      "basis": "measured",
+      "currentActualYen": 2124,
+      "usedFor": "イベントチラシの画像からの情報自動抽出、アクセス増減の分析",
+      "pricing": "従量課金（画像入力を含む処理は文字のみより高い）",
+      "calculation": "実測月額177円（2026年7〜8月）を基に、利用拡大を見込んで月2,000円で計上",
+      "measuredNote": "2026-07-18〜08-15の実測で月177円。Cloud Console のサービス別内訳で確認",
+      "riskNote": "チラシ取込の件数に比例して増える。大量取込を行う月は上振れする",
+      "sourceUrl": "https://console.cloud.google.com/billing/reports",
+      "docRef": ""
+    },
+    {
+      "id": "river-water-level",
+      "name": "河川水位・雨量のリアルタイム配信",
+      "category": "data",
+      "status": "planned",
+      "annualYen": null,
+      "basis": "unknown",
+      "currentActualYen": 0,
+      "usedFor": "災害MAPで河川の水位上昇を早期に把握し、冠水の予兆をつかむ",
+      "pricing": "有償配信（一般財団法人 河川情報センター経由）。料金は要見積",
+      "calculation": "未算出。市との協働事業が成立した場合に見積を取得する",
+      "measuredNote": "2026-08-23調査。国が観測した水位・雨量は「水防災オープンデータ提供サービス」として有償配信のみで、無償の公開APIは存在しない",
+      "riskNote": "配信事業者との契約が必要。自治体が既に契約している場合は市経由で利用できる可能性があり、協働事業の協議事項とする",
+      "sourceUrl": "https://www.river.or.jp/koeki/opendata/index.html",
+      "docRef": "site/inzai-disaster-map/CLAUDE_HANDOFF.md"
+    },
+    {
+      "id": "x-api",
+      "name": "X（旧Twitter）投稿の自動検索API",
+      "category": "api",
+      "status": "deferred",
+      "annualYen": 393000,
+      "basis": "estimated",
+      "currentActualYen": 0,
+      "usedFor": "災害時のX投稿からの被害情報収集。市長のX発信の自動取得",
+      "pricing": "Basicプラン 月200ドル程度〜",
+      "calculation": "月200ドル×12か月×163.75円 ≒ 393,000円",
+      "measuredNote": "未契約。金額は公表プラン料金からの試算で、実際の見積は未取得",
+      "riskNote": "印西市規模の巡回には費用が見合わないため見送り中。Threads・Instagram・Blueskyで代替している。市長のX発信だけは取得できない制約が残る",
+      "sourceUrl": "https://developer.x.com/en/products/x-api",
+      "docRef": "site/inzai-disaster-map/CLAUDE_HANDOFF.md"
+    },
+    {
+      "id": "vercel-supabase",
+      "name": "CiDAOの稼働基盤（Vercel・Supabase）",
+      "category": "infra",
+      "status": "active",
+      "annualYen": 0,
+      "basis": "measured",
+      "currentActualYen": 0,
+      "usedFor": "CiDAOサイト本体、災害MAPのAPI、SNS巡回の定期実行、データベース",
+      "pricing": "いずれも無料枠内で運用中",
+      "calculation": "現在は無料枠で足りているため0円。利用者数が増えると有料プランが必要になる",
+      "measuredNote": "2026-08時点で無料枠内。請求は発生していない",
+      "riskNote": "Vercelは商用利用や帯域超過で有料プラン（月20ドル〜）が必要になる場合がある。Supabaseもデータベース容量の上限がある。利用が増えた段階で再評価する",
+      "sourceUrl": "",
+      "docRef": ""
+    }
+  ]
+}

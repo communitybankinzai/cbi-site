@@ -237,6 +237,11 @@ const UNREAD_POLL_MS = 30000;
     document.querySelectorAll('.tab-btn').forEach(b => {
       b.addEventListener('click', () => switchTab(b.dataset.tab));
     });
+    // 予算タブ: 提案書へ貼り付ける形で書き出す
+    const mdBtn = $('budget-copy-md');
+    if (mdBtn) mdBtn.addEventListener('click', () => budgetData && budgetCopy(budgetToMarkdown(), '提案書用の表'));
+    const csvBtn = $('budget-copy-csv');
+    if (csvBtn) csvBtn.addEventListener('click', () => budgetData && budgetCopy(budgetToCsv(), 'CSV'));
   }
 
   // =========================================================
@@ -248,13 +253,14 @@ const UNREAD_POLL_MS = 30000;
       b.classList.toggle('active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports', 'ledger', 'metaverse'].forEach(t => {
+    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports', 'ledger', 'budget', 'metaverse'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
     document.body.classList.toggle('mail-fullwidth', name === 'mail');
     if (name !== 'mail') {
       document.body.classList.remove('mail-view-labels', 'mail-view-list', 'mail-view-detail');
     }
+    if (name === 'budget') openBudgetTab();
     if (name === 'agents' && !state.agentsLoaded) loadAgents();
     if (name === 'changelog' && !state.changelogLoaded) loadChangelog();
     if (name === 'changelog') loadNewsAdmin();
@@ -1979,6 +1985,127 @@ const UNREAD_POLL_MS = 30000;
   let mvFixesLoaded = false;
   let mvDailyLoaded = false;
   let mvDays = 14;
+
+
+  // ===== 💰 予算計上アイテム =====
+  // 協働事業の提案書へ転記する費用一覧。実測値と試算値を必ず区別して表示する。
+  let budgetData = null;
+
+  const BUDGET_STATUS = {
+    active:   { label: '発生中',   cls: 'is-active' },
+    planned:  { label: '採択後',   cls: 'is-planned' },
+    deferred: { label: '見送り中', cls: 'is-deferred' }
+  };
+  const BUDGET_BASIS = {
+    measured:  '実測にもとづく',
+    estimated: '公表料金からの試算',
+    unknown:   '要見積（根拠未取得）'
+  };
+
+  function budgetYen(v) {
+    return v === null || v === undefined ? '要見積' : `${Number(v).toLocaleString('ja-JP')}円`;
+  }
+
+  async function openBudgetTab() {
+    if (budgetData) return;
+    try {
+      const res = await fetch('./budget-items.json?_=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      budgetData = await res.json();
+      renderBudget();
+    } catch (e) {
+      $('budget-list').innerHTML = `<div class="empty">予算データを読み込めませんでした（${esc(e.message || '接続エラー')}）。</div>`;
+    }
+  }
+
+  function renderBudget() {
+    const items = budgetData.items || [];
+    const cats = budgetData.categories || {};
+    $('budget-updated').textContent = budgetData.updatedAt ? `最終更新 ${budgetData.updatedAt}` : '';
+
+    // 合計は「金額が確定している項目」だけを足す。要見積を0円として扱わない
+    const sumOf = st => items.filter(i => i.status === st && i.annualYen !== null)
+                            .reduce((a, i) => a + Number(i.annualYen || 0), 0);
+    const unknownCount = items.filter(i => i.annualYen === null).length;
+    const actualSum = items.reduce((a, i) => a + Number(i.currentActualYen || 0), 0);
+
+    $('budget-summary').innerHTML = `
+      <div class="budget-card">
+        <span class="budget-card-label">提案書へ計上（発生中）</span>
+        <strong class="budget-card-value">${budgetYen(sumOf('active'))}<small>／年</small></strong>
+      </div>
+      <div class="budget-card">
+        <span class="budget-card-label">現在の実際の支出</span>
+        <strong class="budget-card-value">${budgetYen(actualSum)}<small>／年換算</small></strong>
+      </div>
+      <div class="budget-card">
+        <span class="budget-card-label">見送り中（参考）</span>
+        <strong class="budget-card-value is-muted">${budgetYen(sumOf('deferred'))}<small>／年</small></strong>
+      </div>
+      ${unknownCount ? `<div class="budget-card"><span class="budget-card-label">要見積</span><strong class="budget-card-value is-muted">${unknownCount}件</strong></div>` : ''}
+    `;
+
+    $('budget-list').innerHTML = items.map(i => {
+      const st = BUDGET_STATUS[i.status] || { label: i.status, cls: '' };
+      return `
+      <article class="budget-item ${st.cls}">
+        <div class="budget-item-head">
+          <span class="budget-badge ${st.cls}">${esc(st.label)}</span>
+          <h3>${esc(i.name)}</h3>
+          <span class="budget-amount">${budgetYen(i.annualYen)}<small>／年</small></span>
+        </div>
+        <dl class="budget-detail">
+          <dt>用途</dt><dd>${esc(i.usedFor || '-')}</dd>
+          <dt>料金体系</dt><dd>${esc(i.pricing || '-')}</dd>
+          <dt>算出方法</dt><dd>${esc(i.calculation || '-')}<span class="budget-basis">${esc(BUDGET_BASIS[i.basis] || i.basis)}</span></dd>
+          ${i.measuredNote ? `<dt>実測</dt><dd>${esc(i.measuredNote)}</dd>` : ''}
+          ${i.riskNote ? `<dt>留意点</dt><dd class="budget-risk">${esc(i.riskNote)}</dd>` : ''}
+          ${i.sourceUrl ? `<dt>出典</dt><dd><a href="${esc(i.sourceUrl)}" target="_blank" rel="noreferrer">${esc(i.sourceUrl)}</a></dd>` : ''}
+        </dl>
+      </article>`;
+    }).join('');
+  }
+
+  // 提案書に貼れる形（Markdownの表）を組み立てる
+  function budgetToMarkdown() {
+    const items = (budgetData.items || []).filter(i => i.status !== 'deferred');
+    const lines = [
+      '| 費目 | 年額 | 算出根拠 |',
+      '|---|---|---|',
+      ...items.map(i => `| ${i.name} | ${budgetYen(i.annualYen)} | ${(i.calculation || '').replace(/\|/g, '／')} |`)
+    ];
+    const total = items.filter(i => i.annualYen !== null).reduce((a, i) => a + Number(i.annualYen), 0);
+    lines.push(`| **合計** | **${budgetYen(total)}** | 金額が確定している項目の合計 |`);
+    const unknown = items.filter(i => i.annualYen === null);
+    if (unknown.length) lines.push('', `※ ${unknown.map(i => i.name).join('・')} は見積取得後に計上する。`);
+    lines.push('', `（${budgetData.updatedAt} 時点。実測にもとづく額と公表料金からの試算を含む）`);
+    return lines.join('\n');
+  }
+
+  function budgetToCsv() {
+    const head = ['費目', '状態', '年額(円)', '算出の根拠', '用途', '料金体系', '算出方法', '実測', '留意点', '出典'];
+    const rows = (budgetData.items || []).map(i => [
+      i.name,
+      (BUDGET_STATUS[i.status] || {}).label || i.status,
+      i.annualYen === null ? '要見積' : i.annualYen,
+      BUDGET_BASIS[i.basis] || i.basis,
+      i.usedFor || '', i.pricing || '', i.calculation || '',
+      i.measuredNote || '', i.riskNote || '', i.sourceUrl || ''
+    ]);
+    return [head, ...rows]
+      .map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
+      .join('\r\n');
+  }
+
+  async function budgetCopy(text, label) {
+    try {
+      await navigator.clipboard.writeText(text);
+      $('budget-copy-status').textContent = `${label}をコピーしました`;
+    } catch {
+      $('budget-copy-status').textContent = 'コピーできませんでした（ブラウザの権限を確認してください）';
+    }
+    setTimeout(() => { $('budget-copy-status').textContent = ''; }, 4000);
+  }
 
   function openMetaverseTab() {
     mvBindSseSave();
