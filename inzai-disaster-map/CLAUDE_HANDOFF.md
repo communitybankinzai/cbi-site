@@ -42,7 +42,9 @@
 - **情報源はコードに固定せず DB レジストリ**（`disaster_info_sources`）。CIDAO管理画面 `/admin/disaster-sources` で追加・有効/無効・削除・**テスト取得（DB未書込でプレビュー）**・今すぐ巡回・**手動項目の追加**（公式LINE本文の貼り付け用）。新しい情報源を見つけたらここに登録する。
 - kind 別パーサ（`src/lib/disaster-timeline.ts`）: city-category-html（市の災害情報16-5-2・避難情報16-5-1）／city-alert-xml（防災速報。`src/lib/inzai-city-alerts.ts` に共通化し避難所APIと共用）／jma-warning（印西市 1223100・解除は cancel）／jma-overview（千葉県概況）／jma-quake（印西市の震度を題名に）／sns-priority（`disaster_sns_candidates.raw_payload.priority_label` 付き＝市長・市公式）／manual。新種は関数表に1つ足す。
 - pg_cron 10分ごと POST（app_settings の4分クレームで多重実行防止）、90日で自動削除。migration `supabase/migrations/20260823120000_disaster_timeline.sql`（**適用はユーザーが SQL Editor で実行**。未適用の間 API は 503 と案内文を返し、MAP側は「取得できませんでした」を表示する）。
-- 取れない情報源（再調査不要）: 市公式LINE（API無し→手動）、市長X（有料・予算タブ）、千葉県公式（日付付き一覧なし）、市RSS（存在しない）。詳細は保管庫 `cidao/2026-08-23_災害公式情報の情報源調査とタイムライン設計.md`。
+- 千葉県防災ポータル（kind `chiba-bousai-portal`、2026-08-23午後追加）: トップの緊急情報と被害情報PDF一覧を取り込む。PDF本文は取得不可（題名・時刻のみ）。**情報源の登録は管理画面から行う（seedには無い）**。
+- 市長SNSは保存時ラベルに加えて読み出し時にも判定（取りこぼし対策）。
+- 取れない情報源（再調査不要）: 市公式LINE（API無し→手動）、市長X（有料・予算タブ）、千葉県公式トップ pref.chiba.lg.jp（日付付き一覧なし。**防災ポータルは取れる**）、市RSS（存在しない）。詳細は保管庫 `cidao/2026-08-23_災害公式情報の情報源調査とタイムライン設計.md`。
 
 ### SNS・写真・場所確認
 
