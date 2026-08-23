@@ -71,7 +71,7 @@ MAPは `config.js` の `snsMonitorEndpoint` で以下へ接続する。
 
 `https://cidao.vercel.app/api/disaster/sns-monitor`
 
-- Supabase `pg_cron`が5分ごとに固定検索語を巡回する。ブラウザを開いていなくても動く。
+- Supabase `pg_cron`が5分ごとに固定検索語を巡回する。ブラウザを開いていなくても動く。**Instagramだけは20分間隔に間引く**（`PLATFORM_MIN_INTERVAL_MS`。2026-08-23 に Graph API の時間あたり上限 #4 に達したため。前回−5分から検索するので取りこぼしなし）。
 - CIDAO APIのGETは`?date=YYYY-MM-DD`で指定した日本時間の日付だけを返す。過去災害を現在表示へ混在させない。
 - 発見した投稿は自動公開せず、`disaster_sns_candidates`へ未確認候補として保存する。
 - MAP右側の「SNS新着巡回」から元投稿を開き、確認後に端末内の被害候補へ登録できる。

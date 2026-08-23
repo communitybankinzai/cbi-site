@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-08-23",
+          "title": "SNS巡回: Instagramの巡回間隔を5分→20分に間引き（Meta #4 上限対策）0.1時間",
+          "category": "保守",
+          "outputs": [
+            "C:\\Repos\\cidao: src/lib/disaster-sns-monitor.ts（8dd324d）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "cronは5分のまま、ルールの last_scanned_at が20分未満のInstagramルールを skipped にする。scanSince が前回−5分から検索するため取りこぼしなし。Threads/Blueskyは5分維持。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341"
+        },
+        {
+          "date": "2026-08-23",
           "title": "いんざいパルケ記事リンクの実装（承諾取得後・3か所へ反映＋PDF28件再生成）0.3時間",
           "category": "実装",
           "outputs": [
@@ -4089,13 +4101,6 @@
           "category": "実装",
           "priority": "中",
           "note": "8/23 02:16 の市長投稿（震度5弱・安全第一）は本文に署名がなく自動判定不可。IGの投稿ページはログイン壁で投稿者を外部確認できない。管理画面で人が付けたラベルをタイムラインが拾う設計にする"
-        },
-        {
-          "due": "2026-08-30",
-          "title": "📸 Instagram巡回の「Application request limit reached」対策（巡回間隔を5分→15〜30分にする／ハッシュタグIDをキャッシュして呼出回数を半減）",
-          "category": "保守",
-          "priority": "高",
-          "note": "2026-08-23 12:40〜 IG巡回が#4上限で連続失敗。4語×5分＝時間あたり約100〜150呼出で Meta の時間上限に到達したと推定（確信度：中）。Threads/Blueskyは正常"
         },
         {
           "due": "未定",
