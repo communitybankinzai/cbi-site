@@ -1,6 +1,6 @@
 # CBIメタバース印西 引継ぎ
 
-最終更新: 2026-08-19
+最終更新: 2026-08-23
 
 ## 作業場所と公開先
 
@@ -28,11 +28,12 @@
   - **クイズ成績記録・見直し**（2026-08-19追加）: 全クイズの解答を localStorage `cbi-meta-quiz-log-v1` に1問ずつ記録（直近500問・端末内のみ）。クイズタブ「📒 成績と見直し」でレベル別正答率とまちがい一覧（最大30件・「📖 復習する」で該当文化財の詳細モーダルへ）。消去は confirm 付きボタン
 - **スマホUI**（2026-08-20改善）: メディアクエリは `(pointer: coarse), (max-width: 640px)`。左上ボタン群は `#menuToggle`（☰）で開閉する縦メニュー（項目タップで自動クローズ）。`#controlPanel` は max-height＋overflow-y:auto（浸水シミュまでスクロール可・トグルと重ならないよう top:96px）。右下 `#mobileMoveBar`=モード切替（setModeをラップして表示同期）＋⚡速度切替（`speedMultiplier` ×1/×2/×4、Shift加速とは乗算で併用）＋⬆⬇長押し（keys.KeyE/KeyQ を疑似入力）。撮影/告知モードのUI非表示リストに menuToggle/mobileMoveBar/topLeftBar を追加済み。**3D画面の実機見た目は本番でのみ確認可**（スクショ検証はブラウザペイン制約で不可のことあり）
   - ピース50枚達成→completeModalで名前入力→**印西文化財マイスター認定証**（canvas描画・PNG保存・localStorage `cbi-meta-cert-v1` 保存・ずかん上部の🏅ボタンで再表示）。達成日はローカル時間で記録（toISOStringはUTCずれに注意）
+- **📄 学習レポート一覧への導線**（2026-08-23追加）: ☰メニューの「📄 学習レポート」（`#reportsBtn`）から `reports.html` を別タブで開く。それまで50件の一覧はサイト内のどこからもリンクされておらず、3D→文化財ピン→詳細モーダル→個別レポート→「もどる」でしか到達できなかった。**レポートを読むだけの利用者に3Dを踏ませない**ことが目的で、root requests の1日枠（30回）の節約にもなる。イベント系UIとして `applyMode` の表示リストに入れてあるため防災モードでは非表示。録画時の非表示リスト（`recStart`）にも登録済み
 - **🏢 公民館ピン表示切替**（2026-08-19追加）: `kominkan.json`（公民館5・中央駅前地域交流館・文化ホールの7施設。出典=市公式の施設一覧ページ、座標=GSI住所検索の番地代表点）。クリックで所在地＋市公式ページへのリンク。**本埜公民館のみ大字代表点（番地未収録）のため要目視確認**
 - **⏱ タイムトライアル**（2026-08-20追加）: ☰メニューの「⏱ タイムトライアル」。設定は `TT_CONFIG`（参加要件=クイズ10問以上・正答率80%以上／年齢区分→レベル対応／コース=固定の文化財index列: 初級3・中級5・上級7＋**完走コース full=全50か所（最近傍＋2-opt順・約58km・×4飛行で移動のみ約8分）**、どの年齢でも完走コースを選択可／通過判定80m／事務局メール=communitybankinzai@gmail.com）に集約。流れ: 要件判定→年齢選択→ニックネーム→コース選択（レベル別 or 完走）→1か所目へテレポート＋カウントダウン6秒→onTickで計測・HUD表示→通過時は**精霊が出現して通過の合図**（`ttSpiritPass`: encounterバナーを自動クローズ・未入手ピースは自動獲得。通常のshowEncounterはトライアル中抑止のまま）→全通過でttFinish→証明書PNG＋mailto報告。自己ベストは localStorage `cbi-meta-tt-best-v1`（コースキー別）
 - **⏱ サーバー公式計測（厳密競技モード・2026-08-20追加）**: CIDAO `POST/GET https://cidao.vercel.app/api/metaverse-tt`（`C:\Repos\cidao src/app/api/metaverse-tt/route.ts`）。計測開始の瞬間に start→trialId取得、通過ごとに checkpoint、ゴールで finish。**タイムはサーバー時計（finished_at−started_at）で確定**し、順序違反・物理的に速すぎる通過は flags 記録→status=flagged（証明書と結果画面に「事務局確認対象」表示）。記録コードはサーバー発行。エントリー画面に上位3位ランキング表示（GET、名前はttEscでエスケープ）。API不通時は端末計測の「参考記録」へ自動フォールバック。DB: `metaverse_tt_trials`（migration `20260820120000_metaverse_time_trial.sql`・**2026-08-20適用済み**・RLS有効でanon不可・service_roleのみ）。通過報告は直列キュー（並行送信だと到着順が入れ替わり順序チェックに弾かれるため）。**事務局の記録管理は CiDAO `/admin/timetrial`**（コース別ランキング・フラグ付き記録・未完走一覧・個別削除・全リセット=「リセット」入力＋confirm。実装は `src/app/admin/timetrial/`）。GitHub Pagesの旧HTMLキャッシュ（〜10分）に注意
 - **参加要件のイベント別設定**（2026-08-20追加）: 正答率％・最低解答数は CiDAO `/admin/timetrial` の「⚙ 参加要件」から変更（`app_settings` key `metaverse_tt_requirements`）。API GETが `requirements` を返し、サイトの`openTtModal`が参加判定に使用（不通時は TT_CONFIG の既定80%/10問）。サーバーのstart受付も同じ値で判定
-- **🔀 用途モード**（2026-08-20追加）: `?mode=event`/`?mode=bousai` で入り口分岐、パラメータなし初回はモード選択画面（localStorage `cbi-meta-mode-v1` に記憶・☰メニュー「🔀 モード切替」で変更）。イベント=文化財系表示・防災系（避難所トグル/floodControls）非表示。防災=ゲーム系（puzzleBtn/pinToggle/pickMode/ttBtn）非表示・避難所ピン自動ON・浸水シミュ表示・文化財ピンOFF。cinemaパラメータ時は選択画面を出さない。災害MAPヘッダーのリンクは `?mode=bousai` 直行
+- **🔀 用途モード**（2026-08-20追加）: `?mode=event`/`?mode=bousai` で入り口分岐、パラメータなし初回はモード選択画面（localStorage `cbi-meta-mode-v1` に記憶・☰メニュー「🔀 モード切替」で変更）。イベント=文化財系表示・防災系（避難所トグル/floodControls）非表示。防災=ゲーム系（puzzleBtn/reportsBtn/pinToggle/pickMode/ttBtn）非表示・避難所ピン自動ON・浸水シミュ表示・文化財ピンOFF。cinemaパラメータ時は選択画面を出さない。災害MAPヘッダーのリンクは `?mode=bousai` 直行
 - **2D災害MAPとのデータ共有**（2026-08-19）: `bunkazai.json`／`kominkan.json` は `inzai-disaster-map/` の「参考: 文化財」「参考: 公民館」レイヤーからも読まれる（相対パス `../metaverse/`）。**ファイル名・キー構成を変える場合は災害MAP側（app.js の ensureBunkazaiLayer/ensureKominkanLayer）も更新すること**。避難所は両者ともCIDAO APIを共有
 
 ## 文化財ピンの座標について（重要）

@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-08-23",
+          "title": "メタバース☰メニューへ学習レポート一覧の導線を追加（導線調査＋実装＋検証）0.2時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（#reportsBtn の追加＝markup 1／クリックハンドラ 1／applyMode のイベント系UIリスト／recStart の録画時非表示リストの計4か所）",
+            "site/metaverse/CLAUDE_HANDOFF.md（実装済み機能に1項目追加・用途モードの記述へ reportsBtn を反映・最終更新日を更新）",
+            "site/admin/changelog.json 1件／site/admin/agents-worklog.json（本実績）",
+            "調査: grep で reports.html への参照を全ファイル横断し、サイト内リンクが1本も無いことを確認（report.html の戻り先としてのみ存在）",
+            "検証: 抽出したインラインJSを node --check で構文確認。ローカル(8767)で reportsBtn の存在・ラベル・title・並び順（puzzleBtn直後）、クリックで window.open('reports.html','_blank','noopener') が呼ばれること、☰メニューが自動で閉じること、applyMode('bousai')で display:none／applyMode('event')で表示に戻ることを実測。reports.html が200で返ることも確認"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "祐樹さんから「この画面（レポート一覧）にたどりつくまで大変」との指摘を受けて調査したところ、reports.html はサイト内のどこからもリンクされていなかった。到達経路はトップ→3D読み込み→文化財ピン→詳細モーダル→個別レポート→「もどる」の6手。改善案をA（トップページのナビ）／B（メタバースの☰メニュー）／C（両方＋災害MAP）の3択で提示し、祐樹さんがBを選択したためBのみ実装した。Aは未実施のまま残っているので、トップページからの導線が必要になれば別途対応する。3Dのroot requests上限（1日30回）を消費させない効果も見込める。hours はセッション累計 output 102,270 から前タスク記録時点の 77,459 を引いた 24,811 で算出。session: 23c7a3be-6c61-4cb9-9a96-9269b46b2070 / output: 102,270 / cost: $15.43"
+        },
+        {
+          "date": "2026-08-23",
           "title": "文化財A4学習レポート バッチD（市指定 無形民俗3・史跡6・天然記念物2＋国登録1）12件の調査・作成・PDF生成 0.8時間",
           "category": "実装",
           "outputs": [
