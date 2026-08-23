@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-23",
+          "title": "県災対本部会議資料PDF（8/14）の印西市分を抽出＋冠水実績レイヤーの日付複数選択フィルタ実装＋NIED問い合わせ文の訂正 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/past-flood-points.json（pf-001）, app.js, index.html, styles.css, config.js, CLAUDE_HANDOFF.md（dccd417）",
+            "site/admin/changelog.json",
+            "memory: feedback-no-false-collaboration-claims"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "56ページのPDFから印西市の記載8箇所を抽出。地図化できる地点情報は別紙8の船橋印西線泉野1丁目の冠水通行止め1件のみ。ローカルJS実測でON→1点・日付解除→0点・全日付→1点を確認（ブラウザペイン非表示でスクショ不可）。前回記録(649,628)以降の差分 21,946 で 0.2h。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 671,574 / cost: $390.27"
+        },
+        {
+          "date": "2026-08-23",
           "title": "SNS巡回: Instagramの巡回間隔を5分→20分に間引き（Meta #4 上限対策）0.1時間",
           "category": "保守",
           "outputs": [
