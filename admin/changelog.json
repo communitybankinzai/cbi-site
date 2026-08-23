@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-08-23",
+      "type": "content",
+      "target": "inzai-disaster-map",
+      "title": "公式情報に防災科研（NIED）のリアルタイム洪水・土砂災害リスクマップへのリンクを追加",
+      "detail": "実効雨量・洪水危険度・指定河川洪水予報を別窓で確認できるようになった。配信（ArcGIS ImageServer/MapServer）は公開状態だが、二次利用の可否が明記されていないため、MAPへの重ね表示は防災科研への許諾確認後に実施する。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-08-23",
       "type": "feature",
       "target": "inzai-disaster-map",
       "title": "災害MAPに「📰 公式発表・市長発信」タイムラインを追加",
