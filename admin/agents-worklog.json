@@ -22,7 +22,8 @@
           "category": "実装",
           "outputs": [
             "cidao/src/components/NotificationBell.tsx（未ログイン時はポーリング停止／間隔 60秒→5分／タブ非表示中は停止。commit 70aea0c、main へ push 済み）",
-            "site/admin/agents-worklog.json（A1 実績1件・予定3件を追加）"
+            "site/admin/agents-worklog.json（A1 実績1件・予定3件を追加）",
+            "site/admin/changelog.json（1件追記）"
           ],
           "hours": 0.3,
           "partnerApproved": false,
