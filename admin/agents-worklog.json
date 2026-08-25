@@ -17,6 +17,18 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-26",
+          "title": "CiDAO 通知ベルのポーリング削減（Vercel 無料枠 75% 到達への対処）0.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao/src/components/NotificationBell.tsx（未ログイン時はポーリング停止／間隔 60秒→5分／タブ非表示中は停止。commit 70aea0c、main へ push 済み）",
+            "site/admin/agents-worklog.json（A1 実績1件・予定3件を追加）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "Vercel から「free team cidao が Fluid Active CPU 無料枠（4時間/月）の 75% を使用」との警告メールが 8/26 7:03 に届いたことへの対処。100% 到達でプロジェクトが自動一時停止される。静的解析の結果、主因は NotificationBell が全ページで 60秒ごとに Server Action getMyNotifications を呼んでいたこと。Server Action は呼ぶたびに Vercel Function を起動するうえ、未ログイン訪問者にも走り続け、タブ非表示中も止まらなかった。対処として (1) 未ログインと判明した時点でポーリング停止 (2) 間隔 5分 (3) タブ非表示中は呼ばない（前面復帰時に1回補完）の3点を実装。推定 90〜95% 削減。検証は tsc --noEmit exit 0 / eslint exit 0 / npm run build exit 0。同一タブでのログイン復帰は /auth/callback へのフルリダイレクトで再マウントされるため副作用なしを確認。消費実績は 8/26 時点で 10,800 CPU秒（月の経過率 82%）、日割り 427 CPU秒/日で8月末は約 92% 着地見込みのため、今月の停止リスクは低いと判断（確信度：中）。調査中に src/proxy.ts（Next.js 16 で middleware.ts から改名）が全リクエストで supabase.auth.getUser() を実行していることを発見。未ログインでも走るため追加の削減余地があるが、今回のスコープ外として plans に登録した。session: b2dfc687-1bf2-4f8d-a777-31e69b2c6f2b / output: 33,237 / cost: $6.34"
+        },
+        {
           "date": "2026-08-25",
           "title": "イルミライ関連のCBI管理移行（文書304件移管・市メール一次資料化）＋競技会企画の未承認整理と代表説明用A4要旨の作成 0.8時間",
           "category": "事務",
@@ -4144,6 +4156,31 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-02",
+          "title": "Vercel Active CPU の削減効果を実測し、不足なら proxy.ts の getUser() スキップを実装",
+          "category": "実装",
+          "priority": "高",
+          "note": "8/26 の通知ベル修正（commit 70aea0c）の効果を Vercel ダッシュボードの Observability → Usage で確認する。日割り 427 CPU秒/日 が目に見えて下がっていれば対処完了。下がりきらない場合は src/proxy.ts の updateSession が全リクエストで supabase.auth.getUser() を呼んでいる点を見直す（Supabase の認証 Cookie が無いリクエストは getUser() をスキップする／matcher から /api/ を除外する）。無料枠は Fluid Active CPU 4時間/月。超過すると Pro は年 $240（約36,000円）。"
+        },
+        {
+          "due": "2026-08-26",
+          "title": "Anthropic API キー cidao-local の再発行と .env.local / Vercel 環境変数の差し替え",
+          "category": "保守",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "中司さんが Anthropic Console（console.anthropic.com/settings/keys）で新しい API キーを発行すること",
+          "note": "現行キー cidao-local が 2026-08-26 07:23 UTC（日本時間 16:23）に失効する。失効すると CiDAO の AI 機能（提案分類 /api/ai/classify-proposal、団体マッチング /api/ai/match-orgs）が停止する。新キー受領後、C:/Repos/cidao/.env.local の ANTHROPIC_API_KEY と Vercel プロジェクト設定の環境変数を差し替え、再デプロイして疎通確認する。"
+        },
+        {
+          "due": "未定",
+          "title": "cidao の layout.tsx 未コミット変更（Google Fonts → node_modules 内 woff2）の扱いを決める",
+          "category": "その他",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "この変更を行った作業（他セッション）の意図確認。恒久対応にするのか、ビルド検証用の一時変更なのかの判断",
+          "note": "2026-08-26 の作業中に発見。src/app/layout.tsx で next/font/google の Geist を next/font/local に差し替え、node_modules/next/dist/next-devtools/... 配下の woff2 を直接参照している。node_modules に依存するため npm install の内容次第で壊れる。今回の通知ベル修正のコミットには含めていない。"
+        },
         {
           "due": "未定",
           "title": "communitybankinzai@gmail.com を Claude のコネクタへ接続し、受信箱を整理する（処理済メールのラベル振り分け）",
