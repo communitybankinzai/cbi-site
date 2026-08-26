@@ -18,7 +18,7 @@
       "actuals": [
         {
           "date": "2026-08-26",
-          "title": "CiDAO 通知ベルの負荷対策（Vercel 無料枠 75% 到達）とRealtime即時通知化 0.8時間",
+          "title": "CiDAO 通知の負荷対策とRealtime即時化／サイト全体点検／CBI受信メールの自動仕分け構築 1.8時間",
           "category": "実装",
           "outputs": [
             "cidao/src/components/NotificationBell.tsx（第1段: 未ログイン時ポーリング停止・60秒→5分・タブ非表示中は停止。commit 70aea0c／第2段: ポーリング廃止しSupabase Realtime購読へ、購読失敗時のみ5分ポーリングへ退避。commit a302fb5）",
@@ -26,11 +26,15 @@
             "cidao/supabase/migrations/20260826120000_notifications_realtime.sql（新規。notifications を supabase_realtime publication へ追加。適用は未実施）",
             "site/admin/agents-worklog.json（A1 実績1件・予定を更新）",
             "site/admin/changelog.json（2件追記）",
-            "cidao: 放置されていた git worktree（.claude/worktrees/inspiring-wilson-fce1d3・51MB）を削除。main 取り込み済み・未コミット変更なし・.env系なしを確認のうえ実施"
+            "cidao: 放置されていた git worktree（.claude/worktrees/inspiring-wilson-fce1d3・51MB）を削除。main 取り込み済み・未コミット変更なし・.env系なしを確認のうえ実施",
+            "cidao: サイト全体点検（公開12ページ HTTP200・認証必須6ページ 307リダイレクト・CBIサイトとadmin 200・Realtime購読の競合なしを確認）",
+            "gas-mail-share/MailTriage.gs（新規。CBI受信メールを要対応／要確認／参考の3ラベルへ自動仕分け。git管理外のためOneDrive同期のみ）",
+            "gas-mail-share/README.md（設置手順・トリガー設定・ルール調整方法を追記）",
+            "agents/a1-core/credentials.md（管理者キーの名称と発行日を更新。git ignore 対象のため push なし）"
           ],
-          "hours": 1.2,
+          "hours": 1.8,
           "partnerApproved": false,
-          "note": "Vercel から「free team cidao が Fluid Active CPU 無料枠（4時間/月）の 75% を使用」との警告メールが 8/26 7:03 に届いたことへの対処。100% 到達でプロジェクトが自動一時停止される。静的解析の結果、主因は NotificationBell が全ページで 60秒ごとに Server Action getMyNotifications を呼んでいたこと。Server Action は呼ぶたびに Vercel Function が起動するうえ、未ログイン訪問者にも走り続け、タブ非表示中も止まらなかった。第1段として (1) 未ログイン時のポーリング停止 (2) 間隔5分 (3) タブ非表示中は呼ばない を実装し、本番配信ファイルに visibilitychange と 300000 が含まれること、未ログイン状態で150秒間サーバーへの問い合わせが発生しないことを実測で確認した。その後「5分の遅延を疑似的に埋められないか」との相談を受け、疑似ではなく Supabase Realtime による即時通知へ切り替える方針を選択（第2段）。Server Action の呼び出しはマウント時の1回だけになり、以降の新着は WebSocket で届くため Vercel の無料枠を消費しない。notifications テーブルは supabase_realtime publication に未登録のため DDL が必要で、未適用でも壊れないよう購読失敗時は5分ポーリングへ退避する実装にした。検証は両段とも tsc --noEmit exit 0 / eslint exit 0 / npm run build exit 0。消費実績は 8/26 時点で 10,800 CPU秒（月の経過率82%）、日割り 427 CPU秒/日で8月末は約92%着地見込みのため、今月の停止リスクは低いと判断（確信度：中）。調査中に src/proxy.ts（Next.js 16 で middleware.ts から改名）が全リクエストで supabase.auth.getUser() を実行していることを発見し、追加の削減余地として plans に登録した。APIキー cidao-local の本日失効は、Console の実物を確認したところ .env.local 用（ローカル開発）で最終使用 8/08、本番は無期限の cidao-production（最終使用 8/25）が使われていたため、本番影響なしと判明し「失効させて放置」と判断（当初「本番が停止する」と報告したのは誤り、訂正済み）。作業中に伏せ字処理の不備で ANTHROPIC_ADMIN_KEY の値をチャットに露出させたため、失効・再発行を plans に登録した。DDL は同日に中司さんが Supabase の SQL Editor で実行し適用済み（Success. No rows returned）。あわせて放置されていた git worktree を削除した（51MB 解放）。動作確認まで完了。service_role による疎通確認で Supabase 側の Realtime 配信が機能していることを確認したうえで、本番でテスト通知を送信し、画面を更新せずに10秒以内でベルに表示されることを実測した（テスト通知2件は削除済み）。途中「5分待っても出ない」事象があり setAuth() の呼び出し漏れを疑ったが、@supabase/ssr が自動でトークンを設定しており原因ではなかった（通知送信時に CiDAO のタブが開かれていなかった、または旧版JSのままだったと推定）。未ログイン状態で notifications を anon 権限で読めないことも実測で確認済み（0件・RLS有効）。session: b2dfc687-1bf2-4f8d-a777-31e69b2c6f2b / output: 118,101 / cost: $20.05"
+          "note": "Vercel から「free team cidao が Fluid Active CPU 無料枠（4時間/月）の 75% を使用」との警告メールが 8/26 7:03 に届いたことへの対処。100% 到達でプロジェクトが自動一時停止される。静的解析の結果、主因は NotificationBell が全ページで 60秒ごとに Server Action getMyNotifications を呼んでいたこと。Server Action は呼ぶたびに Vercel Function が起動するうえ、未ログイン訪問者にも走り続け、タブ非表示中も止まらなかった。第1段として (1) 未ログイン時のポーリング停止 (2) 間隔5分 (3) タブ非表示中は呼ばない を実装し、本番配信ファイルに visibilitychange と 300000 が含まれること、未ログイン状態で150秒間サーバーへの問い合わせが発生しないことを実測で確認した。その後「5分の遅延を疑似的に埋められないか」との相談を受け、疑似ではなく Supabase Realtime による即時通知へ切り替える方針を選択（第2段）。Server Action の呼び出しはマウント時の1回だけになり、以降の新着は WebSocket で届くため Vercel の無料枠を消費しない。notifications テーブルは supabase_realtime publication に未登録のため DDL が必要で、未適用でも壊れないよう購読失敗時は5分ポーリングへ退避する実装にした。検証は両段とも tsc --noEmit exit 0 / eslint exit 0 / npm run build exit 0。消費実績は 8/26 時点で 10,800 CPU秒（月の経過率82%）、日割り 427 CPU秒/日で8月末は約92%着地見込みのため、今月の停止リスクは低いと判断（確信度：中）。調査中に src/proxy.ts（Next.js 16 で middleware.ts から改名）が全リクエストで supabase.auth.getUser() を実行していることを発見し、追加の削減余地として plans に登録した。APIキー cidao-local の本日失効は、Console の実物を確認したところ .env.local 用（ローカル開発）で最終使用 8/08、本番は無期限の cidao-production（最終使用 8/25）が使われていたため、本番影響なしと判明し「失効させて放置」と判断（当初「本番が停止する」と報告したのは誤り、訂正済み）。作業中に伏せ字処理の不備で ANTHROPIC_ADMIN_KEY の値をチャットに露出させたため、失効・再発行を plans に登録した。DDL は同日に中司さんが Supabase の SQL Editor で実行し適用済み（Success. No rows returned）。あわせて放置されていた git worktree を削除した（51MB 解放）。動作確認まで完了。service_role による疎通確認で Supabase 側の Realtime 配信が機能していることを確認したうえで、本番でテスト通知を送信し、画面を更新せずに10秒以内でベルに表示されることを実測した（テスト通知2件は削除済み）。途中「5分待っても出ない」事象があり setAuth() の呼び出し漏れを疑ったが、@supabase/ssr が自動でトークンを設定しており原因ではなかった（通知送信時に CiDAO のタブが開かれていなかった、または旧版JSのままだったと推定）。未ログイン状態で notifications を anon 権限で読めないことも実測で確認済み（0件・RLS有効）。その後サイト全体点検を実施し、公開12ページが HTTP200、認証必須6ページが /login への307、CBIサイト本体と管理画面も200であることを確認。Realtime 購読は vote-agg 系と notifications 系の2種のみでチャンネル名が異なり、@supabase/ssr の createBrowserClient がブラウザで自動シングルトンのためWebSocket 接続は増えないことをコードで確認。提案詳細ページで投票バーが表示されることも中司さんに実機確認いただいた。続いて CBI 受信メールの自動仕分けを構築。既存の gas-mail-share Web API 経由で受信箱の実態を調査したところ、直近60日50件のうち37件が【CBIサイト 更新履歴】掲載候補で、2026-08-20・08-21 の Vercel デプロイ失敗通知2件がそこに埋もれて未対応のままだったことを発見。これを拾うことを主目的に MailTriage.gs を作成し、要対応／要確認／参考の3ラベルへ分類する実装とした。知らない差出人は必ず要確認へ倒す設計とし、行政・団体からの連絡を落とさないようにしている。実データ50件で判定を2回検証し、初版で要確認が44件に膨らむ問題（処理済みラベルの除外漏れ）と参考が0件になる問題（表示名のみの差出人を判定できない）を修正。最終的に要対応6件（Vercel失敗2・上限1・Anthropic残高3）を正しく抽出できることを確認した。設置とトリガー設定は中司さんの作業のため plans に登録。管理者キーのローテーションは .env.local と credentials.md を差し替え済み、Vercel 環境変数は未更新。なお credentials.md には値ではなく接頭辞のみが記載されており、当初『値が生で書かれている』と報告したのは誤りで訂正した。session: b2dfc687-1bf2-4f8d-a777-31e69b2c6f2b / output: 180,537 / cost: $33.00"
         },
         {
           "date": "2026-08-25",
@@ -4161,13 +4165,31 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "要対応メールを検出したら中司さんの個人Gmailへ通知するか決める",
+          "category": "その他",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "MailTriage.gs を実運用してみて、ラベルを見に行く運用で足りるかどうかの判断",
+          "note": "2026-08-26 のラベル設計時に3択で「3分類のみ」を選択したため今回は見送った項目。ラベルは貼られるが、Gmail を開かないと気づけない。運用してみて見落とすようなら、要対応の検出時に you0810jmsdf@gmail.com へサマリを送る処理を足す。"
+        },
+        {
+          "due": "2026-08-31",
+          "title": "CBI受信メールの自動仕分け（MailTriage.gs）を GAS に設置し、30分間隔のトリガーを設定する",
+          "category": "実装",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "中司さんが communitybankinzai@gmail.com の GAS プロジェクトへ MailTriage.gs を貼り付け、testTriage で確認のうえトリガーを設定すること",
+          "note": "手順は gas-mail-share/README.md の「受信メールの自動仕分け」節に記載。testTriage を実行するとラベルを貼らずに判定結果だけログに出るため、安全に試せる。設置すると Vercel のデプロイ失敗や利用上限、Anthropic の残高警告が 要対応 ラベルで拾えるようになる。実データ50件での検証では要対応6件を正しく抽出できている。"
+        },
+        {
           "due": "2026-08-27",
-          "title": "ANTHROPIC_ADMIN_KEY を失効・再発行し、Vercel 環境変数と .env.local を差し替える",
+          "title": "Vercel の ANTHROPIC_ADMIN_KEY を新キーへ更新し、Redeploy 後に旧キーを削除する",
           "category": "保守",
           "priority": "高",
           "status": "待ち",
-          "blockedBy": "中司さんが Claude Console の「管理者キー」で現行キーを削除し、新しい管理者キーを発行すること",
-          "note": "2026-08-26 の作業中、伏せ字処理の不備で現行キーの値がチャットに露出したため。参照箇所は (1) Vercel 環境変数（cidao/src/app/api/cron/cost-alert/route.ts が毎日 22:00 に使用・最重要）(2) C:/Repos/cidao/.env.local (3) agents/a1-core/credentials.md の3か所。Vercel の環境変数更新は中司さんの操作が必要。差し替え後、cost-alert cron の疎通を確認する。"
+          "blockedBy": "中司さんが Vercel の環境変数を更新して Redeploy すること",
+          "note": "2026-08-26 に新キー nsfactory-admin-20260826 を発行し、C:/Repos/cidao/.env.local と agents/a1-core/credentials.md は差し替え済み。残るは Vercel 環境変数の更新と Redeploy のみ。更新しない限り旧キー cbi-cost-monitor を削除できず、値が作業ログに残ったままの鍵が有効であり続ける。Redeploy 後に /api/cron/cost-alert の疎通を確認してから旧キーを Console で削除する。急ぎではないが、放置するとキーが2本ある中途半端な状態が続く。"
         },
         {
           "due": "2026-09-02",
