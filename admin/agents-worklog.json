@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-08-28",
+          "title": "電子決裁システムの実装レビュー・ビルド検証・コミットと決裁規程v1.1への改訂 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao: supabase/migrations/20260825140000_approval_workflow.sql（288行・未適用）",
+            "C:\\Repos\\cidao: src/lib/approval.ts（280行・決裁判定ロジック）",
+            "C:\\Repos\\cidao: src/app/admin/approvals/（一覧・起案・詳細/押印・監査閲覧の6ファイル）",
+            "C:\\Repos\\cidao: src/app/admin/page.tsx（導線追加）／コミット 666dfd3・未push",
+            "docs/2026-08-25_決裁規程_内規_案v1.md（v1.1へ改訂・第5条を実装との整合で修正）",
+            "cidao/proposals/2026-08-25_電子決裁システムの設計方針.md（§5-3 実装状況を追記）",
+            "cidao/worklog.md（2026-08-28ブロック）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "実装はFable 5サブエージェントへ委譲（Codexは C:\\Repos\\cidao が信頼済みプロジェクトに入っておらず書込不可）。ジョブは週次上限で異常終了したが**ファイルは書き終えていた**ため、レビュー・検証・コミットを引き継いだ。npm run build 成功（72s）、決裁3ルートの出力を確認。RLSはanon全面revoke・役員のみSELECT、電子印はUPDATE/DELETEをトリガで拒否、押印時刻はサーバー時刻を強制。実装で判明した3点（監査役を定足数の母数から外す／可決には決裁権者全員の承認も必要／決裁権者の却下で否決）を決裁規程v1.1へ反映した。layout.tsx の未コミット変更（Google Fonts → node_modules 内 woff2）は別件のため意図的に除外。session: a0b5c628-3688-4d36-b40a-978c76d89e45 / output: 207,814 / cost: $51.40"
+        },
+        {
+          "date": "2026-08-28",
           "title": "防災科研の断り回答を受け見送り確定処理（plans完了・公開表記修正・見送り表更新）0.1時間",
           "category": "事務",
           "outputs": [
@@ -4204,12 +4221,12 @@
       "plans": [
         {
           "due": "未定",
-          "title": "電子決裁システムの実装（CiDAO・LINE認証＋電子印）",
-          "category": "実装",
+          "title": "電子決裁を稼働させる（migration適用・Storageバケット作成・役員へのofficer_role付与）",
+          "category": "事務",
           "priority": "中",
           "status": "待ち",
-          "blockedBy": "決裁規程（内規）の確定。何を誰の承認で決めるかが決まらないと画面もテーブルも設計できない",
-          "note": "中司さんの構想：メンバーが電子印を押して決裁するシステム。認証はCiDAOのLINE認証を使用（2026-08-25決定）。要注意点：①LINE認証済み≠役員なので members に officer_role を追加し管理者が手動付与する ②members はRLS上誰でも閲覧できるため、決裁テーブルは役員のみSELECT可にする ③スタンプは追記型（UPDATE/DELETE禁止）で改ざんを防ぐ ④添付はSupabase Storageの非公開バケット（既存の画像保存は公開バケットなので流用不可）。メンバーはブラウザのフォーム入力のみでmd・Gitには触れさせない。設計は cidao/proposals/2026-08-25_電子決裁システムの設計方針.md"
+          "blockedBy": "中司さんの手作業：Supabase の SQL Editor で migration 20260825140000_approval_workflow.sql を実行、Storage に非公開バケット approval-attachments を作成、役員4名に officer_role を付与すること",
+          "note": "2026-08-28に実装完了（コミット 666dfd3・npm run build 成功・**未push**）。決裁ルールは approval_rules テーブルに持たせてあるため、役員会の議決後は**値の差し替えのみ**でコード修正は不要。未議決の内規に基づく機能のため、本番へのpushの可否はユーザー判断。設計は cidao/proposals/2026-08-25_電子決裁システムの設計方針.md §5-3"
         },
         {
           "due": "未定",
