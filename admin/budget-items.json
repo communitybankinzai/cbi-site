@@ -10,6 +10,17 @@
   },
   "items": [
     {
+      "id": "nied-effective-rainfall",
+      "name": "実効雨量データ（防災科研→I-レジリエンス社 有償提供）",
+      "category": "データ購入",
+      "status": "候補（要見積）",
+      "annualCost": null,
+      "costNote": "金額未確認。防災科研 知財窓口の案内（2026-08-28）により、実効雨量（1.5h/72h等）の正規提供ルートは I-レジリエンス株式会社（https://i-resilience.co.jp/）経由の販売。導入する場合は見積を取得する",
+      "reason": "土壌の水分状態を踏まえた土砂災害リスクの先読みに有用。キキクル（無償・気象庁）で危険度自体は取得済みのため、必要性が生じた時点で検討",
+      "decidedAt": "2026-08-28",
+      "source": "防災科研 知財窓口回答（CBI公式Gmail）"
+    },
+    {
       "id": "map-tiles",
       "name": "3D地図データ配信（Google Map Tiles API）",
       "category": "api",
