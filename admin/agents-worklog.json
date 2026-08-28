@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-28",
+          "title": "キキクル3レイヤー実装（WOUDIO投稿の調査→気象庁公開配信と特定→実装・本番公開）＋NIED経緯の正確化 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js, index.html, config.js, CLAUDE_HANDOFF.md（ee797ec）",
+            "site/admin/changelog.json",
+            "cidao/2026-08-23_災害公式情報の情報源調査とタイムライン設計.md（NIED最終経緯）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "FB投稿（太刀川英輔氏）のMAPはNOSIGNERの商用アプリWOUDIOで、表示データは気象庁キキクルと特定。土砂/浸水/洪水の3レイヤーを雨雲レーダーと同型で実装（targetTimes.jsonのmemberはimmed0等）。印西付近タイル200を実測、ローカルJS検証後push、本番 v=20260828b 反映確認。前回記録(683,815)以降の差分 35,971 で 0.4h。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 719,786 / cost: $444.44"
+        },
+        {
+          "date": "2026-08-28",
           "title": "電子決裁システムの実装レビュー・ビルド検証・コミットと決裁規程v1.1への改訂 0.4時間",
           "category": "実装",
           "outputs": [
