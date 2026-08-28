@@ -632,6 +632,58 @@ const rainNowcastLayer = L.tileLayer("", {
 });
 let rainNowcastTime = null;
 
+// キキクル（気象庁 危険度分布）。雨雲レーダーと同じ jmatile 配信で、土砂・浸水・洪水の3要素。
+// WOUDIOの観光防災マップ（2026-08-28 参照依頼）が表示していたのも同じデータ。
+const KIKIKURU_ELEMENTS = {
+  kikikuruLand: { element: "land", label: "土砂キキクル" },
+  kikikuruInund: { element: "inund", label: "浸水キキクル" },
+  kikikuruFlood: { element: "flood", label: "洪水キキクル" }
+};
+const kikikuruLayers = {};
+Object.keys(KIKIKURU_ELEMENTS).forEach(key => {
+  kikikuruLayers[key] = L.tileLayer("", {
+    attribution: "気象庁 キキクル（危険度分布）",
+    opacity: 0.62,
+    maxNativeZoom: 10,
+    maxZoom: 18,
+    zIndex: 455,
+    updateWhenIdle: true
+  });
+});
+
+async function refreshKikikuru(showLayer) {
+  const status = document.getElementById("kikikuru-layer-status");
+  try {
+    const response = await fetch(`https://www.jma.go.jp/bosai/jmatile/data/risk/targetTimes.json?_=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const times = await response.json();
+    const latest = Array.isArray(times)
+      ? times.find(item => item?.basetime && item?.validtime && item?.member && item?.elements?.includes("land"))
+      : null;
+    if (!latest) throw new Error("最新時刻がありません");
+    Object.entries(KIKIKURU_ELEMENTS).forEach(([key, def]) => {
+      const template = `https://www.jma.go.jp/bosai/jmatile/data/risk/${latest.basetime}/${latest.member}/${latest.validtime}/surf/${def.element}/{z}/{x}/{y}.png`;
+      kikikuruLayers[key].setUrl(template, false);
+    });
+    if (status) {
+      status.textContent = `${formatJmaTime(latest.validtime)}時点・5分更新`;
+      status.classList.remove("is-error");
+    }
+    Object.keys(KIKIKURU_ELEMENTS).forEach(key => {
+      const enabled = document.querySelector(`[data-overlay="${key}"]`)?.checked;
+      if (enabled && !map.hasLayer(kikikuruLayers[key])) kikikuruLayers[key].addTo(map);
+    });
+  } catch (error) {
+    if (status) {
+      status.textContent = "取得できません";
+      status.classList.add("is-error");
+    }
+    if (showLayer) {
+      appendSystemWorkLog("キキクルレイヤー", "blocked", `気象庁キキクルの最新配信を取得できませんでした: ${error?.message || "不明なエラー"}`, "通信状態と気象庁配信URLを確認する");
+    }
+  }
+}
+
 const landslideGroup = L.layerGroup([
   L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_dosekiryukeikaikuiki_data/{z}/{x}/{y}.png", {
     attribution: "ハザードマップポータルサイト",
@@ -2848,6 +2900,11 @@ function renderPastFloodMarkers() {
 }
 
 function toggleOverlay(name, checked) {
+  if (Object.prototype.hasOwnProperty.call(kikikuruLayers, name)) {
+    if (checked) { refreshKikikuru(true); kikikuruLayers[name].addTo(map); }
+    else map.removeLayer(kikikuruLayers[name]);
+    return;
+  }
   if (name === "rainNowcast") {
     if (checked) refreshRainNowcast(true);
     else map.removeLayer(rainNowcastLayer);
@@ -3162,6 +3219,9 @@ function formatJmaTime(value) {
 
 setInterval(() => {
   if (document.querySelector('[data-overlay="rainNowcast"]')?.checked) refreshRainNowcast(true);
+}, 5 * 60 * 1000);
+setInterval(() => {
+  if (Object.keys(KIKIKURU_ELEMENTS).some(key => document.querySelector(`[data-overlay="${key}"]`)?.checked)) refreshKikikuru(false);
 }, 5 * 60 * 1000);
 
 setInterval(() => refreshEarthquakeSummary(false), 10 * 60 * 1000);
