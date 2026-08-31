@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-08-31",
+          "title": "イベントカレンダーに年月ジャンプのドロップダウン追加＋読み込み中表示 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/events/_components/EventsBrowser.tsx（年月select・useTransitionによる遷移中表示・view=list維持）",
+            "cidao: src/app/globals.css（cidao-ym-spinner。reduced-motion対応）",
+            "検証: eslint 新規指摘0件／tsc 自ファイルエラーなし／dev実機でselect37件生成・9月→12月の1回ジャンプ・list表示でのview維持（2027-03&view=list）・consoleエラー0件を実測",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "「数ヶ月先の月へ行くのに1ヶ月ずつ待たされる」指摘への対応。前月/次月/今月はprefetchが効くLinkのまま残し、ジャンプ手段のみ追加した。スクリーンショットはブラウザペイン非表示のため取得不可、代わりにDOM/URL実測で確認。hours はセッション累計1.0から記録済み0.9を差し引いた差分。session: a9c4a1fa-063e-440d-ad58-d9e76b23b7ab / output: 100,553 / cost: $33.79（累計）"
+        },
+        {
           "date": "2026-08-28",
           "title": "防災科研 正式回答の記録と完結処理（回答要点のノート転記・実効雨量を予算候補化・御礼返信文作成）＋キキクル表示の実測サポート 0.1時間",
           "category": "事務",
