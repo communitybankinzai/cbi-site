@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-31",
+          "title": "年月ジャンプを年ボタン・月ボタンの2つに分離 0.15時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/events/_components/EventsBrowser.tsx（PickerPopover/PickerCell/NowLegend に共通化し、YearPicker と MonthPicker の2コンポーネントへ分離）",
+            "検証: eslint 新規指摘0件／tsc 自ファイルエラーなし／dev実機で 年パネル4件（2025-2028）・月パネル12件・2026-09→2027年選択で月保持（2027-09）・3月選択で年保持（2027-03）・今年/今月リングの出し分け・Escape閉鎖・list表示でのview維持（2026-12&view=list）を実測",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 0.15,
+          "partnerApproved": false,
+          "note": "「年と月は分けたほうがよい」の指示。解釈が2通り（ポップ内で年もボタン列にする／見出し自体を年・月の2ボタンに分ける）あったため3択で確認し、後者を採用。前ターンのMonthPicker単体構成から共通化して置き換えた。スクリーンショットはブラウザペイン非表示のため取得不可、DOM/URL実測で代替。hours はセッション累計1.3から記録済み1.2を差し引いた差分（0.14を切り上げ）。session: a9c4a1fa-063e-440d-ad58-d9e76b23b7ab / output: 131,685 / cost: $44.15（累計）"
+        },
+        {
+          "date": "2026-08-31",
           "title": "年月ジャンプをselectから年送り＋12ヶ月グリッドのポップオーバーへ変更 0.2時間",
           "category": "実装",
           "outputs": [
