@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-08-31",
+          "title": "年月ジャンプをselectから年送り＋12ヶ月グリッドのポップオーバーへ変更 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/events/_components/EventsBrowser.tsx（MonthPickerコンポーネント新設。外側クリック/Escapeで閉じる、年範囲クランプ、選択中反転・今月リング）",
+            "検証: eslint 新規指摘0件／tsc 自ファイルエラーなし／dev実機でポップオーバー開閉・2026-09→2027-03の2タップ移動・年下限2025でのボタン無効化・Escape/外側クリックでの閉鎖・list表示でのview維持（2026-12&view=list）を実測。consoleエラーはHMRのWebSocketのみでアプリ由来なし",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "前ターンで実装したselect方式に対する『スマホで37件スクロールになる』懸念を受けての差し替え指示。selectは廃止しMonthPickerに一本化した。スクリーンショットはブラウザペイン非表示のため取得不可、DOM/URL実測で代替。hours はセッション累計1.2から記録済み1.0を差し引いた差分。session: a9c4a1fa-063e-440d-ad58-d9e76b23b7ab / output: 117,808 / cost: $38.70（累計）"
+        },
+        {
+          "date": "2026-08-31",
           "title": "イベントカレンダーに年月ジャンプのドロップダウン追加＋読み込み中表示 0.2時間",
           "category": "実装",
           "outputs": [
