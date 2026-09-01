@@ -1348,30 +1348,108 @@ function joyEnd() {
 // 左スティック＝移動／右スティック＝視点／L2・R2＝下降・上昇／○＝ピン選択／×＝閉じる
 // スティックの遊び。中古の個体は手を離しても値が戻らないうえ、時間とともにズレていく。
 // 実測（CUH-ZCT2）では左スティック縦の静止値が -0.92 → -0.62 と動いた（2026-09-01）
+//
+// 手を離した状態の値を「中心」として覚え、そこからの差で操作量を決める。中心の決め方は3段構え。
+//   ① つないだ直後：値が動かなくなるまで待ってから測る
+//   ② 遊びの内側にいる間：中心をゆっくり現在値へ寄せる（静止値が時間とともにずれる個体への追従）
+//   ③ 遊びを超えた入力が長く動かないとき：人の操作ではないとみなして中心へ吸収する
+// ① が要るのは、Gamepad API がボタンやスティックの動きを検知するまでパッドを返さないため。
+// つないだ直後の値をそのまま中心にすると「倒した瞬間の値＝中心」になってしまい、
+// 手を離してから逆方向へ動き続ける（2026-09-02 に修正）
 const PAD_DEADZONE = 0.2;
-const PAD_CENTER_TRACK_SEC = 2.5; // 遊びの内側にいる間、中心をこの秒数かけて現在値へ寄せる
+const PAD_CENTER_TRACK_SEC = 2.5;  // 遊びの内側にいる間、中心をこの秒数かけて現在値へ寄せる
+const PAD_CALIB_HOLD_SEC = 0.5;    // この時間ぶれなければ中心を確定する
+const PAD_CALIB_JITTER = 0.06;     // 中心を確定するまでに許すぶれ幅
+const PAD_CALIB_LIMIT = 0.9;       // 倒し切り付近は中心にしない（倒したまま繋いだ疑いがあるため）
+const PAD_CALIB_FORCE_SEC = 5.0;   // ただしこの時間動かなければ、本当にそこが静止値だとみなす
+const PAD_STUCK_SEC = 3.0;         // 動かない入力を張り付きとみなすまでの時間
+const PAD_STUCK_JITTER = 0.03;     // 「動いていない」とみなす変化量
+const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
+const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
+let padSeen = false;        // 直前のフレームでパッドが見えていたか（つなぎ直しの検知に使う）
 
-// 中古のコントローラーは手を離しても値が中央に戻らないことがある（実測で左スティック縦 -0.92、
-// R2 が 0.20 のまま等）。手を離している状態の値を「中心」として覚え、そこからの差で判定する
-const padCenter = [0, 0, 0, 0];
-const padTriggerBase = [0, 0]; // L2, R2 の静止値
-let padCalibrated = false;
+// 見張るのは左右スティックの4軸（0〜3）と L2・R2（4=L2, 5=R2）の計6つ
+const PAD_CH = 6;
+const padCenter = [0, 0, 0, 0, 0, 0]; // 手を離した状態の値
+const padValue = [0, 0, 0, 0, 0, 0];  // 中心を引き遊びを抜いた操作量（軸 -1〜1／トリガー 0〜1）
+let padCalibrated = false;            // 中心が確定しているか（確定するまで操作を受け付けない）
+let padCalibElapsed = 0;              // 値が動かないまま経った秒数
+let padCalibWait = 0;                 // 測定を始めてからの総経過秒数
+const padCalibMin = [0, 0, 0, 0, 0, 0];
+const padCalibMax = [0, 0, 0, 0, 0, 0];
+const padStuckRef = [0, 0, 0, 0, 0, 0]; // 張り付き監視の基準値
+const padStuckSec = [0, 0, 0, 0, 0, 0]; // 基準値から動かないまま経った秒数
+let padStuckNoticeAt = -Infinity; // 起動直後の吸収も知らせたいので、最初は必ず通知が出るようにする
 
-function calibratePad(pad) {
-  for (let i = 0; i < 4; i++) padCenter[i] = typeof pad.axes[i] === "number" ? pad.axes[i] : 0;
-  padTriggerBase[0] = pad.buttons[6] ? pad.buttons[6].value : 0;
-  padTriggerBase[1] = pad.buttons[7] ? pad.buttons[7].value : 0;
+// 番号から生の値を取り出す（軸はそのまま、トリガーは押し込み量 0〜1）
+function padRaw(pad, ch) {
+  if (ch < 4) {
+    const v = pad.axes[ch];
+    return typeof v === "number" ? v : 0;
+  }
+  const b = pad.buttons[ch === 4 ? 6 : 7];
+  return b ? b.value : 0;
+}
+
+// 測定のやり直し。いま見えている値を出発点にして、動かなくなるまで数え直す
+function resetPadCalibRange(pad) {
+  padCalibElapsed = 0;
+  for (let ch = 0; ch < PAD_CH; ch++) {
+    const v = pad ? padRaw(pad, ch) : 0;
+    padCalibMin[ch] = v;
+    padCalibMax[ch] = v;
+    padValue[ch] = 0;
+    padStuckSec[ch] = 0;
+  }
+}
+
+// 中心を測り直す。手を離すのを待つところから始める
+function beginPadCalibration(pad) {
+  padCalibrated = false;
+  padCalibWait = 0;
+  resetPadCalibRange(pad);
+}
+
+// つないだ直後の測定。値が PAD_CALIB_HOLD_SEC のあいだ動かなければ、その範囲の中央を中心にする。
+// 途中で動いたら測り直す＝手を離すまで待つ
+function updatePadCalibration(pad, dt) {
+  padCalibWait += dt;
+  let moved = false;
+  let extreme = false; // 倒し切り・踏み切りのまま静止しているか
+  for (let ch = 0; ch < PAD_CH; ch++) {
+    const v = padRaw(pad, ch);
+    if (v < padCalibMin[ch]) padCalibMin[ch] = v;
+    if (v > padCalibMax[ch]) padCalibMax[ch] = v;
+    if (padCalibMax[ch] - padCalibMin[ch] > PAD_CALIB_JITTER) moved = true;
+    if ((ch < 4 ? Math.abs(v) : v) > PAD_CALIB_LIMIT) extreme = true;
+  }
+  if (moved) { resetPadCalibRange(pad); return; }
+  padCalibElapsed += dt;
+  if (padCalibElapsed < PAD_CALIB_HOLD_SEC) return;
+  // 倒したまま繋いだときにその位置を中心にしてしまわないよう、極端な値のあいだは待つ。
+  // ただし待ち続けると本当にそこが静止値の個体で操作できなくなるので、時間が経てば受け入れる
+  if (extreme && padCalibWait < PAD_CALIB_FORCE_SEC) return;
+  for (let ch = 0; ch < PAD_CH; ch++) {
+    padCenter[ch] = (padCalibMin[ch] + padCalibMax[ch]) / 2;
+    padStuckRef[ch] = padCenter[ch];
+    padStuckSec[ch] = 0;
+  }
   padCalibrated = true;
 }
 
-// 中心からの差にデッドゾーンをかけ、-1〜1 に引き伸ばす（境目で値が飛ばないようにする）
-function padAxis(v, i) {
-  if (typeof v !== "number") return 0;
-  const c = padCenter[i] || 0;
-  let d = v - c;
+// 中心からの差にデッドゾーンをかけ、-1〜1 に引き伸ばす（境目で値が飛ばないようにする）。
+// トリガー（4以降）は押し込む向きだけを見る
+function padNormalize(raw, ch) {
+  const c = padCenter[ch] || 0;
+  let d = raw - c;
+  if (ch >= 4) {
+    const range = 1 - c;
+    if (d < PAD_DEADZONE || range <= 0.25) return 0; // 静止値が高すぎる個体は踏み込みを読まない
+    return Math.min(1, (d - PAD_DEADZONE) / (range - PAD_DEADZONE));
+  }
   // 中心がずれているぶん片側の可動域が狭くなるので、その側だけ引き伸ばして左右の効きを揃える
   const range = d > 0 ? 1 - c : 1 + c;
   if (range > 0.25) d = d / range; // 可動域がほぼ無い方向は補正しない（わずかな揺れが暴走するため）
@@ -1381,28 +1459,52 @@ function padAxis(v, i) {
 }
 
 // 遊びの内側にいる間は、中心を現在値へゆっくり寄せる。静止値そのものが時間とともに
-// ずれていく個体があり、一度測っただけでは動き続けてしまうため。
-// 遊びを超える入力が入っているときは寄せない（意図した操作を打ち消さないようにする）
-function trackPadCenter(pad, dt) {
+// ずれていく個体があり、一度測っただけでは動き続けてしまうため
+function trackPadCenter(pad, ch, dt) {
   const k = Math.min(1, dt / PAD_CENTER_TRACK_SEC);
-  for (let i = 0; i < 4; i++) {
-    const v = pad.axes[i];
-    if (typeof v !== "number" || padAxis(v, i) !== 0) continue;
-    padCenter[i] += (v - padCenter[i]) * k;
-  }
-  for (const [bi, base] of [[6, 0], [7, 1]]) {
-    const raw = pad.buttons[bi] ? pad.buttons[bi].value : 0;
-    if (raw - padTriggerBase[base] < PAD_DEADZONE) {
-      padTriggerBase[base] += (raw - padTriggerBase[base]) * k;
-    }
-  }
+  padCenter[ch] += (padRaw(pad, ch) - padCenter[ch]) * k;
 }
 
-// トリガーは 0〜1。静止値を差し引いてから判定する
-function padTrigger(pad, buttonIndex, baseIndex) {
-  const raw = pad.buttons[buttonIndex] ? pad.buttons[buttonIndex].value : 0;
-  const d = raw - (padTriggerBase[baseIndex] || 0);
-  return d > PAD_DEADZONE ? Math.min(1, d / (1 - (padTriggerBase[baseIndex] || 0))) : 0;
+// 遊びを超えた入力が PAD_STUCK_SEC のあいだ動かないときは、人の操作ではなく張り付きと
+// みなして中心へ吸収する。指が触れていれば値は必ず細かく揺れるため、まったく動かない＝
+// 手を離しているとみなせる。倒し切り付近だけは意図した操作なので対象から外す
+function absorbPadStuck(pad, ch, dt) {
+  const raw = padRaw(pad, ch);
+  if (Math.abs(raw - padStuckRef[ch]) > PAD_STUCK_JITTER) {
+    padStuckRef[ch] = raw;
+    padStuckSec[ch] = 0;
+    return false;
+  }
+  if (Math.abs(padValue[ch]) > PAD_STUCK_LIMIT) { padStuckSec[ch] = 0; return false; }
+  padStuckSec[ch] += dt;
+  if (padStuckSec[ch] < PAD_STUCK_SEC) return false;
+  padCenter[ch] = raw;
+  padValue[ch] = 0;
+  padStuckSec[ch] = 0;
+  return true;
+}
+
+// 毎フレーム1回だけ呼ぶ。結果は padValue に入る
+function updatePadInput(pad, dt) {
+  if (!padCalibrated) {
+    updatePadCalibration(pad, dt);
+    return; // 中心が決まるまでは操作を受け付けない（padValue は 0 のまま）
+  }
+  let absorbed = false;
+  for (let ch = 0; ch < PAD_CH; ch++) {
+    padValue[ch] = padNormalize(padRaw(pad, ch), ch);
+    if (padValue[ch] === 0) {
+      trackPadCenter(pad, ch, dt);
+      padStuckRef[ch] = padRaw(pad, ch);
+      padStuckSec[ch] = 0;
+    } else if (absorbPadStuck(pad, ch, dt)) {
+      absorbed = true;
+    }
+  }
+  if (absorbed && performance.now() - padStuckNoticeAt > PAD_STUCK_NOTICE_MS) {
+    padStuckNoticeAt = performance.now();
+    showPickResult("コントローラーの入力が戻らないままだったので、その位置を中心に取り直しました。", 4000);
+  }
 }
 
 // ============================================================
@@ -1485,7 +1587,8 @@ function setPadEnabled(on) {
   paintPadToggle();
   try { localStorage.setItem(PAD_ENABLED_KEY, on ? "1" : "0"); } catch (e) { /* 保存できなくても動く */ }
   if (on) {
-    padCalibrated = false; // 有効にした時点の値で中心を測り直す
+    padSeen = false;       // 有効にした時点の値で中心を測り直す
+    padCalibrated = false;
     showPickResult("コントローラー操作を有効にしました。", 2500);
   } else {
     updatePadHud(false);   // 照準とロックオン枠を消す
@@ -1533,14 +1636,19 @@ viewer.clock.onTick.addEventListener(function () {
   // --- ゲームパッド入力を合流させる ---
   const pad = readGamepad();
   if (pad) {
-    if (!padCalibrated) calibratePad(pad); // つないだ直後の値＝手を離した状態とみなして中心にする
-    trackPadCenter(pad, dt);               // ずれていく静止値に追従する
-    right += padAxis(pad.axes[0], 0);
-    forward += -padAxis(pad.axes[1], 1); // 上に倒す＝前進
+    if (!padSeen) {
+      // つないだ直後。どの個体でも中心はここから測り直すので、機種ごとの設定は要らない
+      padSeen = true;
+      beginPadCalibration(pad);
+      showPickResult("コントローラーを認識しました。スティックから手を離してください（中心を測っています）。", 2500);
+    }
+    updatePadInput(pad, dt); // 中心の測定・追従・張り付きの吸収をまとめて行う
+    right += padValue[0];
+    forward += -padValue[1]; // 上に倒す＝前進
 
     // 右スティックで視点。移動処理より先に向きを決める
-    const lookX = padAxis(pad.axes[2], 2);
-    const lookY = padAxis(pad.axes[3], 3);
+    const lookX = padValue[2];
+    const lookY = padValue[3];
     if (lookX !== 0 || lookY !== 0) {
       cam.setView({
         orientation: {
@@ -1553,7 +1661,7 @@ viewer.clock.onTick.addEventListener(function () {
     }
 
     // L2＝下降／R2＝上昇（アナログ。踏み込み量で速さが変わる）
-    let padUp = padTrigger(pad, 7, 1) - padTrigger(pad, 6, 0);
+    let padUp = padValue[5] - padValue[4];
     // 古い個体は L2 が反応しないことがあるため、L1／R1 でも上下できるようにしておく
     if (padUp === 0) {
       const l1 = pad.buttons[4] && pad.buttons[4].pressed ? 1 : 0;
@@ -1568,15 +1676,15 @@ viewer.clock.onTick.addEventListener(function () {
     if (isDown(0) && !padPrevButtons[0]) closeOverlays();
     // OPTIONS＝スティックの中心を取り直す。勝手に動くコントローラーの応急処置
     if (isDown(9) && !padPrevButtons[9]) {
-      calibratePad(pad);
-      showPickResult("スティックの中心を合わせました（手を離した状態でOPTIONSを押してください）。", 3000);
+      beginPadCalibration(pad);
+      showPickResult("スティックの中心を測り直します。手を離したままにしてください。", 3000);
     }
     padPrevButtons = pad.buttons.map((b) => b.pressed);
   } else {
     padPrevButtons = [];
-    padCalibrated = false; // 挿し直したら測り直す
+    padSeen = false; // 挿し直し・別のコントローラーに替えたら測り直す
   }
-  updatePadHud(!!pad);                       // 照準とロックオン枠の表示
+  updatePadHud(!!pad && padCalibrated);      // 照準とロックオン枠の表示（中心の測定中は出さない）
   updateTonbi(dt, forward, right, up);       // 手前のトンビの姿勢
 
   if (forward !== 0 || right !== 0 || up !== 0 || walkMode) {
