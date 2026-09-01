@@ -18,15 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-02",
-          "title": "メタバースのコントローラー ドリフト対策の再設計と単体テスト 0.5時間",
+          "title": "Map Tiles課金の切り分け（gcloud導入・請求明細CSV・割り当てAPI実測）と記録の訂正 0.8時間",
           "category": "実装",
           "outputs": [
-            "site/metaverse/index.html（ドリフト対策ブロック全面書き換え・約160行。beginPadCalibration／updatePadCalibration／padNormalize／trackPadCenter／absorbPadStuck／updatePadInput を新設し、旧 calibratePad／padAxis／padTrigger を廃止。メインループの結線と OPTIONS 再測定、HUD表示条件も更新）",
-            "site/admin/changelog.json（1件追記）"
+            "scripts/gcp-maptiles-audit.ps1（新規。割り当ての既定/実効/上書き・予算スコープ・自動調整を一括点検）",
+            "cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md（新規。CSVとAPIの実データで決着）",
+            "cidao/2026-09-01_MapTiles課金の実態と検証モード.md（冒頭に訂正。課金診断は誤りと明示）",
+            "2026-08-21_MapTiles年間費用見積_協働事業算出根拠.md（記載は正しいと検証済み注記）",
+            "2026-08-21_GoogleMapTiles_1日クォータ枯渇と対策.md（同上）",
+            "site/metaverse/CLAUDE_HANDOFF.md（作業ルール2・3、費用ゼロ運用の項を実測値へ）",
+            "MOC_CiDAO.md（2行差し替え）",
+            "site/admin/agents-worklog.json・changelog.json"
           ],
-          "hours": 0.5,
+          "hours": 0.8,
           "partnerApproved": false,
-          "note": "旧実装はパッドを最初に検出したフレームの値を中心として記録していた。Gamepad API は操作があるまでパッドを返さないため、倒した瞬間の値を中心と誤認しうる構造だった（コメントに残る実測値 -0.92 はこの症状と整合）。①値が0.5秒動かなくなるまで待って中心を測る（倒し切り付近は最大5秒まで保留）②遊びの内側では中心を追従③デッドゾーン超えの入力が3秒変化しなければ張り付きとみなし中心へ吸収（倒し切りは除外）の3段構えへ変更。検証は node での単体テスト8シナリオ24項目すべて合格＋ページ上の実コードを直接駆動して同結果を確認。実機ゲームパッドでの操作確認は未実施（環境にパッドなし・ブラウザペイン非表示でフレームが進まないため）。 session: 56a636ec-88d8-440d-aa18-9c240b78f3c6 / output: 48,113 / cost: $5.73"
+          "note": "Google Cloud SDK を winget で導入し、代表アカウントで gcloud auth login（CLOUDSDK_CONFIG=C:/Users/nsfactory/.gcloud に固定。この端末はAppDataが仮想化されており既定パスだと実行主体によって設定が食い違うため）。請求明細CSV（8月・7月）とService Usage APIの実データで、**Map Tilesの課金は¥0（8月108回・無料枠1,000の11%）**、**root上限は30のまま（利用者上書き30・既定10,000）**、renderer実効値500,000/日を確認。8月分¥316の正体はGemini API ¥287（最大は3.1 Flash Image の画像出力¥198）＋消費税¥29だった。2026-09-01の『課金は実測¥0はもう正しくない』『本番リロードが課金を生んだ』は誤りで、本セッション前半で入れた訂正注記も同じ前提に乗っていたため取り消して差し替えた。原因は予算アラート名『メタバース Map Tiles 月額』とスコープ（プロジェクト全体）の不一致。日本語入りps1はBOM付きUTF-8で保存しないとPS5.1が誤読する問題を再現（保管庫の既知事項どおり）。 session: e08758ad-a59a-4333-bb4f-8ccc11b52e4b / output: 79,254 / cost: $11.62"
         },
         {
           "date": "2026-09-02",
@@ -4364,20 +4370,6 @@
           "note": "実装済みだが未検証の4点：①ロックオン枠が出るか ②○ボタンで文化財の説明が開くか ③デッドゾーン0.2＋自動追従で暴走が止まるか ④トンビが操作に合わせて羽ばたくか。https://communitybankinzai.github.io/cbi-site/metaverse/?mode=event&notiles=1 で確認する（3Dを読まないので課金ゼロ）。手元の2台はどちらも故障しているため、正常なコントローラーが要る。経緯は cidao/2026-09-01_メタバースのコントローラー対応と機材の不具合.md"
         },
         {
-          "due": "2026-09-05",
-          "title": "💴 Map Tiles 課金のSKU別内訳を確認する（8月¥316の中身）",
-          "category": "調査",
-          "priority": "高",
-          "note": "https://console.cloud.google.com/billing/01F9AA-70146E-8EBB5D/reports を期間8/1〜9/1・グループ条件SKUで開く。**you0810jmsdf@gmail.com でログインしないと権限エラーになる**（2026-09-01に別アカウントで開いて失敗）。【2026-09-02更新】(2)rendererが課金対象かは計算で否定済み（9/1の6,455タイルがSKU課金なら約¥5,346になり実績¥100と2桁合わない）。(3)root上限の確認は別planへ分離。**残る目的は1つ：Photorealistic 3D Tiles（C6E1-98B2-DBD0）が¥316のうち何円か**。3〜7月分も毎月¥98〜245課金されていたため、**同じ操作を7/1〜8/1でも行い差分を見る**こと。詳細は cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md"
-        },
-        {
-          "due": "2026-09-05",
-          "title": "予算「メタバース Map Tiles 月額」のスコープがMap Tiles APIに絞られているか確認する",
-          "category": "調査",
-          "priority": "中",
-          "note": "https://console.cloud.google.com/billing/01F9AA-70146E-8EBB5D/budgets の予算「メタバース Map Tiles 月額」（¥1,000）を開き、範囲がプロジェクト全体か、サービス=Map Tiles APIに絞られているかを見る。**この1点でSKU調査の解釈が変わる**：プロジェクト全体なら9/1の¥100はGemini API等の可能性が高く、Map Tiles APIに絞られているならroot上限が効いていないことになる。cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md §4 の仮説A/B。"
-        },
-        {
           "due": "2026-09-30",
           "title": "🎮 イベント用に正常なコントローラーを用意する（手元の2台は故障）",
           "category": "事務",
@@ -4539,7 +4531,7 @@
           "title": "root枠（30回/日）がイベント規模に足りない件の検討",
           "category": "調査",
           "priority": "高",
-          "note": "rootは3Dワールドを開いた回数で、リロードのたびに1消費する。競技会（50人×14日）では700〜1,400回必要だが無料枠は月1,000回のため課金が発生する。rendererを50万回に上げてもrootが尽きれば3Dは表示されない。①rootリクエストの単価を調べて予算計上 ②会期短縮 ③再訪を抑える案内、のいずれかを選ぶ。企画書§10のリスク表にも記載済み。"
+          "note": "rootは3Dワールドを開いた回数で、リロードのたびに1消費する。競技会（50人×14日）では700〜1,400回必要だが無料枠は月1,000回のため課金が発生する。rendererを50万回に上げてもrootが尽きれば3Dは表示されない。①rootリクエストの単価を調べて予算計上 ②会期短縮 ③再訪を抑える案内、のいずれかを選ぶ。企画書§10のリスク表にも記載済み。 【2026-09-02実測】8月のroot実績は月108回（無料枠1,000の11%）。上限30/日・renderer 500,000/日はService Usage APIで実効値を確認済み。会期14日×50人でも1人1回なら700回で無料枠内に収まる見込みで、課金より先に『1日30回』の上限が効く。当日朝の一時引き上げ運用は引き続き必要。"
         },
         {
           "due": "未定",
@@ -4556,13 +4548,6 @@
           "category": "保守",
           "priority": "高",
           "note": "イベント前日にA9（イベント企画）から参加予定人数を受け取り→当日朝にConsoleで人数×2へ引き上げ→終了当日に30へ戻す。戻し忘れ防止に終了日のplanを都度登録。チェックリストは 2026-08-20_タイムトライアル競技会_運営方針.md。"
-        },
-        {
-          "due": "2026-09-05",
-          "title": "⚠ root requests per day が30のままかをConsoleで確認する（割り当て自動調整の巻き添えを疑う）",
-          "category": "保守",
-          "priority": "高",
-          "note": "https://console.cloud.google.com/google/maps-apis/quotas?project=creators-map → Map Tiles API → `3D Tiles root requests per day` の現在値と使用量%を記録する（要 you0810jmsdf@gmail.com）。**30より大きければ即座に30へ戻す**。2026-08-21に有効化した割り当て自動調整（Quota adjuster）がrootまで引き上げていないかを必ず見る（rendererは無償なので上げてよいが、rootは課金対象）。疑う根拠：2026-09-01は月初1日で予算¥1,000の10%に到達したが、root30回/日なら無料枠1,000の3%で課金¥0のはず。あわせてrendererの現在値（既定30,000→50万へ引き上げ済み）も記録し、CiDAOの RENDERER_LIMIT_PER_DAY と一致するか確認する。判定表は cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md §5"
         },
         {
           "due": "2026-08-31",
@@ -5180,6 +5165,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-30",
+          "title": "予算アラート「メタバース Map Tiles 月額」のスコープと名前の不一致を直す",
+          "category": "事務",
+          "priority": "中",
+          "note": "名前は Map Tiles だがスコープはプロジェクト全体で、実際に鳴っているのは Gemini API の費用。2026-09-01にこの取り違えで誤った結論（メタバースが課金を生んでいる）を出した。対応案は2つ：(a) 予算のスコープをサービス=Map Tiles APIに絞る (b) 名前を『creators-map 全体』に変えてMap Tiles用の予算を別に作る。**推奨は(b)**（Gemini APIの費用も見張る必要があるため）。Billing Budgets API は未有効なので、有効化すれば scripts/gcp-maptiles-audit.ps1 でスコープを自動確認できる：gcloud services enable billingbudgets.googleapis.com --project=creators-map。根拠は cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md"
+        },
+        {
+          "due": "2026-09-30",
+          "title": "creators-map の Gemini API 費用（8月¥287）が何の処理かを特定する",
+          "category": "調査",
+          "priority": "中",
+          "note": "8月分の請求¥316のうち¥287がGemini API。内訳の最大は『3.1 Flash Image 画像出力』20,160回・¥198で、8/3〜8/31にわたり継続発生している。メタバースのトンビ画像生成のような単発作業では説明がつかない量なので、クリエイターズマップ側の常時処理かGASの定期実行を疑う。止められる処理なら止める。毎月¥98〜245（3〜7月）の基準額もほぼこれ。根拠は cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md"
+        },
         {
           "due": "2026-09-05",
           "title": "Anthropic のクレジット残高を補充する（2026-09-01時点で $9.16）",
