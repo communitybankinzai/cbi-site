@@ -18,7 +18,7 @@
       "actuals": [
         {
           "date": "2026-09-02",
-          "title": "Map Tiles課金の切り分け（gcloud導入・請求明細CSV・割り当てAPI実測）と記録の訂正 0.8時間",
+          "title": "Map Tiles課金の切り分け（CSV・割り当てAPI実測）、Gemini費用の特定、セッション共有ボード連携 1.1時間",
           "category": "実装",
           "outputs": [
             "scripts/gcp-maptiles-audit.ps1（新規。割り当ての既定/実効/上書き・予算スコープ・自動調整を一括点検）",
@@ -28,11 +28,13 @@
             "2026-08-21_GoogleMapTiles_1日クォータ枯渇と対策.md（同上）",
             "site/metaverse/CLAUDE_HANDOFF.md（作業ルール2・3、費用ゼロ運用の項を実測値へ）",
             "MOC_CiDAO.md（2行差し替え）",
-            "site/admin/agents-worklog.json・changelog.json"
+            "site/admin/agents-worklog.json・changelog.json",
+            ".claude/settings.local.json（セッション共有ボードの4フックを追加。既存のgit pull・plans確認・worklog確認は維持。.bak_20260902 あり）",
+            "CLAUDE.md（作業ルール13：ボードで CBI: 接頭辞つきで名乗る）"
           ],
-          "hours": 0.8,
+          "hours": 1.1,
           "partnerApproved": false,
-          "note": "Google Cloud SDK を winget で導入し、代表アカウントで gcloud auth login（CLOUDSDK_CONFIG=C:/Users/nsfactory/.gcloud に固定。この端末はAppDataが仮想化されており既定パスだと実行主体によって設定が食い違うため）。請求明細CSV（8月・7月）とService Usage APIの実データで、**Map Tilesの課金は¥0（8月108回・無料枠1,000の11%）**、**root上限は30のまま（利用者上書き30・既定10,000）**、renderer実効値500,000/日を確認。8月分¥316の正体はGemini API ¥287（最大は3.1 Flash Image の画像出力¥198）＋消費税¥29だった。2026-09-01の『課金は実測¥0はもう正しくない』『本番リロードが課金を生んだ』は誤りで、本セッション前半で入れた訂正注記も同じ前提に乗っていたため取り消して差し替えた。原因は予算アラート名『メタバース Map Tiles 月額』とスコープ（プロジェクト全体）の不一致。日本語入りps1はBOM付きUTF-8で保存しないとPS5.1が誤読する問題を再現（保管庫の既知事項どおり）。 session: e08758ad-a59a-4333-bb4f-8ccc11b52e4b / output: 79,254 / cost: $11.62"
+          "note": "Google Cloud SDK を winget で導入し、代表アカウントで gcloud auth login（CLOUDSDK_CONFIG=C:/Users/nsfactory/.gcloud に固定。この端末はAppDataが仮想化されており既定パスだと実行主体によって設定が食い違うため）。請求明細CSV（8月・7月）とService Usage APIの実データで、**Map Tilesの課金は¥0（8月108回・無料枠1,000の11%）**、**root上限は30のまま（利用者上書き30・既定10,000）**、renderer実効値500,000/日を確認。8月分¥316の正体はGemini API ¥287（最大は3.1 Flash Image の画像出力¥198）＋消費税¥29だった。2026-09-01の『課金は実測¥0はもう正しくない』『本番リロードが課金を生んだ』は誤りで、本セッション前半で入れた訂正注記も同じ前提に乗っていたため取り消して差し替えた。原因は予算アラート名『メタバース Map Tiles 月額』とスコープ（プロジェクト全体）の不一致。日本語入りps1はBOM付きUTF-8で保存しないとPS5.1が誤読する問題を再現（保管庫の既知事項どおり）。 追加調査：8月のGemini ¥287の内訳は画像生成（3.1 Flash Image 画像出力20,160回・¥198）が主で、本人確認により『サイト・SNS用の画像づくり』と特定。画像の解析（入力）は3,354回で¥0.27と無視できる水準で、CiDAOのイベント画像解析はClaude実装のためGemini不使用。『COCoLaのGAS（Drive監視5分間隔・Gemini Vision）が生きている』疑いは、Cloud Monitoringの日次リクエスト数が2〜16回/日（5分間隔なら288回/日）であることから否定した。あわせて、N's factory（レザークラフト）側で運用中のセッション共有ボードにCBIセッションも双方向参加させ、同一PC・同一Googleアカウントで並行する両事業の作業が互いに見えるようにした。本セッションも名乗り＋申し送りを掲示済み。 session: e08758ad-a59a-4333-bb4f-8ccc11b52e4b / output: 110,028 / cost: $17.05"
         },
         {
           "date": "2026-09-02",
@@ -5171,13 +5173,6 @@
           "category": "事務",
           "priority": "中",
           "note": "名前は Map Tiles だがスコープはプロジェクト全体で、実際に鳴っているのは Gemini API の費用。2026-09-01にこの取り違えで誤った結論（メタバースが課金を生んでいる）を出した。対応案は2つ：(a) 予算のスコープをサービス=Map Tiles APIに絞る (b) 名前を『creators-map 全体』に変えてMap Tiles用の予算を別に作る。**推奨は(b)**（Gemini APIの費用も見張る必要があるため）。Billing Budgets API は未有効なので、有効化すれば scripts/gcp-maptiles-audit.ps1 でスコープを自動確認できる：gcloud services enable billingbudgets.googleapis.com --project=creators-map。根拠は cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md"
-        },
-        {
-          "due": "2026-09-30",
-          "title": "creators-map の Gemini API 費用（8月¥287）が何の処理かを特定する",
-          "category": "調査",
-          "priority": "中",
-          "note": "8月分の請求¥316のうち¥287がGemini API。内訳の最大は『3.1 Flash Image 画像出力』20,160回・¥198で、8/3〜8/31にわたり継続発生している。メタバースのトンビ画像生成のような単発作業では説明がつかない量なので、クリエイターズマップ側の常時処理かGASの定期実行を疑う。止められる処理なら止める。毎月¥98〜245（3〜7月）の基準額もほぼこれ。根拠は cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md"
         },
         {
           "due": "2026-09-05",
