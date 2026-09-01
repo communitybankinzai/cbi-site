@@ -1382,6 +1382,7 @@ const PAD_STUCK_CREEP_SEC = 1.5;   // 中心を現在値へ寄せるときの速
 const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒数を過ぎたら寄せ始める
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
+const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1483,20 +1484,21 @@ function updatePadCalibration(pad, dt) {
 
 // 中心からの差にデッドゾーンをかけ、-1〜1 に引き伸ばす（境目で値が飛ばないようにする）。
 // トリガー（4以降）は押し込む向きだけを見る
+// 中心がずれていると、片側の可動域が狭くなる（中心 -0.8 なら上へは 0.2 しか動かせない）。
+// 狭い側は遊びも比例して狭め、残りを可動域いっぱいまで引き伸ばして倒す向きで効きが変わらないようにする。
+// 遊びの判定は引き伸ばす前の生の差で行う（引き伸ばしてから判定すると、わずかなズレが遊びを超えて動き出す）
 function padNormalize(raw, ch) {
   const c = padCenter[ch] || 0;
-  let d = raw - c;
-  if (ch >= 4) {
-    const range = 1 - c;
-    if (d < PAD_DEADZONE || range <= 0.25) return 0; // 静止値が高すぎる個体は踏み込みを読まない
-    return Math.min(1, (d - PAD_DEADZONE) / (range - PAD_DEADZONE));
-  }
-  // 中心がずれているぶん片側の可動域が狭くなるので、その側だけ引き伸ばして左右の効きを揃える
-  const range = d > 0 ? 1 - c : 1 + c;
-  if (range > 0.25) d = d / range; // 可動域がほぼ無い方向は補正しない（わずかな揺れが暴走するため）
+  const d = raw - c;
+  // トリガー（4以降）は押し込む向きだけを見る
+  const range = ch >= 4 ? 1 - c : (d > 0 ? 1 - c : 1 + c);
+  if (range <= PAD_MIN_RANGE) return 0;    // この向きへはもう倒せない
+  if (ch >= 4 && d < 0) return 0;
+  const dz = Math.min(PAD_DEADZONE, range * 0.5); // 可動域の半分を超える遊びは取らない
   const a = Math.abs(d);
-  if (a < PAD_DEADZONE) return 0;
-  return Math.sign(d) * Math.min(1, (a - PAD_DEADZONE) / (1 - PAD_DEADZONE));
+  if (a < dz) return 0;
+  const v = Math.min(1, (a - dz) / (range - dz));
+  return ch >= 4 ? v : Math.sign(d) * v;
 }
 
 // 遊びの内側にいる間は、中心を現在値へゆっくり寄せる。静止値そのものが時間とともに
