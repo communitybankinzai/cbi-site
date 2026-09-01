@@ -17,6 +17,23 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-02",
+          "title": "Map Tiles課金の切り分け調査（請求履歴6か月の確定）と記録の訂正 0.4時間",
+          "category": "調査",
+          "outputs": [
+            "cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md（新規）",
+            "2026-08-21_MapTiles年間費用見積_協働事業算出根拠.md（冒頭に訂正注記。「実請求額0円」は誤り）",
+            "2026-08-21_GoogleMapTiles_1日クォータ枯渇と対策.md（冒頭に訂正注記）",
+            "cidao/2026-09-01_MapTiles課金の実態と検証モード.md（冒頭に追記リンク）",
+            "site/metaverse/CLAUDE_HANDOFF.md（作業ルール2と費用ゼロ運用の項を実態に合わせて更新）",
+            "MOC_CiDAO.md（1行追記）",
+            "site/admin/agents-worklog.json（plans 3件を更新・新規1件）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "Google Payments の入金レシート6通（Gmail）から、creators-map は2026年3月分から毎月¥98〜245が課金され続けていたと確定。「公開以来の実請求額0円」は最初から誤りで、8月¥316の全額をメタバース由来として提案書に計上してはいけない（増分は月¥151が上限）。rendererが課金対象でないことは9/1実測6,455タイルとの矛盾から計算で否定。料金は公式ページで再確認（SKU C6E1-98B2-DBD0・$6.00/1,000・無料枠1,000/月・Enterpriseのみ）。SKU内訳とroot上限はCloud Consoleに個人アカウントでログインしないと取得できないためplansへ差し戻した。 session: e08758ad-a59a-4333-bb4f-8ccc11b52e4b / output: 37,504 / cost: $5.32"
+        },
+        {
           "date": "2026-09-01",
           "title": "メタバースのゲームパッド対応（移動・視点・ロックオン・トンビ演出）と、Map Tiles課金の調査 2.1時間",
           "category": "実装",
@@ -4330,7 +4347,14 @@
           "title": "💴 Map Tiles 課金のSKU別内訳を確認する（8月¥316の中身）",
           "category": "調査",
           "priority": "高",
-          "note": "https://console.cloud.google.com/billing/01F9AA-70146E-8EBB5D/reports を期間8/1〜9/1・グループ条件SKUで開く。**you0810jmsdf@gmail.com でログインしないと権限エラーになる**（2026-09-01に別アカウントで開いて失敗）。確認したいのは(1)Map Tiles以外のSKUが混ざっていないか (2)renderer が課金対象になっていないか (3)root requests per day が30のままか。詳細は cidao/2026-09-01_MapTiles課金の実態と検証モード.md"
+          "note": "https://console.cloud.google.com/billing/01F9AA-70146E-8EBB5D/reports を期間8/1〜9/1・グループ条件SKUで開く。**you0810jmsdf@gmail.com でログインしないと権限エラーになる**（2026-09-01に別アカウントで開いて失敗）。【2026-09-02更新】(2)rendererが課金対象かは計算で否定済み（9/1の6,455タイルがSKU課金なら約¥5,346になり実績¥100と2桁合わない）。(3)root上限の確認は別planへ分離。**残る目的は1つ：Photorealistic 3D Tiles（C6E1-98B2-DBD0）が¥316のうち何円か**。3〜7月分も毎月¥98〜245課金されていたため、**同じ操作を7/1〜8/1でも行い差分を見る**こと。詳細は cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md"
+        },
+        {
+          "due": "2026-09-05",
+          "title": "予算「メタバース Map Tiles 月額」のスコープがMap Tiles APIに絞られているか確認する",
+          "category": "調査",
+          "priority": "中",
+          "note": "https://console.cloud.google.com/billing/01F9AA-70146E-8EBB5D/budgets の予算「メタバース Map Tiles 月額」（¥1,000）を開き、範囲がプロジェクト全体か、サービス=Map Tiles APIに絞られているかを見る。**この1点でSKU調査の解釈が変わる**：プロジェクト全体なら9/1の¥100はGemini API等の可能性が高く、Map Tiles APIに絞られているならroot上限が効いていないことになる。cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md §4 の仮説A/B。"
         },
         {
           "due": "2026-09-30",
@@ -4513,11 +4537,11 @@
           "note": "イベント前日にA9（イベント企画）から参加予定人数を受け取り→当日朝にConsoleで人数×2へ引き上げ→終了当日に30へ戻す。戻し忘れ防止に終了日のplanを都度登録。チェックリストは 2026-08-20_タイムトライアル競技会_運営方針.md。"
         },
         {
-          "due": "2026-09-01",
-          "title": "Map Tiles 割り当て自動調整（Quota adjuster）の動作確認と上限値の記録",
+          "due": "2026-09-05",
+          "title": "⚠ root requests per day が30のままかをConsoleで確認する（割り当て自動調整の巻き添えを疑う）",
           "category": "保守",
-          "priority": "中",
-          "note": "2026-08-21に有効化。Console「割り当て」で3D Tiles renderer requests per dayの現在値（既定30,000→自動増加後）を確認し、2026-08-21_GoogleMapTiles_1日クォータ枯渇と対策.md に追記。CiDAO管理画面の目安値（DAILY_QUOTA_BASELINE=30000）の更新要否も判断。"
+          "priority": "高",
+          "note": "https://console.cloud.google.com/google/maps-apis/quotas?project=creators-map → Map Tiles API → `3D Tiles root requests per day` の現在値と使用量%を記録する（要 you0810jmsdf@gmail.com）。**30より大きければ即座に30へ戻す**。2026-08-21に有効化した割り当て自動調整（Quota adjuster）がrootまで引き上げていないかを必ず見る（rendererは無償なので上げてよいが、rootは課金対象）。疑う根拠：2026-09-01は月初1日で予算¥1,000の10%に到達したが、root30回/日なら無料枠1,000の3%で課金¥0のはず。あわせてrendererの現在値（既定30,000→50万へ引き上げ済み）も記録し、CiDAOの RENDERER_LIMIT_PER_DAY と一致するか確認する。判定表は cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md §5"
         },
         {
           "due": "2026-08-31",
