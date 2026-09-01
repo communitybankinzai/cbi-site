@@ -648,6 +648,7 @@
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
   <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
+  <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
   <button id="modeSwitchBtn" title="イベント用途と防災用途を切り替えます">🔀 モード切替</button>
   <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 撮影</button>
   <button id="recBtn" title="画面を動画（WebM）で録画します。もう一度押すと停止して保存されます">🎥 録画</button>
@@ -1467,7 +1468,38 @@ try {
   if (localStorage.getItem(TONBI_KEY) === "1") setTonbiVisible(true);
 } catch (e) { /* プライベートモード等では既定のOFFのまま */ }
 
+// コントローラー入力の受付切替。手を離しても入力が残る個体が挿さっていると
+// マウス操作まで打ち消されてしまうため、抜き差しせずその場で止められるようにする
+const PAD_ENABLED_KEY = "cbi-meta-pad-enabled-v1";
+let padEnabled = true;
+try { padEnabled = localStorage.getItem(PAD_ENABLED_KEY) !== "0"; } catch (e) { /* 既定はON */ }
+
+function paintPadToggle() {
+  const btn = document.getElementById("padToggleBtn");
+  btn.textContent = padEnabled ? "🎮 コントローラー" : "🎮 コントローラー停止中";
+  btn.classList.toggle("off", !padEnabled);
+}
+
+function setPadEnabled(on) {
+  padEnabled = on;
+  paintPadToggle();
+  try { localStorage.setItem(PAD_ENABLED_KEY, on ? "1" : "0"); } catch (e) { /* 保存できなくても動く */ }
+  if (on) {
+    padCalibrated = false; // 有効にした時点の値で中心を測り直す
+    showPickResult("コントローラー操作を有効にしました。", 2500);
+  } else {
+    updatePadHud(false);   // 照準とロックオン枠を消す
+    showPickResult("コントローラー操作を止めました。マウス・キーボードで操作できます。", 3500);
+  }
+}
+
+paintPadToggle();
+document.getElementById("padToggleBtn").addEventListener("click", function () {
+  setPadEnabled(!padEnabled);
+});
+
 function readGamepad() {
+  if (!padEnabled) return null;
   const pads = navigator.getGamepads ? navigator.getGamepads() : [];
   for (const p of pads) if (p && p.mapping === "standard") return p;
   for (const p of pads) if (p) return p; // standard 以外でもスティックだけは使えるようにする
@@ -3364,7 +3396,7 @@ function recStart() {
   const bar = document.getElementById("topLeftBar");
   if (bar) bar.style.display = "";
   ["puzzleBtn", "reportsBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
-   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
+   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
   });
