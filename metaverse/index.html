@@ -1368,7 +1368,14 @@ viewer.clock.onTick.addEventListener(function () {
     // L2＝下降／R2＝上昇（アナログ。踏み込み量で速さが変わる）
     const l2 = pad.buttons[6] ? pad.buttons[6].value : 0;
     const r2 = pad.buttons[7] ? pad.buttons[7].value : 0;
-    up += (r2 > PAD_DEADZONE ? r2 : 0) - (l2 > PAD_DEADZONE ? l2 : 0);
+    let padUp = (r2 > PAD_DEADZONE ? r2 : 0) - (l2 > PAD_DEADZONE ? l2 : 0);
+    // 古い個体は L2 が反応しないことがあるため、L1／R1 でも上下できるようにしておく
+    if (padUp === 0) {
+      const l1 = pad.buttons[4] && pad.buttons[4].pressed ? 1 : 0;
+      const r1 = pad.buttons[5] && pad.buttons[5].pressed ? 1 : 0;
+      padUp = r1 - l1;
+    }
+    up += padUp;
 
     // ○＝画面中央のピンを選ぶ／×＝開いているパネルを閉じる（押した瞬間のみ）
     const isDown = (i) => !!(pad.buttons[i] && pad.buttons[i].pressed);
