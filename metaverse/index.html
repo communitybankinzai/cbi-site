@@ -532,6 +532,15 @@
   }
   @keyframes tonbiBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -16px; } }
 
+  /* コントローラー診断パネル。?paddebug=1 のときだけ出す（コンソールを開けない環境用） */
+  #padDebug {
+    position: absolute; right: 8px; bottom: 8px; z-index: 40; display: none;
+    background: rgba(8, 14, 22, 0.88); color: #bfe3d0; border: 1px solid #3a7;
+    border-radius: 8px; padding: 8px 10px; font-size: 11px; line-height: 1.45;
+    font-family: Consolas, "Courier New", monospace; white-space: pre;
+    pointer-events: none; max-width: 46ch; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  }
+
   /* ゲームパッド用HUD（照準とロックオン枠）。コントローラー接続中だけ出す */
   #padHud { position: absolute; inset: 0; z-index: 28; pointer-events: none; display: none; }
   #padCross {
@@ -870,6 +879,8 @@
   <div id="padCross"></div>
   <div id="padLock"><span id="padLockName"></span><span id="padLockHint">○ボタンで開く</span></div>
 </div>
+
+<div id="padDebug"></div>
 
 <div id="joystick"><div id="joystickKnob"></div></div>
 
@@ -1507,6 +1518,45 @@ function updatePadInput(pad, dt) {
   }
 }
 
+// ?paddebug=1 で右下に診断パネルを出す。開発者ツールを開けない場面でも
+// 「パッドが見えているのか」「中心の測定が終わっているのか」を画面だけで確かめられるようにする
+const PAD_DEBUG = new URLSearchParams(location.search).get("paddebug") === "1";
+const PAD_CH_NAMES = ["左横", "左縦", "右横", "右縦", "L2", "R2"];
+let padDebugFrame = 0;
+function updatePadDebug(pad, forward, right, up) {
+  if (!PAD_DEBUG) return;
+  const el = document.getElementById("padDebug");
+  if (el.style.display !== "block") el.style.display = "block";
+  if (++padDebugFrame % 6 !== 0) return; // 毎フレーム書き換えると重いので間引く
+  const all = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
+  const L = ["■ コントローラー診断"];
+  L.push("受付: " + (padEnabled ? "ON" : "OFF ←「コントローラー停止中」を押して戻す"));
+  L.push("ブラウザが見ている数: " + all.length);
+  if (!pad) {
+    L.push("状態: パッドを検出していません");
+    L.push("→ この画面を1回クリックしてから、");
+    L.push("  コントローラーのボタンを1回押してください");
+  } else {
+    L.push("機種: " + String(pad.id).slice(0, 38));
+    L.push("mapping: " + pad.mapping + " / 軸" + pad.axes.length + " ボタン" + pad.buttons.length);
+    L.push("中心の測定: " + (padCalibrated
+      ? "完了"
+      : "測定中（静止 " + padCalibElapsed.toFixed(1) + "秒 / 合計 " + padCalibWait.toFixed(1) + "秒）"));
+    for (let ch = 0; ch < PAD_CH; ch++) {
+      L.push("  " + PAD_CH_NAMES[ch] + " 生" + padRaw(pad, ch).toFixed(3).padStart(7) +
+        " 中心" + padCenter[ch].toFixed(3).padStart(7) +
+        " 出力" + padValue[ch].toFixed(3).padStart(7));
+    }
+    const pressed = [];
+    for (let i = 0; i < pad.buttons.length; i++) if (pad.buttons[i].pressed) pressed.push(i);
+    L.push("押されているボタン: " + (pressed.length ? pressed.join(",") : "なし"));
+  }
+  L.push("移動入力: 前後 " + forward.toFixed(2) + " / 左右 " + right.toFixed(2) + " / 上下 " + up.toFixed(2));
+  const keyList = Object.keys(keys).filter((k) => keys[k]);
+  L.push("キーボード: " + (keyList.length ? keyList.join(",") : "なし"));
+  el.textContent = L.join("\n");
+}
+
 // ============================================================
 // 手前を飛ぶトンビ（操作に連動して姿勢が変わる）
 // ============================================================
@@ -1685,6 +1735,7 @@ viewer.clock.onTick.addEventListener(function () {
     padSeen = false; // 挿し直し・別のコントローラーに替えたら測り直す
   }
   updatePadHud(!!pad && padCalibrated);      // 照準とロックオン枠の表示（中心の測定中は出さない）
+  updatePadDebug(pad, forward, right, up);   // ?paddebug=1 のときだけ右下に状態を出す
   updateTonbi(dt, forward, right, up);       // 手前のトンビの姿勢
 
   if (forward !== 0 || right !== 0 || up !== 0 || walkMode) {
