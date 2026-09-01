@@ -1263,6 +1263,25 @@ function joyEnd() {
   joyState.active = false; joyState.dx = 0; joyState.dy = 0;
   knob.style.left = "50%"; knob.style.top = "50%";
 }
+
+// --- ゲームパッド（DUALSHOCK 4 等・standard mapping）---
+// 左スティック＝移動／右スティック＝視点／L2・R2＝下降・上昇／○＝ピン選択／×＝閉じる
+const PAD_DEADZONE = 0.1;   // スティックの遊び。経年劣化した個体のドリフト対策に必須
+const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
+let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
+
+// デッドゾーンぶんを差し引いて -1〜1 に引き伸ばす（境目で値が飛ばないようにする）
+function padAxis(v) {
+  if (typeof v !== "number" || Math.abs(v) < PAD_DEADZONE) return 0;
+  return Math.sign(v) * ((Math.abs(v) - PAD_DEADZONE) / (1 - PAD_DEADZONE));
+}
+
+function readGamepad() {
+  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+  for (const p of pads) if (p && p.mapping === "standard") return p;
+  for (const p of pads) if (p) return p; // standard 以外でもスティックだけは使えるようにする
+  return null;
+}
 joystickEl.addEventListener("pointerup", joyEnd);
 joystickEl.addEventListener("pointercancel", joyEnd);
 
@@ -1287,6 +1306,40 @@ viewer.clock.onTick.addEventListener(function () {
 
   forward += -joyState.dy; // ジョイスティック上=前進
   right += joyState.dx;
+
+  // --- ゲームパッド入力を合流させる ---
+  const pad = readGamepad();
+  if (pad) {
+    right += padAxis(pad.axes[0]);
+    forward += -padAxis(pad.axes[1]); // 上に倒す＝前進
+
+    // 右スティックで視点。移動処理より先に向きを決める
+    const lookX = padAxis(pad.axes[2]);
+    const lookY = padAxis(pad.axes[3]);
+    if (lookX !== 0 || lookY !== 0) {
+      cam.setView({
+        orientation: {
+          heading: cam.heading + lookX * PAD_LOOK_SPEED * dt,
+          pitch: Cesium.Math.clamp(cam.pitch - lookY * PAD_LOOK_SPEED * dt,
+            Cesium.Math.toRadians(-89), Cesium.Math.toRadians(89)),
+          roll: 0,
+        },
+      });
+    }
+
+    // L2＝下降／R2＝上昇（アナログ。踏み込み量で速さが変わる）
+    const l2 = pad.buttons[6] ? pad.buttons[6].value : 0;
+    const r2 = pad.buttons[7] ? pad.buttons[7].value : 0;
+    up += (r2 > PAD_DEADZONE ? r2 : 0) - (l2 > PAD_DEADZONE ? l2 : 0);
+
+    // ○＝画面中央のピンを選ぶ／×＝開いているパネルを閉じる（押した瞬間のみ）
+    const isDown = (i) => !!(pad.buttons[i] && pad.buttons[i].pressed);
+    if (isDown(1) && !padPrevButtons[1]) pickAtScreenCenter();
+    if (isDown(0) && !padPrevButtons[0]) closeOverlays();
+    padPrevButtons = pad.buttons.map((b) => b.pressed);
+  } else {
+    padPrevButtons = [];
+  }
 
   if (forward !== 0 || right !== 0 || up !== 0 || walkMode) {
     // 歩行モードでは水平方向のみに移動（ピッチの影響を除去）
@@ -2804,7 +2857,7 @@ function pickInteractiveEntity(position) {
   return null;
 }
 
-viewer.screenSpaceEventHandler.setInputAction(function (click) {
+function handleInteractiveClick(click) {
   if (pickModeActive) {
     handlePickPosition(click);
     return; // 位置修正モード中は看板クリックを無効化（誤タップ防止）
@@ -2844,7 +2897,23 @@ viewer.screenSpaceEventHandler.setInputAction(function (click) {
     kLink.href = k.url; kLink.style.display = "block";
     document.getElementById("spotInfo").style.display = "block";
   }
-}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+}
+viewer.screenSpaceEventHandler.setInputAction(handleInteractiveClick, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+// 画面中央のピンを選ぶ（ゲームパッドの○ボタン用。マウスクリックと同じ処理を通す）
+function pickAtScreenCenter() {
+  if (pickModeActive) return; // 位置修正モード中は誤操作防止のため反応させない
+  const canvasEl = viewer.scene.canvas;
+  handleInteractiveClick({
+    position: new Cesium.Cartesian2(canvasEl.clientWidth / 2, canvasEl.clientHeight / 2),
+  });
+}
+
+// 開いている情報パネル・詳細モーダルを閉じる（ゲームパッドの×ボタン用）
+function closeOverlays() {
+  document.getElementById("bunkazaiModal").classList.remove("show");
+  document.getElementById("spotInfo").style.display = "none";
+}
 
 // 近接判定（500msごと・地上〜低空のみ）
 let lastPieceCheck = 0;
