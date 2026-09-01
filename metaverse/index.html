@@ -1364,7 +1364,7 @@ function joyEnd() {
 }
 
 // --- ゲームパッド（DUALSHOCK 4 等・standard mapping）---
-// 左スティック＝移動／右スティック＝視点／L2・R2＝下降・上昇／○＝ピン選択／×＝閉じる
+// 左スティック＝移動／右スティック＝視点／L2・R2（またはL1・R1、十字キー上下）＝下降・上昇／○＝ピン選択／×＝閉じる
 // スティックの遊び。中古の個体は手を離しても値が戻らないうえ、時間とともにズレていく。
 // 実測（CUH-ZCT2）では左スティック縦の静止値が -0.92 → -0.62 と動いた（2026-09-01）
 //
@@ -1823,6 +1823,12 @@ viewer.clock.onTick.addEventListener(function () {
       const l1 = pad.buttons[4] && pad.buttons[4].pressed ? 1 : 0;
       const r1 = pad.buttons[5] && pad.buttons[5].pressed ? 1 : 0;
       padUp = r1 - l1;
+    }
+    // 左側のボタンがまとめて壊れている個体もあるので、十字キーの上下でも昇降できるようにする
+    if (padUp === 0) {
+      const dpadUp = pad.buttons[12] && pad.buttons[12].pressed ? 1 : 0;
+      const dpadDown = pad.buttons[13] && pad.buttons[13].pressed ? 1 : 0;
+      padUp = dpadUp - dpadDown;
     }
     up += padUp;
 
