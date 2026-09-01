@@ -517,6 +517,21 @@
     color: #fff; font-size: 14px; cursor: pointer; font-weight: bold;
   }
 
+  /* 手前を飛ぶトンビ。操作に合わせて姿勢が変わる（☰メニューの「🦅 トンビ」で切替） */
+  #tonbiLayer {
+    position: absolute; left: 50%; bottom: 10%; z-index: 26;
+    width: 30vw; max-width: 420px; min-width: 190px;
+    pointer-events: none; display: none;
+    transform: translateX(-50%);
+    transition: transform 0.3s ease-out;
+    animation: tonbiBob 4.5s ease-in-out infinite; /* 上下の揺れで風を感じさせる */
+  }
+  #tonbiLayer img {
+    width: 100%; height: auto; display: block;
+    filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.28));
+  }
+  @keyframes tonbiBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -16px; } }
+
   /* ゲームパッド用HUD（照準とロックオン枠）。コントローラー接続中だけ出す */
   #padHud { position: absolute; inset: 0; z-index: 28; pointer-events: none; display: none; }
   #padCross {
@@ -632,6 +647,7 @@
   <button id="kominkanToggleBtn" class="off" title="印西市の公民館・交流館・文化ホールのピンを表示／非表示します（クリックで各施設の市公式ページへ）">🏢 公民館</button>
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
+  <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
   <button id="modeSwitchBtn" title="イベント用途と防災用途を切り替えます">🔀 モード切替</button>
   <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 撮影</button>
   <button id="recBtn" title="画面を動画（WebM）で録画します。もう一度押すと停止して保存されます">🎥 録画</button>
@@ -846,6 +862,8 @@
   <p id="spotInfoDesc"></p>
   <a id="spotInfoLink" href="#" target="_blank" rel="noopener" style="display:none;margin-top:8px;padding:6px;border-radius:8px;border:1px solid #ffd166;background:rgba(255,209,102,0.12);color:#ffd166;font-size:12px;font-weight:bold;text-decoration:none;text-align:center;">🔎 市公式ページで詳しく見る</a>
 </div>
+
+<div id="tonbiLayer"><img id="tonbiImg" src="assets/tonbi/tonbi_flap_level.webp" alt=""></div>
 
 <div id="padHud">
   <div id="padCross"></div>
@@ -1341,6 +1359,69 @@ function padTrigger(pad, buttonIndex, baseIndex) {
   return d > PAD_DEADZONE ? Math.min(1, d / (1 - (padTriggerBase[baseIndex] || 0))) : 0;
 }
 
+// ============================================================
+// 手前を飛ぶトンビ（操作に連動して姿勢が変わる）
+// ============================================================
+// 打ち下ろし→戻し→水平→振り上げ の順に回すと羽ばたいて見える
+const TONBI_CYCLE = ["flap_down", "flap_rise", "flap_level", "flap_up"];
+const TONBI_KEY = "cbi-meta-tonbi-v1";
+let tonbiOn = false;
+let tonbiPhase = 0;      // 羽ばたきの何コマ目か
+let tonbiElapsed = 0;    // 次のコマまでの経過秒
+let tonbiSrc = "";       // いま出している画像（同じなら書き換えない）
+
+function setTonbiFrame(name) {
+  if (tonbiSrc === name) return;
+  tonbiSrc = name;
+  document.getElementById("tonbiImg").src = "assets/tonbi/tonbi_" + name + ".webp";
+}
+
+// forward/right/up は毎フレームの移動入力（キーボード・スティック共通）
+function updateTonbi(dt, forward, right, up) {
+  if (!tonbiOn) return;
+
+  // 上昇中はしっかり羽ばたき、前進中はゆるく羽ばたく。トビは滑空が多い鳥なので普段は静止
+  let interval = 0;
+  if (up > 0.15) interval = 0.10;
+  else if (forward > 0.55) interval = 0.20;
+
+  if (interval > 0) {
+    tonbiElapsed += dt;
+    if (tonbiElapsed >= interval) {
+      tonbiElapsed = 0;
+      tonbiPhase = (tonbiPhase + 1) % TONBI_CYCLE.length;
+    }
+    setTonbiFrame(TONBI_CYCLE[tonbiPhase]);
+  } else if (up < -0.15) {
+    setTonbiFrame("flap_up");   // 降下中は翼を上げて風を受ける姿
+    tonbiElapsed = 0;
+  } else {
+    setTonbiFrame("flap_level"); // 滑空
+    tonbiElapsed = 0;
+  }
+
+  // 左右に曲がるときは機体を傾ける
+  const roll = Math.max(-22, Math.min(22, right * 22));
+  document.getElementById("tonbiLayer").style.transform =
+    "translateX(-50%) rotate(" + roll.toFixed(1) + "deg)";
+}
+
+function setTonbiVisible(on) {
+  tonbiOn = on;
+  const layer = document.getElementById("tonbiLayer");
+  const btn = document.getElementById("tonbiToggleBtn");
+  layer.style.display = on ? "block" : "none";
+  btn.classList.toggle("off", !on);
+  try { localStorage.setItem(TONBI_KEY, on ? "1" : "0"); } catch (e) { /* 保存できなくても動く */ }
+}
+
+document.getElementById("tonbiToggleBtn").addEventListener("click", function () {
+  setTonbiVisible(!tonbiOn);
+});
+try {
+  if (localStorage.getItem(TONBI_KEY) === "1") setTonbiVisible(true);
+} catch (e) { /* プライベートモード等では既定のOFFのまま */ }
+
 function readGamepad() {
   const pads = navigator.getGamepads ? navigator.getGamepads() : [];
   for (const p of pads) if (p && p.mapping === "standard") return p;
@@ -1417,7 +1498,8 @@ viewer.clock.onTick.addEventListener(function () {
     padPrevButtons = [];
     padCalibrated = false; // 挿し直したら測り直す
   }
-  updatePadHud(!!pad); // 照準とロックオン枠の表示
+  updatePadHud(!!pad);                       // 照準とロックオン枠の表示
+  updateTonbi(dt, forward, right, up);       // 手前のトンビの姿勢
 
   if (forward !== 0 || right !== 0 || up !== 0 || walkMode) {
     // 歩行モードでは水平方向のみに移動（ピッチの影響を除去）
@@ -2675,9 +2757,10 @@ function applyMode(mode) {
   currentMode = ev ? "event" : "bousai";
   try { localStorage.setItem(MODE_KEY, currentMode); } catch (e) {}
   // イベント系UI（文化財ゲーム・学習レポート・タイムトライアル・位置修正）
-  ["puzzleBtn", "reportsBtn", "pinToggleBtn", "pickModeBtn", "ttBtn"].forEach(id => {
+  ["puzzleBtn", "reportsBtn", "pinToggleBtn", "pickModeBtn", "ttBtn", "tonbiToggleBtn"].forEach(id => {
     document.getElementById(id).style.display = ev ? "" : "none";
   });
+  if (!ev) setTonbiVisible(false); // 防災用途では演出を出さない
   // 防災系UI（避難所トグル・浸水シミュレーション）
   document.getElementById("shelterToggleBtn").style.display = ev ? "none" : "";
   document.getElementById("floodControls").style.display = ev ? "none" : "";
@@ -3235,7 +3318,7 @@ function recStart() {
   const bar = document.getElementById("topLeftBar");
   if (bar) bar.style.display = "";
   ["puzzleBtn", "reportsBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
-   "pickModeBtn", "ttBtn", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
+   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
   });
