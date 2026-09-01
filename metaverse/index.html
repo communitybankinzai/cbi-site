@@ -659,6 +659,7 @@
   <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
   <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
   <button id="padCenterBtn" style="display:none" title="スティックから手を離した状態で押してください。いまの値をそのまま「手を離した位置」として覚え直します（コントローラーのOPTIONSボタンでも同じことができます）">🎯 中心合わせ</button>
+  <button id="padDebugBtn" title="コントローラーを認識しているか、各スティックがどんな値を出しているかを画面に表示します">🩺 診断</button>
   <button id="modeSwitchBtn" title="イベント用途と防災用途を切り替えます">🔀 モード切替</button>
   <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 撮影</button>
   <button id="recBtn" title="画面を動画（WebM）で録画します。もう一度押すと停止して保存されます">🎥 録画</button>
@@ -1377,6 +1378,8 @@ const PAD_CALIB_LIMIT = 0.9;       // 倒し切り付近は中心にしない（
 const PAD_CALIB_FORCE_SEC = 5.0;   // ただしこの時間たてば、倒し切りの値でも受け入れる（永久に動かないのを防ぐ）
 const PAD_STUCK_SEC = 5.0;         // 動かない入力を張り付きとみなすまでの時間
 const PAD_STUCK_JITTER = 0.10;     // この幅に収まったまま動かなければ「触っていない」とみなす
+const PAD_STUCK_CREEP_SEC = 1.5;   // 中心を現在値へ寄せるときの速さ（この秒数かけて寄せる）
+const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒数を過ぎたら寄せ始める
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
@@ -1518,6 +1521,12 @@ function absorbPadStuck(pad, ch, dt) {
   }
   if (Math.abs(padValue[ch]) > PAD_STUCK_LIMIT) { padStuckSec[ch] = 0; return false; }
   padStuckSec[ch] += dt;
+  // 静止値がじわじわ動き続ける個体は、時間が来るのを待って一度に直すだけでは追いつかない。
+  // 狭い範囲から出ないまま時間が過ぎたら、そのつど中心を現在値へ寄せて流れを抑える。
+  // ただし寄せ始めるまで少し待つ（人が倒して保持している操作を弱めてしまわないため）
+  if (padStuckSec[ch] > PAD_STUCK_CREEP_AFTER) {
+    padCenter[ch] += (raw - padCenter[ch]) * Math.min(1, dt / PAD_STUCK_CREEP_SEC);
+  }
   if (padStuckSec[ch] < PAD_STUCK_SEC) return false;
   padCenter[ch] = (padStuckMin[ch] + padStuckMax[ch]) / 2; // 揺れの真ん中を中心にする
   padValue[ch] = 0;
@@ -1565,11 +1574,15 @@ function updatePadInput(pad, dt) {
 // ?paddebug=1 で右下に診断パネルを出す。開発者ツールを開けない場面でも
 // 「パッドが見えているのか」「中心の測定が終わっているのか」を画面だけで確かめられるようにする
 const PAD_DEBUG = new URLSearchParams(location.search).get("paddebug") === "1";
+let padDebugOn = PAD_DEBUG; // 🩺診断ボタンで切り替える（URLに ?paddebug=1 があれば最初から出す）
 const PAD_CH_NAMES = ["左横", "左縦", "右横", "右縦", "L2", "R2"];
 let padDebugFrame = 0;
 function updatePadDebug(pad, forward, right, up) {
-  if (!PAD_DEBUG) return;
   const el = document.getElementById("padDebug");
+  if (!padDebugOn) {
+    if (el.style.display !== "none") el.style.display = "none";
+    return;
+  }
   if (el.style.display !== "block") el.style.display = "block";
   if (++padDebugFrame % 6 !== 0) return; // 毎フレーム書き換えると重いので間引く
   const all = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
@@ -1696,6 +1709,13 @@ function setPadEnabled(on) {
 paintPadToggle();
 document.getElementById("padToggleBtn").addEventListener("click", function () {
   setPadEnabled(!padEnabled);
+});
+document.getElementById("padDebugBtn").addEventListener("click", function () {
+  padDebugOn = !padDebugOn;
+  this.classList.toggle("on", padDebugOn);
+  padDebugFrame = 5; // 押した直後に一度描き直す
+  updatePadDebug(readGamepad(), 0, 0, 0);
+  if (!padDebugOn) document.getElementById("padDebug").style.display = "none";
 });
 document.getElementById("padCenterBtn").addEventListener("click", function () {
   const pad = readGamepad();
@@ -3611,7 +3631,7 @@ function recStart() {
   const bar = document.getElementById("topLeftBar");
   if (bar) bar.style.display = "";
   ["puzzleBtn", "reportsBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
-   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
+   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
   });
