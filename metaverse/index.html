@@ -533,10 +533,22 @@
     position: relative; will-change: transform;
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.30)); /* ぼかしを広げるほど描き直しが重くなる */
   }
+  /* 4コマを重ねて置き、濃さだけで切り替える。src を書き換えると毎回デコードが走って重い。
+     1枚目だけ通常の流れに置いて高さの基準にし、残りは上に重ねる */
   #tonbiLayer img { width: 100%; height: auto; display: block; }
-  /* 次のコマ。切り替わりの前後だけ薄く重ねて、コマの飛びを目立たなくする */
-  #tonbiImgNext { position: absolute; left: 0; top: 0; opacity: 0; }
+  #tonbiInner .tonbiFrame { opacity: 0; }
+  #tonbiInner .tonbiFrame:not(:first-child) { position: absolute; left: 0; top: 0; }
   @keyframes tonbiBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -16px; } }
+
+  /* いま何倍速で飛んでいるかの表示。等倍のときは出さない */
+  #speedChip {
+    position: absolute; left: 50%; bottom: 88px; transform: translateX(-50%);
+    z-index: 30; display: none; pointer-events: none;
+    background: rgba(10, 16, 26, 0.82); color: #ffd166;
+    border: 1px solid rgba(255, 209, 102, 0.55); border-radius: 14px;
+    padding: 4px 14px; font-size: 14px; font-weight: bold; white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  }
 
   /* コントローラー診断パネル。?paddebug=1 のときだけ出す（コンソールを開けない環境用） */
   #padDebug {
@@ -881,12 +893,14 @@
   <a id="spotInfoLink" href="#" target="_blank" rel="noopener" style="display:none;margin-top:8px;padding:6px;border-radius:8px;border:1px solid #ffd166;background:rgba(255,209,102,0.12);color:#ffd166;font-size:12px;font-weight:bold;text-decoration:none;text-align:center;">🔎 市公式ページで詳しく見る</a>
 </div>
 
-<div id="tonbiLayer"><div id="tonbiInner"><img id="tonbiImg" src="assets/tonbi/tonbi_flap_level.webp" alt=""><img id="tonbiImgNext" src="assets/tonbi/tonbi_flap_level.webp" alt=""></div></div>
+<div id="tonbiLayer"><div id="tonbiInner"><img class="tonbiFrame" data-frame="flap_up" src="assets/tonbi/tonbi_flap_up.webp" alt=""><img class="tonbiFrame" data-frame="flap_rise" src="assets/tonbi/tonbi_flap_rise.webp" alt=""><img class="tonbiFrame" data-frame="flap_level" src="assets/tonbi/tonbi_flap_level.webp" alt=""><img class="tonbiFrame" data-frame="flap_down" src="assets/tonbi/tonbi_flap_down.webp" alt=""></div></div>
 
 <div id="padHud">
   <div id="padCross"></div>
   <div id="padLock"><span id="padLockName"></span><span id="padLockHint">○ボタンで開く</span></div>
 </div>
+
+<div id="speedChip"></div>
 
 <div id="padDebug"></div>
 
@@ -1390,7 +1404,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02h"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02j"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1581,6 +1595,18 @@ function updatePadInput(pad, dt) {
   }
 }
 
+// いま何倍で飛んでいるかを画面に出す。□の切替・R1のダッシュ・Shift をまとめた実際の倍率を示す
+let speedChipText = "";
+function updateSpeedChip(dashing, shifting) {
+  const mult = speedMultiplier * (dashing ? SPEED_BOOST : 1) * (shifting ? SPEED_BOOST : 1);
+  const text = mult > 1 ? "⚡ ×" + mult + (dashing ? "（R1ダッシュ中）" : "") : "";
+  if (speedChipText === text) return;   // 変わったときだけ書き換える
+  speedChipText = text;
+  const el = document.getElementById("speedChip");
+  el.textContent = text;
+  el.style.display = text ? "block" : "none";
+}
+
 // ?paddebug=1 で右下に診断パネルを出す。開発者ツールを開けない場面でも
 // 「パッドが見えているのか」「中心の測定が終わっているのか」を画面だけで確かめられるようにする
 const PAD_DEBUG = new URLSearchParams(location.search).get("paddebug") === "1";
@@ -1647,20 +1673,30 @@ const TONBI_KEY = "cbi-meta-tonbi-v1";
 let tonbiOn = false;
 let tonbiPhase = 0;      // 羽ばたきの何コマ目か
 let tonbiElapsed = 0;    // 次のコマまでの経過秒
-let tonbiSrcA = "";      // いま出している画像（同じなら書き換えない）
-let tonbiSrcB = "";      // 重ねている次のコマ
-
-// いまのコマと次のコマを重ねて出す。mix=0 でいまのコマだけ、1 で次のコマだけ
-let tonbiMix = -1;       // 前回の重ね具合（同じなら書き換えない）
 let tonbiRoll = "";      // 前回の傾き
 let tonbiLift = "";      // 前回の上下
+const tonbiEls = {};     // コマ名 → img 要素
+const tonbiOpacity = {}; // コマ名 → いま設定している濃さ（同じなら書き換えない）
+
+// いまのコマと次のコマを重ねて出す。mix=0 でいまのコマだけ、1 で次のコマだけ。
+// 濃さを変えるだけなので、画像の読み込みもデコードも起きない
 function setTonbiPair(a, b, mix) {
-  const imgA = document.getElementById("tonbiImg");
-  const imgB = document.getElementById("tonbiImgNext");
-  if (tonbiSrcA !== a) { tonbiSrcA = a; imgA.src = "assets/tonbi/tonbi_" + a + ".webp"; }
-  if (tonbiSrcB !== b) { tonbiSrcB = b; imgB.src = "assets/tonbi/tonbi_" + b + ".webp"; }
-  const m = Math.round(mix * 20) / 20; // 5%刻み。細かく書き換えても見た目は変わらない
-  if (tonbiMix !== m) { tonbiMix = m; imgB.style.opacity = m; }
+  if (!tonbiEls.flap_up) {
+    document.querySelectorAll("#tonbiInner .tonbiFrame").forEach(function (el) {
+      tonbiEls[el.dataset.frame] = el;
+      tonbiOpacity[el.dataset.frame] = 0;
+    });
+  }
+  const m = Math.round(mix * 20) / 20; // 5%刻み。これより細かくしても見た目は変わらない
+  const want = {};
+  for (const name in tonbiEls) want[name] = 0;
+  want[a] = a === b ? 1 : 1 - m;
+  want[b] = a === b ? 1 : m;
+  for (const name in tonbiEls) {
+    if (tonbiOpacity[name] === want[name]) continue;
+    tonbiOpacity[name] = want[name];
+    tonbiEls[name].style.opacity = want[name];
+  }
 }
 
 // forward/right/up は毎フレームの移動入力（キーボード・スティック共通）
@@ -1857,7 +1893,10 @@ viewer.clock.onTick.addEventListener(function () {
     }
     // □＝移動の速さを切り替える（押しているあいだだけ効く R1 と違い、押すたびに段が変わる）
     if (isDown(2) && !padPrevButtons[2]) {
-      showPickResult("移動の速さを ×" + cycleSpeedMultiplier() + " にしました（R1を押しているあいだはさらに4倍）。", 2500);
+      const m = cycleSpeedMultiplier();
+      showPickResult(m > 1
+        ? "移動の速さを ×" + m + " にしました（R1を押しているあいだはさらに4倍）。"
+        : "移動の速さを ×1（もとの速さ）に戻しました。", 2500);
     }
     padPrevButtons = pad.buttons.map((b) => b.pressed);
   } else {
@@ -1865,7 +1904,8 @@ viewer.clock.onTick.addEventListener(function () {
     padSeen = false; // 挿し直し・別のコントローラーに替えたら測り直す
   }
   updatePadHud(!!pad && padCalibrated);      // 照準とロックオン枠の表示（中心の測定中は出さない）
-  updatePadDebug(pad, forward, right, up);   // ?paddebug=1 のときだけ右下に状態を出す
+  updatePadDebug(pad, forward, right, up);   // 🩺診断のときだけ右下に状態を出す
+  updateSpeedChip(padDash > 1, !!(keys["ShiftLeft"] || keys["ShiftRight"]));
   const centerBtn = document.getElementById("padCenterBtn");
   const wantCenterBtn = pad ? "" : "none";
   if (centerBtn.style.display !== wantCenterBtn) centerBtn.style.display = wantCenterBtn;
@@ -3692,7 +3732,7 @@ function recStart() {
   const bar = document.getElementById("topLeftBar");
   if (bar) bar.style.display = "";
   ["puzzleBtn", "reportsBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
-   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
+   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "speedChip", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
   });
