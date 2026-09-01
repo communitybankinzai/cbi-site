@@ -1308,10 +1308,37 @@ const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
 
-// デッドゾーンぶんを差し引いて -1〜1 に引き伸ばす（境目で値が飛ばないようにする）
-function padAxis(v) {
-  if (typeof v !== "number" || Math.abs(v) < PAD_DEADZONE) return 0;
-  return Math.sign(v) * ((Math.abs(v) - PAD_DEADZONE) / (1 - PAD_DEADZONE));
+// 中古のコントローラーは手を離しても値が中央に戻らないことがある（実測で左スティック縦 -0.92、
+// R2 が 0.20 のまま等）。手を離している状態の値を「中心」として覚え、そこからの差で判定する
+const padCenter = [0, 0, 0, 0];
+const padTriggerBase = [0, 0]; // L2, R2 の静止値
+let padCalibrated = false;
+
+function calibratePad(pad) {
+  for (let i = 0; i < 4; i++) padCenter[i] = typeof pad.axes[i] === "number" ? pad.axes[i] : 0;
+  padTriggerBase[0] = pad.buttons[6] ? pad.buttons[6].value : 0;
+  padTriggerBase[1] = pad.buttons[7] ? pad.buttons[7].value : 0;
+  padCalibrated = true;
+}
+
+// 中心からの差にデッドゾーンをかけ、-1〜1 に引き伸ばす（境目で値が飛ばないようにする）
+function padAxis(v, i) {
+  if (typeof v !== "number") return 0;
+  const c = padCenter[i] || 0;
+  let d = v - c;
+  // 中心がずれているぶん片側の可動域が狭くなるので、その側だけ引き伸ばして左右の効きを揃える
+  const range = d > 0 ? 1 - c : 1 + c;
+  if (range > 0.25) d = d / range; // 可動域がほぼ無い方向は補正しない（わずかな揺れが暴走するため）
+  const a = Math.abs(d);
+  if (a < PAD_DEADZONE) return 0;
+  return Math.sign(d) * Math.min(1, (a - PAD_DEADZONE) / (1 - PAD_DEADZONE));
+}
+
+// トリガーは 0〜1。静止値を差し引いてから判定する
+function padTrigger(pad, buttonIndex, baseIndex) {
+  const raw = pad.buttons[buttonIndex] ? pad.buttons[buttonIndex].value : 0;
+  const d = raw - (padTriggerBase[baseIndex] || 0);
+  return d > PAD_DEADZONE ? Math.min(1, d / (1 - (padTriggerBase[baseIndex] || 0))) : 0;
 }
 
 function readGamepad() {
@@ -1348,12 +1375,13 @@ viewer.clock.onTick.addEventListener(function () {
   // --- ゲームパッド入力を合流させる ---
   const pad = readGamepad();
   if (pad) {
-    right += padAxis(pad.axes[0]);
-    forward += -padAxis(pad.axes[1]); // 上に倒す＝前進
+    if (!padCalibrated) calibratePad(pad); // つないだ直後の値＝手を離した状態とみなして中心にする
+    right += padAxis(pad.axes[0], 0);
+    forward += -padAxis(pad.axes[1], 1); // 上に倒す＝前進
 
     // 右スティックで視点。移動処理より先に向きを決める
-    const lookX = padAxis(pad.axes[2]);
-    const lookY = padAxis(pad.axes[3]);
+    const lookX = padAxis(pad.axes[2], 2);
+    const lookY = padAxis(pad.axes[3], 3);
     if (lookX !== 0 || lookY !== 0) {
       cam.setView({
         orientation: {
@@ -1366,9 +1394,7 @@ viewer.clock.onTick.addEventListener(function () {
     }
 
     // L2＝下降／R2＝上昇（アナログ。踏み込み量で速さが変わる）
-    const l2 = pad.buttons[6] ? pad.buttons[6].value : 0;
-    const r2 = pad.buttons[7] ? pad.buttons[7].value : 0;
-    let padUp = (r2 > PAD_DEADZONE ? r2 : 0) - (l2 > PAD_DEADZONE ? l2 : 0);
+    let padUp = padTrigger(pad, 7, 1) - padTrigger(pad, 6, 0);
     // 古い個体は L2 が反応しないことがあるため、L1／R1 でも上下できるようにしておく
     if (padUp === 0) {
       const l1 = pad.buttons[4] && pad.buttons[4].pressed ? 1 : 0;
@@ -1381,9 +1407,15 @@ viewer.clock.onTick.addEventListener(function () {
     const isDown = (i) => !!(pad.buttons[i] && pad.buttons[i].pressed);
     if (isDown(1) && !padPrevButtons[1]) pickAtScreenCenter();
     if (isDown(0) && !padPrevButtons[0]) closeOverlays();
+    // OPTIONS＝スティックの中心を取り直す。勝手に動くコントローラーの応急処置
+    if (isDown(9) && !padPrevButtons[9]) {
+      calibratePad(pad);
+      showPickResult("スティックの中心を合わせました（手を離した状態でOPTIONSを押してください）。", 3000);
+    }
     padPrevButtons = pad.buttons.map((b) => b.pressed);
   } else {
     padPrevButtons = [];
+    padCalibrated = false; // 挿し直したら測り直す
   }
   updatePadHud(!!pad); // 照準とロックオン枠の表示
 
