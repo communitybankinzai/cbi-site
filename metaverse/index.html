@@ -658,6 +658,7 @@
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
   <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
   <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
+  <button id="padCenterBtn" style="display:none" title="スティックから手を離した状態で押してください。いまの値をそのまま「手を離した位置」として覚え直します（コントローラーのOPTIONSボタンでも同じことができます）">🎯 中心合わせ</button>
   <button id="modeSwitchBtn" title="イベント用途と防災用途を切り替えます">🔀 モード切替</button>
   <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 撮影</button>
   <button id="recBtn" title="画面を動画（WebM）で録画します。もう一度押すと停止して保存されます">🎥 録画</button>
@@ -1525,6 +1526,19 @@ function absorbPadStuck(pad, ch, dt) {
   return true;
 }
 
+// 手を離した状態で押してもらう前提で、いまの値をそのまま中心にする。
+// 自動の測定は「静止するのを待つ」ため直るまで数秒かかるが、こちらは押した瞬間に決まる
+function snapPadCenterNow(pad) {
+  if (!pad) return;
+  for (let ch = 0; ch < PAD_CH; ch++) {
+    padCenter[ch] = padRaw(pad, ch);
+    padStuckMin[ch] = padStuckMax[ch] = padCenter[ch];
+    padStuckSec[ch] = 0;
+    padValue[ch] = 0;
+  }
+  padCalibrated = true;
+}
+
 // 毎フレーム1回だけ呼ぶ。結果は padValue に入る
 function updatePadInput(pad, dt) {
   if (!padCalibrated) {
@@ -1683,6 +1697,12 @@ paintPadToggle();
 document.getElementById("padToggleBtn").addEventListener("click", function () {
   setPadEnabled(!padEnabled);
 });
+document.getElementById("padCenterBtn").addEventListener("click", function () {
+  const pad = readGamepad();
+  if (!pad) { showPickResult("コントローラーが見つかりません。ボタンを1回押してから、もう一度お試しください。", 3000); return; }
+  snapPadCenterNow(pad);
+  showPickResult("いまの位置をスティックの中心にしました。動きが止まらないときは、手を離してもう一度押してください。", 3500);
+});
 
 function readGamepad() {
   if (!padEnabled) return null;
@@ -1759,8 +1779,8 @@ viewer.clock.onTick.addEventListener(function () {
     if (isDown(0) && !padPrevButtons[0]) closeOverlays();
     // OPTIONS＝スティックの中心を取り直す。勝手に動くコントローラーの応急処置
     if (isDown(9) && !padPrevButtons[9]) {
-      beginPadCalibration(pad);
-      showPickResult("スティックの中心を測り直します。手を離したままにしてください。", 3000);
+      snapPadCenterNow(pad);
+      showPickResult("いまの位置をスティックの中心にしました。", 2500);
     }
     padPrevButtons = pad.buttons.map((b) => b.pressed);
   } else {
@@ -1769,6 +1789,9 @@ viewer.clock.onTick.addEventListener(function () {
   }
   updatePadHud(!!pad && padCalibrated);      // 照準とロックオン枠の表示（中心の測定中は出さない）
   updatePadDebug(pad, forward, right, up);   // ?paddebug=1 のときだけ右下に状態を出す
+  const centerBtn = document.getElementById("padCenterBtn");
+  const wantCenterBtn = pad ? "" : "none";
+  if (centerBtn.style.display !== wantCenterBtn) centerBtn.style.display = wantCenterBtn;
   updateTonbi(dt, forward, right, up);       // 手前のトンビの姿勢
 
   if (forward !== 0 || right !== 0 || up !== 0 || walkMode) {
@@ -3588,7 +3611,7 @@ function recStart() {
   const bar = document.getElementById("topLeftBar");
   if (bar) bar.style.display = "";
   ["puzzleBtn", "reportsBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
-   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
+   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
   });
