@@ -1370,9 +1370,10 @@ function joyEnd() {
 const PAD_DEADZONE = 0.2;
 const PAD_CENTER_TRACK_SEC = 2.5;  // 遊びの内側にいる間、中心をこの秒数かけて現在値へ寄せる
 const PAD_CALIB_HOLD_SEC = 0.5;    // この時間ぶれなければ中心を確定する
-const PAD_CALIB_JITTER = 0.06;     // 中心を確定するまでに許すぶれ幅
+const PAD_CALIB_JITTER = 0.12;     // 中心を確定するまでに許すぶれ幅（静止値が揺れる個体があるので広めに取る）
+const PAD_CALIB_SETTLE_SEC = 3.0;  // 揺れが収まらなくても、この時間で測定中の平均を中心にして操作を受け付ける
 const PAD_CALIB_LIMIT = 0.9;       // 倒し切り付近は中心にしない（倒したまま繋いだ疑いがあるため）
-const PAD_CALIB_FORCE_SEC = 5.0;   // ただしこの時間動かなければ、本当にそこが静止値だとみなす
+const PAD_CALIB_FORCE_SEC = 5.0;   // ただしこの時間たてば、倒し切りの値でも受け入れる（永久に動かないのを防ぐ）
 const PAD_STUCK_SEC = 3.0;         // 動かない入力を張り付きとみなすまでの時間
 const PAD_STUCK_JITTER = 0.03;     // 「動いていない」とみなす変化量
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
@@ -1391,6 +1392,8 @@ let padCalibElapsed = 0;              // 値が動かないまま経った秒数
 let padCalibWait = 0;                 // 測定を始めてからの総経過秒数
 const padCalibMin = [0, 0, 0, 0, 0, 0];
 const padCalibMax = [0, 0, 0, 0, 0, 0];
+const padCalibSum = [0, 0, 0, 0, 0, 0]; // 測定中の合計（揺れが収まらないとき平均を中心にするため）
+let padCalibSamples = 0;
 const padStuckRef = [0, 0, 0, 0, 0, 0]; // 張り付き監視の基準値
 const padStuckSec = [0, 0, 0, 0, 0, 0]; // 基準値から動かないまま経った秒数
 let padStuckNoticeAt = -Infinity; // 起動直後の吸収も知らせたいので、最初は必ず通知が出るようにする
@@ -1421,34 +1424,56 @@ function resetPadCalibRange(pad) {
 function beginPadCalibration(pad) {
   padCalibrated = false;
   padCalibWait = 0;
+  padCalibSamples = 0;
+  for (let ch = 0; ch < PAD_CH; ch++) padCalibSum[ch] = 0;
   resetPadCalibRange(pad);
+}
+
+// 中心を決めて操作の受付を始める。静止して測れたときは観測範囲の中央、
+// 揺れが収まらず時間切れになったときは測定中の平均を使う
+function finishPadCalibration(useAverage) {
+  for (let ch = 0; ch < PAD_CH; ch++) {
+    padCenter[ch] = (useAverage && padCalibSamples)
+      ? padCalibSum[ch] / padCalibSamples
+      : (padCalibMin[ch] + padCalibMax[ch]) / 2;
+    padStuckRef[ch] = padCenter[ch];
+    padStuckSec[ch] = 0;
+    padValue[ch] = 0;
+  }
+  padCalibrated = true;
 }
 
 // つないだ直後の測定。値が PAD_CALIB_HOLD_SEC のあいだ動かなければ、その範囲の中央を中心にする。
 // 途中で動いたら測り直す＝手を離すまで待つ
 function updatePadCalibration(pad, dt) {
   padCalibWait += dt;
+  padCalibSamples++;
   let moved = false;
   let extreme = false; // 倒し切り・踏み切りのまま静止しているか
   for (let ch = 0; ch < PAD_CH; ch++) {
     const v = padRaw(pad, ch);
+    padCalibSum[ch] += v;
     if (v < padCalibMin[ch]) padCalibMin[ch] = v;
     if (v > padCalibMax[ch]) padCalibMax[ch] = v;
     if (padCalibMax[ch] - padCalibMin[ch] > PAD_CALIB_JITTER) moved = true;
     if ((ch < 4 ? Math.abs(v) : v) > PAD_CALIB_LIMIT) extreme = true;
   }
-  if (moved) { resetPadCalibRange(pad); return; }
+  if (moved) {
+    resetPadCalibRange(pad);
+    // 静止値そのものが揺れ続ける個体は「動かなくなるのを待つ」といつまでも確定しない。
+    // 時間が来たら測定中の平均を中心として操作を受け付ける（動かせないままにしない）
+    if (padCalibWait >= (extreme ? PAD_CALIB_FORCE_SEC : PAD_CALIB_SETTLE_SEC)) {
+      finishPadCalibration(true);
+      showPickResult("スティックの値が揺れ続けているため、平均を中心にして操作を受け付けます。ずれを感じたら手を離してOPTIONSを押してください。", 5000);
+    }
+    return;
+  }
   padCalibElapsed += dt;
   if (padCalibElapsed < PAD_CALIB_HOLD_SEC) return;
   // 倒したまま繋いだときにその位置を中心にしてしまわないよう、極端な値のあいだは待つ。
   // ただし待ち続けると本当にそこが静止値の個体で操作できなくなるので、時間が経てば受け入れる
   if (extreme && padCalibWait < PAD_CALIB_FORCE_SEC) return;
-  for (let ch = 0; ch < PAD_CH; ch++) {
-    padCenter[ch] = (padCalibMin[ch] + padCalibMax[ch]) / 2;
-    padStuckRef[ch] = padCenter[ch];
-    padStuckSec[ch] = 0;
-  }
-  padCalibrated = true;
+  finishPadCalibration(false);
 }
 
 // 中心からの差にデッドゾーンをかけ、-1〜1 に引き伸ばす（境目で値が飛ばないようにする）。
