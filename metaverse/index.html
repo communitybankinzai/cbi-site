@@ -531,7 +531,7 @@
   /* 影は1回だけここでかける。画像ごとにかけると重ね合わせで2枚ぶんの計算になる */
   #tonbiInner {
     position: relative; will-change: transform;
-    filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.28));
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.30)); /* ぼかしを広げるほど描き直しが重くなる */
   }
   #tonbiLayer img { width: 100%; height: auto; display: block; }
   /* 次のコマ。切り替わりの前後だけ薄く重ねて、コマの飛びを目立たなくする */
@@ -1364,7 +1364,8 @@ function joyEnd() {
 }
 
 // --- ゲームパッド（DUALSHOCK 4 等・standard mapping）---
-// 左スティック＝移動／右スティック＝視点／L2・R2（またはL1・R1、十字キー上下）＝下降・上昇／○＝ピン選択／×＝閉じる
+// 左スティック＝移動／右スティック＝視点／L2・十字下＝下降／R2・十字上＝上昇
+// R1＝押しているあいだダッシュ／□＝速度切替／○＝ピン選択／×＝閉じる／OPTIONS＝中心合わせ
 // スティックの遊び。中古の個体は手を離しても値が戻らないうえ、時間とともにズレていく。
 // 実測（CUH-ZCT2）では左スティック縦の静止値が -0.92 → -0.62 と動いた（2026-09-01）
 //
@@ -1389,7 +1390,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02g"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02h"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1586,6 +1587,7 @@ const PAD_DEBUG = new URLSearchParams(location.search).get("paddebug") === "1";
 let padDebugOn = PAD_DEBUG; // 🩺診断ボタンで切り替える（URLに ?paddebug=1 があれば最初から出す）
 const PAD_CH_NAMES = ["左横", "左縦", "右横", "右縦", "L2", "R2"];
 let padDebugFrame = 0;
+let padDebugText = "";   // 前回の表示内容（同じなら書き換えない）
 function updatePadDebug(pad, forward, right, up) {
   const el = document.getElementById("padDebug");
   if (!padDebugOn) {
@@ -1593,7 +1595,7 @@ function updatePadDebug(pad, forward, right, up) {
     return;
   }
   if (el.style.display !== "block") el.style.display = "block";
-  if (++padDebugFrame % 6 !== 0) return; // 毎フレーム書き換えると重いので間引く
+  if (++padDebugFrame % 15 !== 0) return; // 4回/秒。読むには十分で、書き換えの負担が小さい // 毎フレーム書き換えると重いので間引く
   const all = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
   const L = ["■ コントローラー診断  版 " + PAD_TUNING_VERSION];
   L.push("受付: " + (padEnabled ? "ON" : "OFF ←「コントローラー停止中」を押して戻す"));
@@ -1623,7 +1625,8 @@ function updatePadDebug(pad, forward, right, up) {
   L.push("移動入力: 前後 " + forward.toFixed(2) + " / 左右 " + right.toFixed(2) + " / 上下 " + up.toFixed(2));
   const keyList = Object.keys(keys).filter((k) => keys[k]);
   L.push("キーボード: " + (keyList.length ? keyList.join(",") : "なし"));
-  el.textContent = L.join("\n");
+  const text = L.join("\n");
+  if (padDebugText !== text) { padDebugText = text; el.textContent = text; }
 }
 
 // ============================================================
@@ -1648,12 +1651,16 @@ let tonbiSrcA = "";      // いま出している画像（同じなら書き換�
 let tonbiSrcB = "";      // 重ねている次のコマ
 
 // いまのコマと次のコマを重ねて出す。mix=0 でいまのコマだけ、1 で次のコマだけ
+let tonbiMix = -1;       // 前回の重ね具合（同じなら書き換えない）
+let tonbiRoll = "";      // 前回の傾き
+let tonbiLift = "";      // 前回の上下
 function setTonbiPair(a, b, mix) {
   const imgA = document.getElementById("tonbiImg");
   const imgB = document.getElementById("tonbiImgNext");
   if (tonbiSrcA !== a) { tonbiSrcA = a; imgA.src = "assets/tonbi/tonbi_" + a + ".webp"; }
   if (tonbiSrcB !== b) { tonbiSrcB = b; imgB.src = "assets/tonbi/tonbi_" + b + ".webp"; }
-  imgB.style.opacity = mix.toFixed(3);
+  const m = Math.round(mix * 20) / 20; // 5%刻み。細かく書き換えても見た目は変わらない
+  if (tonbiMix !== m) { tonbiMix = m; imgB.style.opacity = m; }
 }
 
 // forward/right/up は毎フレームの移動入力（キーボード・スティック共通）
@@ -1690,11 +1697,17 @@ function updateTonbi(dt, forward, right, up) {
 
   // 左右に曲がるときは機体を傾ける（ゆっくり効かせたいので transition のある外側に当てる）
   const roll = Math.max(-22, Math.min(22, right * 22));
-  document.getElementById("tonbiLayer").style.transform =
-    "translateX(-50%) rotate(" + roll.toFixed(1) + "deg)";
+  const rollStr = "translateX(-50%) rotate(" + roll.toFixed(0) + "deg)";
+  if (tonbiRoll !== rollStr) {
+    tonbiRoll = rollStr;
+    document.getElementById("tonbiLayer").style.transform = rollStr;
+  }
   // 羽ばたきに合わせた体の上下は、なまらせたくないので内側に当てる
-  document.getElementById("tonbiInner").style.transform =
-    "translateY(" + (lift * 7).toFixed(1) + "px)";
+  const liftStr = "translateY(" + (lift * 7).toFixed(0) + "px)";
+  if (tonbiLift !== liftStr) {
+    tonbiLift = liftStr;
+    document.getElementById("tonbiInner").style.transform = liftStr;
+  }
 }
 
 function setTonbiVisible(on) {
@@ -1775,8 +1788,13 @@ viewer.clock.onTick.addEventListener(function () {
   lastTime = now;
 
   const cam = viewer.camera;
+  // パッドは速度の計算にも使うので先に読む
+  const pad = readGamepad();
+  // R1＝押しているあいだダッシュ。人差し指なので、右スティックで視点を回しながらでも押せる
+  const padDash = pad && pad.buttons[5] && pad.buttons[5].pressed ? SPEED_BOOST : 1;
   const baseSpeed = walkMode ? WALK_SPEED : FLY_SPEED;
-  const speed = baseSpeed * ((keys["ShiftLeft"] || keys["ShiftRight"]) ? SPEED_BOOST : 1) * speedMultiplier * dt;
+  const speed = baseSpeed * ((keys["ShiftLeft"] || keys["ShiftRight"]) ? SPEED_BOOST : 1)
+    * padDash * speedMultiplier * dt;
 
   let forward = 0, right = 0, up = 0;
   if (keys["KeyW"] || keys["ArrowUp"]) forward += 1;
@@ -1790,7 +1808,6 @@ viewer.clock.onTick.addEventListener(function () {
   right += joyState.dx;
 
   // --- ゲームパッド入力を合流させる ---
-  const pad = readGamepad();
   if (pad) {
     if (!padSeen) {
       // つないだ直後。どの個体でも中心はここから測り直すので、機種ごとの設定は要らない
@@ -1818,12 +1835,9 @@ viewer.clock.onTick.addEventListener(function () {
 
     // L2＝下降／R2＝上昇（アナログ。踏み込み量で速さが変わる）
     let padUp = padValue[5] - padValue[4];
-    // 古い個体は L2 が反応しないことがあるため、L1／R1 でも上下できるようにしておく
-    if (padUp === 0) {
-      const l1 = pad.buttons[4] && pad.buttons[4].pressed ? 1 : 0;
-      const r1 = pad.buttons[5] && pad.buttons[5].pressed ? 1 : 0;
-      padUp = r1 - l1;
-    }
+    // 古い個体は L2 が反応しないことがあるため、L1 でも下降できるようにしておく
+    // （R1 はダッシュに使うので、上昇の代わりは十字キーの上が受け持つ）
+    if (padUp === 0 && pad.buttons[4] && pad.buttons[4].pressed) padUp = -1;
     // 左側のボタンがまとめて壊れている個体もあるので、十字キーの上下でも昇降できるようにする
     if (padUp === 0) {
       const dpadUp = pad.buttons[12] && pad.buttons[12].pressed ? 1 : 0;
@@ -1840,6 +1854,10 @@ viewer.clock.onTick.addEventListener(function () {
     if (isDown(9) && !padPrevButtons[9]) {
       snapPadCenterNow(pad);
       showPickResult("いまの位置をスティックの中心にしました。", 2500);
+    }
+    // □＝移動の速さを切り替える（押しているあいだだけ効く R1 と違い、押すたびに段が変わる）
+    if (isDown(2) && !padPrevButtons[2]) {
+      showPickResult("移動の速さを ×" + cycleSpeedMultiplier() + " にしました（R1を押しているあいだはさらに4倍）。", 2500);
     }
     padPrevButtons = pad.buttons.map((b) => b.pressed);
   } else {
@@ -1963,11 +1981,15 @@ function updateMobileMoveBar() {
 mobileModeBtn.addEventListener("click", () => { setMode(!walkMode); updateMobileMoveBar(); });
 const _origSetMode = setMode; // 他経路（パネルのモードボタン）からの切替にも表示を追従させる
 setMode = function (walk) { _origSetMode(walk); updateMobileMoveBar(); };
-document.getElementById("mobileSpeedBtn").addEventListener("click", function () {
+// 速度の倍率を次の段へ。⚡ボタンとコントローラーの□ボタンから呼ぶ
+function cycleSpeedMultiplier() {
   const steps = [1, 2, 4];
   speedMultiplier = steps[(steps.indexOf(speedMultiplier) + 1) % steps.length];
-  this.textContent = "⚡×" + speedMultiplier;
-});
+  const btn = document.getElementById("mobileSpeedBtn");
+  if (btn) btn.textContent = "⚡×" + speedMultiplier;
+  return speedMultiplier;
+}
+document.getElementById("mobileSpeedBtn").addEventListener("click", cycleSpeedMultiplier);
 [["mobileUpBtn", "KeyE"], ["mobileDownBtn", "KeyQ"]].forEach(([id, code]) => {
   const el = document.getElementById(id);
   el.addEventListener("pointerdown", (e) => { keys[code] = true; el.setPointerCapture(e.pointerId); e.preventDefault(); });
