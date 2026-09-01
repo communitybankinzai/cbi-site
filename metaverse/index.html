@@ -1345,7 +1345,10 @@ function joyEnd() {
 
 // --- ゲームパッド（DUALSHOCK 4 等・standard mapping）---
 // 左スティック＝移動／右スティック＝視点／L2・R2＝下降・上昇／○＝ピン選択／×＝閉じる
-const PAD_DEADZONE = 0.1;   // スティックの遊び。経年劣化した個体のドリフト対策に必須
+// スティックの遊び。中古の個体は手を離しても値が戻らないうえ、時間とともにズレていく。
+// 実測（CUH-ZCT2）では左スティック縦の静止値が -0.92 → -0.62 と動いた（2026-09-01）
+const PAD_DEADZONE = 0.2;
+const PAD_CENTER_TRACK_SEC = 2.5; // 遊びの内側にいる間、中心をこの秒数かけて現在値へ寄せる
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1374,6 +1377,24 @@ function padAxis(v, i) {
   const a = Math.abs(d);
   if (a < PAD_DEADZONE) return 0;
   return Math.sign(d) * Math.min(1, (a - PAD_DEADZONE) / (1 - PAD_DEADZONE));
+}
+
+// 遊びの内側にいる間は、中心を現在値へゆっくり寄せる。静止値そのものが時間とともに
+// ずれていく個体があり、一度測っただけでは動き続けてしまうため。
+// 遊びを超える入力が入っているときは寄せない（意図した操作を打ち消さないようにする）
+function trackPadCenter(pad, dt) {
+  const k = Math.min(1, dt / PAD_CENTER_TRACK_SEC);
+  for (let i = 0; i < 4; i++) {
+    const v = pad.axes[i];
+    if (typeof v !== "number" || padAxis(v, i) !== 0) continue;
+    padCenter[i] += (v - padCenter[i]) * k;
+  }
+  for (const [bi, base] of [[6, 0], [7, 1]]) {
+    const raw = pad.buttons[bi] ? pad.buttons[bi].value : 0;
+    if (raw - padTriggerBase[base] < PAD_DEADZONE) {
+      padTriggerBase[base] += (raw - padTriggerBase[base]) * k;
+    }
+  }
 }
 
 // トリガーは 0〜1。静止値を差し引いてから判定する
@@ -1481,6 +1502,7 @@ viewer.clock.onTick.addEventListener(function () {
   const pad = readGamepad();
   if (pad) {
     if (!padCalibrated) calibratePad(pad); // つないだ直後の値＝手を離した状態とみなして中心にする
+    trackPadCenter(pad, dt);               // ずれていく静止値に追従する
     right += padAxis(pad.axes[0], 0);
     forward += -padAxis(pad.axes[1], 1); // 上に倒す＝前進
 
