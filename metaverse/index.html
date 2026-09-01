@@ -1374,8 +1374,8 @@ const PAD_CALIB_JITTER = 0.12;     // 中心を確定するまでに許すぶれ
 const PAD_CALIB_SETTLE_SEC = 3.0;  // 揺れが収まらなくても、この時間で測定中の平均を中心にして操作を受け付ける
 const PAD_CALIB_LIMIT = 0.9;       // 倒し切り付近は中心にしない（倒したまま繋いだ疑いがあるため）
 const PAD_CALIB_FORCE_SEC = 5.0;   // ただしこの時間たてば、倒し切りの値でも受け入れる（永久に動かないのを防ぐ）
-const PAD_STUCK_SEC = 3.0;         // 動かない入力を張り付きとみなすまでの時間
-const PAD_STUCK_JITTER = 0.03;     // 「動いていない」とみなす変化量
+const PAD_STUCK_SEC = 5.0;         // 動かない入力を張り付きとみなすまでの時間
+const PAD_STUCK_JITTER = 0.10;     // この幅に収まったまま動かなければ「触っていない」とみなす
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
@@ -1394,7 +1394,8 @@ const padCalibMin = [0, 0, 0, 0, 0, 0];
 const padCalibMax = [0, 0, 0, 0, 0, 0];
 const padCalibSum = [0, 0, 0, 0, 0, 0]; // 測定中の合計（揺れが収まらないとき平均を中心にするため）
 let padCalibSamples = 0;
-const padStuckRef = [0, 0, 0, 0, 0, 0]; // 張り付き監視の基準値
+const padStuckMin = [0, 0, 0, 0, 0, 0]; // 張り付き監視の区間の最小
+const padStuckMax = [0, 0, 0, 0, 0, 0]; // 同じく最大（この幅で「触っているか」を見る）
 const padStuckSec = [0, 0, 0, 0, 0, 0]; // 基準値から動かないまま経った秒数
 let padStuckNoticeAt = -Infinity; // 起動直後の吸収も知らせたいので、最初は必ず通知が出るようにする
 
@@ -1436,7 +1437,7 @@ function finishPadCalibration(useAverage) {
     padCenter[ch] = (useAverage && padCalibSamples)
       ? padCalibSum[ch] / padCalibSamples
       : (padCalibMin[ch] + padCalibMax[ch]) / 2;
-    padStuckRef[ch] = padCenter[ch];
+    padStuckMin[ch] = padStuckMax[ch] = padCenter[ch];
     padStuckSec[ch] = 0;
     padValue[ch] = 0;
   }
@@ -1501,22 +1502,26 @@ function trackPadCenter(pad, ch, dt) {
   padCenter[ch] += (padRaw(pad, ch) - padCenter[ch]) * k;
 }
 
-// 遊びを超えた入力が PAD_STUCK_SEC のあいだ動かないときは、人の操作ではなく張り付きと
-// みなして中心へ吸収する。指が触れていれば値は必ず細かく揺れるため、まったく動かない＝
-// 手を離しているとみなせる。倒し切り付近だけは意図した操作なので対象から外す
+// 遊びを超えた入力が PAD_STUCK_SEC のあいだ狭い範囲から出ないときは、人の操作ではなく
+// 張り付きとみなして中心へ吸収する。判定は「前の値との差」ではなく「一定時間の変動幅」で行う。
+// 差で見ると、静止値そのものが小刻みに揺れる個体では毎フレーム測り直しになり、
+// いつまでも吸収されない（2026-09-02 に実機で発生）。倒し切り付近は意図した操作なので対象外
 function absorbPadStuck(pad, ch, dt) {
   const raw = padRaw(pad, ch);
-  if (Math.abs(raw - padStuckRef[ch]) > PAD_STUCK_JITTER) {
-    padStuckRef[ch] = raw;
+  if (raw < padStuckMin[ch]) padStuckMin[ch] = raw;
+  if (raw > padStuckMax[ch]) padStuckMax[ch] = raw;
+  if (padStuckMax[ch] - padStuckMin[ch] > PAD_STUCK_JITTER) {
+    padStuckMin[ch] = padStuckMax[ch] = raw; // 大きく動いた＝人が触っている
     padStuckSec[ch] = 0;
     return false;
   }
   if (Math.abs(padValue[ch]) > PAD_STUCK_LIMIT) { padStuckSec[ch] = 0; return false; }
   padStuckSec[ch] += dt;
   if (padStuckSec[ch] < PAD_STUCK_SEC) return false;
-  padCenter[ch] = raw;
+  padCenter[ch] = (padStuckMin[ch] + padStuckMax[ch]) / 2; // 揺れの真ん中を中心にする
   padValue[ch] = 0;
   padStuckSec[ch] = 0;
+  padStuckMin[ch] = padStuckMax[ch] = raw;
   return true;
 }
 
@@ -1531,7 +1536,7 @@ function updatePadInput(pad, dt) {
     padValue[ch] = padNormalize(padRaw(pad, ch), ch);
     if (padValue[ch] === 0) {
       trackPadCenter(pad, ch, dt);
-      padStuckRef[ch] = padRaw(pad, ch);
+      padStuckMin[ch] = padStuckMax[ch] = padRaw(pad, ch);
       padStuckSec[ch] = 0;
     } else if (absorbPadStuck(pad, ch, dt)) {
       absorbed = true;
@@ -1570,8 +1575,11 @@ function updatePadDebug(pad, forward, right, up) {
     for (let ch = 0; ch < PAD_CH; ch++) {
       L.push("  " + PAD_CH_NAMES[ch] + " 生" + padRaw(pad, ch).toFixed(3).padStart(7) +
         " 中心" + padCenter[ch].toFixed(3).padStart(7) +
-        " 出力" + padValue[ch].toFixed(3).padStart(7));
+        " 出力" + padValue[ch].toFixed(3).padStart(7) +
+        " 幅" + (padStuckMax[ch] - padStuckMin[ch]).toFixed(3) +
+        " " + padStuckSec[ch].toFixed(1) + "s");
     }
+    L.push("（幅=直近の変動幅。" + PAD_STUCK_JITTER + "以内のまま" + PAD_STUCK_SEC + "秒で中心を取り直す）");
     const pressed = [];
     for (let i = 0; i < pad.buttons.length; i++) if (pad.buttons[i].pressed) pressed.push(i);
     L.push("押されているボタン: " + (pressed.length ? pressed.join(",") : "なし"));
