@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-31",
+  "updatedAt": "2026-09-01",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。 2026-08-22 以降: plans に status（進行中/待ち/保留）と blockedBy（待ちの理由）を追加。status 未設定は「進行中」扱いで、期限超過すると管理画面エージェントタブ先頭の「要対応」パネルに赤で出る。着手できない事情があるものだけ status:\"待ち\" にして blockedBy に解除条件を書く（忘れによる放置と区別するため）。",
   "categories": [
@@ -16,6 +16,23 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-09-01",
+          "title": "広報いんざいPDFのイベント一括取り込みを実装＋画像添付の導線修正 1.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/api/events/scan-pdf/route.ts（新規／unpdfでページ単位テキスト化→Claudeで構造化抽出。印西市ドメイン限定・管理者限定・1回6〜8ページ）",
+            "cidao: src/app/admin/events/import/_components/KouhouPdfImport.tsx（新規／70件規模を扱う表形式の確認UI。ページ範囲をずらして複数回呼ぶ）",
+            "cidao: src/app/admin/events/import/actions.ts（重複排除キーを image_sha256 → dedupe_key に汎用化、取り込み元を flyer/kouhou で分離、上限30→100件）",
+            "cidao: src/app/admin/events/import/page.tsx / _components/BulkFlyerImport.tsx（広報セクション追加・型変更に追随）",
+            "cidao: src/app/api/events/scan/route.ts（skip_ai=1 でアップロードのみ）／events/new/_components/ImageScanField.tsx（AI読み取りのon/off）／events/[id]/edit/page.tsx（編集画面は既定off）／events/page.tsx・_components/EventsBrowser.tsx（一覧に編集リンク）",
+            "package.json（unpdf 追加）",
+            "site/admin/changelog.json / agents-worklog.json"
+          ],
+          "hours": 1.3,
+          "partnerApproved": false,
+          "note": "当初はPDFをdocumentブロックでClaudeへ直接渡す設計にしたが、11MB・30ページの読み取りが60秒を超え、Vercel（Hobbyプラン）の実行時間上限で504になった（本番で実測）。unpdfでテキスト化してから渡す方式に変更し、入力を約1/6・抽出1.6秒に短縮して解決。分割単位も「AIが判断した続き」から「呼び出し側が指定するページ範囲」へ変え、AIの判断ミスによる読み飛ばしが起きない構造にした。ローカル実測はAPIキー失効（cidao-local が2026-08-26に期限切れ）で不可、再発行したキーもidentity-linked型でworkspace-idを要求され、組織にワークスペースが1件も無いため使えず、検証は本番の管理画面で実施。tsc・eslint・npm run build はいずれもクリア。session: 0674ed09-f3c8-4256-9351-6e8bcdcb6e40 / output: 129,054 / cost: $22.56"
+        },
         {
           "date": "2026-08-31",
           "title": "年月ジャンプを年ボタン・月ボタンの2つに分離 0.15時間",
@@ -4286,6 +4303,22 @@
       ],
       "plans": [
         {
+          "due": "2026-09-08",
+          "title": "広報いんざい取り込みの抽出精度を確認し、必要ならプロンプトを調整する",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-01に令和8年9月号で本番登録まで到達したが、抽出件数と誤抽出の有無をまだ数えていない。確認する点は3つ。(1)日時付き記事77件のうち何件が参加型として拾われたか（少なすぎればページの読み飛ばし、多すぎれば除外指示が効いていない）(2)給付金の申請案内・外来生物注意など「参加する場でないもの」が混ざっていないか (3)同じ号を2回読み込んで2回目が全件「重複スキップ」になるか（重複排除キーがタイトル依存のため、AIがタイトルを揺らすと二重登録される。揺れるようならキーをページ番号＋出現順に変える）。あわせて画像添付の修正（一覧の編集リンク・AI解析オフ）の動作確認も行う"
+        },
+        {
+          "due": "未定",
+          "title": "ローカル開発用の Anthropic APIキーをどう用意するか決める",
+          "category": "その他",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "ワークスペースを新規作成してそのワークスペースキーを使うか、サービスアカウントのキーを使うかの方針判断。前者は組織のコスト集計が分かれる影響がある",
+          "note": "2026-09-01に判明。cidao-local が2026-08-26で有効期限切れになり、Console から再発行したキー（cidao-local-v3）は identity-linked 型のため全リクエストに anthropic-workspace-id ヘッダーが必要になる。ところが /v1/organizations/workspaces が空配列で、指定できるワークスペースが組織に1件も存在しない（Console上の「Default」はレガシー扱いでAPIに出てこない）。default・組織ID・wrkspc_default はいずれも「有効なワークスペースIDではない」と拒否された。既存キー（cidao-production-v3 等）はすべてレガシーのワークスペースキーなので本番は影響を受けていないが、本番キーを更新すると同じ問題が起きる。この状態ではローカルでAI機能の実測ができず、検証を本番デプロイに頼らざるを得ない"
+        },
+        {
           "due": "未定",
           "title": "電子決裁を稼働させる（migration適用・Storageバケット作成・役員へのofficer_role付与）",
           "category": "事務",
@@ -5049,6 +5082,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-05",
+          "title": "Anthropic のクレジット残高を補充する（2026-09-01時点で $9.16）",
+          "category": "事務",
+          "priority": "高",
+          "note": "広報いんざいの取り込みは1号あたり約$0.35で当面まかなえるが、A1の予定にある「団体情報の自動拡充 220件バッチ」は最低$30が必要で、この残高では完走できない。残高切れはAI機能が quota エラーで止まる形で表面化し、今回のAPIキー期限切れと同様に気づきにくい。/api/cron/cost-alert が残高低下も拾う設計になっているかの確認もあわせて行う"
+        },
         {
           "due": "未定",
           "title": "決裁規程（議案版）を役員会に諮り議決する",
