@@ -517,6 +517,38 @@
     color: #fff; font-size: 14px; cursor: pointer; font-weight: bold;
   }
 
+  /* ゲームパッド用HUD（照準とロックオン枠）。コントローラー接続中だけ出す */
+  #padHud { position: absolute; inset: 0; z-index: 28; pointer-events: none; display: none; }
+  #padCross {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 26px; height: 26px; opacity: 0.85;
+  }
+  #padCross::before, #padCross::after {
+    content: ""; position: absolute; background: rgba(255,255,255,0.9);
+    box-shadow: 0 0 3px rgba(0,0,0,0.9);
+  }
+  #padCross::before { left: 50%; top: 0; width: 2px; height: 100%; margin-left: -1px; }
+  #padCross::after { top: 50%; left: 0; height: 2px; width: 100%; margin-top: -1px; }
+  #padCross.locked::before, #padCross.locked::after { background: #ffd166; }
+  #padLock {
+    position: absolute; display: none; transform: translate(-50%, -50%);
+    width: 78px; height: 78px; border: 3px solid #ffd166; border-radius: 8px;
+    box-shadow: 0 0 12px rgba(255, 209, 102, 0.7), inset 0 0 10px rgba(255, 209, 102, 0.35);
+    animation: padLockIn 0.18s ease-out;
+  }
+  @keyframes padLockIn { from { width: 130px; height: 130px; opacity: 0.2; } to { width: 78px; height: 78px; opacity: 1; } }
+  #padLockName {
+    position: absolute; left: 50%; top: -30px; transform: translateX(-50%);
+    white-space: nowrap; font-size: 13px; font-weight: bold; color: #ffd166;
+    background: rgba(10, 16, 26, 0.82); padding: 3px 10px; border-radius: 12px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+  }
+  #padLockHint {
+    position: absolute; left: 50%; bottom: -26px; transform: translateX(-50%);
+    white-space: nowrap; font-size: 11px; color: #fff; opacity: 0.9;
+    background: rgba(10, 16, 26, 0.75); padding: 2px 8px; border-radius: 10px;
+  }
+
   /* 仮想ジョイスティック（モバイル） */
   #joystick {
     position: absolute; bottom: 96px; left: 20px; z-index: 30;
@@ -813,6 +845,11 @@
   <h4 id="spotInfoTitle"></h4>
   <p id="spotInfoDesc"></p>
   <a id="spotInfoLink" href="#" target="_blank" rel="noopener" style="display:none;margin-top:8px;padding:6px;border-radius:8px;border:1px solid #ffd166;background:rgba(255,209,102,0.12);color:#ffd166;font-size:12px;font-weight:bold;text-decoration:none;text-align:center;">🔎 市公式ページで詳しく見る</a>
+</div>
+
+<div id="padHud">
+  <div id="padCross"></div>
+  <div id="padLock"><span id="padLockName"></span><span id="padLockHint">○ボタンで開く</span></div>
 </div>
 
 <div id="joystick"><div id="joystickKnob"></div></div>
@@ -1268,6 +1305,7 @@ function joyEnd() {
 // 左スティック＝移動／右スティック＝視点／L2・R2＝下降・上昇／○＝ピン選択／×＝閉じる
 const PAD_DEADZONE = 0.1;   // スティックの遊び。経年劣化した個体のドリフト対策に必須
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
+const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
 
 // デッドゾーンぶんを差し引いて -1〜1 に引き伸ばす（境目で値が飛ばないようにする）
@@ -1340,6 +1378,7 @@ viewer.clock.onTick.addEventListener(function () {
   } else {
     padPrevButtons = [];
   }
+  updatePadHud(!!pad); // 照準とロックオン枠の表示
 
   if (forward !== 0 || right !== 0 || up !== 0 || walkMode) {
     // 歩行モードでは水平方向のみに移動（ピッチの影響を除去）
@@ -2864,7 +2903,11 @@ function handleInteractiveClick(click) {
   }
   const interactivePick = pickInteractiveEntity(click.position);
   if (!interactivePick) return;
-  const id = interactivePick.id;
+  openEntityById(interactivePick.id);
+}
+
+// ピンの種類ごとに情報パネル・詳細モーダルを開く（マウスクリックとゲームパッドの○で共用）
+function openEntityById(id) {
   if (id.startsWith("spot-")) {
     const idx = parseInt(id.replace("spot-", ""), 10);
     const spot = SPOTS[idx];
@@ -2901,12 +2944,91 @@ function handleInteractiveClick(click) {
 viewer.screenSpaceEventHandler.setInputAction(handleInteractiveClick, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
 // 画面中央のピンを選ぶ（ゲームパッドの○ボタン用。マウスクリックと同じ処理を通す）
+// ピンは小さく、コントローラーで画面中央にぴたりと合わせるのは難しいため、
+// 中央そのものに当たらなければ、照準の近くにあるピンのうち一番近いものを拾う
 function pickAtScreenCenter() {
   if (pickModeActive) return; // 位置修正モード中は誤操作防止のため反応させない
-  const canvasEl = viewer.scene.canvas;
-  handleInteractiveClick({
-    position: new Cesium.Cartesian2(canvasEl.clientWidth / 2, canvasEl.clientHeight / 2),
-  });
+  const scene = viewer.scene;
+  const canvasEl = scene.canvas;
+  const center = new Cesium.Cartesian2(canvasEl.clientWidth / 2, canvasEl.clientHeight / 2);
+
+  const direct = pickInteractiveEntity(center);
+  if (direct) { openEntityById(direct.id); return; }
+
+  const target = findAimTarget();
+  if (target) { openEntityById(target.id); return; }
+  // 無反応だと壊れているように見えるため、狙いが外れたことを画面に出す
+  showPickResult("画面の真ん中にピンを入れて○ボタンを押してください。", 2500);
+}
+
+// 照準にいちばん近いピンを探す（ロックオン表示と○ボタンで共用）
+function findAimTarget() {
+  const scene = viewer.scene;
+  const canvasEl = scene.canvas;
+  // タブが裏に回っている等で描画領域がないときは判定しない（座標が全て0になり誤爆するため）
+  if (!canvasEl.clientWidth || !canvasEl.clientHeight) return null;
+  const center = new Cesium.Cartesian2(canvasEl.clientWidth / 2, canvasEl.clientHeight / 2);
+  const now = viewer.clock.currentTime;
+  const toEnt = new Cesium.Cartesian3();
+  let best = null, bestDist = PAD_AIM_RADIUS;
+  for (const ent of viewer.entities.values) {
+    const id = String(ent.id || "");
+    if (!ent.show || !ent.position) continue; // 地面の高さ測定が終わっていないピンは対象外
+    if (!/^(bunkazai|spot|shelter|kominkan)-/.test(id)) continue;
+    const world = ent.position.getValue(now);
+    if (!world) continue;
+    Cesium.Cartesian3.subtract(world, scene.camera.position, toEnt);
+    if (Cesium.Cartesian3.dot(toEnt, scene.camera.direction) <= 0) continue; // 背後のピンは除く
+    const sp = Cesium.SceneTransforms.worldToWindowCoordinates(scene, world);
+    if (!sp) continue;
+    const d = Cesium.Cartesian2.distance(sp, center);
+    if (d < bestDist) { bestDist = d; best = { id: id, sp: sp }; }
+  }
+  return best;
+}
+
+// ピンの表示名（ロックオン枠に出す）
+function entityDisplayName(id) {
+  const idx = parseInt(id.replace(/^[a-z]+-/, ""), 10);
+  if (id.startsWith("bunkazai-")) return (BUNKAZAI[idx] || {}).name || "文化財";
+  if (id.startsWith("spot-")) return (SPOTS[idx] || {}).name || "スポット";
+  if (id.startsWith("shelter-")) return (SHELTERS[idx] || {}).name || "避難所";
+  if (id.startsWith("kominkan-")) return (KOMINKAN[idx] || {}).name || "公民館";
+  return "";
+}
+
+// ロックオンHUDの更新。毎フレームだと重いので数フレームに1回だけ計算する
+let padHudFrame = 0;
+let padLockedId = null;
+function updatePadHud(connected) {
+  const hud = document.getElementById("padHud");
+  if (!connected) {
+    if (hud.style.display !== "none") { hud.style.display = "none"; padLockedId = null; }
+    return;
+  }
+  hud.style.display = "block";
+  if (++padHudFrame % 4 !== 0) return;
+
+  const target = findAimTarget();
+  const lock = document.getElementById("padLock");
+  const cross = document.getElementById("padCross");
+  if (!target) {
+    lock.style.display = "none";
+    cross.classList.remove("locked");
+    padLockedId = null;
+    return;
+  }
+  if (target.id !== padLockedId) {
+    padLockedId = target.id;
+    document.getElementById("padLockName").textContent = entityDisplayName(target.id);
+    lock.style.animation = "none";
+    void lock.offsetWidth;      // 別のピンに移ったときに枠の出現アニメを出し直す
+    lock.style.animation = "";
+  }
+  lock.style.display = "block";
+  lock.style.left = target.sp.x + "px";
+  lock.style.top = target.sp.y + "px";
+  cross.classList.add("locked");
 }
 
 // 開いている情報パネル・詳細モーダルを閉じる（ゲームパッドの×ボタン用）
