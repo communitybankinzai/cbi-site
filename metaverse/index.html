@@ -575,6 +575,12 @@
     #miniMap { width: 92vw; max-width: none; right: 4vw; bottom: 76px; height: 46vh; }
   }
 
+  /* 左下の操作説明のいちばん上に出す高さの表示 */
+  #altLine {
+    color: #ffd166; font-weight: bold; margin-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 209, 102, 0.3); padding-bottom: 3px;
+  }
+
   /* いま何倍速で飛んでいるかの表示。等倍のときは出さない */
   #speedChip {
     position: absolute; left: 50%; bottom: 88px; transform: translateX(-50%);
@@ -925,14 +931,7 @@
 </div>
 
 <div id="floodNotice"><b>浸水シミュレーション</b> これは標高の可視化であり、国や市が公表する公式の浸水想定ではありません。避難判断には公式情報を確認してください。</div>
-<div id="helpBox">
-  <b>操作方法</b><br>
-  移動：<b>W A S D</b> ／ 矢印キー（<b>Shift</b>で加速）<br>
-  上昇・下降：<b>E</b> ／ <b>Q</b>（飛行モード）<br>
-  見回す：画面を<b>ドラッグ</b><br>
-  スポット看板を<b>クリック</b>で説明表示<br>
-  🧩 文化財に<b>80m以内</b>まで近づくとパズルピース獲得
-</div>
+<div id="helpBox"><div id="altLine"></div><div id="helpBody"></div></div>
 
 <div id="spotInfo">
   <span class="close" onclick="document.getElementById('spotInfo').style.display='none'">✕</span>
@@ -1532,7 +1531,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03a"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03b"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1722,6 +1721,52 @@ function updatePadInput(pad, dt) {
     showPickResult("コントローラーの入力が戻らないままだったので、その位置を中心に取り直しました。", 4000);
   }
 }
+
+// 左下の操作説明。コントローラーをつないでいる間はそちらの説明に差し替える
+const HELP_KEYBOARD =
+  "<b>操作方法</b><br>" +
+  "移動：<b>W A S D</b> ／ 矢印キー（<b>Shift</b>で加速）<br>" +
+  "上昇・下降：<b>E</b> ／ <b>Q</b>（飛行モード）<br>" +
+  "見回す：画面を<b>ドラッグ</b><br>" +
+  "スポット看板を<b>クリック</b>で説明表示<br>" +
+  "🧩 文化財に<b>80m以内</b>まで近づくとパズルピース獲得";
+const HELP_GAMEPAD =
+  "<b>🎮 コントローラー操作</b><br>" +
+  "移動：<b>左スティック</b> ／ 見回す：<b>右スティック</b><br>" +
+  "上昇・下降：<b>R2</b> ／ <b>L2</b>（十字キー上下でも）<br>" +
+  "速く飛ぶ：<b>R1</b>を押している間（<b>□</b>で速度切替）<br>" +
+  "精霊をゲット：<b>○</b> ／ 閉じる：<b>×</b><br>" +
+  "主要施設へ飛ぶ：<b>十字キー左右</b><br>" +
+  "勝手に動くとき：手を離して<b>OPTIONS</b>";
+let helpBoxMode = "";
+function updateHelpBox(hasPad) {
+  const want = hasPad ? "pad" : "key";
+  if (helpBoxMode === want) return;
+  helpBoxMode = want;
+  document.getElementById("helpBody").innerHTML = hasPad ? HELP_GAMEPAD : HELP_KEYBOARD;
+}
+updateHelpBox(false);
+
+// いまの高さを左下に出す。海抜と、地面からの高さ（測れるときだけ）を並べる。
+// 地面の高さを測る処理は重いので1秒に1回だけにする
+let altText = "";
+setInterval(function () {
+  try {
+    const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+    const msl = carto.height - INZAI_GEOID_HEIGHT_M; // 楕円体高から標高へ
+    let agl = null;
+    if (viewer.scene.sampleHeightSupported) {
+      const g = viewer.scene.sampleHeight(carto);
+      if (g !== undefined && g !== null) agl = carto.height - g;
+    }
+    const t = "⛰ 高さ " + Math.round(Math.max(0, msl)) + "m（海抜）"
+      + (agl !== null ? " ／ 地上から " + Math.round(Math.max(0, agl)) + "m" : "");
+    if (t !== altText) {
+      altText = t;
+      document.getElementById("altLine").textContent = t;
+    }
+  } catch (e) { /* 測れなくても飛行はできる */ }
+}, 1000);
 
 // いま何倍で飛んでいるかを画面に出す。□の切替・R1のダッシュ・Shift をまとめた実際の倍率を示す
 let speedChipText = "";
@@ -2012,6 +2057,7 @@ viewer.clock.onTick.addEventListener(function () {
   updatePadHud(!!pad && padCalibrated);      // 照準とロックオン枠の表示（中心の測定中は出さない）
   updatePadDebug(pad, forward, right, up);   // 🩺診断のときだけ右下に状態を出す
   updateSpeedChip(padDash > 1, !!(keys["ShiftLeft"] || keys["ShiftRight"]));
+  updateHelpBox(!!pad);                      // 左下の説明をコントローラー用に切り替える
   const centerBtn = document.getElementById("padCenterBtn");
   const wantCenterBtn = pad ? "" : "none";
   if (centerBtn.style.display !== wantCenterBtn) centerBtn.style.display = wantCenterBtn;
