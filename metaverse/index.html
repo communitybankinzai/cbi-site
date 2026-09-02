@@ -727,6 +727,7 @@
   <button id="padCenterBtn" style="display:none" title="スティックから手を離した状態で押してください。いまの値をそのまま「手を離した位置」として覚え直します（コントローラーのOPTIONSボタンでも同じことができます）">🎯 中心合わせ</button>
   <button id="padDebugBtn" title="コントローラーを認識しているか、各スティックがどんな値を出しているかを画面に表示します">🩺 診断</button>
   <button id="noTilesBtn" title="3Dの街並みを読み込むかどうかを切り替えます。読み込まない検証モードなら、ピン・メニュー・コントローラーの確認を1日30回の表示枠を使わずに行えます">🔧 検証モード</button>
+  <button id="gridBtn" style="display:none" title="検証モードの緯度経度グリッドを出す／消す">▦ グリッド</button>
   <button id="modeSwitchBtn" title="イベント用途と防災用途を切り替えます">🔀 モード切替</button>
   <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 撮影</button>
   <button id="recBtn" title="画面を動画（WebM）で録画します。もう一度押すと停止して保存されます">🎥 録画</button>
@@ -1185,6 +1186,7 @@ function addGridLines() {
     });
   }
   viewer.scene.primitives.add(lines);
+  gridPrims.push(lines);
 
   // 2kmごとの交点に座標を出す。近づいたときだけ見えるようにする
   const labels = new Cesium.LabelCollection();
@@ -1206,7 +1208,20 @@ function addGridLines() {
     }
   }
   viewer.scene.primitives.add(labels);
+  gridPrims.push(labels);
+
+  // 重さの切り分け用に、その場で出し入れできるようにしておく
+  const btn = document.getElementById("gridBtn");
+  btn.style.display = "";
+  btn.classList.add("on");
+  btn.addEventListener("click", function () {
+    const on = !gridPrims[0].show;
+    gridPrims.forEach(function (p) { p.show = on; });
+    btn.classList.toggle("on", on);
+    btn.textContent = on ? "▦ グリッド" : "▦ グリッド（非表示）";
+  });
 }
+const gridPrims = []; // グリッドの描画単位（ON/OFF 用）
 
 async function loadTileset() {
   if (NO_TILES) {
@@ -1541,7 +1556,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03g"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03h"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1814,6 +1829,10 @@ function updatePadDebug(pad, forward, right, up) {
   const avg = fpsHistory.length ? Math.round(fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length) : 0;
   L.push("描画: いま " + fpsValue + " fps ／ 10秒平均 " + avg + " ／ 最大 " + fpsBest
     + " ／ 最低 " + (fpsWorst === 999 ? "-" : fpsWorst));
+  const otherMs = Math.max(0, frameMs - tickLogicMs - renderMs);
+  L.push("1フレーム " + frameMs.toFixed(0) + "ms：自前処理 " + tickLogicMs.toFixed(1)
+    + "ms／Cesium更新・描画 " + renderMs.toFixed(0) + "ms／その他 " + otherMs.toFixed(0) + "ms"
+    + "（描画命令 " + drawCmds + "）");
   L.push("画面: " + viewer.canvas.width + "×" + viewer.canvas.height
     + " ／ 解像度倍率 " + viewer.resolutionScale.toFixed(2)
     + " ／ 実体 " + Math.round(viewer.entities.values.length) + " ／ 描画単位 " + viewer.scene.primitives.length);
@@ -1986,8 +2005,19 @@ joystickEl.addEventListener("pointercancel", joyEnd);
 
 // --- 毎フレームの移動処理 ---
 let lastTime = undefined;
+// 1フレームの内訳を測る。重さの原因が自前の処理か Cesium の描画かを切り分けるため
+let tickT0 = 0, tickLogicMs = 0, renderT0 = 0, renderMs = 0, frameMs = 0, lastPostRender = 0, drawCmds = 0;
+viewer.scene.preUpdate.addEventListener(function () { renderT0 = performance.now(); });
+viewer.scene.postRender.addEventListener(function () {
+  const n = performance.now();
+  renderMs = renderMs * 0.9 + (n - renderT0) * 0.1;              // なめらかにした平均
+  if (lastPostRender) frameMs = frameMs * 0.9 + (n - lastPostRender) * 0.1;
+  lastPostRender = n;
+  try { drawCmds = viewer.scene.frameState.commandList.length; } catch (e) { /* 取れなければ 0 のまま */ }
+});
 viewer.clock.onTick.addEventListener(function () {
-  const now = performance.now();
+  tickT0 = performance.now();
+  const now = tickT0;
   const dt = lastTime === undefined ? 0.016 : Math.min((now - lastTime) / 1000, 0.1);
   lastTime = now;
 
@@ -2140,6 +2170,10 @@ viewer.clock.onTick.addEventListener(function () {
       keepAboveGround();
     }
   }
+});
+// 上の主ループの直後に呼ばれるので、その所要時間になる
+viewer.clock.onTick.addEventListener(function () {
+  tickLogicMs = tickLogicMs * 0.9 + (performance.now() - tickT0) * 0.1;
 });
 
 // 飛行モードで地表より下へ潜らないようにする（地下＝真っ黒対策）
@@ -4048,7 +4082,7 @@ function recStart() {
   const bar = document.getElementById("topLeftBar");
   if (bar) bar.style.display = "";
   ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
-   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "noTilesBtn", "speedChip", "miniMap", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
+   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "noTilesBtn", "gridBtn", "speedChip", "miniMap", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
   });
