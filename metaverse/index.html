@@ -1667,7 +1667,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03q"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03r"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -4143,7 +4143,7 @@ viewer.clock.onTick.addEventListener(function () {
   const now = performance.now();
   if (now - lastPieceCheck < 500) return;
   lastPieceCheck = now;
-  if (!tileset || BUNKAZAI.length === 0) return;
+  if ((!tileset && !NO_TILES) || BUNKAZAI.length === 0) return; // 検証モード（街並みなし）でも出現させる
   if (pieceTotal() === BUNKAZAI.length) return;
 
   const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
@@ -4497,8 +4497,183 @@ async function startTeaser() {
   window.cinemaDone = true; // 録画スクリプトの終了検知用
 }
 
+// プレイ動画用シーケンス（?cinema=3・約60秒）。SNS告知向けに「実際に遊んでいる画面」を自動で作る。
+// カメラを直接飛ばす cinema=1/2 と違い、通常の移動処理（Wキー相当の keys）と視点回転を自動操縦し、
+// 文化財2か所を実プレイと同じ動きで通過する。80m以内で精霊が出現→ゲットまで本物の処理を通す。
+//   ?pair=0,39   通過する文化財の index（既定：宝珠院観音堂 → いなざき獅子舞・約900m）
+//   ?speed=2     移動の速さ（⚡ボタンの倍率と同じ。×2 は実プレイでよく使う段）
+// 録画は scripts/promo/record_play.mjs（仮想時間で1フレームずつ撮る）。window.cinemaDone で終了を知らせる
+async function startPlayDemo() {
+  const q = new URLSearchParams(location.search);
+  const targets = (q.get("pair") || "0,39").split(",").map(Number)
+    .filter((n) => Number.isInteger(n) && n >= 0);
+  const cruiseMult = Math.max(0.5, Math.min(4, parseFloat(q.get("speed") || "2") || 2));
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  applyMode("event");                       // 実プレイと同じイベント用途（文化財ピンが出る）
+  CAPTURE_HIDE_IDS.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+  document.getElementById("howtoModal").classList.remove("show");
+  setTonbiVisible(true);                    // 「鳥になって飛ぶ」の主役
+  speedMultiplier = cruiseMult;
+
+  const cap = document.createElement("div");
+  cap.id = "cinemaCaption";
+  document.body.appendChild(cap);
+  const style = document.createElement("style");
+  style.textContent =
+    "#cinemaCaption{position:absolute;left:50%;top:13%;transform:translateX(-50%);z-index:70;" +
+    "color:#fff;font-size:28px;font-weight:bold;text-align:center;line-height:1.6;width:92%;" +
+    "text-shadow:0 2px 14px rgba(0,0,0,0.9),0 0 4px rgba(0,0,0,0.9);opacity:0;transition:opacity 0.6s;" +
+    "pointer-events:none;}" + /* 空の部分に出す。下側は精霊カードと重なる */ +
+    "#cinemaCaption.show{opacity:1;}#cinemaCaption b{color:#ffd166;}" +
+    "#cinemaCaption small{font-size:17px;font-weight:normal;display:block;margin-top:6px;}" +
+    "#cinemaEnd{position:absolute;inset:0;z-index:80;background:linear-gradient(160deg,#2c3e50,#1a2533);" +
+    "display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;" +
+    "color:#fff;opacity:0;transition:opacity 1.2s;pointer-events:none;}" +
+    "#cinemaEnd.show{opacity:1;}" +
+    "#cinemaEnd img{width:46%;max-width:260px;margin-bottom:22px;}" +
+    "#cinemaEnd h2{color:#ffd166;font-size:30px;margin:0 0 10px;}" +
+    "#cinemaEnd p{font-size:17px;line-height:1.9;margin:0;}";
+  document.head.appendChild(style);
+  const end = document.createElement("div");
+  end.id = "cinemaEnd";
+  end.innerHTML =
+    '<img src="../assets/cbi-logo.png" alt="CBI">' +
+    "<h2>CBIメタバース印西</h2>" +
+    "<p>鳥になって印西の空を飛び<br>文化財50か所の精霊を集めよう<br>スマホで今すぐ遊べます<br><b>communitybankinzai.github.io/cbi-site</b></p>";
+  document.body.appendChild(end);
+
+  // 仮想時間で1フレームずつ撮る録画では CSS の transition が進まない（opacity が 0 のまま写る）ため、
+  // テロップと終了画面のフェードは requestAnimationFrame で行う。人が普通に開いたときも同じに見える
+  cap.style.transition = "none"; end.style.transition = "none"; end.style.opacity = "0";
+  function fadeTo(el, target, ms) {
+    const from = parseFloat(el.style.opacity || "0"), t0 = performance.now();
+    (function step() {
+      const k = Math.min(1, (performance.now() - t0) / ms);
+      el.style.opacity = String(from + (target - from) * k);
+      if (k < 1) requestAnimationFrame(step);
+    })();
+  }
+  let sayTimer = null;
+  function say(html, ms) {
+    cap.innerHTML = html;
+    fadeTo(cap, 1, 500);
+    if (sayTimer) clearTimeout(sayTimer);
+    sayTimer = setTimeout(() => fadeTo(cap, 0, 500), ms);
+  }
+
+  // 文化財データと3D都市データがそろうまで待つ（検証モードでは街並みを読まない）
+  while (BUNKAZAI.length === 0 || (!tileset && !NO_TILES)) { await sleep(300); }
+  await sleep(NO_TILES ? 1500 : 2500);      // 起動時の flyToSpot と初期タイルの描画安定待ち
+
+  const tb = targets.map((i) => BUNKAZAI[i]).filter(Boolean);
+  if (tb.length === 0) { window.cinemaDone = true; return; }
+  // 前回の記録に残っていても同じ演出になるよう、対象だけ未取得に戻す（ゲット時に再保存される）
+  targets.forEach((i) => { delete pieces[i]; });
+  tb.forEach((b) => { if (b.cardImage) { const im = new Image(); im.src = b.cardImage; } }); // 精霊カードを先読み
+
+  // 開始位置：1か所目から「2か所目→1か所目」の向きへ 850m 離れた地点（1→2 が一直線に近くなる）
+  const mLat = 111320, mLon = 111320 * Math.cos(Cesium.Math.toRadians(tb[0].lat));
+  let dN = 1, dE = 0;
+  if (tb[1]) {
+    dN = (tb[0].lat - tb[1].lat) * mLat; dE = (tb[0].lon - tb[1].lon) * mLon;
+    const L = Math.hypot(dN, dE) || 1; dN /= L; dE /= L;
+  }
+  const startLat = tb[0].lat + dN * 850 / mLat;
+  const startLon = tb[0].lon + dE * 850 / mLon;
+  const START_H = 135;                      // 楕円体高。地表（約60〜70m）から 65m ほど上
+  viewer.camera.cancelFlight();             // 起動時の flyToSpot（3秒）が残っていると位置が上書きされる
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(startLon, startLat, START_H),
+    orientation: { heading: Math.atan2(-dE, -dN), pitch: Cesium.Math.toRadians(-4), roll: 0 },
+  });
+
+  // ---- 自動操縦：毎フレーム、目標へ向きを寄せ、高さはピッチで整える ----
+  const st = { phase: "intro", idx: 0, forward: false, lastNow: undefined, groundTick: 0, ground: null, nearShown: false };
+  function relTo(b) {
+    const c = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+    const n = (b.lat - Cesium.Math.toDegrees(c.latitude)) * mLat;
+    const e = (b.lon - Cesium.Math.toDegrees(c.longitude)) * mLon;
+    return { dist: Math.hypot(n, e), bearing: Math.atan2(e, n), height: c.height, carto: c };
+  }
+  viewer.clock.onTick.addEventListener(function () {
+    if (st.phase !== "fly") { keys["KeyW"] = false; return; }
+    const b = tb[st.idx];
+    if (!b) return;
+    const now = performance.now();
+    const dt = st.lastNow === undefined ? 0.033 : Math.min((now - st.lastNow) / 1000, 0.5);
+    st.lastNow = now;
+    const cam = viewer.camera;
+    const r = relTo(b);
+    // 向き：最短回転で目標へ（毎秒最大 40 度。急に振らない）
+    let diff = r.bearing - cam.heading;
+    diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+    const maxTurn = Cesium.Math.toRadians(40) * dt;
+    const heading = cam.heading + Math.max(-maxTurn, Math.min(maxTurn, diff));
+    // 高さ：遠くでは高め、近づくほど低く（獲得判定の上限 150m より下で通過する）。
+    // 木立や台地に近づきすぎないよう、地表から 38m 以上は保つ
+    if ((st.groundTick++ % 10) === 0 && viewer.scene.sampleHeightSupported) {
+      try {
+        const g = viewer.scene.sampleHeight(r.carto.clone());
+        st.ground = (g === undefined || g === null) ? null : g;
+      } catch (e) { /* 未読込なら前回値のまま */ }
+    }
+    let targetH = 100 + Math.min(r.dist, 800) / 800 * 35;
+    if (st.ground !== null) targetH = Math.max(targetH, st.ground + 38);
+    const wantPitch = Cesium.Math.toRadians(Math.max(-18, Math.min(8, -3 + (targetH - r.height) * 0.35)));
+    const maxPitchStep = Cesium.Math.toRadians(20) * dt;
+    const pitch = cam.pitch + Math.max(-maxPitchStep, Math.min(maxPitchStep, wantPitch - cam.pitch));
+    cam.setView({ orientation: { heading: heading, pitch: pitch, roll: 0 } });
+    keys["KeyW"] = st.forward;
+    // 精霊が出たら止まる（ゲットは人が押すのと同じ confirmCatch を少し遅れて呼ぶ）
+    if (encounterIdx !== null) { st.phase = "catch"; keys["KeyW"] = false; onEncounter(encounterIdx === targets[st.idx]); }
+    else if (r.dist < 300 && !st.nearShown) { st.nearShown = true; say("文化財に近づくと…", 2400); }
+  });
+
+  // isTarget=false は、目的地の途中や同じ境内にいる別の精霊（宝珠院の観音堂と延命地蔵など）。
+  // 実プレイでも起きることなので、そのままゲットして目的地へ進む（目的地の数には入れない）
+  async function onEncounter(isTarget) {
+    await sleep(600);
+    say(isTarget ? "精霊が <b>あらわれた！</b>" : "もう1体 <b>あらわれた！</b>", 2400);
+    await sleep(isTarget ? 2600 : 1800);
+    say("タップで <b>ゲット！</b>", 1600);
+    await sleep(1100);
+    confirmCatch();
+    await sleep(isTarget ? 2400 : 1600);
+    if (!isTarget) { st.phase = "fly"; return; }
+    st.idx++;
+    st.nearShown = false;
+    if (tb[st.idx]) {
+      say("つぎの文化財へ", 2200);
+      st.phase = "fly";
+    } else {
+      say("こうして <b>50か所</b> を<br>めぐっていく<small>ピースを集めると1枚の絵が完成</small>", 3800);
+      await sleep(4200);
+      fadeTo(end, 1, 1200);
+      await sleep(5000);
+      window.cinemaDone = true; // 録画スクリプトの終了検知用
+    }
+  }
+
+  // ---- 開始 ----
+  say("🦅 鳥になって<br>印西の空を <b>飛ぶ</b>", 3400);
+  await sleep(1400);
+  st.forward = true;
+  st.phase = "fly";
+  // 安全弁：何かの理由で精霊が出ないまま 80 秒たったら終える（録画を止められるように）
+  setTimeout(function () {
+    if (window.cinemaDone) return;
+    fadeTo(end, 1, 1200);
+    setTimeout(function () { window.cinemaDone = true; }, 4000);
+  }, 80000);
+}
+
 if (CINEMA) startCinema();
 else if (CINEMA_MODE === "2") startTeaser();
+else if (CINEMA_MODE === "3") startPlayDemo();
 
 // ============================================================
 // 開始
