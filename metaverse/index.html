@@ -552,6 +552,29 @@
   @keyframes tonbiFlap { from { transform: translateX(0); } to { transform: translateX(-100%); } }
   @keyframes tonbiBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -16px; } }
 
+  /* 3Dワールドの中に開く文化財マップ。閉じているあいだは中身を読み込まない（負荷ゼロ） */
+  #miniMap {
+    position: absolute; right: 8px; bottom: 8px; z-index: 32; display: none;
+    width: 34vw; max-width: 420px; min-width: 260px; height: 42vh; min-height: 240px;
+    background: #0b1420; border: 1px solid #2a4258; border-radius: 10px;
+    overflow: hidden; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+    contain: paint;
+  }
+  #miniMapBar {
+    display: flex; align-items: center; gap: 6px; padding: 5px 8px;
+    background: #132436; color: #9fd0f0; font-size: 12px; font-weight: bold;
+  }
+  #miniMapBar span { flex: 1; }
+  #miniMapBar button {
+    background: #1d3a56; color: #cfe8ff; border: 1px solid #3a6a95; border-radius: 6px;
+    padding: 2px 8px; font-size: 12px; cursor: pointer;
+  }
+  #miniMapBar button:hover { background: #26506f; }
+  #miniMapFrame { width: 100%; height: calc(100% - 28px); border: 0; display: block; }
+  @media (pointer: coarse), (max-width: 640px) {
+    #miniMap { width: 92vw; max-width: none; right: 4vw; bottom: 76px; height: 46vh; }
+  }
+
   /* いま何倍速で飛んでいるかの表示。等倍のときは出さない */
   #speedChip {
     position: absolute; left: 50%; bottom: 88px; transform: translateX(-50%);
@@ -923,6 +946,15 @@
 <div id="padHud">
   <div id="padCross"></div>
   <div id="padLock"><span id="padLockName"></span><span id="padLockHint">○ボタンで開く</span></div>
+</div>
+
+<div id="miniMap">
+  <div id="miniMapBar">
+    <span>🗺 文化財マップ</span>
+    <button id="miniMapPop" title="別のタブで大きく開きます">⤢</button>
+    <button id="miniMapClose" title="地図を閉じます">✕</button>
+  </div>
+  <iframe id="miniMapFrame" title="印西市 文化財マップ" src="about:blank"></iframe>
 </div>
 
 <div id="speedChip"></div>
@@ -1499,7 +1531,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02y"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02z"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2123,7 +2155,22 @@ document.getElementById("topLeftBar").addEventListener("click", (e) => {
 });
 
 // ---- 学習レポート一覧（別タブ。3Dを読み込み直さずに50件の一覧へ行ける）----
-document.getElementById("mapBtn").addEventListener("click", () => {
+// 文化財マップは3Dワールドの中に開く。閉じている間は中身を読み込まないので負荷はゼロ。
+// 別のタブで大きく見たいときは、地図の右上「⤢」から開ける
+let miniMapOpen = false;
+function setMiniMap(open) {
+  miniMapOpen = open;
+  const panel = document.getElementById("miniMap");
+  const frame = document.getElementById("miniMapFrame");
+  panel.style.display = open ? "block" : "none";
+  frame.src = open ? "map.html?mini=1" : "about:blank"; // 閉じたら読み込みを止める
+  const btn = document.getElementById("mapBtn");
+  btn.classList.toggle("on", open);
+  btn.textContent = open ? "🗺 マップ表示中" : "🗺 文化財マップ";
+}
+document.getElementById("mapBtn").addEventListener("click", () => setMiniMap(!miniMapOpen));
+document.getElementById("miniMapClose").addEventListener("click", () => setMiniMap(false));
+document.getElementById("miniMapPop").addEventListener("click", () => {
   window.open("map.html", "_blank", "noopener");
 });
 document.getElementById("reportsBtn").addEventListener("click", () => {
@@ -3875,7 +3922,7 @@ function recStart() {
   const bar = document.getElementById("topLeftBar");
   if (bar) bar.style.display = "";
   ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
-   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "noTilesBtn", "speedChip", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
+   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "noTilesBtn", "speedChip", "miniMap", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
   });

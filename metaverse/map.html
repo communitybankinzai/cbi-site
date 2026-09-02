@@ -55,6 +55,14 @@
     border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: bold; white-space: nowrap;
   }
 
+  /* 3Dワールドの中に小さく開くとき（?mini=1）。限られた面積に収める */
+  body.mini #topBar { top: 4px; left: 4px; right: 4px; gap: 4px; }
+  body.mini .chip { padding: 3px 9px; font-size: 11px; border-radius: 14px; }
+  body.mini .chip.title { display: none; }
+  body.mini #filters { padding: 5px 8px; font-size: 11px; line-height: 1.7; max-width: 62%; }
+  body.mini #filters .sub { display: none; }
+  body.mini .leaflet-popup-content { font-size: 12px; max-width: 210px; }
+
   .leaflet-popup-content-wrapper { background: #10202f; color: #e8f0f8; border-radius: 10px; }
   .leaflet-popup-tip { background: #10202f; }
   .leaflet-popup-content { margin: 12px 14px; font-size: 13px; line-height: 1.7; max-width: 260px; }
@@ -79,7 +87,7 @@
   <span class="chip title">🗺 印西市 文化財マップ</span>
   <span class="chip count" id="countChip">集めた文化財 —</span>
   <span class="chip live off" id="liveChip">3Dワールド未接続</span>
-  <a class="chip link" href="index.html" target="_blank" rel="noopener">🌏 3Dワールドを開く</a>
+  <a class="chip link" id="openWorld" href="index.html" target="_blank" rel="noopener">🌏 3Dワールドを開く</a>
   <a class="chip link" href="reports.html" target="_blank" rel="noopener">📄 学習レポート</a>
 </div>
 
@@ -108,6 +116,16 @@ const GOTO_KEY = "cbi-meta-goto-v1";
 const LIVE_TIMEOUT_MS = 8000; // これ以上更新が無ければ「未接続」とみなす
 
 const DESIG_COLOR = { "国指定": "#e74c3c", "県指定": "#f39c12", "市指定": "#3498db", "国登録": "#9b59b6" };
+
+// 3Dワールドの画面内に小さく開かれているとき（?mini=1）は表示を詰め、
+// 「3Dワールドを開く」の代わりに「大きく開く」を出す
+const MINI = new URLSearchParams(location.search).get("mini") === "1";
+if (MINI) {
+  document.body.classList.add("mini");
+  const a = document.getElementById("openWorld");
+  a.textContent = "⤢ 大きく開く";
+  a.href = "map.html";
+}
 
 const map = L.map("map", { zoomControl: true }).setView([35.832, 140.145], 12);
 L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
