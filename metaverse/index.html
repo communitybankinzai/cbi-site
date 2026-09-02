@@ -520,7 +520,7 @@
   /* 手前を飛ぶトンビ。操作に合わせて姿勢が変わる（☰メニューの「🦅 トンビ」で切替） */
   #tonbiLayer {
     position: absolute; left: 50%; bottom: 10%; z-index: 26;
-    width: 30vw; max-width: 420px; min-width: 190px;
+    width: 20vw; max-width: 290px; min-width: 150px;
     pointer-events: none; display: none;
     transform: translateX(-50%);
     transition: transform 0.3s ease-out;
@@ -536,16 +536,15 @@
     animation-play-state: paused;
   }
   @keyframes tonbiLift { 0%, 100% { translate: 0 5px; } 50% { translate: 0 -5px; } }
-  /* 6コマを横一列に並べ、steps で1コマずつ送る。JavaScript は毎フレーム何もしない */
-  /* contain と will-change で、羽ばたきの描き直しをこの中だけに閉じ込めてGPUに任せる */
+  /* 6コマを横につないだ1枚の絵を、窓の幅ぶんずつ送る。要素はこの img ひとつだけで、
+     動かすのは transform だけなので、描き直しはブラウザ（GPU）側で完結する */
   #tonbiViewport { width: 100%; overflow: hidden; contain: paint; }
-  #tonbiStrip {
-    display: flex; width: 600%;
+  #tonbiSheet {
+    width: 600%; height: auto; display: block;
     animation: tonbiFlap 0.54s steps(6) infinite;
     animation-play-state: paused;
     will-change: transform; backface-visibility: hidden;
   }
-  #tonbiStrip img { width: 16.666667%; height: auto; display: block; }
   @keyframes tonbiFlap { from { transform: translateX(0); } to { transform: translateX(-100%); } }
   @keyframes tonbiBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -16px; } }
 
@@ -902,7 +901,7 @@
   <a id="spotInfoLink" href="#" target="_blank" rel="noopener" style="display:none;margin-top:8px;padding:6px;border-radius:8px;border:1px solid #ffd166;background:rgba(255,209,102,0.12);color:#ffd166;font-size:12px;font-weight:bold;text-decoration:none;text-align:center;">🔎 市公式ページで詳しく見る</a>
 </div>
 
-<div id="tonbiLayer"><div id="tonbiInner"><div id="tonbiViewport"><div id="tonbiStrip"><img src="assets/tonbi/tonbi_flap_up.webp" alt=""><img src="assets/tonbi/tonbi_flap_rise.webp" alt=""><img src="assets/tonbi/tonbi_flap_level.webp" alt=""><img src="assets/tonbi/tonbi_flap_down.webp" alt=""><img src="assets/tonbi/tonbi_flap_level.webp" alt=""><img src="assets/tonbi/tonbi_flap_rise.webp" alt=""></div></div></div></div>
+<div id="tonbiLayer"><div id="tonbiInner"><div id="tonbiViewport"><img id="tonbiSheet" src="assets/tonbi/tonbi_flap_sheet.webp" alt=""></div></div></div>
 
 <div id="padHud">
   <div id="padCross"></div>
@@ -1413,7 +1412,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02l"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02m"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1679,7 +1678,7 @@ let tonbiMode = "";      // いまの飛び方（climb/cruise/dive/glide）。�
 // 止めるときは animation を切って、見せたいコマの位置へ帯をずらす（帯の並びは
 // 0=振り上げ 1=戻し 2=水平 3=打ち下ろし 4=水平 5=戻し）
 function applyTonbiMode(mode) {
-  const strip = document.getElementById("tonbiStrip");
+  const strip = document.getElementById("tonbiSheet");
   const inner = document.getElementById("tonbiInner");
   if (mode === "climb" || mode === "cruise") {
     const dur = (mode === "climb" ? "0.33s" : "0.54s"); // 上昇中はしっかり、巡航中はゆるく
