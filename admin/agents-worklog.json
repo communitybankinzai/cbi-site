@@ -18,6 +18,25 @@
       "actuals": [
         {
           "date": "2026-09-02",
+          "title": "FreeFree掲載→メタバースお店ピン（CiDAO 6ファイル＋公開API）と「めぐりモード」4択の実装 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao supabase/migrations/20260902200000_freefree_metaverse_pin.sql — metaverse_pin/address/lat/lon 列と部分インデックス（ユーザーが SQL Editor で実行する）",
+            "C:\\Repos\\cidao src/lib/geocode.ts — 国土地理院 住所検索API（geocodeAddress／isNearInzai）",
+            "C:\\Repos\\cidao src/app/api/metaverse-shops/route.ts — 掲載中のお店ピン一覧（CORS github.io/localhost、サーバー2分キャッシュ、列未作成時は空配列）",
+            "C:\\Repos\\cidao src/app/freefree/actions.ts — metaverse_pin/address/shop_links を受け、住所→緯度経度変換、リンク合流（重複除去・5件）",
+            "C:\\Repos\\cidao src/app/freefree/new/page.tsx — フォーム項目の受け取り",
+            "C:\\Repos\\cidao src/app/freefree/new/_components/NewFreefreeForm.tsx — 「🗺 メタバース印西にお店のピンを出す」区画（住所・HP・ショップ・SNS）",
+            "site/metaverse/index.html — 🛍 お店ピン（SHOP_ENDPOINT／addShopEntities／setShopPins／shopToggleBtn）、情報パネルの #spotInfoLinks、openEntityById の shop 分岐と後始末、めぐりモード4択（MODE_LIST／applyMode 書き直し／modeSelect 4カード／?mode=shop|all）、版 2026-09-03s",
+            "site/admin/changelog.json — feature 2件",
+            "site/metaverse/CLAUDE_HANDOFF.md ／ cidao/2026-09-02_メタバース他者の位置表示と定型スタンプと軽量モード.md — 追記"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "ユーザー要望「各店をピンして HP／ショップへ飛ばす。FreeFree掲示板に住所とURL・SNSを貼ることで権利を得る。ピンでごちゃごちゃになるので表示モードも切替」。3択で確認し、投稿フォームへの専用項目追加／ピン寿命は掲載期間と連動／めぐりモード新設を採用。検証：tsc exit 0・eslint exit 0（5分で応答なくバックグラウンド再実行）、ローカル cidao で /api/metaverse-shops が列未作成でも 200＋CORS＋空配列を返すことを curl で確認、メタバースはローカル 8765 で模擬データを入れて情報パネル（店名・所在地・掲示板リンク・HP/SNSボタン）と4モードの遷移（ピン・ボタン・浸水UIの表示状態）を JS で確認。cidao は commit 51589c4 を push（Vercel 自動デプロイ）。未了：migration の適用（ユーザー作業）、本番での実投稿による通し確認。session: d59656bc-791e-4e89-87d3-b7fe5c3a2817 / output: 110,650 / cost: $27.90"
+        },
+        {
+          "date": "2026-09-02",
           "title": "メタバース プレイ動画モード（?cinema=3）実装＋仮想時間録画スクリプト新設＋本番で60秒動画を生成 0.7時間",
           "category": "実装",
           "outputs": [
@@ -4438,6 +4457,29 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-05",
+          "title": "🗄 FreeFree お店ピンの migration を Supabase SQL Editor で実行する",
+          "category": "実装",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "中司さんが CiDAO の Supabase SQL Editor で C:\\Repos\\cidao\\supabase\\migrations\\20260902200000_freefree_metaverse_pin.sql を実行すること（列4つと部分インデックスの追加のみ。既存データに影響なし）",
+          "note": "未実行のあいだは /api/metaverse-shops が {shops:[]} を返し、フォームで「メタバースに載せる」を選んだ投稿だけが『column does not exist』で失敗する（通常の掲載は通る）。実行後、FreeFree で住所付きのテスト投稿を1件作り、メタバース ?mode=shop でピンが立つことを確認する"
+        },
+        {
+          "due": "2026-09-08",
+          "title": "🛍 お店ピンの通し確認（本番で実投稿→ピン→リンク遷移）と、お店への案内文の作成",
+          "category": "実装",
+          "priority": "中",
+          "note": "migration 適用後。確認点：住所→位置のずれ（番地まで入れた場合／町名だけの場合）、ピンのクリックで HP／ショップ／SNS ボタンが出る、掲載期限切れで消える。あわせて『FreeFree に住所とリンクを貼るとメタバースにピンが立つ』ことをお店に伝える短い案内文（A4 の告知やSNS用）を A4 と相談して作る"
+        },
+        {
+          "due": "未定",
+          "title": "📋 FreeFree の掲載詳細ページに「メタバースにピンあり」の印と3D空間へのリンクを出す",
+          "category": "実装",
+          "priority": "低",
+          "note": "2026-09-02の実装では [id]/page.tsx を触っていない（ついで改善を避けた）。metaverse_pin=true の掲載に『🗺 メタバース印西でこのお店を見る』（?mode=shop へのリンク）を出すと、掲示板→3D の導線ができる"
+        },
         {
           "due": "未定",
           "title": "🎬 プレイ動画の見え方改善（地面をもっと見せる／16:9版／別の文化財ペア）",

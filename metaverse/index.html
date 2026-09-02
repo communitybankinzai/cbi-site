@@ -167,7 +167,13 @@
     background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
     border-radius: 10px; padding: 8px 12px; font-size: 13px; cursor: pointer;
   }
-  #pinToggleBtn.off, #shelterToggleBtn.off, #kominkanToggleBtn.off { opacity: 0.55; }
+  #pinToggleBtn.off, #shelterToggleBtn.off, #kominkanToggleBtn.off, #shopToggleBtn.off { opacity: 0.55; }
+  /* 🛍 お店ピンの情報パネルに出すリンク（ホームページ・オンラインショップ・SNS） */
+  #spotInfoLinks a {
+    display: block; margin-top: 6px; padding: 6px; border-radius: 8px;
+    border: 1px solid #ff8fb1; background: rgba(255, 143, 177, 0.12); color: #ffb3c9;
+    font-size: 12px; font-weight: bold; text-decoration: none; text-align: center;
+  }
   #spotInfo p { white-space: pre-line; }
   /* 年表・クイズ */
   #timelineList { list-style: none; margin: 0; padding: 0; }
@@ -769,6 +775,7 @@
   <button id="pinToggleBtn" title="地図上の文化財ピンの表示／非表示を切り替えます">📍 表示中</button>
   <button id="shelterToggleBtn" class="off" title="印西市の指定避難所・特別避難所・広域避難場所（公式55施設）のピンを表示／非表示します">🏫 避難所</button>
   <button id="kominkanToggleBtn" class="off" title="印西市の公民館・交流館・文化ホールのピンを表示／非表示します（クリックで各施設の市公式ページへ）">🏢 公民館</button>
+  <button id="shopToggleBtn" class="off" title="FreeFree掲示板に住所とリンクを載せたお店のピンを表示／非表示します（クリックでホームページ・オンラインショップ・SNSへ）">🛍 お店</button>
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
   <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
@@ -809,9 +816,11 @@
 </div>
 <div id="modeSelect">
   <div class="inner">
-    <h2>🌏 CBIメタバース印西へようこそ！<br>利用目的をえらんでください</h2>
-    <button class="modeCard" onclick="applyMode('event')">🎪 イベント・文化財探検<small>文化財めぐり・ずかん・クイズ・タイムトライアル</small></button>
+    <h2>🌏 CBIメタバース印西へようこそ！<br>めぐりモードをえらんでください</h2>
+    <button class="modeCard" onclick="applyMode('event')">🎪 文化財めぐり<small>文化財ピン・ずかん・クイズ・タイムトライアル</small></button>
+    <button class="modeCard" onclick="applyMode('shop')">🛍 お店めぐり<small>FreeFree掲示板に載ったお店のピン。クリックでお店のサイトへ</small></button>
     <button class="modeCard" onclick="applyMode('bousai')">🛟 防災・地形の理解<small>浸水シミュレーション・避難所の場所確認</small></button>
+    <button class="modeCard" onclick="applyMode('all')">🌏 すべて表示<small>文化財・お店・公民館のピンをまとめて（ピンは多くなります）</small></button>
     <p class="note">あとから「🔀 モード切替」（左上メニュー）でいつでも変更できます</p>
   </div>
 </div>
@@ -1010,6 +1019,7 @@
   <h4 id="spotInfoTitle"></h4>
   <p id="spotInfoDesc"></p>
   <a id="spotInfoLink" href="#" target="_blank" rel="noopener" style="display:none;margin-top:8px;padding:6px;border-radius:8px;border:1px solid #ffd166;background:rgba(255,209,102,0.12);color:#ffd166;font-size:12px;font-weight:bold;text-decoration:none;text-align:center;">🔎 市公式ページで詳しく見る</a>
+  <div id="spotInfoLinks"></div>
 </div>
 
 <div id="tonbiLayer"><div id="tonbiInner"><div id="tonbiViewport"><img id="tonbiSheet" src="assets/tonbi/tonbi_flap_sheet.webp" alt=""></div></div></div>
@@ -1667,7 +1677,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03r"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03s"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -3055,6 +3065,93 @@ document.getElementById("kominkanToggleBtn").addEventListener("click", function 
   }
 });
 
+// ---- 🛍 お店ピン（2026-09-02）----
+// FreeFree掲示板で「メタバースに載せる」を選び住所を入れた掲載を、CiDAO の公開API から読む。
+// 掲載期間中のものだけ返るので、ここでは期限を見ない。クリックでホームページ・ショップ・SNSへ。
+// お店が自分で掲示板に貼ることでピンの権利を得る運用（CBIが手で転記しない）
+const SHOP_ENDPOINT = "https://cidao.vercel.app/api/metaverse-shops";
+const SHOP_ICON = { food: "🍰", retail: "🛍", education: "🎓", craft: "🛠", living: "🏠", startup: "💼", event: "🌟", volunteer: "🤝" };
+let SHOPS = [];
+let shopPinsVisible = false;
+let shopLoadPromise = null;
+function shopIcon(s) { return SHOP_ICON[s.category] || "🛍"; }
+function shopName(s) { return s.shop || s.title || "お店"; }
+
+function addShopEntities() {
+  const pinHeightRef = Cesium.HeightReference.CLAMP_TO_3D_TILE ?? Cesium.HeightReference.NONE;
+  SHOPS.forEach((s, i) => {
+    if (viewer.entities.getById("shop-" + i)) return;
+    const ent = viewer.entities.add({
+      id: "shop-" + i,
+      show: false,
+      position: Cesium.Cartesian3.fromDegrees(s.lon, s.lat, PIN_FALLBACK_HEIGHT),
+      point: {
+        pixelSize: 11,
+        color: Cesium.Color.fromCssColorString("#ff8fb1"),
+        outlineColor: Cesium.Color.fromCssColorString("#1a2533"), outlineWidth: 2,
+        heightReference: pinHeightRef,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 12000),
+      },
+      label: {
+        text: shopIcon(s) + " " + shopName(s).slice(0, 16),
+        font: "bold 12px sans-serif",
+        fillColor: Cesium.Color.WHITE,
+        outlineColor: Cesium.Color.fromCssColorString("#1a2533"),
+        outlineWidth: 4,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        pixelOffset: new Cesium.Cartesian2(0, -18),
+        heightReference: pinHeightRef,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000),
+      },
+    });
+    ent.__wantVisible = shopPinsVisible;
+    watchPinClamp(ent, s.lon, s.lat);
+  });
+}
+
+function loadShops() {
+  if (!shopLoadPromise) {
+    shopLoadPromise = fetch(SHOP_ENDPOINT, { headers: { Accept: "application/json" } })
+      .then(res => { if (!res.ok) throw new Error("metaverse-shops HTTP " + res.status); return res.json(); })
+      .then(data => {
+        SHOPS = (data.shops || []).filter(s => isFinite(s.lat) && isFinite(s.lon));
+        addShopEntities();
+      })
+      .catch(e => { shopLoadPromise = null; throw e; });
+  }
+  return shopLoadPromise;
+}
+
+function applyShopPinVisibility() {
+  for (let i = 0; i < SHOPS.length; i++) {
+    const e = viewer.entities.getById("shop-" + i);
+    if (e) setPinVisible(e, shopPinsVisible);
+  }
+  document.getElementById("shopToggleBtn").classList.toggle("off", !shopPinsVisible);
+}
+
+// ON にするときは初回だけ取得する。取得後に0件なら、その旨を短く知らせる
+function setShopPins(on, quiet) {
+  shopPinsVisible = !!on;
+  applyShopPinVisibility();
+  if (!shopPinsVisible) return;
+  if (shopLoadPromise) return;
+  loadShops().then(function () {
+    applyShopPinVisibility();
+    if (SHOPS.length === 0 && !quiet) showPickResult("まだお店の登録がありません。FreeFree掲示板で住所とリンクを載せると、ここにピンが立ちます。", 7000);
+  }).catch(function () {
+    shopPinsVisible = false;
+    applyShopPinVisibility();
+    if (!quiet) showPickResult("お店の情報を読み込めませんでした。", 6000);
+  });
+}
+
+document.getElementById("shopToggleBtn").addEventListener("click", function () {
+  setShopPins(!shopPinsVisible);
+});
+
 // ---- 文化財詳細モーダル（写真・解説・この文化財のクイズ）----
 let bmIdx = null, bmQs = [], bmPos = 0, bmScore = 0;
 function openBunkazaiDetail(i) {
@@ -3705,34 +3802,48 @@ document.getElementById("ttBtn").addEventListener("click", openTtModal);
 // ☰メニューの「🔀 モード切替」でいつでも変更できる
 // ============================================================
 const MODE_KEY = "cbi-meta-mode-v1";
+// めぐりモード（2026-09-02に2択→4択）。ピンが増えて画面がごちゃつくため、目的ごとに出すピンをまとめて切り替える。
+//  event : 文化財めぐり（文化財ピン＋ゲーム系UI）
+//  shop  : お店めぐり（お店ピンのみ。文化財ピンとゲーム系UIは隠す）
+//  bousai: 防災（避難所ピン＋浸水シミュレーション。演出なし）
+//  all   : すべて（文化財＋お店＋公民館のピン。ゲーム系UIあり）
+// 個別のピン表示トグルはどのモードでも使える（モードは初期状態を決めるだけ）
+const MODE_LIST = ["event", "shop", "bousai", "all"];
 let currentMode = "event";
 function applyMode(mode) {
-  const ev = mode !== "bousai";
-  currentMode = ev ? "event" : "bousai";
-  try { localStorage.setItem(MODE_KEY, currentMode); } catch (e) {}
-  // イベント系UI（文化財ゲーム・学習レポート・タイムトライアル・位置修正）
-  ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "pickModeBtn", "ttBtn", "tonbiToggleBtn"].forEach(id => {
-    document.getElementById(id).style.display = ev ? "" : "none";
+  currentMode = MODE_LIST.indexOf(mode) >= 0 ? mode : "event";
+  const m = currentMode;
+  const bousai = m === "bousai";
+  const game = m === "event" || m === "all";
+  try { localStorage.setItem(MODE_KEY, m); } catch (e) {}
+  // 文化財ゲーム系UI（ずかん・学習レポート・文化財マップ・文化財ピン切替・位置修正・タイムトライアル）
+  ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "pickModeBtn", "ttBtn"].forEach(id => {
+    document.getElementById(id).style.display = game ? "" : "none";
   });
-  if (!ev) setTonbiVisible(false); // 防災用途では演出を出さない
+  document.getElementById("tonbiToggleBtn").style.display = bousai ? "none" : "";
+  if (bousai) setTonbiVisible(false); // 防災用途では演出を出さない
+  document.getElementById("shopToggleBtn").style.display = bousai ? "none" : "";
   // 防災系UI（避難所トグル・浸水シミュレーション）
-  document.getElementById("shelterToggleBtn").style.display = ev ? "none" : "";
-  document.getElementById("floodControls").style.display = ev ? "none" : "";
-  if (ev) {
-    // 防災→イベント: 浸水面と避難所ピンを片づけ、文化財ピンを表示
+  document.getElementById("shelterToggleBtn").style.display = bousai ? "" : "none";
+  document.getElementById("floodControls").style.display = bousai ? "" : "none";
+  if (!bousai) {
+    // 浸水面と避難所ピンを片づける
     const ft = document.getElementById("floodToggle");
     if (ft.checked) { ft.checked = false; ft.dispatchEvent(new Event("change")); }
     if (shelterPinsVisible) { shelterPinsVisible = false; applyShelterPinVisibility(); }
-    if (!bunkazaiPinsVisible) { bunkazaiPinsVisible = true; applyBunkazaiPinVisibility(); }
   } else {
-    // イベント→防災: ゲーム系を片づけ、文化財ピンOFF・避難所ピンON
+    // ゲーム系を片づける
     if (ttActive) ttAbort();
     document.getElementById("puzzlePanel").style.display = "none";
     document.getElementById("bunkazaiModal").classList.remove("show");
     document.getElementById("ttModal").classList.remove("show");
-    if (bunkazaiPinsVisible) { bunkazaiPinsVisible = false; applyBunkazaiPinVisibility(); }
     if (!shelterPinsVisible) document.getElementById("shelterToggleBtn").click(); // 初回は避難所データも取得
   }
+  // ピンの初期状態
+  if (bunkazaiPinsVisible !== game) { bunkazaiPinsVisible = game; applyBunkazaiPinVisibility(); }
+  setShopPins(m === "shop" || m === "all", m === "all"); // 「すべて」では0件でも案内を出さない
+  if (m === "all" && !kominkanPinsVisible) document.getElementById("kominkanToggleBtn").click();
+  if (m !== "all" && kominkanPinsVisible) document.getElementById("kominkanToggleBtn").click();
   document.getElementById("modeSelect").classList.remove("show");
 }
 function openModeSelect() { document.getElementById("modeSelect").classList.add("show"); }
@@ -3999,6 +4110,32 @@ function handleInteractiveClick(click) {
 
 // ピンの種類ごとに情報パネル・詳細モーダルを開く（マウスクリックとゲームパッドの○で共用）
 function openEntityById(id) {
+  // お店ピン用のリンク欄と、リンクボタンの文言は毎回初期状態に戻す（他の種類のピンに残さない）
+  const spotLinks = document.getElementById("spotInfoLinks");
+  if (spotLinks) spotLinks.innerHTML = "";
+  document.getElementById("spotInfoLink").textContent = "🔎 市公式ページで詳しく見る";
+  if (id.startsWith("shop-")) {
+    const idx = parseInt(id.replace("shop-", ""), 10);
+    const s = SHOPS[idx];
+    if (!s) return;
+    document.getElementById("spotInfoTitle").textContent = shopIcon(s) + " " + shopName(s);
+    document.getElementById("spotInfoDesc").textContent =
+      (s.shop && s.title ? "「" + s.title + "」 " : "") +
+      "所在地: " + (s.address || s.location || "不明") +
+      "（FreeFree掲示板の掲載。掲載期間中だけ表示されます）";
+    const sLink = document.getElementById("spotInfoLink");
+    sLink.href = s.detailUrl; sLink.textContent = "📋 FreeFree掲示板の掲載を見る"; sLink.style.display = "block";
+    if (spotLinks) {
+      (s.links || []).forEach(function (l) {
+        const a = document.createElement("a");
+        a.href = l.url; a.target = "_blank"; a.rel = "noopener";
+        a.textContent = "🔗 " + (l.label || "リンク");
+        spotLinks.appendChild(a);
+      });
+    }
+    document.getElementById("spotInfo").style.display = "block";
+    return;
+  }
   if (id.startsWith("spot-")) {
     const idx = parseInt(id.replace("spot-", ""), 10);
     const spot = SPOTS[idx];
@@ -4074,7 +4211,7 @@ function findAimTarget() {
   for (const ent of viewer.entities.values) {
     const id = String(ent.id || "");
     if (!ent.show || !ent.position) continue; // 地面の高さ測定が終わっていないピンは対象外
-    if (!/^(bunkazai|spot|shelter|kominkan)-/.test(id)) continue;
+    if (!/^(bunkazai|spot|shelter|kominkan|shop)-/.test(id)) continue;
     const world = ent.position.getValue(now);
     if (!world) continue;
     Cesium.Cartesian3.subtract(world, scene.camera.position, toEnt);
@@ -4094,6 +4231,7 @@ function entityDisplayName(id) {
   if (id.startsWith("spot-")) return (SPOTS[idx] || {}).name || "スポット";
   if (id.startsWith("shelter-")) return (SHELTERS[idx] || {}).name || "避難所";
   if (id.startsWith("kominkan-")) return (KOMINKAN[idx] || {}).name || "公民館";
+  if (id.startsWith("shop-")) return SHOPS[idx] ? shopName(SHOPS[idx]) : "お店";
   return "";
 }
 
@@ -4296,7 +4434,7 @@ function recStart() {
   const bar = document.getElementById("topLeftBar");
   if (bar) bar.style.display = "";
   ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
-   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "noTilesBtn", "gridBtn", "speedChip", "miniMap", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
+   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "noTilesBtn", "gridBtn", "speedChip", "miniMap", "modeSwitchBtn", "shotBtn", "howtoBtn", "shopToggleBtn"].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
   });
@@ -5027,12 +5165,12 @@ loadTileset();
 try {
   const modeParams = new URLSearchParams(location.search);
   const modeParam = modeParams.get("mode");
-  if (modeParam === "event" || modeParam === "bousai") {
+  if (MODE_LIST.indexOf(modeParam) >= 0) {
     applyMode(modeParam); // リンク分け用（QR・サイト導線）
   } else if (!modeParams.get("cinema")) { // 撮影・告知モードでは選択画面を出さない
     let savedMode = null;
     try { savedMode = localStorage.getItem(MODE_KEY); } catch (e) {}
-    if (savedMode === "event" || savedMode === "bousai") applyMode(savedMode);
+    if (MODE_LIST.indexOf(savedMode) >= 0) applyMode(savedMode);
     else openModeSelect(); // 初回はモード選択から
   }
 } catch (e) {
