@@ -1416,7 +1416,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02n"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02o"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1684,6 +1684,10 @@ let tonbiMode = "";      // いまの飛び方（climb/cruise/dive/glide）。�
 function applyTonbiMode(mode) {
   const strip = document.getElementById("tonbiSheet");
   const inner = document.getElementById("tonbiInner");
+  // 風で漂う上下の揺れも、羽ばたいていないあいだは止める。動き続けると、
+  // その裏で3D画面ごと合成し直しになって操作が重くなる（2026-09-02 実機で確認）
+  document.getElementById("tonbiLayer").style.animationPlayState =
+    (mode === "climb" || mode === "cruise") ? "running" : "paused";
   if (mode === "climb" || mode === "cruise") {
     const dur = (mode === "climb" ? "0.33s" : "0.54s"); // 上昇中はしっかり、巡航中はゆるく
     strip.style.animationName = "tonbiFlap";
