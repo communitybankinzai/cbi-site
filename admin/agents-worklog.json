@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-02",
+          "title": "SNS予約投稿キューを動画対応（Threads VIDEO／Instagram REELS）にし、失敗理由の記録を追加、プレイ動画を 09/03 12:00 に予約 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/SnsQueue.gs — isVideoUrl_／waitMediaContainer_／postQueueToThreads_・postQueueToInstagram_ を動画対応＋{ok,error}返却に変更、snsErrNote_ で結果メモに API 応答を残す、diagnoseInstagram() 追加。clasp push -f 済み（push 前に clasp pull で実体6ファイルがローカルと一致することを確認）",
+            "site/admin/index.html・admin.js — 予約投稿の欄を「画像／動画URL」に、一覧に🎬印（コミット 62faa1c）",
+            "site/assets/video/metaverse_play_20260902.mp4 — 720x1280・無音AAC付き・31.8MB（コミット 89ba7b5）",
+            "SNS予約投稿シート — id q1788360263342（2026/09/03 12:00・Threads＋Instagram・動画）",
+            "cidao/2026-09-02_SNS予約投稿の動画対応とInstagram失敗の追跡.md — 新規ノート、MOC_CiDAO に登録"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "ユーザー指摘「動画だとInstagramとThreadsに自動投稿できないのか。何のために作った仕組みか」。実物を確認したところ、キューは文章＋画像のみ対応で、Instagram は 08/08・08/25・09/01 の3回とも失敗していたが理由が記録されていなかった。3択（A動画対応＋原因特定／BThreadsのみ／C手動）で A を選択。予約の投入はユーザー承認のうえ 09/03 12:00 で登録。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 192,302 / cost: $61.31"
+        },
+        {
+          "date": "2026-09-02",
           "title": "FreeFree お店ピンの migration を DATABASE_URL 直結で本番へ適用 0.1時間",
           "category": "保守",
           "outputs": [
@@ -4478,6 +4493,13 @@
       ],
       "plans": [
         {
+          "due": "2026-09-03",
+          "title": "📣 09/03 12:00 の予約投稿（プレイ動画・Threads＋Instagram）の結果メモを確認し、Instagram が失敗なら理由から対処する",
+          "category": "広報",
+          "priority": "高",
+          "note": "管理画面「📣 自動投稿」タブの予約投稿一覧、id q1788360263342。結果メモに API 応答の先頭120字が残る（2026-09-02 の改修）。失敗理由が権限（instagram_content_publish）やアカウント種別なら、credentials.md 1.0 節の手順でトークンを取り直す。GAS エディタの diagnoseInstagram() でも投稿せずに確かめられる"
+        },
+        {
           "due": "2026-09-30",
           "title": "📕 卒業論文 本文を20ページ以内に収める（現在23p・3p超過）",
           "category": "レポート",
@@ -4525,15 +4547,6 @@
           "category": "広報",
           "priority": "低",
           "note": "v2（2026-09-02・らせん上昇→滑空・80秒）で「空ばかり」は解消。16:9 は `node scripts/promo/record_play.mjs --landscape`、別ペアは `--pair i,j`、短くするなら `--speed 2.8` や index.html の CLIMB_GAIN_M（200m）を下げる。1回＝root request 1回・実時間約30分"
-        },
-        {
-          "due": "未定",
-          "title": "📣 プレイ動画と投稿原稿でSNSへ投稿する（Threads・X・Instagram・Facebook）",
-          "category": "広報",
-          "priority": "中",
-          "status": "待ち",
-          "blockedBy": "ユーザー（中司さん）が動画 v3 と原稿を確認し、投稿すること（投稿はユーザー実施）",
-          "note": "2026-09-02 に原稿4媒体分を作成済み：agents/a4-voice-out/knowledge/sns-drafts/2026-09-02_鳥になって印西の空を飛ぶ_CiDAO提案と動画.md。添付は cbi_metaverse_play_9x16_20260902_v3.mp4（容量制限なら _v3_sns.mp4）。投稿前に提案ページの投票残り日数を確認する。公式アカウントへの投稿はユーザー実施"
         },
         {
           "due": "未定",
