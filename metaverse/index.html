@@ -4501,13 +4501,13 @@ async function startTeaser() {
 // カメラを直接飛ばす cinema=1/2 と違い、通常の移動処理（Wキー相当の keys）と視点回転を自動操縦し、
 // 文化財2か所を実プレイと同じ動きで通過する。80m以内で精霊が出現→ゲットまで本物の処理を通す。
 //   ?pair=0,39   通過する文化財の index（既定：宝珠院観音堂 → いなざき獅子舞・約900m）
-//   ?speed=2     移動の速さ（⚡ボタンの倍率と同じ。×2 は実プレイでよく使う段）
+//   ?speed=2.4   移動の速さ（⚡ボタンの倍率と同じ意味。約72m/s）
 // 録画は scripts/promo/record_play.mjs（仮想時間で1フレームずつ撮る）。window.cinemaDone で終了を知らせる
 async function startPlayDemo() {
   const q = new URLSearchParams(location.search);
   const targets = (q.get("pair") || "0,39").split(",").map(Number)
     .filter((n) => Number.isInteger(n) && n >= 0);
-  const cruiseMult = Math.max(0.5, Math.min(4, parseFloat(q.get("speed") || "2") || 2));
+  const cruiseMult = Math.max(0.5, Math.min(4, parseFloat(q.get("speed") || "2.4") || 2.4));
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   applyMode("event");                       // 実プレイと同じイベント用途（文化財ピンが出る）
@@ -4516,6 +4516,7 @@ async function startPlayDemo() {
     if (el) el.style.display = "none";
   });
   document.getElementById("howtoModal").classList.remove("show");
+  document.getElementById("speedChip").style.display = "none"; // 滑空中に倍率を変えるため表示が実態とずれる
   setTonbiVisible(true);                    // 「鳥になって飛ぶ」の主役
   speedMultiplier = cruiseMult;
 
@@ -4582,25 +4583,49 @@ async function startPlayDemo() {
     dN = (tb[0].lat - tb[1].lat) * mLat; dE = (tb[0].lon - tb[1].lon) * mLon;
     const L = Math.hypot(dN, dE) || 1; dN /= L; dE /= L;
   }
-  const startLat = tb[0].lat + dN * 850 / mLat;
-  const startLon = tb[0].lon + dE * 850 / mLon;
-  const START_H = 135;                      // 楕円体高。地表（約60〜70m）から 65m ほど上
+  const startLat = tb[0].lat + dN * 700 / mLat;
+  const startLon = tb[0].lon + dE * 700 / mLon;
+  const START_H = 120;                      // 楕円体高。地表（約60〜70m）から 50m ほど上。ここから上昇する
   viewer.camera.cancelFlight();             // 起動時の flyToSpot（3秒）が残っていると位置が上書きされる
   viewer.camera.setView({
     destination: Cesium.Cartesian3.fromDegrees(startLon, startLat, START_H),
     orientation: { heading: Math.atan2(-dE, -dN), pitch: Cesium.Math.toRadians(-4), roll: 0 },
   });
 
-  // ---- 自動操縦：毎フレーム、目標へ向きを寄せ、高さはピッチで整える ----
-  const st = { phase: "intro", idx: 0, forward: false, lastNow: undefined, groundTick: 0, ground: null, nearShown: false };
+  // ---- 自動操縦：トンビの飛び方をまねる ----
+  //   climb : 旋回しながら上昇（上昇気流に乗るらせん。ピッチ＋22°・毎秒30°回る）
+  //   glide : 目的地に向かって滑空（ピッチは「残り距離で目標高度まで降りる」角度。翼は広げたまま）
+  //   catch : 精霊が出たので止まってゲット
+  // 前進は climb ではキー入力（羽ばたく）、glide では 0.5 のアナログ入力（トンビが滑空の姿になる）にし、
+  // 速さの倍率を倍にして実際の速度は変えない
+  const st = { phase: "intro", idx: 0, lastNow: undefined, groundTick: 0, ground: null, nearShown: false,
+               turnDir: 1, topH: 0, resume: "climb" };
+  const CLIMB_GAIN_M = 200;                 // 1回の上昇で稼ぐ高さ
+  const ARRIVE_H = 92;                      // 目的地の真上での高さ（楕円体高。獲得判定の上限150mより下）
   function relTo(b) {
     const c = Cesium.Cartographic.fromCartesian(viewer.camera.position);
     const n = (b.lat - Cesium.Math.toDegrees(c.latitude)) * mLat;
     const e = (b.lon - Cesium.Math.toDegrees(c.longitude)) * mLon;
     return { dist: Math.hypot(n, e), bearing: Math.atan2(e, n), height: c.height, carto: c };
   }
+  function setInput(forwardAnalog) {
+    // forwardAnalog: 1=キー（羽ばたき）、0.5=アナログ（滑空）、0=停止
+    keys["KeyW"] = forwardAnalog >= 1;
+    joyState.dy = forwardAnalog > 0 && forwardAnalog < 1 ? -forwardAnalog : 0;
+    speedMultiplier = forwardAnalog > 0 && forwardAnalog < 1 ? cruiseMult / forwardAnalog : cruiseMult;
+  }
+  function beginClimb(b) {
+    const r = relTo(b);
+    st.topH = r.height + CLIMB_GAIN_M;
+    // 回る向き：目的地の方位までの回転が 200° 以上になる側（らせんが1周近く見えるように）
+    let d = r.bearing - viewer.camera.heading;
+    d = Math.atan2(Math.sin(d), Math.cos(d));
+    st.turnDir = Math.abs(d) < Cesium.Math.toRadians(160) ? -Math.sign(d || 1) : Math.sign(d);
+    st.phase = "climb";
+    say("🦅 トンビのように<br>上昇気流で <b>高く</b>", 3000);
+  }
   viewer.clock.onTick.addEventListener(function () {
-    if (st.phase !== "fly") { keys["KeyW"] = false; return; }
+    if (st.phase === "intro" || st.phase === "catch" || st.phase === "done") { setInput(0); return; }
     const b = tb[st.idx];
     if (!b) return;
     const now = performance.now();
@@ -4608,29 +4633,46 @@ async function startPlayDemo() {
     st.lastNow = now;
     const cam = viewer.camera;
     const r = relTo(b);
-    // 向き：最短回転で目標へ（毎秒最大 40 度。急に振らない）
-    let diff = r.bearing - cam.heading;
-    diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-    const maxTurn = Cesium.Math.toRadians(40) * dt;
-    const heading = cam.heading + Math.max(-maxTurn, Math.min(maxTurn, diff));
-    // 高さ：遠くでは高め、近づくほど低く（獲得判定の上限 150m より下で通過する）。
-    // 木立や台地に近づきすぎないよう、地表から 38m 以上は保つ
     if ((st.groundTick++ % 10) === 0 && viewer.scene.sampleHeightSupported) {
       try {
         const g = viewer.scene.sampleHeight(r.carto.clone());
         st.ground = (g === undefined || g === null) ? null : g;
       } catch (e) { /* 未読込なら前回値のまま */ }
     }
-    let targetH = 100 + Math.min(r.dist, 800) / 800 * 35;
-    if (st.ground !== null) targetH = Math.max(targetH, st.ground + 38);
-    const wantPitch = Cesium.Math.toRadians(Math.max(-18, Math.min(8, -3 + (targetH - r.height) * 0.35)));
-    const maxPitchStep = Cesium.Math.toRadians(20) * dt;
+    let diff = r.bearing - cam.heading;
+    diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+    let heading = cam.heading, wantPitch = 0, forwardIn = 1;
+
+    if (st.phase === "climb") {
+      // 一定の向きに回り続ける。高さが足りているうえで目的地の方位に来たら滑空へ
+      heading = cam.heading + st.turnDir * Cesium.Math.toRadians(30) * dt;
+      wantPitch = r.height < st.topH ? Cesium.Math.toRadians(22) : Cesium.Math.toRadians(2);
+      const aligned = Math.abs(diff) < Cesium.Math.toRadians(10);
+      if (r.height >= st.topH && aligned) {
+        st.phase = "glide";
+        say("目的地へ <b>滑空</b>", 2600);
+      }
+    } else if (st.phase === "glide") {
+      const maxTurn = Cesium.Math.toRadians(40) * dt;
+      heading = cam.heading + Math.max(-maxTurn, Math.min(maxTurn, diff));
+      // 残りの距離で ARRIVE_H まで降りる角度。急すぎ・浅すぎは抑える
+      let deg = -Cesium.Math.toDegrees(Math.atan2(r.height - ARRIVE_H, Math.max(r.dist, 60)));
+      deg = Math.max(-26, Math.min(-4, deg));
+      // 木立や台地に近づきすぎない（地表＋38m）
+      if (st.ground !== null && r.height < st.ground + 38) deg = Math.max(deg, 4);
+      wantPitch = Cesium.Math.toRadians(deg);
+      forwardIn = 0.5;
+      if (r.dist < 300 && !st.nearShown) { st.nearShown = true; say("文化財に近づくと…", 2400); }
+    }
+    const maxPitchStep = Cesium.Math.toRadians(25) * dt;
     const pitch = cam.pitch + Math.max(-maxPitchStep, Math.min(maxPitchStep, wantPitch - cam.pitch));
     cam.setView({ orientation: { heading: heading, pitch: pitch, roll: 0 } });
-    keys["KeyW"] = st.forward;
+    setInput(forwardIn);
     // 精霊が出たら止まる（ゲットは人が押すのと同じ confirmCatch を少し遅れて呼ぶ）
-    if (encounterIdx !== null) { st.phase = "catch"; keys["KeyW"] = false; onEncounter(encounterIdx === targets[st.idx]); }
-    else if (r.dist < 300 && !st.nearShown) { st.nearShown = true; say("文化財に近づくと…", 2400); }
+    if (encounterIdx !== null) {
+      st.resume = st.phase; st.phase = "catch"; setInput(0);
+      onEncounter(encounterIdx === targets[st.idx]);
+    }
   });
 
   // isTarget=false は、目的地の途中や同じ境内にいる別の精霊（宝珠院の観音堂と延命地蔵など）。
@@ -4642,27 +4684,28 @@ async function startPlayDemo() {
     say("タップで <b>ゲット！</b>", 1600);
     await sleep(1100);
     confirmCatch();
-    await sleep(isTarget ? 2400 : 1600);
-    if (!isTarget) { st.phase = "fly"; return; }
+    await sleep(isTarget ? 2000 : 1400);
+    if (!isTarget) { st.phase = st.resume; return; }
     st.idx++;
     st.nearShown = false;
     if (tb[st.idx]) {
-      say("つぎの文化財へ", 2200);
-      st.phase = "fly";
+      beginClimb(tb[st.idx]);
     } else {
-      say("こうして <b>50か所</b> を<br>めぐっていく<small>ピースを集めると1枚の絵が完成</small>", 3800);
-      await sleep(4200);
+      st.phase = "done";
+      say("印西市の文化財の<br><b>名前と場所</b>を覚えよう！", 3400);
+      await sleep(3600);
+      say("余裕があれば<br><b>詳しく学習</b>できる機能も<small>解説・年表・クイズ・学習レポート</small>", 3400);
+      await sleep(3800);
       fadeTo(end, 1, 1200);
-      await sleep(5000);
+      await sleep(4200);
       window.cinemaDone = true; // 録画スクリプトの終了検知用
     }
   }
 
   // ---- 開始 ----
-  say("🦅 鳥になって<br>印西の空を <b>飛ぶ</b>", 3400);
-  await sleep(1400);
-  st.forward = true;
-  st.phase = "fly";
+  say("🦅 鳥になって<br>印西の空を <b>飛ぶ</b>", 3000);
+  await sleep(2600);
+  beginClimb(tb[0]);
   // 安全弁：何かの理由で精霊が出ないまま 80 秒たったら終える（録画を止められるように）
   setTimeout(function () {
     if (window.cinemaDone) return;
