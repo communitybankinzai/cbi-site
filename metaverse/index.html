@@ -958,6 +958,7 @@
 <div id="miniMap">
   <div id="miniMapBar">
     <span id="miniMapCount">🗺 文化財マップ</span>
+    <button id="miniMapHideGot" title="すでに集めた文化財のピンを隠し、まだの場所だけを表示します">✅ 集めたを隠す</button>
     <button id="miniMapFollow" title="いま飛んでいる場所を、いつも地図の中央に置きます">🎯 自分を中心に</button>
     <button id="miniMapPop" title="別のタブで大きく開きます">⤢</button>
     <button id="miniMapClose" title="地図を閉じます">✕</button>
@@ -1602,7 +1603,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03m"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03n"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2380,6 +2381,7 @@ function setMiniMap(open) {
     return miniMapApi.ready;
   }).then(function () {
     miniMapApi.invalidate();
+    miniMapApi.setFilter(!miniMapHideGot, true); // 「集めたを隠す」の状態を反映
     miniMapApi.setFollow(true); // 最初は自分を中心に。地図を動かせば自動で解除される
   }).catch(function (e) {
     document.getElementById("miniMapCount").textContent = "🗺 地図を読み込めませんでした";
@@ -2388,6 +2390,14 @@ function setMiniMap(open) {
 document.getElementById("mapBtn").addEventListener("click", () => setMiniMap(!miniMapOpen));
 document.getElementById("miniMapFollow").addEventListener("click", function () {
   if (miniMapApi) miniMapApi.setFollow(!miniMapApi.getFollow());
+});
+// まだ集めていない場所だけを見たいとき用。押すたびに切り替える
+let miniMapHideGot = false;
+document.getElementById("miniMapHideGot").addEventListener("click", function () {
+  miniMapHideGot = !miniMapHideGot;
+  this.classList.toggle("on", miniMapHideGot);
+  this.textContent = miniMapHideGot ? "✅ 集めたを隠し中" : "✅ 集めたを隠す";
+  if (miniMapApi) miniMapApi.setFilter(!miniMapHideGot, true);
 });
 document.getElementById("miniMapClose").addEventListener("click", () => setMiniMap(false));
 document.getElementById("miniMapPop").addEventListener("click", () => {
