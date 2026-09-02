@@ -536,16 +536,16 @@
      実機でフレームが落ちて操作が届かなくなった（2026-09-02） */
   #tonbiInner {
     position: relative;
-    animation: tonbiLift 0.54s ease-in-out infinite;
+    animation: tonbiLift 1.0s ease-in-out infinite;
     animation-play-state: paused;
   }
-  @keyframes tonbiLift { 0%, 100% { translate: 0 5px; } 50% { translate: 0 -5px; } }
+  @keyframes tonbiLift { 0%, 100% { translate: 0 9px; } 50% { translate: 0 -9px; } }
   /* 6コマを横につないだ1枚の絵を、窓の幅ぶんずつ送る。要素はこの img ひとつだけで、
      動かすのは transform だけなので、描き直しはブラウザ（GPU）側で完結する */
   #tonbiViewport { width: 100%; overflow: hidden; contain: paint; }
   #tonbiSheet {
     width: 600%; height: auto; display: block;
-    animation: tonbiFlap 0.54s steps(6) infinite;
+    animation: tonbiFlap 1.0s steps(6) infinite;
     animation-play-state: paused;
     will-change: transform; backface-visibility: hidden;
   }
@@ -1499,7 +1499,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02x"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02y"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1772,7 +1772,9 @@ function applyTonbiMode(mode) {
   document.getElementById("tonbiLayer").style.animationPlayState =
     (mode === "climb" || mode === "cruise") ? "running" : "paused";
   if (mode === "climb" || mode === "cruise") {
-    const dur = (mode === "climb" ? "0.33s" : "0.54s"); // 上昇中はしっかり、巡航中はゆるく
+    // 絵が4枚しかないため、速く回すとせわしなく見える。トビは滑空が多くゆったり羽ばたく鳥なので、
+    // 上昇でも1秒に1.7回ほどに抑え、足りない滑らかさは体の上下動で補う
+    const dur = (mode === "climb" ? "0.6s" : "1.0s"); // 上昇中はしっかり、巡航中はゆるく
     strip.style.animationName = "tonbiFlap";
     strip.style.animationDuration = dur;
     strip.style.animationPlayState = "running";
