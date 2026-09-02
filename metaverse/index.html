@@ -1595,11 +1595,11 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 // 止まってしまう不具合が実機で出たため（2026-09-02）
 const PAD_FAST_DELTA = 0.22;       // この量以上を…
 const PAD_FAST_WINDOW_MS = 400;    // …この時間以内に動いたら「人が動かした」
-const PAD_HOLD_MAX_MS = 20000;     // 握ったままとみなす上限（本当に張り付いた場合の打ち切り）
-const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
+const PAD_HOLD_MAX_MS = 120000;    // 握ったままとみなす上限。20秒だと長い前進で止まってしまった（2026-09-02）。張り付きは🎯中心合わせで直す前提
+const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だけ（生の値で3割程度まで）。それ以上は意図した操作（ゆっくり4割倒す子どもの操作を殺した経緯あり・2026-09-02）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03k"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03l"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1759,14 +1759,10 @@ function absorbPadStuck(pad, ch, dt) {
     padStuckSec[ch] = 0;
     return false;
   }
-  if (Math.abs(padValue[ch]) > PAD_STUCK_LIMIT) { padStuckSec[ch] = 0; return false; }
+  if (Math.abs(padValue[ch]) >= PAD_STUCK_LIMIT) { padStuckSec[ch] = 0; return false; }
   padStuckSec[ch] += dt;
-  // 静止値がじわじわ動き続ける個体は、時間が来るのを待って一度に直すだけでは追いつかない。
-  // 狭い範囲から出ないまま時間が過ぎたら、そのつど中心を現在値へ寄せて流れを抑える。
-  // ただし寄せ始めるまで少し待つ（人が倒して保持している操作を弱めてしまわないため）
-  if (padStuckSec[ch] > PAD_STUCK_CREEP_AFTER) {
-    padCenter[ch] += (raw - padCenter[ch]) * Math.min(1, dt / PAD_STUCK_CREEP_SEC);
-  }
+  // 以前はここで中心をじわじわ寄せていたが、ゆっくり倒して保持する操作を弱めてしまうため外した。
+  // じわじわ動くドリフトは遊びの内側の追従（trackPadCenter）で追いつく（テスト[13]）
   if (padStuckSec[ch] < PAD_STUCK_SEC) return false;
   padCenter[ch] = (padStuckMin[ch] + padStuckMax[ch]) / 2; // 揺れの真ん中を中心にする
   padValue[ch] = 0;
