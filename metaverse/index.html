@@ -537,11 +537,13 @@
   }
   @keyframes tonbiLift { 0%, 100% { translate: 0 5px; } 50% { translate: 0 -5px; } }
   /* 6コマを横一列に並べ、steps で1コマずつ送る。JavaScript は毎フレーム何もしない */
-  #tonbiViewport { width: 100%; overflow: hidden; }
+  /* contain と will-change で、羽ばたきの描き直しをこの中だけに閉じ込めてGPUに任せる */
+  #tonbiViewport { width: 100%; overflow: hidden; contain: paint; }
   #tonbiStrip {
     display: flex; width: 600%;
     animation: tonbiFlap 0.54s steps(6) infinite;
     animation-play-state: paused;
+    will-change: transform; backface-visibility: hidden;
   }
   #tonbiStrip img { width: 16.666667%; height: auto; display: block; }
   @keyframes tonbiFlap { from { transform: translateX(0); } to { transform: translateX(-100%); } }
@@ -1411,7 +1413,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02k"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02l"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
