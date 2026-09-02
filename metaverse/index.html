@@ -571,6 +571,11 @@
   }
   #miniMapBar button:hover { background: #26506f; }
   #miniMapBox { width: 100%; height: calc(100% - 30px); }
+  /* 地図を開いているあいだ、右下の診断パネルは地図の左隣へ寄せる（重なると地図が見えない） */
+  body.miniMapOpen #padDebug { right: calc(min(34vw, 420px) + 16px); }
+  @media (pointer: coarse), (max-width: 640px) {
+    body.miniMapOpen #padDebug { right: 8px; bottom: calc(46vh + 84px); }
+  }
   #miniMapBar button.on { background: #26506f; border-color: #7fc8ff; }
   @media (pointer: coarse), (max-width: 640px) {
     #miniMap { width: 92vw; max-width: none; right: 4vw; bottom: 76px; height: 46vh; }
@@ -1533,7 +1538,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03d"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03e"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2230,6 +2235,7 @@ let miniMapLoading = false;
 function setMiniMap(open) {
   miniMapOpen = open;
   document.getElementById("miniMap").style.display = open ? "block" : "none";
+  document.body.classList.toggle("miniMapOpen", open);
   const btn = document.getElementById("mapBtn");
   btn.classList.toggle("on", open);
   btn.textContent = open ? "🗺 マップ表示中" : "🗺 文化財マップ";
