@@ -5,26 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>印西市 文化財マップ｜CBIメタバース印西</title>
 <meta name="description" content="印西市の指定・登録文化財50か所の地図。メタバース印西と連動し、集めた文化財といまの居場所が地図で分かります。">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: #0b1420; color: #e8f0f8;
     font-family: "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; }
   #map { position: absolute; inset: 0; }
-  .leaflet-container { background: #0b1420; }
 
-  /* 上部の帯。集めた数と、メタバースとつながっているかを出す */
   #topBar {
     position: absolute; top: 8px; left: 8px; right: 8px; z-index: 1000;
-    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
-    pointer-events: none;
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap; pointer-events: none;
   }
   #topBar > * { pointer-events: auto; }
   .chip {
     background: rgba(10, 20, 32, 0.88); border: 1px solid #2a4258; border-radius: 18px;
     padding: 6px 14px; font-size: 13px; font-weight: bold; white-space: nowrap;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4); color: #e8f0f8;
   }
   .chip.title { color: #7fc8ff; }
   .chip.count { color: #ffd166; }
@@ -32,8 +28,9 @@
   .chip.link:hover { border-color: #9fe8b0; }
   .chip.live { color: #9fe8b0; }
   .chip.live.off { color: #8fa4b8; }
+  button.chip { cursor: pointer; }
+  button.chip.on { background: #26506f; border-color: #7fc8ff; color: #cfe8ff; }
 
-  /* 絞り込み */
   #filters {
     position: absolute; left: 8px; bottom: 8px; z-index: 1000;
     background: rgba(10, 20, 32, 0.9); border: 1px solid #2a4258; border-radius: 10px;
@@ -42,42 +39,6 @@
   #filters label { display: block; cursor: pointer; }
   #filters input { vertical-align: -2px; margin-right: 4px; }
   #filters .sub { color: #8fa4b8; font-size: 11px; }
-
-  /* 文化財ピン */
-  .bzPin {
-    width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
-    font-size: 13px; border: 2px solid rgba(255, 255, 255, 0.75);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-  }
-  .bzPin.got { border-color: #ffd166; box-shadow: 0 0 10px rgba(255, 209, 102, 0.8); }
-  .meLabel {
-    background: rgba(10, 20, 32, 0.9); border: 1px solid #7fc8ff; color: #7fc8ff;
-    border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: bold; white-space: nowrap;
-  }
-
-  /* 3Dワールドの中に小さく開くとき（?mini=1）。限られた面積に収める */
-  body.mini #topBar { top: 4px; left: 4px; right: 4px; gap: 4px; }
-  body.mini .chip { padding: 3px 9px; font-size: 11px; border-radius: 14px; }
-  body.mini .chip.title { display: none; }
-  body.mini #filters { padding: 5px 8px; font-size: 11px; line-height: 1.7; max-width: 62%; }
-  body.mini #filters .sub { display: none; }
-  body.mini .leaflet-popup-content { font-size: 12px; max-width: 210px; }
-
-  .leaflet-popup-content-wrapper { background: #10202f; color: #e8f0f8; border-radius: 10px; }
-  .leaflet-popup-tip { background: #10202f; }
-  .leaflet-popup-content { margin: 12px 14px; font-size: 13px; line-height: 1.7; max-width: 260px; }
-  .leaflet-popup-content h3 { margin: 0 0 4px; font-size: 15px; color: #ffd166; }
-  .leaflet-popup-content .meta { color: #8fa4b8; font-size: 11px; margin-bottom: 6px; }
-  .leaflet-popup-content .src { font-size: 11px; color: #8fa4b8; }
-  .leaflet-popup-content a { color: #7fc8ff; }
-  .goBtn {
-    display: block; width: 100%; margin-top: 8px; padding: 7px 10px; cursor: pointer;
-    background: #1d3a56; color: #cfe8ff; border: 1px solid #3a6a95; border-radius: 8px;
-    font-size: 12px; font-weight: bold;
-  }
-  .goBtn:hover { background: #26506f; }
-  .goBtn:disabled { opacity: 0.5; cursor: default; }
-  .gotMark { color: #ffd166; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -87,7 +48,8 @@
   <span class="chip title">🗺 印西市 文化財マップ</span>
   <span class="chip count" id="countChip">集めた文化財 —</span>
   <span class="chip live off" id="liveChip">3Dワールド未接続</span>
-  <a class="chip link" id="openWorld" href="index.html" target="_blank" rel="noopener">🌏 3Dワールドを開く</a>
+  <button class="chip" id="followBtn" title="3Dワールドで飛んでいる場所を、いつも地図の中央に置きます">🎯 自分を中心に</button>
+  <a class="chip link" href="index.html" target="_blank" rel="noopener">🌏 3Dワールドを開く</a>
   <a class="chip link" href="reports.html" target="_blank" rel="noopener">📄 学習レポート</a>
 </div>
 
@@ -97,182 +59,78 @@
   <div class="sub">出典：印西市ホームページ<br>座標は住所の代表点のため実際の位置と差がある場合があります</div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="map-core.js"></script>
 <script>
-// ============================================================
-// 印西市 文化財マップ（2次元）
-// ------------------------------------------------------------
-// メタバース（index.html）と同じ端末・同じサイトなので、ブラウザの保存領域を
-// 共有できる。これを使って「集めた文化財」と「いま3Dワールドで飛んでいる場所」を
-// この地図に映し、逆にこの地図から「そこへ飛んで」と伝える。
-//   - 集めた記録 : cocola-metaverse-puzzle-v1（メタバースが書く）
-//   - 現在地     : cbi-meta-camera-v1（メタバースが1秒ごとに書く）
-//   - 移動の指示 : cbi-meta-goto-v1（この地図が書き、メタバースが受け取る）
-// 別のタブが書いた変更は storage イベントで届く（同じタブの書き込みでは起きない）
-// ============================================================
-const PUZZLE_KEY = "cocola-metaverse-puzzle-v1";
-const CAMERA_KEY = "cbi-meta-camera-v1";
-const GOTO_KEY = "cbi-meta-goto-v1";
-const LIVE_TIMEOUT_MS = 8000; // これ以上更新が無ければ「未接続」とみなす
+// 全画面版の文化財マップ。地図の中身は map-core.js（3Dワールドの画面内版と共用）。
+// 3Dワールドは別のタブなので、現在地と移動の指示はブラウザの保存領域を経由してやりとりする
+const CAMERA_KEY = "cbi-meta-camera-v1"; // 3Dワールドが1秒ごとに書く現在地
+const GOTO_KEY = "cbi-meta-goto-v1";     // この地図が書く行き先
+const LIVE_TIMEOUT_MS = 8000;            // これ以上新しくなければ「未接続」とみなす
 
-const DESIG_COLOR = { "国指定": "#e74c3c", "県指定": "#f39c12", "市指定": "#3498db", "国登録": "#9b59b6" };
+let mapApi = null;
 
-// 3Dワールドの画面内に小さく開かれているとき（?mini=1）は表示を詰め、
-// 「3Dワールドを開く」の代わりに「大きく開く」を出す
-const MINI = new URLSearchParams(location.search).get("mini") === "1";
-if (MINI) {
-  document.body.classList.add("mini");
-  const a = document.getElementById("openWorld");
-  a.textContent = "⤢ 大きく開く";
-  a.href = "map.html";
-}
-
-const map = L.map("map", { zoomControl: true }).setView([35.832, 140.145], 12);
-L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
-  attribution: "地理院タイル", maxZoom: 18,
-}).addTo(map);
-
-let SPOTS = [];
-const markers = [];
-let meMarker = null, meLabel = null, lastCameraAt = 0;
-
-function readPieces() {
-  try {
-    const raw = localStorage.getItem(PUZZLE_KEY);
-    const d = raw ? JSON.parse(raw) : {};
-    return (d && typeof d === "object" && !Array.isArray(d)) ? d : {};
-  } catch (e) { return {}; }
-}
-
-function esc(s) {
-  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+CBIMap.load().then(function () {
+  mapApi = CBIMap.create(document.getElementById("map"), {
+    onGo: function (i, b) {
+      try {
+        localStorage.setItem(GOTO_KEY, JSON.stringify({ idx: i, name: b.name, t: Date.now() }));
+      } catch (e) { /* 保存できない設定でも地図は使える */ }
+      if (!isLive()) {
+        alert("3Dワールドのタブが見つかりません。\n上の「🌏 3Dワールドを開く」で開いてから、もう一度お試しください。");
+      }
+    },
+    onCount: function (got, total) {
+      document.getElementById("countChip").textContent = "集めた文化財 " + got + " / " + total;
+    },
+    onFollowChange: function (on) {
+      document.getElementById("followBtn").classList.toggle("on", on);
+    },
   });
+  return mapApi.ready;
+}).then(function () {
+  refreshCamera();
+}).catch(function (e) {
+  document.getElementById("countChip").textContent = "地図を読み込めませんでした";
+});
+
+function readCamera() {
+  try { return JSON.parse(localStorage.getItem(CAMERA_KEY) || "null"); } catch (e) { return null; }
+}
+function isLive() {
+  const c = readCamera();
+  return !!(c && typeof c.lat === "number" && Date.now() - (c.t || 0) < LIVE_TIMEOUT_MS);
 }
 
-function pinIcon(b, got) {
-  const color = DESIG_COLOR[b.designation] || "#3498db";
-  return L.divIcon({
-    className: "",
-    html: '<div class="bzPin' + (got ? " got" : "") + '" style="background:' + color + '">'
-      + (got ? "✅" : "🧩") + "</div>",
-    iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -14],
-  });
-}
-
-function popupHtml(b, i, got) {
-  const desc = b.description ? "<p>" + esc(b.description) + "</p>" : "";
-  const link = b.detailUrl
-    ? '<p class="src">出典：<a href="' + esc(b.detailUrl) + '" target="_blank" rel="noopener">印西市ホームページ</a></p>' : "";
-  return "<h3>" + esc(b.name) + "</h3>"
-    + '<div class="meta">' + esc(b.designation || "") + "／" + esc(b.type || "")
-    + (b.era ? "／" + esc(b.era) : "") + "<br>" + esc(b.address || "") + "</div>"
-    + (got ? '<p class="gotMark">✅ この文化財の精霊は取得ずみです</p>' : "<p>🧩 まだ取得していません</p>")
-    + desc + link
-    + '<button class="goBtn" onclick="sendGoto(' + i + ')">▶ 3Dワールドでここへ飛ぶ</button>';
-}
-
-// 3Dワールドのタブへ「ここへ飛んで」と伝える。開いていなければ案内だけ出す
-function sendGoto(i) {
-  const b = SPOTS[i];
-  if (!b) return;
-  try {
-    localStorage.setItem(GOTO_KEY, JSON.stringify({ idx: i, name: b.name, t: Date.now() }));
-  } catch (e) { /* 保存できない設定でも地図は使える */ }
-  const live = Date.now() - lastCameraAt < LIVE_TIMEOUT_MS;
-  if (!live) {
-    alert("3Dワールドのタブが見つかりません。\n上の「🌏 3Dワールドを開く」で開いてから、もう一度お試しください。");
-  }
-}
-
-function applyFilter() {
-  const showGot = document.getElementById("fGot").checked;
-  const showNot = document.getElementById("fNot").checked;
-  const pieces = readPieces();
-  markers.forEach(function (m, i) {
-    const got = pieces[i] !== undefined;
-    const want = got ? showGot : showNot;
-    if (want && !map.hasLayer(m)) m.addTo(map);
-    if (!want && map.hasLayer(m)) map.removeLayer(m);
-  });
-}
-
-// 集めた記録を読み直して、ピンの見た目と件数を更新する
-function refreshPieces() {
-  const pieces = readPieces();
-  let got = 0;
-  markers.forEach(function (m, i) {
-    const has = pieces[i] !== undefined;
-    if (has) got++;
-    m.setIcon(pinIcon(SPOTS[i], has));
-    m.setPopupContent(popupHtml(SPOTS[i], i, has));
-  });
-  document.getElementById("countChip").textContent =
-    "集めた文化財 " + got + " / " + SPOTS.length;
-  applyFilter();
-}
-
-// 3Dワールドの現在地を地図に映す
 function refreshCamera() {
-  let cam = null;
-  try { cam = JSON.parse(localStorage.getItem(CAMERA_KEY) || "null"); } catch (e) { cam = null; }
+  if (!mapApi) return;
+  const cam = readCamera();
   const chip = document.getElementById("liveChip");
-  if (!cam || typeof cam.lat !== "number") { chip.textContent = "3Dワールド未接続"; chip.classList.add("off"); return; }
-  lastCameraAt = cam.t || 0;
-  const live = Date.now() - lastCameraAt < LIVE_TIMEOUT_MS;
-  chip.textContent = live
-    ? "🐦 いまここを飛んでいます（高度 " + Math.round(cam.height) + "m）"
-    : "3Dワールド未接続";
+  const live = !!(cam && typeof cam.lat === "number" && Date.now() - (cam.t || 0) < LIVE_TIMEOUT_MS);
+  chip.textContent = live ? "🐦 3Dワールドと連動中" : "3Dワールド未接続";
   chip.classList.toggle("off", !live);
-  if (!live) {
-    if (meMarker) { map.removeLayer(meMarker); meMarker = null; }
-    if (meLabel) { map.removeLayer(meLabel); meLabel = null; }
-    return;
-  }
-  const pos = [cam.lat, cam.lon];
-  if (!meMarker) {
-    meMarker = L.circleMarker(pos, {
-      radius: 9, color: "#7fc8ff", weight: 3, fillColor: "#7fc8ff", fillOpacity: 0.45,
-    }).addTo(map);
-    meLabel = L.marker(pos, {
-      icon: L.divIcon({ className: "", html: '<div class="meLabel">🐦 いまここ</div>',
-        iconSize: [80, 20], iconAnchor: [-12, 26] }),
-      interactive: false,
-    }).addTo(map);
-  } else {
-    meMarker.setLatLng(pos);
-    meLabel.setLatLng(pos);
-  }
+  if (live) mapApi.setMe(cam.lat, cam.lon, cam.height);
+  else mapApi.setMe(null);
 }
 
-fetch("bunkazai.json")
-  .then(function (r) { return r.json(); })
-  .then(function (data) {
-    SPOTS = data.spots || [];
-    SPOTS.forEach(function (b, i) {
-      const m = L.marker([b.lat, b.lon], { icon: pinIcon(b, false) }).bindPopup(popupHtml(b, i, false));
-      markers.push(m);
-      m.addTo(map);
-    });
-    if (markers.length) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.08));
-    refreshPieces();
-    refreshCamera();
-  })
-  .catch(function (e) {
-    document.getElementById("countChip").textContent = "文化財データを読み込めませんでした";
-  });
-
+document.getElementById("followBtn").addEventListener("click", function () {
+  if (!mapApi) return;
+  mapApi.setFollow(!mapApi.getFollow());
+});
 document.getElementById("fGot").addEventListener("change", applyFilter);
 document.getElementById("fNot").addEventListener("change", applyFilter);
+function applyFilter() {
+  if (!mapApi) return;
+  mapApi.setFilter(document.getElementById("fGot").checked, document.getElementById("fNot").checked);
+}
 
 // 3Dワールドのタブでの変化を受け取る（別タブの書き込みだけが届く）
 window.addEventListener("storage", function (e) {
-  if (e.key === PUZZLE_KEY) refreshPieces();
+  if (e.key === CBIMap.PUZZLE_KEY && mapApi) mapApi.refreshPieces();
   if (e.key === CAMERA_KEY) refreshCamera();
 });
-// 取りこぼし（タブが裏にいる間の更新など）に備えて定期的にも見に行く
-setInterval(function () { refreshCamera(); }, 2000);
-setInterval(function () { refreshPieces(); }, 10000);
+// 取りこぼしに備えて定期的にも見に行く
+setInterval(refreshCamera, 2000);
+setInterval(function () { if (mapApi) mapApi.refreshPieces(); }, 10000);
 </script>
 </body>
 </html>
