@@ -398,7 +398,7 @@ const UNREAD_POLL_MS = 30000;
           <div style="display: flex; justify-content: space-between; gap: 8px; align-items: baseline;">
             <strong style="font-size: 0.85rem;">${esc(q.scheduledAt)}</strong>
             <span style="font-size: 0.75rem;">${esc(SNSQ_STATUS_LABEL[q.status] || q.status)}
-              ${q.threads ? ' / Threads' : ''}${q.instagram ? ' / Instagram' : ''}</span>
+              ${q.threads ? ' / Threads' : ''}${q.instagram ? ' / Instagram' : ''}${/\.(mp4|mov)(\?|#|$)/i.test(q.imageUrl || '') ? ' / 🎬動画' : ''}</span>
           </div>
           <p style="font-size: 0.8rem; white-space: pre-wrap; margin: 6px 0; color: var(--c-ink-sub);">${esc(q.text)}</p>
           ${q.imageUrl ? `<a href="${esc(q.imageUrl)}" target="_blank" rel="noopener"><img src="${esc(q.imageUrl)}" alt="投稿画像" style="max-width: 160px; max-height: 160px; border-radius: 8px; margin: 4px 0; border: 1px solid var(--c-line);"></a>` : ''}
@@ -478,7 +478,7 @@ const UNREAD_POLL_MS = 30000;
     if (!text) { toast('本文を入力してください', 'err'); return; }
     if (!when) { toast('投稿日時を指定してください', 'err'); return; }
     if (!threads && !instagram) { toast('投稿先を選んでください', 'err'); return; }
-    if (instagram && !imageUrl) { toast('Instagramに投稿する場合は画像URLが必須です', 'err'); return; }
+    if (instagram && !imageUrl) { toast('Instagramに投稿する場合は画像か動画（.mp4）のURLが必須です', 'err'); return; }
     const btn = $('snsq-add');
     btn.disabled = true;
     try {
@@ -494,7 +494,7 @@ const UNREAD_POLL_MS = 30000;
         const s = $('snsq-file-status'); if (s) s.textContent = '';
         loadSnsQueue();
       } else {
-        const msg = { text_required: '本文が空です', invalid_scheduledAt: '日時の形式が不正です', instagram_requires_image: 'Instagramは画像URL必須です' }[r && r.error] || (r && r.error) || 'unknown';
+        const msg = { text_required: '本文が空です', invalid_scheduledAt: '日時の形式が不正です', instagram_requires_image: 'Instagramは画像か動画のURLが必須です' }[r && r.error] || (r && r.error) || 'unknown';
         toast('追加失敗: ' + msg, 'err');
       }
     } catch (err) {

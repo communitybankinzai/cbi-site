@@ -665,7 +665,7 @@
         <h2 class="panel-title">🗓 予約投稿</h2>
         <p class="meta-note">
           日時を指定してThreads / Instagramへ自動投稿します（15分毎にチェック）。
-          Instagramは画像URL必須。Instagram投稿はトークン設定後に有効になります。
+          Instagramは画像か動画のURLが必須。URLが .mp4 なら動画（Threads は動画投稿、Instagram はリール）として投稿します。動画は GitHub Pages など公開URLに置いてから貼ってください（画像の「選んで保存」は10MBまで・画像のみ）。
         </p>
 
         <div class="field">
@@ -673,14 +673,14 @@
           <textarea id="snsq-text" rows="5" placeholder="投稿本文（ハッシュタグ含む）"></textarea>
         </div>
         <div class="field">
-          <span>画像（任意・Instagramに投稿する場合は必須）</span>
+          <span>画像／動画URL（任意・Instagramに投稿する場合は必須）</span>
           <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:6px;">
             <input type="file" id="snsq-file" accept="image/jpeg,image/png,image/webp,image/gif" style="font-size:13px;">
             <span id="snsq-file-status" class="meta-note" style="margin:0;"></span>
           </div>
           <img id="snsq-file-preview" alt="" hidden
                style="max-width:140px; max-height:140px; border-radius:8px; border:1px solid var(--c-line); margin-bottom:6px;">
-          <input type="url" id="snsq-image" placeholder="写真を選ぶと自動で入ります（URLを直接貼ることもできます）">
+          <input type="url" id="snsq-image" placeholder="写真を選ぶと自動で入ります（画像や動画 .mp4 の公開URLを直接貼ることもできます）">
         </div>
         <div class="field">
           <span>投稿日時</span>
