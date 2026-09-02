@@ -795,7 +795,9 @@
       <li>移動：<b>左スティック</b>／見回す：<b>右スティック</b></li>
       <li>上昇：<span class="keybox">R2</span> または<b>十字キー上</b>／下降：<span class="keybox">L2</span> または<b>十字キー下</b></li>
       <li><b>速く飛ぶ</b>：<span class="keybox">R1</span>を押している間は4倍速。<span class="keybox">□</span>を押すと ×1→×2→×4 に切り替わります（いまの速さは画面の下中央に出ます）</li>
-      <li>文化財を開く：<span class="keybox">○</span>（画面中央の照準に入れてから）／閉じる：<span class="keybox">×</span></li>
+      <li><b>精霊をゲットする</b>：精霊が出てきたら <span class="keybox">○</span></li>
+      <li><b>主要施設へ飛ぶ</b>：<b>十字キー左右</b>（駅・モール・公民館など17か所を順にめぐります）</li>
+      <li>文化財を開く：<span class="keybox">○</span>（精霊が出ていないとき・画面中央の照準に入れてから）／閉じる：<span class="keybox">×</span></li>
       <li><b>手を離しているのに勝手に動くとき</b>：スティックから手を離した状態で、画面の「<b>🎯 中心合わせ</b>」ボタンか<span class="keybox">OPTIONS</span>を押してください。その位置を「手を離した状態」として覚え直します</li>
       <li>うまく動かないときは「<b>🩺 診断</b>」でコントローラーを認識できているか確認できます。マウスで操作したいときは「<b>🎮 コントローラー</b>」で入力を止められます</li>
     </ul>
@@ -1497,7 +1499,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02v"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02x"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1941,11 +1943,19 @@ viewer.clock.onTick.addEventListener(function () {
       const dpadDown = pad.buttons[13] && pad.buttons[13].pressed ? 1 : 0;
       padUp = dpadUp - dpadDown;
     }
+    // 十字キーの左右で主要施設をめぐる。コントローラーだけで遊ぶときは画面右の
+    // 「📍スポットへ移動」を押せないため、遠くへ行く手段がこれしかない
+    if (isDownNow(pad, 14) && !padPrevButtons[14]) padGoSpot(-1);
+    if (isDownNow(pad, 15) && !padPrevButtons[15]) padGoSpot(1);
     up += padUp;
 
     // ○＝画面中央のピンを選ぶ／×＝開いているパネルを閉じる（押した瞬間のみ）
     const isDown = (i) => !!(pad.buttons[i] && pad.buttons[i].pressed);
-    if (isDown(1) && !padPrevButtons[1]) pickAtScreenCenter();
+    if (isDown(1) && !padPrevButtons[1]) {
+      // 精霊が出ているあいだは○でゲット。出ていなければ画面中央のピンを開く
+      if (document.getElementById("encounter").classList.contains("show")) confirmCatch();
+      else pickAtScreenCenter();
+    }
     if (isDown(0) && !padPrevButtons[0]) closeOverlays();
     // OPTIONS＝スティックの中心を取り直す。勝手に動くコントローラーの応急処置
     if (isDown(9) && !padPrevButtons[9]) {
@@ -2248,6 +2258,17 @@ window.addEventListener("storage", function (e) {
   showPickResult("地図から「" + BUNKAZAI[d.idx].name + "」の近くへ移動します。", 3000);
 });
 
+// コントローラーの十字キー左右で主要施設をめぐる。押すたびに次／前のスポットへ飛ぶ
+let padSpotIdx = 0;
+function isDownNow(pad, i) { return !!(pad.buttons[i] && pad.buttons[i].pressed); }
+function padGoSpot(step) {
+  // 主要施設への移動は競技中も許している（そこから先は自力で文化財を探す運用のため）
+  padSpotIdx = (padSpotIdx + step + SPOTS.length) % SPOTS.length;
+  const spot = SPOTS[padSpotIdx];
+  flyToSpot(spot);
+  showPickResult("📍 " + spot.name + "（" + (padSpotIdx + 1) + "/" + SPOTS.length + "）へ移動します。十字キー左右で次の場所へ。", 3000);
+}
+
 // 文化財の約300m南・上空200mへテレポート（最後の接近は自分で）
 function teleportNear(b) {
   viewer.camera.flyTo({
@@ -2305,6 +2326,8 @@ function showEncounter(idx) {
   var dEl = document.getElementById("encounterDetail");
   if (b.detailUrl) { dEl.href = b.detailUrl; dEl.style.display = "block"; }
   else { dEl.style.display = "none"; }
+  const getBtn = document.querySelector("#encounter .getBtn");
+  if (getBtn) getBtn.textContent = readGamepad() ? "ゲットする！（○ボタン）" : "ゲットする！";
   document.getElementById("encounter").classList.add("show");
 }
 
