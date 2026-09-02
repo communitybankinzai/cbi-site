@@ -525,6 +525,10 @@
     transform: translateX(-50%);
     transition: transform 0.3s ease-out;
     animation: tonbiBob 4.5s ease-in-out infinite; /* 上下の揺れで風を感じさせる */
+    /* Cesium の描画面に重なる大きな要素なので、GPU 側で独立した層として持たせる。
+       これがないと、トンビが動くたびに描画面ごと合成し直しになり、実機で操作が
+       追いつかなくなった（2026-09-02） */
+    will-change: transform;
   }
   /* 羽ばたきに合わせた体の上下。#tonbiLayer 側は傾き用で transition が効いており、
      同じ要素に当てると上下の動きまで 0.3 秒なまってしまうので分けてある。
@@ -1412,7 +1416,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02m"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02n"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
