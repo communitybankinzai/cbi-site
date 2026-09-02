@@ -49,18 +49,20 @@
         },
         {
           "date": "2026-09-02",
-          "title": "メタバース プレイ動画モード（?cinema=3）実装＋仮想時間録画スクリプト新設＋本番で60秒動画を生成 0.7時間",
+          "title": "メタバース プレイ動画モード（?cinema=3）実装＋仮想時間録画スクリプト新設＋本番で動画2本生成（v1直進60秒／v2らせん上昇→滑空80秒） 1.1時間",
           "category": "実装",
           "outputs": [
             "site/metaverse/index.html — startPlayDemo()（?cinema=3・自動操縦で宝珠院観音堂→いなざき獅子舞を実プレイと同じ移動処理で通過、精霊出現→ゲット、テロップ・終了画面は rAF フェード）、近接判定を検証モードでも動くように変更、版 2026-09-03r",
             "scripts/promo/record_play.mjs — 新規。puppeteer＋timeweb で1フレームずつ撮影→ffmpeg で 9:16／16:9 MP4。依存は C:\\COCoLa\\scripts\\promo\node_modules を流用",
-            "scripts/promo/out/cbi_metaverse_play_9x16_20260902.mp4（76.6MB・crf19）／同 _sns.mp4（軽量版）— 本番URLで生成（root request 1回消費）",
             "site/admin/changelog.json — 1件追記",
-            "cidao/2026-09-02_メタバースプレイ動画の自動生成.md — 新規ノート（設計判断・はまった点2件・実測値）、MOC_CiDAO.md に登録"
+            "cidao/2026-09-02_メタバースプレイ動画の自動生成.md — 新規ノート（設計判断・はまった点2件・実測値）、MOC_CiDAO.md に登録",
+            "scripts/promo/out/cbi_metaverse_play_9x16_20260902_v2.mp4（144.6MB・80.4秒・らせん上昇→滑空版）／同 _v2_sns.mp4（720x1280・26.6MB）／同 _v1_sns.mp4（直進版の軽量版のみ残存。v1本編は同名出力で上書きされたため record_play.mjs の出力名に時刻を付けた）",
+            "site/metaverse/index.html — 自動操縦を climb（旋回しながら＋22°で200m上昇）→glide（残り距離で目的地上空92mへ降りる角度）→catch の段階制に変更、滑空中はアナログ前進0.5でトンビが翼を広げる、終盤テロップをユーザー指定文に変更、速度チップをCSSで非表示（コミット 9e7419a・824d4f1）",
+            "site/admin/changelog.json — 計2件追記"
           ],
-          "hours": 0.7,
+          "hours": 1.1,
           "partnerApproved": false,
-          "note": "ユーザー依頼「鳥になって印西の空を飛ぶをSNS告知用に実プレイ動画にしたい。画面録画ではなくAIで自動化」。2026-06 の COCoLa 期プロモ（record_vt.mjs・仮想時間方式）を再利用し、カメラ演出ではなく通常の移動処理を自動操縦する方式にした。ドライラン（?notiles=1・6fps）で2つの不具合を検出して修正：起動時の flyToSpot が開始位置を上書き（cancelFlight で解決）、timeweb 下では CSS transition が進まずテロップが写らない（rAF フェードに置換）。宝珠院の境内で延命地蔵の精霊も続けて出るため、目的地以外の精霊もゲットして進む仕様を追加。本番録画は1,798フレーム＝59.9秒を実631秒（0.35秒/フレーム）で完了、要所フレームを目視確認。要対応メール0件。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 73,519 / cost: $18.65"
+          "note": "ユーザー依頼「鳥になって印西の空を飛ぶをSNS告知用に実プレイ動画にしたい。画面録画ではなくAIで自動化」。2026-06 の COCoLa 期プロモ（record_vt.mjs・仮想時間方式）を再利用し、カメラ演出ではなく通常の移動処理を自動操縦する方式にした。ドライラン（?notiles=1・6fps）で2つの不具合を検出して修正：起動時の flyToSpot が開始位置を上書き（cancelFlight で解決）、timeweb 下では CSS transition が進まずテロップが写らない（rAF フェードに置換）。宝珠院の境内で延命地蔵の精霊も続けて出るため、目的地以外の精霊もゲットして進む仕様を追加。本番録画は1,798フレーム＝59.9秒を実631秒（0.35秒/フレーム）で完了、要所フレームを目視確認。要対応メール0件。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 73,519 / cost: $18.65 ユーザーが v1 を見て「まっすぐにしか飛んでいない。鳶のように高く上がって目的地に滑空するシーンが欲しい」と指摘→v2 で段階制に変更し再録画（2,413フレームを実1,717秒。上空では表示範囲が広くタイル待ちで1フレーム約1.7秒）。録画プロセスの二重起動（自作の kill が自分の bash まで巻き込んだ）で1回やり直し、制御用 ps1（%LOCALAPPDATA%\\cbi-rec-ctl.ps1）を作った。本日の root request 消費は4回。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 110,470 / cost: $29.20"
         },
         {
           "date": "2026-09-02",
@@ -4517,10 +4519,10 @@
         },
         {
           "due": "未定",
-          "title": "🎬 プレイ動画の見え方改善（地面をもっと見せる／16:9版／別の文化財ペア）",
+          "title": "🎬 プレイ動画の追加バリエーション（16:9版／別の文化財ペア／長さ調整）",
           "category": "広報",
           "priority": "低",
-          "note": "2026-09-02 生成の cbi_metaverse_play_9x16_20260902.mp4 は上半分が空になりがち（ピッチ約−3°で高度を保つ設計）。ユーザーが動画を見て要望が出たら、ピッチを深くして上昇キーで高度を補う方式へ変更する。16:9 は `node scripts/promo/record_play.mjs --landscape`、別ペアは `--pair i,j` で即生成できる（1回＝root request 1回）"
+          "note": "v2（2026-09-02・らせん上昇→滑空・80秒）で「空ばかり」は解消。16:9 は `node scripts/promo/record_play.mjs --landscape`、別ペアは `--pair i,j`、短くするなら `--speed 2.8` や index.html の CLIMB_GAIN_M（200m）を下げる。1回＝root request 1回・実時間約30分"
         },
         {
           "due": "未定",
@@ -4528,7 +4530,7 @@
           "category": "広報",
           "priority": "中",
           "status": "待ち",
-          "blockedBy": "ユーザー（中司さん）が生成した動画 scripts/promo/out/cbi_metaverse_play_9x16_20260902.mp4 を確認し、投稿してよいと判断すること",
+          "blockedBy": "ユーザー（中司さん）が scripts/promo/out/cbi_metaverse_play_9x16_20260902_v2.mp4（らせん上昇→滑空版）を確認し、投稿してよいと判断すること",
           "note": "2026-09-02 に動画は完成。投稿文は C:\\COCoLa\\scripts\\promo\\instagram_caption.txt（2026-06 版・COCoLa名義）を CBI 名義・現行の事業名に直して使う。公式アカウントへの投稿はユーザー実施"
         },
         {
