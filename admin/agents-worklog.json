@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-09-02",
+          "title": "FreeFree お店ピンの migration を DATABASE_URL 直結で本番へ適用 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "Supabase 本番DB freefree_posts に metaverse_pin/address/lat/lon 列と idx_freefree_metaverse_pin を追加（information_schema と pg_indexes で確認）",
+            "site/admin/agents-worklog.json — 該当予定を実績へ、ログイン問題の予定に回避経路を追記"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "ユーザーは Supabase 管理画面に入れず（表示される組織が N's factory のみ）、「ログインしなくてもできると言ったはず」との指摘。cidao の .env.local にある DATABASE_URL で psycopg から migration を実行し、/api/metaverse-shops の error が消えたことを curl で確認。session: d59656bc-791e-4e89-87d3-b7fe5c3a2817 / output: 110,650 以降の差分"
+        },
+        {
+          "date": "2026-09-02",
           "title": "FreeFree掲載→メタバースお店ピン（CiDAO 6ファイル＋公開API）と「めぐりモード」4択の実装 0.5時間",
           "category": "実装",
           "outputs": [
@@ -4458,15 +4470,6 @@
       ],
       "plans": [
         {
-          "due": "2026-09-05",
-          "title": "🗄 FreeFree お店ピンの migration を Supabase SQL Editor で実行する",
-          "category": "実装",
-          "priority": "高",
-          "status": "待ち",
-          "blockedBy": "中司さんが CiDAO の Supabase SQL Editor で C:\\Repos\\cidao\\supabase\\migrations\\20260902200000_freefree_metaverse_pin.sql を実行すること（列4つと部分インデックスの追加のみ。既存データに影響なし）",
-          "note": "未実行のあいだは /api/metaverse-shops が {shops:[]} を返し、フォームで「メタバースに載せる」を選んだ投稿だけが『column does not exist』で失敗する（通常の掲載は通る）。実行後、FreeFree で住所付きのテスト投稿を1件作り、メタバース ?mode=shop でピンが立つことを確認する"
-        },
-        {
           "due": "2026-09-08",
           "title": "🛍 お店ピンの通し確認（本番で実投稿→ピン→リンク遷移）と、お店への案内文の作成",
           "category": "実装",
@@ -4501,7 +4504,7 @@
           "title": "🔑 Supabase 管理画面にログインできない問題を解消する",
           "category": "保守",
           "priority": "高",
-          "note": "2026-09-02に判明。2段階認証コードは分かるがログインできない状態。パスワードリセット（登録メールにリンク→2FAコードで通過）で復旧できる見込み。**当面の回避策**：C:\\Repos\\cidao\\.env.local の SUPABASE_SERVICE_ROLE_KEY を使えば PostgREST 経由で本番DBを参照・更新できる（scratchpad の cidao_db.py が実装例）。ただし RLS をバイパスする強い権限なので、管理画面の復旧を優先する"
+          "note": "2026-09-02に判明。2段階認証コードは分かるがログインできない状態。パスワードリセット（登録メールにリンク→2FAコードで通過）で復旧できる見込み。**当面の回避策**：C:\\Repos\\cidao\\.env.local の SUPABASE_SERVICE_ROLE_KEY を使えば PostgREST 経由で本番DBを参照・更新できる（scratchpad の cidao_db.py が実装例）。ただし RLS をバイパスする強い権限なので、管理画面の復旧を優先する／2026-09-02追記：.env.local の DATABASE_URL（Postgres直結）で DDL も適用できることを実証（psycopg で migration 20260902200000 を適用）。**管理画面へのログインをユーザーに頼まず、migration はこの経路で当てること**。管理画面が要るのは Auth 設定・Storage バケット作成・Reports 閲覧など"
         },
         {
           "due": "2026-09-05",
