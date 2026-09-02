@@ -789,6 +789,15 @@
       <li>上昇／下降：<span class="keybox">E</span>／<span class="keybox">Q</span>（飛行モード時）</li>
       <li>見回す：画面をマウスで<b>ドラッグ</b></li>
     </ul>
+    <p><b>コントローラー（プレイステーション等）：</b>つないだら、まず<b>どれかボタンを1回押してください</b>（押すまでブラウザが認識しません）。認識したら<b>スティックから手を離して1秒ほど待つ</b>と操作できるようになります。</p>
+    <ul>
+      <li>移動：<b>左スティック</b>／見回す：<b>右スティック</b></li>
+      <li>上昇：<span class="keybox">R2</span> または<b>十字キー上</b>／下降：<span class="keybox">L2</span> または<b>十字キー下</b></li>
+      <li><b>速く飛ぶ</b>：<span class="keybox">R1</span>を押している間は4倍速。<span class="keybox">□</span>を押すと ×1→×2→×4 に切り替わります（いまの速さは画面の下中央に出ます）</li>
+      <li>文化財を開く：<span class="keybox">○</span>（画面中央の照準に入れてから）／閉じる：<span class="keybox">×</span></li>
+      <li><b>手を離しているのに勝手に動くとき</b>：スティックから手を離した状態で、画面の「<b>🎯 中心合わせ</b>」ボタンか<span class="keybox">OPTIONS</span>を押してください。その位置を「手を離した状態」として覚え直します</li>
+      <li>うまく動かないときは「<b>🩺 診断</b>」でコントローラーを認識できているか確認できます。マウスで操作したいときは「<b>🎮 コントローラー</b>」で入力を止められます</li>
+    </ul>
     <p><b>スマートフォン：</b></p>
     <ul>
       <li>移動：画面左下の<b>丸いスティック</b>を指でたおす</li>
@@ -1487,7 +1496,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02t"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02u"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
