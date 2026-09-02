@@ -1487,7 +1487,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02r"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02s"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2225,6 +2225,7 @@ function awardPiece(idx) {
   pieces[idx] = new Date().toISOString();
   savePieces();
   renderPuzzle();
+  applyPieceMark(idx);          // 捕まえた瞬間にピンの見た目を切り替える
   const tribe = SPIRIT_TRIBES[tribeOf(BUNKAZAI[idx])];
   showStampToast(tribe.label + "をゲット！ パズルピースも開いた（" + pieceTotal() + "/" + BUNKAZAI.length + "）");
   if (pieceTotal() === BUNKAZAI.length) {
@@ -3321,8 +3322,23 @@ async function loadBunkazai() {
     watchPinClamp(ent, b.lon, b.lat);
   });
   renderPuzzle();
+  refreshAllPieceMarks();       // すでに捕まえた文化財のピンに印を付ける
   applyBunkazaiPinVisibility(); // 読込前にトグル操作されていても状態を反映する
   updateCertButton(); // 認定証ボタン（50枚達成済み or 発行済みなら表示）
+}
+
+// ---- 精霊を捕まえた文化財は、ピンを見ただけで分かるようにする ----
+// 種別ごとの色は残したいので、点の輪郭を金色にし、看板の絵文字を🧩から✅に変える
+function applyPieceMark(i) {
+  const e = viewer.entities.getById("bunkazai-" + i);
+  if (!e || !BUNKAZAI[i]) return;
+  const got = pieces[i] !== undefined;
+  e.label.text = (got ? "✅ " : "🧩 ") + BUNKAZAI[i].name;
+  e.point.outlineColor = Cesium.Color.fromCssColorString(got ? "#ffd166" : "#1a2533");
+  e.point.outlineWidth = got ? 4 : 2;
+}
+function refreshAllPieceMarks() {
+  for (let i = 0; i < BUNKAZAI.length; i++) applyPieceMark(i);
 }
 
 // ---- 文化財ピンの表示／非表示切替 ----
