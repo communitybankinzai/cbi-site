@@ -1597,9 +1597,12 @@ const PAD_FAST_DELTA = 0.22;       // この量以上を…
 const PAD_FAST_WINDOW_MS = 400;    // …この時間以内に動いたら「人が動かした」
 const PAD_HOLD_MAX_MS = 120000;    // 握ったままとみなす上限。20秒だと長い前進で止まってしまった（2026-09-02）。張り付きは🎯中心合わせで直す前提
 const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だけ（生の値で3割程度まで）。それ以上は意図した操作（ゆっくり4割倒す子どもの操作を殺した経緯あり・2026-09-02）
+// 張り付きの自動吸収そのものの有効／無効。実機で良品の前進を何度も止めてしまったため既定は無効にした。
+// 壊れた個体のズレは「🎯 中心合わせ」で直す。つないだときの測定と、遊びの内側での追従は残る（2026-09-02）
+const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03l"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03m"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1800,7 +1803,7 @@ function updatePadInput(pad, dt) {
       padStuckMin[ch] = padStuckMax[ch] = padRaw(pad, ch);
       padStuckSec[ch] = 0;
       padHeldSince[ch] = 0; // 遊びの内側へ戻った＝手を離した
-    } else if (absorbPadStuck(pad, ch, dt)) {
+    } else if (PAD_STUCK_AUTO && absorbPadStuck(pad, ch, dt)) {
       absorbed = true;
     }
   }
