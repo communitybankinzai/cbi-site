@@ -681,6 +681,7 @@
 <div id="topLeftBar">
   <button id="puzzleBtn">🏛 印西市文化財<span class="badge" id="puzzleCount">0/50</span></button>
   <button id="reportsBtn" title="印西市の指定・登録文化財50件の学習レポート一覧を別タブで開きます（A4用紙1枚の両面で読める・印刷できる）">📄 学習レポート</button>
+  <button id="mapBtn" title="文化財50か所の平面地図を別タブで開きます。集めた文化財と、いま飛んでいる場所が地図に出るので、横で見ながら道案内ができます">🗺 文化財マップ</button>
   <button id="pinToggleBtn" title="地図上の文化財ピンの表示／非表示を切り替えます">📍 表示中</button>
   <button id="shelterToggleBtn" class="off" title="印西市の指定避難所・特別避難所・広域避難場所（公式55施設）のピンを表示／非表示します">🏫 避難所</button>
   <button id="kominkanToggleBtn" class="off" title="印西市の公民館・交流館・文化ホールのピンを表示／非表示します（クリックで各施設の市公式ページへ）">🏢 公民館</button>
@@ -1496,7 +1497,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02u"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02v"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2110,6 +2111,9 @@ document.getElementById("topLeftBar").addEventListener("click", (e) => {
 });
 
 // ---- 学習レポート一覧（別タブ。3Dを読み込み直さずに50件の一覧へ行ける）----
+document.getElementById("mapBtn").addEventListener("click", () => {
+  window.open("map.html", "_blank", "noopener");
+});
 document.getElementById("reportsBtn").addEventListener("click", () => {
   window.open("reports.html", "_blank", "noopener");
 });
@@ -2211,6 +2215,38 @@ function renderPuzzle() {
     list.appendChild(li);
   });
 }
+
+// ---- 2次元の文化財マップ（map.html）との連携 ----
+// 同じ端末・同じサイトなのでブラウザの保存領域を共有できる。ここに現在地を書き出すと
+// 別タブの地図が「いまここ」を表示でき、地図側が行き先を書けばこちらが受け取れる。
+// 親が地図を見ながら、操作している子に道を教える遊び方を想定している
+const CAMERA_SHARE_KEY = "cbi-meta-camera-v1";
+const GOTO_SHARE_KEY = "cbi-meta-goto-v1";
+setInterval(function () {
+  try {
+    const c = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+    localStorage.setItem(CAMERA_SHARE_KEY, JSON.stringify({
+      lat: Cesium.Math.toDegrees(c.latitude),
+      lon: Cesium.Math.toDegrees(c.longitude),
+      height: Math.round(c.height - INZAI_GEOID_HEIGHT_M), // 標高に直しておく
+      t: Date.now(),
+    }));
+  } catch (e) { /* 保存できない設定でも3Dワールドは動く */ }
+}, 1000);
+
+// 地図から「ここへ飛んで」と言われたときの受け取り口（別タブの書き込みだけが届く）
+window.addEventListener("storage", function (e) {
+  if (e.key !== GOTO_SHARE_KEY || !e.newValue) return;
+  let d = null;
+  try { d = JSON.parse(e.newValue); } catch (err) { return; }
+  if (!d || typeof d.idx !== "number" || !BUNKAZAI[d.idx]) return;
+  if (typeof ttActive !== "undefined" && ttActive) {
+    showPickResult("タイムトライアル中は地図から飛べません（記録が成立しなくなるため）。", 3500);
+    return;
+  }
+  teleportNear(BUNKAZAI[d.idx]);
+  showPickResult("地図から「" + BUNKAZAI[d.idx].name + "」の近くへ移動します。", 3000);
+});
 
 // 文化財の約300m南・上空200mへテレポート（最後の接近は自分で）
 function teleportNear(b) {
@@ -3238,7 +3274,7 @@ function applyMode(mode) {
   currentMode = ev ? "event" : "bousai";
   try { localStorage.setItem(MODE_KEY, currentMode); } catch (e) {}
   // イベント系UI（文化財ゲーム・学習レポート・タイムトライアル・位置修正）
-  ["puzzleBtn", "reportsBtn", "pinToggleBtn", "pickModeBtn", "ttBtn", "tonbiToggleBtn"].forEach(id => {
+  ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "pickModeBtn", "ttBtn", "tonbiToggleBtn"].forEach(id => {
     document.getElementById(id).style.display = ev ? "" : "none";
   });
   if (!ev) setTonbiVisible(false); // 防災用途では演出を出さない
@@ -3813,7 +3849,7 @@ function recStart() {
   // 録画中も操作できるよう、録画ボタンだけは戻して見せる
   const bar = document.getElementById("topLeftBar");
   if (bar) bar.style.display = "";
-  ["puzzleBtn", "reportsBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
+  ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
    "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "noTilesBtn", "speedChip", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
