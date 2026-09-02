@@ -7,6 +7,8 @@
 <meta name="description" content="印西市をGoogle Photorealistic 3D Tilesでリアルに再現したCBIのメタバースワールド。千葉ニュータウンの街を自由に歩けます。">
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
 <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<!-- 他の利用者の位置共有・定型スタンプ（Supabase Realtime）。読めなくても3D表示は動く -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
 <style>
   html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; background: #000; }
   #cesiumContainer { width: 100%; height: 100%; }
@@ -275,6 +277,46 @@
   @media (max-width: 480px) {
     #presenceChip { font-size: 10px; padding: 3px 8px; margin: 0 4px; }
     #presenceChip b { font-size: 11px; }
+  }
+  /* 🛰 他の利用者へ送る定型スタンプ（自由入力なし・2026-09-02）。同行者がいるときだけ出す */
+  #stampBar {
+    position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); z-index: 29;
+    display: none; gap: 6px; align-items: center;
+    background: rgba(20, 30, 40, 0.82); border: 1px solid rgba(127, 200, 255, 0.55);
+    border-radius: 999px; padding: 5px 8px;
+  }
+  #stampBar .who { color: #7fc8ff; font-size: 12px; padding: 0 4px; white-space: nowrap; }
+  #stampBar button {
+    border: 0; border-radius: 999px; background: rgba(127, 200, 255, 0.18); color: #fff;
+    font-size: 13px; padding: 5px 10px; cursor: pointer; white-space: nowrap;
+  }
+  #stampBar button:hover { background: rgba(127, 200, 255, 0.38); }
+  #stampFeed {
+    position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); z-index: 29;
+    display: flex; flex-direction: column; gap: 3px; align-items: center; pointer-events: none;
+  }
+  #stampFeed div {
+    background: rgba(20, 30, 40, 0.75); color: #fff; font-size: 12px; padding: 3px 10px;
+    border-radius: 999px; white-space: nowrap; transition: opacity 0.6s;
+  }
+  /* 🪶 軽量モードのすすめ。描画が遅いときに1回だけ出す */
+  #liteToast {
+    position: absolute; top: 100px; left: 50%; transform: translateX(-50%); z-index: 40;
+    display: none; align-items: center; gap: 8px;
+    background: rgba(20, 30, 40, 0.92); color: #fff; border: 1px solid rgba(255, 209, 102, 0.7);
+    border-radius: 10px; padding: 8px 12px; font-size: 13px; max-width: 92vw;
+  }
+  #liteToast button {
+    border: 0; border-radius: 6px; background: #ffd166; color: #222; font-weight: bold;
+    padding: 6px 10px; cursor: pointer; white-space: nowrap;
+  }
+  #liteToast .close { cursor: pointer; opacity: 0.7; padding: 0 4px; }
+  @media (pointer: coarse), (max-width: 640px) {
+    /* スマホは右下の移動ボタンの上・左のジョイスティックと重ねない */
+    #stampBar { bottom: 96px; left: auto; right: 14px; transform: none; flex-wrap: wrap; justify-content: flex-end; max-width: 52vw; }
+    #stampBar .who { display: none; }
+    #stampBar button { font-size: 12px; padding: 4px 8px; }
+    #stampFeed { bottom: 170px; left: auto; right: 14px; transform: none; align-items: flex-end; }
   }
   /* 3D表示の利用上限バナー */
   /* 3D表示の枠を使い切ったときの案内。街並みが真っ暗になり「壊れた」と受け取られるため、
@@ -730,6 +772,7 @@
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
   <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
+  <button id="liteBtn" class="off" title="動きが重い端末向け。描画の解像度を下げ、街並みを粗めに読み、空の表現やトンビを止めて軽くします（もう一度押すと元に戻ります）">🪶 軽量モード</button>
   <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
   <button id="padCenterBtn" style="display:none" title="スティックから手を離した状態で押してください。いまの値をそのまま「手を離した位置」として覚え直します（コントローラーのOPTIONSボタンでも同じことができます）">🎯 中心合わせ</button>
   <button id="padDebugBtn" title="コントローラーを認識しているか、各スティックがどんな値を出しているかを画面に表示します">🩺 診断</button>
@@ -739,6 +782,21 @@
   <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 撮影</button>
   <button id="recBtn" title="画面を動画（WebM）で録画します。もう一度押すと停止して保存されます">🎥 録画</button>
   <button id="howtoBtn">❓ 使い方</button>
+</div>
+
+<!-- 🛰 同行者への定型スタンプ。自由入力は持たせない（子どもも使う空間のため見守り不要の設計） -->
+<div id="stampBar">
+  <span class="who" id="stampWho"></span>
+  <button data-stamp="hi" title="近くの人にあいさつを送ります">👋 こんにちは</button>
+  <button data-stamp="here" title="いまいる場所が面白いと伝えます">✨ ここ面白い</button>
+  <button data-stamp="go" title="いっしょに文化財へ行こうと誘います">🏛 いっしょに</button>
+  <button data-stamp="good" title="いいねを送ります">👍 いいね</button>
+</div>
+<div id="stampFeed"></div>
+<div id="liteToast">
+  <span>🐢 動きが重いようです。</span>
+  <button onclick="applyLite(true); document.getElementById('liteToast').style.display='none'">🪶 軽量モードにする</button>
+  <span class="close" onclick="document.getElementById('liteToast').style.display='none'">✕</span>
 </div>
 
 <div id="quotaBanner">
@@ -1297,7 +1355,7 @@ async function loadTileset() {
       maximumScreenSpaceError: 8,
     });
     // 管理画面の設定が先に届いていれば、それを優先する（上の8は通信できないときの既定値）
-    if (pendingSse !== null) tileset.maximumScreenSpaceError = pendingSse;
+    liteApplyTileset(); // 管理画面の設定（pendingSse）と軽量モードを反映
     viewer.scene.primitives.add(tileset);
 
     // 3D Tilesの1日あたり利用上限（Google側クォータ）に達すると、詳細タイルの取得が
@@ -1609,7 +1667,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03o"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03p"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1912,7 +1970,9 @@ function updatePadDebug(pad, forward, right, up) {
   L.push("地図: " + (miniMapOpen ? "ひらいている" : "とじている")
     + (miniMapOpen && miniMapApi ? (miniMapApi.getFollow() ? "／自分を中心に" : "／追従なし") : "")
     + " ／ トンビ: " + (tonbiOn ? "あり" : "なし")
-    + " ／ 街並み: " + (NO_TILES ? "読まない" : "読む"));
+    + " ／ 街並み: " + (NO_TILES ? "読まない" : "読む")
+    + " ／ 軽量: " + (liteOn ? "あり" : "なし")
+    + " ／ 同行者: " + (rtReady ? Object.keys(rtOthers).length + "人" : "未接続"));
   L.push("受付: " + (padEnabled ? "ON" : "OFF ←「コントローラー停止中」を押して戻す"));
   L.push("ブラウザが見ている数: " + all.length);
   if (!pad) {
@@ -2021,6 +2081,61 @@ try {
   if (localStorage.getItem(TONBI_KEY) === "1") setTonbiVisible(true);
 } catch (e) { /* プライベートモード等では既定のOFFのまま */ }
 
+// ============================================================
+// 🪶 軽量モード（2026-09-02）
+// N95 ノート等で「動かない」と見えるほど fps が落ちるため、描画の負担を一括で下げる。
+//  - 解像度倍率 1.0 → 0.6（ピクセル数が約1/3）
+//  - 街並みの粗さ maximumScreenSpaceError を 24 以上に（タイル取得数も減る）
+//  - 空の大気表現・FXAA・MSAA を止める、描画を 30fps 上限に
+//  - トンビを消す（毎フレーム合成が走るため）
+// 入口は ☰メニューの「🪶 軽量モード」、URL の ?lite=1、描画が遅いときの案内の3つ。
+// 選択は localStorage に残す（?lite=0 で解除）
+// ============================================================
+const LITE_KEY = "cbi-meta-lite";
+const LITE_SSE = 24;
+const LITE_RES = 0.6;
+const LITE_DEFAULTS = {
+  msaa: viewer.scene.msaaSamples,
+  fxaa: (viewer.scene.postProcessStages && viewer.scene.postProcessStages.fxaa) ? viewer.scene.postProcessStages.fxaa.enabled : true,
+};
+let liteOn = false;
+let liteSuggested = false;
+function liteApplyTileset() {
+  if (!tileset) return;
+  const base = pendingSse !== null ? pendingSse : 8;
+  const v = liteOn ? Math.max(base, LITE_SSE) : base;
+  if (tileset.maximumScreenSpaceError !== v) tileset.maximumScreenSpaceError = v;
+}
+function applyLite(on) {
+  liteOn = !!on;
+  viewer.resolutionScale = liteOn ? LITE_RES : 1.0;
+  viewer.scene.skyAtmosphere.show = !liteOn;
+  try { viewer.scene.postProcessStages.fxaa.enabled = liteOn ? false : LITE_DEFAULTS.fxaa; } catch (e) { /* 無い版でも続ける */ }
+  try { viewer.scene.msaaSamples = liteOn ? 1 : LITE_DEFAULTS.msaa; } catch (e) { /* 同上 */ }
+  viewer.targetFrameRate = liteOn ? 30 : undefined;
+  liteApplyTileset();
+  if (liteOn && tonbiOn) setTonbiVisible(false);
+  const btn = document.getElementById("liteBtn");
+  if (btn) btn.classList.toggle("off", !liteOn);
+  try { localStorage.setItem(LITE_KEY, liteOn ? "1" : "0"); } catch (e) { /* 保存できなくても動く */ }
+  viewer.scene.requestRender();
+}
+function liteSuggest() {
+  if (liteOn || liteSuggested || NO_TILES) return;
+  liteSuggested = true;
+  const el = document.getElementById("liteToast");
+  if (!el) return;
+  el.style.display = "flex";
+  setTimeout(function () { el.style.display = "none"; }, 20000);
+}
+document.getElementById("liteBtn").addEventListener("click", function () { applyLite(!liteOn); });
+(function () {
+  const q = new URLSearchParams(location.search).get("lite");
+  let on = q === "1";
+  if (q === null) { try { on = localStorage.getItem(LITE_KEY) === "1"; } catch (e) { on = false; } }
+  if (on) applyLite(true);
+})();
+
 // コントローラー入力の受付切替。手を離しても入力が残る個体が挿さっていると
 // マウス操作まで打ち消されてしまうため、抜き差しせずその場で止められるようにする
 const PAD_ENABLED_KEY = "cbi-meta-pad-enabled-v1";
@@ -2108,6 +2223,11 @@ viewer.clock.onTick.addEventListener(function () {
     if (fpsHistory.length > 20) fpsHistory.shift();
     fpsFrames = 0;
     fpsSince = now;
+    // 10秒平均が 12fps を切ったら軽量モードをすすめる（起動直後の読み込み中は除く）
+    if (fpsHistory.length >= 20 && now > 25000) {
+      const avg10 = fpsHistory.reduce(function (a, b) { return a + b; }, 0) / fpsHistory.length;
+      if (avg10 < 12) liteSuggest();
+    }
   }
 
   const cam = viewer.camera;
@@ -4096,7 +4216,7 @@ const CAPTURE_HIDE_IDS = [
   "mvHeader", "controlPanel", "helpBox", "puzzleBtn", "howtoBtn",
   "panelToggle", "joystick", "spotInfo", "puzzlePanel",
   "menuToggle", "mobileMoveBar", "topLeftBar",
-  "presenceChip", "quotaBanner", "tileLoading",
+  "presenceChip", "quotaBanner", "tileLoading", "stampBar", "stampFeed", "liteToast",
 ];
 
 // 📸 いまの画面をPNGで保存する（SNS告知や報告書の素材づくり用）。
@@ -4473,8 +4593,8 @@ function applyRenderQuality(sse) {
   const v = Number(sse);
   if (!isFinite(v) || v < 2 || v > 64) return;
   pendingSse = v;
-  if (!tileset || tileset.maximumScreenSpaceError === v) return;
-  tileset.maximumScreenSpaceError = v;
+  if (!tileset) return;
+  liteApplyTileset(); // 軽量モード中は管理画面の値より粗い側を採る
   viewer.scene.requestRender();
 }
 function usageFetch() {
@@ -4497,6 +4617,169 @@ if (!new URLSearchParams(location.search).get("cinema")) { // 撮影・告知モ
   usageFetch();
   setInterval(usageFetch, 5 * 60 * 1000);
   setInterval(presencePing, PRESENCE_INTERVAL_MS);
+}
+
+// ============================================================
+// 🛰 他の利用者の位置（光点）と定型スタンプ — Supabase Realtime（2026-09-02・段階2＋3の一部）
+// 各画面が Presence チャネル "metaverse-world" に自分の位置（経度・緯度・高さ・向き）を
+// 移動したときだけ約1.5秒ごとに載せ、他の画面はそれを光点＋「利用者NNN」で描く。
+// 番号は匿名のセッションIDから作る（名前入力なし＝個人特定・不適切名の問題を起こさない）。
+// 会話は定型スタンプ4種のみ（自由入力なし）。DBには何も書かず、切断すれば消える。
+// 上の在席表示（人数）とは別系統。Realtime に繋がらなくても3D表示は動く。
+// ============================================================
+const RT_URL = "https://oxuxvtuhijnsewivgrje.supabase.co";
+const RT_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94dXh2dHVoaWpuc2V3aXZncmplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNjAwOTYsImV4cCI6MjA5NzgzNjA5Nn0.Pd4mIElqYweQuMt4uBARVeWXhSZ9TseVsID9lHB0JI4";
+const RT_CHANNEL = "metaverse-world";
+const RT_SEND_MS = 1500;          // 位置を送る最短間隔（受け手はこの時間で補間して滑らかに動かす）
+const STAMPS = { hi: "👋 こんにちは", here: "✨ ここ面白い", go: "🏛 いっしょに行こう", good: "👍 いいね" };
+const STAMP_SHOW_MS = 4000;
+let rtChannel = null, rtReady = false;
+const rtOthers = {};              // セッションID → { ent, num, from, to, t0, t1, cur, stamp, stampUntil }
+let rtLastSent = null, rtLastSentAt = 0, rtLastStampAt = 0;
+
+function rtNum(key) { return (parseInt(key.slice(0, 6), 16) % 900) + 100; }
+function rtMyPos() {
+  const c = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+  return {
+    lon: +Cesium.Math.toDegrees(c.longitude).toFixed(6),
+    lat: +Cesium.Math.toDegrees(c.latitude).toFixed(6),
+    h: +c.height.toFixed(1),
+    hd: Math.round(Cesium.Math.toDegrees(viewer.camera.heading)),
+  };
+}
+function rtMoved(a, b) {
+  if (!a) return true;
+  const dh = Math.abs(((a.hd - b.hd + 540) % 360) - 180);
+  return Math.abs(a.lon - b.lon) > 0.00001 || Math.abs(a.lat - b.lat) > 0.00001 || Math.abs(a.h - b.h) > 0.5 || dh > 10;
+}
+// 受け取った2点の間を時間で補間する（1.5秒おきの座標をそのまま出すとカクつく）
+function rtPosOf(o) {
+  if (!o.to) return undefined;
+  const k = o.t1 > o.t0 ? Math.min(1, (Date.now() - o.t0) / (o.t1 - o.t0)) : 1;
+  const f = o.from || o.to;
+  o.cur = { lon: f.lon + (o.to.lon - f.lon) * k, lat: f.lat + (o.to.lat - f.lat) * k, h: f.h + (o.to.h - f.h) * k };
+  return Cesium.Cartesian3.fromDegrees(o.cur.lon, o.cur.lat, o.cur.h);
+}
+function rtEnsure(key) {
+  let o = rtOthers[key];
+  if (o) return o;
+  o = { num: rtNum(key), from: null, to: null, t0: 0, t1: 0, cur: null, stamp: "", stampUntil: 0, lastStampAt: 0 };
+  o.ent = viewer.entities.add({
+    position: new Cesium.CallbackProperty(function () { return rtPosOf(o); }, false),
+    point: {
+      pixelSize: 14, color: Cesium.Color.fromCssColorString("#7fc8ff"),
+      outlineColor: Cesium.Color.WHITE, outlineWidth: 2,
+      disableDepthTestDistance: Number.POSITIVE_INFINITY, // 建物の陰でも見える光点
+    },
+    label: {
+      text: new Cesium.CallbackProperty(function () {
+        return (o.stampUntil > Date.now() ? o.stamp + "\n" : "") + "利用者" + o.num;
+      }, false),
+      font: "bold 13px sans-serif", fillColor: Cesium.Color.WHITE,
+      outlineColor: Cesium.Color.BLACK, outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+      verticalOrigin: Cesium.VerticalOrigin.BOTTOM, pixelOffset: new Cesium.Cartesian2(0, -12),
+      showBackground: true, backgroundColor: new Cesium.Color(0.08, 0.12, 0.16, 0.75),
+      disableDepthTestDistance: Number.POSITIVE_INFINITY,
+    },
+  });
+  rtOthers[key] = o;
+  return o;
+}
+function rtRemove(key) {
+  const o = rtOthers[key];
+  if (!o) return;
+  try { viewer.entities.remove(o.ent); } catch (e) { /* 既に消えていても続ける */ }
+  delete rtOthers[key];
+}
+function rtSync() {
+  if (!rtChannel) return;
+  const state = rtChannel.presenceState();
+  const me = presenceGetSessionId();
+  const seen = {};
+  const now = Date.now();
+  Object.keys(state).forEach(function (key) {
+    if (key === me) return;
+    const metas = state[key];
+    const p = metas && metas[metas.length - 1];
+    if (!p || typeof p.lon !== "number" || typeof p.lat !== "number" || typeof p.h !== "number") return;
+    if (!isFinite(p.lon) || !isFinite(p.lat) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) return;
+    seen[key] = true;
+    const o = rtEnsure(key);
+    if (!o.to || rtMoved(o.to, p)) { o.from = o.cur || p; o.to = p; o.t0 = now; o.t1 = now + RT_SEND_MS; }
+  });
+  Object.keys(rtOthers).forEach(function (key) { if (!seen[key]) rtRemove(key); });
+  rtUpdateUi();
+}
+function rtUpdateUi() {
+  const bar = document.getElementById("stampBar");
+  if (!bar) return;
+  const n = Object.keys(rtOthers).length;
+  const show = rtReady && n > 0 && !(typeof ttActive !== "undefined" && ttActive);
+  bar.style.display = show ? "flex" : "none";
+  const who = document.getElementById("stampWho");
+  if (who) who.textContent = "同行者 " + n + "人";
+}
+function rtSendTick() {
+  if (!rtReady) return;
+  const now = Date.now();
+  if (now - rtLastSentAt < RT_SEND_MS) return;
+  const p = rtMyPos();
+  if (!rtMoved(rtLastSent, p)) return;
+  rtLastSent = p; rtLastSentAt = now;
+  p.m = (typeof currentMode !== "undefined" ? currentMode : "event");
+  rtChannel.track(p).catch(function () { /* 送れなくても次の周期で送る */ });
+}
+function rtFeed(who, text) {
+  const feed = document.getElementById("stampFeed");
+  if (!feed) return;
+  const div = document.createElement("div");
+  div.textContent = who + "：" + text;
+  feed.appendChild(div);
+  while (feed.children.length > 3) feed.removeChild(feed.firstChild);
+  setTimeout(function () { div.style.opacity = "0"; }, 6000);
+  setTimeout(function () { if (div.parentNode) div.parentNode.removeChild(div); }, 6700);
+}
+function rtSendStamp(code) {
+  if (!rtReady || !STAMPS[code]) return;
+  const now = Date.now();
+  if (now - rtLastStampAt < 2000) return; // 連打防止
+  rtLastStampAt = now;
+  rtChannel.send({ type: "broadcast", event: "stamp", payload: { from: presenceGetSessionId(), code: code } });
+  rtFeed("あなた", STAMPS[code]);
+}
+function rtOnStamp(p) {
+  if (!p || typeof p.from !== "string" || !STAMPS[p.code]) return; // 定型4種以外は捨てる
+  const o = rtOthers[p.from];
+  if (!o) return;                                   // 位置の見えていない相手からは出さない
+  const now = Date.now();
+  if (now - o.lastStampAt < 1500) return;           // 相手側の連打も抑える
+  o.lastStampAt = now;
+  o.stamp = STAMPS[p.code]; o.stampUntil = now + STAMP_SHOW_MS;
+  rtFeed("利用者" + o.num, STAMPS[p.code]);
+}
+function rtConnect() {
+  if (typeof supabase === "undefined" || !supabase.createClient) return; // CDN が読めないときは光点なしで動く
+  const client = supabase.createClient(RT_URL, RT_ANON, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    realtime: { params: { eventsPerSecond: 5 } },
+  });
+  const me = presenceGetSessionId();
+  rtChannel = client.channel(RT_CHANNEL, { config: { presence: { key: me }, broadcast: { self: false } } });
+  rtChannel
+    .on("presence", { event: "sync" }, rtSync)
+    .on("broadcast", { event: "stamp" }, function (msg) { rtOnStamp(msg.payload); })
+    .subscribe(function (status) {
+      rtReady = status === "SUBSCRIBED";
+      if (rtReady) { rtLastSent = null; rtLastSentAt = 0; rtSendTick(); } // 入室直後に自分の位置を出す
+      rtUpdateUi();
+    });
+  setInterval(rtSendTick, 500);
+  document.querySelectorAll("#stampBar button[data-stamp]").forEach(function (b) {
+    b.addEventListener("click", function () { rtSendStamp(b.getAttribute("data-stamp")); });
+  });
+}
+if (!new URLSearchParams(location.search).get("cinema")) { // 撮影・告知モードでは繋がない
+  try { rtConnect(); } catch (e) { console.warn("realtime 接続に失敗", e); }
 }
 
 loadTileset();
