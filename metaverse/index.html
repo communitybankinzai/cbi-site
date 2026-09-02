@@ -1667,7 +1667,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03p"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03q"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -4644,7 +4644,7 @@ function rtMyPos() {
     lon: +Cesium.Math.toDegrees(c.longitude).toFixed(6),
     lat: +Cesium.Math.toDegrees(c.latitude).toFixed(6),
     h: +c.height.toFixed(1),
-    hd: Math.round(Cesium.Math.toDegrees(viewer.camera.heading)),
+    hd: Math.round(Cesium.Math.toDegrees(viewer.camera.heading)) % 360,
   };
 }
 function rtMoved(a, b) {
@@ -4657,8 +4657,27 @@ function rtPosOf(o) {
   if (!o.to) return undefined;
   const k = o.t1 > o.t0 ? Math.min(1, (Date.now() - o.t0) / (o.t1 - o.t0)) : 1;
   const f = o.from || o.to;
-  o.cur = { lon: f.lon + (o.to.lon - f.lon) * k, lat: f.lat + (o.to.lat - f.lat) * k, h: f.h + (o.to.h - f.h) * k };
+  o.cur = {
+    lon: f.lon + (o.to.lon - f.lon) * k, lat: f.lat + (o.to.lat - f.lat) * k, h: f.h + (o.to.h - f.h) * k,
+    hd: rtLerpDeg(f.hd || 0, o.to.hd || 0, k),
+  };
   return Cesium.Cartesian3.fromDegrees(o.cur.lon, o.cur.lat, o.cur.h);
+}
+// 角度は近い側へ回して補間する（350°→10° を 340° 逆回りにしない）
+function rtLerpDeg(a, b, k) { const d = ((b - a + 540) % 360) - 180; return (a + d * k + 360) % 360; }
+// 向き付きの光点（2026-09-02）。上向きの矢印画像を、相手の向き（水平ベクトル）に世界座標で揃える。
+// 画面上では「相手が進む方向」へ矢印が向く（遠ざかる相手は地平線の方、近づく相手は手前）
+const RT_ARROW = "data:image/svg+xml;utf8," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26">' +
+  '<path d="M13 2 L23 22 L13 17 L3 22 Z" fill="#7fc8ff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>');
+function rtAxisOf(o) {
+  if (!o.cur) return Cesium.Cartesian3.UNIT_Z;
+  const hd = Cesium.Math.toRadians(o.cur.hd || 0);
+  const pos = Cesium.Cartesian3.fromDegrees(o.cur.lon, o.cur.lat, o.cur.h);
+  const enu = Cesium.Transforms.eastNorthUpToFixedFrame(pos);            // 東・北・上 → 世界座標
+  const local = new Cesium.Cartesian4(Math.sin(hd), Math.cos(hd), 0, 0);  // 向き（北が0°・時計回り）
+  const w = Cesium.Matrix4.multiplyByVector(enu, local, new Cesium.Cartesian4());
+  return Cesium.Cartesian3.normalize(new Cesium.Cartesian3(w.x, w.y, w.z), new Cesium.Cartesian3());
 }
 function rtEnsure(key) {
   let o = rtOthers[key];
@@ -4666,10 +4685,10 @@ function rtEnsure(key) {
   o = { num: rtNum(key), from: null, to: null, t0: 0, t1: 0, cur: null, stamp: "", stampUntil: 0, lastStampAt: 0 };
   o.ent = viewer.entities.add({
     position: new Cesium.CallbackProperty(function () { return rtPosOf(o); }, false),
-    point: {
-      pixelSize: 14, color: Cesium.Color.fromCssColorString("#7fc8ff"),
-      outlineColor: Cesium.Color.WHITE, outlineWidth: 2,
-      disableDepthTestDistance: Number.POSITIVE_INFINITY, // 建物の陰でも見える光点
+    billboard: {
+      image: RT_ARROW, width: 26, height: 26,
+      alignedAxis: new Cesium.CallbackProperty(function () { return rtAxisOf(o); }, false),
+      disableDepthTestDistance: Number.POSITIVE_INFINITY, // 建物の陰でも見える
     },
     label: {
       text: new Cesium.CallbackProperty(function () {

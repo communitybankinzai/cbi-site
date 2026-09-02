@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-09-02",
+          "title": "メタバース：他者の光点を向き付き矢印へ（alignedAxis で世界座標の向きに揃える） 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html — RT_ARROW（インラインSVG矢印）、rtAxisOf（東北上フレームで向きベクトルを世界座標へ）、rtLerpDeg（最短回転の補間）、光点 point → billboard(alignedAxis)、送信 hd を 0〜359 に正規化、版 2026-09-03q",
+            "site/admin/changelog.json — feature 1件"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "ユーザー質問「相手が飛んでいるところも見えますか」→ 位置・高さは追うが向きは描いていないと回答し、3案（向き付き光点／軌跡／精霊アバター）から1を選択。ローカル2オリジンで向き90°→東向き単位ベクトル(1,0,0)、補間 350°→10° が 0° を通ることを JS で確認。描画そのものは前回同様ブラウザペインでは確認不可。session: d59656bc-791e-4e89-87d3-b7fe5c3a2817 / output: 63,388 / cost: $13.78"
+        },
+        {
+          "date": "2026-09-02",
           "title": "メタバース：他の利用者の光点表示＋定型スタンプ（Supabase Realtime）と軽量モードの実装 0.5時間",
           "category": "実装",
           "outputs": [
