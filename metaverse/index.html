@@ -1162,47 +1162,50 @@ function addGridLines() {
   const LAT0 = 35.75, LAT1 = 35.92, LON0 = 140.05, LON1 = 140.32;
   const STEP = 0.005;
   const H = INZAI_GEOID_HEIGHT_M; // 標高0m相当（Cesiumは楕円体高で描くため）
-  const thin = Cesium.Color.fromCssColorString("rgba(90, 200, 255, 0.22)");
-  const thick = Cesium.Color.fromCssColorString("rgba(120, 220, 255, 0.55)");
   const near = (v, unit) => Math.abs(v / unit - Math.round(v / unit)) < 1e-6;
-  const line = (positions, major) => viewer.entities.add({
-    polyline: {
-      positions: Cesium.Cartesian3.fromDegreesArrayHeights(positions),
-      width: major ? 2 : 1,
-      material: major ? thick : thin,
-    },
-  });
+  // エンティティで描くと毎フレーム全件を走査されて重い（線90本＋ラベル193個で12fpsまで落ちた。
+  // 2026-09-02 実測）。動かない図形なので、まとめて1つの描画単位に入れる
+  const lines = new Cesium.PolylineCollection();
+  const thin = Cesium.Material.fromType("Color", { color: Cesium.Color.fromCssColorString("rgba(90, 200, 255, 0.22)") });
+  const thick = Cesium.Material.fromType("Color", { color: Cesium.Color.fromCssColorString("rgba(120, 220, 255, 0.55)") });
   for (let lat = LAT0; lat <= LAT1 + 1e-9; lat += STEP) {
     const v = Math.round(lat * 1000) / 1000;
-    line([LON0, v, H, LON1, v, H], near(v, 0.01));
+    const major = near(v, 0.01);
+    lines.add({
+      positions: Cesium.Cartesian3.fromDegreesArrayHeights([LON0, v, H, LON1, v, H]),
+      width: major ? 2 : 1, material: major ? thick : thin,
+    });
   }
   for (let lon = LON0; lon <= LON1 + 1e-9; lon += STEP) {
     const v = Math.round(lon * 1000) / 1000;
-    line([v, LAT0, H, v, LAT1, H], near(v, 0.01));
+    const major = near(v, 0.01);
+    lines.add({
+      positions: Cesium.Cartesian3.fromDegreesArrayHeights([v, LAT0, H, v, LAT1, H]),
+      width: major ? 2 : 1, material: major ? thick : thin,
+    });
   }
-  // 2kmごとの交点に座標を出す。近づいたときだけ見えるようにし、数も抑える
-  // （1kmごとにすると571個になり、せっかく軽くした描画をまた重くしてしまう）
+  viewer.scene.primitives.add(lines);
+
+  // 2kmごとの交点に座標を出す。近づいたときだけ見えるようにする
+  const labels = new Cesium.LabelCollection();
   for (let lat = LAT0; lat <= LAT1 + 1e-9; lat += 0.02) {
     for (let lon = LON0; lon <= LON1 + 1e-9; lon += 0.02) {
       const la = Math.round(lat * 1000) / 1000, lo = Math.round(lon * 1000) / 1000;
-      viewer.entities.add({
+      labels.add({
         position: Cesium.Cartesian3.fromDegrees(lo, la, H),
-        label: {
-          text: la.toFixed(3) + ", " + lo.toFixed(3),
-          font: "11px monospace",
-          fillColor: Cesium.Color.fromCssColorString("rgba(160, 230, 255, 0.9)"),
-          showBackground: true,
-          backgroundColor: Cesium.Color.fromCssColorString("rgba(6, 18, 30, 0.65)"),
-          horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          pixelOffset: new Cesium.Cartesian2(4, -4),
-          // 常に最前面にすると、スポットや文化財の看板を覆い隠してしまう（2026-09-02）。
-          // 深度は素直に扱い、表示も足元に近づいたときだけにする
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2000),
-        },
+        text: la.toFixed(3) + ", " + lo.toFixed(3),
+        font: "11px monospace",
+        fillColor: Cesium.Color.fromCssColorString("rgba(160, 230, 255, 0.9)"),
+        showBackground: true,
+        backgroundColor: Cesium.Color.fromCssColorString("rgba(6, 18, 30, 0.65)"),
+        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+        pixelOffset: new Cesium.Cartesian2(4, -4),
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2000),
       });
     }
   }
+  viewer.scene.primitives.add(labels);
 }
 
 async function loadTileset() {
@@ -1538,7 +1541,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03e"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03f"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
