@@ -1487,7 +1487,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02s"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02t"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2864,12 +2864,18 @@ async function openTtModal() {
   const st = ttQuizStats();
   const qualified = st.answers >= req.minAnswers && Math.round(st.rate * 100) >= req.minRatePct;
   const ratePct = Math.round(st.rate * 100);
+  // 管理画面で要件を 0問・0% にすると免除の合図。会場で親子に遊んでもらうときなど、
+  // クイズを解かずにすぐ走れるようにするための設定なので、表示もそれに合わせる
+  const freePass = req.minAnswers <= 0 && req.minRatePct <= 0;
   let html =
     '<p class="ttNote">家にいながらオンラインで競争！ 文化財を決められた順番に巡ってタイムを競います。文化財の場所と移動操作をマスターしよう。</p>' +
-    '<p class="ttNote">参加要件：クイズで<b>' + req.minAnswers + '問以上解答し、正答率' + req.minRatePct + '%以上</b>であること' +
-    (info ? "（今回のイベント設定）" : "（標準設定）") + '。<br>' +
-    'あなたの成績：' + st.answers + '問解答・正答率' + ratePct + '% → ' +
-    (qualified ? '<span class="ttOk">✅ 参加できます</span>' : '<span class="ttNg">❌ まだ参加できません（クイズタブで挑戦しよう）</span>') + "</p>";
+    (freePass
+      ? '<p class="ttNote"><span class="ttOk">✅ どなたでも参加できます</span>（今回はクイズの成績を問いません）。<br>' +
+        'これまでのあなたの成績：' + st.answers + '問解答・正答率' + ratePct + '%</p>'
+      : '<p class="ttNote">参加要件：クイズで<b>' + req.minAnswers + '問以上解答し、正答率' + req.minRatePct + '%以上</b>であること' +
+        (info ? "（今回のイベント設定）" : "（標準設定）") + '。<br>' +
+        'あなたの成績：' + st.answers + '問解答・正答率' + ratePct + '% → ' +
+        (qualified ? '<span class="ttOk">✅ 参加できます</span>' : '<span class="ttNg">❌ まだ参加できません（クイズタブで挑戦しよう）</span>') + "</p>");
   if (qualified) {
     html += '<p style="margin:8px 0 2px;"><b>参加年齢をえらんでください</b>（年齢でレベルが決まります）</p>' +
       '<div class="quizLevelRow">' +
