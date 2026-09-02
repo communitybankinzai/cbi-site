@@ -1533,7 +1533,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03c"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03d"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1789,6 +1789,7 @@ let padDebugOn = PAD_DEBUG; // 🩺診断ボタンで切り替える（URLに ?p
 const PAD_CH_NAMES = ["左横", "左縦", "右横", "右縦", "L2", "R2"];
 let padDebugFrame = 0;
 let padDebugText = "";   // 前回の表示内容（同じなら書き換えない）
+let fpsFrames = 0, fpsSince = 0, fpsValue = 0, fpsWorst = 999; // 描画の速さの計測
 function updatePadDebug(pad, forward, right, up) {
   const el = document.getElementById("padDebug");
   if (!padDebugOn) {
@@ -1798,7 +1799,12 @@ function updatePadDebug(pad, forward, right, up) {
   if (el.style.display !== "block") el.style.display = "block";
   if (++padDebugFrame % 15 !== 0) return; // 4回/秒。読むには十分で、書き換えの負担が小さい // 毎フレーム書き換えると重いので間引く
   const all = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
-  const L = ["■ コントローラー診断  版 " + PAD_TUNING_VERSION];
+  const L = ["■ 診断  版 " + PAD_TUNING_VERSION];
+  L.push("描画: " + fpsValue + " fps（この画面での最低 " + (fpsWorst === 999 ? "-" : fpsWorst) + "）");
+  L.push("地図: " + (miniMapOpen ? "ひらいている" : "とじている")
+    + (miniMapOpen && miniMapApi ? (miniMapApi.getFollow() ? "／自分を中心に" : "／追従なし") : "")
+    + " ／ トンビ: " + (tonbiOn ? "あり" : "なし")
+    + " ／ 街並み: " + (NO_TILES ? "読まない" : "読む"));
   L.push("受付: " + (padEnabled ? "ON" : "OFF ←「コントローラー停止中」を押して戻す"));
   L.push("ブラウザが見ている数: " + all.length);
   if (!pad) {
@@ -1938,6 +1944,7 @@ document.getElementById("padToggleBtn").addEventListener("click", function () {
   setPadEnabled(!padEnabled);
 });
 document.getElementById("padDebugBtn").addEventListener("click", function () {
+  fpsWorst = 999; // 開くたびに最低値を測り直す
   padDebugOn = !padDebugOn;
   this.classList.toggle("on", padDebugOn);
   padDebugFrame = 5; // 押した直後に一度描き直す
@@ -1967,6 +1974,16 @@ viewer.clock.onTick.addEventListener(function () {
   const now = performance.now();
   const dt = lastTime === undefined ? 0.016 : Math.min((now - lastTime) / 1000, 0.1);
   lastTime = now;
+
+  // 1秒あたり何回描けているか。重さの原因を推測で探すと外すので、数字で見るための計測。
+  // 数えるだけなので、この処理自体は負担にならない
+  fpsFrames++;
+  if (now - fpsSince >= 500) {
+    fpsValue = Math.round(fpsFrames * 1000 / (now - fpsSince));
+    if (fpsValue < fpsWorst) fpsWorst = fpsValue;
+    fpsFrames = 0;
+    fpsSince = now;
+  }
 
   const cam = viewer.camera;
   // パッドは速度の計算にも使うので先に読む
