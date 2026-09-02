@@ -1210,16 +1210,17 @@ function addGridLines() {
   viewer.scene.primitives.add(labels);
   gridPrims.push(labels);
 
-  // 重さの切り分け用に、その場で出し入れできるようにしておく
+  // 実測でグリッドは1フレームあたり約30msの負担だった（2026-09-02、線90本＋ラベル193個）。
+  // 既定は非表示にし、進んでいる感じが欲しいときだけボタンで出す
   const btn = document.getElementById("gridBtn");
   btn.style.display = "";
-  btn.classList.add("on");
-  btn.addEventListener("click", function () {
-    const on = !gridPrims[0].show;
+  function paintGrid(on) {
     gridPrims.forEach(function (p) { p.show = on; });
     btn.classList.toggle("on", on);
     btn.textContent = on ? "▦ グリッド" : "▦ グリッド（非表示）";
-  });
+  }
+  paintGrid(false);
+  btn.addEventListener("click", function () { paintGrid(!gridPrims[0].show); });
 }
 const gridPrims = []; // グリッドの描画単位（ON/OFF 用）
 
@@ -1556,7 +1557,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03h"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03i"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
