@@ -4516,7 +4516,6 @@ async function startPlayDemo() {
     if (el) el.style.display = "none";
   });
   document.getElementById("howtoModal").classList.remove("show");
-  document.getElementById("speedChip").style.display = "none"; // 滑空中に倍率を変えるため表示が実態とずれる
   setTonbiVisible(true);                    // 「鳥になって飛ぶ」の主役
   speedMultiplier = cruiseMult;
 
@@ -4537,7 +4536,8 @@ async function startPlayDemo() {
     "#cinemaEnd.show{opacity:1;}" +
     "#cinemaEnd img{width:46%;max-width:260px;margin-bottom:22px;}" +
     "#cinemaEnd h2{color:#ffd166;font-size:30px;margin:0 0 10px;}" +
-    "#cinemaEnd p{font-size:17px;line-height:1.9;margin:0;}";
+    "#cinemaEnd p{font-size:17px;line-height:1.9;margin:0;}" +
+    "#speedChip{display:none!important;}"; /* 滑空中に倍率を変えるため表示が実態とずれる。updateSpeedChip が display を戻すので CSS で隠す */
   document.head.appendChild(style);
   const end = document.createElement("div");
   end.id = "cinemaEnd";
