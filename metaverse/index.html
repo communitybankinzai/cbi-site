@@ -1541,7 +1541,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03f"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03g"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1797,7 +1797,8 @@ let padDebugOn = PAD_DEBUG; // 🩺診断ボタンで切り替える（URLに ?p
 const PAD_CH_NAMES = ["左横", "左縦", "右横", "右縦", "L2", "R2"];
 let padDebugFrame = 0;
 let padDebugText = "";   // 前回の表示内容（同じなら書き換えない）
-let fpsFrames = 0, fpsSince = 0, fpsValue = 0, fpsWorst = 999; // 描画の速さの計測
+let fpsFrames = 0, fpsSince = 0, fpsValue = 0, fpsWorst = 999, fpsBest = 0; // 描画の速さの計測
+const fpsHistory = [];  // 直近10秒ぶん（0.5秒刻み）
 function updatePadDebug(pad, forward, right, up) {
   const el = document.getElementById("padDebug");
   if (!padDebugOn) {
@@ -1808,7 +1809,14 @@ function updatePadDebug(pad, forward, right, up) {
   if (++padDebugFrame % 15 !== 0) return; // 4回/秒。読むには十分で、書き換えの負担が小さい // 毎フレーム書き換えると重いので間引く
   const all = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
   const L = ["■ 診断  版 " + PAD_TUNING_VERSION];
-  L.push("描画: " + fpsValue + " fps（この画面での最低 " + (fpsWorst === 999 ? "-" : fpsWorst) + "）");
+  // スクリーンショットを撮る瞬間はブラウザから焦点が外れて描画が絞られるため、
+  // その瞬間の値だけでは平時の速さが分からない。最大と直近10秒の平均も並べる
+  const avg = fpsHistory.length ? Math.round(fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length) : 0;
+  L.push("描画: いま " + fpsValue + " fps ／ 10秒平均 " + avg + " ／ 最大 " + fpsBest
+    + " ／ 最低 " + (fpsWorst === 999 ? "-" : fpsWorst));
+  L.push("画面: " + viewer.canvas.width + "×" + viewer.canvas.height
+    + " ／ 解像度倍率 " + viewer.resolutionScale.toFixed(2)
+    + " ／ 実体 " + Math.round(viewer.entities.values.length) + " ／ 描画単位 " + viewer.scene.primitives.length);
   L.push("地図: " + (miniMapOpen ? "ひらいている" : "とじている")
     + (miniMapOpen && miniMapApi ? (miniMapApi.getFollow() ? "／自分を中心に" : "／追従なし") : "")
     + " ／ トンビ: " + (tonbiOn ? "あり" : "なし")
@@ -1952,7 +1960,7 @@ document.getElementById("padToggleBtn").addEventListener("click", function () {
   setPadEnabled(!padEnabled);
 });
 document.getElementById("padDebugBtn").addEventListener("click", function () {
-  fpsWorst = 999; // 開くたびに最低値を測り直す
+  fpsWorst = 999; fpsBest = 0; fpsHistory.length = 0; // 開くたびに測り直す
   padDebugOn = !padDebugOn;
   this.classList.toggle("on", padDebugOn);
   padDebugFrame = 5; // 押した直後に一度描き直す
@@ -1989,6 +1997,9 @@ viewer.clock.onTick.addEventListener(function () {
   if (now - fpsSince >= 500) {
     fpsValue = Math.round(fpsFrames * 1000 / (now - fpsSince));
     if (fpsValue < fpsWorst) fpsWorst = fpsValue;
+    if (fpsValue > fpsBest) fpsBest = fpsValue;
+    fpsHistory.push(fpsValue);
+    if (fpsHistory.length > 20) fpsHistory.shift();
     fpsFrames = 0;
     fpsSince = now;
   }
