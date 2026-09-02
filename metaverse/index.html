@@ -690,6 +690,7 @@
   <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
   <button id="padCenterBtn" style="display:none" title="スティックから手を離した状態で押してください。いまの値をそのまま「手を離した位置」として覚え直します（コントローラーのOPTIONSボタンでも同じことができます）">🎯 中心合わせ</button>
   <button id="padDebugBtn" title="コントローラーを認識しているか、各スティックがどんな値を出しているかを画面に表示します">🩺 診断</button>
+  <button id="noTilesBtn" title="3Dの街並みを読み込むかどうかを切り替えます。読み込まない検証モードなら、ピン・メニュー・コントローラーの確認を1日30回の表示枠を使わずに行えます">🔧 検証モード</button>
   <button id="modeSwitchBtn" title="イベント用途と防災用途を切り替えます">🔀 モード切替</button>
   <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 撮影</button>
   <button id="recBtn" title="画面を動画（WebM）で録画します。もう一度押すと停止して保存されます">🎥 録画</button>
@@ -1084,9 +1085,78 @@ let tileset = null;
 // 2026-09-01 の動作確認では1日で予算の10%（約100円）に達した。開発時はこのモードを使う。
 const NO_TILES = new URLSearchParams(location.search).get("notiles") === "1";
 
+// 検証モードの入り切り。3Dタイルを読むかどうかは読み込み時に決まるので、URLを書き換えて開き直す。
+// 街並みを読む側へ戻すときだけ確認を挟む（1回の読み込みで1日30回の表示枠を1つ使うため）
+(function setupNoTilesButton() {
+  const btn = document.getElementById("noTilesBtn");
+  if (!btn) return;
+  btn.textContent = NO_TILES ? "🔧 検証モード中" : "🔧 検証モード";
+  btn.classList.toggle("on", NO_TILES);
+  btn.addEventListener("click", function () {
+    const url = new URL(location.href);
+    if (NO_TILES) {
+      if (!confirm("3Dの街並みを読み込みます。\n1日30回の表示枠を1回使います。よろしいですか？")) return;
+      url.searchParams.delete("notiles");
+    } else {
+      url.searchParams.set("notiles", "1");
+    }
+    location.href = url.toString();
+  });
+})();
+
+// 検証モードでは街並みが無いため、動いているかどうかが分かりにくい。
+// 地面の代わりに緯度経度の目盛りを引いて、進んでいる感じと現在地を掴めるようにする。
+// 0.005度＝およそ500m、0.01度ごとに太い線と座標ラベルを置く
+function addGridLines() {
+  const LAT0 = 35.75, LAT1 = 35.92, LON0 = 140.05, LON1 = 140.32;
+  const STEP = 0.005;
+  const H = INZAI_GEOID_HEIGHT_M; // 標高0m相当（Cesiumは楕円体高で描くため）
+  const thin = Cesium.Color.fromCssColorString("rgba(90, 200, 255, 0.22)");
+  const thick = Cesium.Color.fromCssColorString("rgba(120, 220, 255, 0.55)");
+  const near = (v, unit) => Math.abs(v / unit - Math.round(v / unit)) < 1e-6;
+  const line = (positions, major) => viewer.entities.add({
+    polyline: {
+      positions: Cesium.Cartesian3.fromDegreesArrayHeights(positions),
+      width: major ? 2 : 1,
+      material: major ? thick : thin,
+    },
+  });
+  for (let lat = LAT0; lat <= LAT1 + 1e-9; lat += STEP) {
+    const v = Math.round(lat * 1000) / 1000;
+    line([LON0, v, H, LON1, v, H], near(v, 0.01));
+  }
+  for (let lon = LON0; lon <= LON1 + 1e-9; lon += STEP) {
+    const v = Math.round(lon * 1000) / 1000;
+    line([v, LAT0, H, v, LAT1, H], near(v, 0.01));
+  }
+  // 2kmごとの交点に座標を出す。近づいたときだけ見えるようにし、数も抑える
+  // （1kmごとにすると571個になり、せっかく軽くした描画をまた重くしてしまう）
+  for (let lat = LAT0; lat <= LAT1 + 1e-9; lat += 0.02) {
+    for (let lon = LON0; lon <= LON1 + 1e-9; lon += 0.02) {
+      const la = Math.round(lat * 1000) / 1000, lo = Math.round(lon * 1000) / 1000;
+      viewer.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(lo, la, H),
+        label: {
+          text: la.toFixed(3) + ", " + lo.toFixed(3),
+          font: "11px monospace",
+          fillColor: Cesium.Color.fromCssColorString("rgba(160, 230, 255, 0.9)"),
+          showBackground: true,
+          backgroundColor: Cesium.Color.fromCssColorString("rgba(6, 18, 30, 0.65)"),
+          horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          pixelOffset: new Cesium.Cartesian2(4, -4),
+          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 4000),
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        },
+      });
+    }
+  }
+}
+
 async function loadTileset() {
   if (NO_TILES) {
     document.getElementById("overlay").style.display = "none";
+    addGridLines();
     const badge = document.createElement("div");
     badge.textContent = "🔧 検証モード（3D都市データを読み込みません／課金なし）";
     badge.style.cssText =
@@ -1416,7 +1486,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02o"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02q"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -3712,7 +3782,7 @@ function recStart() {
   const bar = document.getElementById("topLeftBar");
   if (bar) bar.style.display = "";
   ["puzzleBtn", "reportsBtn", "pinToggleBtn", "shelterToggleBtn", "kominkanToggleBtn",
-   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "speedChip", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
+   "pickModeBtn", "ttBtn", "tonbiToggleBtn", "padToggleBtn", "padCenterBtn", "padDebugBtn", "noTilesBtn", "speedChip", "modeSwitchBtn", "shotBtn", "howtoBtn"].forEach(function (id) {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
   });
