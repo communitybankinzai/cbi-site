@@ -1554,10 +1554,17 @@ const PAD_STUCK_SEC = 5.0;         // 動かない入力を張り付きとみな
 const PAD_STUCK_JITTER = 0.10;     // この幅に収まったまま動かなければ「触っていない」とみなす
 const PAD_STUCK_CREEP_SEC = 1.5;   // 中心を現在値へ寄せるときの速さ（この秒数かけて寄せる）
 const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒数を過ぎたら寄せ始める
+// 人の操作と張り付きの見分け方。人はスティックを「速く」倒す（0.2秒ほどで0.2以上動く）が、
+// 張り付きやドリフトは「じわじわ」しか動かない。速い動きがあってからしばらくは人が握っている
+// とみなし、吸収も中心寄せもしない。値が全く揺れない良品で、前へ倒して保持すると2秒で
+// 止まってしまう不具合が実機で出たため（2026-09-02）
+const PAD_FAST_DELTA = 0.22;       // この量以上を…
+const PAD_FAST_WINDOW_MS = 400;    // …この時間以内に動いたら「人が動かした」
+const PAD_HOLD_MAX_MS = 20000;     // 握ったままとみなす上限（本当に張り付いた場合の打ち切り）
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03i"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03j"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1577,6 +1584,20 @@ let padCalibSamples = 0;
 const padStuckMin = [0, 0, 0, 0, 0, 0]; // 張り付き監視の区間の最小
 const padStuckMax = [0, 0, 0, 0, 0, 0]; // 同じく最大（この幅で「触っているか」を見る）
 const padStuckSec = [0, 0, 0, 0, 0, 0]; // 基準値から動かないまま経った秒数
+const padHist = [[], [], [], [], [], []];   // 直近0.4秒の生の値（速い動きの検出用）
+const padHeldSince = [0, 0, 0, 0, 0, 0]; // 速く倒してから離していない＝握っている（0なら握っていない）
+
+// 直近の値を覚え、速い動きがあれば「握り始めた」と記録する。遊びの内側へ戻ったら解除する
+function notePadMotion(ch, raw, now) {
+  const h = padHist[ch];
+  h.push({ t: now, v: raw });
+  while (h.length && now - h[0].t > PAD_FAST_WINDOW_MS) h.shift();
+  if (!padHeldSince[ch]) {
+    for (let i = 0; i < h.length; i++) {
+      if (Math.abs(raw - h[i].v) >= PAD_FAST_DELTA) { padHeldSince[ch] = now; break; }
+    }
+  }
+}
 let padStuckNoticeAt = -Infinity; // 起動直後の吸収も知らせたいので、最初は必ず通知が出るようにする
 
 // 番号から生の値を取り出す（軸はそのまま、トリガーは押し込み量 0〜1）
@@ -1689,6 +1710,13 @@ function trackPadCenter(pad, ch, dt) {
 // いつまでも吸収されない（2026-09-02 に実機で発生）。倒し切り付近は意図した操作なので対象外
 function absorbPadStuck(pad, ch, dt) {
   const raw = padRaw(pad, ch);
+  // 速く倒してから離していない＝人が握っている。張り付きの判定を始めない
+  // （ただし本当に張り付いた場合に備え、PAD_HOLD_MAX_MS を過ぎたら判定を始める）
+  if (padHeldSince[ch] && performance.now() - padHeldSince[ch] < PAD_HOLD_MAX_MS) {
+    padStuckMin[ch] = padStuckMax[ch] = raw;
+    padStuckSec[ch] = 0;
+    return false;
+  }
   if (raw < padStuckMin[ch]) padStuckMin[ch] = raw;
   if (raw > padStuckMax[ch]) padStuckMax[ch] = raw;
   if (padStuckMax[ch] - padStuckMin[ch] > PAD_STUCK_JITTER) {
@@ -1732,12 +1760,15 @@ function updatePadInput(pad, dt) {
     return; // 中心が決まるまでは操作を受け付けない（padValue は 0 のまま）
   }
   let absorbed = false;
+  const nowMs = performance.now();
   for (let ch = 0; ch < PAD_CH; ch++) {
+    notePadMotion(ch, padRaw(pad, ch), nowMs);
     padValue[ch] = padNormalize(padRaw(pad, ch), ch);
     if (padValue[ch] === 0) {
       trackPadCenter(pad, ch, dt);
       padStuckMin[ch] = padStuckMax[ch] = padRaw(pad, ch);
       padStuckSec[ch] = 0;
+      padHeldSince[ch] = 0; // 遊びの内側へ戻った＝手を離した
     } else if (absorbPadStuck(pad, ch, dt)) {
       absorbed = true;
     }
