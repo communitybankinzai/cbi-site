@@ -4737,7 +4737,19 @@ async function startPlayDemo() {
   // 前進は climb ではキー入力（羽ばたく）、glide では 0.5 のアナログ入力（トンビが滑空の姿になる）にし、
   // 速さの倍率を倍にして実際の速度は変えない
   const st = { phase: "intro", idx: 0, lastNow: undefined, groundTick: 0, ground: null, nearShown: false,
-               turnDir: 1, topH: 0, resume: "climb" };
+               turnDir: 1, topH: 0, resume: "climb", bank: 0 };
+  const BANK_CLIMB_DEG = 24;                // らせん上昇中の傾き（進行方向側の翼が下がる）
+  // トンビの絵の傾きは updateTonbi が横移動入力から決めるが、自動操縦では横移動を使わないので
+  // ここで上書きする。#tonbiLayer の transform には CSS transition が付いており、仮想時間の録画では
+  // 進まないため切っておく（人が見るときも毎フレーム少しずつ動かすので滑らかさは変わらない）
+  const tonbiLayer = document.getElementById("tonbiLayer");
+  tonbiLayer.style.transition = "none";
+  function applyBank(deg) {
+    // 画面の傾き（カメラのロール）と、手前のトンビの傾きを同じ向きにそろえる。
+    // 右へ回るとき（deg>0）は右翼が下がり、地平線は画面上で左が下がって見える
+    tonbiLayer.style.transform = "translateX(-50%) rotate(" + deg.toFixed(1) + "deg)";
+    return Cesium.Math.toRadians(deg); // Cesium のロールは正で右翼が下がる向き（検証モードのスクショで確認 2026-09-02）
+  }
   const CLIMB_GAIN_M = 200;                 // 1回の上昇で稼ぐ高さ
   const ARRIVE_H = 92;                      // 目的地の真上での高さ（楕円体高。獲得判定の上限150mより下）
   function relTo(b) {
@@ -4763,7 +4775,15 @@ async function startPlayDemo() {
     say("🦅 トンビのように<br>上昇気流で <b>高く</b>", 3000);
   }
   viewer.clock.onTick.addEventListener(function () {
-    if (st.phase === "intro" || st.phase === "catch" || st.phase === "done") { setInput(0); return; }
+    if (st.phase === "intro" || st.phase === "catch" || st.phase === "done") {
+      setInput(0);
+      if (Math.abs(st.bank) > 0.1) { // 止まったら水平に戻す
+        st.bank *= 0.9;
+        const cam0 = viewer.camera;
+        cam0.setView({ orientation: { heading: cam0.heading, pitch: cam0.pitch, roll: applyBank(st.bank) } });
+      }
+      return;
+    }
     const b = tb[st.idx];
     if (!b) return;
     const now = performance.now();
@@ -4779,11 +4799,12 @@ async function startPlayDemo() {
     }
     let diff = r.bearing - cam.heading;
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-    let heading = cam.heading, wantPitch = 0, forwardIn = 1;
+    let heading = cam.heading, wantPitch = 0, forwardIn = 1, wantBank = 0;
 
     if (st.phase === "climb") {
       // 一定の向きに回り続ける。高さが足りているうえで目的地の方位に来たら滑空へ
       heading = cam.heading + st.turnDir * Cesium.Math.toRadians(30) * dt;
+      wantBank = st.turnDir * BANK_CLIMB_DEG;
       wantPitch = r.height < st.topH ? Cesium.Math.toRadians(22) : Cesium.Math.toRadians(2);
       const aligned = Math.abs(diff) < Cesium.Math.toRadians(10);
       if (r.height >= st.topH && aligned) {
@@ -4792,7 +4813,9 @@ async function startPlayDemo() {
       }
     } else if (st.phase === "glide") {
       const maxTurn = Cesium.Math.toRadians(40) * dt;
-      heading = cam.heading + Math.max(-maxTurn, Math.min(maxTurn, diff));
+      const turn = Math.max(-maxTurn, Math.min(maxTurn, diff));
+      heading = cam.heading + turn;
+      wantBank = Math.max(-16, Math.min(16, Cesium.Math.toDegrees(diff) * 0.4)); // 進路修正の量に応じて軽く傾く
       // 残りの距離で ARRIVE_H まで降りる角度。急すぎ・浅すぎは抑える
       let deg = -Cesium.Math.toDegrees(Math.atan2(r.height - ARRIVE_H, Math.max(r.dist, 60)));
       deg = Math.max(-26, Math.min(-4, deg));
@@ -4804,7 +4827,10 @@ async function startPlayDemo() {
     }
     const maxPitchStep = Cesium.Math.toRadians(25) * dt;
     const pitch = cam.pitch + Math.max(-maxPitchStep, Math.min(maxPitchStep, wantPitch - cam.pitch));
-    cam.setView({ orientation: { heading: heading, pitch: pitch, roll: 0 } });
+    // 傾きは毎秒最大 30° で目標へ寄せる（急に倒れない）
+    const maxBankStep = 30 * dt;
+    st.bank += Math.max(-maxBankStep, Math.min(maxBankStep, wantBank - st.bank));
+    cam.setView({ orientation: { heading: heading, pitch: pitch, roll: applyBank(st.bank) } });
     setInput(forwardIn);
     // 精霊が出たら止まる（ゲットは人が押すのと同じ confirmCatch を少し遅れて呼ぶ）
     if (encounterIdx !== null) {
