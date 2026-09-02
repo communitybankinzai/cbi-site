@@ -1145,8 +1145,9 @@ function addGridLines() {
           horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
           verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
           pixelOffset: new Cesium.Cartesian2(4, -4),
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 4000),
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          // 常に最前面にすると、スポットや文化財の看板を覆い隠してしまう（2026-09-02）。
+          // 深度は素直に扱い、表示も足元に近づいたときだけにする
+          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2000),
         },
       });
     }
@@ -1486,7 +1487,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02q"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02r"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
