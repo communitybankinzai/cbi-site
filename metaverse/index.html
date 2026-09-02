@@ -2203,6 +2203,7 @@ joystickEl.addEventListener("pointercancel", joyEnd);
 
 // --- 毎フレームの移動処理 ---
 let lastTime = undefined;
+let tonbiPrevHeading = undefined; // トンビの傾き用（前フレームの機首の向き）
 // 1フレームの内訳を測る。重さの原因が自前の処理か Cesium の描画かを切り分けるため
 let tickT0 = 0, tickLogicMs = 0, renderT0 = 0, renderMs = 0, frameMs = 0, lastPostRender = 0, drawCmds = 0;
 viewer.scene.preUpdate.addEventListener(function () { renderT0 = performance.now(); });
@@ -2335,7 +2336,16 @@ viewer.clock.onTick.addEventListener(function () {
   const centerBtn = document.getElementById("padCenterBtn");
   const wantCenterBtn = pad ? "" : "none";
   if (centerBtn.style.display !== wantCenterBtn) centerBtn.style.display = wantCenterBtn;
-  updateTonbi(dt, forward, right, up);       // 手前のトンビの姿勢
+  // 旋回の速さ（毎秒の機首の回り）を横移動の入力に足して、トンビが曲がる側へ傾くようにする。
+  // 右スティックやドラッグで視点を回しても、横移動と同じ 22° を上限に傾く（2026-09-02 ユーザー要望）
+  let yawTilt = 0;
+  if (tonbiPrevHeading !== undefined && dt > 0) {
+    let dh = cam.heading - tonbiPrevHeading;
+    dh = Math.atan2(Math.sin(dh), Math.cos(dh));
+    yawTilt = Math.max(-1, Math.min(1, dh / dt / Cesium.Math.toRadians(45))); // 毎秒45°回れば目いっぱい
+  }
+  tonbiPrevHeading = cam.heading;
+  updateTonbi(dt, forward, right + yawTilt, up); // 手前のトンビの姿勢
 
   if (forward !== 0 || right !== 0 || up !== 0 || walkMode) {
     // 歩行モードでは水平方向のみに移動（ピッチの影響を除去）
@@ -4640,12 +4650,14 @@ async function startTeaser() {
 // 文化財2か所を実プレイと同じ動きで通過する。80m以内で精霊が出現→ゲットまで本物の処理を通す。
 //   ?pair=0,39   通過する文化財の index（既定：宝珠院観音堂 → いなざき獅子舞・約900m）
 //   ?speed=2.4   移動の速さ（⚡ボタンの倍率と同じ意味。約72m/s）
+//   ?roll=0      旋回で画面を傾けない（トンビだけ傾く）
 // 録画は scripts/promo/record_play.mjs（仮想時間で1フレームずつ撮る）。window.cinemaDone で終了を知らせる
 async function startPlayDemo() {
   const q = new URLSearchParams(location.search);
   const targets = (q.get("pair") || "0,39").split(",").map(Number)
     .filter((n) => Number.isInteger(n) && n >= 0);
   const cruiseMult = Math.max(0.5, Math.min(4, parseFloat(q.get("speed") || "2.4") || 2.4));
+  const CAMERA_ROLL = q.get("roll") !== "0";  // ?roll=0 で画面は水平のまま、トンビだけ傾ける
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   applyMode("event");                       // 実プレイと同じイベント用途（文化財ピンが出る）
@@ -4748,7 +4760,7 @@ async function startPlayDemo() {
     // 画面の傾き（カメラのロール）と、手前のトンビの傾きを同じ向きにそろえる。
     // 右へ回るとき（deg>0）は右翼が下がり、地平線は画面上で左が下がって見える
     tonbiLayer.style.transform = "translateX(-50%) rotate(" + deg.toFixed(1) + "deg)";
-    return Cesium.Math.toRadians(deg); // Cesium のロールは正で右翼が下がる向き（検証モードのスクショで確認 2026-09-02）
+    return CAMERA_ROLL ? Cesium.Math.toRadians(deg) : 0; // Cesium のロールは正で右翼が下がる向き（検証モードのスクショで確認 2026-09-02）
   }
   const CLIMB_GAIN_M = 200;                 // 1回の上昇で稼ぐ高さ
   const ARRIVE_H = 92;                      // 目的地の真上での高さ（楕円体高。獲得判定の上限150mより下）
