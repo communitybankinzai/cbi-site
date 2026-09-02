@@ -42,6 +42,9 @@
 - **🛍 お店ピン**（2026-09-02追加）: FreeFree掲示板（CiDAO）で「🗺 メタバース印西にお店のピンを出す」を選び住所を入れた掲載を、`https://cidao.vercel.app/api/metaverse-shops`（公開・CORS=github.io/localhost 8765-8767/4173・サーバー2分キャッシュ）から取得して `shop-N` エンティティで描く。API は掲載中（`status='active'` かつ期限内）のものだけ返すので、期限切れの扱いはメタバース側で持たない。クリックで情報パネルに店名（団体名または掲載者のSNS表示名。個人氏名は出ない）・掲載タイトル・所在地・「📋 FreeFree掲示板の掲載を見る」・リンクボタン（`#spotInfoLinks`。ホームページ／オンラインショップ／SNS）を出す。**`openEntityById` の先頭で `#spotInfoLinks` を空にし `spotInfoLink` の文言を既定に戻す**（他の種類のピンへ残さないため）。住所→緯度経度は CiDAO 側の保存時に国土地理院APIで変換（`src/lib/geocode.ts`）。**CiDAO の Supabase で migration `20260902200000_freefree_metaverse_pin.sql` が未適用だと API は `{shops:[]}` を返す**（メタバースは止まらない）。実装は `C:\Repos\cidao` の `src/app/api/metaverse-shops/route.ts`・`src/app/freefree/actions.ts`・`new/_components/NewFreefreeForm.tsx`
 - **🔀 めぐりモード（4択）**（2026-09-02に2択→4択）: `event`（文化財めぐり）／`shop`（お店めぐり：お店ピンのみ、文化財ピンとゲーム系ボタンは隠す）／`bousai`（防災：従来どおり）／`all`（文化財＋お店＋公民館）。`MODE_LIST` が正。`?mode=shop` `?mode=all` も可。個別トグルはどのモードでも使え、モードは初期状態を決めるだけ。在席APIへ送る `mode` は未知の値を `event` に丸めるので `shop`/`all` は3D側の人数に含まれる
 
+- **🎬 プレイ動画モード（`?cinema=3`・2026-09-02追加）**: SNS告知用の「実際に遊んでいる画面」を自動で作る。`startPlayDemo()` が通常の移動処理（`keys["KeyW"]`／`joyState.dy`）と視点回転を自動操縦し、文化財2か所（`?pair=0,39`＝宝珠院観音堂→いなざき獅子舞）を **らせん上昇（旋回しながら＋22°で200m）→滑空（残り距離で上空92mへ）→精霊出現→ゲット** の段階制で通過する。旋回中はカメラを24°ロールしトンビも傾ける（`?roll=0` で画面は水平のまま）。目的地以外の精霊が出てもゲットして進む。テロップと終了画面のフェードは rAF（timeweb の仮想時間では CSS transition が進まないため）。録画は `scripts/promo/record_play.mjs`（puppeteer＋timeweb で1フレームずつ→ffmpeg。本番URLで1回＝root request 1回・実時間20〜30分）。経緯と落とし穴は保管庫ノート [[cidao/2026-09-02_メタバースプレイ動画の自動生成]]
+- **🦅 旋回のバンク（通常操作・2026-09-02追加）**: 飛行モードで機首を回す（右スティック・ドラッグ）か横移動すると、トンビが曲がる側へ最大22°傾き、**画面（カメラのロール）も最大20°傾く**。まっすぐ飛ぶと毎秒40°で水平へ戻る。歩行モードでは傾けない。回る速さはフレーム時間で暴れるので 8:2 で平滑化（`yawTiltSmooth`）。Cesium のロールは正で右翼が下がる向き。実装は主ループの `cameraBankEnabled` ブロック（プレイ動画モードは自前で傾けるため false にする）。**実機コントローラーでの確認は未了**
+
 ## 文化財ピンの座標について（重要）
 
 - bunkazai.json の座標は**住所の番地代表点**（国土地理院の住所検索由来）。山林・広い敷地では実際の堂宇と数十〜数百mずれる

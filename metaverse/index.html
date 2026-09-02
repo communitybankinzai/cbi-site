@@ -2204,6 +2204,9 @@ joystickEl.addEventListener("pointercancel", joyEnd);
 // --- 毎フレームの移動処理 ---
 let lastTime = undefined;
 let tonbiPrevHeading = undefined; // トンビの傾き用（前フレームの機首の向き）
+let flyBank = 0;                  // 画面の傾き（度）。曲がるときに地平線が傾く
+let yawTiltSmooth = 0;            // 機首の回る速さ（−1〜1・平滑化済み）。トンビと画面の傾きに使う
+let cameraBankEnabled = true;     // プレイ動画モード（?cinema=3）は自前で傾けるため false にする
 // 1フレームの内訳を測る。重さの原因が自前の処理か Cesium の描画かを切り分けるため
 let tickT0 = 0, tickLogicMs = 0, renderT0 = 0, renderMs = 0, frameMs = 0, lastPostRender = 0, drawCmds = 0;
 viewer.scene.preUpdate.addEventListener(function () { renderT0 = performance.now(); });
@@ -2338,14 +2341,30 @@ viewer.clock.onTick.addEventListener(function () {
   if (centerBtn.style.display !== wantCenterBtn) centerBtn.style.display = wantCenterBtn;
   // 旋回の速さ（毎秒の機首の回り）を横移動の入力に足して、トンビが曲がる側へ傾くようにする。
   // 右スティックやドラッグで視点を回しても、横移動と同じ 22° を上限に傾く（2026-09-02 ユーザー要望）
-  let yawTilt = 0;
   if (tonbiPrevHeading !== undefined && dt > 0) {
     let dh = cam.heading - tonbiPrevHeading;
     dh = Math.atan2(Math.sin(dh), Math.cos(dh));
-    yawTilt = Math.max(-1, Math.min(1, dh / dt / Cesium.Math.toRadians(45))); // 毎秒45°回れば目いっぱい
+    // ドラッグは「1フレームに何度回したか」で入ってくるためフレーム時間で割ると値が暴れる。
+    // 直近の値と 8:2 でならしてから使う
+    const inst = Math.max(-1, Math.min(1, dh / dt / Cesium.Math.toRadians(45))); // 毎秒45°回れば目いっぱい
+    yawTiltSmooth = yawTiltSmooth * 0.8 + inst * 0.2;
   }
   tonbiPrevHeading = cam.heading;
+  const yawTilt = Math.abs(yawTiltSmooth) < 0.02 ? 0 : yawTiltSmooth;
   updateTonbi(dt, forward, right + yawTilt, up); // 手前のトンビの姿勢
+
+  // 画面の傾き（バンク）。飛行モードで曲がるとき、地平線が曲がる側へ最大 20° 傾き、
+  // まっすぐ飛ぶと滑らかに水平へ戻る（2026-09-02 ユーザー要望「地平線も傾けて欲しい」）。
+  // 歩行モードでは傾けない。プレイ動画モードは自前で傾きを管理するので止めておく
+  if (cameraBankEnabled) {
+    const bankTarget = walkMode ? 0 : Math.max(-20, Math.min(20, (right + yawTilt) * 20));
+    const bankStep = 40 * dt;
+    flyBank += Math.max(-bankStep, Math.min(bankStep, bankTarget - flyBank));
+    if (Math.abs(flyBank) < 0.05) flyBank = 0;
+    if (flyBank !== 0 || Math.abs(cam.roll) > 1e-4) {
+      cam.setView({ orientation: { heading: cam.heading, pitch: cam.pitch, roll: Cesium.Math.toRadians(flyBank) } });
+    }
+  }
 
   if (forward !== 0 || right !== 0 || up !== 0 || walkMode) {
     // 歩行モードでは水平方向のみに移動（ピッチの影響を除去）
@@ -4658,6 +4677,7 @@ async function startPlayDemo() {
     .filter((n) => Number.isInteger(n) && n >= 0);
   const cruiseMult = Math.max(0.5, Math.min(4, parseFloat(q.get("speed") || "2.4") || 2.4));
   const CAMERA_ROLL = q.get("roll") !== "0";  // ?roll=0 で画面は水平のまま、トンビだけ傾ける
+  cameraBankEnabled = false;                  // 通常操作の傾き処理は止め、このモードの自動操縦が傾きを決める
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   applyMode("event");                       // 実プレイと同じイベント用途（文化財ピンが出る）
