@@ -130,7 +130,8 @@
   /* スポット情報 */
   #spotInfo {
     position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
-    z-index: 25; background: rgba(20, 30, 40, 0.9); color: #fff;
+    /* トンビ（z-index 26・同じく画面下中央）の後ろに隠れて「反応がない」と見えたため前へ出す（2026-09-02） */
+    z-index: 31; background: rgba(20, 30, 40, 0.9); color: #fff;
     border-radius: 12px; padding: 12px 16px; max-width: 320px; font-size: 13px;
     display: none;
   }
@@ -995,41 +996,75 @@ const GOOGLE_3DTILES_URL = "https://tile.googleapis.com/v1/3dtiles/root.json?key
 // 座標の出典：駅・公園・商業施設は OpenStreetMap（2026-08-22取得）、公民館7施設は kominkan.json（市公式の施設一覧）
 const SPOTS = [
   { name: "千葉ニュータウン中央駅", group: "駅", lat: 35.799983, lon: 140.116119,
-    desc: "印西市の玄関口となる北総線の駅。駅周辺はCBIの活動エリアの中心です。" },
+    desc: "印西市の玄関口となる北総線の駅。駅周辺はCBIの活動エリアの中心です。",
+    detail: "北総線（京成高砂〜印旛日本医大、32.3km）の駅で、1984年に開業。京成線・都営浅草線・京急線と直通し、都心へそのまま乗り入れる。駅前には印西市の複合施設「コスモスパレット」やイオンモールが集まり、市の玄関口。",
+    source: "https://www.city.inzai.lg.jp/0000008909.html", sourceLabel: "印西市「北総線・成田スカイアクセス」" },
   { name: "印西牧の原駅", group: "駅", lat: 35.803497, lon: 140.166716,
-    desc: "北総線の駅。周辺には大型商業施設が集まり、家族連れで賑わうエリアです。" },
+    desc: "北総線の駅。周辺には大型商業施設が集まり、家族連れで賑わうエリアです。",
+    detail: "北総線の駅で、1995年に開業。駅前にはBIG HOPガーデンモール印西があり、ジョイフル本田千葉ニュータウン店なども近い、買い物と家族連れの街。",
+    source: "https://www.city.inzai.lg.jp/0000008909.html", sourceLabel: "印西市「北総線・成田スカイアクセス」" },
   { name: "印旛日本医大駅", group: "駅", lat: 35.787590, lon: 140.203402,
-    desc: "北総線の終着駅。市の南東部の玄関口で、松虫寺など南部の文化財をめぐる起点になります。" },
+    desc: "北総線の終着駅。市の南東部の玄関口で、松虫寺など南部の文化財をめぐる起点になります。",
+    detail: "北総線の終点で、2000年に開業。京成電鉄の成田スカイアクセス線も通り、2020年10月からはこの駅始発の京成上野行き臨時ライナーも走る。平日朝の特急なら日本橋まで約1時間。",
+    source: "https://www.city.inzai.lg.jp/0000008909.html", sourceLabel: "印西市「北総線・成田スカイアクセス」" },
   { name: "木下駅（木下河岸）", group: "駅", lat: 35.838908, lon: 140.148377,
-    desc: "JR成田線の駅。利根川の舟運で栄えた木下河岸の歴史が残る、印西の旧市街エリアです。" },
+    desc: "JR成田線の駅。利根川の舟運で栄えた木下河岸の歴史が残る、印西の旧市街エリアです。",
+    detail: "JR成田線（我孫子〜成田）の駅で、1901年（明治34年）4月1日開業。2015年からは上野東京ラインで東京・品川へ直通する電車もある。駅のある木下は利根川の河岸町で、最盛期には年間4,000艘の出船があった水陸交通の要所だった（市指定文化財「吉岡家河岸関係文書」の解説より）。",
+    source: "https://www.city.inzai.lg.jp/0000005067.html", sourceLabel: "印西市「吉岡家河岸関係文書」／JR東日本 駅情報" },
   { name: "小林駅", group: "駅", lat: 35.830578, lon: 140.193301,
-    desc: "JR成田線の駅。市の東部、小林地区の玄関口です。" },
+    desc: "JR成田線の駅。市の東部、小林地区の玄関口です。",
+    detail: "JR成田線の駅で、1901年（明治34年）8月10日開業。上野東京ラインで東京方面へ直通する電車もある。駅前の小林公民館は、公民館・小林図書館・市役所小林出張所を兼ねた複合施設。",
+    source: "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=703", sourceLabel: "JR東日本 駅情報（小林駅）" },
 
   { name: "イオンモール千葉ニュータウン", group: "商業・公園", lat: 35.800167, lon: 140.111502,
-    desc: "千葉ニュータウン中央駅前の大型ショッピングモール。地域の暮らしの拠点です。" },
+    desc: "千葉ニュータウン中央駅前の大型ショッピングモール。地域の暮らしの拠点です。",
+    detail: "2006年4月21日開業。敷地面積約112,000㎡・延床面積約180,000㎡、駐車場約4,000台の大型ショッピングモール。核店舗はイオン千葉ニュータウン店で、専門店は約180店。千葉ニュータウン中央駅の北側。",
+    source: "https://www.aeonmall.com/facility/detail/1556/", sourceLabel: "イオンモール 施設情報" },
   { name: "BIG HOPガーデンモール印西", group: "商業・公園", lat: 35.803195, lon: 140.162553,
-    desc: "印西牧の原駅前のアウトレットモール。観覧車がランドマークです。" },
+    desc: "印西牧の原駅前のアウトレットモール。観覧車がランドマークです。",
+    detail: "印西牧の原駅前（原1-2）のショッピングモール。バリューモール1F・2Fに専門店が並び、公式サイトでは観覧車・大型屋内遊園地・ふれあい動物園を備えた家族向けの施設として紹介されている。",
+    source: "https://www.bighop.jp/", sourceLabel: "BIG HOP ガーデンモール印西 公式サイト" },
   { name: "ジョイフル本田千葉ニュータウン店", group: "商業・公園", lat: 35.807083, lon: 140.155674,
-    desc: "牧の原エリアの大型ホームセンター。広い駐車場が上空からの目印になります。" },
+    desc: "牧の原エリアの大型ホームセンター。広い駐車場が上空からの目印になります。",
+    detail: "株式会社ジョイフル本田の超大型店で、公式サイトでは敷地面積を東京ドーム3.6個分と紹介。庭木庭園センター、合鍵・靴修理の工房、飲食店などの専門店を併設する。",
+    source: "https://www.joyfulhonda.com/shop/chibant", sourceLabel: "ジョイフル本田 店舗情報" },
   { name: "松山下公園", group: "商業・公園", lat: 35.824677, lon: 140.114947,
-    desc: "市の総合公園。体育施設が集まる、市民スポーツの拠点です。" },
+    desc: "市の総合公園。体育施設が集まる、市民スポーツの拠点です。",
+    detail: "浦部275番地ほか、開園面積140,645㎡の総合公園。1987年9月に整備着手、テニスコート（8面）は1988年4月、総合体育館は2010年4月に開設。陸上競技場・野球場もあり、競技スポーツと健康づくりの拠点。駐車場は普通車283台。",
+    source: "https://www.city.inzai.lg.jp/0000001700.html", sourceLabel: "印西市「松山下公園」" },
 
   { name: "印西市役所", group: "公共施設", lat: 35.832338, lon: 140.145795,
-    desc: "印西市の行政の中心。CiDAO（市民投票PoC）など行政連携の取り組みも進行中です。" },
+    desc: "印西市の行政の中心。CiDAO（市民投票PoC）など行政連携の取り組みも進行中です。",
+    detail: "大森2364-2。開庁は平日9時〜16時30分（市民課は一部の土曜も）。JR木下駅から徒歩約15分、千葉ニュータウン中央駅からはちばレインボーバス神崎線で「印西市役所前」下車。",
+    source: "https://www.city.inzai.lg.jp/0000000516.html", sourceLabel: "印西市「印西市役所案内」" },
   { name: "印西市文化ホール", group: "公共施設", lat: 35.833294, lon: 140.145981,
-    desc: "市役所に隣接する文化施設。市民の発表や催しの会場です。" },
+    desc: "市役所に隣接する文化施設。市民の発表や催しの会場です。",
+    detail: "大森2535。客席522席（車いす3席・親子室6席）のホールで、舞台は間口12m・奥行12m。残響を変えられる可変板を64枚備え、スタインウェイとベーゼンドルファーのコンサートピアノを常設。休館日は月曜。",
+    source: "https://www.inzai-bunka.jp/about/hall/", sourceLabel: "印西市文化ホール 公式サイト" },
   { name: "中央公民館", group: "公共施設", lat: 35.841534, lon: 140.145203,
-    desc: "木下地区にある印西市立の公民館。地域の学習・活動の拠点です。" },
+    desc: "木下地区にある印西市立の公民館。地域の学習・活動の拠点です。",
+    detail: "大森3934-1、JR木下駅北口から徒歩5分。1階会議室から5階講堂まで、研修室・調理実習室・視聴覚室などを備える。駐車場62台。休館日は月曜・祝日。",
+    source: "https://www.city.inzai.lg.jp/0000012731.html", sourceLabel: "印西市「中央公民館」" },
   { name: "中央駅前地域交流館（コスモスパレット）", group: "公共施設", lat: 35.799309, lon: 140.119659,
-    desc: "千葉ニュータウン中央駅前の交流施設。市民活動の打ち合わせにも使われます。" },
+    desc: "千葉ニュータウン中央駅前の交流施設。市民活動の打ち合わせにも使われます。",
+    detail: "中央南1-4-3。会議室やレクリエーションホールのあるパレットⅠと、芸術ホール・児童館・保健センター・出張所などが入るパレットⅡからなる複合施設。名称は市民公募で決まり、2025年4月にはパレットⅡで総合保健センターが開所した。",
+    source: "https://www.city.inzai.lg.jp/0000001556.html", sourceLabel: "印西市「中央駅前地域交流館」" },
   { name: "そうふけ公民館", group: "公共施設", lat: 35.799629, lon: 140.165695,
-    desc: "そうふけ地区の印西市立公民館。牧の原エリアの南側にあります。" },
+    desc: "そうふけ地区の印西市立公民館。牧の原エリアの南側にあります。",
+    detail: "原3-4。276㎡の多目的室のほか、創作活動室・視聴覚室・調理室・和室などを備える。駐車場44台。休館日は月曜・祝日。",
+    source: "https://www.city.inzai.lg.jp/0000001555.html", sourceLabel: "印西市「そうふけ公民館」" },
   { name: "本埜公民館", group: "公共施設", lat: 35.808392, lon: 140.197952,
-    desc: "本埜地区の印西市立公民館。市の東部から文化財をめぐる起点になります。" },
+    desc: "本埜地区の印西市立公民館。市の東部から文化財をめぐる起点になります。",
+    detail: "中根1375。1階に陶芸窯・音楽室・美術工芸室、2階に研修室や情報学習室、3階に多目的ホールを備える3階建ての公民館。休館日は月曜・祝日。",
+    source: "https://www.city.inzai.lg.jp/0000013509.html", sourceLabel: "印西市「本埜公民館」" },
   { name: "小林公民館", group: "公共施設", lat: 35.831291, lon: 140.197220,
-    desc: "小林地区の印西市立公民館。小林駅の近くにあります。" },
+    desc: "小林地区の印西市立公民館。小林駅の近くにあります。",
+    detail: "小林北5-1-6。公民館・小林図書館・市役所小林出張所の3つの機能を兼ねた複合施設で、1階に集会室や遊戯室、2階にホール・工芸室・調理実習室などがある。駐車場49台。",
+    source: "https://www.city.inzai.lg.jp/0000001557.html", sourceLabel: "印西市「小林公民館」" },
   { name: "印旛公民館", group: "公共施設", lat: 35.780167, lon: 140.224731,
-    desc: "印旛地区の印西市立公民館。市の最も南東にあり、南部の文化財に近い施設です。" },
+    desc: "印旛地区の印西市立公民館。市の最も南東にあり、南部の文化財に近い施設です。",
+    detail: "瀬戸1518。大会議室・研修室4室・陶芸室・視聴覚室・調理実習室などを備え、駐車場は70台。休館日は月曜・祝日。",
+    source: "https://www.city.inzai.lg.jp/0000002335.html", sourceLabel: "印西市「印旛公民館」" },
 ];
 
 const START_SPOT = SPOTS[0]; // 初期位置：千葉ニュータウン中央駅
@@ -1564,7 +1599,7 @@ const PAD_HOLD_MAX_MS = 20000;     // 握ったままとみなす上限（本当
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03j"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03k"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -3831,8 +3866,17 @@ function openEntityById(id) {
     const spot = SPOTS[idx];
     if (!spot) return;
     document.getElementById("spotInfoTitle").textContent = "📍 " + spot.name;
-    document.getElementById("spotInfoDesc").textContent = spot.desc;
-    document.getElementById("spotInfoLink").style.display = "none";
+    // 1行の紹介に、公式ページに書かれている事実だけで組んだ概要と出典を添える（2026-09-02）
+    document.getElementById("spotInfoDesc").textContent = spot.desc + (spot.detail ? "\n\n" + spot.detail : "");
+    document.getElementById("spotInfoDesc").style.whiteSpace = "pre-line";
+    const sLink = document.getElementById("spotInfoLink");
+    if (spot.source) {
+      sLink.href = spot.source;
+      sLink.textContent = "出典：" + (spot.sourceLabel || "公式ページ") + " ↗";
+      sLink.style.display = "inline-block";
+    } else {
+      sLink.style.display = "none";
+    }
     document.getElementById("spotInfo").style.display = "block";
   } else if (id.startsWith("bunkazai-")) {
     const idx = parseInt(id.replace("bunkazai-", ""), 10);
