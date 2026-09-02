@@ -526,18 +526,25 @@
     transition: transform 0.3s ease-out;
     animation: tonbiBob 4.5s ease-in-out infinite; /* 上下の揺れで風を感じさせる */
   }
-  /* 羽ばたきの上下動はここに当てる。#tonbiLayer 側は傾き用で transition が効いており、
-     同じ要素に当てると上下の動きまで 0.3 秒なまってしまう */
-  /* 影は1回だけここでかける。画像ごとにかけると重ね合わせで2枚ぶんの計算になる */
+  /* 羽ばたきに合わせた体の上下。#tonbiLayer 側は傾き用で transition が効いており、
+     同じ要素に当てると上下の動きまで 0.3 秒なまってしまうので分けてある。
+     drop-shadow は入れない：4枚の合成結果にぼかしを毎フレームかけ直すことになり、
+     実機でフレームが落ちて操作が届かなくなった（2026-09-02） */
   #tonbiInner {
-    position: relative; will-change: transform;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.30)); /* ぼかしを広げるほど描き直しが重くなる */
+    position: relative;
+    animation: tonbiLift 0.54s ease-in-out infinite;
+    animation-play-state: paused;
   }
-  /* 4コマを重ねて置き、濃さだけで切り替える。src を書き換えると毎回デコードが走って重い。
-     1枚目だけ通常の流れに置いて高さの基準にし、残りは上に重ねる */
-  #tonbiLayer img { width: 100%; height: auto; display: block; }
-  #tonbiInner .tonbiFrame { opacity: 0; }
-  #tonbiInner .tonbiFrame:not(:first-child) { position: absolute; left: 0; top: 0; }
+  @keyframes tonbiLift { 0%, 100% { translate: 0 5px; } 50% { translate: 0 -5px; } }
+  /* 6コマを横一列に並べ、steps で1コマずつ送る。JavaScript は毎フレーム何もしない */
+  #tonbiViewport { width: 100%; overflow: hidden; }
+  #tonbiStrip {
+    display: flex; width: 600%;
+    animation: tonbiFlap 0.54s steps(6) infinite;
+    animation-play-state: paused;
+  }
+  #tonbiStrip img { width: 16.666667%; height: auto; display: block; }
+  @keyframes tonbiFlap { from { transform: translateX(0); } to { transform: translateX(-100%); } }
   @keyframes tonbiBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -16px; } }
 
   /* いま何倍速で飛んでいるかの表示。等倍のときは出さない */
@@ -893,7 +900,7 @@
   <a id="spotInfoLink" href="#" target="_blank" rel="noopener" style="display:none;margin-top:8px;padding:6px;border-radius:8px;border:1px solid #ffd166;background:rgba(255,209,102,0.12);color:#ffd166;font-size:12px;font-weight:bold;text-decoration:none;text-align:center;">🔎 市公式ページで詳しく見る</a>
 </div>
 
-<div id="tonbiLayer"><div id="tonbiInner"><img class="tonbiFrame" data-frame="flap_up" src="assets/tonbi/tonbi_flap_up.webp" alt=""><img class="tonbiFrame" data-frame="flap_rise" src="assets/tonbi/tonbi_flap_rise.webp" alt=""><img class="tonbiFrame" data-frame="flap_level" src="assets/tonbi/tonbi_flap_level.webp" alt=""><img class="tonbiFrame" data-frame="flap_down" src="assets/tonbi/tonbi_flap_down.webp" alt=""></div></div>
+<div id="tonbiLayer"><div id="tonbiInner"><div id="tonbiViewport"><div id="tonbiStrip"><img src="assets/tonbi/tonbi_flap_up.webp" alt=""><img src="assets/tonbi/tonbi_flap_rise.webp" alt=""><img src="assets/tonbi/tonbi_flap_level.webp" alt=""><img src="assets/tonbi/tonbi_flap_down.webp" alt=""><img src="assets/tonbi/tonbi_flap_level.webp" alt=""><img src="assets/tonbi/tonbi_flap_rise.webp" alt=""></div></div></div></div>
 
 <div id="padHud">
   <div id="padCross"></div>
@@ -1404,7 +1411,7 @@ const PAD_STUCK_CREEP_AFTER = 0.4; // 狭い範囲に留まったままこの秒
 const PAD_STUCK_LIMIT = 0.9;       // 倒し切り付近は吸収しない（前進しっぱなし等は意図した操作）
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-02j"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-02k"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -1660,42 +1667,31 @@ function updatePadDebug(pad, forward, right, up) {
 // ============================================================
 // 4コマの翼の高さは 振り上げ > 戻し > 水平 > 打ち下ろし。lift はその目安で、
 // コマとコマの間を埋める体の上下動に使う（打ち下ろすと体が浮き、振り上げると沈む）
-const TONBI_FRAMES = [
-  { name: "flap_up", lift: 1.0 },
-  { name: "flap_rise", lift: 0.55 },
-  { name: "flap_level", lift: 0.15 },
-  { name: "flap_down", lift: -0.6 },
-];
-// 上→下→上と往復させる。一方向に回すと、打ち下ろしから振り上げへ戻るところで
-// 翼が一気に飛んでカクついて見える
-const TONBI_ORDER = [0, 1, 2, 3, 2, 1];
 const TONBI_KEY = "cbi-meta-tonbi-v1";
 let tonbiOn = false;
-let tonbiPhase = 0;      // 羽ばたきの何コマ目か
-let tonbiElapsed = 0;    // 次のコマまでの経過秒
 let tonbiRoll = "";      // 前回の傾き
-let tonbiLift = "";      // 前回の上下
-const tonbiEls = {};     // コマ名 → img 要素
-const tonbiOpacity = {}; // コマ名 → いま設定している濃さ（同じなら書き換えない）
+let tonbiMode = "";      // いまの飛び方（climb/cruise/dive/glide）。変わったときだけ設定し直す
 
-// いまのコマと次のコマを重ねて出す。mix=0 でいまのコマだけ、1 で次のコマだけ。
-// 濃さを変えるだけなので、画像の読み込みもデコードも起きない
-function setTonbiPair(a, b, mix) {
-  if (!tonbiEls.flap_up) {
-    document.querySelectorAll("#tonbiInner .tonbiFrame").forEach(function (el) {
-      tonbiEls[el.dataset.frame] = el;
-      tonbiOpacity[el.dataset.frame] = 0;
-    });
-  }
-  const m = Math.round(mix * 20) / 20; // 5%刻み。これより細かくしても見た目は変わらない
-  const want = {};
-  for (const name in tonbiEls) want[name] = 0;
-  want[a] = a === b ? 1 : 1 - m;
-  want[b] = a === b ? 1 : m;
-  for (const name in tonbiEls) {
-    if (tonbiOpacity[name] === want[name]) continue;
-    tonbiOpacity[name] = want[name];
-    tonbiEls[name].style.opacity = want[name];
+// 羽ばたきはCSSのアニメーションに任せる（帯を steps で1コマずつ送る）。
+// ここでやるのは「飛び方が変わったときに速さを設定する／止める」だけで、毎フレームの処理はしない。
+// 止めるときは animation を切って、見せたいコマの位置へ帯をずらす（帯の並びは
+// 0=振り上げ 1=戻し 2=水平 3=打ち下ろし 4=水平 5=戻し）
+function applyTonbiMode(mode) {
+  const strip = document.getElementById("tonbiStrip");
+  const inner = document.getElementById("tonbiInner");
+  if (mode === "climb" || mode === "cruise") {
+    const dur = (mode === "climb" ? "0.33s" : "0.54s"); // 上昇中はしっかり、巡航中はゆるく
+    strip.style.animationName = "tonbiFlap";
+    strip.style.animationDuration = dur;
+    strip.style.animationPlayState = "running";
+    strip.style.transform = "";
+    inner.style.animationDuration = dur;
+    inner.style.animationPlayState = "running";
+  } else {
+    const frame = mode === "dive" ? 0 : 2; // 降下中は翼を上げて風を受ける姿、滑空は水平
+    strip.style.animationName = "none";
+    strip.style.transform = "translateX(" + (-frame * 100 / 6).toFixed(4) + "%)";
+    inner.style.animationPlayState = "paused";
   }
 }
 
@@ -1703,33 +1699,13 @@ function setTonbiPair(a, b, mix) {
 function updateTonbi(dt, forward, right, up) {
   if (!tonbiOn) return;
 
-  // 上昇中はしっかり羽ばたき、前進中はゆるく羽ばたく。トビは滑空が多い鳥なので普段は静止。
-  // 1コマの長さ。6コマで1往復なので 0.055 なら約3回/秒、0.09 なら約2回/秒
-  let interval = 0;
-  if (up > 0.15) interval = 0.055;
-  else if (forward > 0.55) interval = 0.09;
-
-  let lift = 0.15;
-  if (interval > 0) {
-    tonbiElapsed += dt;
-    while (tonbiElapsed >= interval) {
-      tonbiElapsed -= interval;   // 余りを持ち越す（0 に戻すとフレーム落ちのぶん遅れる）
-      tonbiPhase = (tonbiPhase + 1) % TONBI_ORDER.length;
-    }
-    const p = tonbiElapsed / interval;
-    const a = TONBI_FRAMES[TONBI_ORDER[tonbiPhase]];
-    const b = TONBI_FRAMES[TONBI_ORDER[(tonbiPhase + 1) % TONBI_ORDER.length]];
-    // コマの真ん中あたりでだけ重ねる。ずっと重ねると翼が二重に見える
-    setTonbiPair(a.name, b.name, Math.min(1, Math.max(0, (p - 0.3) / 0.4)));
-    lift = a.lift + (b.lift - a.lift) * p; // 体の上下はコマの間も切れ目なく動かす
-  } else if (up < -0.15) {
-    setTonbiPair("flap_up", "flap_up", 0);   // 降下中は翼を上げて風を受ける姿
-    tonbiElapsed = 0;
-    lift = 1.0;
-  } else {
-    setTonbiPair("flap_level", "flap_level", 0); // 滑空
-    tonbiElapsed = 0;
-  }
+  // トビは滑空が多い鳥なので、普段は羽ばたかせない
+  let mode;
+  if (up > 0.15) mode = "climb";
+  else if (forward > 0.55) mode = "cruise";
+  else if (up < -0.15) mode = "dive";
+  else mode = "glide";
+  if (tonbiMode !== mode) { tonbiMode = mode; applyTonbiMode(mode); }
 
   // 左右に曲がるときは機体を傾ける（ゆっくり効かせたいので transition のある外側に当てる）
   const roll = Math.max(-22, Math.min(22, right * 22));
@@ -1738,16 +1714,11 @@ function updateTonbi(dt, forward, right, up) {
     tonbiRoll = rollStr;
     document.getElementById("tonbiLayer").style.transform = rollStr;
   }
-  // 羽ばたきに合わせた体の上下は、なまらせたくないので内側に当てる
-  const liftStr = "translateY(" + (lift * 7).toFixed(0) + "px)";
-  if (tonbiLift !== liftStr) {
-    tonbiLift = liftStr;
-    document.getElementById("tonbiInner").style.transform = liftStr;
-  }
 }
 
 function setTonbiVisible(on) {
   tonbiOn = on;
+  if (on) { tonbiMode = ""; applyTonbiMode("glide"); } // 出した直後は滑空の姿から
   const layer = document.getElementById("tonbiLayer");
   const btn = document.getElementById("tonbiToggleBtn");
   layer.style.display = on ? "block" : "none";
