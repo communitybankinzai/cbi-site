@@ -276,6 +276,8 @@
   #ttHud .ttDir { color: #ffd166; font-weight: bold; }
   #ttHud .ttOpt { display: block; margin-top: 4px; font-size: 11px; color: #cfe6ff; cursor: pointer; }
   #ttHud .ttOpt input { vertical-align: middle; margin-right: 4px; }
+  #ttHud .ttCardBtn { display: none; margin-left: 8px; padding: 1px 8px; border-radius: 8px; border: 1px solid #ffd166;
+    background: transparent; color: #ffd166; font-size: 10px; cursor: pointer; }
   /* 次の目的地カード：写真と解説で「どんな文化財か」を頭に入れてから向かう（2026-09-03 追加・学習効果のため） */
   /* 次の目的地カード（画面左下・2026-09-03「左下にもう少し大きく」の要望で HUD から独立） */
   #ttCard { position: absolute; left: 16px; bottom: 170px; z-index: 36; display: none; width: min(360px, 44vw);
@@ -306,7 +308,8 @@
     #ttHud .ttArrow { width: 20px; height: 20px; line-height: 20px; font-size: 17px; margin-right: 4px; }
     #ttHud .ttOpt { font-size: 10px; margin-top: 2px; }
     #ttCard:not(.open) .ttCardHead button { display: none; }
-    #ttCard:not(.open) { background: rgba(20, 30, 40, 0.45); }
+    #ttCard:not(.open) { display: none !important; } /* スマホでは閉じているときは何も出さない（HUDの📷ボタンで開く） */
+    #ttHud .ttCardBtn { display: inline-block; }
     /* スマホ：普段は1行だけ（ジョイスティックの上）。開いたときは画面中央に大きく出し、HUD や操作部と重ねない */
     #ttCard { left: 8px; bottom: 236px; width: auto; max-width: 70vw; padding: 5px 10px; }
     #ttCard.open { left: 50%; top: 50%; bottom: auto; transform: translate(-50%, -50%); width: 86vw; max-width: 420px;
@@ -885,7 +888,7 @@
 <div id="ttHud">
   <span class="ttTime" id="ttHudTime">0:00.0</span><button class="ttAbort" onclick="ttAbort()">中止</button><br>
   <span class="ttArrow" id="ttHudArrow" aria-hidden="true">⬆</span><span id="ttHudNext"></span>
-  <label class="ttOpt"><input type="checkbox" id="ttOnlyNext" checked onchange="ttApplyPinFocus()">📍 次の地点のピンだけ表示する</label>
+  <label class="ttOpt"><input type="checkbox" id="ttOnlyNext" checked onchange="ttApplyPinFocus()">📍 次の地点のピンだけ表示する<button type="button" class="ttCardBtn" onclick="event.preventDefault(); ttToggleCard();">📷 写真と解説</button></label>
 </div>
 
 <div id="ttModal">
@@ -1735,7 +1738,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04b"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04c"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
