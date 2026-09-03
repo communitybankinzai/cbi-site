@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-03",
+      "type": "content",
+      "target": "卒業論文 本文（/thesis/paper.html）",
+      "title": "卒業論文の本文をURLで読めるようになった",
+      "detail": "これまで論文はWordファイルでしか渡せず、メールに添付すると相手の回線によっては届かない恐れがあった。草稿のMarkdownからHTMLを組む build_paper_html.py を作り、/thesis/paper.html として公開した。外部の読み込みが一切ないため99KBで開き、スマホでも読める。章・節の目次から飛べる。Word版と同じMarkdownから作るので、内容が食い違わない。スライドと同じくnoindexで、URLを知る人だけが見られる。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-09-03",
       "type": "feature",
       "target": "メタバース印西",
       "title": "通信量の見張り（本日の推定通信量の表示・上限を超えたら軽量モードへ自動切替）と、全50か所のプレイ動画モード",
