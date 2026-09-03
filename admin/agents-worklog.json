@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-03",
+          "title": "タイムトライアルの順位表示・期間別ランキング・イベント期間設定（CiDAO API＋管理画面）と、画面上の→目印・左下カード 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao src/app/api/metaverse-tt/route.ts — GET ?period=、応答 event／period／range、finish 応答に rank（all/month/event・人ごとのベストで比較）（1d96761・origin へ push・Vercel 反映確認済み）",
+            "C:\\Repos\\cidao src/app/admin/timetrial/{actions.ts,page.tsx,_components/TrialControls.tsx} — saveTtEvent と EventForm（イベント期間の保存・解除）",
+            "site/metaverse/index.html — ttRankHtml、#ttPeriod セレクトと ttChangePeriod、#ttTarget（ttUpdateTargetMarker）、#ttCard を左下の独立ボックスへ（版 2026-09-03v）",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json — 追記"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "ユーザー要望「自己ベスト更新嬉しい。過去の参加者のうち順位が知りたい。イベント時はイベント用、通常時は期間で選べるように」「次の目標は→で教えて」「文化財情報は左下にもう少し大きく」。順位は同じニックネームを1人としてベストで比較。tsc 通過、検証モードで puppeteer から計測を起動し、→目印（見えていれば⬇）と左下カードの表示位置を実測・スクショ確認。本番API は ?period=month で今月の記録だけ返ることを確認。cidao は fork ではなく origin（communitybankinzai/cidao）に push しないと Vercel に反映されない（最初 fork に押して8分待って気づいた）。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 268,617 / cost: $107.04"
+        },
+        {
+          "date": "2026-09-03",
           "title": "タイムトライアル中の「次の目的地の写真と解説」カードを追加 0.1時間",
           "category": "実装",
           "outputs": [
