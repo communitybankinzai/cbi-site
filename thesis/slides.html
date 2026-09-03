@@ -36,6 +36,8 @@ h2{font-family:var(--serif);font-size:clamp(25px,3.4vw,46px);line-height:1.26;fo
 .slide.active .d1{transition-delay:.10s}.slide.active .d2{transition-delay:.24s}
 .slide.active .d3{transition-delay:.38s}.slide.active .d4{transition-delay:.52s}
 .slide.active .d5{transition-delay:.66s}.slide.active .d6{transition-delay:.80s}
+.slide.active .d7{transition-delay:.94s}.slide.active .d8{transition-delay:1.08s}
+.slide.active .d9{transition-delay:1.22s}.slide.active .d10{transition-delay:1.36s}
 .brand{font-family:var(--serif);font-size:clamp(36px,6.2vw,86px);line-height:1.16;color:#fff}
 .brand small{display:block;font-size:clamp(11px,1.3vw,17px);letter-spacing:.46em;color:#7fd6b4;
   margin-bottom:2.6vh;font-family:var(--sans);font-weight:700}
@@ -91,6 +93,40 @@ td.b{background:#fbf7ee;font-weight:700}
   .flow{grid-template-columns:1fr}
   .flow .arw{transform:rotate(90deg)}
 }
+
+/* ===== 印刷／PDF：A4横で1枚1ページ ===== */
+@media print{
+  @page{ size:297mm 210mm; margin:0 }
+  html,body{ height:auto; overflow:visible; background:#fff }
+  .stage{ position:static; width:auto; height:auto }
+  .slide{
+    position:relative; inset:auto;
+    width:297mm; height:210mm;
+    padding:14mm 18mm;
+    opacity:1 !important; visibility:visible !important; transform:none !important;
+    transition:none !important;
+    break-after:page; page-break-after:always;
+    overflow:hidden;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .slide:last-child{ break-after:auto; page-break-after:avoid }
+  .a{ opacity:1 !important; transform:none !important; transition:none !important }
+  .prog,.hint{ display:none !important }
+  /* 画面幅(vw)基準の文字が用紙で崩れないよう、A4横を基準に固定する */
+  h1{ font-size:40pt } h2{ font-size:26pt }
+  .brand{ font-size:46pt } .brand small{ font-size:10pt }
+  .kicker{ font-size:9pt } .sub,.lead{ font-size:12pt }
+  .big{ font-size:24pt } .quote{ font-size:18pt }
+  .note,.byline{ font-size:10pt }
+  .card h3{ font-size:15pt } .card p{ font-size:10.5pt } .card .no{ font-size:9pt }
+  .stat .v{ font-size:30pt } .stat .l{ font-size:9.5pt }
+  .flow h4{ font-size:14pt } .flow p{ font-size:10pt } .flow .arw{ font-size:18pt }
+  .chain span{ font-size:10pt }
+  table{ font-size:10.5pt } th,td{ padding:2.6mm 3mm }
+  .num{ right:12mm; bottom:9mm; font-size:10pt }
+  .rule{ margin:5mm 0 }
+  .cols{ gap:6mm; margin-top:6mm } .stats{ gap:5mm; margin-top:7mm }
+}
 </style>
 </head>
 <body>
@@ -110,26 +146,27 @@ td.b{background:#fbf7ee;font-weight:700}
     <div class="kicker a d1">はじめに</div>
     <h2 class="a d2">一年間、20回の講座で見たもの</h2>
     <div class="rule a d3"></div>
-    <div class="cols c2 a d4">
-      <div class="card"><div class="no">01</div><h3>資源はあった</h3><p>文化財、成熟した市民活動、技能を持つ市民。印西市に足りないものは見当たらなかった</p></div>
-      <div class="card"><div class="no">02</div><h3>しかし、知らなかった</h3><p>筆者自身、第2回講座で木下地区を歩くまで、市内にどんな文化財があるかを知らなかった</p></div>
+    <div class="cols c2">
+      <div class="card a d4"><div class="no">01</div><h3>資源はあった</h3><p>文化財、成熟した市民活動、技能を持つ市民。印西市に足りないものは見当たらなかった</p></div>
+      <div class="card a d5"><div class="no">02</div><h3>しかし、知らなかった</h3><p>筆者自身、第2回講座で木下地区を歩くまで、市内にどんな文化財があるかを知らなかった</p></div>
     </div>
-    <div class="lead a d5">課題は「足りない」ことではない。<strong>互いに見えていない</strong>ことである。</div>
+    <div class="lead a d6">課題は「足りない」ことではない。<strong>互いに見えていない</strong>ことである。</div>
   </div>
   <div class="num">02</div>
 </section>
 
 <section class="slide">
   <div class="wrap">
-    <div class="kicker a d1">第2章　四つの視点</div>
-    <h2 class="a d2">三つの「見えていない」</h2>
+    <div class="kicker a d1">第2章　20回の講座から</div>
+    <h2 class="a d2">四つの視点から見た印西市</h2>
     <div class="rule a d3"></div>
-    <div class="cols c3 a d4">
-      <div class="card"><div class="no">資源</div><h3>文化財が見えない</h3><p>指定・登録文化財は50件ある。しかし市民がその場所も名前も知らない</p></div>
-      <div class="card"><div class="no">担い手</div><h3>人が互いに見えない</h3><p>参加したい市民と、担い手を探す団体が、互いを知らないままでいる</p></div>
-      <div class="card"><div class="no">声</div><h3>意思が束ねられない</h3><p>市民の声を集め、政策の言葉に翻訳して届ける場がない</p></div>
+    <div class="cols c2">
+      <div class="card a d4"><div class="no">① 資源</div><h3>何があるか</h3><p>文化財は50件ある。しかし市民は、その場所も名前も知らない</p></div>
+      <div class="card a d5"><div class="no">② 担い手</div><h3>誰が支えているか</h3><p>参加したい市民と、担い手を探す団体が、互いを知らないままでいる</p></div>
+      <div class="card a d6"><div class="no">③ 合意形成</div><h3>まちの意思はどう決まるか</h3><p>声を束ね、政策の言葉に翻訳して届ける場がない</p></div>
+      <div class="card a d7"><div class="no">④ 行動設計</div><h3>人はどうすれば動くか</h3><p>呼びかけでは変わらない。関われる環境の設計が要る</p></div>
     </div>
-    <div class="note a d5">第20回講座で学んだとおり、文化財は自然に残るものではない。知られないまま時間が経てば失われる。</div>
+    <div class="note a d8"><strong>前の三つは「見えていない」という同じ形をしている。</strong> 四つ目だけは課題ではなく、それにどう向き合うかを教えている。</div>
   </div>
   <div class="num">03</div>
 </section>
@@ -137,15 +174,17 @@ td.b{background:#fbf7ee;font-weight:700}
 <section class="slide">
   <div class="wrap">
     <div class="kicker a d1">第2章　2.2</div>
-    <h2 class="a d2">支える側の困りごとが、見えていない</h2>
+    <h2 class="a d2">支える側と、支えられる側で、見ているものが違う</h2>
     <div class="rule a d3"></div>
     <table class="a d4">
-      <tr><th>身近な地域で気になること</th><th>団体調査</th><th>市民調査</th></tr>
-      <tr><td>自治会・町内会の役員や担い手が不足</td><td>68.6%</td><td>22.3%</td></tr>
-      <tr><td>地域の行事や活動に参加する人が少ない</td><td>58.5%</td><td>18.8%</td></tr>
+      <tr><th>増えてきたと感じる地域の問題や課題</th><th>団体</th><th>市民</th></tr>
+      <tr><td>孤独・孤立に関すること</td><td>37.0%</td><td>14.0%</td></tr>
+      <tr><td>高齢者の暮らしに関すること</td><td>60.5%</td><td>47.0%</td></tr>
+      <tr><td>移動手段の確保に関すること</td><td>54.3%</td><td>43.7%</td></tr>
+      <tr><td>防犯に関すること</td><td>27.2%</td><td>53.0%</td></tr>
     </table>
-    <div class="note a d5">印西市 地域福祉計画（令和元年10月実施）。団体調査は民生委員・児童委員および社会福祉協議会支部が対象。</div>
-    <div class="big a d6">支える側の最大の課題が、<em>市民一般の関心には上ってこない</em></div>
+    <div class="note a d5">印西市 第5次地域福祉計画のアンケート（令和6年11月実施／市民1,569件・団体81件）。団体には民生委員児童委員協議会・社会福祉協議会支部のほか<strong>各種市民団体</strong>を含む。5年前の調査でも「担い手が不足」は団体68.6%に対し市民22.3%だった。</div>
+    <div class="big a d6">この差は、<em>5年を経ても変わっていない</em></div>
   </div>
   <div class="num">04</div>
 </section>
@@ -155,12 +194,13 @@ td.b{background:#fbf7ee;font-weight:700}
     <div class="kicker a d1">第3章　解決の仕組み</div>
     <h2 class="a d2">Citizen DAO ― 見えないものを、見えるようにする</h2>
     <div class="rule a d3"></div>
-    <div class="cols c3 a d4">
-      <div class="card"><div class="no">可視化</div><h3>資源と人を見えるようにする</h3><p>文化財、団体、イベント、技能を持つ市民を一つの場に集める</p></div>
-      <div class="card"><div class="no">集約</div><h3>声を束ねる</h3><p>誰が何を望んでいるかを、提案と投票の形で数値にする</p></div>
-      <div class="card"><div class="no">創発</div><h3>担い手を集め実行に移す</h3><p>生まれたアイデアに人を募り、実際に動かすところまで支える</p></div>
+    <div class="sub a d4"><strong>DAO</strong> は、代表者がトップダウンで決めるのではなく、参加する一人ひとりが提案・投票・実行に直接関わる組織の形。これを市民活動に応用したものが <strong>Citizen DAO（シダオ）</strong> である。</div>
+    <div class="cols c3">
+      <div class="card a d5"><div class="no">可視化</div><h3>資源と人を見えるようにする</h3><p>文化財、団体、イベント、技能を持つ市民を一つの場に集める</p></div>
+      <div class="card a d6"><div class="no">集約</div><h3>声を束ねる</h3><p>誰が何を望んでいるかを、提案と投票の形で数値にする</p></div>
+      <div class="card a d7"><div class="no">創発</div><h3>担い手を集め実行に移す</h3><p>生まれたアイデアに人を募り、実際に動かすところまで支える</p></div>
     </div>
-    <div class="lead a d5">市民が提案し、投票し、実行する。その過程がすべて記録され、誰でも見られる。</div>
+    <div class="lead a d8">市民が提案し、投票し、実行する。その過程がすべて記録され、誰でも見られる。</div>
   </div>
   <div class="num">05</div>
 </section>
@@ -186,13 +226,13 @@ td.b{background:#fbf7ee;font-weight:700}
     <h2 class="a d2">決めたことが、実際に動くように</h2>
     <div class="rule a d3"></div>
     <table class="a d4">
-      <tr><th>対象</th><th>拘束力</th><th>例</th></tr>
-      <tr><td>団体の内部運営</td><td>拘束的</td><td>年会費、運営方針、役員選任</td></tr>
-      <tr><td>団体の主催事業</td><td>拘束的</td><td>事業の実施、名称の決定</td></tr>
-      <tr><td>市政に関わる事項</td><td>諮問的</td><td>予算・条例を要する提案</td></tr>
-      <tr><td>選挙に関わる事項</td><td>対象外</td><td>公職選挙法により除外</td></tr>
+      <tr><th>対象</th><th>拘束力</th><th>誰が決めるか</th><th>例</th></tr>
+      <tr><td>団体の内部運営</td><td>拘束的</td><td>その団体の会員</td><td>年会費、運営方針、役員選任</td></tr>
+      <tr><td>団体の主催事業</td><td>拘束的</td><td>その団体の会員</td><td>事業の実施、名称の決定</td></tr>
+      <tr><td>市政に関わる事項</td><td>諮問的</td><td>参加者の誰でも</td><td>予算・条例を要する提案</td></tr>
+      <tr><td>選挙に関わる事項</td><td>対象外</td><td>―</td><td>公職選挙法により除外</td></tr>
     </table>
-    <div class="note a d5">台湾の vTaiwan は、議論の結果に拘束力がなく「歯のない虎」と評されて停滞した。決めたことが動く領域を先に確保する。</div>
+    <div class="note a d5">ここでいう団体とは、CiDAO に参加する<strong>それぞれの団体</strong>であって、CBI に限らない。各団体が自団体のことを自団体の会員で決められる。台湾の vTaiwan は結果に拘束力がなく「歯のない虎」と評されて停滞した。決めたことが動く領域を先に確保する。</div>
   </div>
   <div class="num">07</div>
 </section>
@@ -202,17 +242,18 @@ td.b{background:#fbf7ee;font-weight:700}
     <div class="kicker a d1">第4章　実装①</div>
     <h2 class="a d2">文化財50件を、子どもが覚えられる形にした</h2>
     <div class="rule a d3"></div>
-    <div class="stats a d4">
-      <div class="stat"><div class="v">50件</div><div class="l">学習コンテンツを公開</div></div>
-      <div class="stat"><div class="v">6件</div><div class="l">国指定</div></div>
-      <div class="stat"><div class="v">17件</div><div class="l">県指定</div></div>
-      <div class="stat"><div class="v">26件</div><div class="l">市指定</div></div>
+    <div class="lead a d4">見えていないものは文化財だけではない。それでも最初に選んだのは、<strong>失われれば二度と戻らない</strong>からである。</div>
+    <div class="stats">
+      <div class="stat a d5"><div class="v">50件</div><div class="l">学習コンテンツを公開</div></div>
+      <div class="stat a d6"><div class="v">6件</div><div class="l">国指定</div></div>
+      <div class="stat a d7"><div class="v">17件</div><div class="l">県指定</div></div>
+      <div class="stat a d8"><div class="v">26件</div><div class="l">市指定</div></div>
     </div>
-    <div class="cols c2 a d5">
-      <div class="card"><div class="no">紙で配れる</div><h3>A4用紙1枚のレポート</h3><p>位置情報・読み仮名・キャラクター・クイズを備え、印刷して配れる形にした。デジタル環境の有無にかかわらず使える</p></div>
-      <div class="card"><div class="no">空から見る</div><h3>三次元地図での文化財めぐり</h3><p>鳥の視点で市内を飛び、ピンを訪ねる。ニュータウン地区と里山地区の広がりが一目で分かる</p></div>
+    <div class="cols c2">
+      <div class="card a d9"><div class="no">紙で配れる</div><h3>A4用紙1枚のレポート</h3><p>位置情報・読み仮名・キャラクター・クイズを備え、印刷して配れる形にした。デジタル環境の有無にかかわらず使える</p></div>
+      <div class="card a d10"><div class="no">空から見る</div><h3>三次元地図での文化財めぐり</h3><p>鳥の視点で市内を飛び、ピンを訪ねる。ニュータウン地区と里山地区の広がりが一目で分かる</p></div>
     </div>
-    <div class="note a d6">三次元地図は「メタバース」と呼べるものではない。アバターも自由な会話もない学習用のビューアで、自由入力は子どもが使うことを前提にあえて置いていない。</div>
+    <div class="note a d10">内訳は国指定6件・県指定17件・市指定26件・<strong>国登録1件</strong>の計50件（令和7年4月1日現在）。三次元地図は「メタバース」と呼べるものではない。アバターも自由な会話もない学習用のビューアで、自由入力は子どもが使うことを前提にあえて置いていない。</div>
   </div>
   <div class="num">08</div>
 </section>
@@ -233,7 +274,7 @@ td.b{background:#fbf7ee;font-weight:700}
       <i>›</i>
       <span class="on">決定</span>
     </div>
-    <div class="note a d6">そこで継続の可否を CiDAO 上の提案にかけ、投票で決めた。自分の裁量で始められなくなるということは、裏返せば、他の誰でも同じ手続きで始められるということである。</div>
+    <div class="note a d7">そこで継続の可否を CiDAO 上の提案にかけ、投票で決めた。自分の裁量で始められなくなるということは、裏返せば、他の誰でも同じ手続きで始められるということである。</div>
   </div>
   <div class="num">09</div>
 </section>
@@ -266,12 +307,12 @@ td.b{background:#fbf7ee;font-weight:700}
       <i>›</i>
       <span class="on">行政が制度を整える</span>
     </div>
-    <div class="cols c3 a d5">
-      <div class="card"><div class="no">2025年3月</div><h3>市民が提案した</h3><p>市長との対話会で、千葉ニュータウン中央駅前の常設マルシェを市民団体 COCoLa が提案</p></div>
-      <div class="card"><div class="no">2025年11〜12月</div><h3>自分たちで実施した</h3><p>有志が「イルミライマルシェ」を結成し、駅前のイルミネーション点灯に合わせたマルシェを開催</p></div>
-      <div class="card"><div class="no">2026年8月</div><h3>市が制度を整えた</h3><p>公園・広場の利活用の試行を開始。活用例にマルシェが挙げられ、公民連携推進室も新設された</p></div>
+    <div class="cols c3">
+      <div class="card a d5"><div class="no">2025年3月</div><h3>市民が提案した</h3><p>市長との対話会で、千葉ニュータウン中央駅前の常設マルシェを市民団体 COCoLa が提案</p></div>
+      <div class="card a d6"><div class="no">2025年11〜12月</div><h3>自分たちで実施した</h3><p>有志が「イルミライマルシェ」を結成し、駅前のイルミネーション点灯に合わせたマルシェを開催</p></div>
+      <div class="card a d7"><div class="no">2026年8月</div><h3>市が制度を整えた</h3><p>公園・広場の利活用の試行を開始。活用例にマルシェが挙げられ、公民連携推進室も新設された</p></div>
     </div>
-    <div class="note a d6">市の資料に市民提案への言及はなく、両者を因果で結ぶことはできない。それでも、市民が声を上げ、自分たちで動き、行政が制度を整えるという順序が、この二年の間に現に起きている。</div>
+    <div class="note a d8">市の資料に市民提案への言及はなく、両者を因果で結ぶことはできない。それでも、市民が声を上げ、自分たちで動き、行政が制度を整えるという順序が、この二年の間に現に起きている。</div>
   </div>
   <div class="num">11</div>
 </section>
@@ -293,13 +334,13 @@ td.b{background:#fbf7ee;font-weight:700}
     <div class="kicker a d1">第6章　目指す状態</div>
     <h2 class="a d2">市民・団体・企業・行政が、一つの場で出会う</h2>
     <div class="rule a d3"></div>
-    <div class="cols c2 a d4">
-      <div class="card"><div class="no">市民</div><h3>眠れるスキル・時間・想い</h3><p>関心のある分野から参加し、担い手として名乗りを上げられる</p></div>
-      <div class="card"><div class="no">団体</div><h3>活動を知ってもらう場</h3><p>市内で活動する団体の情報を集めて公開し、参加したい市民と出会える</p></div>
-      <div class="card"><div class="no">企業</div><h3>地域とつながる入口</h3><p>協賛や連携の相手を見つける。ただし、まだ実例を示せる段階にない</p></div>
-      <div class="card"><div class="no">行政</div><h3>声を政策の言葉で受け取る</h3><p>整理された市民の意向を、判断の材料として受け取れる</p></div>
+    <div class="cols c2">
+      <div class="card a d4"><div class="no">市民</div><h3>眠れるスキル・時間・想い</h3><p>関心のある分野から参加し、担い手として名乗りを上げられる</p></div>
+      <div class="card a d5"><div class="no">団体</div><h3>活動を知ってもらう場</h3><p>市内で活動する団体の情報を集めて公開し、参加したい市民と出会える</p></div>
+      <div class="card a d6"><div class="no">企業</div><h3>地域とつながる入口</h3><p>協賛や連携の相手を見つける。ただし、まだ実例を示せる段階にない</p></div>
+      <div class="card a d7"><div class="no">行政</div><h3>声を政策の言葉で受け取る</h3><p>整理された市民の意向を、判断の材料として受け取れる</p></div>
     </div>
-    <div class="note a d5">現段階の実証は小規模で、そこへ至る道のりは長い。それでも、団体の情報も文化財も、すでに一つの地図の上に載っている。</div>
+    <div class="note a d8">現段階の実証は小規模で、そこへ至る道のりは長い。それでも、団体の情報も文化財も、すでに一つの地図の上に載っている。</div>
   </div>
   <div class="num">13</div>
 </section>
@@ -317,7 +358,7 @@ td.b{background:#fbf7ee;font-weight:700}
       <tr><td>④</td><td>全国モデルとしての発信</td></tr>
       <tr><td>⑤</td><td>企画提案型協働事業としての実施</td></tr>
     </table>
-    <div class="note a d5">③に費用は発生しない。すでに公開しているものを、教材として使っていただくだけである。⑤で求めるのは基盤の運営費ではなく、その基盤を用いて実施する個別の事業に要する費用である。</div>
+    <div class="note a d5">③の制作費は発生しない。ただし三次元地図は閲覧数に応じた地図データの利用料がかかるため、学校での利用が広がる場合は費用の扱いを協議させていただきたい。<strong>A4レポートは印刷すれば使えるため、費用を伴わない形でも活用できる。</strong> ⑤で求めるのは資金だけではない。<strong>市が市民へ CiDAO を紹介してくださることの価値が大きい。</strong></div>
   </div>
   <div class="num">14</div>
 </section>
@@ -330,7 +371,7 @@ td.b{background:#fbf7ee;font-weight:700}
     <div class="lead a d4">千葉ニュータウンは「完成された都市」ではなく「更新を前提とした都市」である。そして文化財は、人の手によって守られてきたものである。</div>
     <div class="big a d5">その人は、子どものうちに<em>知る機会</em>を得た者の中から育つ</div>
     <div class="note a d6">本研究が目指すのは、印西市の子どもが、自分のまちにどのような文化財があり、それがどこにあるのかを言えるようになること。そしてその先に、まちのことを自分たちで決め、自分たちで動かす市民が育つことである。</div>
-    <div class="byline a d6">ご清聴ありがとうございました</div>
+    <div class="byline a d7">ご清聴ありがとうございました</div>
   </div>
   <div class="num">15</div>
 </section>
