@@ -269,6 +269,12 @@
   #ttHud .ttTime { font-size: 20px; font-weight: bold; color: #7fc8ff; font-variant-numeric: tabular-nums; }
   #ttHud .ttAbort { margin-left: 10px; padding: 3px 10px; border: none; border-radius: 8px;
     background: #e74c3c; color: #fff; font-size: 11px; cursor: pointer; }
+  /* 次の地点の方向。自分の向きを上にした矢印（2026-09-03 追加。目的地が見つけにくいとの声から） */
+  #ttHud .ttArrow { display: inline-block; width: 26px; height: 26px; line-height: 26px; margin-right: 6px;
+    font-size: 22px; color: #ffd166; transform-origin: 50% 50%; will-change: transform; vertical-align: middle; }
+  #ttHud .ttDir { color: #ffd166; font-weight: bold; }
+  #ttHud .ttOpt { display: block; margin-top: 4px; font-size: 11px; color: #cfe6ff; cursor: pointer; }
+  #ttHud .ttOpt input { vertical-align: middle; margin-right: 4px; }
   @media (pointer: coarse), (max-width: 640px) { #ttHud { top: 92px; } }
   /* 同時利用者数（在席表示） */
   #presenceChip {
@@ -827,7 +833,8 @@
 
 <div id="ttHud">
   <span class="ttTime" id="ttHudTime">0:00.0</span><button class="ttAbort" onclick="ttAbort()">中止</button><br>
-  <span id="ttHudNext"></span>
+  <span class="ttArrow" id="ttHudArrow" aria-hidden="true">⬆</span><span id="ttHudNext"></span>
+  <label class="ttOpt"><input type="checkbox" id="ttOnlyNext" checked onchange="ttApplyPinFocus()">📍 次の地点のピンだけ表示する</label>
 </div>
 
 <div id="ttModal">
@@ -1677,7 +1684,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03s"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03t"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -3548,7 +3555,48 @@ function ttStart(courseKey) {
   ttCountdownEnd = performance.now() + 6000; // テレポート約3秒＋カウントダウン3秒
   ttStartMs = 0;
   document.getElementById("ttHud").style.display = "block";
+  ttApplyPinFocus(); // 次の地点以外のピンを隠す（スイッチがONのとき）
   // サーバー計測の開始登録はカウントダウン終了（計測開始）の瞬間に行う（onTick内）
+}
+// 計測中は「次の地点のピンだけ」を表示する。目的地が他のピンに紛れて見つけにくいため（2026-09-03 ユーザー要望）。
+// 終了・中止のときは ttRestorePins() で📍ボタンの状態に戻す
+function ttApplyPinFocus() {
+  if (!ttActive) return;
+  const only = document.getElementById("ttOnlyNext").checked;
+  const nextIdx = ttCourse[ttPos];
+  for (let i = 0; i < BUNKAZAI.length; i++) {
+    const e = viewer.entities.getById("bunkazai-" + i);
+    if (!e) continue;
+    setPinVisible(e, only ? (i === nextIdx) : bunkazaiPinsVisible);
+  }
+}
+function ttRestorePins() {
+  for (let i = 0; i < BUNKAZAI.length; i++) {
+    const e = viewer.entities.getById("bunkazai-" + i);
+    if (e) setPinVisible(e, bunkazaiPinsVisible);
+  }
+}
+// 次の地点の方向（自分の向きを基準にした相対角）と、8方位の言葉
+function ttBearingToNext() {
+  const b = BUNKAZAI[ttCourse[ttPos]];
+  const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+  const lat = Cesium.Math.toDegrees(carto.latitude), lon = Cesium.Math.toDegrees(carto.longitude);
+  const dy = (b.lat - lat) * 111320;
+  const dx = (b.lon - lon) * 111320 * Math.cos(carto.latitude);
+  const bearing = Math.atan2(dx, dy);                        // 北=0・東=+（Cesium の heading と同じ向き）
+  let rel = bearing - viewer.camera.heading;
+  rel = Math.atan2(Math.sin(rel), Math.cos(rel));           // -180〜180°
+  const relDeg = Cesium.Math.toDegrees(rel);
+  const abs = ((Cesium.Math.toDegrees(bearing) % 360) + 360) % 360;
+  const compass = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"][Math.round(abs / 45) % 8];
+  let word;
+  const a = Math.abs(relDeg);
+  if (a < 20) word = "正面";
+  else if (a < 70) word = relDeg > 0 ? "右前" : "左前";
+  else if (a < 110) word = relDeg > 0 ? "右" : "左";
+  else if (a < 160) word = relDeg > 0 ? "右後ろ" : "左後ろ";
+  else word = "後ろ";
+  return { relDeg: relDeg, word: word, compass: compass };
 }
 // 通過演出: 精霊があらわれて通過の合図になる（未入手ならピースも自動ゲット）
 function ttSpiritPass(idx) {
@@ -3577,6 +3625,7 @@ function ttSpiritPass(idx) {
 function ttAbort() {
   ttActive = false;
   document.getElementById("ttHud").style.display = "none";
+  ttRestorePins();
   showPickResult("タイムトライアルを中止しました。", 4000);
 }
 function ttLoadBest() {
@@ -3598,25 +3647,31 @@ viewer.clock.onTick.addEventListener(function () {
   if (now < ttCountdownEnd) {
     hudTime.textContent = "🚦 " + Math.ceil((ttCountdownEnd - now) / 1000);
     hudNext.textContent = "スタート準備中… 1か所目: " + BUNKAZAI[ttCourse[0]].name;
+    document.getElementById("ttHudArrow").style.transform = "rotate(" + ttBearingToNext().relDeg.toFixed(0) + "deg)";
     return;
   }
   if (!ttStartMs) { ttStartMs = now; ttServerStart(); } // 計測開始と同時にサーバーへ開始登録（厳密モード）
   const elapsed = now - ttStartMs;
   hudTime.textContent = "⏱ " + ttFormat(elapsed);
   const d = ttDistToNext();
-  hudNext.textContent = "つぎ（" + (ttPos + 1) + "/" + ttCourse.length + "）: " +
-    BUNKAZAI[ttCourse[ttPos]].name + " まで 約" + (d >= 1000 ? (d / 1000).toFixed(1) + "km" : Math.round(d) + "m");
+  const dir = ttBearingToNext();
+  document.getElementById("ttHudArrow").style.transform = "rotate(" + dir.relDeg.toFixed(0) + "deg)";
+  hudNext.innerHTML = "つぎ（" + (ttPos + 1) + "/" + ttCourse.length + "）: " +
+    ttEsc(BUNKAZAI[ttCourse[ttPos]].name) + "<br><span class=\"ttDir\">" + dir.word + "（" + dir.compass + "）</span> 約" +
+    (d >= 1000 ? (d / 1000).toFixed(1) + "km" : Math.round(d) + "m");
   if (d <= TT_CONFIG.radius) {
     const passedIdx = ttCourse[ttPos];
     ttSpiritPass(passedIdx); // 精霊出現＝通過の合図
     ttPos++;
     ttServerCheckpoint(ttPos); // サーバーへ通過を記録（厳密モード）
     if (ttPos >= ttCourse.length) ttFinish(elapsed);
+    else ttApplyPinFocus();    // 次の地点のピンへ切り替え
   }
 });
 async function ttFinish(clientElapsedMs) {
   ttActive = false;
   document.getElementById("ttHud").style.display = "none";
+  ttRestorePins();
   // サーバー計測（厳密モード）: サーバー時計の確定タイムを取得。失敗時は端末計測を参考記録として使う
   const server = await ttServerFinish();
   const official = server && typeof server.elapsedMs === "number";
