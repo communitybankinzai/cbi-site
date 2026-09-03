@@ -319,6 +319,14 @@
     #ttTarget .ttTargetArrow { font-size: 36px; }
   }
   /* 同時利用者数（在席表示） */
+  /* 📶 本日の通信量（推定）チップ。イベントでテザリングするときの見張り用（2026-09-03） */
+  #trafficChip { position: absolute; right: 16px; top: 50px; z-index: 34; display: none; font-size: 11px; line-height: 1.4;
+    background: rgba(20, 30, 40, 0.55); color: #cfe6ff; border: 1px solid rgba(127, 200, 255, 0.5); border-radius: 10px;
+    padding: 3px 9px; text-shadow: 0 1px 3px rgba(0,0,0,0.9); white-space: nowrap; cursor: pointer; }
+  #trafficChip b { color: #7fc8ff; }
+  #trafficChip.warn b { color: #ffb74d; }
+  #trafficChip.over b { color: #ff8a65; }
+  @media (pointer: coarse), (max-width: 640px) { #trafficChip { right: 8px; top: 132px; font-size: 10px; padding: 2px 7px; } }
   #presenceChip {
     display: none; background: rgba(20, 30, 40, 0.82); color: #fff;
     border: 1px solid rgba(127, 200, 255, 0.55); border-radius: 999px;
@@ -837,6 +845,7 @@
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
   <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
   <button id="liteBtn" class="off" title="動きが重い端末向け。描画の解像度を下げ、街並みを粗めに読み、空の表現やトンビを止めて軽くします（もう一度押すと元に戻ります）">🪶 軽量モード</button>
+  <button id="trafficBtn" class="off" title="テザリングで使うときの見張り。今日この端末がダウンロードした3D都市データの推定量を表示し、上限を決めておくと8割で注意、超えたら自動で軽量モードに切り替えます">📶 通信量</button>
   <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
   <button id="padCenterBtn" style="display:none" title="スティックから手を離した状態で押してください。いまの値をそのまま「手を離した位置」として覚え直します（コントローラーのOPTIONSボタンでも同じことができます）">🎯 中心合わせ</button>
   <button id="padDebugBtn" title="コントローラーを認識しているか、各スティックがどんな値を出しているかを画面に表示します">🩺 診断</button>
@@ -849,6 +858,7 @@
 </div>
 
 <!-- 🛰 同行者への定型スタンプ。自由入力は持たせない（子どもも使う空間のため見守り不要の設計） -->
+<div id="trafficChip" title="この端末が今日ダウンロードした3D都市データの推定量。タップで上限を設定します" onclick="trafficSetCap()"></div>
 <div id="rtPeers"></div>
 <div id="stampBar">
   <span class="who" id="stampWho"></span>
@@ -1738,7 +1748,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04c"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04d"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2041,6 +2051,7 @@ function updatePadDebug(pad, forward, right, up) {
   L.push("地図: " + (miniMapOpen ? "ひらいている" : "とじている")
     + (miniMapOpen && miniMapApi ? (miniMapApi.getFollow() ? "／自分を中心に" : "／追従なし") : "")
     + " ／ トンビ: " + (tonbiOn ? "あり" : "なし")
+    + " ／ 通信量(推定): " + (trafficState ? trafficFmt(trafficBytes()) + "（タイル" + trafficState.tiles + "枚）" : "-")
     + " ／ 街並み: " + (NO_TILES ? "読まない" : "読む")
     + " ／ 軽量: " + (liteOn ? "あり" : "なし")
     + " ／ 同行者: " + (rtReady ? Object.keys(rtOthers).length + "人" : "未接続"));
@@ -2200,6 +2211,91 @@ function liteSuggest() {
   setTimeout(function () { el.style.display = "none"; }, 20000);
 }
 document.getElementById("liteBtn").addEventListener("click", function () { applyLite(!liteOn); });
+
+// ============================================================
+// 📶 通信量の見張り（2026-09-03・イベントでテザリングする際の要望）
+// ブラウザは他サイト（Google のタイル）の転送量を教えてくれない（Timing-Allow-Origin 無し・実測）ので、
+// タイルの枚数 × 平均サイズで推定する。平均は 2026-09-03 に本番で実測した 26KB/枚（描画精度8・圧縮後）。
+// 日付（JST）ごとに端末に積算し、上限（GB）を決めておくと 80% で注意、100% で軽量モードへ自動で切り替える。
+// ============================================================
+const TRAFFIC_KEY = "cbi-meta-traffic-v1";
+const TRAFFIC_CAP_KEY = "cbi-meta-traffic-cap-gb";
+const TRAFFIC_KB_PER_TILE = 26;
+let trafficState = null;
+function trafficDay() {
+  const d = new Date(Date.now() + 9 * 3600 * 1000);
+  return d.toISOString().slice(0, 10);
+}
+function trafficLoad() {
+  let st = null;
+  try { st = JSON.parse(localStorage.getItem(TRAFFIC_KEY)); } catch (e) {}
+  if (!st || st.day !== trafficDay()) st = { day: trafficDay(), tiles: 0, otherBytes: 0, warned: false, liteApplied: false };
+  return st;
+}
+function trafficSave() { try { localStorage.setItem(TRAFFIC_KEY, JSON.stringify(trafficState)); } catch (e) {} }
+function trafficCapGb() { const v = parseFloat(localStorage.getItem(TRAFFIC_CAP_KEY)); return isFinite(v) && v > 0 ? v : 0; }
+function trafficBytes() { return trafficState.tiles * TRAFFIC_KB_PER_TILE * 1024 + trafficState.otherBytes; }
+function trafficFmt(bytes) { return bytes >= 1073741824 ? (bytes / 1073741824).toFixed(2) + "GB" : Math.round(bytes / 1048576) + "MB"; }
+function trafficRender() {
+  const el = document.getElementById("trafficChip");
+  if (!el) return;
+  const cap = trafficCapGb();
+  const bytes = trafficBytes();
+  if (!cap && trafficState.tiles < 50) { el.style.display = "none"; return; } // 上限も設定せず、ほぼ通信していないうちは出さない
+  const ratio = cap ? bytes / (cap * 1073741824) : 0;
+  el.className = ratio >= 1 ? "over" : (ratio >= 0.8 ? "warn" : "");
+  el.innerHTML = "📶 本日 推定 <b>" + trafficFmt(bytes) + "</b>" + (cap ? " / 上限 " + cap + "GB" : "") + (liteOn ? " 🪶" : "");
+  el.style.display = "block";
+  const btn = document.getElementById("trafficBtn");
+  if (btn) { btn.textContent = "📶 通信量 " + trafficFmt(bytes) + (cap ? "/" + cap + "GB" : ""); btn.classList.toggle("off", !cap); }
+  if (cap) {
+    if (ratio >= 1 && !trafficState.liteApplied) {
+      trafficState.liteApplied = true; trafficSave();
+      if (!liteOn) applyLite(true);
+      showPickResult("📶 今日の通信量が上限（" + cap + "GB）に達したため、軽量モードに切り替えました。街並みは粗くなりますが通信量を抑えられます。", 9000);
+    } else if (ratio >= 0.8 && ratio < 1 && !trafficState.warned) {
+      trafficState.warned = true; trafficSave();
+      showPickResult("📶 今日の通信量が上限の8割（推定 " + trafficFmt(bytes) + "）です。上限に達すると軽量モードに自動で切り替わります。", 8000);
+    }
+  }
+}
+function trafficSetCap() {
+  const cur = trafficCapGb();
+  const v = prompt("この端末の1日の通信量の上限をGBで入力してください（0 で上限なし）。\n上限の8割で注意を出し、超えたら軽量モードに自動で切り替えます。\n\n本日の推定: " + trafficFmt(trafficBytes()) + "（タイル " + trafficState.tiles + " 枚 × 平均" + TRAFFIC_KB_PER_TILE + "KB）", cur ? String(cur) : "");
+  if (v === null) return;
+  const n = parseFloat(v);
+  try { localStorage.setItem(TRAFFIC_CAP_KEY, isFinite(n) && n > 0 ? String(n) : "0"); } catch (e) {}
+  if (!(isFinite(n) && n > 0)) { trafficState.warned = false; trafficState.liteApplied = false; trafficSave(); }
+  trafficRender();
+  showPickResult(isFinite(n) && n > 0 ? "📶 上限を " + n + "GB にしました" : "📶 上限なしにしました", 3000);
+}
+(function trafficInit() {
+  trafficState = trafficLoad();
+  try {
+    const seen = new Set();
+    const take = function (list) {
+      for (const e of list) {
+        if (seen.has(e.name)) continue; // 同じURLの再取得（キャッシュ）は数えない
+        seen.add(e.name);
+        if (e.name.indexOf("tile.googleapis.com") !== -1) trafficState.tiles++;
+        else trafficState.otherBytes += (e.transferSize || 0);
+      }
+    };
+    take(performance.getEntriesByType("resource"));
+    const po = new PerformanceObserver(function (l) { take(l.getEntries()); });
+    po.observe({ entryTypes: ["resource"] });
+    // 同じURLを大量に覚えるとメモリを食うので、記録は一定間隔でまとめる
+    setInterval(function () {
+      if (trafficState.day !== trafficDay()) trafficState = trafficLoad();
+      trafficSave(); trafficRender();
+      if (seen.size > 20000) seen.clear();
+      if (performance.clearResourceTimings) performance.clearResourceTimings();
+    }, 5000);
+  } catch (e) { /* 対応していないブラウザでは何もしない */ }
+  const btn = document.getElementById("trafficBtn");
+  if (btn) btn.addEventListener("click", trafficSetCap);
+  trafficRender();
+})();
 (function () {
   const q = new URLSearchParams(location.search).get("lite");
   let on = q === "1";
@@ -4670,7 +4766,7 @@ const CAPTURE_HIDE_IDS = [
   "mvHeader", "controlPanel", "helpBox", "puzzleBtn", "howtoBtn",
   "panelToggle", "joystick", "spotInfo", "puzzlePanel",
   "menuToggle", "mobileMoveBar", "topLeftBar",
-  "presenceChip", "quotaBanner", "tileLoading", "stampBar", "stampFeed", "liteToast", "rtPeers",
+  "presenceChip", "quotaBanner", "tileLoading", "stampBar", "stampFeed", "liteToast", "rtPeers", "trafficChip",
 ];
 
 // 📸 いまの画面をPNGで保存する（SNS告知や報告書の素材づくり用）。
@@ -4960,8 +5056,12 @@ async function startTeaser() {
 // 録画は scripts/promo/record_play.mjs（仮想時間で1フレームずつ撮る）。window.cinemaDone で終了を知らせる
 async function startPlayDemo() {
   const q = new URLSearchParams(location.search);
-  const targets = (q.get("pair") || "0,39").split(",").map(Number)
-    .filter((n) => Number.isInteger(n) && n >= 0);
+  // ?pair=full で完走コース（TT_CONFIG.courses.full の順・全50か所）。展示用のループ再生動画向け（2026-09-03）
+  const pairRaw = q.get("pair") || "0,39";
+  const targets = pairRaw === "full"
+    ? TT_CONFIG.courses.full.idx.slice()
+    : pairRaw.split(",").map(Number).filter((n) => Number.isInteger(n) && n >= 0);
+  const CLIMB_ENABLED = q.get("climb") !== "0";   // ?climb=0 でらせん上昇を省き、まっすぐ滑空で次へ（長いコース向け）
   const cruiseMult = Math.max(0.5, Math.min(4, parseFloat(q.get("speed") || "2.4") || 2.4));
   const CAMERA_ROLL = q.get("roll") !== "0";  // ?roll=0 で画面は水平のまま、トンビだけ傾ける
   cameraBankEnabled = false;                  // 通常操作の傾き処理は止め、このモードの自動操縦が傾きを決める
@@ -5085,7 +5185,13 @@ async function startPlayDemo() {
   }
   function beginClimb(b) {
     const r = relTo(b);
-    st.topH = r.height + CLIMB_GAIN_M;
+    if (!CLIMB_ENABLED && r.height >= 100) {
+      // らせん無し：いまの高さから直接滑空へ（低すぎるときだけ短く上がる）
+      st.topH = r.height; st.phase = "glide";
+      say("つぎは <b>" + ttEsc(b.name) + "</b>", 2600);
+      return;
+    }
+    st.topH = r.height + (CLIMB_ENABLED ? CLIMB_GAIN_M : 80);
     // 回る向き：目的地の方位までの回転が 200° 以上になる側（らせんが1周近く見えるように）
     let d = r.bearing - viewer.camera.heading;
     d = Math.atan2(Math.sin(d), Math.cos(d));
@@ -5142,7 +5248,7 @@ async function startPlayDemo() {
       if (st.ground !== null && r.height < st.ground + 38) deg = Math.max(deg, 4);
       wantPitch = Cesium.Math.toRadians(deg);
       forwardIn = 0.5;
-      if (r.dist < 300 && !st.nearShown) { st.nearShown = true; say("文化財に近づくと…", 2400); }
+      if (r.dist < 300 && !st.nearShown) { st.nearShown = true; if (st.idx === 0) say("文化財に近づくと…", 2400); }
     }
     const maxPitchStep = Cesium.Math.toRadians(25) * dt;
     const pitch = cam.pitch + Math.max(-maxPitchStep, Math.min(maxPitchStep, wantPitch - cam.pitch));
@@ -5194,7 +5300,7 @@ async function startPlayDemo() {
     if (window.cinemaDone) return;
     fadeTo(end, 1, 1200);
     setTimeout(function () { window.cinemaDone = true; }, 4000);
-  }, 80000);
+  }, 80000 * Math.max(1, tb.length / 2)); // 2か所で80秒相当。全50か所なら約33分
 }
 
 if (CINEMA) startCinema();
