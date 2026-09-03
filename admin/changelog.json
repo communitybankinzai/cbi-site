@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-09-03",
+      "type": "content",
+      "target": "site/thesis/slides.html",
+      "title": "卒論発表スライドをサイトに置き、URLで市の担当者に見てもらえるようにした",
+      "detail": "印西市民アカデミー第27期 卒業論文の発表スライド（15枚）を site/thesis/slides.html に配置。事前確認のためURLを市の担当者へ送れる状態にした。サイト内からの導線は張らず、noindex, nofollow を付けて検索結果に出ないようにしている。ただしリポジトリは公開のため、GitHub 上ではファイルが見える。ページは 06_発表/slides.md から build_slides.py で生成され、卒業論文の本文と数値・節番号・表記を突合したうえで出力される。",
+      "author": "A1 Core"
+    },
+    {
       "date": "2026-09-02",
       "type": "feature",
       "target": "管理画面（自動投稿）",
