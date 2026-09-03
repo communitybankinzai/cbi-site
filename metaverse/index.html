@@ -275,7 +275,18 @@
   #ttHud .ttDir { color: #ffd166; font-weight: bold; }
   #ttHud .ttOpt { display: block; margin-top: 4px; font-size: 11px; color: #cfe6ff; cursor: pointer; }
   #ttHud .ttOpt input { vertical-align: middle; margin-right: 4px; }
-  @media (pointer: coarse), (max-width: 640px) { #ttHud { top: 92px; } }
+  /* 次の目的地カード：写真と解説で「どんな文化財か」を頭に入れてから向かう（2026-09-03 追加・学習効果のため） */
+  #ttCard { margin-top: 6px; border-top: 1px solid rgba(127, 200, 255, 0.35); padding-top: 6px; text-align: left; cursor: pointer; }
+  #ttCard .ttCardHead { font-size: 11px; color: #cfe6ff; text-align: center; }
+  #ttCard .ttCardBody { display: none; }
+  #ttCard.open .ttCardBody { display: flex; gap: 8px; align-items: flex-start; margin-top: 4px; }
+  #ttCard .ttCardBody img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; flex: none; background: #0b1520; }
+  #ttCard .ttCardText { font-size: 12px; line-height: 1.45; min-width: 0; }
+  #ttCard .ttCardName { font-weight: bold; color: #ffd166; }
+  #ttCard .ttCardDesig { font-size: 10px; color: #cfe6ff; margin-left: 4px; }
+  #ttCard .ttCardDesc { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }
+  #ttCard .ttCardCredit { font-size: 10px; color: #9fb8cc; margin-top: 2px; }
+  @media (pointer: coarse), (max-width: 640px) { #ttHud { top: 92px; } #ttCard .ttCardBody img { width: 84px; height: 63px; } }
   /* 同時利用者数（在席表示） */
   #presenceChip {
     display: none; background: rgba(20, 30, 40, 0.82); color: #fff;
@@ -835,6 +846,7 @@
   <span class="ttTime" id="ttHudTime">0:00.0</span><button class="ttAbort" onclick="ttAbort()">中止</button><br>
   <span class="ttArrow" id="ttHudArrow" aria-hidden="true">⬆</span><span id="ttHudNext"></span>
   <label class="ttOpt"><input type="checkbox" id="ttOnlyNext" checked onchange="ttApplyPinFocus()">📍 次の地点のピンだけ表示する</label>
+  <div id="ttCard" onclick="ttToggleCard()"></div>
 </div>
 
 <div id="ttModal">
@@ -1684,7 +1696,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03t"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03u"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -3556,6 +3568,7 @@ function ttStart(courseKey) {
   ttStartMs = 0;
   document.getElementById("ttHud").style.display = "block";
   ttApplyPinFocus(); // 次の地点以外のピンを隠す（スイッチがONのとき）
+  ttShowCard();      // 次の目的地の写真と解説
   // サーバー計測の開始登録はカウントダウン終了（計測開始）の瞬間に行う（onTick内）
 }
 // 計測中は「次の地点のピンだけ」を表示する。目的地が他のピンに紛れて見つけにくいため（2026-09-03 ユーザー要望）。
@@ -3575,6 +3588,35 @@ function ttRestorePins() {
     const e = viewer.entities.getById("bunkazai-" + i);
     if (e) setPinVisible(e, bunkazaiPinsVisible);
   }
+}
+// 次の目的地カード：写真（無ければ精霊カード）と解説を出し、20秒たったら自動でたたむ（タップで開閉）。
+// 向かう前に「どんな文化財か」を目にしておくと現地で結びつきやすい、という学習上の狙い（2026-09-03 ユーザー要望）
+let ttCardTimer = null;
+function ttShowCard() {
+  const card = document.getElementById("ttCard");
+  const b = BUNKAZAI[ttCourse[ttPos]];
+  if (!b) { card.innerHTML = ""; return; }
+  const img = b.photo || b.cardImage || "";
+  const credit = b.photo ? "写真出典：印西市ホームページ" : (b.cardImage ? "画像：文化財の精霊カード" : "");
+  card.innerHTML =
+    '<div class="ttCardHead">▾ 次の目的地の写真と解説（タップで開閉）</div>' +
+    '<div class="ttCardBody">' +
+      (img ? '<img src="' + img + '" alt="' + ttEsc(b.photoAlt || b.name) + '" loading="lazy">' : "") +
+      '<div class="ttCardText">' +
+        '<span class="ttCardName">' + ttEsc(b.name) + '</span>' +
+        (b.designation ? '<span class="ttCardDesig">' + ttEsc(b.designation) + '</span>' : "") +
+        (b.description ? '<div class="ttCardDesc">' + ttEsc(b.description) + '</div>' : "") +
+        (credit ? '<div class="ttCardCredit">' + credit + '</div>' : "") +
+      '</div>' +
+    '</div>';
+  card.classList.add("open");
+  clearTimeout(ttCardTimer);
+  ttCardTimer = setTimeout(function () { card.classList.remove("open"); }, 20000);
+}
+function ttToggleCard() {
+  const card = document.getElementById("ttCard");
+  card.classList.toggle("open");
+  clearTimeout(ttCardTimer); // 手で触ったら自動でたたまない
 }
 // 次の地点の方向（自分の向きを基準にした相対角）と、8方位の言葉
 function ttBearingToNext() {
@@ -3665,7 +3707,7 @@ viewer.clock.onTick.addEventListener(function () {
     ttPos++;
     ttServerCheckpoint(ttPos); // サーバーへ通過を記録（厳密モード）
     if (ttPos >= ttCourse.length) ttFinish(elapsed);
-    else ttApplyPinFocus();    // 次の地点のピンへ切り替え
+    else { ttApplyPinFocus(); ttShowCard(); } // 次の地点のピンとカードへ切り替え
   }
 });
 async function ttFinish(clientElapsedMs) {
