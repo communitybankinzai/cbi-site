@@ -1714,7 +1714,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03w"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03x"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -3667,8 +3667,10 @@ function ttShowCard() {
   const card = document.getElementById("ttCard");
   const b = BUNKAZAI[ttCourse[ttPos]];
   if (!b) { card.innerHTML = ""; return; }
-  const img = b.photo || b.cardImage || "";
-  const credit = b.photo ? "写真出典：印西市ホームページ" : (b.cardImage ? "画像：文化財の精霊カード" : "");
+  // 写真は市公式ページ掲載の実物だけ（許可済み20件）。無い文化財は精霊カードで代用せず、文字だけにする
+  // （2026-09-03 ユーザー指摘「精霊ではなく本物の写真に」。残り30件は市ページに写真自体が無い）
+  const img = b.photo || "";
+  const credit = b.photo ? "写真出典：印西市ホームページ" : "（市公式ページに写真はありません）";
   card.innerHTML =
     '<div class="ttCardHead">▾ 次の目的地の写真と解説（タップで開閉）</div>' +
     '<div class="ttCardBody">' +
@@ -3682,6 +3684,15 @@ function ttShowCard() {
     '</div>';
   card.classList.add("shown");
   card.classList.add("open");
+  // 左下の「操作方法」枠（#helpBox）に重ならないよう、その枠の上に置く（PC）。スマホはCSSでジョイスティックの上
+  try {
+    const help = document.getElementById("helpBox");
+    if (help && getComputedStyle(help).display !== "none" && !window.matchMedia("(pointer: coarse), (max-width: 640px)").matches) {
+      card.style.bottom = (help.getBoundingClientRect().height + 28) + "px";
+    } else {
+      card.style.bottom = "";
+    }
+  } catch (e) {}
   clearTimeout(ttCardTimer);
   ttCardTimer = setTimeout(function () { card.classList.remove("open"); }, 20000);
 }
