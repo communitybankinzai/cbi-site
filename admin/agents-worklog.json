@@ -18,15 +18,16 @@
       "actuals": [
         {
           "date": "2026-09-03",
-          "title": "タイムトライアルの順位表示・期間別ランキング・イベント期間設定（CiDAO API＋管理画面）と、画面上の→目印・左下カード 0.4時間",
+          "title": "タイムトライアルの順位表示・期間別ランキング・イベント期間設定（CiDAO API＋管理画面）と、画面上の→目印・左下カード 0.5時間",
           "category": "実装",
           "outputs": [
             "C:\\Repos\\cidao src/app/api/metaverse-tt/route.ts — GET ?period=、応答 event／period／range、finish 応答に rank（all/month/event・人ごとのベストで比較）（1d96761・origin へ push・Vercel 反映確認済み）",
             "C:\\Repos\\cidao src/app/admin/timetrial/{actions.ts,page.tsx,_components/TrialControls.tsx} — saveTtEvent と EventForm（イベント期間の保存・解除）",
             "site/metaverse/index.html — ttRankHtml、#ttPeriod セレクトと ttChangePeriod、#ttTarget（ttUpdateTargetMarker）、#ttCard を左下の独立ボックスへ（版 2026-09-03v）",
-            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json — 追記"
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json — 追記",
+            "（追記）GET ?name= で本人の順位 myRank（ac24bbb）、エントリー画面の「あなたの順位」、カードを操作方法の枠の上へ・写真は実物のみ（版 2026-09-03x）"
           ],
-          "hours": 0.4,
+          "hours": 0.5,
           "partnerApproved": false,
           "note": "ユーザー要望「自己ベスト更新嬉しい。過去の参加者のうち順位が知りたい。イベント時はイベント用、通常時は期間で選べるように」「次の目標は→で教えて」「文化財情報は左下にもう少し大きく」。順位は同じニックネームを1人としてベストで比較。tsc 通過、検証モードで puppeteer から計測を起動し、→目印（見えていれば⬇）と左下カードの表示位置を実測・スクショ確認。本番API は ?period=month で今月の記録だけ返ることを確認。cidao は fork ではなく origin（communitybankinzai/cidao）に push しないと Vercel に反映されない（最初 fork に押して8分待って気づいた）。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 268,617 / cost: $107.04"
         },
@@ -4607,6 +4608,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📷 市公式ページに写真の無い文化財30件の実物写真をどう用意するか決める（Wikimedia Commons の利用可能画像調査／現地撮影／文化財係へ提供依頼）",
+          "category": "調査",
+          "priority": "中",
+          "note": "2026-09-03 ユーザー指摘「文化財は精霊ではなく本物の写真に」。タイムトライアルの目的地カードは写真がある20件だけ実物を出し、残り30件は文字のみ。仏像など堂内のものは公開写真が無い可能性が高い。Google の3D表示のスクショを静止画として使うのは Maps Platform の規約上避ける"
+        },
         {
           "due": "2026-11-15",
           "title": "🗳 CiDAO 上の投票を完了させる（卒業論文の実証記述の裏づけ）",
