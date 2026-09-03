@@ -136,6 +136,18 @@ td.b{background:#fbf7ee;font-weight:700}
 .audio label{display:flex;align-items:center;gap:.3vw;cursor:pointer;white-space:nowrap}
 .audio .t{font-variant-numeric:tabular-nums;min-width:3.4em;text-align:right}
 @media print{ .audio{display:none !important} }
+.shots{display:grid;gap:1.6vw;margin-top:2.4vh}
+.shots.s1{grid-template-columns:1fr}
+.shots.s2{grid-template-columns:1fr 1fr}
+.shot{margin:0}
+.shot img{width:100%;height:25vh;object-fit:cover;object-position:top center;display:block;
+  border:1px solid var(--line);border-radius:12px;background:#fff}
+.shots.s1 .shot img{height:30vh;object-fit:contain}
+.shot figcaption{font-size:clamp(10px,1.05vw,13px);color:var(--ink2);margin-top:.9vh;
+  text-align:center;line-height:1.5}
+.slide.dark .shot img{border-color:rgba(255,255,255,.18)}
+.slide.dark .shot figcaption{color:#c8d4dc}
+@media print{ .shot img{height:48mm} .shots.s1 .shot img{height:60mm} }
 </style>
 </head>
 <body>
@@ -305,9 +317,9 @@ td.b{background:#fbf7ee;font-weight:700}
       <div class="stat a d8"><div class="v">26件</div><div class="l">市指定</div></div>
       <div class="stat a d9"><div class="v">1件</div><div class="l">国登録</div></div>
     </div>
-    <div class="cols c2">
-      <div class="card a d10"><div class="no">紙で配れる</div><h3>A4用紙1枚のレポート</h3><p>位置情報・読み仮名・キャラクター・クイズを備え、印刷して配れる形にした。<br>デジタル環境の有無にかかわらず使える</p></div>
-      <div class="card a d10"><div class="no">空から見る</div><h3>三次元地図での文化財めぐり</h3><p>鳥の視点で市内を飛び、ピンを訪ねる。<br>ニュータウン地区と里山地区の広がりが一目で分かる</p></div>
+    <div class="shots s2 a d10">
+      <figure class="shot"><img src="img/report.jpg" alt="A4用紙1枚のレポート。位置情報・読み仮名・キャラクター・クイズを備え、印刷して配れる"><figcaption>A4用紙1枚のレポート。位置情報・読み仮名・キャラクター・クイズを備え、印刷して配れる</figcaption></figure>
+      <figure class="shot"><img src="img/sky.jpg" alt="三次元地図での文化財めぐり。ニュータウン地区と里山地区の広がりが一目で分かる"><figcaption>三次元地図での文化財めぐり。ニュータウン地区と里山地区の広がりが一目で分かる</figcaption></figure>
     </div>
     <div class="note a d10">令和7年4月1日現在の市内の指定・登録文化財すべて。<br>三次元地図は「メタバース」と呼べるものではない。<br>アバターも自由な会話もない学習用のビューアで、自由入力は子どもが使うことを前提にあえて置いていない。</div>
   </div>
@@ -324,7 +336,10 @@ td.b{background:#fbf7ee;font-weight:700}
       <div class="arw">▶</div>
       <div class="box g"><h4>いま</h4><p>告知ページのURL、配布用PDF、チラシ画像から、AIが開催日時・場所・主催者を抽出して取り込む</p></div>
     </div>
-    <div class="note a d5">市内で配布されている地域のフリーペーパーの記事も、同じ仕組みで取り込める。<br>登録された情報はSNSへ自動配信される。<br><strong>関心の低さが問題なのではない。<br>手続きの面倒さが参加を妨げていたのなら、面倒さのほうを取り除けばよい。</strong><br></div>
+    <div class="shots s1 a d5">
+      <figure class="shot"><img src="img/orgs.jpg" alt="収集した団体・活動の一覧（実際の画面）"><figcaption>収集した団体・活動の一覧（実際の画面）</figcaption></figure>
+    </div>
+    <div class="note a d6">市内で配布されている地域のフリーペーパーの記事も、同じ仕組みで取り込める。<br>登録された情報はSNSへ自動配信される。<br><strong>関心の低さが問題なのではない。<br>手続きの面倒さが参加を妨げていたのなら、面倒さのほうを取り除けばよい。</strong><br></div>
   </div>
   <div class="num">12</div>
 </section>
@@ -339,7 +354,10 @@ td.b{background:#fbf7ee;font-weight:700}
       <div class="card a d5"><div class="no">人材バンク</div><h3>眠っている技能を見えるようにする</h3><p>市民が持つ技能・経験・関心領域を、公開範囲を本人が選べる形で一覧化する</p></div>
       <div class="card a d6"><div class="no">AIとの対話</div><h3>一覧を眺めるのではなく</h3><p>関心の分野、使える時間、住んでいる地域を聞きながら候補を絞る。<br>団体が担い手を探す場合も同じ仕組みが働く</p></div>
     </div>
-    <div class="note a d7">人手による仲介は、コーディネーターの力量と稼働時間に依存する。<br>人を増やして解決する方法は現実的でない。<br>ただし<strong>AIが示すのはあくまで候補であり、仲介者を置き換えるものではない</strong>。<br>仲介者が向き合うべき相手を、見つけやすくするものである。</div>
+    <div class="shots s1 a d7">
+      <figure class="shot"><img src="img/match.jpg" alt="AIとの対話で候補を絞る画面（実際の画面）"><figcaption>AIとの対話で候補を絞る画面（実際の画面）</figcaption></figure>
+    </div>
+    <div class="note a d8">人手による仲介は、コーディネーターの力量と稼働時間に依存する。<br>ただし<strong>AIが示すのはあくまで候補であり、仲介者を置き換えるものではない</strong>。<br>仲介者が向き合うべき相手を、見つけやすくするものである。</div>
   </div>
   <div class="num">13</div>
 </section>
@@ -377,7 +395,10 @@ td.b{background:#fbf7ee;font-weight:700}
       <i>›</i>
       <span class="on">決定</span>
     </div>
-    <div class="note a d7">そこで継続の可否を CiDAO 上の提案にかけ、投票で決めた。<br>自分の裁量で始められなくなるということは、裏返せば、他の誰でも同じ手続きで始められるということである。</div>
+    <div class="shots s1 a d7">
+      <figure class="shot"><img src="img/proposals.jpg" alt="CiDAO の提案一覧。提案ごとに拘束力の種別が表示される（実際の画面）"><figcaption>CiDAO の提案一覧。提案ごとに拘束力の種別が表示される（実際の画面）</figcaption></figure>
+    </div>
+    <div class="note a d8">そこで継続の可否を CiDAO 上の提案にかけ、投票で決めた。<br>自分の裁量で始められなくなるということは、裏返せば、他の誰でも同じ手続きで始められるということである。</div>
   </div>
   <div class="num">15</div>
 </section>
