@@ -127,6 +127,15 @@ td.b{background:#fbf7ee;font-weight:700}
   .rule{ margin:5mm 0 }
   .cols{ gap:6mm; margin-top:6mm } .stats{ gap:5mm; margin-top:7mm }
 }
+.audio{position:fixed;right:3vw;bottom:2.4vh;z-index:10;display:flex;align-items:center;gap:.7vw;
+  background:rgba(255,255,255,.86);border:1px solid var(--line);border-radius:999px;padding:.7vh 1vw;
+  font-size:12px;color:var(--ink2);box-shadow:0 2px 10px rgba(23,41,60,.08)}
+.audio button{border:0;background:var(--green);color:#fff;width:30px;height:30px;border-radius:50%;
+  cursor:pointer;font-size:13px;line-height:1;display:grid;place-items:center}
+.audio button:hover{background:var(--green-d)}
+.audio label{display:flex;align-items:center;gap:.3vw;cursor:pointer;white-space:nowrap}
+.audio .t{font-variant-numeric:tabular-nums;min-width:3.4em;text-align:right}
+@media print{ .audio{display:none !important} }
 </style>
 </head>
 <body>
@@ -429,7 +438,7 @@ td.b{background:#fbf7ee;font-weight:700}
     <div class="cols c3">
       <div class="card a d5"><div class="no">② 配る</div><h3>学校・公民館・図書館へ</h3><p>A4レポートを印刷して、子どもの手に届ける</p></div>
       <div class="card a d6"><div class="no">③ 歩く</div><h3>位置情報で文化財めぐり</h3><p>歩いて訪ねることは、資料を読むこととは違う理解をもたらす</p></div>
-      <div class="card a d7"><div class="no">④ 担い手を募る</div><h3>案内役・撮影・解説・保存</h3><p><strong>担い手がいないのではない。<br>募集が届いていない</strong></p></div>
+      <div class="card a d7"><div class="no">④ 担い手を募る</div><h3>案内役・撮影・解説・保存</h3><p>ブログメディア「千葉ほくそうパルケ」から記事掲載の協力を得て、35件のリンクを張っている。<br><strong>記録している市民は現にいる。<br>ただし、まだ数えるほどしかいない</strong></p></div>
     </div>
     <div class="note a d8">①の「作る」は完了している。<br>⑤では「次にどの文化財を整備してほしいか」を CiDAO 上で問い、<strong>市民でできることは流れ①へ、予算や制度が要るものは流れ②へ渡す</strong>。<br>可視化から担い手の発掘、意思の集約までが、一つの流れでつながる。</div>
   </div>
@@ -527,6 +536,13 @@ td.b{background:#fbf7ee;font-weight:700}
 </section>
 </div>
 
+<audio id="au" preload="none"></audio>
+<div class="audio">
+  <button id="ab" title="再生 / 一時停止">&#9654;</button>
+  <label><input type="checkbox" id="aa"> 自動送り</label>
+  <span class="t" id="at">--:--</span>
+</div>
+
 <script>
 (function(){
   var slides=[].slice.call(document.querySelectorAll('.slide'));
@@ -546,7 +562,39 @@ td.b{background:#fbf7ee;font-weight:700}
     slides[cur].classList.add('active');
     prog.style.width=((cur+1)/slides.length*100)+'%';
     if(history.replaceState) history.replaceState(null,'','#'+(cur+1));
+    if(typeof loadAudio==='function') loadAudio(cur, playing || (aa && aa.checked));
   }
+
+  // ===== 音声（audio/01.mp3 〜）=====
+  var au=document.getElementById('au'), ab=document.getElementById('ab'),
+      aa=document.getElementById('aa'), at=document.getElementById('at');
+  var playing=false;
+  function pad(n){ return (n<10?'0':'')+n; }
+  function fmt(x){ if(!isFinite(x)) return '--:--'; x=Math.max(0,Math.round(x)); return pad(Math.floor(x/60))+':'+pad(x%60); }
+  function loadAudio(i, autoplay){
+    if(!au) return;
+    au.src='audio/'+pad(i+1)+'.mp3';
+    at.textContent='--:--';
+    if(autoplay){ au.play().catch(function(){ playing=false; ab.innerHTML='&#9654;'; }); }
+  }
+  if(au){
+    au.addEventListener('loadedmetadata', function(){ at.textContent=fmt(au.duration); });
+    au.addEventListener('timeupdate', function(){ at.textContent=fmt(au.duration-au.currentTime); });
+    au.addEventListener('play', function(){ playing=true; ab.innerHTML='&#10073;&#10073;'; });
+    au.addEventListener('pause', function(){ playing=false; ab.innerHTML='&#9654;'; });
+    au.addEventListener('ended', function(){
+      ab.innerHTML='&#9654;';
+      if(aa.checked && cur<slides.length-1){ go(cur+1); }
+    });
+    ab.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(!au.src) loadAudio(cur, false);
+      if(au.paused){ au.play().catch(function(){}); } else { au.pause(); }
+    });
+    document.querySelector('.audio').addEventListener('click', function(e){ e.stopPropagation(); });
+    loadAudio(0, false);
+  }
+
   addEventListener('keydown',function(e){
     if(['ArrowRight','ArrowDown','PageDown',' '].indexOf(e.key)>=0){e.preventDefault();go(cur+1);}
     if(['ArrowLeft','ArrowUp','PageUp'].indexOf(e.key)>=0){e.preventDefault();go(cur-1);}
