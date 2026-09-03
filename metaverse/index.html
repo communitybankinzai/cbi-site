@@ -1748,7 +1748,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04f"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04g"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -5241,8 +5241,9 @@ async function startPlayDemo() {
     let heading = cam.heading, wantPitch = 0, forwardIn = 1, wantBank = 0;
 
     if (st.phase === "climb" && CLIMB_MODE === "turn") {
-      // 短い側へ旋回（毎秒30°・傾きあり）。向きが合えば高さにかかわらず滑空へ
-      const maxTurn = Cesium.Math.toRadians(30) * dt;
+      // 短い側へゆるく旋回（毎秒20°＝速さ×2.4で半径200mほどの弧・傾きあり）。向きが合えば高さにかかわらず滑空へ
+      // （直角に向きを変えて直進、にならないよう回る速さを抑える。2026-09-03 ユーザー指摘）
+      const maxTurn = Cesium.Math.toRadians(20) * dt;
       const turn = Math.max(-maxTurn, Math.min(maxTurn, diff));
       heading = cam.heading + turn;
       wantBank = Math.max(-BANK_CLIMB_DEG, Math.min(BANK_CLIMB_DEG, Cesium.Math.toDegrees(diff) * 0.6));
@@ -5262,7 +5263,7 @@ async function startPlayDemo() {
         say("目的地へ <b>滑空</b>", 2600);
       }
     } else if (st.phase === "glide") {
-      const maxTurn = Cesium.Math.toRadians(40) * dt;
+      const maxTurn = Cesium.Math.toRadians(CLIMB_MODE === "turn" ? 25 : 40) * dt;
       const turn = Math.max(-maxTurn, Math.min(maxTurn, diff));
       heading = cam.heading + turn;
       wantBank = Math.max(-16, Math.min(16, Cesium.Math.toDegrees(diff) * 0.4)); // 進路修正の量に応じて軽く傾く
