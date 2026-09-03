@@ -1748,7 +1748,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04g"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04h"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -5269,7 +5269,7 @@ async function startPlayDemo() {
       wantBank = Math.max(-16, Math.min(16, Cesium.Math.toDegrees(diff) * 0.4)); // 進路修正の量に応じて軽く傾く
       // 残りの距離で ARRIVE_H まで降りる角度。急すぎ・浅すぎは抑える
       let deg = -Cesium.Math.toDegrees(Math.atan2(r.height - ARRIVE_H, Math.max(r.dist, 60)));
-      deg = Math.max(-26, Math.min(-4, deg));
+      deg = Math.max(-26, Math.min(6, deg)); // 目標より低ければ少し上向く（以前は常に下向きで低くなりすぎた）
       // 木立や台地に近づきすぎない（地表＋38m）
       if (st.ground !== null && r.height < st.ground + 38) deg = Math.max(deg, 4);
       wantPitch = Cesium.Math.toRadians(deg);
