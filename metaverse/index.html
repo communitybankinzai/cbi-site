@@ -319,6 +319,15 @@
     #presenceChip b { font-size: 11px; }
   }
   /* 🛰 他の利用者へ送る定型スタンプ（自由入力なし・2026-09-02）。同行者がいるときだけ出す */
+  /* 🛰 同行者リスト：いま同じ空間にいる人のID・方向・距離（2026-09-03 追加。光点を見失いやすいため） */
+  #rtPeers { position: absolute; left: 16px; top: 262px; z-index: 34; display: none; max-width: 260px;
+    background: rgba(20, 30, 40, 0.88); color: #fff; border: 1px solid rgba(127, 200, 255, 0.6); border-radius: 10px;
+    padding: 6px 10px; font-size: 12px; line-height: 1.6; }
+  #rtPeers .peerHead { font-size: 11px; color: #cfe6ff; }
+  #rtPeers .peer { cursor: pointer; white-space: nowrap; }
+  #rtPeers .peer:hover { color: #ffd166; }
+  #rtPeers .peer b { color: #ffd166; }
+  @media (pointer: coarse), (max-width: 640px) { #rtPeers { left: 8px; top: 130px; font-size: 11px; max-width: 60vw; } }
   #stampBar {
     position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); z-index: 29;
     display: none; gap: 6px; align-items: center;
@@ -826,6 +835,7 @@
 </div>
 
 <!-- 🛰 同行者への定型スタンプ。自由入力は持たせない（子どもも使う空間のため見守り不要の設計） -->
+<div id="rtPeers"></div>
 <div id="stampBar">
   <span class="who" id="stampWho"></span>
   <button data-stamp="hi" title="近くの人にあいさつを送ります">👋 こんにちは</button>
@@ -1714,7 +1724,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03x"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03z"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -3663,16 +3673,32 @@ function ttRestorePins() {
 // 次の目的地カード：写真（無ければ精霊カード）と解説を出し、20秒たったら自動でたたむ（タップで開閉）。
 // 向かう前に「どんな文化財か」を目にしておくと現地で結びつきやすい、という学習上の狙い（2026-09-03 ユーザー要望）
 let ttCardTimer = null;
-function ttShowCard() {
+// 画像は「写真（市公式・20件）」と「精霊カード」を切り替えられる（2026-09-03 ユーザー要望）。
+// 既定は写真。写真が無い文化財は精霊カードを出す。選んだ側は端末に残す
+const TT_CARD_IMG_KEY = "cbi-meta-tt-cardimg-v1";
+function ttCardImgPref() {
+  try { return localStorage.getItem(TT_CARD_IMG_KEY) === "spirit" ? "spirit" : "photo"; } catch (e) { return "photo"; }
+}
+function ttSwitchCardImg(ev) {
+  if (ev) ev.stopPropagation(); // カード全体の開閉と区別する
+  try { localStorage.setItem(TT_CARD_IMG_KEY, ttCardImgPref() === "photo" ? "spirit" : "photo"); } catch (e) {}
+  ttShowCard(true);
+}
+function ttShowCard(keepTimer) {
   const card = document.getElementById("ttCard");
   const b = BUNKAZAI[ttCourse[ttPos]];
   if (!b) { card.innerHTML = ""; return; }
-  // 写真は市公式ページ掲載の実物だけ（許可済み20件）。無い文化財は精霊カードで代用せず、文字だけにする
-  // （2026-09-03 ユーザー指摘「精霊ではなく本物の写真に」。残り30件は市ページに写真自体が無い）
-  const img = b.photo || "";
-  const credit = b.photo ? "写真出典：印西市ホームページ" : "（市公式ページに写真はありません）";
+  const pref = ttCardImgPref();
+  const useSpirit = (pref === "spirit" && b.cardImage) || (!b.photo && b.cardImage);
+  const img = useSpirit ? b.cardImage : (b.photo || "");
+  const credit = useSpirit ? "画像：文化財の精霊カード" : (b.photo ? "写真出典：印西市ホームページ" : "（市公式ページに写真はありません）");
+  const canSwitch = !!(b.photo && b.cardImage);
+  const switchBtn = canSwitch
+    ? '<button type="button" onclick="ttSwitchCardImg(event)" style="float:right;font-size:11px;padding:2px 8px;border-radius:8px;border:1px solid #7fc8ff;background:transparent;color:#cfe6ff;cursor:pointer;">' +
+      (useSpirit ? "📷 写真にする" : "🧚 精霊にする") + "</button>"
+    : "";
   card.innerHTML =
-    '<div class="ttCardHead">▾ 次の目的地の写真と解説（タップで開閉）</div>' +
+    '<div class="ttCardHead">▾ 次の目的地の写真と解説（タップで開閉）' + switchBtn + '</div>' +
     '<div class="ttCardBody">' +
       (img ? '<img src="' + img + '" alt="' + ttEsc(b.photoAlt || b.name) + '" loading="lazy">' : "") +
       '<div class="ttCardText">' +
@@ -3693,6 +3719,7 @@ function ttShowCard() {
       card.style.bottom = "";
     }
   } catch (e) {}
+  if (keepTimer) return; // 画像の切り替えでは自動でたたむ時間を延ばさない
   clearTimeout(ttCardTimer);
   ttCardTimer = setTimeout(function () { card.classList.remove("open"); }, 20000);
 }
@@ -4619,7 +4646,7 @@ const CAPTURE_HIDE_IDS = [
   "mvHeader", "controlPanel", "helpBox", "puzzleBtn", "howtoBtn",
   "panelToggle", "joystick", "spotInfo", "puzzlePanel",
   "menuToggle", "mobileMoveBar", "topLeftBar",
-  "presenceChip", "quotaBanner", "tileLoading", "stampBar", "stampFeed", "liteToast",
+  "presenceChip", "quotaBanner", "tileLoading", "stampBar", "stampFeed", "liteToast", "rtPeers",
 ];
 
 // 📸 いまの画面をPNGで保存する（SNS告知や報告書の素材づくり用）。
@@ -5315,11 +5342,56 @@ function rtPosOf(o) {
 }
 // 角度は近い側へ回して補間する（350°→10° を 340° 逆回りにしない）
 function rtLerpDeg(a, b, k) { const d = ((b - a + 540) % 360) - 180; return (a + d * k + 360) % 360; }
+// 同行者リスト：ID（利用者NNN）・自分の向きに対する方向・距離を1秒おきに描く。行をタップするとその人の方を向く
+function rtRelTo(p) {
+  const c = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+  const lat = Cesium.Math.toDegrees(c.latitude), lon = Cesium.Math.toDegrees(c.longitude);
+  const dy = (p.lat - lat) * 111320, dx = (p.lon - lon) * 111320 * Math.cos(c.latitude);
+  const bearing = Math.atan2(dx, dy);
+  let rel = bearing - viewer.camera.heading;
+  rel = Math.atan2(Math.sin(rel), Math.cos(rel));
+  const relDeg = Cesium.Math.toDegrees(rel), a = Math.abs(relDeg);
+  const word = a < 20 ? "正面" : a < 70 ? (relDeg > 0 ? "右前" : "左前") : a < 110 ? (relDeg > 0 ? "右" : "左") : a < 160 ? (relDeg > 0 ? "右後ろ" : "左後ろ") : "後ろ";
+  const abs = ((Cesium.Math.toDegrees(bearing) % 360) + 360) % 360;
+  const compass = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"][Math.round(abs / 45) % 8];
+  return { dist: Math.hypot(dx, dy), bearing: bearing, word: word, compass: compass, up: p.h - c.height };
+}
+function rtRenderPeerList() {
+  const el = document.getElementById("rtPeers");
+  if (!el) return;
+  const keys = Object.keys(rtOthers).filter(function (k) { return rtOthers[k].cur || rtOthers[k].to; });
+  if (!keys.length) { el.style.display = "none"; return; }
+  const rows = keys.map(function (k) {
+    const o = rtOthers[k];
+    const p = o.cur || o.to;
+    const r = rtRelTo(p);
+    const dist = r.dist >= 1000 ? (r.dist / 1000).toFixed(1) + "km" : Math.round(r.dist) + "m";
+    const vert = r.up > 60 ? "↑" : (r.up < -60 ? "↓" : "");
+    return '<div class="peer" data-key="' + k + '" title="タップするとこの人の方を向きます">🛰 利用者' + o.num +
+      '　<b>' + r.word + '</b>（' + r.compass + '）約' + dist + vert + '</div>';
+  });
+  el.innerHTML = '<div class="peerHead">いっしょに飛んでいる人（タップでその方向を向く）</div>' + rows.join("");
+  el.style.display = "block";
+}
+document.getElementById("rtPeers").addEventListener("click", function (ev) {
+  const row = ev.target.closest(".peer");
+  if (!row) return;
+  const o = rtOthers[row.dataset.key];
+  const p = o && (o.cur || o.to);
+  if (!p) return;
+  const r = rtRelTo(p);
+  viewer.camera.setView({ orientation: { heading: r.bearing, pitch: viewer.camera.pitch, roll: 0 } });
+  showPickResult("利用者" + o.num + " の方を向きました（" + r.compass + "・約" + Math.round(r.dist) + "m）", 3000);
+});
+setInterval(rtRenderPeerList, 1000);
 // 向き付きの光点（2026-09-02）。上向きの矢印画像を、相手の向き（水平ベクトル）に世界座標で揃える。
 // 画面上では「相手が進む方向」へ矢印が向く（遠ざかる相手は地平線の方、近づく相手は手前）
-const RT_ARROW = "data:image/svg+xml;utf8," + encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26">' +
-  '<path d="M13 2 L23 22 L13 17 L3 22 Z" fill="#7fc8ff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>');
+// 他の利用者の印：上から見たトンビのシルエット（頭が進行方向。2026-09-03 に矢印から変更）
+const RT_BIRD = "data:image/svg+xml;utf8," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+  '<path d="M32 4 C34 4 36 7 36 11 L36 20 C44 18 56 16 62 22 C58 26 48 30 38 32 L38 40 C41 44 44 50 42 58 L32 52 L22 58 C20 50 23 44 26 40 L26 32 C16 30 6 26 2 22 C8 16 20 18 28 20 L28 11 C28 7 30 4 32 4 Z"' +
+  ' fill="#ffd166" stroke="#1a2533" stroke-width="2.5" stroke-linejoin="round"/></svg>');
+const RT_ARROW = RT_BIRD; // 旧名（参照が残っていても動くように）
 function rtAxisOf(o) {
   if (!o.cur) return Cesium.Cartesian3.UNIT_Z;
   const hd = Cesium.Math.toRadians(o.cur.hd || 0);
@@ -5336,8 +5408,10 @@ function rtEnsure(key) {
   o.ent = viewer.entities.add({
     position: new Cesium.CallbackProperty(function () { return rtPosOf(o); }, false),
     billboard: {
-      image: RT_ARROW, width: 26, height: 26,
+      image: RT_BIRD, width: 40, height: 40,
       alignedAxis: new Cesium.CallbackProperty(function () { return rtAxisOf(o); }, false),
+      // 遠いほど大きく描く（300m で等倍、6km で 2.4倍）。小さな光点が遠くで消えて見失うのを防ぐ（2026-09-03）
+      scaleByDistance: new Cesium.NearFarScalar(300, 1.0, 6000, 2.4),
       disableDepthTestDistance: Number.POSITIVE_INFINITY, // 建物の陰でも見える
     },
     label: {

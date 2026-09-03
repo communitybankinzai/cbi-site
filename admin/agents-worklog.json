@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-09-03",
+          "title": "同行者リスト（ID・方向・距離・タップで向く）、他の利用者の印を鳥の形＋距離で拡大、目的地カードの写真／精霊切り替え 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html — rtRelTo／rtRenderPeerList／#rtPeers、RT_BIRD（SVG）＋scaleByDistance、ttSwitchCardImg／TT_CARD_IMG_KEY、誤って消した ttHideCard／ttUpdateTargetMarker を復元（版 2026-09-03z）",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json — 追記"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "ユーザー要望「同時にアクセスしている人を見失いやすい。どのIDがどの方角にいるか表示」「距離に応じて大きく」「F-111か鳥の形に」「精霊の写真と切り替えられるように」。検証モードで仮の同行者を北東350mに置き、一覧に『利用者475 右前（北東）約495m↑』と出て、タップ後に heading が45°・表示が『正面』に変わることを実測。カードの切替は photos/44.jpg ⇄ spirits/ノマホリ.webp を実測。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 294,320 / cost: $118.56"
+        },
+        {
+          "date": "2026-09-03",
           "title": "タイムトライアルの順位表示・期間別ランキング・イベント期間設定（CiDAO API＋管理画面）と、画面上の→目印・左下カード 0.5時間",
           "category": "実装",
           "outputs": [
