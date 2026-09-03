@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-03",
+          "title": "通信量の見張り（推定表示・上限で軽量モード自動切替）、通信量の実測、プレイ動画の全50か所モードと展示用ループ動画の録画開始 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html — trafficChip／trafficBtn／PerformanceObserver によるタイル枚数積算（26KB/枚で推定）・上限で applyLite(true)、?pair=full／?climb=0、安全弁を目的地数に比例（版 2026-09-04d）",
+            "site/metaverse/CLAUDE_HANDOFF.md — 通信量の実測（90秒93MB・約1MB/秒）",
+            "scratchpad datameter.mjs／tao.mjs — CDP で転送量を集計。Google タイルは Timing-Allow-Origin 無しでブラウザからは転送量が取れないことを確認",
+            "録画：cbi_metaverse_play_16x9_20260903_HHMM.mp4（全50か所・16:9・24fps・約25分見込み）を独立プロセスで生成中"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "ユーザー要望（11/3 武蔵屋展示の準備）「当日のトータル通信量を画面上でモニタし、制限で簡易モードへ切替」「ループ再生用に全50か所のタイムトライアル動画」。検証モードで、上限0.001GBを設定するとチップが赤くなり liteOn=true になることを実測。10GB で持つかの問いには本番実測（速さ×2.4で90秒93MB）から『体験交代型なら5〜8時間、飛びっぱなしなら約3時間』と回答。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 342,036 / cost: $140.83"
+        },
+        {
+          "date": "2026-09-03",
           "title": "発表スライドにアニメーション付与、PDF化、生涯学習課あて照会メールの下書き 0.3時間",
           "category": "実装",
           "outputs": "academy/06_発表/add_animation.ps1（新規）、academy/06_発表/卒論発表スライド.pptx（アニメ299効果）、academy/06_発表/卒論発表スライド.pdf（24ページ・1.71MB）、Gmail下書き（生涯学習課推進係あて・確認4件）",
@@ -5798,6 +5812,13 @@
           "category": "会議",
           "priority": "中",
           "note": "2026-09-03 登録。展示は横長モニター、体験はタイムトライアル初級（約2km・3か所）を想定。PCは GPU 付きが望ましく、N95 なら軽量モード。当日は同時アクセス数が読めないので renderer 上限（50万/日）と root 枠を確認しておく"
+        },
+        {
+          "due": "2026-10-27",
+          "title": "🎬 展示用ループ動画（全50か所・16:9）の完成確認と、展示PCへの配置・再生設定（VLCループ等）",
+          "category": "広報",
+          "priority": "中",
+          "note": "2026-09-03 に録画を開始（scripts/promo/out/cbi_metaverse_play_16x9_20260903_*.mp4、約25分・24fps）。数時間かかるため完成は翌日以降に確認。長すぎる／らせんが欲しい場合は ?climb=1 や --pair で作り直せる"
         },
         {
           "due": "2026-09-18",
