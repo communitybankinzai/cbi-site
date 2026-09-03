@@ -1748,7 +1748,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04h"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04i"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -5178,11 +5178,12 @@ async function startPlayDemo() {
     const e = (b.lon - Cesium.Math.toDegrees(c.longitude)) * mLon;
     return { dist: Math.hypot(n, e), bearing: Math.atan2(e, n), height: c.height, carto: c };
   }
-  function setInput(forwardAnalog) {
-    // forwardAnalog: 1=キー（羽ばたき）、0.5=アナログ（滑空）、0=停止
+  function setInput(forwardAnalog, speedScale) {
+    // forwardAnalog: 1=キー（羽ばたき）、0.5=アナログ（滑空）、0=停止。speedScale: 実速度の倍率（省略=1）
+    const sc = (typeof speedScale === "number" && speedScale > 0) ? speedScale : 1;
     keys["KeyW"] = forwardAnalog >= 1;
     joyState.dy = forwardAnalog > 0 && forwardAnalog < 1 ? -forwardAnalog : 0;
-    speedMultiplier = forwardAnalog > 0 && forwardAnalog < 1 ? cruiseMult / forwardAnalog : cruiseMult;
+    speedMultiplier = forwardAnalog > 0 && forwardAnalog < 1 ? (cruiseMult * sc) / forwardAnalog : cruiseMult * sc;
   }
   function beginClimb(b) {
     const r = relTo(b);
@@ -5263,7 +5264,11 @@ async function startPlayDemo() {
         say("目的地へ <b>滑空</b>", 2600);
       }
     } else if (st.phase === "glide") {
-      const maxTurn = Cesium.Math.toRadians(CLIMB_MODE === "turn" ? 25 : 40) * dt;
+      // 目的地の近くで行き過ぎたら（残り300m未満で向きが45°以上ずれている）、速度を落として小さく回り込む。
+      // 速いまま回ると旋回半径が80mの判定円より大きく、目的地の周りを回り続けて着けない（2026-09-03 全50か所の録画で発生）
+      const overshoot = r.dist < 300 && Math.abs(diff) > Cesium.Math.toRadians(45);
+      st.slow = overshoot ? 0.4 : 1;
+      const maxTurn = Cesium.Math.toRadians(overshoot ? 60 : (CLIMB_MODE === "turn" ? 25 : 40)) * dt;
       const turn = Math.max(-maxTurn, Math.min(maxTurn, diff));
       heading = cam.heading + turn;
       wantBank = Math.max(-16, Math.min(16, Cesium.Math.toDegrees(diff) * 0.4)); // 進路修正の量に応じて軽く傾く
@@ -5282,7 +5287,7 @@ async function startPlayDemo() {
     const maxBankStep = 30 * dt;
     st.bank += Math.max(-maxBankStep, Math.min(maxBankStep, wantBank - st.bank));
     cam.setView({ orientation: { heading: heading, pitch: pitch, roll: applyBank(st.bank) } });
-    setInput(forwardIn);
+    setInput(forwardIn, st.phase === "glide" ? st.slow : 1);
     // 精霊が出たら止まる（ゲットは人が押すのと同じ confirmCatch を少し遅れて呼ぶ）
     if (encounterIdx !== null) {
       st.resume = st.phase; st.phase = "catch"; setInput(0);
