@@ -1748,7 +1748,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04j"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04k"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -5298,6 +5298,13 @@ async function startPlayDemo() {
 
   // isTarget=false は、目的地の途中や同じ境内にいる別の精霊（宝珠院の観音堂と延命地蔵など）。
   // 実プレイでも起きることなので、そのままゲットして目的地へ進む（目的地の数には入れない）
+  // 次の目的地へ進める。すでにゲット済みの文化財（同じ座標にある2件のうち先に出た方など）は飛ばす。
+  // 2026-09-04 全50か所の録画で、観音寺鋳造鰐口(30)と弥陀一尊武蔵型板碑(23)が同じ座標のため
+  // 30 に着いたとき 23 が先に出てゲットされ、次の目的地 23 が二度と出現せず周りを回り続けた
+  function advanceTarget() {
+    st.idx++;
+    while (tb[st.idx] && pieces[targets[st.idx]] !== undefined) st.idx++;
+  }
   async function onEncounter(isTarget) {
     await sleep(600);
     say(isTarget ? "精霊が <b>あらわれた！</b>" : "もう1体 <b>あらわれた！</b>", 2400);
@@ -5306,8 +5313,13 @@ async function startPlayDemo() {
     await sleep(1100);
     confirmCatch();
     await sleep(isTarget ? 2000 : 1400);
-    if (!isTarget) { st.phase = st.resume; return; }
-    st.idx++;
+    if (!isTarget) {
+      // 目的地以外を取ったあとも、いまの目的地が取れていれば（同じ座標の別件だった等）先へ進める
+      if (tb[st.idx] && pieces[targets[st.idx]] !== undefined) { advanceTarget(); st.nearShown = false; if (tb[st.idx]) { beginClimb(tb[st.idx]); return; } }
+      else { st.phase = st.resume; return; }
+    } else {
+      advanceTarget();
+    }
     st.nearShown = false;
     if (tb[st.idx]) {
       beginClimb(tb[st.idx]);
