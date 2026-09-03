@@ -70,11 +70,12 @@
             "site/admin/index.html・admin.js — 予約投稿の欄を「画像／動画URL」に、一覧に🎬印（コミット 62faa1c）",
             "site/assets/video/metaverse_play_20260902.mp4 — 720x1280・無音AAC付き・31.8MB（コミット 89ba7b5）",
             "SNS予約投稿シート — id q1788360263342（2026/09/03 12:00・Threads＋Instagram・動画）",
-            "cidao/2026-09-02_SNS予約投稿の動画対応とInstagram失敗の追跡.md — 新規ノート、MOC_CiDAO に登録"
+            "cidao/2026-09-02_SNS予約投稿の動画対応とInstagram失敗の追跡.md — 新規ノート、MOC_CiDAO に登録",
+            "（09-03追記）cbi-admin-gas/SnsQueue.gs — 処理中マーカー（status=processing・媒体ごとの途中経過・20分超は打ち切り）で二重投稿を防止、待ち時間を6分制限内に短縮。NewsPublish.gs — 投稿関数の戻り値 {ok,error} に合わせて成否判定を修正。いずれも clasp push 済み"
           ],
           "hours": 0.3,
           "partnerApproved": false,
-          "note": "ユーザー指摘「動画だとInstagramとThreadsに自動投稿できないのか。何のために作った仕組みか」。実物を確認したところ、キューは文章＋画像のみ対応で、Instagram は 08/08・08/25・09/01 の3回とも失敗していたが理由が記録されていなかった。3択（A動画対応＋原因特定／BThreadsのみ／C手動）で A を選択。予約の投入はユーザー承認のうえ 09/03 12:00 で登録。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 192,302 / cost: $61.31"
+          "note": "ユーザー指摘「動画だとInstagramとThreadsに自動投稿できないのか。何のために作った仕組みか」。実物を確認したところ、キューは文章＋画像のみ対応で、Instagram は 08/08・08/25・09/01 の3回とも失敗していたが理由が記録されていなかった。3択（A動画対応＋原因特定／BThreadsのみ／C手動）で A を選択。予約の投入はユーザー承認のうえ 09/03 12:00 で登録。 09-03 12:40 ユーザー「投稿されてませんよ」→ キューは scheduled のまま、Threads にも投稿なし。過去の投稿はすべて NewsPublish の即時投稿で、processSnsQueue の15分トリガーが一度も作られていない疑い（GAS エディタで setupSnsQueueTrigger() を実行する必要があり、ユーザーへ依頼）。 session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 192,302 / cost: $61.31"
         },
         {
           "date": "2026-09-02",
@@ -4553,10 +4554,12 @@
         },
         {
           "due": "2026-09-03",
-          "title": "📣 09/03 12:00 の予約投稿（プレイ動画・Threads＋Instagram）の結果メモを確認し、Instagram が失敗なら理由から対処する",
+          "title": "📣 予約投稿キューの15分トリガーを作成し（GASエディタで setupSnsQueueTrigger()）、プレイ動画の投稿結果を確認する",
           "category": "広報",
           "priority": "高",
-          "note": "管理画面「📣 自動投稿」タブの予約投稿一覧、id q1788360263342。結果メモに API 応答の先頭120字が残る（2026-09-02 の改修）。失敗理由が権限（instagram_content_publish）やアカウント種別なら、credentials.md 1.0 節の手順でトークンを取り直す。GAS エディタの diagnoseInstagram() でも投稿せずに確かめられる"
+          "note": "2026-09-03 判明：予約投稿キュー（processSnsQueue）の15分トリガーが存在しない疑い（過去の投稿は NewsPublish の即時投稿のみ）。トリガー作成後、最初の巡回で q1788360263342（09/03 12:00 予約）が投稿される。時刻を変えたい場合は先に管理画面で取り消して入れ直す。結果メモに API 応答が残る",
+          "status": "待ち",
+          "blockedBy": "中司さんが communitybankinzai@gmail.com の GAS「CBI管理画面バックエンド」を開き、SnsQueue.gs の setupSnsQueueTrigger() を1回実行すること（トリガー作成の権限はエディタからしか使えない）"
         },
         {
           "due": "2026-09-30",
