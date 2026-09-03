@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-03",
+          "title": "タイムトライアルに次の地点への方向矢印と「次の地点のピンだけ表示」スイッチを追加 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html — ttBearingToNext（相対角・8方位）、HUDの矢印と方向の言葉、#ttOnlyNext スイッチ（既定ON）、ttApplyPinFocus／ttRestorePins、版 2026-09-03t",
+            "site/metaverse/CLAUDE_HANDOFF.md — 計測中のナビの節を追記",
+            "site/admin/changelog.json — 1件追記"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "ユーザー要望「次の目標地点がなかなか見つけられない。方位距離を出すか、次以外のピンを隠すモードが欲しい」→両方を実装。検証モードで puppeteer から ttStart を直接呼び、計測中は表示ピンが次の1件だけになること、スイッチOFFで50件に戻ること、中止で元に戻ることを実測。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 233,448 / cost: $93.71"
+        },
+        {
+          "date": "2026-09-03",
           "title": "予約投稿キューの15分トリガー作成をユーザーに案内し、プレイ動画を Threads＋Instagram（リール）へ自動投稿（両方成功） 0.1時間",
           "category": "広報",
           "outputs": [
