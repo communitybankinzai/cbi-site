@@ -262,9 +262,10 @@
   #ttCertCanvas { width: 100%; border-radius: 10px; box-shadow: 0 6px 30px rgba(0,0,0,0.5); }
   #ttHud {
     position: absolute; top: 52px; left: 50%; transform: translateX(-50%);
-    z-index: 36; display: none; background: rgba(20, 30, 40, 0.92); color: #fff;
-    border: 1px solid #7fc8ff; border-radius: 12px; padding: 8px 14px;
+    z-index: 36; display: none; background: rgba(20, 30, 40, 0.55); color: #fff;
+    border: 1px solid rgba(127, 200, 255, 0.7); border-radius: 12px; padding: 8px 14px;
     font-size: 13px; line-height: 1.5; text-align: center; max-width: min(92vw, 480px);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9); /* 背景を薄くしても読めるように（2026-09-03「邪魔すぎる」の指摘で半透明化） */
   }
   #ttHud .ttTime { font-size: 20px; font-weight: bold; color: #7fc8ff; font-variant-numeric: tabular-nums; }
   #ttHud .ttAbort { margin-left: 10px; padding: 3px 10px; border: none; border-radius: 8px;
@@ -278,8 +279,9 @@
   /* 次の目的地カード：写真と解説で「どんな文化財か」を頭に入れてから向かう（2026-09-03 追加・学習効果のため） */
   /* 次の目的地カード（画面左下・2026-09-03「左下にもう少し大きく」の要望で HUD から独立） */
   #ttCard { position: absolute; left: 16px; bottom: 170px; z-index: 36; display: none; width: min(360px, 44vw);
-    background: rgba(20, 30, 40, 0.92); color: #fff; border: 1px solid #7fc8ff; border-radius: 12px; padding: 8px 12px;
-    text-align: left; cursor: pointer; }
+    background: rgba(20, 30, 40, 0.6); color: #fff; border: 1px solid rgba(127, 200, 255, 0.7); border-radius: 12px; padding: 8px 12px;
+    text-align: left; cursor: pointer; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+  #ttCard.open { background: rgba(20, 30, 40, 0.85); } /* 開いたときは写真と文字を読みやすく */
   #ttCard.shown { display: block; }
   #ttCard .ttCardHead { font-size: 11px; color: #cfe6ff; }
   #ttCard .ttCardBody { display: none; }
@@ -298,9 +300,18 @@
   #ttTarget .ttTargetLabel { display: inline-block; margin-top: 2px; padding: 2px 8px; border-radius: 10px;
     background: rgba(20, 30, 40, 0.85); border: 1px solid #ffd166; color: #ffd166; font-size: 12px; font-weight: bold; white-space: nowrap; }
   @media (pointer: coarse), (max-width: 640px) {
-    #ttHud { top: 92px; }
-    #ttCard { left: 8px; bottom: 236px; width: min(320px, 70vw); }  /* ジョイスティックの上 */
-    #ttCard .ttCardBody img { max-height: 130px; }
+    #ttHud { top: 92px; background: rgba(20, 30, 40, 0.4); padding: 4px 10px; font-size: 11px; line-height: 1.35; max-width: 92vw; }
+    #ttHud .ttTime { font-size: 16px; }
+    #ttHud .ttAbort { padding: 2px 8px; font-size: 10px; }
+    #ttHud .ttArrow { width: 20px; height: 20px; line-height: 20px; font-size: 17px; margin-right: 4px; }
+    #ttHud .ttOpt { font-size: 10px; margin-top: 2px; }
+    #ttCard:not(.open) .ttCardHead button { display: none; }
+    #ttCard:not(.open) { background: rgba(20, 30, 40, 0.45); }
+    /* スマホ：普段は1行だけ（ジョイスティックの上）。開いたときは画面中央に大きく出し、HUD や操作部と重ねない */
+    #ttCard { left: 8px; bottom: 236px; width: auto; max-width: 70vw; padding: 5px 10px; }
+    #ttCard.open { left: 50%; top: 50%; bottom: auto; transform: translate(-50%, -50%); width: 86vw; max-width: 420px;
+      max-height: 72vh; overflow-y: auto; padding: 10px 12px; }
+    #ttCard .ttCardBody img { max-height: 160px; }
     #ttCard .ttCardText { font-size: 13px; }
     #ttTarget .ttTargetArrow { font-size: 36px; }
   }
@@ -1724,7 +1735,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03z"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04b"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -3709,15 +3720,21 @@ function ttShowCard(keepTimer) {
       '</div>' +
     '</div>';
   card.classList.add("shown");
+  const mobile = window.matchMedia("(pointer: coarse), (max-width: 640px)").matches;
+  // スマホでは自動で開かない（開くと画面をふさぐ。2026-09-03 ユーザー指摘）。1行の見出しをタップしたときだけ中央に出す
+  if (mobile) {
+    if (keepTimer) card.classList.add("open"); // 画像の切り替え中は開いたまま
+    else card.classList.remove("open");
+    card.style.bottom = "";
+    card.querySelector(".ttCardHead").firstChild.textContent = card.classList.contains("open") ? "▾ 次の目的地の写真と解説（タップで閉じる）" : "▸ 次の目的地の写真と解説（タップで見る）";
+    return;
+  }
   card.classList.add("open");
-  // 左下の「操作方法」枠（#helpBox）に重ならないよう、その枠の上に置く（PC）。スマホはCSSでジョイスティックの上
+  // 左下の「操作方法」枠（#helpBox）に重ならないよう、その枠の上に置く（PC）
   try {
     const help = document.getElementById("helpBox");
-    if (help && getComputedStyle(help).display !== "none" && !window.matchMedia("(pointer: coarse), (max-width: 640px)").matches) {
-      card.style.bottom = (help.getBoundingClientRect().height + 28) + "px";
-    } else {
-      card.style.bottom = "";
-    }
+    if (help && getComputedStyle(help).display !== "none") card.style.bottom = (help.getBoundingClientRect().height + 28) + "px";
+    else card.style.bottom = "";
   } catch (e) {}
   if (keepTimer) return; // 画像の切り替えでは自動でたたむ時間を延ばさない
   clearTimeout(ttCardTimer);
@@ -3778,6 +3795,10 @@ function ttToggleCard() {
   const card = document.getElementById("ttCard");
   card.classList.toggle("open");
   clearTimeout(ttCardTimer); // 手で触ったら自動でたたまない
+  const head = card.querySelector(".ttCardHead");
+  if (head && window.matchMedia("(pointer: coarse), (max-width: 640px)").matches) {
+    head.firstChild.textContent = card.classList.contains("open") ? "▾ 次の目的地の写真と解説（タップで閉じる）" : "▸ 次の目的地の写真と解説（タップで見る）";
+  }
 }
 // 次の地点の方向（自分の向きを基準にした相対角）と、8方位の言葉
 function ttBearingToNext() {
