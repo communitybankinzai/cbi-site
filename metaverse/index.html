@@ -1714,7 +1714,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03v"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03w"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -3492,9 +3492,18 @@ function ttHash(str) { // 証明書の簡易検証コード（改ざん抑止用
 }
 // 参加要件はサーバー設定（管理画面で変更可）を優先し、取得できない場合は TT_CONFIG の既定値を使う
 let ttCurrentReq = null;
-async function ttGetServerInfo() {
+// エントリー画面用。端末に残る直近の記録のニックネームを添えると、その人の順位（myRank）も返る
+function ttMyName() {
+  const h = ttLoadHistory();
+  return h.length ? String(h[0].name || "") : "";
+}
+async function ttGetServerInfo(period) {
   try {
-    const res = await fetch(TT_API);
+    const qs = [];
+    if (period) qs.push("period=" + encodeURIComponent(period));
+    const nm = ttMyName();
+    if (nm) qs.push("name=" + encodeURIComponent(nm));
+    const res = await fetch(TT_API + (qs.length ? "?" + qs.join("&") : ""));
     if (!res.ok) throw new Error("HTTP " + res.status);
     return await res.json();
   } catch (e) { return null; }
@@ -3560,9 +3569,8 @@ async function ttChangePeriod(period) {
   const el = document.getElementById("ttRanking");
   if (el) el.innerHTML = '<span class="ttNote">読み込み中…</span>';
   try {
-    const res = await fetch(TT_API + "?period=" + encodeURIComponent(period));
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const info = await res.json();
+    const info = await ttGetServerInfo(period);
+    if (!info) throw new Error("no info");
     ttLastInfo = info;
     ttRenderRanking(info);
   } catch (e) {
@@ -3585,7 +3593,19 @@ function ttRenderRanking(info) {
     return "<b>" + TT_CONFIG.courses[k].label.split("（")[0] + "</b>：" +
       list.map((r, i) => (i + 1) + "位 " + ttEsc(r.name) + " " + ttFormat(r.elapsedMs)).join("　");
   }).filter(Boolean).join("<br>");
-  el.innerHTML = "🏆 <b>ランキング（サーバー公式記録）</b>" + select + "<br>" + (rows || "この期間の記録はまだありません");
+  // あなたの順位（この端末で最後に使ったニックネームの、期間内ベストで比較）
+  let mine = "";
+  const nm = ttMyName();
+  if (nm && info.myRank && Object.keys(info.myRank).length) {
+    mine = '<br><span style="color:#ffd166;">あなた（' + ttEsc(nm) + '）の順位：</span>' +
+      Object.keys(TT_CONFIG.courses).filter(k => info.myRank[k]).map(k => {
+        const r = info.myRank[k];
+        return TT_CONFIG.courses[k].label.split("（")[0] + " <b>" + r.rank + "位</b>／" + r.total + "人中（" + ttFormat(r.bestMs) + "）";
+      }).join("　");
+  } else if (nm) {
+    mine = '<br><span class="ttNote">あなた（' + ttEsc(nm) + '）のこの期間の公式記録はありません</span>';
+  }
+  el.innerHTML = "🏆 <b>ランキング（サーバー公式記録）</b>" + select + "<br>" + (rows || "この期間の記録はまだありません") + mine;
 }
 function ttSelectAge(key) {
   const age = TT_CONFIG.ages.find(a => a.key === key);
