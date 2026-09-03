@@ -1748,7 +1748,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04d"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04e"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -5061,7 +5061,8 @@ async function startPlayDemo() {
   const targets = pairRaw === "full"
     ? TT_CONFIG.courses.full.idx.slice()
     : pairRaw.split(",").map(Number).filter((n) => Number.isInteger(n) && n >= 0);
-  const CLIMB_ENABLED = q.get("climb") !== "0";   // ?climb=0 でらせん上昇を省き、まっすぐ滑空で次へ（長いコース向け）
+  const CLIMB_MODE = q.get("climb") || "1";        // 1=らせん上昇（既定）／turn=目的地の方へ旋回したらまっすぐ／0=旋回も上昇もしない
+  const CLIMB_ENABLED = CLIMB_MODE !== "0";
   const cruiseMult = Math.max(0.5, Math.min(4, parseFloat(q.get("speed") || "2.4") || 2.4));
   const CAMERA_ROLL = q.get("roll") !== "0";  // ?roll=0 で画面は水平のまま、トンビだけ傾ける
   cameraBankEnabled = false;                  // 通常操作の傾き処理は止め、このモードの自動操縦が傾きを決める
@@ -5185,6 +5186,17 @@ async function startPlayDemo() {
   }
   function beginClimb(b) {
     const r = relTo(b);
+    if (CLIMB_MODE === "turn") {
+      // 目的地の方へ短い側に旋回（傾きあり）しながら少し上がり、向きが合ったらまっすぐ滑空へ
+      // （2026-09-03 ユーザー指示「らせんまでしなくてよい。目的の方向に向いたらまっすぐ」）
+      let d = r.bearing - viewer.camera.heading;
+      d = Math.atan2(Math.sin(d), Math.cos(d));
+      st.turnDir = Math.sign(d || 1);
+      st.topH = Math.max(r.height, 150);       // 低いときは 150m まで上げる（木立や建物を越える）
+      st.phase = "climb";
+      say("つぎは <b>" + ttEsc(b.name) + "</b>", 2600);
+      return;
+    }
     if (!CLIMB_ENABLED && r.height >= 100) {
       // らせん無し：いまの高さから直接滑空へ（低すぎるときだけ短く上がる）
       st.topH = r.height; st.phase = "glide";
@@ -5226,7 +5238,18 @@ async function startPlayDemo() {
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
     let heading = cam.heading, wantPitch = 0, forwardIn = 1, wantBank = 0;
 
-    if (st.phase === "climb") {
+    if (st.phase === "climb" && CLIMB_MODE === "turn") {
+      // 短い側へ旋回（毎秒30°・傾きあり）。向きが合えば高さにかかわらず滑空へ
+      const maxTurn = Cesium.Math.toRadians(30) * dt;
+      const turn = Math.max(-maxTurn, Math.min(maxTurn, diff));
+      heading = cam.heading + turn;
+      wantBank = Math.max(-BANK_CLIMB_DEG, Math.min(BANK_CLIMB_DEG, Cesium.Math.toDegrees(diff) * 0.6));
+      wantPitch = r.height < st.topH ? Cesium.Math.toRadians(12) : Cesium.Math.toRadians(2);
+      if (Math.abs(diff) < Cesium.Math.toRadians(8)) {
+        st.phase = "glide";
+        say("目的地へ <b>滑空</b>", 2200);
+      }
+    } else if (st.phase === "climb") {
       // 一定の向きに回り続ける。高さが足りているうえで目的地の方位に来たら滑空へ
       heading = cam.heading + st.turnDir * Cesium.Math.toRadians(30) * dt;
       wantBank = st.turnDir * BANK_CLIMB_DEG;
