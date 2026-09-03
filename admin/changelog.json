@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-03",
+      "type": "docs",
+      "target": "CBI/academy/",
+      "title": "卒業論文の作業フォルダを COCoLa から CBI 配下へ移した",
+      "detail": "COCoLa フォルダが近く消去されるため、印西市民アカデミー卒業論文の一式（草稿・引用文献・参考資料・調査記録・提出版・発表資料、約237MB）を OneDrive/CBI/academy へ移動した。ビルドスクリプト4本（docx・スライド・音声・PowerPoint）のパスを更新し、いずれも移動後に動作することを実測で確認している（本文20ページ、スライド24枚、音声24本、pptx 8.15MB）。plans と現役のノート11ファイルの参照先も更新した。過去の実績記録（actuals・changelog）は履歴のため書き換えていない。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-09-03",
       "type": "feature",
       "target": "site/thesis/slides.html",
       "title": "発表スライドに実際の画面を掲載し、ナレーションを男性の声にした",
