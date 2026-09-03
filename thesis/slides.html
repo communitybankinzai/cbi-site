@@ -578,6 +578,19 @@ td.b{background:#fbf7ee;font-weight:700}
       el.style.transition='none'; el.style.opacity=1; el.style.transform='none';
     });
     slides.forEach(function(s){s.style.transition='none';});
+    // 画像として書き出すときは操作用の部品を隠す
+    var hide = document.querySelectorAll('.audio,.hint,.prog');
+    for (var i=0;i<hide.length;i++){ hide[i].style.display='none'; }
+    // ?step=N : d1〜dN までを見せ、それ以降は場所を保ったまま透明にする
+    // （PowerPoint 用に、アニメーションの段階ごとの絵を書き出すため）
+    var m = location.search.match(/step=(\d+)/);
+    if (m) {
+      var lim = parseInt(m[1], 10);
+      for (var d = lim + 1; d <= 10; d++) {
+        var later = document.querySelectorAll('.d' + d);
+        for (var j = 0; j < later.length; j++) { later[j].style.visibility = 'hidden'; }
+      }
+    }
   }
   function go(i){
     if(i<0||i>=slides.length) return;
