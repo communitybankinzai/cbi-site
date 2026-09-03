@@ -276,17 +276,34 @@
   #ttHud .ttOpt { display: block; margin-top: 4px; font-size: 11px; color: #cfe6ff; cursor: pointer; }
   #ttHud .ttOpt input { vertical-align: middle; margin-right: 4px; }
   /* 次の目的地カード：写真と解説で「どんな文化財か」を頭に入れてから向かう（2026-09-03 追加・学習効果のため） */
-  #ttCard { margin-top: 6px; border-top: 1px solid rgba(127, 200, 255, 0.35); padding-top: 6px; text-align: left; cursor: pointer; }
-  #ttCard .ttCardHead { font-size: 11px; color: #cfe6ff; text-align: center; }
+  /* 次の目的地カード（画面左下・2026-09-03「左下にもう少し大きく」の要望で HUD から独立） */
+  #ttCard { position: absolute; left: 16px; bottom: 170px; z-index: 36; display: none; width: min(360px, 44vw);
+    background: rgba(20, 30, 40, 0.92); color: #fff; border: 1px solid #7fc8ff; border-radius: 12px; padding: 8px 12px;
+    text-align: left; cursor: pointer; }
+  #ttCard.shown { display: block; }
+  #ttCard .ttCardHead { font-size: 11px; color: #cfe6ff; }
   #ttCard .ttCardBody { display: none; }
-  #ttCard.open .ttCardBody { display: flex; gap: 8px; align-items: flex-start; margin-top: 4px; }
-  #ttCard .ttCardBody img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; flex: none; background: #0b1520; }
-  #ttCard .ttCardText { font-size: 12px; line-height: 1.45; min-width: 0; }
-  #ttCard .ttCardName { font-weight: bold; color: #ffd166; }
-  #ttCard .ttCardDesig { font-size: 10px; color: #cfe6ff; margin-left: 4px; }
-  #ttCard .ttCardDesc { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }
-  #ttCard .ttCardCredit { font-size: 10px; color: #9fb8cc; margin-top: 2px; }
-  @media (pointer: coarse), (max-width: 640px) { #ttHud { top: 92px; } #ttCard .ttCardBody img { width: 84px; height: 63px; } }
+  #ttCard.open .ttCardBody { display: block; margin-top: 6px; }
+  #ttCard .ttCardBody img { width: 100%; max-height: 190px; object-fit: cover; border-radius: 8px; background: #0b1520; display: block; }
+  #ttCard .ttCardText { font-size: 14px; line-height: 1.5; margin-top: 6px; }
+  #ttCard .ttCardName { font-weight: bold; color: #ffd166; font-size: 16px; }
+  #ttCard .ttCardDesig { font-size: 11px; color: #cfe6ff; margin-left: 6px; }
+  #ttCard .ttCardDesc { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; margin-top: 4px; }
+  #ttCard .ttCardCredit { font-size: 10px; color: #9fb8cc; margin-top: 4px; }
+  /* 画面上で次の目的地を指す → 。見えているときはその真上、画面外のときは縁でその方向を向く */
+  #ttTarget { position: absolute; left: 0; top: 0; z-index: 35; display: none; pointer-events: none;
+    transform-origin: 50% 50%; will-change: transform; text-align: center; }
+  #ttTarget .ttTargetArrow { display: block; font-size: 44px; line-height: 1; color: #ffd166;
+    text-shadow: 0 0 6px #000, 0 2px 10px rgba(0,0,0,0.9); }
+  #ttTarget .ttTargetLabel { display: inline-block; margin-top: 2px; padding: 2px 8px; border-radius: 10px;
+    background: rgba(20, 30, 40, 0.85); border: 1px solid #ffd166; color: #ffd166; font-size: 12px; font-weight: bold; white-space: nowrap; }
+  @media (pointer: coarse), (max-width: 640px) {
+    #ttHud { top: 92px; }
+    #ttCard { left: 8px; bottom: 236px; width: min(320px, 70vw); }  /* ジョイスティックの上 */
+    #ttCard .ttCardBody img { max-height: 130px; }
+    #ttCard .ttCardText { font-size: 13px; }
+    #ttTarget .ttTargetArrow { font-size: 36px; }
+  }
   /* 同時利用者数（在席表示） */
   #presenceChip {
     display: none; background: rgba(20, 30, 40, 0.82); color: #fff;
@@ -842,11 +859,12 @@
   </div>
 </div>
 
+<div id="ttCard" onclick="ttToggleCard()"></div>
+<div id="ttTarget"><span class="ttTargetArrow">➜</span><br><span class="ttTargetLabel"></span></div>
 <div id="ttHud">
   <span class="ttTime" id="ttHudTime">0:00.0</span><button class="ttAbort" onclick="ttAbort()">中止</button><br>
   <span class="ttArrow" id="ttHudArrow" aria-hidden="true">⬆</span><span id="ttHudNext"></span>
   <label class="ttOpt"><input type="checkbox" id="ttOnlyNext" checked onchange="ttApplyPinFocus()">📍 次の地点のピンだけ表示する</label>
-  <div id="ttCard" onclick="ttToggleCard()"></div>
 </div>
 
 <div id="ttModal">
@@ -1696,7 +1714,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-03u"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-03v"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -3522,19 +3540,52 @@ async function openTtModal() {
   }
   html += '<div id="ttRanking" class="ttNote"></div>';
   document.getElementById("ttBody").innerHTML = html;
+  ttLastInfo = info;
   ttRenderRanking(info);
+  if (info && info.event && info.event.active && (info.period || "all") === "all") ttChangePeriod("event"); // 開催中はイベント期間を既定に
+}
+// ゴール時の順位（同じニックネームは1人とみなした人数の中で何位か）。全期間・今月・イベント期間
+function ttRankHtml(rank) {
+  if (!rank || !rank.all) return "";
+  const one = (label, r) => label + " <b>" + r.rank + "位</b>／" + r.total + "人中";
+  const parts = [];
+  if (rank.event) parts.push("🎪 " + one(ttEsc(rank.event.name), rank.event));
+  parts.push(one("全期間", rank.all));
+  if (rank.month) parts.push(one("今月", rank.month));
+  return '<p class="ttNote" style="margin:4px 0 6px;">🏆 順位（同じコース・参加者ごとのベストで比較）：' + parts.join("　") + "</p>";
+}
+let ttLastInfo = null;
+// ランキングの期間を切り替える（全期間／今月／直近7日／イベント期間）。イベント期間中は既定がイベント
+async function ttChangePeriod(period) {
+  const el = document.getElementById("ttRanking");
+  if (el) el.innerHTML = '<span class="ttNote">読み込み中…</span>';
+  try {
+    const res = await fetch(TT_API + "?period=" + encodeURIComponent(period));
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const info = await res.json();
+    ttLastInfo = info;
+    ttRenderRanking(info);
+  } catch (e) {
+    if (el) el.innerHTML = '<span class="ttNote">ランキングを読み込めませんでした</span>';
+  }
 }
 function ttEsc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 function ttRenderRanking(info) {
   const el = document.getElementById("ttRanking");
   if (!el || !info || !info.ranking) return;
+  const period = info.period || "all";
+  const ev = info.event || null;
+  const opts = [["all", "全期間"], ["month", "今月"], ["week", "直近7日"]];
+  if (ev) opts.unshift(["event", "🎪 " + ev.name + (ev.active ? "（開催中）" : "")]);
+  const select = '<select id="ttPeriod" onchange="ttChangePeriod(this.value)" style="font-size:12px;margin-left:6px;">' +
+    opts.map(o => '<option value="' + o[0] + '"' + (o[0] === period ? " selected" : "") + ">" + ttEsc(o[1]) + "</option>").join("") + "</select>";
   const rows = Object.keys(TT_CONFIG.courses).map(k => {
     const list = (info.ranking[k] || []).slice(0, 3);
     if (!list.length) return "";
     return "<b>" + TT_CONFIG.courses[k].label.split("（")[0] + "</b>：" +
       list.map((r, i) => (i + 1) + "位 " + ttEsc(r.name) + " " + ttFormat(r.elapsedMs)).join("　");
   }).filter(Boolean).join("<br>");
-  el.innerHTML = rows ? "🏆 <b>ランキング（サーバー公式記録）</b><br>" + rows : "";
+  el.innerHTML = "🏆 <b>ランキング（サーバー公式記録）</b>" + select + "<br>" + (rows || "この期間の記録はまだありません");
 }
 function ttSelectAge(key) {
   const age = TT_CONFIG.ages.find(a => a.key === key);
@@ -3609,9 +3660,61 @@ function ttShowCard() {
         (credit ? '<div class="ttCardCredit">' + credit + '</div>' : "") +
       '</div>' +
     '</div>';
+  card.classList.add("shown");
   card.classList.add("open");
   clearTimeout(ttCardTimer);
   ttCardTimer = setTimeout(function () { card.classList.remove("open"); }, 20000);
+}
+function ttHideCard() {
+  const card = document.getElementById("ttCard");
+  card.classList.remove("shown", "open");
+  document.getElementById("ttTarget").style.display = "none";
+}
+// 画面上の → で次の目的地を指す。目的地が視界に入っていればその真上に、視界の外なら画面の縁で
+// その方向を向く（ゲームの「オフスクリーン・インジケーター」と同じ考え方）
+function ttUpdateTargetMarker() {
+  const el = document.getElementById("ttTarget");
+  const b = BUNKAZAI[ttCourse[ttPos]];
+  if (!b || !ttActive) { el.style.display = "none"; return; }
+  const canvas = viewer.canvas;
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  if (!W || !H) return;
+  const ent = viewer.entities.getById("bunkazai-" + ttCourse[ttPos]);
+  let pos = ent && ent.position ? ent.position.getValue(viewer.clock.currentTime) : null;
+  if (!pos) pos = Cesium.Cartesian3.fromDegrees(b.lon, b.lat, 70);
+  const cam = viewer.camera;
+  const toTarget = Cesium.Cartesian3.subtract(pos, cam.position, new Cesium.Cartesian3());
+  const inFront = Cesium.Cartesian3.dot(cam.direction, toTarget) > 0;
+  let win = inFront ? viewer.scene.cartesianToCanvasCoordinates(pos) : undefined;
+  const margin = 36;
+  el.style.display = "block";
+  const label = el.querySelector(".ttTargetLabel");
+  const arrow = el.querySelector(".ttTargetArrow");
+  if (win && win.x >= margin && win.x <= W - margin && win.y >= margin && win.y <= H - margin) {
+    // 見えている：真上に ⬇ と名前
+    arrow.textContent = "⬇";
+    arrow.style.transform = "none";
+    label.textContent = b.name;
+    el.style.left = win.x + "px";
+    el.style.top = Math.max(0, win.y - 84) + "px";
+    el.style.transform = "translateX(-50%)";
+    return;
+  }
+  // 画面外：自分の向きに対する方位角で縁の位置を決める（上＝正面）
+  const rel = Cesium.Math.toRadians(ttBearingToNext().relDeg);
+  const cx = W / 2, cy = H / 2;
+  const dx = Math.sin(rel), dy = -Math.cos(rel);
+  // 画面中心から方向へ伸ばし、縁（余白つき）に当たる点を求める
+  const tx = dx !== 0 ? (cx - margin) / Math.abs(dx) : Infinity;
+  const ty = dy !== 0 ? (cy - margin) / Math.abs(dy) : Infinity;
+  const t = Math.min(tx, ty);
+  const x = cx + dx * t, y = cy + dy * t;
+  arrow.textContent = "➜";
+  arrow.style.transform = "rotate(" + (Cesium.Math.toDegrees(rel) - 90).toFixed(0) + "deg)";
+  label.textContent = b.name;
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+  el.style.transform = "translate(-50%, -50%)";
 }
 function ttToggleCard() {
   const card = document.getElementById("ttCard");
@@ -3668,6 +3771,7 @@ function ttAbort() {
   ttActive = false;
   document.getElementById("ttHud").style.display = "none";
   ttRestorePins();
+  ttHideCard();
   showPickResult("タイムトライアルを中止しました。", 4000);
 }
 function ttLoadBest() {
@@ -3690,6 +3794,7 @@ viewer.clock.onTick.addEventListener(function () {
     hudTime.textContent = "🚦 " + Math.ceil((ttCountdownEnd - now) / 1000);
     hudNext.textContent = "スタート準備中… 1か所目: " + BUNKAZAI[ttCourse[0]].name;
     document.getElementById("ttHudArrow").style.transform = "rotate(" + ttBearingToNext().relDeg.toFixed(0) + "deg)";
+    ttUpdateTargetMarker();
     return;
   }
   if (!ttStartMs) { ttStartMs = now; ttServerStart(); } // 計測開始と同時にサーバーへ開始登録（厳密モード）
@@ -3698,6 +3803,7 @@ viewer.clock.onTick.addEventListener(function () {
   const d = ttDistToNext();
   const dir = ttBearingToNext();
   document.getElementById("ttHudArrow").style.transform = "rotate(" + dir.relDeg.toFixed(0) + "deg)";
+  ttUpdateTargetMarker();
   hudNext.innerHTML = "つぎ（" + (ttPos + 1) + "/" + ttCourse.length + "）: " +
     ttEsc(BUNKAZAI[ttCourse[ttPos]].name) + "<br><span class=\"ttDir\">" + dir.word + "（" + dir.compass + "）</span> 約" +
     (d >= 1000 ? (d / 1000).toFixed(1) + "km" : Math.round(d) + "m");
@@ -3714,6 +3820,7 @@ async function ttFinish(clientElapsedMs) {
   ttActive = false;
   document.getElementById("ttHud").style.display = "none";
   ttRestorePins();
+  ttHideCard();
   // サーバー計測（厳密モード）: サーバー時計の確定タイムを取得。失敗時は端末計測を参考記録として使う
   const server = await ttServerFinish();
   const official = server && typeof server.elapsedMs === "number";
@@ -3748,6 +3855,7 @@ async function ttFinish(clientElapsedMs) {
   document.getElementById("ttBody").innerHTML =
     '<p><b>🎉 ゴール！</b> タイム：<span style="color:#7fc8ff;font-size:20px;font-weight:bold;">' + ttFormat(elapsedMs) + "</span>" +
     (isBest ? '　<span class="ttOk">自己ベスト更新！</span>' : "") + "</p>" +
+    ttRankHtml(official ? server.rank : null) +
     (official
       ? '<p style="margin:6px 0;padding:9px 11px;border-radius:10px;background:rgba(46,204,113,0.15);border:1px solid #2ecc71;font-size:12.5px;line-height:1.7;">' +
         '<b class="ttOk">✅ 記録を事務局へ送信しました</b><br>' +
