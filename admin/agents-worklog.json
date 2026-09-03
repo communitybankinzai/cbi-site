@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-09-03",
+          "title": "タイムトライアル中の「次の目的地の写真と解説」カードを追加 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html — #ttCard／ttShowCard／ttToggleCard（写真 or 精霊カード・名前・指定区分・解説要約・出典、20秒で自動的にたたむ）、版 2026-09-03u",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json — 追記"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "ユーザー要望「計測開始後、次の目的地の写真と概要が出るとイメージが頭に残り学習効果が高い」。検証モードで puppeteer から計測を起動し、カードに photos/44.jpg と解説が入ること、スクショで配置を確認。同時に「印西市外の3D切り抜きは当面やらない」とユーザー判断（plans 登録なし）。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 240,559 / cost: $96.62"
+        },
+        {
+          "date": "2026-09-03",
           "title": "タイムトライアルに次の地点への方向矢印と「次の地点のピンだけ表示」スイッチを追加 0.2時間",
           "category": "実装",
           "outputs": [
