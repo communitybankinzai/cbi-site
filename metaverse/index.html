@@ -1748,7 +1748,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04e"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04f"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -5213,12 +5213,14 @@ async function startPlayDemo() {
   }
   viewer.clock.onTick.addEventListener(function () {
     if (st.phase === "intro" || st.phase === "catch" || st.phase === "done") {
-      setInput(0);
-      if (Math.abs(st.bank) > 0.1) { // 止まったら水平に戻す
-        st.bank *= 0.9;
-        const cam0 = viewer.camera;
-        cam0.setView({ orientation: { heading: cam0.heading, pitch: cam0.pitch, roll: applyBank(st.bank) } });
-      }
+      // 止まらずに前へ進み続ける（KEEP_MOVING：2026-09-03「常に前進しながらの撮影だと自然」）。
+      // ゲット中・テロップ中は滑空の姿勢でゆっくり前進し、傾きとピッチは水平へ戻す
+      setInput(st.phase === "intro" ? 0 : 0.5);
+      const cam0 = viewer.camera;
+      const dt0 = 0.033;
+      st.bank *= 0.9;
+      const pitch0 = cam0.pitch + Math.max(-Cesium.Math.toRadians(10) * dt0, Math.min(Cesium.Math.toRadians(10) * dt0, 0 - cam0.pitch));
+      cam0.setView({ orientation: { heading: cam0.heading, pitch: pitch0, roll: applyBank(st.bank) } });
       return;
     }
     const b = tb[st.idx];
