@@ -988,6 +988,8 @@
   <button id="liteBtn" class="off" title="動きが重い端末向け。描画の解像度を下げ、街並みを粗めに読み、空の表現やトンビを止めて軽くします（もう一度押すと元に戻ります）">🪶 軽量モード</button>
   <button id="trafficBtn" class="off" title="テザリングで使うときの見張り。今日この端末がダウンロードした3D都市データの推定量を表示し、上限を決めておくと8割で注意、超えたら自動で軽量モードに切り替えます">📶 通信量</button>
   <button id="bgmBtn" class="off" title="BGMを流します（自前で打ち込んだ曲。昼はトビの滑空テーマ、夜景モードではクリスマスメドレー）。もう一度押すと止まります">🎵 BGM</button>
+  <button id="bgmPickBtn" class="off" title="この端末にある音楽ファイル（mp3 など）をBGMにします。ファイルは端末の中だけで使い、サイトには送りません。次回もこの端末では同じ曲が使われます">🎵 曲を選ぶ</button>
+  <input type="file" id="bgmFile" accept="audio/*" style="display:none">
   <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
   <button id="padCenterBtn" style="display:none" title="スティックから手を離した状態で押してください。いまの値をそのまま「手を離した位置」として覚え直します（コントローラーのOPTIONSボタンでも同じことができます）">🎯 中心合わせ</button>
   <button id="padDebugBtn" title="コントローラーを認識しているか、各スティックがどんな値を出しているかを画面に表示します">🩺 診断</button>
@@ -1979,7 +1981,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04q"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04r"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2453,7 +2455,38 @@ document.getElementById("liteBtn").addEventListener("click", function () { apply
 const BGM_KEY = "cbi-meta-bgm-v1";
 const BGM_TRACKS = { day: "assets/audio/bgm_tobi.m4a", night: "assets/audio/bgm_xmas.m4a" };
 let bgmAudio = null, bgmTrack = "";
-function bgmWanted() { return window.nightOn ? "night" : "day"; }
+// 端末の音楽ファイル（mp3 等）を BGM にする（2026-09-04「MP3を自分で設定できるということ？」への対応）。
+// ファイルは IndexedDB に置き、この端末だけで再生する。サイトへは送らないので、フリー音源サイトの
+// 「二次配布禁止」にも触れない（展示PCに入れた曲をそのまま使える）
+let bgmCustom = null;   // { name, blob, url }
+function bgmDb() {
+  return new Promise(function (resolve, reject) {
+    const req = indexedDB.open("cbi-meta-bgm", 1);
+    req.onupgradeneeded = function () { req.result.createObjectStore("files"); };
+    req.onsuccess = function () { resolve(req.result); };
+    req.onerror = function () { reject(req.error); };
+  });
+}
+function bgmLoadCustom() {
+  return bgmDb().then(function (db) {
+    return new Promise(function (resolve) {
+      const tx = db.transaction("files", "readonly").objectStore("files").get("custom");
+      tx.onsuccess = function () { resolve(tx.result || null); };
+      tx.onerror = function () { resolve(null); };
+    });
+  }).catch(function () { return null; });
+}
+function bgmSaveCustom(rec) {
+  return bgmDb().then(function (db) {
+    return new Promise(function (resolve) {
+      const store = db.transaction("files", "readwrite").objectStore("files");
+      const tx = rec ? store.put(rec, "custom") : store.delete("custom");
+      tx.onsuccess = function () { resolve(true); };
+      tx.onerror = function () { resolve(false); };
+    });
+  }).catch(function () { return false; });
+}
+function bgmWanted() { return bgmCustom ? "custom" : (window.nightOn ? "night" : "day"); }
 function bgmApply() {
   const btn = document.getElementById("bgmBtn");
   const on = !!(bgmAudio && !bgmAudio.paused);
@@ -2464,7 +2497,12 @@ function bgmStart() {
   const want = bgmWanted();
   if (!bgmAudio || bgmTrack !== want) {
     if (bgmAudio) { try { bgmAudio.pause(); } catch (e) {} }
-    bgmAudio = new Audio(BGM_TRACKS[want]);
+    if (want === "custom") {
+      if (!bgmCustom.url) bgmCustom.url = URL.createObjectURL(bgmCustom.blob);
+      bgmAudio = new Audio(bgmCustom.url);
+    } else {
+      bgmAudio = new Audio(BGM_TRACKS[want]);
+    }
     bgmAudio.loop = true; bgmAudio.volume = 0.35; bgmTrack = want;
   }
   const p = bgmAudio.play();
@@ -2482,6 +2520,35 @@ function bgmStop() {
   if (!btn) return;
   btn.addEventListener("click", function () { (bgmAudio && !bgmAudio.paused) ? bgmStop() : bgmStart(); });
   try { if (localStorage.getItem(BGM_KEY) === "1") btn.textContent = "🎵 BGM（前回ON）"; } catch (e) {}
+  // 端末に保存してある曲があれば読み込む
+  const pick = document.getElementById("bgmPickBtn"), file = document.getElementById("bgmFile");
+  function pickLabel() {
+    if (!pick) return;
+    pick.textContent = bgmCustom ? "🎵 曲: " + bgmCustom.name.slice(0, 14) : "🎵 曲を選ぶ";
+    pick.classList.toggle("off", !bgmCustom);
+  }
+  bgmLoadCustom().then(function (rec) { if (rec && rec.blob) { bgmCustom = { name: rec.name || "選んだ曲", blob: rec.blob, url: null }; } pickLabel(); });
+  if (pick && file) {
+    pick.addEventListener("click", function () {
+      if (bgmCustom && confirm("いまの曲「" + bgmCustom.name + "」をやめて、元の曲（トビのテーマ／クリスマスメドレー）に戻しますか？\n「キャンセル」で別の曲を選べます。")) {
+        bgmCustom = null; bgmSaveCustom(null); pickLabel();
+        if (bgmAudio && !bgmAudio.paused) bgmStart();
+        return;
+      }
+      file.value = ""; file.click();
+    });
+    file.addEventListener("change", function () {
+      const f = file.files && file.files[0];
+      if (!f) return;
+      if (f.size > 40 * 1024 * 1024) { showPickResult("🎵 40MB までのファイルにしてください（いまのは " + Math.round(f.size / 1048576) + "MB）", 5000); return; }
+      bgmCustom = { name: f.name, blob: f, url: null };
+      bgmSaveCustom({ name: f.name, blob: f }).then(function (ok) {
+        showPickResult(ok ? "🎵 「" + f.name + "」をこの端末のBGMにしました" : "🎵 曲は使えますが、次回のために保存はできませんでした", 4000);
+      });
+      pickLabel();
+      bgmStart();
+    });
+  }
   // 昼／夜景の切り替えに追従（再生中だけ曲を差し替える）
   setInterval(function () { if (bgmAudio && !bgmAudio.paused && bgmWanted() !== bgmTrack) bgmStart(); }, 2000);
 })();
