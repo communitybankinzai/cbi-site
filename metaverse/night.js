@@ -34,6 +34,8 @@
   const NIGHT_COURSE_KEY = "night";         // サーバー（CiDAO metaverse-tt）のコース key
   const NIGHT_BEST_KEY = "cbi-meta-night-best-v1";
   const NIGHT_LOCAL_RANK_KEY = "cbi-meta-night-local-v1";
+  const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
+  const NIGHT_FLOOR_HEIGHT = 70;            // 地中ロックの下限（楕円体高・標高約34m。コース一帯の地表は約60〜70m）
 
   // ---- 図柄（線画SVG） ----
   const DESIGNS = {
@@ -440,9 +442,9 @@
         tt.pos++;
         ttCheckpoint(tt.pos);
         if (tt.pos >= COURSE.length) { ttFinishNight(); return; }
-        caption("✅ " + (g.index + 1) + " 番 通過！<small>次は " + (tt.pos + 1) + " 番" + (tt.pos === COURSE.length - 1 ? "（ゴール・クリスマスいんザイ君）" : "") + "</small>", 2500);
+        caption("✅ " + (g.index + 1) + " 番 通過！<small>次は <b>" + (tt.pos + 1) + " 番</b>" + (tt.pos === COURSE.length - 1 ? "（ゴール・クリスマスいんザイ君）" : "") + "　" + nextGateGuide() + "</small>", 4000);
       } else if (g.index > tt.pos) {
-        caption("⚠ 順番どおりに！<small>次は " + (tt.pos + 1) + " 番のゲート</small>", 2500);
+        caption("⚠ 順番どおりに！<small>次は " + (tt.pos + 1) + " 番のゲート　" + nextGateGuide() + "</small>", 3000);
       }
       return;
     }
@@ -474,6 +476,10 @@
       "#nightCaption{position:absolute;left:50%;top:14%;transform:translateX(-50%);z-index:70;color:#fff;font-size:34px;font-weight:bold;text-align:center;line-height:1.5;width:92%;text-shadow:0 2px 16px rgba(0,0,0,0.95),0 0 6px rgba(0,0,0,0.9);opacity:0;transition:opacity 0.7s;pointer-events:none;}" +
       "#nightCaption.show{opacity:1;}#nightCaption small{display:block;font-size:19px;font-weight:normal;margin-top:6px;}#nightCaption b{color:#ffd166;}" +
       "#nightTourBtn,#nightTtBtn{display:none;}#nightTourBtn.on,#nightTtBtn.on{display:inline-block;}" +
+      "#nightTarget{position:absolute;left:0;top:0;z-index:60;display:none;pointer-events:none;text-align:center;}" +
+      "#nightTarget .arrow{display:block;font-size:46px;line-height:1;color:#ffd166;text-shadow:0 0 14px rgba(255,209,102,0.9),0 2px 6px rgba(0,0,0,0.9);}" +
+      "#nightTarget .label{display:inline-block;margin-top:2px;padding:3px 10px;border-radius:10px;background:rgba(10,16,32,0.8);color:#fff;font:bold 15px 'Segoe UI',system-ui,sans-serif;white-space:nowrap;}" +
+      "#nightTtModal .login{background:#06c755;color:#fff;font-weight:bold;font-size:17px;}" +
       "#nightTtModal{position:fixed;inset:0;z-index:120;background:rgba(3,6,16,0.82);display:none;align-items:center;justify-content:center;}" +
       "#nightTtModal.show{display:flex;}" +
       "#nightTtModal .inner{background:#0d1526;color:#e8f0ff;border:1px solid rgba(120,230,255,0.4);border-radius:14px;padding:22px 26px;width:min(92vw,560px);max-height:90vh;overflow:auto;font-size:14px;box-shadow:0 0 40px rgba(120,230,255,0.25);}" +
@@ -506,6 +512,10 @@
     capEl = document.createElement("div");
     capEl.id = "nightCaption";
     document.body.appendChild(capEl);
+    targetEl = document.createElement("div");
+    targetEl.id = "nightTarget";
+    targetEl.innerHTML = '<span class="arrow">⬇</span><span class="label"></span>';
+    document.body.appendChild(targetEl);
     const modal = document.createElement("div");
     modal.id = "nightTtModal";
     modal.innerHTML = '<div class="inner" id="nightTtInner"></div>';
@@ -523,6 +533,68 @@
   function relArrow(bearing) {
     const rel = ((bearing - Cesium.Math.toDegrees(viewer.camera.heading)) % 360 + 360) % 360;
     return ARROWS[Math.round(rel / 45) % 8];
+  }
+  // 次のゲートの向き（文化財タイムトライアルの ttBearingToNext と同じ言葉づかい）
+  function bearingInfo(target) {
+    const c = cameraLonLat();
+    const abs = bearingDeg(c, target);
+    let rel = abs - Cesium.Math.toDegrees(viewer.camera.heading);
+    rel = ((rel + 540) % 360) - 180;                       // -180〜180°
+    const compass = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"][Math.round(abs / 45) % 8];
+    const a = Math.abs(rel);
+    let word;
+    if (a < 20) word = "正面";
+    else if (a < 70) word = rel > 0 ? "右前" : "左前";
+    else if (a < 110) word = rel > 0 ? "右" : "左";
+    else if (a < 160) word = rel > 0 ? "右後ろ" : "左後ろ";
+    else word = "後ろ";
+    const dh = Math.round(target.height - c.height);
+    return { relDeg: rel, word: word, compass: compass, dist: Math.round(distM(c, target)), arrow: relArrow(abs),
+             updown: Math.abs(dh) > 20 ? (dh > 0 ? "↑" + dh + "m" : "↓" + (-dh) + "m") : "" };
+  }
+  function nextGateGuide() {
+    const n = COURSE[Math.min(tt.pos, COURSE.length - 1)];
+    const b = bearingInfo(n);
+    return b.arrow + " " + b.word + "（" + b.compass + "）" + b.dist + "m" + (b.updown ? " " + b.updown : "");
+  }
+  // 画面上の目印：次のゲートが見えていれば真上に ⬇、画面外なら縁で ➜ がその方向を向く（文化財TTの ttUpdateTargetMarker と同型）
+  let targetEl = null;
+  function updateTargetMarker() {
+    if (!targetEl) return;
+    if (!tt.active || tt.pos >= COURSE.length || !gates[tt.pos].frame) { targetEl.style.display = "none"; return; }
+    const canvas = viewer.canvas;
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    if (!W || !H) return;
+    const g = gates[tt.pos];
+    const pos = Cesium.Cartesian3.fromDegrees(g.def.lon, g.def.lat, g.def.height);
+    const cam = viewer.camera;
+    const toTarget = Cesium.Cartesian3.subtract(pos, cam.position, new Cesium.Cartesian3());
+    const inFront = Cesium.Cartesian3.dot(cam.direction, toTarget) > 0;
+    const win = inFront ? viewer.scene.cartesianToCanvasCoordinates(pos) : undefined;
+    const margin = 40;
+    const arrow = targetEl.querySelector(".arrow"), label = targetEl.querySelector(".label");
+    const b = bearingInfo(g.def);
+    label.textContent = (g.index + 1) + (g.def.goal ? "番 GOAL" : "番") + "　" + b.dist + "m";
+    targetEl.style.display = "block";
+    if (win && win.x >= margin && win.x <= W - margin && win.y >= margin && win.y <= H - margin) {
+      arrow.textContent = "⬇";
+      arrow.style.transform = "none";
+      targetEl.style.left = win.x + "px";
+      targetEl.style.top = Math.max(0, win.y - 96) + "px";
+      targetEl.style.transform = "translateX(-50%)";
+      return;
+    }
+    const rel = Cesium.Math.toRadians(b.relDeg);
+    const cx = W / 2, cy = H / 2;
+    const dx = Math.sin(rel), dy = -Math.cos(rel);
+    const tx = dx !== 0 ? (cx - margin) / Math.abs(dx) : Infinity;
+    const ty = dy !== 0 ? (cy - margin) / Math.abs(dy) : Infinity;
+    const t = Math.min(tx, ty);
+    arrow.textContent = "➜";
+    arrow.style.transform = "rotate(" + (b.relDeg - 90).toFixed(0) + "deg)";
+    targetEl.style.left = (cx + dx * t) + "px";
+    targetEl.style.top = (cy + dy * t) + "px";
+    targetEl.style.transform = "translate(-50%, -50%)";
   }
   let hudFrame = 0;
   function updateHud(force) {
@@ -723,29 +795,62 @@
     });
     return h + "</table>";
   }
+  // ---- CiDAO ログイン（このタイムレースは CiDAO 登録者だけ・ランキングはログインの表示名） ----
+  // /api/metaverse-auth がログイン後に #mtoken=<署名トークン> を付けて戻してくる。トークンの中身（表示名・期限）は
+  // 画面表示にだけ使い、正当性はサーバー（start）が署名で検証する
+  const AUTH_URL = TT_API.replace(/metaverse-tt$/, "metaverse-auth");
+  function takeTokenFromUrl() {
+    const m = /[#&]mtoken=([^&]+)/.exec(location.hash || "");
+    if (!m) return;
+    try { localStorage.setItem(LOGIN_TOKEN_KEY, decodeURIComponent(m[1])); } catch (e) { /* 保存できなくても続ける */ }
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
+  }
+  function getLogin() {
+    let tok = null;
+    try { tok = localStorage.getItem(LOGIN_TOKEN_KEY); } catch (e) { return null; }
+    if (!tok) return null;
+    try {
+      const body = tok.split(".")[0].replace(/-/g, "+").replace(/_/g, "/");
+      const p = JSON.parse(decodeURIComponent(escape(atob(body))));
+      if (!p || !p.nick || !p.exp || p.exp < Date.now()) return null;
+      return { token: tok, nick: String(p.nick), uid: String(p.uid || "") };
+    } catch (e) { return null; }
+  }
+  function clearLogin() { try { localStorage.removeItem(LOGIN_TOKEN_KEY); } catch (e) { /* 同上 */ } }
+  function loginUrl() {
+    return AUTH_URL + "?return=" + encodeURIComponent(location.origin + location.pathname + location.search);
+  }
+  window.nightLogin = getLogin;
+
   async function openTtModal() {
     ensureHud();
     if (tourRunning) cancelTour();
     if (!window.nightOn) applyNight(true);
     const inner = document.getElementById("nightTtInner");
     const best = loadBest();
-    const myName = (typeof ttMyName === "function" ? ttMyName() : "") || (best && best.name) || "";
+    const login = getLogin();
+    const myName = login ? login.nick : "";
     inner.innerHTML =
-      "<h2>⏱ 夜景タイムトライアル</h2>" +
+      "<h2>⏱ 夜景タイムトライアル（イルミライINZAI タイムレース）</h2>" +
       "<p>スタート地点（印西牧の原の東）から、空にうかぶ <b>いんザイ君の光のゲート10か所</b> を番号順にくぐり、千葉ニュータウン中央駅の上の <b>クリスマスいんザイ君</b>（10番）をくぐったらゴール。順番をとばしたゲートは数えません。R1（Shift）でダッシュ！</p>" +
       (best ? "<p>🏅 この端末のベスト：<b>" + ttFormat(best.elapsedMs) + "</b>（" + ttEsc(best.name) + "・" + ttEsc(best.date) + "）</p>" : "") +
-      '<p><input id="nightTtName" maxlength="20" placeholder="ニックネーム（20文字まで）" value="' + ttEsc(myName) + '"></p>' +
-      '<p><button class="go" id="nightTtGo">🛸 スタート</button><button class="sub" id="nightTtClose">閉じる</button></p>' +
+      (login
+        ? '<p>👤 ログイン中：<b>' + ttEsc(login.nick) + '</b> さん（ランキングにはこの表示名で載ります）</p>' +
+          '<p><button class="go" id="nightTtGo">🛸 スタート</button><button class="sub" id="nightTtClose">閉じる</button><button class="sub" id="nightTtLogout">別の人でログイン</button></p>'
+        : '<p>このタイムレースは <b>CiDAO（市民DAO）の登録者</b> だけが参加できます。LINE でログインすると、この画面に戻ってきます。</p>' +
+          '<p><button class="login" id="nightTtLogin">🔐 CiDAO でログインして参加</button><button class="sub" id="nightTtClose">閉じる</button></p>') +
       '<div id="nightTtRank"><p>ランキングを読み込み中…</p></div>';
     document.getElementById("nightTtModal").classList.add("show");
-    document.getElementById("nightTtGo").onclick = function () {
-      const name = document.getElementById("nightTtName").value.trim().slice(0, 20);
-      if (!name) { document.getElementById("nightTtName").focus(); return; }
-      startTt(name);
-    };
+    if (login) {
+      document.getElementById("nightTtGo").onclick = function () { startTt(login.nick, login.token); };
+      document.getElementById("nightTtLogout").onclick = function () { clearLogin(); openTtModal(); };
+    } else {
+      document.getElementById("nightTtLogin").onclick = function () {
+        try { sessionStorage.setItem("cbi-meta-night-login-pending", "1"); } catch (e) { /* 同上 */ }
+        location.href = loginUrl();
+      };
+    }
     document.getElementById("nightTtClose").onclick = closeTtModal;
-    document.getElementById("nightTtName").onkeydown = function (e) { if (e.key === "Enter") document.getElementById("nightTtGo").click(); };
-    setTimeout(function () { const el = document.getElementById("nightTtName"); if (el) el.focus(); }, 50);
     const info = await fetchInfo();
     const rankEl = document.getElementById("nightTtRank");
     if (!rankEl) return;
@@ -758,7 +863,7 @@
   function closeTtModal() { document.getElementById("nightTtModal").classList.remove("show"); }
   window.openNightTt = openTtModal;
 
-  function startTt(name) {
+  function startTt(name, token) {
     closeTtModal();
     hideUiForTour();
     if (typeof setMode === "function" && walkMode) setMode(false);
@@ -773,10 +878,18 @@
     caption("🛸 <b>3・2・1</b> でスタート<br><small>1番のゲートは正面。番号順に くぐろう</small>", 3500);
     // サーバーへ開始登録（通過報告はこの後に直列で送る）
     tt.queue = ttApiPost({
-      action: "start", name: name, ageKey: "night", courseKey: NIGHT_COURSE_KEY,
+      action: "start", name: name, ageKey: "night", courseKey: NIGHT_COURSE_KEY, token: token || "",
       quizRatePct: 100, quizAnswers: 0, checkpoints: COURSE.length,
     }).then(function (d) { tt.trialId = d.trialId || null; tt.official = !!tt.trialId; })
-      .catch(function () { tt.trialId = null; tt.official = false; });
+      .catch(function (e) {
+        tt.trialId = null; tt.official = false;
+        // ログインの期限切れ・偽トークンはサーバーが 401 で断る → 中止してログインし直してもらう
+        if (/401/.test(String(e && e.message))) {
+          clearLogin();
+          ttAbortNight("ログインの有効期限が切れました。もう一度ログインしてください");
+          setTimeout(openTtModal, 1500);
+        }
+      });
     setTimeout(function () { if (tt.active) caption("🚀 <b>GO!</b>", 1500); }, 3500);
   }
   function ttCheckpoint(pos) {
@@ -875,10 +988,32 @@
         performance.now() - lastInputAt > IDLE_RESTART_MS) startTour();
   }, 500);
 
+  // 地中ロック：夜景モード中は楕円体高 NIGHT_FLOOR_HEIGHT を下限にし、地面（タイルの高さ）が取れるときはその 3m 上を下限にする。
+  // 本体の keepAboveGround は12フレームに1回なので、低fpsのダッシュでは地中に入ってから戻る＝画面が真っ黒になる瞬間があった
+  let floorFrame = 0;
+  function keepAboveFloor() {
+    const cam = viewer.camera;
+    const carto = Cesium.Cartographic.fromCartesian(cam.position);
+    let minH = NIGHT_FLOOR_HEIGHT;
+    floorFrame++;
+    if (floorFrame % 4 === 0 && !NO_TILES && viewer.scene.sampleHeightSupported) {
+      try {
+        const ground = viewer.scene.sampleHeight(carto.clone());
+        if (ground !== undefined && ground !== null && isFinite(ground)) minH = Math.max(minH, ground + 3);
+      } catch (e) { /* 取れないフレームは下限だけで守る */ }
+    }
+    if (carto.height >= minH) return;
+    cam.setView({
+      destination: Cesium.Cartesian3.fromDegrees(Cesium.Math.toDegrees(carto.longitude), Cesium.Math.toDegrees(carto.latitude), minH),
+      orientation: { heading: cam.heading, pitch: Math.max(cam.pitch, Cesium.Math.toRadians(-10)), roll: cam.roll },
+    });
+  }
   viewer.clock.onTick.addEventListener(function () {
     if (!window.nightOn) return;
+    if (!walkMode) keepAboveFloor();
     checkPass();
     updateHud(tt.active);
+    updateTargetMarker();
   });
 
   // ------------------------------------------------------------
@@ -894,6 +1029,10 @@
   // ------------------------------------------------------------
   // 起動
   // ------------------------------------------------------------
+  takeTokenFromUrl();
+  // ログインから戻ってきたとき（#mtoken 付き）は、夜景モードを起こしてタイムレース画面を開き直す
+  let cameBackFromLogin = false;
+  try { cameBackFromLogin = !!getLogin() && sessionStorage.getItem("cbi-meta-night-login-pending") === "1"; sessionStorage.removeItem("cbi-meta-night-login-pending"); } catch (e) { /* 無くても続ける */ }
   if (NIGHT_PARAM) {
     applyNight(true);
     try {
@@ -901,6 +1040,7 @@
         bunkazaiPinsVisible = false; applyBunkazaiPinVisibility();
       }
     } catch (e) { /* 変数が無い版でも続ける */ }
-    if (TOUR_PARAM) startTour();
+    if (TOUR_PARAM && !cameBackFromLogin) startTour();
   }
+  if (cameBackFromLogin) { if (!window.nightOn) applyNight(true); setTimeout(openTtModal, 1200); }
 })();
