@@ -5976,6 +5976,19 @@
       "actuals": [
         {
           "date": "2026-09-05",
+          "title": "展示用動画にBGM（甘茶の音楽工房「セビーリャの砦」）をループ合成 0.1時間",
+          "category": "広報",
+          "outputs": [
+            "events/武蔵屋_20261103/BGM/甘茶の音楽工房_セビーリャの砦.mp3・README.md（出典・利用条件）",
+            "scripts/promo/out/cbi_metaverse_play_16x9_full50_exhibit_bgm.mp4（939MB）",
+            "scripts/promo/out/bgm_check_30s.mp4（確認用）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "ユーザーがダウンロードした mp3（ID3: セビーリャの砦／甘茶の音楽工房）を保管庫に保存し、映像はコピー・音声は2分28秒の曲を21分15秒ぶんループ、冒頭2秒フェードイン・末尾6秒フェードアウト、音量0.9で合成。フリー素材の再配布禁止に配慮し、公開サイトには置かない"
+        },
+        {
+          "date": "2026-09-05",
           "title": "展示用ループ動画（全50か所・16:9・21分15秒）の完成 0.1時間",
           "category": "広報",
           "outputs": [
@@ -6049,10 +6062,10 @@
       "plans": [
         {
           "due": "2026-10-27",
-          "title": "🎬 展示用動画にBGMを合成し、展示PCへ配置・ループ再生設定（VLC等）",
+          "title": "🎬 展示用動画（BGM合成済み）を展示PCへ配置し、ループ再生を設定する（VLC等）",
           "category": "広報",
           "priority": "中",
-          "note": "動画は完成済み（cbi_metaverse_play_16x9_full50_exhibit.mp4）。曲はユーザーがフリー音源（DOVA-SYNDROME・甘茶の音楽工房等）から選定→mp3 を受け取って ffmpeg で合成。分割4本（part1/2a/3a/1547）と partial は削除してよい"
+          "note": "BGM合成済み: scripts/promo/out/cbi_metaverse_play_16x9_full50_exhibit_bgm.mp4（939MB・21分15秒・曲は甘茶の音楽工房「セビーリャの砦」ループ・末尾6秒フェード）。曲の原本と利用条件は events/武蔵屋_20261103/BGM/README.md。分割4本（part1/2a/3a/1547）と partial は削除してよい"
         },
         {
           "due": "2026-10-10",
