@@ -844,6 +844,8 @@
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
   <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
+  <button id="nightBtn" class="off" title="街を夜景にします。星空・光の列・空にうかぶ いんザイ君のイルミネーションが出ます（イルミライINZAI向け。もう一度押すと昼に戻ります）">🌃 夜景</button>
+  <button id="nightTourBtn" title="西の空から牧の原へ飛び、いんザイ君の光をくぐって駅に降りる自動遊覧（約50秒）。操作すると途中でやめられます">🛸 夜間遊覧</button>
   <button id="liteBtn" class="off" title="動きが重い端末向け。描画の解像度を下げ、街並みを粗めに読み、空の表現やトンビを止めて軽くします（もう一度押すと元に戻ります）">🪶 軽量モード</button>
   <button id="trafficBtn" class="off" title="テザリングで使うときの見張り。今日この端末がダウンロードした3D都市データの推定量を表示し、上限を決めておくと8割で注意、超えたら自動で軽量モードに切り替えます">📶 通信量</button>
   <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
@@ -1748,7 +1750,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04k"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04l"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2191,7 +2193,7 @@ function liteApplyTileset() {
 function applyLite(on) {
   liteOn = !!on;
   viewer.resolutionScale = liteOn ? LITE_RES : 1.0;
-  viewer.scene.skyAtmosphere.show = !liteOn;
+  viewer.scene.skyAtmosphere.show = !liteOn && !window.nightOn; // 夜景モード（night.js）中は星空のまま
   try { viewer.scene.postProcessStages.fxaa.enabled = liteOn ? false : LITE_DEFAULTS.fxaa; } catch (e) { /* 無い版でも続ける */ }
   try { viewer.scene.msaaSamples = liteOn ? 1 : LITE_DEFAULTS.msaa; } catch (e) { /* 同上 */ }
   viewer.targetFrameRate = liteOn ? 30 : undefined;
@@ -2200,6 +2202,7 @@ function applyLite(on) {
   const btn = document.getElementById("liteBtn");
   if (btn) btn.classList.toggle("off", !liteOn);
   try { localStorage.setItem(LITE_KEY, liteOn ? "1" : "0"); } catch (e) { /* 保存できなくても動く */ }
+  if (window.nightRefresh) window.nightRefresh(); // 夜景モードのブルーム・空の設定を軽量モードと両立させる
   viewer.scene.requestRender();
 }
 function liteSuggest() {
@@ -5245,11 +5248,16 @@ async function startPlayDemo() {
     if (st.phase === "climb" && CLIMB_MODE === "turn") {
       // 短い側へゆるく旋回（毎秒20°＝速さ×2.4で半径200mほどの弧・傾きあり）。向きが合えば高さにかかわらず滑空へ
       // （直角に向きを変えて直進、にならないよう回る速さを抑える。2026-09-03 ユーザー指摘）
-      const maxTurn = Cesium.Math.toRadians(20) * dt;
+      // 目的地が近い（旋回半径より内側）と、ゆるい旋回では永遠に向きが合わず周回して上昇し続ける
+      // （2026-09-04 梵鐘→上宿古墳 401m で発生・高度3,000mまで上がった）。近くて横にあるときは減速して小さく回る
+      const near = r.dist < 450 && Math.abs(diff) > Cesium.Math.toRadians(30);
+      st.slow = near ? 0.4 : 1;
+      const maxTurn = Cesium.Math.toRadians(near ? 60 : 20) * dt;
       const turn = Math.max(-maxTurn, Math.min(maxTurn, diff));
       heading = cam.heading + turn;
       wantBank = Math.max(-BANK_CLIMB_DEG, Math.min(BANK_CLIMB_DEG, Cesium.Math.toDegrees(diff) * 0.6));
-      wantPitch = r.height < st.topH ? Cesium.Math.toRadians(12) : Cesium.Math.toRadians(2);
+      // 高さは 150m まで上げたらそれ以上は上げない（以前は +2° で上がり続けた）。300m を超えていたら下げる
+      wantPitch = r.height < st.topH ? Cesium.Math.toRadians(12) : (r.height > 300 ? Cesium.Math.toRadians(-8) : 0);
       if (Math.abs(diff) < Cesium.Math.toRadians(8)) {
         st.phase = "glide";
         say("目的地へ <b>滑空</b>", 2200);
@@ -5260,6 +5268,7 @@ async function startPlayDemo() {
       wantBank = st.turnDir * BANK_CLIMB_DEG;
       wantPitch = r.height < st.topH ? Cesium.Math.toRadians(22) : Cesium.Math.toRadians(2);
       const aligned = Math.abs(diff) < Cesium.Math.toRadians(10);
+      st.slow = 1;
       if (r.height >= st.topH && aligned) {
         st.phase = "glide";
         say("目的地へ <b>滑空</b>", 2600);
@@ -5288,7 +5297,7 @@ async function startPlayDemo() {
     const maxBankStep = 30 * dt;
     st.bank += Math.max(-maxBankStep, Math.min(maxBankStep, wantBank - st.bank));
     cam.setView({ orientation: { heading: heading, pitch: pitch, roll: applyBank(st.bank) } });
-    setInput(forwardIn, st.phase === "glide" ? st.slow : 1);
+    setInput(forwardIn, (st.phase === "glide" || st.phase === "climb") ? (st.slow || 1) : 1);
     // 精霊が出たら止まる（ゲットは人が押すのと同じ confirmCatch を少し遅れて呼ぶ）
     if (encounterIdx !== null) {
       st.resume = st.phase; st.phase = "catch"; setInput(0);
@@ -5713,11 +5722,14 @@ try {
     let savedMode = null;
     try { savedMode = localStorage.getItem(MODE_KEY); } catch (e) {}
     if (MODE_LIST.indexOf(savedMode) >= 0) applyMode(savedMode);
+    else if (modeParams.get("night") === "1") applyMode("event"); // 夜景モード（会場上映）では選択画面を出さない
     else openModeSelect(); // 初回はモード選択から
   }
 } catch (e) {
   console.error("モード初期化に失敗:", e);
 }
 </script>
+<!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
+<script src="night.js"></script>
 </body>
 </html>
