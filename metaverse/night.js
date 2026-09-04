@@ -52,19 +52,22 @@
   };
   // ---- コース：東（印西牧の原）→ 西（千葉ニュータウン中央駅）。高さは楕円体高（地表は約60〜70m）----
   // 最後の 10番 がゴール（千葉NT中央駅の真上・クリスマスいんザイ君・少し大きい）
+  // 各ゲートは主要スポット（駅・施設）の真上に置く（座標は index.html の SPOTS と同じ・OpenStreetMap／市の施設一覧由来）。
+  // 高さは 160〜480m の間で大きく上下させ、上昇・降下の起伏をつける（2026-09-04 中司さん指示）。
+  // 順路：印旛日本医大駅（南東・スタート側）→ 本埜公民館 → 小林駅 → 印西牧の原駅 → ジョイフル本田 → 印西市役所 → 木下駅 → 松山下公園 → イオンモール → 千葉NT中央駅（ゴール）
   const COURSE = [
-    { lon: 140.1700, lat: 35.8040, height: 240, design: "kihon", color: "gold", size: 130 },
-    { lon: 140.1640, lat: 35.8030, height: 290, design: "ongaku", color: "sky", size: 130 },
-    { lon: 140.1580, lat: 35.8062, height: 250, design: "placard", color: "green", size: 140 },
-    { lon: 140.1520, lat: 35.8035, height: 320, design: "kihon", color: "pink", size: 130, flip: true },
-    { lon: 140.1460, lat: 35.8010, height: 260, design: "ongaku", color: "white", size: 130, flip: true },
-    { lon: 140.1400, lat: 35.8045, height: 300, design: "placard", color: "orange", size: 140, flip: true },
-    { lon: 140.1340, lat: 35.8010, height: 240, design: "kihon", color: "violet", size: 130 },
-    { lon: 140.1280, lat: 35.8040, height: 290, design: "ongaku", color: "cyan", size: 130 },
-    { lon: 140.1220, lat: 35.8010, height: 250, design: "placard", color: "magenta", size: 140 },
-    { lon: 140.1161, lat: 35.8005, height: 300, design: "xmas", color: "xmas", size: 160, goal: true },
+    { name: "印旛日本医大駅", lon: 140.203402, lat: 35.787590, height: 200, design: "kihon", color: "gold", size: 130 },
+    { name: "本埜公民館", lon: 140.197952, lat: 35.808392, height: 420, design: "ongaku", color: "sky", size: 130 },
+    { name: "小林駅", lon: 140.193301, lat: 35.830578, height: 180, design: "placard", color: "green", size: 140 },
+    { name: "印西牧の原駅", lon: 140.166716, lat: 35.803497, height: 450, design: "kihon", color: "pink", size: 130, flip: true },
+    { name: "ジョイフル本田千葉ニュータウン店", lon: 140.155674, lat: 35.807083, height: 220, design: "ongaku", color: "white", size: 130, flip: true },
+    { name: "印西市役所", lon: 140.145795, lat: 35.832338, height: 480, design: "placard", color: "orange", size: 140, flip: true },
+    { name: "木下駅", lon: 140.148377, lat: 35.838908, height: 160, design: "kihon", color: "violet", size: 130 },
+    { name: "松山下公園", lon: 140.114947, lat: 35.824677, height: 400, design: "ongaku", color: "cyan", size: 130 },
+    { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 240, design: "placard", color: "magenta", size: 140 },
+    { name: "千葉ニュータウン中央駅", lon: 140.116119, lat: 35.799983, height: 380, design: "xmas", color: "xmas", size: 160, goal: true },
   ];
-  const START_POINT = { lon: 140.1765, lat: 35.8040, height: 240 }; // 1番ゲートの約600m東
+  const START_POINT = { lon: 140.2105, lat: 35.7845, height: 200 }; // 1番ゲート（印旛日本医大駅）の約700m東南東
   const STATION_MAKINOHARA = { lon: 140.166716, lat: 35.803497 };
   const BIGHOP = { lon: 140.162553, lat: 35.803195 };
   const STATION_CNT = { lon: 140.116119, lat: 35.799983 };           // 千葉ニュータウン中央駅
@@ -279,7 +282,7 @@
     const lpos = Cesium.Matrix4.multiplyByPoint(g.frame, local, new Cesium.Cartesian3());
     g.label = labels.add({
       position: lpos,
-      text: d.goal ? String(g.index + 1) + " GOAL" : String(g.index + 1),
+      text: (d.goal ? String(g.index + 1) + " GOAL" : String(g.index + 1)) + "\n" + d.name,
       font: "bold 30px 'Segoe UI', system-ui, sans-serif",
       fillColor: Cesium.Color.fromCssColorString(d.goal ? "#ffd166" : "#dff3ff"),
       outlineColor: Cesium.Color.fromCssColorString("#0a1020"), outlineWidth: 5,
@@ -442,7 +445,7 @@
         tt.pos++;
         ttCheckpoint(tt.pos);
         if (tt.pos >= COURSE.length) { ttFinishNight(); return; }
-        caption("✅ " + (g.index + 1) + " 番 通過！<small>次は <b>" + (tt.pos + 1) + " 番</b>" + (tt.pos === COURSE.length - 1 ? "（ゴール・クリスマスいんザイ君）" : "") + "　" + nextGateGuide() + "</small>", 4000);
+        caption("✅ " + (g.index + 1) + " 番（" + g.def.name + "）通過！<small>次は <b>" + (tt.pos + 1) + " 番 " + COURSE[Math.min(tt.pos, COURSE.length - 1)].name + "</b>" + (tt.pos === COURSE.length - 1 ? "（ゴール・クリスマスいんザイ君）" : "") + "　" + nextGateGuide() + "</small>", 4000);
       } else if (g.index > tt.pos) {
         caption("⚠ 順番どおりに！<small>次は " + (tt.pos + 1) + " 番のゲート　" + nextGateGuide() + "</small>", 3000);
       }
@@ -450,7 +453,7 @@
     }
     burst(g);
     g.passes++; passCount++;
-    caption("✨ " + (g.index + 1) + " 番の いんザイ君 をくぐった！<small>" + passCount + "回目" + (g.def.goal ? "・ここが ゴール（千葉ニュータウン中央駅）" : "") + "</small>", 3500);
+    caption("✨ " + (g.index + 1) + " 番（" + g.def.name + "の上空）の いんザイ君 をくぐった！<small>" + passCount + "回目" + (g.def.goal ? "・ここが ゴール" : "") + "</small>", 3500);
     updateHud(true);
   }
 
@@ -463,9 +466,8 @@
     style.textContent =
       "#shipHud{position:absolute;inset:0;z-index:58;pointer-events:none;display:none;}" +
       "#shipHud.on{display:block;}" +
-      "#shipHud .vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 70%,rgba(2,6,14,0.22) 90%,rgba(2,6,14,0.5) 100%);}" +
-      "#shipHud.noframe .vig,#shipHud.noframe svg{display:none;}" +
-      "body.nightOn #helpBox{z-index:66;bottom:15vh;}" +
+
+      "body.nightOn #helpBox{z-index:66;bottom:56px;}" +
       "@media (max-width:640px){#shipReadout{bottom:20%;font-size:12px;} #shipTt{font-size:22px;top:9%;} #nightCaption{font-size:22px;top:20%;} #nightCaption small{font-size:14px;}}" +
       "#shipHud svg{position:absolute;inset:0;width:100%;height:100%;}" +
       "#shipHud .ret{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border:2px solid rgba(120,230,255,0.7);border-radius:50%;box-shadow:0 0 12px rgba(120,230,255,0.5);}" +
@@ -478,7 +480,8 @@
       "#shipTt.on{display:block;}#shipTt b{color:#ffd166;}#shipTt small{display:block;font-size:17px;font-weight:normal;color:#8fe9ff;}" +
       "#nightCaption{position:absolute;left:50%;top:14%;transform:translateX(-50%);z-index:70;color:#fff;font-size:34px;font-weight:bold;text-align:center;line-height:1.5;width:92%;text-shadow:0 2px 16px rgba(0,0,0,0.95),0 0 6px rgba(0,0,0,0.9);opacity:0;transition:opacity 0.7s;pointer-events:none;}" +
       "#nightCaption.show{opacity:1;}#nightCaption small{display:block;font-size:19px;font-weight:normal;margin-top:6px;}#nightCaption b{color:#ffd166;}" +
-      "#nightTourBtn,#nightTtBtn,#nightHudBtn{display:none;}#nightTourBtn.on,#nightTtBtn.on,#nightHudBtn.on{display:inline-block;}" +
+      "#nightTourBtn,#nightTtBtn{display:none;}#nightTourBtn.on,#nightTtBtn.on{display:inline-block;}" +
+      "#nightHudBtn{display:none !important;}" +
       "#nightTarget{position:absolute;left:0;top:0;z-index:60;display:none;pointer-events:none;text-align:center;}" +
       "#nightTarget .arrow{display:block;font-size:46px;line-height:1;color:#ffd166;text-shadow:0 0 14px rgba(255,209,102,0.9),0 2px 6px rgba(0,0,0,0.9);}" +
       "#nightTarget .label{display:inline-block;margin-top:2px;padding:3px 10px;border-radius:10px;background:rgba(10,16,32,0.8);color:#fff;font:bold 15px 'Segoe UI',system-ui,sans-serif;white-space:nowrap;}" +
@@ -496,18 +499,6 @@
     hudEl = document.createElement("div");
     hudEl.id = "shipHud";
     hudEl.innerHTML =
-      '<div class="vig"></div>' +
-      '<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' +
-      '<defs><linearGradient id="nhG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1526"/><stop offset="1" stop-color="#05080f"/></linearGradient></defs>' +
-      '<path d="M0,0 L70,0 L215,900 L0,900 Z" fill="url(#nhG)"/>' +
-      '<path d="M1600,0 L1530,0 L1385,900 L1600,900 Z" fill="url(#nhG)"/>' +
-      '<path d="M70,0 L215,900" stroke="rgba(120,230,255,0.35)" stroke-width="3" fill="none"/>' +
-      '<path d="M1530,0 L1385,900" stroke="rgba(120,230,255,0.35)" stroke-width="3" fill="none"/>' +
-      '<path d="M0,900 L0,760 Q800,830 1600,760 L1600,900 Z" fill="url(#nhG)"/>' +
-      '<path d="M0,760 Q800,830 1600,760" stroke="rgba(120,230,255,0.75)" stroke-width="4" fill="none"/>' +
-      '<path d="M0,776 Q800,846 1600,776" stroke="rgba(120,230,255,0.18)" stroke-width="2" fill="none"/>' +
-      '<path d="M70,0 Q800,60 1530,0" stroke="rgba(120,230,255,0.25)" stroke-width="3" fill="none"/>' +
-      "</svg>" +
       '<div class="ret"></div>' +
       '<div id="shipTt"></div>' +
       '<div id="shipReadout"></div>';
@@ -659,10 +650,9 @@
       if (on) { cp.style.display = "none"; pt.style.display = "inline-block"; }
       else { cp.style.display = ""; pt.style.display = ""; }
     }
-    if (on && !hudEl.dataset.frameInit) { hudEl.dataset.frameInit = "1"; applyHudFrame(hudFrameDefault()); }
     const btn = document.getElementById("nightBtn");
     if (btn) { btn.classList.toggle("off", !on); btn.textContent = on ? "🌃 夜景中" : "🌃 夜景"; }
-    ["nightTourBtn", "nightTtBtn", "nightHudBtn"].forEach(function (id) { const b = document.getElementById(id); if (b) b.classList.toggle("on", !!on); });
+    ["nightTourBtn", "nightTtBtn"].forEach(function (id) { const b = document.getElementById(id); if (b) b.classList.toggle("on", !!on); });
     if (on) {
       loadGates();
       buildStrings();
@@ -676,22 +666,6 @@
     }
     sc.requestRender();
   }
-  // 操縦席の枠：画面が縦長（スマホ縦持ち等）だと枠が邪魔になるので既定で消す。☰「🛸 操縦席の枠」／?hud=0 で切り替え
-  const HUD_FRAME_KEY = "cbi-meta-night-hudframe";
-  function hudFrameDefault() {
-    if (q.get("hud") === "0") return false;
-    if (q.get("hud") === "1") return true;
-    try { const v = localStorage.getItem(HUD_FRAME_KEY); if (v === "0" || v === "1") return v === "1"; } catch (e) { /* 既定へ */ }
-    return window.innerWidth >= 900 && window.innerWidth > window.innerHeight;
-  }
-  function applyHudFrame(on, persist) {
-    ensureHud();
-    hudEl.classList.toggle("noframe", !on);
-    const b = document.getElementById("nightHudBtn");
-    if (b) { b.classList.toggle("off", !on); b.textContent = on ? "🛸 操縦席の枠" : "🛸 枠なし"; }
-    if (persist) { try { localStorage.setItem(HUD_FRAME_KEY, on ? "1" : "0"); } catch (e) { /* 保存できなくても続ける */ } }
-  }
-  window.setNightHudFrame = applyHudFrame;
   window.nightRefresh = function () { if (window.nightOn) applyNight(true); };
   window.setNight = applyNight;
   window.nightCourse = COURSE;
@@ -748,14 +722,15 @@
     if (!alive()) return stop();
     await sleep(1500);
 
+    const hdg0 = bearingDeg(START_POINT, COURSE[0]);
     viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(140.192, 35.804, 2200),
-      orientation: { heading: Cesium.Math.toRadians(270), pitch: Cesium.Math.toRadians(-26), roll: 0 },
+      destination: Cesium.Cartesian3.fromDegrees(START_POINT.lon + 0.02, START_POINT.lat - 0.004, 2400),
+      orientation: { heading: Cesium.Math.toRadians(hdg0), pitch: Cesium.Math.toRadians(-26), roll: 0 },
     });
     caption("🛸 印西の夜空へ<br><b>ようこそ</b>", 5000);
-    await cinemaFlyTo(START_POINT.lon + 0.004, START_POINT.lat, 900, -20, 270, 7);
+    await cinemaFlyTo(START_POINT.lon + 0.005, START_POINT.lat - 0.001, 900, -20, hdg0, 7);
     if (!alive()) return stop();
-    caption("光の <b>いんザイ君</b> を 10か所<br>順番に くぐって 千葉ニュータウンへ", 5000);
+    caption("市内の駅や施設の上に うかぶ 光の <b>いんザイ君</b> を 10か所<br>順番に くぐって 千葉ニュータウン中央駅へ", 5000);
     await cinemaFlyTo(START_POINT.lon, START_POINT.lat, START_POINT.height, 0, bearingDeg(START_POINT, COURSE[0]), 5);
     if (!alive()) return stop();
     for (let i = 0; i < COURSE.length; i++) {
@@ -861,7 +836,7 @@
     const myName = login ? login.nick : "";
     inner.innerHTML =
       "<h2>⏱ 夜景タイムトライアル（イルミライINZAI タイムレース）</h2>" +
-      "<p>スタート地点（印西牧の原の東）から、空にうかぶ <b>いんザイ君の光のゲート10か所</b> を番号順にくぐり、千葉ニュータウン中央駅の上の <b>クリスマスいんザイ君</b>（10番）をくぐったらゴール。順番をとばしたゲートは数えません。R1（Shift）でダッシュ！</p>" +
+      "<p>スタート地点（印旛日本医大駅の東）から、市内の駅や施設の真上にうかぶ <b>いんザイ君の光のゲート10か所</b> を番号順にくぐり、千葉ニュータウン中央駅の上の <b>クリスマスいんザイ君</b>（10番）をくぐったらゴール（全長約20km・ダッシュで3分ほど）。順番をとばしたゲートは数えません。R1（Shift）でダッシュ！</p>" +
       (best ? "<p>🏅 この端末のベスト：<b>" + ttFormat(best.elapsedMs) + "</b>（" + ttEsc(best.name) + "・" + ttEsc(best.date) + "）</p>" : "") +
       (login
         ? '<p>👤 ログイン中：<b>' + ttEsc(login.nick) + '</b> さん（ランキングにはこの表示名で載ります）</p>' +
@@ -904,7 +879,7 @@
       destination: Cesium.Cartesian3.fromDegrees(START_POINT.lon, START_POINT.lat, START_POINT.height),
       orientation: { heading: Cesium.Math.toRadians(bearingDeg(START_POINT, COURSE[0])), pitch: 0, roll: 0 },
     });
-    caption("🛸 <b>3・2・1</b> でスタート<br><small>1番のゲートは正面。番号順に くぐろう</small>", 3500);
+    caption("🛸 <b>3・2・1</b> でスタート<br><small>1番のゲート（" + COURSE[0].name + "の上空）は正面。番号順に くぐろう</small>", 3500);
     // サーバーへ開始登録（通過報告はこの後に直列で送る）
     tt.queue = ttApiPost({
       action: "start", name: name, ageKey: "night", courseKey: NIGHT_COURSE_KEY, token: token || "",
@@ -1050,8 +1025,9 @@
   // ------------------------------------------------------------
   const nightBtn = document.getElementById("nightBtn");
   if (nightBtn) nightBtn.addEventListener("click", function () { applyNight(!window.nightOn); });
+  // 操縦席の枠は 2026-09-04 に撤去（見にくいとの指摘）。index.html に残っているボタンは使わないので消す
   const hudBtn = document.getElementById("nightHudBtn");
-  if (hudBtn) hudBtn.addEventListener("click", function () { applyHudFrame(hudEl && hudEl.classList.contains("noframe"), true); });
+  if (hudBtn) hudBtn.remove();
   const tourBtn = document.getElementById("nightTourBtn");
   if (tourBtn) tourBtn.addEventListener("click", function () { startTour(); });
   const ttBtn = document.getElementById("nightTtBtn");
