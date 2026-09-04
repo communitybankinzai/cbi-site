@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-04",
+      "type": "feature",
+      "target": "メタバース印西",
+      "title": "イベント用の2人対戦タイムレースを実装し、左右2画面・ゲームパッド2台・READY/結果HUDで進行できるようにした",
+      "detail": "URL `?mode=event&race=vs` または `?mode=event&race=cultural-vs` で2Pレースを起動。既存ViewerをP1、2つ目のCesium ViewerをP2として左右分割し、P1=Gamepad index 0／P2=index 1で独立操作する。コース選択、P1/P2接続表示、READY、3-2-1-START、同時タイマー、順番どおりのチェックポイント通過、先着勝者表示、両者ゴール後の結果画面、再戦、中心補正、入力テスト、FPS表示、切断時PAUSE、強制終了を追加。文化財コースは既存 TT_CONFIG の初級/中級/上級/全件を利用し、通常レース用の固定コースも用意した。`?race=solo` は既存タイムトライアルを直起動する。実装本体は `metaverse/vs-race.js`。検証はローカル `?notiles=1` でHTML/JS/文化財データの読み込みHTTP 200を確認、実機ゲームパッド2台での操作確認は別途必要。",
+      "author": "Codex"
+    },
+    {
+      "date": "2026-09-04",
       "type": "fix",
       "target": "メタバース印西（印西市３次元夜景MAP）",
       "title": "夜景モードで左下の操作方法が操縦席の枠に隠れていたのを直し、右のスポット一覧は夜景中は既定で隠すようにした",

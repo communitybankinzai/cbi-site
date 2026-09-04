@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-04",
+          "title": "メタバース印西にイベント用2人対戦タイムレース（左右2画面・ゲームパッド2台・READY/結果HUD）を実装 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/vs-race.js（新規。RACE_CONFIG、2つ目のCesium Viewer、2プレイヤー状態、READY、カウントダウン、チェックポイント、結果保存）",
+            "site/metaverse/index.html（2PレースHUDの強制終了ボタン、VSモード中の既存1P移動ループ停止時の計測更新）",
+            "site/admin/changelog.json",
+            "site/admin/agents-worklog.json",
+            "site/metaverse/CLAUDE_HANDOFF.md"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "ユーザー提供仕様 `CBI_metaverse_2player_race_spec_2026-09-04.md` に基づく実装。`?mode=event&race=vs` / `?mode=event&race=cultural-vs` で起動し、P1=Gamepad index 0、P2=index 1、左右2画面、READY→3-2-1-START、同時タイマー、順番どおりのCP判定、勝者表示、両者ゴール後のRESULT、再戦、コース選択、CENTER、INPUT、FPS、切断時PAUSE、ENDを実装。ローカル `?notiles=1` で index.html / vs-race.js / bunkazai.json / night.js のHTTP 200読み込みを確認。Chrome/Edge実機制御は環境上不可、ゲームパッド2台の実機確認は未実施。session-stats.py は Codex transcript が .claude/projects に無く失敗したため output/cost 未取得。session: 01a06c33-7a07-7df0-a0bd-6ccc9691c392 / output: n/a / cost: n/a"
+        },
+        {
+          "date": "2026-09-04",
           "title": "いんザイ君デザイン使用申請の提出書類3点（第1号様式・企画書・申請者の概要書）を Word で作成、用語を「印西市３次元夜景MAP」に統一、図柄4種の形態を明記 0.3時間",
           "category": "事務",
           "outputs": [

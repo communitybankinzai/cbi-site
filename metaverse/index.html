@@ -1098,6 +1098,7 @@
       <button id="vsResetBtn">RESET</button>
       <button id="vsFullBtn">FULL</button>
       <button id="vsInputBtn">INPUT</button>
+      <button id="vsForceEndBtn" class="danger">END</button>
       <div id="vsFpsP1" class="metric">P1 --fps</div>
       <div id="vsFpsP2" class="metric">P2 --fps</div>
       <div id="vsGoalCount" class="metric">0 / 2 GOAL</div>
@@ -2642,6 +2643,7 @@ viewer.clock.onTick.addEventListener(function () {
     updatePadDebug(readGamepad(0), 0, 0, 0);
     updateSpeedChip(false, false);
     updateHelpBox(false);
+    tickLogicMs = tickLogicMs * 0.9 + (performance.now() - tickT0) * 0.1;
     return;
   }
 
