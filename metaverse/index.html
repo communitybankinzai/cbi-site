@@ -987,6 +987,7 @@
   <button id="nightTtBtn" title="夜景タイムトライアル。いんザイ君の光のゲート10か所を番号順にくぐり、ゴールまでのタイムを競います（サーバー公式計測・全国ランキング。夜景中は T キーでも開けます）">⏱ 夜景TT</button>
   <button id="liteBtn" class="off" title="動きが重い端末向け。描画の解像度を下げ、街並みを粗めに読み、空の表現やトンビを止めて軽くします（もう一度押すと元に戻ります）">🪶 軽量モード</button>
   <button id="trafficBtn" class="off" title="テザリングで使うときの見張り。今日この端末がダウンロードした3D都市データの推定量を表示し、上限を決めておくと8割で注意、超えたら自動で軽量モードに切り替えます">📶 通信量</button>
+  <button id="bgmBtn" class="off" title="BGMを流します（自前で打ち込んだ曲。昼はトビの滑空テーマ、夜景モードではクリスマスメドレー）。もう一度押すと止まります">🎵 BGM</button>
   <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
   <button id="padCenterBtn" style="display:none" title="スティックから手を離した状態で押してください。いまの値をそのまま「手を離した位置」として覚え直します（コントローラーのOPTIONSボタンでも同じことができます）">🎯 中心合わせ</button>
   <button id="padDebugBtn" title="コントローラーを認識しているか、各スティックがどんな値を出しているかを画面に表示します">🩺 診断</button>
@@ -1978,7 +1979,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04p"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04q"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2442,6 +2443,48 @@ function liteSuggest() {
   setTimeout(function () { el.style.display = "none"; }, 20000);
 }
 document.getElementById("liteBtn").addEventListener("click", function () { applyLite(!liteOn); });
+
+// ============================================================
+// 🎵 BGM（2026-09-04・ユーザー要望「メタバースプレイ時にも BGM を流したい」）
+// 曲は自前で打ち込んだもの（assets/audio/）。昼＝オリジナル「トビの滑空」テーマ、夜景モード＝クリスマスメドレー
+// （旋律は保護期間満了の4曲）。ブラウザは操作なしの自動再生を許さないので、開始は必ずボタン操作。
+// ON/OFF は端末に残し、次回はボタンが「🎵 BGM（前回ON）」と知らせるだけで自動では鳴らさない。撮影モードでは鳴らさない
+// ============================================================
+const BGM_KEY = "cbi-meta-bgm-v1";
+const BGM_TRACKS = { day: "assets/audio/bgm_tobi.m4a", night: "assets/audio/bgm_xmas.m4a" };
+let bgmAudio = null, bgmTrack = "";
+function bgmWanted() { return window.nightOn ? "night" : "day"; }
+function bgmApply() {
+  const btn = document.getElementById("bgmBtn");
+  const on = !!(bgmAudio && !bgmAudio.paused);
+  if (btn) { btn.classList.toggle("off", !on); btn.textContent = on ? "🎵 BGM 再生中" : "🎵 BGM"; }
+}
+function bgmStart() {
+  if (new URLSearchParams(location.search).get("cinema")) return;
+  const want = bgmWanted();
+  if (!bgmAudio || bgmTrack !== want) {
+    if (bgmAudio) { try { bgmAudio.pause(); } catch (e) {} }
+    bgmAudio = new Audio(BGM_TRACKS[want]);
+    bgmAudio.loop = true; bgmAudio.volume = 0.35; bgmTrack = want;
+  }
+  const p = bgmAudio.play();
+  if (p && p.catch) p.catch(function () { showPickResult("🎵 BGM を再生できませんでした。もう一度ボタンを押してください。", 4000); bgmApply(); });
+  try { localStorage.setItem(BGM_KEY, "1"); } catch (e) {}
+  bgmApply();
+}
+function bgmStop() {
+  if (bgmAudio) { try { bgmAudio.pause(); } catch (e) {} }
+  try { localStorage.setItem(BGM_KEY, "0"); } catch (e) {}
+  bgmApply();
+}
+(function bgmInit() {
+  const btn = document.getElementById("bgmBtn");
+  if (!btn) return;
+  btn.addEventListener("click", function () { (bgmAudio && !bgmAudio.paused) ? bgmStop() : bgmStart(); });
+  try { if (localStorage.getItem(BGM_KEY) === "1") btn.textContent = "🎵 BGM（前回ON）"; } catch (e) {}
+  // 昼／夜景の切り替えに追従（再生中だけ曲を差し替える）
+  setInterval(function () { if (bgmAudio && !bgmAudio.paused && bgmWanted() !== bgmTrack) bgmStart(); }, 2000);
+})();
 
 // ============================================================
 // 📶 通信量の見張り（2026-09-03・イベントでテザリングする際の要望）
