@@ -5,16 +5,21 @@
 //  - 街並み：CustomShader で暗く青みがけ、位置で決まる乱数で窓明かりをまばらに灯す
 //  - 空　　：大気表現と太陽を消して星空（Cesium 標準のスカイボックス）を出す
 //  - 光　　：ブルーム（にじみ）を掛け、光点（PointPrimitive）が電飾に見えるようにする
-//  - 主役　：空中に いんザイ君（クリスマス版の線画 SVG）を光の粒で浮かべる。
-//            線画の内側は空いているので、宇宙船（一人称カメラ）でお腹をくぐれる
-//  - 地上　：印西牧の原駅〜BIG HOP に光の列
-//  - 演出　：宇宙船コックピットの HUD、くぐった瞬間の光の弾け、自動遊覧コース
+//  - 主役　：空中に いんザイ君 の光のゲートを **10か所**。印西牧の原（東）から千葉ニュータウン中央駅（西）へ
+//            順にくぐり、最後の 10番＝千葉NT中央駅の上空の **クリスマスいんザイ君** がゴール。
+//            図柄は手元の線画4種（基本形・音楽・プラカード・クリスマス）を色替え・左右反転で10枚にしている
+//            （2026-09-04 中司さん決定）。線画の内側は空いているので、宇宙船（一人称カメラ）でくぐれる
+//  - 競技　：⏱ 夜景タイムトライアル。スタート地点から10ゲートを順番にくぐりゴールまでの時間を、
+//            既存のタイムトライアル基盤（CiDAO API `metaverse-tt`・コース key `night`）で公式計測し順位を出す。
+//            API 不通時は端末内の参考記録。クイズの参加要件は夜景コースだけ免除（サーバー側も同じ）
+//  - 演出　：宇宙船コックピットの HUD、くぐった瞬間の光の弾け、自動遊覧（コースをなぞってゴールへ）
 //
-// 入口：URL `?night=1`（会場は `?night=1&tour=1&mode=event`）／☰メニューの「🌃 夜景」ボタン
-//   tour=1 … 起動時に自動遊覧（約50秒）→ そのあと自由操縦。操作が 150 秒無ければ遊覧を再開（放置対策）
-// index.html 側の変数・関数（viewer / tileset / NO_TILES / SPOTS / cinemaFlyTo / CAPTURE_HIDE_IDS /
-// cameraBankEnabled / liteOn / INZAI_GEOID_HEIGHT_M / keys / joyState / setPinVisible 等）をそのまま使う。
-// このファイルは index.html の </script> の直後に読み込む（トップレベルの const/let は別スクリプトからも見える）。
+// 入口：URL `?night=1`（会場は `?night=1&tour=1&mode=event`）／☰メニューの「🌃 夜景」「🛸 夜間遊覧」「⏱ 夜景TT」
+//   tour=1 … 起動時に自動遊覧 → そのあと自由操縦。操作が 150 秒無ければ遊覧を再開（放置対策）
+//   夜景中はキーボードの T でタイムトライアル画面を開ける
+// index.html 側の変数・関数（viewer / tileset / NO_TILES / cinemaFlyTo / CAPTURE_HIDE_IDS / cameraBankEnabled /
+// liteOn / INZAI_GEOID_HEIGHT_M / keys / joyState / TT_API / ttApiPost / ttFormat / ttRankHtml / ttEsc / ttMyName 等）を
+// そのまま使う。このファイルは index.html の </script> の直後に読み込む（トップレベルの const/let は別スクリプトからも見える）。
 //
 // いんザイ君のデザイン使用：本番運用の前に印西市への使用申請が要る（2026-09-04 ユーザー方針：
 // うまく機能するようなら市役所へ申請）。それまでは検証用途に限る。
@@ -25,33 +30,76 @@
   const NIGHT_PARAM = q.get("night") === "1";
   const TOUR_PARAM = q.get("tour") === "1";
   const IDLE_RESTART_MS = 150000;           // 会場で放置されたら遊覧を再開するまでの秒数（150秒）
+  const GATE_MAX_POINTS = 2000;             // 1ゲートあたりの光の粒の上限（10ゲートで最大2万）
+  const NIGHT_COURSE_KEY = "night";         // サーバー（CiDAO metaverse-tt）のコース key
+  const NIGHT_BEST_KEY = "cbi-meta-night-best-v1";
+  const NIGHT_LOCAL_RANK_KEY = "cbi-meta-night-local-v1";
 
-  // ---- 空中のいんザイ君（光のゲート） ----
-  // 位置は 印西牧の原駅（140.166716, 35.803497）と BIG HOP（140.162553, 35.803195）の間の上空。
-  // 高さは楕円体高（この地域の地表は楕円体高で約60〜70m）。facing は図柄が向く方角（270=西向き＝
-  // 西の千葉ニュータウン中央側から東へ飛んでくると正面に見える）
-  const GATE = { lon: 140.1646, lat: 35.8033, height: 280, sizeM: 150, facing: 270 };
-  const GATE_MAX_POINTS = 2400;             // 光の粒の上限（多いほど細かいが重い）
-  const GATE_IMG = "assets/night/inzaikun_xmas.svg";
-
-  const STATION = { lon: 140.166716, lat: 35.803497 };
+  // ---- 図柄（線画SVG） ----
+  const DESIGNS = {
+    xmas: "assets/night/inzaikun_xmas.svg",       // クリスマス（黒い円盤に線が「抜き」＝透明）
+    kihon: "assets/night/inzaikun_kihon.svg",     // 基本形（黒い線＋赤い切り取り線＋下にロゴ文字）
+    ongaku: "assets/night/inzaikun_ongaku.svg",   // 音楽（A4の隅に小さく描かれている）
+    placard: "assets/night/inzaikun_placard.svg", // プラカード（顔のアップ）
+  };
+  // 光の色（[主, 副]）
+  const PALETTE = {
+    gold: ["#fff1c4", "#ffd166"], sky: ["#dff3ff", "#7cc4ff"], green: ["#e8ffe8", "#6ee7a8"],
+    pink: ["#ffe6f0", "#ff9ecb"], white: ["#ffffff", "#e8f0ff"], orange: ["#fff0d6", "#ffa447"],
+    violet: ["#f0e6ff", "#b48cff"], cyan: ["#e0ffff", "#5ff0ff"], magenta: ["#ffe0ff", "#ff6ad5"],
+  };
+  // ---- コース：東（印西牧の原）→ 西（千葉ニュータウン中央駅）。高さは楕円体高（地表は約60〜70m）----
+  // 最後の 10番 がゴール（千葉NT中央駅の真上・クリスマスいんザイ君・少し大きい）
+  const COURSE = [
+    { lon: 140.1700, lat: 35.8040, height: 240, design: "kihon", color: "gold", size: 130 },
+    { lon: 140.1640, lat: 35.8030, height: 290, design: "ongaku", color: "sky", size: 130 },
+    { lon: 140.1580, lat: 35.8062, height: 250, design: "placard", color: "green", size: 140 },
+    { lon: 140.1520, lat: 35.8035, height: 320, design: "kihon", color: "pink", size: 130, flip: true },
+    { lon: 140.1460, lat: 35.8010, height: 260, design: "ongaku", color: "white", size: 130, flip: true },
+    { lon: 140.1400, lat: 35.8045, height: 300, design: "placard", color: "orange", size: 140, flip: true },
+    { lon: 140.1340, lat: 35.8010, height: 240, design: "kihon", color: "violet", size: 130 },
+    { lon: 140.1280, lat: 35.8040, height: 290, design: "ongaku", color: "cyan", size: 130 },
+    { lon: 140.1220, lat: 35.8010, height: 250, design: "placard", color: "magenta", size: 140 },
+    { lon: 140.1161, lat: 35.8005, height: 300, design: "xmas", color: "xmas", size: 160, goal: true },
+  ];
+  const START_POINT = { lon: 140.1765, lat: 35.8040, height: 240 }; // 1番ゲートの約600m東
+  const STATION_MAKINOHARA = { lon: 140.166716, lat: 35.803497 };
   const BIGHOP = { lon: 140.162553, lat: 35.803195 };
+  const STATION_CNT = { lon: 140.116119, lat: 35.799983 };           // 千葉ニュータウン中央駅
+  const AEON = { lon: 140.111502, lat: 35.800167 };
 
   window.nightOn = false;                   // index.html の applyLite が空の表現を切るかどうかの判断に読む
-  let gatePoints = null;                    // PointPrimitiveCollection（いんザイ君）
-  let gateBase = [];                        // 各粒の元の色
-  let gateFrame = null;                     // ENU 行列（くぐり判定用）
-  let gateHalfW = 0, gateHalfH = 0;
-  let stringPoints = null;                  // 光の列
-  let stringBase = [];
+  const gates = COURSE.map(function (g, i) {
+    return { def: g, index: i, points: null, base: [], frame: null, inv: null, halfW: 0, halfH: 0,
+             facing: 0, prevSide: null, passes: 0, label: null };
+  });
+  let labels = null;                        // 番号ラベル
+  let stringPoints = null, stringBase = [];  // 地上の光の列
   let twinkleTimer = null, chaseTimer = null, chaseTick = 0;
-  let prevSide = null;                      // 前フレームにゲート面のどちら側にいたか
   let passCount = 0;
-  let burstUntil = 0;
   let tourRunning = false, tourToken = 0;
   let lastInputAt = performance.now();
   let hudEl = null, capEl = null;
   let uiHidden = [];
+  let imgCache = {};
+
+  // ------------------------------------------------------------
+  // 地理の小道具
+  // ------------------------------------------------------------
+  const M_LAT = 111320;
+  function mLon(lat) { return 111320 * Math.cos(Cesium.Math.toRadians(lat)); }
+  function bearingDeg(a, b) { // a から b を見る方位（度・北=0・時計回り）
+    const dx = (b.lon - a.lon) * mLon((a.lat + b.lat) / 2), dy = (b.lat - a.lat) * M_LAT;
+    return (Cesium.Math.toDegrees(Math.atan2(dx, dy)) + 360) % 360;
+  }
+  function distM(a, b) {
+    const dx = (b.lon - a.lon) * mLon((a.lat + b.lat) / 2), dy = (b.lat - a.lat) * M_LAT;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  function cameraLonLat() {
+    const c = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+    return { lon: Cesium.Math.toDegrees(c.longitude), lat: Cesium.Math.toDegrees(c.latitude), height: c.height };
+  }
 
   // ------------------------------------------------------------
   // 街並みを夜にするシェーダー
@@ -79,59 +127,84 @@
   });
 
   // ------------------------------------------------------------
-  // 画像 → 光の粒（線画の白い画素を拾う）
+  // 画像 → 光の粒
+  //   2段階で読む：①全体を描いて図柄の範囲（余白・A4の隅など）を見つける ②その範囲だけを拡大して描き直し、線の画素を拾う
+  //   線の拾い方は画像ごとに自動判定：
+  //     「抜き」型（クリスマス）… 不透明な円盤に線が透明な穴 → 円盤の内側の透明画素が線
+  //     「インク」型（基本形・音楽・プラカード）… 透明な地に黒い線 → 暗い不透明画素が線（赤い切り取り線は除く）
+  //   図柄の下にあるロゴ文字は、行ごとの点の有無を見て「空行が続くところ」で切り落とす
   // ------------------------------------------------------------
-  function sampleImage(img) {
-    const W = 360, H = 360;
+  function scanPixels(ctx, W, H) {
+    const data = ctx.getImageData(0, 0, W, H).data;
+    const opaque = new Uint8Array(W * H), dark = new Uint8Array(W * H), red = new Uint8Array(W * H);
+    let nOpaque = 0, minX = W, maxX = -1, minY = H, maxY = -1;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4, k = y * W + x;
+      const a = data[i + 3];
+      if (a < 128) continue;
+      opaque[k] = 1; nOpaque++;
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+      const l = 0.299 * r + 0.587 * g + 0.114 * b;
+      if (r > 170 && g < 100 && b < 100) red[k] = 1;
+      else if (l < 140) dark[k] = 1;
+      if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y;
+    }
+    return { opaque: opaque, dark: dark, red: red, nOpaque: nOpaque, minX: minX, maxX: maxX, minY: minY, maxY: maxY };
+  }
+  function sampleImage(img, flip) {
     const cv = document.createElement("canvas");
-    cv.width = W; cv.height = H;
     const ctx = cv.getContext("2d", { willReadFrequently: true });
+    // ① 全体
+    const W0 = 900, H0 = 900;
+    cv.width = W0; cv.height = H0;
+    ctx.clearRect(0, 0, W0, H0);
+    ctx.drawImage(img, 0, 0, W0, H0);
+    let s0;
+    try { s0 = scanPixels(ctx, W0, H0); } catch (e) { console.warn("夜景: 画像を読めません", e); return null; }
+    if (s0.maxX < 0) return null;
+    const bw = s0.maxX - s0.minX + 1, bh = s0.maxY - s0.minY + 1;
+    const holes = s0.nOpaque > bw * bh * 0.5;          // 図柄の範囲の半分以上が不透明＝「抜き」型
+    // ② 図柄の範囲だけを拡大して描き直す（元画像の座標に戻してから）
+    const sx = s0.minX / W0 * img.width, sy = s0.minY / H0 * img.height;
+    const sw = bw / W0 * img.width, sh = bh / H0 * img.height;
+    const W = 480, H = Math.max(120, Math.round(480 * bh / bw));
+    cv.width = W; cv.height = H;
     ctx.clearRect(0, 0, W, H);
-    ctx.drawImage(img, 0, 0, W, H);
-    let data;
-    try { data = ctx.getImageData(0, 0, W, H).data; } catch (e) { console.warn("夜景: 画像を読めません", e); return null; }
-    // 素材はレーザー加工用の図案：黒い円盤に線画が「抜き（透明）」で入っている。
-    // そのため「不透明で明るい画素」だけでなく「円盤の内側にある透明な画素」も線として拾う。
-    // 行ごとに不透明画素の左端・右端（円盤の縁）を求め、縁から少し内側の透明画素を線とみなす
+    if (flip) { ctx.translate(W, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const s = scanPixels(ctx, W, H);
     const lit = new Uint8Array(W * H);
     const rowCount = new Int32Array(H);
-    const margin = Math.round(W * 0.03);      // 縁の赤いカット線との隙間を拾わないための余白
-    for (let y = 0; y < H; y++) {
-      let L = -1, R = -1;
-      for (let x = 0; x < W; x++) { if (data[(y * W + x) * 4 + 3] >= 128) { if (L < 0) L = x; R = x; } }
-      if (L < 0) continue;
-      for (let x = 0; x < W; x++) {
-        const i = (y * W + x) * 4;
-        const a = data[i + 3];
-        let on = false;
-        if (a >= 128) {
-          const l = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-          on = l > 140;
-        } else {
-          on = x > L + margin && x < R - margin;
+    if (holes) {
+      const margin = Math.max(3, Math.round(W * 0.03));
+      for (let y = 0; y < H; y++) {
+        let L = -1, R = -1;
+        for (let x = 0; x < W; x++) if (s.opaque[y * W + x]) { if (L < 0) L = x; R = x; }
+        if (L < 0) continue;
+        for (let x = L + margin; x <= R - margin; x++) {
+          if (!s.opaque[y * W + x]) { lit[y * W + x] = 1; rowCount[y]++; }
         }
-        if (on) { lit[y * W + x] = 1; rowCount[y]++; }
       }
+    } else {
+      for (let k = 0; k < W * H; k++) if (s.dark[k] && !s.red[k]) { lit[k] = 1; rowCount[Math.floor(k / W)]++; }
     }
-    // キャラクターの下にあるロゴ文字を除く：上から最初の点のある行を探し、そこから下へたどって
-    // 「空行が続く」ところで切る（足元とロゴの間の隙間）
+    // ロゴ文字を切り落とす：上から最初の点のある行を探し、下へたどって空行が続くところで切る
     let top = -1;
-    for (let y = 0; y < H; y++) { if (rowCount[y] > 0) { top = y; break; } }
+    for (let y = 0; y < H; y++) if (rowCount[y] > 0) { top = y; break; }
     if (top < 0) return null;
     let bottom = H - 1, gap = 0;
+    const gapNeed = Math.max(4, Math.round(H * 0.02));
     for (let y = top; y < H; y++) {
-      if (rowCount[y] === 0) { gap++; if (gap >= Math.round(H * 0.02)) { bottom = y - gap; break; } }
+      if (rowCount[y] === 0) { gap++; if (gap >= gapNeed) { bottom = y - gap; break; } }
       else gap = 0;
     }
-    let minX = W, maxX = 0;
     const pts = [];
-    for (let y = top; y <= bottom; y += 2) {
-      for (let x = 0; x < W; x += 2) {
-        if (!lit[y * W + x]) continue;
-        pts.push([x + Math.random() * 1.2 - 0.6, y + Math.random() * 1.2 - 0.6]);
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-      }
+    let minX = W, maxX = 0;
+    for (let y = top; y <= bottom; y++) for (let x = 0; x < W; x++) {
+      if (!lit[y * W + x]) continue;
+      pts.push([x + Math.random() * 0.8 - 0.4, y + Math.random() * 0.8 - 0.4]);
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
     }
     if (pts.length === 0) return null;
     let keep = pts;
@@ -139,88 +212,116 @@
       const p = GATE_MAX_POINTS / pts.length;
       keep = pts.filter(function () { return Math.random() < p; });
     }
-    return { pts: keep, top: top, bottom: bottom, minX: minX, maxX: maxX, W: W, H: H };
+    return { pts: keep, top: top, bottom: bottom, minX: minX, maxX: maxX };
+  }
+  function loadImage(key) {
+    if (imgCache[key]) return imgCache[key];
+    imgCache[key] = new Promise(function (resolve, reject) {
+      const img = new Image();
+      img.onload = function () { resolve(img); };
+      img.onerror = function () { reject(new Error(DESIGNS[key] + " を読み込めません")); };
+      img.src = DESIGNS[key];
+    });
+    return imgCache[key];
   }
 
-  function buildGate(sample) {
-    const center = Cesium.Cartesian3.fromDegrees(GATE.lon, GATE.lat, GATE.height);
-    gateFrame = Cesium.Transforms.eastNorthUpToFixedFrame(center);
-    const f = Cesium.Math.toRadians(GATE.facing);
-    // 図柄を正面から見る人の「右」方向（東北上フレーム）
-    const ux = -Math.cos(f), uy = Math.sin(f);
-    const charH = sample.bottom - sample.top;            // 図柄の高さ（px）
-    const scale = GATE.sizeM / charH;                     // m/px
+  // ------------------------------------------------------------
+  // ゲートを空に組み立てる
+  // ------------------------------------------------------------
+  function gateColor(g, p, top, charH) {
+    const r = Math.random();
+    if (g.def.color === "xmas") {
+      if (p[1] < top + charH * 0.22) return r < 0.6 ? "#ff5a5a" : "#fff6f0";  // 帽子＝赤と白
+      if (r < 0.62) return "#fff1c4";
+      if (r < 0.86) return "#ffd166";
+      if (r < 0.95) return "#9fd8ff";
+      return "#ff9ecb";
+    }
+    const pal = PALETTE[g.def.color] || PALETTE.gold;
+    return r < 0.6 ? pal[0] : pal[1];
+  }
+  function buildGate(g, sample) {
+    const d = g.def;
+    const prev = g.index === 0 ? START_POINT : COURSE[g.index - 1];
+    g.facing = bearingDeg(d, prev);                       // 図柄は「前のゲート（来る方向）」を向く
+    const center = Cesium.Cartesian3.fromDegrees(d.lon, d.lat, d.height);
+    g.frame = Cesium.Transforms.eastNorthUpToFixedFrame(center);
+    g.inv = Cesium.Matrix4.inverseTransformation(g.frame, new Cesium.Matrix4());
+    const f = Cesium.Math.toRadians(g.facing);
+    const ux = -Math.cos(f), uy = Math.sin(f);            // 図柄を正面から見る人の「右」（東北上フレーム）
+    const charH = sample.bottom - sample.top;
+    const scale = d.size / charH;                         // m/px
     const cx = (sample.minX + sample.maxX) / 2, cy = (sample.top + sample.bottom) / 2;
-    gateHalfW = ((sample.maxX - sample.minX) / 2) * scale;
-    gateHalfH = (charH / 2) * scale;
-
-    if (gatePoints) viewer.scene.primitives.remove(gatePoints);
-    gatePoints = new Cesium.PointPrimitiveCollection();
-    gateBase = [];
-    const hatLine = sample.top + charH * 0.22;            // 上 22% は帽子＝赤と白
+    g.halfW = ((sample.maxX - sample.minX) / 2) * scale;
+    g.halfH = (charH / 2) * scale;
+    if (g.points) viewer.scene.primitives.remove(g.points);
+    g.points = new Cesium.PointPrimitiveCollection();
+    g.base = [];
     const local = new Cesium.Cartesian3();
     for (const p of sample.pts) {
       const x = (p[0] - cx) * scale, yUp = (cy - p[1]) * scale;
       local.x = ux * x; local.y = uy * x; local.z = yUp;
-      const pos = Cesium.Matrix4.multiplyByPoint(gateFrame, local, new Cesium.Cartesian3());
-      let col;
-      const r = Math.random();
-      if (p[1] < hatLine) col = r < 0.6 ? "#ff5a5a" : "#fff6f0";
-      else if (r < 0.62) col = "#fff1c4";
-      else if (r < 0.86) col = "#ffd166";
-      else if (r < 0.95) col = "#9fd8ff";
-      else col = "#ff9ecb";
-      const c = Cesium.Color.fromCssColorString(col);
-      gateBase.push(c);
-      gatePoints.add({
-        position: pos,
-        color: c,
-        pixelSize: 6,
+      const pos = Cesium.Matrix4.multiplyByPoint(g.frame, local, new Cesium.Cartesian3());
+      const c = Cesium.Color.fromCssColorString(gateColor(g, p, sample.top, charH));
+      g.base.push(c);
+      g.points.add({
+        position: pos, color: c, pixelSize: 6,
         scaleByDistance: new Cesium.NearFarScalar(150, 2.2, 4000, 0.45),
-        disableDepthTestDistance: 0,
       });
     }
-    gatePoints.show = window.nightOn;
-    viewer.scene.primitives.add(gatePoints);
+    g.points.show = window.nightOn;
+    viewer.scene.primitives.add(g.points);
+    // 番号ラベル（図柄の上）
+    if (!labels) { labels = new Cesium.LabelCollection(); viewer.scene.primitives.add(labels); labels.show = window.nightOn; }
+    local.x = 0; local.y = 0; local.z = g.halfH + 18;
+    const lpos = Cesium.Matrix4.multiplyByPoint(g.frame, local, new Cesium.Cartesian3());
+    g.label = labels.add({
+      position: lpos,
+      text: d.goal ? String(g.index + 1) + " GOAL" : String(g.index + 1),
+      font: "bold 30px 'Segoe UI', system-ui, sans-serif",
+      fillColor: Cesium.Color.fromCssColorString(d.goal ? "#ffd166" : "#dff3ff"),
+      outlineColor: Cesium.Color.fromCssColorString("#0a1020"), outlineWidth: 5,
+      style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+      horizontalOrigin: Cesium.HorizontalOrigin.CENTER, verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+      scaleByDistance: new Cesium.NearFarScalar(300, 1.3, 6000, 0.5),
+      disableDepthTestDistance: Number.POSITIVE_INFINITY,
+    });
   }
-
-  function loadGate() {
-    if (gatePoints) return;
-    const img = new Image();
-    img.onload = function () {
-      const s = sampleImage(img);
-      if (!s) { console.warn("夜景: いんザイ君の図柄から光の粒を作れませんでした"); return; }
-      buildGate(s);
-    };
-    img.onerror = function () { console.warn("夜景: " + GATE_IMG + " を読み込めません"); };
-    img.src = GATE_IMG;
+  let gatesLoading = false;
+  function loadGates() {
+    if (gatesLoading) return;
+    gatesLoading = true;
+    gates.forEach(function (g) {
+      loadImage(g.def.design).then(function (img) {
+        const s = sampleImage(img, !!g.def.flip);
+        if (!s) { console.warn("夜景: ゲート" + (g.index + 1) + " の図柄から光の粒を作れませんでした"); return; }
+        buildGate(g, s);
+      }).catch(function (e) { console.warn("夜景: " + e.message); });
+    });
   }
 
   // ------------------------------------------------------------
-  // 地上の光の列（駅の周り・駅〜BIG HOP・BIG HOP の周り）
+  // 地上の光の列（牧の原：駅の周り・駅〜BIG HOP・BIG HOP の周り／千葉NT：駅の周り・駅〜イオン）
   // ------------------------------------------------------------
   const STRING_COLORS = ["#ff5252", "#ffd166", "#6ee7a8", "#7cc4ff", "#fff2e0"];
   function stringPath() {
     const out = [];
-    const mLat = 111320, mLon = 111320 * Math.cos(Cesium.Math.toRadians(STATION.lat));
     function ring(c, rM, n) {
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2;
-        out.push([c.lon + (Math.cos(a) * rM) / mLon, c.lat + (Math.sin(a) * rM) / mLat]);
+        out.push([c.lon + (Math.cos(a) * rM) / mLon(c.lat), c.lat + (Math.sin(a) * rM) / M_LAT]);
       }
     }
     function line(a, b, n) {
-      for (let i = 0; i <= n; i++) {
-        const t = i / n;
-        out.push([a.lon + (b.lon - a.lon) * t, a.lat + (b.lat - a.lat) * t]);
-      }
+      for (let i = 0; i <= n; i++) { const t = i / n; out.push([a.lon + (b.lon - a.lon) * t, a.lat + (b.lat - a.lat) * t]); }
     }
-    ring(STATION, 70, 90);
-    line(STATION, BIGHOP, 100);
+    ring(STATION_MAKINOHARA, 70, 90);
+    line(STATION_MAKINOHARA, BIGHOP, 100);
     ring(BIGHOP, 95, 120);
+    ring(STATION_CNT, 80, 100);
+    line(STATION_CNT, AEON, 110);
     return out;
   }
-
   async function buildStrings() {
     if (stringPoints) return;
     const path = stringPath();
@@ -240,8 +341,7 @@
       stringBase.push(c);
       stringPoints.add({
         position: Cesium.Cartesian3.fromDegrees(path[i][0], path[i][1], h),
-        color: c,
-        pixelSize: 5,
+        color: c, pixelSize: 5,
         scaleByDistance: new Cesium.NearFarScalar(100, 2.0, 3000, 0.4),
       });
     }
@@ -250,77 +350,106 @@
   }
 
   // ------------------------------------------------------------
-  // またたき・流れる色・くぐったときの弾け
+  // またたき・流れる色・くぐったときの弾け・次ゲートの強調
   // ------------------------------------------------------------
-  const twinkled = [];
+  let burstingUntil = {};
   function twinkle() {
-    if (!gatePoints || !window.nightOn) return;
+    if (!window.nightOn) return;
     const now = performance.now();
-    if (now < burstUntil) return;                  // 弾けている間はそちらに任せる
-    for (const t of twinkled) t[0].color = gateBase[t[1]];
-    twinkled.length = 0;
-    const n = gatePoints.length;
-    for (let k = 0; k < 70; k++) {
-      const i = Math.floor(Math.random() * n);
-      const p = gatePoints.get(i);
-      const f = 0.35 + Math.random() * 1.1;
-      const b = gateBase[i];
-      p.color = new Cesium.Color(Math.min(1, b.red * f), Math.min(1, b.green * f), Math.min(1, b.blue * f), 1);
-      twinkled.push([p, i]);
-    }
+    gates.forEach(function (g) {
+      if (!g.points || (burstingUntil[g.index] || 0) > now) return;
+      const n = g.points.length;
+      const nextIdx = tt.active ? tt.pos : -1;
+      const dim = tt.active && g.index < tt.pos;          // 通過済みは控えめに
+      const emph = g.index === nextIdx;                    // 次のゲートは強めに脈打つ
+      const pulse = emph ? (0.8 + 0.5 * Math.sin(now / 180)) : 1;
+      const k = emph ? 25 : 10;
+      for (let j = 0; j < k; j++) {
+        const i = Math.floor(Math.random() * n);
+        const p = g.points.get(i);
+        const f = (0.35 + Math.random() * 1.1) * pulse * (dim ? 0.5 : 1);
+        const b = g.base[i];
+        p.color = new Cesium.Color(Math.min(1, b.red * f), Math.min(1, b.green * f), Math.min(1, b.blue * f), 1);
+      }
+      if (emph !== g._emph || dim !== g._dim) {          // 状態が変わったときだけ全体を塗り直す
+        g._emph = emph; g._dim = dim;
+        for (let i = 0; i < n; i++) {
+          const p = g.points.get(i);
+          p.pixelSize = emph ? 8 : 6;
+          p.color = dim ? Cesium.Color.multiplyByScalar(g.base[i], 0.45, new Cesium.Color()) : g.base[i];
+        }
+      }
+    });
   }
   function chase() {
     if (!stringPoints || !window.nightOn) return;
     chaseTick++;
     const n = stringPoints.length;
-    for (let i = 0; i < n; i++) {
-      stringPoints.get(i).color = stringBase[(i + chaseTick) % n];
-    }
+    for (let i = 0; i < n; i++) stringPoints.get(i).color = stringBase[(i + chaseTick) % n];
   }
-  function burst() {
-    if (!gatePoints) return;
-    passCount++;
-    burstUntil = performance.now() + 1600;
+  function burst(g) {
+    if (!g.points) return;
+    burstingUntil[g.index] = performance.now() + 1600;
     const start = performance.now();
-    const n = gatePoints.length;
+    const n = g.points.length;
     const white = Cesium.Color.WHITE;
     function step() {
       const t = (performance.now() - start) / 1600;
       if (t >= 1) {
-        for (let i = 0; i < n; i++) { const p = gatePoints.get(i); p.color = gateBase[i]; p.pixelSize = 6; }
+        for (let i = 0; i < n; i++) { const p = g.points.get(i); p.color = g.base[i]; p.pixelSize = 6; }
+        g._emph = undefined;                             // 次の twinkle で強調・減光を塗り直す
         return;
       }
-      const k = 1 - t;                             // 1→0 に減衰
+      const k = 1 - t;
       for (let i = 0; i < n; i++) {
-        const p = gatePoints.get(i);
-        p.color = Cesium.Color.lerp(gateBase[i], white, k, new Cesium.Color());
+        const p = g.points.get(i);
+        p.color = Cesium.Color.lerp(g.base[i], white, k, new Cesium.Color());
         p.pixelSize = 6 + 10 * k;
       }
       requestAnimationFrame(step);
     }
     step();
-    caption("✨ いんザイ君の光を くぐった！<small>" + passCount + "回目</small>", 3500);
-    updateHud();
   }
 
-  // くぐり判定：ゲート面（図柄の平面）を、図柄の範囲内で横切ったら弾ける
-  const invFrame = new Cesium.Matrix4();
+  // くぐり判定：各ゲートの平面を、図柄の範囲内で横切ったら
   const localPos = new Cesium.Cartesian3();
   function checkPass() {
-    if (!gateFrame || !window.nightOn) return;
-    Cesium.Matrix4.inverseTransformation(gateFrame, invFrame);
-    Cesium.Matrix4.multiplyByPoint(invFrame, viewer.camera.position, localPos);
-    const f = Cesium.Math.toRadians(GATE.facing);
-    const nx = Math.sin(f), ny = Math.cos(f);     // 図柄の正面方向（東北上）
-    const ux = -Math.cos(f), uy = Math.sin(f);    // 図柄の横方向
-    const d = localPos.x * nx + localPos.y * ny;  // 面からの符号付き距離
-    const s = localPos.x * ux + localPos.y * uy;  // 横位置
-    const side = d >= 0 ? 1 : -1;
-    if (prevSide !== null && side !== prevSide && Math.abs(d) < 60 &&
-        Math.abs(s) < gateHalfW && Math.abs(localPos.z) < gateHalfH) {
-      burst();
+    if (!window.nightOn) return;
+    const camPos = viewer.camera.position;
+    gates.forEach(function (g) {
+      if (!g.inv) return;
+      Cesium.Matrix4.multiplyByPoint(g.inv, camPos, localPos);
+      const f = Cesium.Math.toRadians(g.facing);
+      const nx = Math.sin(f), ny = Math.cos(f);
+      const ux = -Math.cos(f), uy = Math.sin(f);
+      const d = localPos.x * nx + localPos.y * ny;
+      const s = localPos.x * ux + localPos.y * uy;
+      const side = d >= 0 ? 1 : -1;
+      // 面をまたいだ瞬間に判定する。低fps（N95等）でダッシュすると1フレームで60m以上進むため、面からの距離は200mまで許す
+      if (g.prevSide !== null && side !== g.prevSide && Math.abs(d) < 200 &&
+          Math.abs(s) < g.halfW && Math.abs(localPos.z) < g.halfH) {
+        onGatePass(g);
+      }
+      g.prevSide = side;
+    });
+  }
+  function onGatePass(g) {
+    if (tt.active) {
+      if (g.index === tt.pos) {
+        burst(g);
+        tt.pos++;
+        ttCheckpoint(tt.pos);
+        if (tt.pos >= COURSE.length) { ttFinishNight(); return; }
+        caption("✅ " + (g.index + 1) + " 番 通過！<small>次は " + (tt.pos + 1) + " 番" + (tt.pos === COURSE.length - 1 ? "（ゴール・クリスマスいんザイ君）" : "") + "</small>", 2500);
+      } else if (g.index > tt.pos) {
+        caption("⚠ 順番どおりに！<small>次は " + (tt.pos + 1) + " 番のゲート</small>", 2500);
+      }
+      return;
     }
-    prevSide = side;
+    burst(g);
+    g.passes++; passCount++;
+    caption("✨ " + (g.index + 1) + " 番の いんザイ君 をくぐった！<small>" + passCount + "回目" + (g.def.goal ? "・ここが ゴール（千葉ニュータウン中央駅）" : "") + "</small>", 3500);
+    updateHud(true);
   }
 
   // ------------------------------------------------------------
@@ -340,9 +469,20 @@
       "#shipHud .ret:after{top:50%;left:-10px;height:2px;width:14px;margin-top:-1px;}" +
       "#shipReadout{position:absolute;left:50%;bottom:4.5%;transform:translateX(-50%);color:#8fe9ff;font:bold 15px/1.5 'Segoe UI',system-ui,sans-serif;letter-spacing:0.08em;text-shadow:0 0 10px rgba(120,230,255,0.8);white-space:nowrap;}" +
       "#shipReadout b{color:#ffd166;text-shadow:0 0 10px rgba(255,209,102,0.8);}" +
+      "#shipTt{position:absolute;left:50%;top:5%;transform:translateX(-50%);color:#fff;font:bold 30px/1.3 'Segoe UI',system-ui,sans-serif;text-align:center;text-shadow:0 2px 12px rgba(0,0,0,0.9);display:none;}" +
+      "#shipTt.on{display:block;}#shipTt b{color:#ffd166;}#shipTt small{display:block;font-size:17px;font-weight:normal;color:#8fe9ff;}" +
       "#nightCaption{position:absolute;left:50%;top:14%;transform:translateX(-50%);z-index:70;color:#fff;font-size:34px;font-weight:bold;text-align:center;line-height:1.5;width:92%;text-shadow:0 2px 16px rgba(0,0,0,0.95),0 0 6px rgba(0,0,0,0.9);opacity:0;transition:opacity 0.7s;pointer-events:none;}" +
       "#nightCaption.show{opacity:1;}#nightCaption small{display:block;font-size:19px;font-weight:normal;margin-top:6px;}#nightCaption b{color:#ffd166;}" +
-      "#nightTourBtn{display:none;}#nightTourBtn.on{display:inline-block;}";
+      "#nightTourBtn,#nightTtBtn{display:none;}#nightTourBtn.on,#nightTtBtn.on{display:inline-block;}" +
+      "#nightTtModal{position:fixed;inset:0;z-index:120;background:rgba(3,6,16,0.82);display:none;align-items:center;justify-content:center;}" +
+      "#nightTtModal.show{display:flex;}" +
+      "#nightTtModal .inner{background:#0d1526;color:#e8f0ff;border:1px solid rgba(120,230,255,0.4);border-radius:14px;padding:22px 26px;width:min(92vw,560px);max-height:90vh;overflow:auto;font-size:14px;box-shadow:0 0 40px rgba(120,230,255,0.25);}" +
+      "#nightTtModal h2{margin:0 0 8px;color:#ffd166;font-size:20px;}#nightTtModal p{margin:6px 0;line-height:1.6;}" +
+      "#nightTtModal input{font-size:18px;padding:8px 10px;border-radius:8px;border:1px solid #4a6a8a;background:#0a1020;color:#fff;width:100%;box-sizing:border-box;}" +
+      "#nightTtModal button{font-size:15px;padding:10px 18px;border-radius:10px;border:none;cursor:pointer;margin:6px 6px 0 0;}" +
+      "#nightTtModal .go{background:#ffd166;color:#1a2533;font-weight:bold;font-size:18px;}#nightTtModal .sub{background:#2a3a55;color:#fff;}" +
+      "#nightTtModal table{border-collapse:collapse;width:100%;margin-top:6px;}#nightTtModal td,#nightTtModal th{padding:3px 6px;border-bottom:1px solid #223;text-align:left;font-size:13px;}" +
+      "#nightTtModal .me{color:#ffd166;font-weight:bold;}";
     document.head.appendChild(style);
     hudEl = document.createElement("div");
     hudEl.id = "shipHud";
@@ -350,24 +490,26 @@
       '<div class="vig"></div>' +
       '<svg viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">' +
       '<defs><linearGradient id="nhG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1526"/><stop offset="1" stop-color="#05080f"/></linearGradient></defs>' +
-      // 左右の支柱
       '<path d="M0,0 L70,0 L215,900 L0,900 Z" fill="url(#nhG)"/>' +
       '<path d="M1600,0 L1530,0 L1385,900 L1600,900 Z" fill="url(#nhG)"/>' +
       '<path d="M70,0 L215,900" stroke="rgba(120,230,255,0.35)" stroke-width="3" fill="none"/>' +
       '<path d="M1530,0 L1385,900" stroke="rgba(120,230,255,0.35)" stroke-width="3" fill="none"/>' +
-      // 足元のコンソール
       '<path d="M0,900 L0,760 Q800,830 1600,760 L1600,900 Z" fill="url(#nhG)"/>' +
       '<path d="M0,760 Q800,830 1600,760" stroke="rgba(120,230,255,0.75)" stroke-width="4" fill="none"/>' +
       '<path d="M0,776 Q800,846 1600,776" stroke="rgba(120,230,255,0.18)" stroke-width="2" fill="none"/>' +
-      // 天井の細い枠
       '<path d="M70,0 Q800,60 1530,0" stroke="rgba(120,230,255,0.25)" stroke-width="3" fill="none"/>' +
       "</svg>" +
       '<div class="ret"></div>' +
+      '<div id="shipTt"></div>' +
       '<div id="shipReadout"></div>';
     document.body.appendChild(hudEl);
     capEl = document.createElement("div");
     capEl.id = "nightCaption";
     document.body.appendChild(capEl);
+    const modal = document.createElement("div");
+    modal.id = "nightTtModal";
+    modal.innerHTML = '<div class="inner" id="nightTtInner"></div>';
+    document.body.appendChild(modal);
   }
   let capTimer = null;
   function caption(html, ms) {
@@ -377,15 +519,36 @@
     if (capTimer) clearTimeout(capTimer);
     if (ms) capTimer = setTimeout(function () { capEl.classList.remove("show"); }, ms);
   }
+  const ARROWS = ["⬆", "↗", "➡", "↘", "⬇", "↙", "⬅", "↖"];
+  function relArrow(bearing) {
+    const rel = ((bearing - Cesium.Math.toDegrees(viewer.camera.heading)) % 360 + 360) % 360;
+    return ARROWS[Math.round(rel / 45) % 8];
+  }
   let hudFrame = 0;
-  function updateHud() {
+  function updateHud(force) {
     if (!hudEl || !window.nightOn) return;
-    if ((hudFrame++ % 10) !== 0) return;
-    const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
-    const alt = Math.max(0, Math.round(carto.height - INZAI_GEOID_HEIGHT_M));
+    if (!force && (hudFrame++ % 10) !== 0) return;
+    const c = cameraLonLat();
+    const alt = Math.max(0, Math.round(c.height - INZAI_GEOID_HEIGHT_M));
     const hdg = Math.round(Cesium.Math.toDegrees(viewer.camera.heading)) % 360;
-    document.getElementById("shipReadout").innerHTML =
-      "標高 <b>" + alt + "</b> m ／ 方位 <b>" + hdg + "</b>° ／ いんザイ君 くぐり <b>" + passCount + "</b> 回";
+    let txt = "標高 <b>" + alt + "</b> m ／ 方位 <b>" + hdg + "</b>°";
+    const ttEl = document.getElementById("shipTt");
+    if (tt.active) {
+      const next = COURSE[Math.min(tt.pos, COURSE.length - 1)];
+      const dist = Math.round(distM(c, next));
+      const arrow = relArrow(bearingDeg(c, next));
+      const dh = Math.round(next.height - c.height);
+      txt += " ／ 次 <b>" + (tt.pos + 1) + "</b>/" + COURSE.length + " " + arrow + " <b>" + dist + "</b> m" + (Math.abs(dh) > 20 ? (dh > 0 ? " ↑" : " ↓") + Math.abs(dh) + "m" : "");
+      const el = tt.countdownEnd > performance.now()
+        ? "<b>" + Math.ceil((tt.countdownEnd - performance.now()) / 1000) + "</b><small>スタートまで</small>"
+        : "⏱ <b>" + ttFormat(performance.now() - tt.startMs) + "</b><small>" + tt.name + "　" + (tt.pos) + "/" + COURSE.length + " ゲート通過</small>";
+      ttEl.innerHTML = el;
+      ttEl.classList.add("on");
+    } else {
+      txt += " ／ いんザイ君 くぐり <b>" + passCount + "</b> 回";
+      ttEl.classList.remove("on");
+    }
+    document.getElementById("shipReadout").innerHTML = txt;
   }
 
   // ------------------------------------------------------------
@@ -402,7 +565,7 @@
     if (tileset) tileset.customShader = on ? nightShader : undefined;
     try {
       const b = sc.postProcessStages.bloom;
-      b.enabled = !!on && !liteOn;                 // 軽量モードではブルームを掛けない（GPU負荷）
+      b.enabled = !!on && !liteOn;
       b.uniforms.glowOnly = false;
       b.uniforms.contrast = 128;
       b.uniforms.brightness = -0.3;
@@ -410,15 +573,15 @@
       b.uniforms.sigma = 2.5;
       b.uniforms.stepSize = 1.0;
     } catch (e) { /* ブルームの無い版でも続ける */ }
-    if (gatePoints) gatePoints.show = !!on;
+    gates.forEach(function (g) { if (g.points) g.points.show = !!on; });
+    if (labels) labels.show = !!on;
     if (stringPoints) stringPoints.show = !!on;
     hudEl.classList.toggle("on", !!on);
     const btn = document.getElementById("nightBtn");
     if (btn) { btn.classList.toggle("off", !on); btn.textContent = on ? "🌃 夜景中" : "🌃 夜景"; }
-    const tb = document.getElementById("nightTourBtn");
-    if (tb) tb.classList.toggle("on", !!on);
+    ["nightTourBtn", "nightTtBtn"].forEach(function (id) { const b = document.getElementById(id); if (b) b.classList.toggle("on", !!on); });
     if (on) {
-      loadGate();
+      loadGates();
       buildStrings();
       if (!twinkleTimer) twinkleTimer = setInterval(twinkle, 110);
       if (!chaseTimer) chaseTimer = setInterval(chase, 260);
@@ -426,22 +589,34 @@
       if (twinkleTimer) { clearInterval(twinkleTimer); twinkleTimer = null; }
       if (chaseTimer) { clearInterval(chaseTimer); chaseTimer = null; }
       capEl.classList.remove("show");
+      if (tt.active) ttAbortNight("夜景モードを終了したので中止しました");
     }
     sc.requestRender();
   }
-  // index.html の applyLite（軽量モード）から呼ばれ、空・ブルームの設定を夜景と両立させる
   window.nightRefresh = function () { if (window.nightOn) applyNight(true); };
   window.setNight = applyNight;
-  window.nightGate = GATE;                    // 検証スクリプトからゲート位置を参照するため
+  window.nightCourse = COURSE;
+  window.nightGateCount = function () { return gates.filter(function (g) { return !!g.points; }).length; };
+  // 検証用：i 番ゲートの手前（来る方向）から図柄を正面に見る位置へカメラを置く
+  window.nightGateView = function (i, distMeters) {
+    const g = gates[i]; if (!g || !g.frame) return false;
+    const f = Cesium.Math.toRadians(g.facing);
+    const dm = distMeters || 450;
+    const lon = g.def.lon + Math.sin(f) * dm / mLon(g.def.lat), lat = g.def.lat + Math.cos(f) * dm / M_LAT;
+    viewer.camera.setView({
+      destination: Cesium.Cartesian3.fromDegrees(lon, lat, g.def.height),
+      orientation: { heading: Cesium.Math.toRadians((g.facing + 180) % 360), pitch: 0, roll: 0 },
+    });
+    return true;
+  };
 
-  // tileset は後から読み込まれるので、来たらシェーダーを付ける
   (function waitTileset() {
     if (tileset) { if (window.nightOn) tileset.customShader = nightShader; return; }
     setTimeout(waitTileset, 400);
   })();
 
   // ------------------------------------------------------------
-  // 自動遊覧（約50秒）：西の上空 → 牧の原へ → いんザイ君をくぐる → 観覧車の街をひとまわり → 駅に到着
+  // 自動遊覧：東の上空 → 10ゲートを順にくぐる → ゴール（千葉NT中央駅）へ降下
   // ------------------------------------------------------------
   const sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
   function hideUiForTour() {
@@ -457,53 +632,53 @@
     uiHidden.forEach(function (p) { p[0].style.display = p[1]; });
     uiHidden = [];
   }
-
   async function startTour() {
-    if (tourRunning) return;
+    if (tourRunning || tt.active) return;
     tourRunning = true;
     const token = ++tourToken;
     const alive = function () { return token === tourToken; };
+    const stop = function () { tourRunning = false; };
     if (!window.nightOn) applyNight(true);
     hideUiForTour();
     const prevBank = cameraBankEnabled;
-    cameraBankEnabled = false;                   // 旋回の自動バンクは flyTo と喧嘩するので止める
+    cameraBankEnabled = false;
     if (typeof setMode === "function" && walkMode) setMode(false);
     while (!tileset && !NO_TILES && alive()) await sleep(300);
-    if (!alive()) { tourRunning = false; return; }
+    if (!alive()) return stop();
     await sleep(1500);
 
-    const mLon = 111320 * Math.cos(Cesium.Math.toRadians(GATE.lat));
     viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(140.095, 35.803, 2400),
-      orientation: { heading: Cesium.Math.toRadians(90), pitch: Cesium.Math.toRadians(-26), roll: 0 },
+      destination: Cesium.Cartesian3.fromDegrees(140.192, 35.804, 2200),
+      orientation: { heading: Cesium.Math.toRadians(270), pitch: Cesium.Math.toRadians(-26), roll: 0 },
     });
     caption("🛸 印西の夜空へ<br><b>ようこそ</b>", 5000);
-    await cinemaFlyTo(140.128, 35.803, 1000, -18, 90, 9);
-    if (!alive()) { tourRunning = false; return; }
-
-    caption("光の <b>いんザイ君</b> が<br>見えてきた", 5000);
-    await cinemaFlyTo(GATE.lon - 900 / mLon, GATE.lat, GATE.height, 0, 90, 8);
-    if (!alive()) { tourRunning = false; return; }
-
-    caption("お腹の中を <b>くぐろう</b>", 4000);
-    await cinemaFlyTo(GATE.lon + 260 / mLon, GATE.lat, GATE.height, 0, 90, 6);
-    if (!alive()) { tourRunning = false; return; }
-
-    caption("観覧車の街を<br><b>ひとまわり</b>", 5000);
-    await cinemaFlyTo(BIGHOP.lon, BIGHOP.lat - 0.0035, 260, -30, 0, 6);
-    if (!alive()) { tourRunning = false; return; }
-    await cinemaFlyTo(BIGHOP.lon + 0.003, BIGHOP.lat, 220, -25, 270, 6);
-    if (!alive()) { tourRunning = false; return; }
-
-    caption("<b>印西牧の原駅</b> に到着", 4500);
-    await cinemaFlyTo(STATION.lon, STATION.lat - 0.0028, 150, -25, 0, 6);
-    if (!alive()) { tourRunning = false; return; }
-
-    caption("🎮 ここからは <b>あなたが操縦</b><br><small>左スティックで前後左右・右スティックで見回す・R1でダッシュ<br>空にうかぶ いんザイ君 をくぐってみよう</small>", 9000);
+    await cinemaFlyTo(START_POINT.lon + 0.004, START_POINT.lat, 900, -20, 270, 7);
+    if (!alive()) return stop();
+    caption("光の <b>いんザイ君</b> を 10か所<br>順番に くぐって 千葉ニュータウンへ", 5000);
+    await cinemaFlyTo(START_POINT.lon, START_POINT.lat, START_POINT.height, 0, bearingDeg(START_POINT, COURSE[0]), 5);
+    if (!alive()) return stop();
+    for (let i = 0; i < COURSE.length; i++) {
+      const g = COURSE[i];
+      const nxt = COURSE[i + 1];
+      // ゲートを通り抜けて 120m 先まで進み、機首は次のゲートへ向け始める
+      const hdgIn = bearingDeg(cameraLonLat(), g);
+      const hdgOut = nxt ? bearingDeg(g, nxt) : hdgIn;
+      const f = Cesium.Math.toRadians(hdgIn);
+      const beyond = { lon: g.lon + Math.sin(f) * 120 / mLon(g.lat), lat: g.lat + Math.cos(f) * 120 / M_LAT };
+      const dist = distM(cameraLonLat(), g);
+      if (g.goal) caption("🏁 ゴールの <b>クリスマスいんザイ君</b>！", 4000);
+      else if (i === 4) caption("半分まで来た！<small>この先は千葉ニュータウン中央駅まで</small>", 3500);
+      await cinemaFlyTo(beyond.lon, beyond.lat, g.height, 0, hdgOut, Math.max(3.5, dist / 110));
+      if (!alive()) return stop();
+    }
+    caption("🏁 <b>千葉ニュータウン中央駅</b> に到着", 4500);
+    await cinemaFlyTo(STATION_CNT.lon, STATION_CNT.lat - 0.0028, 170, -25, 0, 6);
+    if (!alive()) return stop();
+    caption("🎮 ここからは <b>あなたが操縦</b><br><small>左スティックで前後左右・右スティックで見回す・R1でダッシュ<br>⏱ タイムトライアルは T キー</small>", 9000);
     cameraBankEnabled = prevBank;
     tourRunning = false;
     lastInputAt = performance.now();
-    if (!TOUR_PARAM) restoreUi();               // 会場（tour=1）ではボタン類を出したままにしない
+    if (!TOUR_PARAM) restoreUi();
   }
   function cancelTour() {
     if (!tourRunning) return;
@@ -516,13 +691,169 @@
   }
   window.startNightTour = startTour;
 
-  // 操作の検知（遊覧の中断・放置の判定）
+  // ------------------------------------------------------------
+  // ⏱ 夜景タイムトライアル
+  // ------------------------------------------------------------
+  const tt = { active: false, pos: 0, startMs: 0, countdownEnd: 0, name: "", trialId: null, queue: Promise.resolve(), official: false };
+  window.nightTtState = tt;                 // 検証スクリプトから状態を見るため
+  function loadBest() { try { return JSON.parse(localStorage.getItem(NIGHT_BEST_KEY) || "null"); } catch (e) { return null; } }
+  function saveBest(rec) { try { localStorage.setItem(NIGHT_BEST_KEY, JSON.stringify(rec)); } catch (e) { /* 保存できなくても続ける */ } }
+  function loadLocal() { try { return JSON.parse(localStorage.getItem(NIGHT_LOCAL_RANK_KEY) || "[]"); } catch (e) { return []; } }
+  function pushLocal(rec) {
+    const list = loadLocal();
+    list.push(rec);
+    list.sort(function (a, b) { return a.elapsedMs - b.elapsedMs; });
+    try { localStorage.setItem(NIGHT_LOCAL_RANK_KEY, JSON.stringify(list.slice(0, 50))); } catch (e) { /* 同上 */ }
+  }
+  let lastInfo = null;
+  async function fetchInfo() {
+    try {
+      const res = await fetch(TT_API);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      lastInfo = await res.json();
+    } catch (e) { lastInfo = null; }
+    return lastInfo;
+  }
+  function rankingTable(list, myName, title) {
+    if (!list || !list.length) return "<p>" + title + "：まだ記録がありません。最初の記録をつくろう！</p>";
+    let h = "<p><b>" + title + "</b></p><table><tr><th>順位</th><th>名前</th><th>タイム</th><th>日付</th></tr>";
+    list.slice(0, 10).forEach(function (r, i) {
+      const me = myName && r.name === myName;
+      h += "<tr" + (me ? ' class="me"' : "") + "><td>" + (i + 1) + "</td><td>" + ttEsc(r.name) + "</td><td>" + ttFormat(r.elapsedMs) + "</td><td>" + ttEsc(String(r.date || "").slice(0, 10)) + "</td></tr>";
+    });
+    return h + "</table>";
+  }
+  async function openTtModal() {
+    ensureHud();
+    if (tourRunning) cancelTour();
+    if (!window.nightOn) applyNight(true);
+    const inner = document.getElementById("nightTtInner");
+    const best = loadBest();
+    const myName = (typeof ttMyName === "function" ? ttMyName() : "") || (best && best.name) || "";
+    inner.innerHTML =
+      "<h2>⏱ 夜景タイムトライアル</h2>" +
+      "<p>スタート地点（印西牧の原の東）から、空にうかぶ <b>いんザイ君の光のゲート10か所</b> を番号順にくぐり、千葉ニュータウン中央駅の上の <b>クリスマスいんザイ君</b>（10番）をくぐったらゴール。順番をとばしたゲートは数えません。R1（Shift）でダッシュ！</p>" +
+      (best ? "<p>🏅 この端末のベスト：<b>" + ttFormat(best.elapsedMs) + "</b>（" + ttEsc(best.name) + "・" + ttEsc(best.date) + "）</p>" : "") +
+      '<p><input id="nightTtName" maxlength="20" placeholder="ニックネーム（20文字まで）" value="' + ttEsc(myName) + '"></p>' +
+      '<p><button class="go" id="nightTtGo">🛸 スタート</button><button class="sub" id="nightTtClose">閉じる</button></p>' +
+      '<div id="nightTtRank"><p>ランキングを読み込み中…</p></div>';
+    document.getElementById("nightTtModal").classList.add("show");
+    document.getElementById("nightTtGo").onclick = function () {
+      const name = document.getElementById("nightTtName").value.trim().slice(0, 20);
+      if (!name) { document.getElementById("nightTtName").focus(); return; }
+      startTt(name);
+    };
+    document.getElementById("nightTtClose").onclick = closeTtModal;
+    document.getElementById("nightTtName").onkeydown = function (e) { if (e.key === "Enter") document.getElementById("nightTtGo").click(); };
+    setTimeout(function () { const el = document.getElementById("nightTtName"); if (el) el.focus(); }, 50);
+    const info = await fetchInfo();
+    const rankEl = document.getElementById("nightTtRank");
+    if (!rankEl) return;
+    if (info && info.ranking) {
+      rankEl.innerHTML = rankingTable(info.ranking[NIGHT_COURSE_KEY], myName, "🏆 全国ランキング（公式記録・上位10）");
+    } else {
+      rankEl.innerHTML = rankingTable(loadLocal(), myName, "🏆 この端末の順位表（サーバーに繋がらないため参考記録）");
+    }
+  }
+  function closeTtModal() { document.getElementById("nightTtModal").classList.remove("show"); }
+  window.openNightTt = openTtModal;
+
+  function startTt(name) {
+    closeTtModal();
+    hideUiForTour();
+    if (typeof setMode === "function" && walkMode) setMode(false);
+    gates.forEach(function (g) { g.prevSide = null; g._emph = undefined; });
+    tt.active = true; tt.pos = 0; tt.name = name; tt.trialId = null; tt.official = false;
+    tt.countdownEnd = performance.now() + 3500;
+    tt.startMs = tt.countdownEnd;
+    viewer.camera.setView({
+      destination: Cesium.Cartesian3.fromDegrees(START_POINT.lon, START_POINT.lat, START_POINT.height),
+      orientation: { heading: Cesium.Math.toRadians(bearingDeg(START_POINT, COURSE[0])), pitch: 0, roll: 0 },
+    });
+    caption("🛸 <b>3・2・1</b> でスタート<br><small>1番のゲートは正面。番号順に くぐろう</small>", 3500);
+    // サーバーへ開始登録（通過報告はこの後に直列で送る）
+    tt.queue = ttApiPost({
+      action: "start", name: name, ageKey: "night", courseKey: NIGHT_COURSE_KEY,
+      quizRatePct: 100, quizAnswers: 0, checkpoints: COURSE.length,
+    }).then(function (d) { tt.trialId = d.trialId || null; tt.official = !!tt.trialId; })
+      .catch(function () { tt.trialId = null; tt.official = false; });
+    setTimeout(function () { if (tt.active) caption("🚀 <b>GO!</b>", 1500); }, 3500);
+  }
+  function ttCheckpoint(pos) {
+    tt.queue = tt.queue.then(function () {
+      if (!tt.trialId) return;
+      return ttApiPost({ action: "checkpoint", trialId: tt.trialId, pos: pos });
+    }).catch(function () { /* 通過報告に失敗しても計測は続ける（サーバー側で要確認扱いになる） */ });
+  }
+  async function ttFinishNight() {
+    const clientMs = Math.round(performance.now() - tt.startMs);
+    tt.active = false;
+    caption("🏁 <b>ゴール！</b><br><small>" + ttFormat(clientMs) + "　結果を集計中…</small>", 6000);
+    let result = null;
+    try {
+      await tt.queue;
+      if (tt.trialId) result = await ttApiPost({ action: "finish", trialId: tt.trialId });
+    } catch (e) { result = null; }
+    const official = !!(result && result.elapsedMs);
+    const ms = official ? result.elapsedMs : clientMs;
+    const date = new Date();
+    const dateStr = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
+    const rec = { name: tt.name, elapsedMs: ms, date: dateStr, official: official };
+    const best = loadBest();
+    if (!best || ms < best.elapsedMs) saveBest(rec);
+    pushLocal(rec);
+    if (!TOUR_PARAM) restoreUi();
+    // 結果画面
+    ensureHud();
+    const inner = document.getElementById("nightTtInner");
+    let h = "<h2>🏁 ゴール！ " + ttEsc(tt.name) + " さん</h2>" +
+      "<p style='font-size:30px;margin:4px 0;'>⏱ <b style='color:#ffd166'>" + ttFormat(ms) + "</b>" +
+      (official ? " <small>（公式記録" + (result.flagged ? "・事務局確認対象" : "") + (result.recordCode ? "・記録コード " + ttEsc(result.recordCode) : "") + "）</small>" : " <small>（参考記録・サーバーに繋がりませんでした）</small>") + "</p>";
+    if (official && typeof ttRankHtml === "function") h += ttRankHtml(result.rank);
+    h += '<p><button class="go" id="nightTtAgain">🔁 もう一度</button><button class="sub" id="nightTtClose2">閉じる</button></p>' +
+      '<div id="nightTtRank2"><p>ランキングを読み込み中…</p></div>';
+    inner.innerHTML = h;
+    document.getElementById("nightTtModal").classList.add("show");
+    document.getElementById("nightTtAgain").onclick = function () { openTtModal(); };
+    document.getElementById("nightTtClose2").onclick = closeTtModal;
+    const info = await fetchInfo();
+    const rankEl = document.getElementById("nightTtRank2");
+    if (!rankEl) return;
+    rankEl.innerHTML = (info && info.ranking)
+      ? rankingTable(info.ranking[NIGHT_COURSE_KEY], tt.name, "🏆 全国ランキング（公式記録・上位10）")
+      : rankingTable(loadLocal(), tt.name, "🏆 この端末の順位表（参考記録）");
+  }
+  function ttAbortNight(reason) {
+    if (!tt.active) return;
+    tt.active = false;
+    tt.trialId = null;
+    gates.forEach(function (g) { g._emph = undefined; });
+    caption("⏹ タイムトライアル中止<small>" + (reason || "") + "</small>", 3000);
+    if (!TOUR_PARAM) restoreUi();
+    updateHud(true);
+  }
+  window.abortNightTt = ttAbortNight;
+
+  // ------------------------------------------------------------
+  // 操作の検知（遊覧の中断・放置の判定）とキー操作
+  // ------------------------------------------------------------
   function noteInput() {
     lastInputAt = performance.now();
     if (tourRunning) cancelTour();
   }
-  ["keydown", "pointerdown", "wheel", "touchstart"].forEach(function (ev) {
+  ["pointerdown", "wheel", "touchstart"].forEach(function (ev) {
     document.addEventListener(ev, noteInput, { passive: true });
+  });
+  document.addEventListener("keydown", function (e) {
+    noteInput();
+    if (!window.nightOn) return;
+    const typing = e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA");
+    if (typing) return;
+    if (e.key === "t" || e.key === "T") { if (!tt.active) openTtModal(); }
+    if (e.key === "Escape") {
+      if (document.getElementById("nightTtModal").classList.contains("show")) closeTtModal();
+      else if (tt.active) ttAbortNight("Esc キー");
+    }
   });
   function gamepadActive() {
     try {
@@ -539,14 +870,15 @@
     if (!window.nightOn) return;
     const anyKey = Object.keys(keys).some(function (k) { return keys[k]; });
     if (anyKey || (joyState && joyState.active) || gamepadActive()) noteInput();
-    if (TOUR_PARAM && !tourRunning && performance.now() - lastInputAt > IDLE_RESTART_MS) startTour();
+    if (TOUR_PARAM && !tourRunning && !tt.active &&
+        !document.getElementById("nightTtModal").classList.contains("show") &&
+        performance.now() - lastInputAt > IDLE_RESTART_MS) startTour();
   }, 500);
 
-  // 毎フレーム：くぐり判定と HUD
   viewer.clock.onTick.addEventListener(function () {
     if (!window.nightOn) return;
     checkPass();
-    updateHud();
+    updateHud(tt.active);
   });
 
   // ------------------------------------------------------------
@@ -556,13 +888,14 @@
   if (nightBtn) nightBtn.addEventListener("click", function () { applyNight(!window.nightOn); });
   const tourBtn = document.getElementById("nightTourBtn");
   if (tourBtn) tourBtn.addEventListener("click", function () { startTour(); });
+  const ttBtn = document.getElementById("nightTtBtn");
+  if (ttBtn) ttBtn.addEventListener("click", function () { if (tt.active) ttAbortNight("ボタン"); else openTtModal(); });
 
   // ------------------------------------------------------------
   // 起動
   // ------------------------------------------------------------
   if (NIGHT_PARAM) {
     applyNight(true);
-    // 夜空に文化財ピンが浮くと雰囲気が壊れるので、既定では隠す（📍ボタンで戻せる）
     try {
       if (typeof bunkazaiPinsVisible !== "undefined" && bunkazaiPinsVisible) {
         bunkazaiPinsVisible = false; applyBunkazaiPinVisibility();
