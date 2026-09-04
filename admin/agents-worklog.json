@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-04",
+          "title": "夜景タイムレースの短縮コース（5か所）追加とコース切替、サーバー側コース night5 の追加 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/night.js",
+            "site/admin/changelog.json",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "C:\\Repos\\cidao src/app/api/metaverse-tt/route.ts",
+            "C:\\Repos\\cidao src/app/admin/timetrial/page.tsx"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "ヘッドレスで短縮コース5ゲートの表示・参加画面のコース選択・全10か所への切替を確認。session: 9bb79d7f-6ee9-4e3f-83ee-7ae28ddef41c（累計 output 約27万。先の実績を差し引いた残りを計上）"
+        },
+        {
+          "date": "2026-09-04",
           "title": "夜景モードの実機指摘対応（枠の歪み→撤去・操作方法の表示・スポット一覧の非表示）、ゲートを市内10スポットの真上に再配置し高低差、設計書・企画書を再生成 0.4時間",
           "category": "実装",
           "outputs": [

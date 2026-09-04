@@ -31,7 +31,6 @@
   const TOUR_PARAM = q.get("tour") === "1";
   const IDLE_RESTART_MS = 150000;           // 会場で放置されたら遊覧を再開するまでの秒数（150秒）
   const GATE_MAX_POINTS = 2000;             // 1ゲートあたりの光の粒の上限（10ゲートで最大2万）
-  const NIGHT_COURSE_KEY = "night";         // サーバー（CiDAO metaverse-tt）のコース key
   const NIGHT_BEST_KEY = "cbi-meta-night-best-v1";
   const NIGHT_LOCAL_RANK_KEY = "cbi-meta-night-local-v1";
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
@@ -55,7 +54,7 @@
   // 各ゲートは主要スポット（駅・施設）の真上に置く（座標は index.html の SPOTS と同じ・OpenStreetMap／市の施設一覧由来）。
   // 高さは 160〜480m の間で大きく上下させ、上昇・降下の起伏をつける（2026-09-04 中司さん指示）。
   // 順路：印旛日本医大駅（南東・スタート側）→ 本埜公民館 → 小林駅 → 印西牧の原駅 → ジョイフル本田 → 印西市役所 → 木下駅 → 松山下公園 → イオンモール → 千葉NT中央駅（ゴール）
-  const COURSE = [
+  const FULL_COURSE = [
     { name: "印旛日本医大駅", lon: 140.203402, lat: 35.787590, height: 200, design: "kihon", color: "gold", size: 130 },
     { name: "本埜公民館", lon: 140.197952, lat: 35.808392, height: 420, design: "ongaku", color: "sky", size: 130 },
     { name: "小林駅", lon: 140.193301, lat: 35.830578, height: 180, design: "placard", color: "green", size: 140 },
@@ -67,17 +66,43 @@
     { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 240, design: "placard", color: "magenta", size: 140 },
     { name: "千葉ニュータウン中央駅", lon: 140.116119, lat: 35.799983, height: 380, design: "xmas", color: "xmas", size: 160, goal: true },
   ];
-  const START_POINT = { lon: 140.2105, lat: 35.7845, height: 200 }; // 1番ゲート（印旛日本医大駅）の約700m東南東
+  // 短縮コース（会場向け・約6km）：印西牧の原駅 → BIG HOP → ジョイフル本田 → イオンモール → 千葉NT中央駅
+  const SHORT_COURSE = [
+    { name: "印西牧の原駅", lon: 140.166716, lat: 35.803497, height: 380, design: "kihon", color: "gold", size: 130 },
+    { name: "BIG HOPガーデンモール印西", lon: 140.162553, lat: 35.803195, height: 180, design: "ongaku", color: "sky", size: 130 },
+    { name: "ジョイフル本田千葉ニュータウン店", lon: 140.155674, lat: 35.807083, height: 440, design: "placard", color: "green", size: 140 },
+    { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 200, design: "kihon", color: "pink", size: 130, flip: true },
+    { name: "千葉ニュータウン中央駅", lon: 140.116119, lat: 35.799983, height: 380, design: "xmas", color: "xmas", size: 160, goal: true },
+  ];
+  // コース一覧。serverKey は CiDAO metaverse-tt のコース key（night=10か所・night5=5か所）。URL ?course=short で短縮を初期選択
+  const COURSES = {
+    full: { label: "全10か所（印旛日本医大駅→千葉NT中央駅・約20km）", serverKey: "night", gates: FULL_COURSE,
+            start: { lon: 140.2105, lat: 35.7845, height: 200 }, startName: "印旛日本医大駅の東" },
+    short: { label: "短縮5か所（印西牧の原駅→千葉NT中央駅・約6km）", serverKey: "night5", gates: SHORT_COURSE,
+             start: { lon: 140.1745, lat: 35.8040, height: 300 }, startName: "印西牧の原駅の東" },
+  };
+  const COURSE_KEY_STORE = "cbi-meta-night-course";
+  let courseKey = (function () {
+    const c = q.get("course");
+    if (c === "short" || c === "full") return c;
+    try { const v = localStorage.getItem(COURSE_KEY_STORE); if (v === "short" || v === "full") return v; } catch (e) { /* 既定へ */ }
+    return "full";
+  })();
+  let COURSE = COURSES[courseKey].gates;
+  let START_POINT = COURSES[courseKey].start;
   const STATION_MAKINOHARA = { lon: 140.166716, lat: 35.803497 };
   const BIGHOP = { lon: 140.162553, lat: 35.803195 };
   const STATION_CNT = { lon: 140.116119, lat: 35.799983 };           // 千葉ニュータウン中央駅
   const AEON = { lon: 140.111502, lat: 35.800167 };
 
   window.nightOn = false;                   // index.html の applyLite が空の表現を切るかどうかの判断に読む
-  const gates = COURSE.map(function (g, i) {
-    return { def: g, index: i, points: null, base: [], frame: null, inv: null, halfW: 0, halfH: 0,
-             facing: 0, prevSide: null, passes: 0, label: null };
-  });
+  function makeGateObjects() {
+    return COURSE.map(function (g, i) {
+      return { def: g, index: i, points: null, base: [], frame: null, inv: null, halfW: 0, halfH: 0,
+               facing: 0, prevSide: null, passes: 0, label: null };
+    });
+  }
+  let gates = makeGateObjects();
   let labels = null;                        // 番号ラベル
   let stringPoints = null, stringBase = [];  // 地上の光の列
   let twinkleTimer = null, chaseTimer = null, chaseTick = 0;
@@ -282,7 +307,7 @@
     const lpos = Cesium.Matrix4.multiplyByPoint(g.frame, local, new Cesium.Cartesian3());
     g.label = labels.add({
       position: lpos,
-      text: (d.goal ? String(g.index + 1) + " GOAL" : String(g.index + 1)) + "\n" + d.name,
+      text: (d.goal ? String(g.index + 1) + " GOAL" : String(g.index + 1)) + "\n" + d.name.replace("ガーデンモール印西", "").replace("千葉ニュータウン店", ""),
       font: "bold 30px 'Segoe UI', system-ui, sans-serif",
       fillColor: Cesium.Color.fromCssColorString(d.goal ? "#ffd166" : "#dff3ff"),
       outlineColor: Cesium.Color.fromCssColorString("#0a1020"), outlineWidth: 5,
@@ -293,6 +318,23 @@
     });
   }
   let gatesLoading = false;
+  // コースを切り替える：光の粒とラベルを作り直す（レース中は不可）
+  function setCourse(key) {
+    if (!COURSES[key] || key === courseKey) return;
+    if (tt.active) return;
+    courseKey = key;
+    COURSE = COURSES[key].gates;
+    START_POINT = COURSES[key].start;
+    try { localStorage.setItem(COURSE_KEY_STORE, key); } catch (e) { /* 保存できなくても続ける */ }
+    gates.forEach(function (g) { if (g.points) viewer.scene.primitives.remove(g.points); });
+    if (labels) labels.removeAll();
+    gates = makeGateObjects();
+    gatesLoading = false;
+    if (window.nightOn) loadGates();
+    updateHud(true);
+  }
+  window.setNightCourse = setCourse;
+  window.nightCourseKey = function () { return courseKey; };
   function loadGates() {
     if (gatesLoading) return;
     gatesLoading = true;
@@ -730,7 +772,7 @@
     caption("🛸 印西の夜空へ<br><b>ようこそ</b>", 5000);
     await cinemaFlyTo(START_POINT.lon + 0.005, START_POINT.lat - 0.001, 900, -20, hdg0, 7);
     if (!alive()) return stop();
-    caption("市内の駅や施設の上に うかぶ 光の <b>いんザイ君</b> を 10か所<br>順番に くぐって 千葉ニュータウン中央駅へ", 5000);
+    caption("市内の駅や施設の上に うかぶ 光の <b>いんザイ君</b> を " + COURSE.length + "か所<br>順番に くぐって 千葉ニュータウン中央駅へ", 5000);
     await cinemaFlyTo(START_POINT.lon, START_POINT.lat, START_POINT.height, 0, bearingDeg(START_POINT, COURSE[0]), 5);
     if (!alive()) return stop();
     for (let i = 0; i < COURSE.length; i++) {
@@ -743,7 +785,7 @@
       const beyond = { lon: g.lon + Math.sin(f) * 120 / mLon(g.lat), lat: g.lat + Math.cos(f) * 120 / M_LAT };
       const dist = distM(cameraLonLat(), g);
       if (g.goal) caption("🏁 ゴールの <b>クリスマスいんザイ君</b>！", 4000);
-      else if (i === 4) caption("半分まで来た！<small>この先は千葉ニュータウン中央駅まで</small>", 3500);
+      else if (i === Math.floor(COURSE.length / 2)) caption("半分まで来た！<small>この先は千葉ニュータウン中央駅まで</small>", 3500);
       await cinemaFlyTo(beyond.lon, beyond.lat, g.height, 0, hdgOut, Math.max(3.5, dist / 110));
       if (!alive()) return stop();
     }
@@ -772,14 +814,16 @@
   // ------------------------------------------------------------
   const tt = { active: false, pos: 0, startMs: 0, countdownEnd: 0, name: "", trialId: null, queue: Promise.resolve(), official: false };
   window.nightTtState = tt;                 // 検証スクリプトから状態を見るため
-  function loadBest() { try { return JSON.parse(localStorage.getItem(NIGHT_BEST_KEY) || "null"); } catch (e) { return null; } }
-  function saveBest(rec) { try { localStorage.setItem(NIGHT_BEST_KEY, JSON.stringify(rec)); } catch (e) { /* 保存できなくても続ける */ } }
-  function loadLocal() { try { return JSON.parse(localStorage.getItem(NIGHT_LOCAL_RANK_KEY) || "[]"); } catch (e) { return []; } }
+  function bestKey() { return NIGHT_BEST_KEY + "-" + courseKey; }
+  function localKey() { return NIGHT_LOCAL_RANK_KEY + "-" + courseKey; }
+  function loadBest() { try { return JSON.parse(localStorage.getItem(bestKey()) || "null"); } catch (e) { return null; } }
+  function saveBest(rec) { try { localStorage.setItem(bestKey(), JSON.stringify(rec)); } catch (e) { /* 保存できなくても続ける */ } }
+  function loadLocal() { try { return JSON.parse(localStorage.getItem(localKey()) || "[]"); } catch (e) { return []; } }
   function pushLocal(rec) {
     const list = loadLocal();
     list.push(rec);
     list.sort(function (a, b) { return a.elapsedMs - b.elapsedMs; });
-    try { localStorage.setItem(NIGHT_LOCAL_RANK_KEY, JSON.stringify(list.slice(0, 50))); } catch (e) { /* 同上 */ }
+    try { localStorage.setItem(localKey(), JSON.stringify(list.slice(0, 50))); } catch (e) { /* 同上 */ }
   }
   let lastInfo = null;
   async function fetchInfo() {
@@ -836,7 +880,10 @@
     const myName = login ? login.nick : "";
     inner.innerHTML =
       "<h2>⏱ 夜景タイムトライアル（イルミライINZAI タイムレース）</h2>" +
-      "<p>スタート地点（印旛日本医大駅の東）から、市内の駅や施設の真上にうかぶ <b>いんザイ君の光のゲート10か所</b> を番号順にくぐり、千葉ニュータウン中央駅の上の <b>クリスマスいんザイ君</b>（10番）をくぐったらゴール（全長約20km・ダッシュで3分ほど）。順番をとばしたゲートは数えません。R1（Shift）でダッシュ！</p>" +
+      "<p>スタート地点（" + COURSES[courseKey].startName + "）から、市内の駅や施設の真上にうかぶ <b>いんザイ君の光のゲート" + COURSE.length + "か所</b> を番号順にくぐり、千葉ニュータウン中央駅の上の <b>クリスマスいんザイ君</b>（" + COURSE.length + "番）をくぐったらゴール。順番をとばしたゲートは数えません。R1（Shift）でダッシュ！</p>" +
+      '<p>コース：' + Object.keys(COURSES).map(function (k) {
+        return '<label style="margin-right:12px;cursor:pointer"><input type="radio" name="nightCourse" value="' + k + '"' + (k === courseKey ? " checked" : "") + " style=\"width:auto;margin-right:4px\">" + COURSES[k].label + "</label>";
+      }).join("") + "</p>" +
       (best ? "<p>🏅 この端末のベスト：<b>" + ttFormat(best.elapsedMs) + "</b>（" + ttEsc(best.name) + "・" + ttEsc(best.date) + "）</p>" : "") +
       (login
         ? '<p>👤 ログイン中：<b>' + ttEsc(login.nick) + '</b> さん（ランキングにはこの表示名で載ります）</p>' +
@@ -855,11 +902,14 @@
       };
     }
     document.getElementById("nightTtClose").onclick = closeTtModal;
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="nightCourse"]'), function (r) {
+      r.onchange = function () { setCourse(r.value); openTtModal(); };
+    });
     const info = await fetchInfo();
     const rankEl = document.getElementById("nightTtRank");
     if (!rankEl) return;
     if (info && info.ranking) {
-      rankEl.innerHTML = rankingTable(info.ranking[NIGHT_COURSE_KEY], myName, "🏆 全国ランキング（公式記録・上位10）");
+      rankEl.innerHTML = rankingTable(info.ranking[COURSES[courseKey].serverKey], myName, "🏆 全国ランキング（" + COURSES[courseKey].label.split("（")[0] + "・公式記録・上位10）");
     } else {
       rankEl.innerHTML = rankingTable(loadLocal(), myName, "🏆 この端末の順位表（サーバーに繋がらないため参考記録）");
     }
@@ -882,7 +932,7 @@
     caption("🛸 <b>3・2・1</b> でスタート<br><small>1番のゲート（" + COURSE[0].name + "の上空）は正面。番号順に くぐろう</small>", 3500);
     // サーバーへ開始登録（通過報告はこの後に直列で送る）
     tt.queue = ttApiPost({
-      action: "start", name: name, ageKey: "night", courseKey: NIGHT_COURSE_KEY, token: token || "",
+      action: "start", name: name, ageKey: "night", courseKey: COURSES[courseKey].serverKey, token: token || "",
       quizRatePct: 100, quizAnswers: 0, checkpoints: COURSE.length,
     }).then(function (d) { tt.trialId = d.trialId || null; tt.official = !!tt.trialId; })
       .catch(function (e) {
@@ -937,7 +987,7 @@
     const rankEl = document.getElementById("nightTtRank2");
     if (!rankEl) return;
     rankEl.innerHTML = (info && info.ranking)
-      ? rankingTable(info.ranking[NIGHT_COURSE_KEY], tt.name, "🏆 全国ランキング（公式記録・上位10）")
+      ? rankingTable(info.ranking[COURSES[courseKey].serverKey], tt.name, "🏆 全国ランキング（公式記録・上位10）")
       : rankingTable(loadLocal(), tt.name, "🏆 この端末の順位表（参考記録）");
   }
   function ttAbortNight(reason) {
