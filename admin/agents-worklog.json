@@ -18,6 +18,27 @@
       "actuals": [
         {
           "date": "2026-09-04",
+          "title": "メタバース夜景モード 第2・3版（いんザイ君ゲート10か所コース・夜景タイムトライアル・CiDAO登録者限定・方位案内・地中ロック）の実装と検証 0.9時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/night.js",
+            "site/metaverse/index.html",
+            "site/metaverse/assets/night/inzaikun_{kihon,ongaku,placard}.svg",
+            "site/admin/changelog.json（2件）",
+            "C:\\Repos\\cidao src/app/api/metaverse-auth/route.ts（新規）",
+            "C:\\Repos\\cidao src/lib/metaverse-token.ts（新規）",
+            "C:\\Repos\\cidao src/app/api/metaverse-tt/route.ts",
+            "C:\\Repos\\cidao src/app/auth/callback/route.ts",
+            "C:\\Repos\\cidao src/app/admin/timetrial/page.tsx",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "cidao/2026-09-04_メタバース夜景フライトモード（イルミライ向け）.md"
+          ],
+          "hours": 0.9,
+          "partnerApproved": false,
+          "note": "午前の第1版（0.8h・別実績）に続く午後分。手元の線画4種を色替えで10ゲートにし千葉NT中央駅上空のクリスマスいんザイ君をゴールに。タイムトライアルは既存API にコース night を追加しサーバー公式計測、CiDAO ログイン（署名トークン）必須・ランキングはログインの表示名。ヘッドレスで10ゲート撮影・通し・401・偽トークン・地中ロックを検証、テスト記録は本番DBから削除。session: 9bb79d7f-6ee9-4e3f-83ee-7ae28ddef41c / output: 168,913 / cost: $57.40（累計。午前分0.8hを差し引いた残りを計上）"
+        },
+        {
+          "date": "2026-09-04",
           "title": "看板作りの写真・動画から SNS 告知用素材（静止画・縦動画）を合成し、投稿文2案を作成、案A＋動画を Threads・Instagram へ予約投稿（9/5 12:00） 0.5時間",
           "category": "広報",
           "outputs": [
@@ -4701,6 +4722,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-10-31",
+          "title": "🌃 夜景タイムレースの会場運用：来客が会場PCで LINE ログインする流れを試し、共有PCでの個人ログインの扱い（別の人でログイン・端末に残るトークン24時間）を決める",
+          "category": "事務",
+          "priority": "中",
+          "note": "CiDAO 登録者限定にしたため、会場では来客ごとに LINE ログインが要る。自分のスマホから遊ぶ導線（QR）を主にするか、会場PCで交代ログインするかの判断。初回ログイン（表示名未設定）の人は /me/edit?welcome=1 に流れてメタバースへ戻らないので、その案内も要る"
+        },
+        {
+          "due": "未定",
+          "title": "🌃 CiDAO 初回ログイン（表示名の確認画面）からメタバースへ戻れるようにする",
+          "category": "実装",
+          "priority": "低",
+          "note": "auth/callback は mv_return Cookie を見て /api/metaverse-auth へ戻すが、初回ログイン・退会復元の分岐が先に走るため戻れない。/me/edit の保存後に Cookie を見て戻す小改修"
+        },
         {
           "due": "2026-09-05",
           "title": "📣 看板作り告知（q1788504185149・9/5 12:00）の投稿結果を確認する（結果メモが Threads/Instagram とも成功か、動画が再生されるか）",
