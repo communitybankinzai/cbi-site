@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-09-04",
+          "title": "メタバース夜景フライトモード（night.js 新規・いんザイ君イルミ・宇宙船HUD・自動遊覧）実装＋ヘッドレス検証＋本番反映 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/night.js（新規・約570行）",
+            "site/metaverse/assets/night/inzaikun_xmas.svg",
+            "site/metaverse/index.html（ボタン2・applyLite 2行・モード初期化1行・script 読込・版 2026-09-04l）",
+            "site/admin/changelog.json",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "cidao/2026-09-04_メタバース夜景フライトモード（イルミライ向け）.md",
+            "MOC_CiDAO.md",
+            "plans 3件（A1×2・A5×1）"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "イルミライINZAI（2026-11-14 会場プロジェクタ上映）向け。B案（夜化＋自動遊覧＋光の列＋ブルーム）にユーザー決定、空中のいんザイ君を宇宙船でくぐる演出を追加。素材SVGは線が透明抜きで最初は光点0個→円盤内側の透明画素を拾う方式に修正。検証：?notiles=1 と本番URL（root 3回消費）をヘッドレスChromeで撮影し、いんザイ君・光の列・星空・HUD・シェーダー適用（エラーなし）を確認。街の暗さ・窓明かりはヘッドレスではタイルが粗く未確認→実機確認を plans 登録。他セッション（7a797c4f）の commit ff634c3 に私の staged ファイルが同梱される事故あり（内容は無傷・ボードで申し送り）。session: 9bb79d7f-6ee9-4e3f-83ee-7ae28ddef41c / output: 80,424 / cost: $19.79"
+        },
+        {
+          "date": "2026-09-04",
           "title": "全50か所プレイ動画の不具合（同一座標の2件で周回し続ける）を特定・修正し録画をやり直し、途中経過を30分ごとに残す仕組みを追加 0.3時間",
           "category": "実装",
           "outputs": [
