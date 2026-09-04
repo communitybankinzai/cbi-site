@@ -465,6 +465,7 @@
       "#shipHud.on{display:block;}" +
       "#shipHud .vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 70%,rgba(2,6,14,0.22) 90%,rgba(2,6,14,0.5) 100%);}" +
       "#shipHud.noframe .vig,#shipHud.noframe svg{display:none;}" +
+      "body.nightOn #helpBox{z-index:66;bottom:15vh;}" +
       "@media (max-width:640px){#shipReadout{bottom:20%;font-size:12px;} #shipTt{font-size:22px;top:9%;} #nightCaption{font-size:22px;top:20%;} #nightCaption small{font-size:14px;}}" +
       "#shipHud svg{position:absolute;inset:0;width:100%;height:100%;}" +
       "#shipHud .ret{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border:2px solid rgba(120,230,255,0.7);border-radius:50%;box-shadow:0 0 12px rgba(120,230,255,0.5);}" +
@@ -651,6 +652,13 @@
     if (labels) labels.show = !!on;
     if (stringPoints) stringPoints.show = !!on;
     hudEl.classList.toggle("on", !!on);
+    document.body.classList.toggle("nightOn", !!on);
+    // 右のスポット一覧は夜景中は既定で隠す（画面が狭くなり、レース中は邪魔になるため）。📍ボタンで開ける
+    const cp = document.getElementById("controlPanel"), pt = document.getElementById("panelToggle");
+    if (cp && pt) {
+      if (on) { cp.style.display = "none"; pt.style.display = "inline-block"; }
+      else { cp.style.display = ""; pt.style.display = ""; }
+    }
     if (on && !hudEl.dataset.frameInit) { hudEl.dataset.frameInit = "1"; applyHudFrame(hudFrameDefault()); }
     const btn = document.getElementById("nightBtn");
     if (btn) { btn.classList.toggle("off", !on); btn.textContent = on ? "🌃 夜景中" : "🌃 夜景"; }
@@ -710,9 +718,11 @@
   // 自動遊覧：東の上空 → 10ゲートを順にくぐる → ゴール（千葉NT中央駅）へ降下
   // ------------------------------------------------------------
   const sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
-  function hideUiForTour() {
+  function hideUiForTour(keepIds) {
     if (uiHidden.length) return;
+    const keep = keepIds || [];
     CAPTURE_HIDE_IDS.concat(["speedChip", "padHud", "miniMap"]).forEach(function (id) {
+      if (keep.indexOf(id) >= 0) return;
       const el = document.getElementById(id);
       if (el && el.style.display !== "none") { uiHidden.push([el, el.style.display]); el.style.display = "none"; }
     });
@@ -884,7 +894,7 @@
 
   function startTt(name, token) {
     closeTtModal();
-    hideUiForTour();
+    hideUiForTour(["helpBox"]);            // 操作方法（左下）はレース中も見えるように残す
     if (typeof setMode === "function" && walkMode) setMode(false);
     gates.forEach(function (g) { g.prevSide = null; g._emph = undefined; });
     tt.active = true; tt.pos = 0; tt.name = name; tt.trialId = null; tt.official = false;

@@ -13,6 +13,142 @@
   html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; background: #000; }
   #cesiumContainer { width: 100%; height: 100%; }
 
+  /* 2人対戦タイムレース（?mode=event&race=vs / cultural-vs） */
+  #vsCesium2, #vsRaceOverlay, #vsCountdown, #vsResultModal { display: none; }
+  body.vsRaceMode { overflow: hidden; }
+  body.vsRaceMode #cesiumContainer {
+    position: absolute; left: 0; right: auto; top: 50px; bottom: 154px;
+    width: 50vw; height: auto; border-right: 1px solid rgba(255,255,255,0.18);
+  }
+  body.vsRaceMode #vsCesium2 {
+    display: block; position: absolute; top: 50px; right: 0; bottom: 154px;
+    width: 50vw; z-index: 1; background: #020617;
+  }
+  body.vsRaceMode #overlay, body.vsRaceMode #mvHeader, body.vsRaceMode #topLeftBar,
+  body.vsRaceMode #controlPanel, body.vsRaceMode #panelToggle, body.vsRaceMode #menuToggle,
+  body.vsRaceMode #helpBox, body.vsRaceMode #mobileMoveBar, body.vsRaceMode #joystick,
+  body.vsRaceMode #trafficChip, body.vsRaceMode #presenceChip, body.vsRaceMode #rtPeers,
+  body.vsRaceMode #stampBar, body.vsRaceMode #stampFeed, body.vsRaceMode #liteToast,
+  body.vsRaceMode #ttCard, body.vsRaceMode #ttTarget, body.vsRaceMode #ttHud,
+  body.vsRaceMode #spotInfo, body.vsRaceMode #puzzlePanel, body.vsRaceMode #pickResult {
+    display: none !important;
+  }
+  body.vsRaceMode #vsRaceOverlay { display: block; }
+  #vsRaceOverlay {
+    position: absolute; inset: 0; z-index: 70; color: #fff; pointer-events: none;
+    font-family: inherit;
+  }
+  #vsRaceOverlay button, #vsRaceOverlay select, #vsRaceOverlay input { pointer-events: auto; }
+  .vsTop {
+    position: absolute; top: 0; left: 0; right: 0; height: 50px; box-sizing: border-box;
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    background: linear-gradient(90deg, rgba(3,7,18,0.93), rgba(15,23,42,0.86));
+    border-bottom: 1px solid rgba(255,255,255,0.16);
+  }
+  .vsTitle { font-weight: 900; white-space: nowrap; }
+  .vsStatus {
+    min-width: 0; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    color: #dbeafe; font-size: 13px;
+  }
+  .vsTop select {
+    max-width: min(34vw, 280px); height: 32px; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.22); background: rgba(15,23,42,0.92);
+    color: #fff; font-weight: 700;
+  }
+  .vsTop button, .vsPanel button, .vsResultPanel button {
+    min-height: 32px; border: 1px solid rgba(255,255,255,0.24); border-radius: 8px;
+    background: rgba(15,23,42,0.82); color: #fff; font-weight: 800; cursor: pointer;
+  }
+  .vsTop button:disabled, .vsPanel button:disabled { opacity: 0.45; cursor: default; }
+  .vsHudRow {
+    position: absolute; left: 0; right: 0; top: 50px;
+    display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); pointer-events: none;
+  }
+  .vsPlayerHud {
+    display: flex; justify-content: space-between; gap: 10px; min-width: 0; box-sizing: border-box;
+    padding: 10px 12px; background: linear-gradient(180deg, rgba(2,6,23,0.72), rgba(2,6,23,0));
+  }
+  .vsPlayerHud strong { display: block; font-size: 14px; }
+  .vsPlayerHud span {
+    display: block; max-width: 36vw; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    color: #e0f2fe; font-size: 12px;
+  }
+  .vsTime { font-variant-numeric: tabular-nums; font-size: 24px; font-weight: 900; white-space: nowrap; }
+  #vsCountdown {
+    position: absolute; inset: 0; z-index: 82; align-items: center; justify-content: center;
+    background: rgba(2,6,23,0.38); color: #fff; font-size: clamp(54px, 13vw, 160px);
+    font-weight: 1000; letter-spacing: 0; text-shadow: 0 8px 32px rgba(0,0,0,0.55);
+    pointer-events: none;
+  }
+  body.vsRaceMode #vsCountdown.show { display: flex; }
+  .vsPanel {
+    position: absolute; left: 0; right: 0; bottom: 0; min-height: 154px; box-sizing: border-box;
+    display: grid; grid-template-columns: minmax(0,1fr) minmax(250px,320px) minmax(0,1fr);
+    gap: 10px; padding: 10px 12px 12px;
+    background: linear-gradient(180deg, rgba(15,23,42,0.9), rgba(2,6,23,0.96));
+    border-top: 1px solid rgba(255,255,255,0.16); pointer-events: auto;
+  }
+  .vsPlayerPanel, .vsOpsPanel {
+    min-width: 0; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px;
+    background: rgba(15,23,42,0.62); padding: 9px; box-sizing: border-box;
+  }
+  .vsPlayerPanel {
+    display: grid; grid-template-columns: auto minmax(0,1fr); gap: 8px 10px; align-items: center;
+  }
+  .vsBadge {
+    width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 1000;
+  }
+  .vsP1 .vsBadge { background: #38bdf8; color: #082f49; }
+  .vsP2 .vsBadge { background: #fbbf24; color: #422006; }
+  .vsMeta { min-width: 0; }
+  .vsMeta strong, .vsMeta span { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .vsMeta strong { font-size: 14px; }
+  .vsMeta span { color: #cbd5e1; font-size: 12px; }
+  .vsAxis {
+    grid-column: 1 / -1; display: grid; grid-template-columns: 44px minmax(0,1fr) 44px minmax(0,1fr);
+    gap: 6px; align-items: center; color: #cbd5e1; font-size: 11px;
+  }
+  .vsAxisBar {
+    height: 8px; border-radius: 999px; background: rgba(148,163,184,0.26);
+    overflow: hidden; position: relative;
+  }
+  .vsAxisBar i {
+    display: block; position: absolute; left: 50%; top: 0; bottom: 0; width: 0; background: #67e8f9;
+  }
+  .vsOpsPanel { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+  .vsOpsPanel .wide { grid-column: 1 / -1; }
+  .vsOpsPanel .primary { background: #f97316; color: #111827; border-color: #fed7aa; }
+  .vsOpsPanel .danger { background: rgba(127,29,29,0.78); }
+  .vsOpsPanel .metric {
+    display: grid; place-items: center; min-height: 32px; border-radius: 8px;
+    background: rgba(15,23,42,0.88); color: #bfdbfe; font-size: 12px; font-variant-numeric: tabular-nums;
+  }
+  #vsResultModal {
+    position: absolute; inset: 0; z-index: 86; align-items: center; justify-content: center;
+    background: rgba(2,6,23,0.68); pointer-events: auto;
+  }
+  body.vsRaceMode #vsResultModal.show { display: flex; }
+  .vsResultPanel {
+    width: min(92vw, 520px); border-radius: 8px; border: 1px solid rgba(255,255,255,0.22);
+    background: rgba(15,23,42,0.96); box-shadow: 0 24px 70px rgba(0,0,0,0.45);
+    padding: 18px; color: #fff;
+  }
+  .vsResultPanel h2 { margin: 0 0 8px; font-size: 24px; }
+  .vsResultPanel table { width: 100%; border-collapse: collapse; margin: 12px 0; font-variant-numeric: tabular-nums; }
+  .vsResultPanel th, .vsResultPanel td {
+    padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.12); text-align: left;
+  }
+  .vsResultActions { display: flex; gap: 8px; flex-wrap: wrap; }
+  @media (max-width: 820px) {
+    body.vsRaceMode #cesiumContainer, body.vsRaceMode #vsCesium2 { top: 86px; bottom: 246px; }
+    .vsTop { height: 86px; flex-wrap: wrap; }
+    .vsHudRow { top: 86px; }
+    .vsPanel { min-height: 246px; grid-template-columns: 1fr 1fr; }
+    .vsOpsPanel { grid-column: 1 / -1; grid-row: 1; }
+    .vsPlayerPanel { grid-row: 2; }
+    .vsAxis { grid-template-columns: 36px minmax(0,1fr) 36px minmax(0,1fr); }
+  }
+
   /* ヘッダー */
   #mvHeader {
     position: absolute; top: 0; left: 0; right: 0; z-index: 20;
@@ -843,6 +979,7 @@
   <button id="shopToggleBtn" class="off" title="FreeFree掲示板に住所とリンクを載せたお店のピンを表示／非表示します（クリックでホームページ・オンラインショップ・SNSへ）">🛍 お店</button>
   <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
+  <button id="vsRaceBtn" title="USBゲームパッド2台で左右2画面の同時タイムレースを開始します">🎮 2Pレース</button>
   <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
   <button id="nightBtn" class="off" title="街を夜景にします。星空・光の列・空にうかぶ いんザイ君のイルミネーションが出ます（イルミライINZAI向け。もう一度押すと昼に戻ります）">🌃 夜景</button>
   <button id="nightTourBtn" title="東の空から、いんザイ君の光のゲート10か所を順にくぐって千葉ニュータウン中央駅に降りる自動遊覧（約70秒）。操作すると途中でやめられます">🛸 夜間遊覧</button>
@@ -910,6 +1047,94 @@
     <span class="close" onclick="document.getElementById('ttModal').classList.remove('show')">✕</span>
     <h3>⏱ 文化財タイムトライアル</h3>
     <div id="ttBody"></div>
+  </div>
+</div>
+
+<div id="vsCesium2" aria-label="PLAYER 2 Cesium view"></div>
+<div id="vsRaceOverlay" aria-live="polite">
+  <div class="vsTop">
+    <div class="vsTitle">2P TIME RACE</div>
+    <select id="vsCourseSelect" title="レースコース"></select>
+    <div id="vsRaceStatus" class="vsStatus">2台のゲームパッドを接続してください</div>
+    <button id="vsExitBtn" title="2Pレースを終了">終了</button>
+  </div>
+
+  <div class="vsHudRow">
+    <div class="vsPlayerHud">
+      <div>
+        <strong id="vsHudP1Name">PLAYER 1</strong>
+        <span id="vsHudP1Next">CHECKPOINT --</span>
+      </div>
+      <div id="vsHudP1Time" class="vsTime">00:00.000</div>
+    </div>
+    <div class="vsPlayerHud">
+      <div>
+        <strong id="vsHudP2Name">PLAYER 2</strong>
+        <span id="vsHudP2Next">CHECKPOINT --</span>
+      </div>
+      <div id="vsHudP2Time" class="vsTime">00:00.000</div>
+    </div>
+  </div>
+
+  <div id="vsCountdown"></div>
+
+  <div class="vsPanel">
+    <section class="vsPlayerPanel vsP1" aria-label="PLAYER 1 status">
+      <div class="vsBadge">P1</div>
+      <div class="vsMeta">
+        <strong id="vsP1Status">未接続</strong>
+        <span id="vsP1Pad">Gamepad index 0</span>
+      </div>
+      <button id="vsReadyP1">P1 READY</button>
+      <button id="vsCenterP1">CENTER</button>
+      <div class="vsAxis">
+        <span>LX</span><span class="vsAxisBar"><i id="vsP1AxisLX"></i></span>
+        <span>LY</span><span class="vsAxisBar"><i id="vsP1AxisLY"></i></span>
+      </div>
+    </section>
+
+    <section class="vsOpsPanel" aria-label="Race operation">
+      <button id="vsStartBtn" class="primary wide">START</button>
+      <button id="vsResetBtn">RESET</button>
+      <button id="vsFullBtn">FULL</button>
+      <button id="vsInputBtn">INPUT</button>
+      <div id="vsFpsP1" class="metric">P1 --fps</div>
+      <div id="vsFpsP2" class="metric">P2 --fps</div>
+      <div id="vsGoalCount" class="metric">0 / 2 GOAL</div>
+      <label class="metric wide" title="切断時に時計を止め、再接続後に同じ状態から再開します">
+        <input id="vsPauseOnDisconnect" type="checkbox" checked> 切断時PAUSE
+      </label>
+    </section>
+
+    <section class="vsPlayerPanel vsP2" aria-label="PLAYER 2 status">
+      <div class="vsBadge">P2</div>
+      <div class="vsMeta">
+        <strong id="vsP2Status">未接続</strong>
+        <span id="vsP2Pad">Gamepad index 1</span>
+      </div>
+      <button id="vsReadyP2">P2 READY</button>
+      <button id="vsCenterP2">CENTER</button>
+      <div class="vsAxis">
+        <span>LX</span><span class="vsAxisBar"><i id="vsP2AxisLX"></i></span>
+        <span>LY</span><span class="vsAxisBar"><i id="vsP2AxisLY"></i></span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="vsResultModal" aria-live="polite">
+  <div class="vsResultPanel">
+    <h2 id="vsResultTitle">RESULT</h2>
+    <div id="vsResultSummary"></div>
+    <table>
+      <thead><tr><th>PLAYER</th><th>TIME</th><th>CHECKPOINT</th></tr></thead>
+      <tbody id="vsResultRows"></tbody>
+    </table>
+    <div class="vsResultActions">
+      <button id="vsRematchBtn">もう一度</button>
+      <button id="vsCourseBtn">コース選択へ</button>
+      <button id="vsResultCloseBtn">閉じる</button>
+    </div>
   </div>
 </div>
 
@@ -1752,7 +1977,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04o"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04p"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -2354,9 +2579,15 @@ document.getElementById("padCenterBtn").addEventListener("click", function () {
   showPickResult("いまの位置をスティックの中心にしました。動きが止まらないときは、手を離してもう一度押してください。", 3500);
 });
 
-function readGamepad() {
+function readGamepad(playerIndex) {
   if (!padEnabled) return null;
   const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+  if (typeof playerIndex === "number") {
+    const direct = pads[playerIndex];
+    if (direct) return direct;
+    for (const p of pads) if (p && p.index === playerIndex) return p;
+    return null;
+  }
   for (const p of pads) if (p && p.mapping === "standard") return p;
   for (const p of pads) if (p) return p; // standard 以外でもスティックだけは使えるようにする
   return null;
@@ -2405,6 +2636,13 @@ viewer.clock.onTick.addEventListener(function () {
       const avg10 = fpsHistory.reduce(function (a, b) { return a + b; }, 0) / fpsHistory.length;
       if (avg10 < 12) liteSuggest();
     }
+  }
+
+  if (window.vsRaceModeEnabled) {
+    updatePadDebug(readGamepad(0), 0, 0, 0);
+    updateSpeedChip(false, false);
+    updateHelpBox(false);
+    return;
   }
 
   const cam = viewer.camera;
@@ -4235,7 +4473,7 @@ function applyMode(mode) {
   const game = m === "event" || m === "all";
   try { localStorage.setItem(MODE_KEY, m); } catch (e) {}
   // 文化財ゲーム系UI（ずかん・学習レポート・文化財マップ・文化財ピン切替・位置修正・タイムトライアル）
-  ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "pickModeBtn", "ttBtn"].forEach(id => {
+  ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "pickModeBtn", "ttBtn", "vsRaceBtn"].forEach(id => {
     document.getElementById(id).style.display = game ? "" : "none";
   });
   document.getElementById("tonbiToggleBtn").style.display = bousai ? "none" : "";
@@ -5724,13 +5962,14 @@ try {
     let savedMode = null;
     try { savedMode = localStorage.getItem(MODE_KEY); } catch (e) {}
     if (MODE_LIST.indexOf(savedMode) >= 0) applyMode(savedMode);
-    else if (modeParams.get("night") === "1") applyMode("event"); // 夜景モード（会場上映）では選択画面を出さない
+    else if (modeParams.get("night") === "1" || modeParams.get("race")) applyMode("event"); // 夜景・レース直起動では選択画面を出さない
     else openModeSelect(); // 初回はモード選択から
   }
 } catch (e) {
   console.error("モード初期化に失敗:", e);
 }
 </script>
+<script src="vs-race.js?v=20260904-1"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js"></script>
 </body>
