@@ -463,7 +463,9 @@
     style.textContent =
       "#shipHud{position:absolute;inset:0;z-index:58;pointer-events:none;display:none;}" +
       "#shipHud.on{display:block;}" +
-      "#shipHud .vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 52%,rgba(2,6,14,0.55) 82%,rgba(2,6,14,0.92) 100%);}" +
+      "#shipHud .vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 70%,rgba(2,6,14,0.22) 90%,rgba(2,6,14,0.5) 100%);}" +
+      "#shipHud.noframe .vig,#shipHud.noframe svg{display:none;}" +
+      "@media (max-width:640px){#shipReadout{bottom:20%;font-size:12px;} #shipTt{font-size:22px;top:9%;} #nightCaption{font-size:22px;top:20%;} #nightCaption small{font-size:14px;}}" +
       "#shipHud svg{position:absolute;inset:0;width:100%;height:100%;}" +
       "#shipHud .ret{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border:2px solid rgba(120,230,255,0.7);border-radius:50%;box-shadow:0 0 12px rgba(120,230,255,0.5);}" +
       "#shipHud .ret:before,#shipHud .ret:after{content:'';position:absolute;background:rgba(120,230,255,0.8);}" +
@@ -475,7 +477,7 @@
       "#shipTt.on{display:block;}#shipTt b{color:#ffd166;}#shipTt small{display:block;font-size:17px;font-weight:normal;color:#8fe9ff;}" +
       "#nightCaption{position:absolute;left:50%;top:14%;transform:translateX(-50%);z-index:70;color:#fff;font-size:34px;font-weight:bold;text-align:center;line-height:1.5;width:92%;text-shadow:0 2px 16px rgba(0,0,0,0.95),0 0 6px rgba(0,0,0,0.9);opacity:0;transition:opacity 0.7s;pointer-events:none;}" +
       "#nightCaption.show{opacity:1;}#nightCaption small{display:block;font-size:19px;font-weight:normal;margin-top:6px;}#nightCaption b{color:#ffd166;}" +
-      "#nightTourBtn,#nightTtBtn{display:none;}#nightTourBtn.on,#nightTtBtn.on{display:inline-block;}" +
+      "#nightTourBtn,#nightTtBtn,#nightHudBtn{display:none;}#nightTourBtn.on,#nightTtBtn.on,#nightHudBtn.on{display:inline-block;}" +
       "#nightTarget{position:absolute;left:0;top:0;z-index:60;display:none;pointer-events:none;text-align:center;}" +
       "#nightTarget .arrow{display:block;font-size:46px;line-height:1;color:#ffd166;text-shadow:0 0 14px rgba(255,209,102,0.9),0 2px 6px rgba(0,0,0,0.9);}" +
       "#nightTarget .label{display:inline-block;margin-top:2px;padding:3px 10px;border-radius:10px;background:rgba(10,16,32,0.8);color:#fff;font:bold 15px 'Segoe UI',system-ui,sans-serif;white-space:nowrap;}" +
@@ -494,7 +496,7 @@
     hudEl.id = "shipHud";
     hudEl.innerHTML =
       '<div class="vig"></div>' +
-      '<svg viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">' +
+      '<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' +
       '<defs><linearGradient id="nhG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1526"/><stop offset="1" stop-color="#05080f"/></linearGradient></defs>' +
       '<path d="M0,0 L70,0 L215,900 L0,900 Z" fill="url(#nhG)"/>' +
       '<path d="M1600,0 L1530,0 L1385,900 L1600,900 Z" fill="url(#nhG)"/>' +
@@ -649,9 +651,10 @@
     if (labels) labels.show = !!on;
     if (stringPoints) stringPoints.show = !!on;
     hudEl.classList.toggle("on", !!on);
+    if (on && !hudEl.dataset.frameInit) { hudEl.dataset.frameInit = "1"; applyHudFrame(hudFrameDefault()); }
     const btn = document.getElementById("nightBtn");
     if (btn) { btn.classList.toggle("off", !on); btn.textContent = on ? "🌃 夜景中" : "🌃 夜景"; }
-    ["nightTourBtn", "nightTtBtn"].forEach(function (id) { const b = document.getElementById(id); if (b) b.classList.toggle("on", !!on); });
+    ["nightTourBtn", "nightTtBtn", "nightHudBtn"].forEach(function (id) { const b = document.getElementById(id); if (b) b.classList.toggle("on", !!on); });
     if (on) {
       loadGates();
       buildStrings();
@@ -665,6 +668,22 @@
     }
     sc.requestRender();
   }
+  // 操縦席の枠：画面が縦長（スマホ縦持ち等）だと枠が邪魔になるので既定で消す。☰「🛸 操縦席の枠」／?hud=0 で切り替え
+  const HUD_FRAME_KEY = "cbi-meta-night-hudframe";
+  function hudFrameDefault() {
+    if (q.get("hud") === "0") return false;
+    if (q.get("hud") === "1") return true;
+    try { const v = localStorage.getItem(HUD_FRAME_KEY); if (v === "0" || v === "1") return v === "1"; } catch (e) { /* 既定へ */ }
+    return window.innerWidth >= 900 && window.innerWidth > window.innerHeight;
+  }
+  function applyHudFrame(on, persist) {
+    ensureHud();
+    hudEl.classList.toggle("noframe", !on);
+    const b = document.getElementById("nightHudBtn");
+    if (b) { b.classList.toggle("off", !on); b.textContent = on ? "🛸 操縦席の枠" : "🛸 枠なし"; }
+    if (persist) { try { localStorage.setItem(HUD_FRAME_KEY, on ? "1" : "0"); } catch (e) { /* 保存できなくても続ける */ } }
+  }
+  window.setNightHudFrame = applyHudFrame;
   window.nightRefresh = function () { if (window.nightOn) applyNight(true); };
   window.setNight = applyNight;
   window.nightCourse = COURSE;
@@ -1021,6 +1040,8 @@
   // ------------------------------------------------------------
   const nightBtn = document.getElementById("nightBtn");
   if (nightBtn) nightBtn.addEventListener("click", function () { applyNight(!window.nightOn); });
+  const hudBtn = document.getElementById("nightHudBtn");
+  if (hudBtn) hudBtn.addEventListener("click", function () { applyHudFrame(hudEl && hudEl.classList.contains("noframe"), true); });
   const tourBtn = document.getElementById("nightTourBtn");
   if (tourBtn) tourBtn.addEventListener("click", function () { startTour(); });
   const ttBtn = document.getElementById("nightTtBtn");
