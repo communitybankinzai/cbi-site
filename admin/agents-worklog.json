@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-04",
+          "title": "BGM機能（🎵ボタン・端末のmp3選択）と自前打ち込み音源3種の試作、全50か所動画の中断復旧（part3a保全・残り18か所再録画・夜間通し録画の開始） 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html — bgmStart/bgmStop、IndexedDB に端末の音楽ファイルを保存する bgmCustom、版 2026-09-04r（他セッションの未コミット変更を巻き込まないよう HEAD 差分だけをステージしてコミット）",
+            "site/metaverse/assets/audio/bgm_tobi.m4a・bgm_xmas.m4a — numpy で合成した自前音源",
+            "scratchpad music.py／condor.py — 音源生成スクリプト",
+            "scripts/promo/out/cbi_metaverse_play_16x9_20260904_part3a_21sites.mp4・_1547.mp4（残り18か所）— 再起動で止まった録画の保全と完走"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "ユーザー要望「著作権フリーの音楽（トップガン・コンドルは飛んでいく系）」→権利を整理し自前打ち込みを試作したが「シンセっぽくて力が抜ける。mp3はないのか」→端末の mp3 を選べる機能を追加（フリー音源サイトの二次配布禁止に触れない設計）。検証モードで選択→IndexedDB 保存→再読込後も残る→再生を実測。夜間通し録画は 22:19 に開始（翌朝完成見込み）。"
+        },
+        {
+          "date": "2026-09-04",
           "title": "夜景タイムレースの短縮コース（5か所）追加とコース切替、サーバー側コース night5 の追加 0.2時間",
           "category": "実装",
           "outputs": [
