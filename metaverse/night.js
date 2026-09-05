@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-05e";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-05f";          // 参加画面に出す版。反映されているかを一目で確かめるため
   const NIGHT_FLOOR_HEIGHT = 70;            // 地中ロックの下限（楕円体高・標高約34m。コース一帯の地表は約60〜70m）
 
   // ---- 図柄（線画SVG） ----
@@ -835,8 +835,6 @@
     cameraBankEnabled = true;
     if (capEl) capEl.classList.remove("show");
     if (!TOUR_PARAM) restoreUi();
-    // 会場（受付必須）：遊覧を止めて遊ぼうとした人がまだ受付していなければ受付を出す
-    if (ENTRY_PARAM && !getLogin(1) && !document.getElementById("nightTtModal").classList.contains("show")) setTimeout(function () { openEntryModal(1); }, 50);
   }
   window.startNightTour = startTour;
 
@@ -947,9 +945,8 @@
       '<button id="nightEntryTab2"' + (claimSlot === 2 ? ' class="on"' : "") + ">2人目" + (l2 ? "：" + ttEsc(l2.nick) : "（未）") + "</button></div>" +
       (cur ? '<p>✅ ' + (claimSlot === 2 ? "2人目" : "1人目") + "：<b>" + ttEsc(cur.nick) + '</b> さん　<button class="sub" id="nightEntryClear">この人を外す</button></p>' : "") +
       claimSectionHtml(claimSlot === 2 ? "2人目" : "1人目") +
-      (ENTRY_PARAM && !l1
-        ? '<p class="note">⛔ 1人目の確認が済むまで、この画面は閉じられません（会場では受付が必須です）</p>'
-        : '<p><button class="go" id="nightEntryDone">✔ 受付を閉じる</button>' + (claimSlot === 1 && l1 ? '<button class="sub" id="nightEntryToTt">⏱ このままタイムレースへ</button>' : "") + "</p>") +
+      '<p><button class="go" id="nightEntryDone">✔ 受付を閉じる</button>' + (claimSlot === 1 && l1 ? '<button class="sub" id="nightEntryToTt">⏱ このままタイムレースへ</button>' : "") + "</p>" +
+      '<p class="note">受付をしなくても自由に飛べます。タイムレースに参加するときだけ、1人目の確認が必要です。</p>' +
       '<p class="note" style="text-align:right">版 ' + NIGHT_VERSION + "</p>";
     document.getElementById("nightTtModal").classList.add("show");
     document.getElementById("nightEntryTab1").onclick = function () { stopQrScan(); openEntryModal(1); };
@@ -1253,7 +1250,6 @@
     if (e.key === "t" || e.key === "T") { if (!tt.active) openTtModal(); }
     if ((e.key === " " || e.key === "Enter") && tt.active && tt.waiting) { e.preventDefault(); ttReadyGo(); }
     if (e.key === "Escape") {
-      if (ENTRY_PARAM && !getLogin(1) && claimFrom === "entry" && document.getElementById("nightTtModal").classList.contains("show")) return; // 受付必須
       if (document.getElementById("nightTtModal").classList.contains("show")) closeTtModal();
       else if (tt.active) ttAbortNight("Esc キー");
     }
@@ -1270,7 +1266,6 @@
     return false;
   }
   setInterval(function () {
-    if (ENTRY_PARAM && !getLogin(1) && !tourRunning && !tt.active && !document.getElementById("nightTtModal").classList.contains("show")) openEntryModal(1);
     if (!window.nightOn) return;
     const anyKey = Object.keys(keys).some(function (k) { return keys[k]; });
     if (anyKey || (joyState && joyState.active) || gamepadActive()) noteInput();
