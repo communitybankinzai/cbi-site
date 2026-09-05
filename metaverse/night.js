@@ -550,6 +550,8 @@
       "#nightTarget .arrow{display:block;font-size:46px;line-height:1;color:#ffd166;text-shadow:0 0 14px rgba(255,209,102,0.9),0 2px 6px rgba(0,0,0,0.9);}" +
       "#nightTarget .label{display:inline-block;margin-top:2px;padding:3px 10px;border-radius:10px;background:rgba(10,16,32,0.8);color:#fff;font:bold 15px 'Segoe UI',system-ui,sans-serif;white-space:nowrap;}" +
       "#nightTtModal .login{background:#06c755;color:#fff;font-weight:bold;font-size:17px;}" +
+      "#nightTtModal .box{background:#0a1020;border:1px solid #2a3a55;border-radius:10px;padding:10px 12px;margin:8px 0;}" +
+      "#nightTtModal .note{font-size:12px;color:#9fb2c8;margin:4px 0 0;}" +
       "#nightTtModal{position:fixed;inset:0;z-index:120;background:rgba(3,6,16,0.82);display:none;align-items:center;justify-content:center;}" +
       "#nightTtModal.show{display:flex;}" +
       "#nightTtModal .inner{background:#0d1526;color:#e8f0ff;border:1px solid rgba(120,230,255,0.4);border-radius:14px;padding:22px 26px;width:min(92vw,560px);max-height:90vh;overflow:auto;font-size:14px;box-shadow:0 0 40px rgba(120,230,255,0.25);}" +
@@ -912,8 +914,15 @@
       (login
         ? '<p>👤 ログイン中：<b>' + ttEsc(login.nick) + '</b> さん（ランキングにはこの表示名で載ります）</p>' +
           '<p><button class="go" id="nightTtGo">🛸 スタート</button><button class="sub" id="nightTtClose">閉じる</button><button class="sub" id="nightTtLogout">別の人でログイン</button></p>'
-        : '<p>このタイムレースは <b>CiDAO（市民DAO）の登録者</b> だけが参加できます。LINE でログインすると、この画面に戻ってきます。</p>' +
-          '<p><button class="login" id="nightTtLogin">🔐 CiDAO でログインして参加</button><button class="sub" id="nightTtClose">閉じる</button></p>') +
+        : '<p>このタイムレースは <b>CiDAO（市民DAO）の登録者</b> だけが参加できます。次のどれかで参加してください。</p>' +
+          '<div class="box"><b>📷 会員証QRを読む</b>（CiDAO のトップページに出る会員QRを、この端末のカメラにかざす）<br>' +
+          '<button class="go" id="nightTtScan">📷 カメラで読む</button><button class="sub" id="nightTtScanStop" style="display:none">停止</button>' +
+          '<div id="nightTtScanBox" style="display:none;margin-top:6px"><video id="nightTtVideo" playsinline muted style="width:100%;max-height:240px;background:#000;border-radius:8px"></video><canvas id="nightTtCanvas" style="display:none"></canvas><p class="note" id="nightTtScanMsg">QR をカメラの中央に…</p></div></div>' +
+          '<div class="box"><b>⌨ CiDAO の表示名（ニックネーム）を入力</b><br>' +
+          '<input id="nightTtClaimName" maxlength="40" placeholder="CiDAO に登録した表示名" style="margin:6px 0"><button class="go" id="nightTtClaim">この名前で参加</button>' +
+          '<p class="note">登録と一致した表示名だけ参加できます。同じ表示名の人が複数いるときは LINE ログインをお願いします。</p></div>' +
+          '<p><button class="login" id="nightTtLogin">🔐 LINE でログインして参加（別の方法）</button><button class="sub" id="nightTtClose">閉じる</button></p>' +
+          '<p class="note" id="nightTtClaimMsg"></p>') +
       '<p>🎮 右スティック（視点）の速さ：<select id="nightLookSens">' + LOOK_SENS_OPTIONS.map(function (o) {
         return '<option value="' + o[0] + '"' + (parseFloat(o[0]) === lookSens ? " selected" : "") + ">" + o[1] + "</option>";
       }).join("") + '</select> <small>小さく倒したときは細かく、大きく倒したときだけ速く回ります</small></p>' +
@@ -928,6 +937,10 @@
         try { sessionStorage.setItem("cbi-meta-night-login-pending", "1"); } catch (e) { /* 同上 */ }
         location.href = loginUrl();
       };
+      document.getElementById("nightTtClaim").onclick = function () { claimByName(document.getElementById("nightTtClaimName").value); };
+      document.getElementById("nightTtClaimName").onkeydown = function (e) { if (e.key === "Enter") claimByName(this.value); };
+      document.getElementById("nightTtScan").onclick = startQrScan;
+      document.getElementById("nightTtScanStop").onclick = stopQrScan;
     }
     document.getElementById("nightTtClose").onclick = closeTtModal;
     Array.prototype.forEach.call(document.querySelectorAll('input[name="nightCourse"]'), function (r) {
@@ -942,7 +955,88 @@
       rankEl.innerHTML = rankingTable(loadLocal(), myName, "🏆 この端末の順位表（サーバーに繋がらないため参考記録）");
     }
   }
-  function closeTtModal() { document.getElementById("nightTtModal").classList.remove("show"); }
+  function closeTtModal() { stopQrScan(); document.getElementById("nightTtModal").classList.remove("show"); }
+
+  // ---- 会員照合（表示名／会員証QR）：CiDAO API の claim が署名トークンを返す ----
+  function claimMsg(text, ok) {
+    const el = document.getElementById("nightTtClaimMsg");
+    if (el) { el.textContent = text; el.style.color = ok ? "#6ee7a8" : "#ff9ecb"; }
+  }
+  async function claim(payload) {
+    claimMsg("照合しています…", true);
+    try {
+      const res = await fetch(TT_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.assign({ action: "claim" }, payload)) });
+      if (res.status === 404) { claimMsg("CiDAO の登録が見つかりません。表示名を確認するか、LINE ログインで参加してください。", false); return false; }
+      if (res.status === 409) { claimMsg("同じ表示名の会員が複数いるため特定できません。LINE ログインで参加してください。", false); return false; }
+      if (!res.ok) { claimMsg("照合できませんでした（" + res.status + "）。しばらくして再度お試しください。", false); return false; }
+      const d = await res.json();
+      try { localStorage.setItem(LOGIN_TOKEN_KEY, d.token); } catch (e) { /* 保存できなくても続ける */ }
+      stopQrScan();
+      caption("👤 <b>" + ttEsc(d.nick) + "</b> さんで参加します", 2500);
+      openTtModal();
+      return true;
+    } catch (e) { claimMsg("サーバーに繋がりません。", false); return false; }
+  }
+  function claimByName(name) {
+    name = String(name || "").trim();
+    if (!name) { claimMsg("表示名を入力してください。", false); return; }
+    claim({ name: name });
+  }
+  // Webカメラで会員証QR（https://cidao.vercel.app/talent/<uuid>）を読む。jsQR は CDN から必要時に読み込む
+  let qrStream = null, qrTimer = null, qrLoading = null;
+  function loadJsQR() {
+    if (window.jsQR) return Promise.resolve();
+    if (qrLoading) return qrLoading;
+    qrLoading = new Promise(function (resolve, reject) {
+      const sc = document.createElement("script");
+      sc.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js";
+      sc.onload = resolve; sc.onerror = function () { reject(new Error("jsQR を読み込めません")); };
+      document.head.appendChild(sc);
+    });
+    return qrLoading;
+  }
+  async function startQrScan() {
+    const box = document.getElementById("nightTtScanBox"), video = document.getElementById("nightTtVideo"), canvas = document.getElementById("nightTtCanvas"), msg = document.getElementById("nightTtScanMsg");
+    if (!box || !video) return;
+    try {
+      await loadJsQR();
+      qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } }, audio: false });
+    } catch (e) {
+      claimMsg("カメラを使えません（" + (e && e.message) + "）。表示名の入力か LINE ログインで参加してください。", false);
+      return;
+    }
+    box.style.display = "block";
+    document.getElementById("nightTtScan").style.display = "none";
+    document.getElementById("nightTtScanStop").style.display = "";
+    video.srcObject = qrStream;
+    try { await video.play(); } catch (e) { /* 自動再生が拒まれても次の描画で進む */ }
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    let busy = false;
+    qrTimer = setInterval(function () {
+      if (busy || !qrStream || video.readyState < 2) return;
+      const w = video.videoWidth, h = video.videoHeight;
+      if (!w || !h) return;
+      canvas.width = w; canvas.height = h;
+      ctx.drawImage(video, 0, 0, w, h);
+      let code = null;
+      try { code = window.jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: "dontInvert" }); } catch (e) { code = null; }
+      if (!code || !code.data) return;
+      const m = String(code.data).match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+      if (!m) { if (msg) msg.textContent = "CiDAO の会員証QRではありません"; return; }
+      busy = true;
+      if (msg) msg.textContent = "読み取りました。照合しています…";
+      claim({ uid: m[0] }).then(function (ok) { busy = false; if (!ok && msg) msg.textContent = "もう一度かざしてください"; });
+    }, 300);
+  }
+  function stopQrScan() {
+    if (qrTimer) { clearInterval(qrTimer); qrTimer = null; }
+    if (qrStream) { try { qrStream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { /* 無視 */ } qrStream = null; }
+    const box = document.getElementById("nightTtScanBox"), b1 = document.getElementById("nightTtScan"), b2 = document.getElementById("nightTtScanStop"), v = document.getElementById("nightTtVideo");
+    if (box) box.style.display = "none";
+    if (b1) b1.style.display = "";
+    if (b2) b2.style.display = "none";
+    if (v) v.srcObject = null;
+  }
   window.openNightTt = openTtModal;
 
   function startTt(name, token) {
