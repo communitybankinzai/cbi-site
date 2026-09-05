@@ -3,7 +3,8 @@
 
   const query = new URLSearchParams(location.search);
   const RACE_MODE = query.get("race");
-  const VS_MODES = { "vs": true, "cultural-vs": true };
+  const PRACTICE_PARAM = query.get("practice") === "1";
+  const VS_MODES = { "vs": true, "cultural-vs": true, "tag": true };
   const STORAGE_KEY = "cbi-meta-vs-race-results-v1";
   const AXIS_DEADZONE = 0.16;
   const LOOK_DEADZONE = 0.12;
@@ -45,7 +46,10 @@
     message: "",
     messageUntil: 0,
     inputTest: false,
+    practice: PRACTICE_PARAM,
     stored: false,
+    spotRestore: null,
+    uiRestore: null,
     p2Fps: 0,
     p2Frames: 0,
     p2FpsSince: 0
@@ -101,7 +105,7 @@
       "vsP1Pad", "vsP2Status", "vsP2Pad", "vsReadyP1", "vsReadyP2", "vsCenterP1",
       "vsCenterP2", "vsStartBtn", "vsResetBtn", "vsFullBtn", "vsInputBtn",
       "vsForceEndBtn", "vsPauseOnDisconnect", "vsFpsP1", "vsFpsP2", "vsGoalCount",
-      "vsP1AxisLX", "vsP1AxisLY", "vsP2AxisLX", "vsP2AxisLY", "vsCountdown",
+      "vsPracticeSolo", "vsP1AxisLX", "vsP1AxisLY", "vsP2AxisLX", "vsP2AxisLY", "vsCountdown",
       "vsResultModal", "vsResultTitle", "vsResultSummary", "vsResultRows",
       "vsRematchBtn", "vsCourseBtn", "vsResultCloseBtn"
     ];
@@ -119,6 +123,13 @@
       });
     }
 
+    get("vsGameSelect").addEventListener("change", e => {
+      race.mode = e.target.value === "tag" ? "tag" : "cultural-vs";
+      const url = new URL(location.href);
+      url.searchParams.set("race", race.mode);
+      history.replaceState(null, "", url);
+      setCourse(race.mode === "tag" ? "city_01" : ui.vsCourseSelect.value, true);
+    });
     ui.vsCourseSelect.addEventListener("change", () => setCourse(ui.vsCourseSelect.value, true));
     ui.vsExitBtn.addEventListener("click", disableVsRace);
     ui.vsReadyP1.addEventListener("click", () => toggleReady(players[0], false));
@@ -134,6 +145,12 @@
       setStatus(race.inputTest ? "入力テスト表示をONにしました" : "入力テスト表示をOFFにしました", 1400);
     });
     ui.vsForceEndBtn.addEventListener("click", forceEndRace);
+    ui.vsPracticeSolo.addEventListener("change", () => {
+      race.practice = !!ui.vsPracticeSolo.checked;
+      updatePracticeUrl();
+      resetRace(true);
+      setStatus(race.practice ? "P2なし確認をONにしました" : "P2なし確認をOFFにしました", 1800);
+    });
     ui.vsRematchBtn.addEventListener("click", () => {
       hideResult();
       resetRace(true);
@@ -282,22 +299,28 @@
     };
   }
 
-  function enableVsRace(mode, requestedCourseId) {
+  async function enableVsRace(mode, requestedCourseId) {
+    if (!await window.ensureMetaverseAdmission()) return;
     if (!wireUiOnce() || !cesiumReady()) return;
     race.enabled = true;
     race.mode = mode || "cultural-vs";
     window.vsRaceModeEnabled = true;
     document.body.classList.add("vsRaceMode");
+    document.body.classList.toggle("vsPracticeMode", !!race.practice);
+    if (ui.vsPracticeSolo) ui.vsPracticeSolo.checked = !!race.practice;
 
     try { if (typeof applyMode === "function") applyMode("event"); } catch (e) {}
     try { if (typeof ttActive !== "undefined" && ttActive && typeof ttAbort === "function") ttAbort(); } catch (e) {}
     try { if (typeof setTonbiVisible === "function") setTonbiVisible(false); } catch (e) {}
+    try { if (window.nightOn && typeof window.setNight === "function") window.setNight(false); } catch (e) {}
+    hideRaceExternalUi();
+    setNormalSpotEntities(false);
 
     players[0].viewer = mainViewer();
     createSecondViewer();
     players.forEach(p => applyViewerRaceProfile(p));
 
-    const defaultCourse = race.mode === "vs" ? RACE_CONFIG.defaultCityCourse : RACE_CONFIG.defaultCourse;
+    const defaultCourse = race.mode === "vs" || race.mode === "tag" ? RACE_CONFIG.defaultCityCourse : RACE_CONFIG.defaultCourse;
     refreshCourseOptions(requestedCourseId || query.get("course") || defaultCourse);
     setCourse(ui.vsCourseSelect.value, false);
     startFrameLoop();
@@ -313,6 +336,21 @@
 
   function cesiumReady() {
     return typeof Cesium !== "undefined" && typeof viewer !== "undefined";
+  }
+
+  function requiredPlayers() {
+    return race.practice ? [players[0]] : players;
+  }
+
+  function optionalPlayers() {
+    return race.practice ? [players[1]] : [];
+  }
+
+  function updatePracticeUrl() {
+    const url = new URL(location.href);
+    if (race.practice) url.searchParams.set("practice", "1");
+    else url.searchParams.delete("practice");
+    history.replaceState(null, "", url);
   }
 
   function mainViewer() {
@@ -363,7 +401,8 @@
     return v;
   }
 
-  function loadSecondTiles(v) {
+  async function loadSecondTiles(v) {
+    if (!await window.ensureMetaverseAdmission()) return;
     if (typeof GOOGLE_3DTILES_URL === "undefined") return;
     Cesium.Cesium3DTileset.fromUrl(GOOGLE_3DTILES_URL, {
       showCreditsOnScreen: true,
@@ -439,6 +478,47 @@
     player.restore = null;
   }
 
+  function hideRaceExternalUi() {
+    if (!race.uiRestore) race.uiRestore = {};
+    ["controlPanel", "panelToggle", "menuToggle", "spotInfo", "shipHud", "nightTarget", "nightTtModal", "nightCap"].forEach(id => {
+      const el = get(id);
+      if (!el) return;
+      if (!(id in race.uiRestore)) race.uiRestore[id] = el.style.display || "";
+      el.style.display = "none";
+    });
+  }
+
+  function restoreRaceExternalUi() {
+    if (!race.uiRestore) return;
+    Object.keys(race.uiRestore).forEach(id => {
+      const el = get(id);
+      if (el) el.style.display = race.uiRestore[id];
+    });
+    race.uiRestore = null;
+  }
+
+  function setNormalSpotEntities(show) {
+    const v = mainViewer();
+    if (!v || !v.entities || typeof SPOTS === "undefined" || !Array.isArray(SPOTS)) return;
+    if (!show) {
+      race.spotRestore = [];
+      SPOTS.forEach((_, i) => {
+        const ent = v.entities.getById("spot-" + i);
+        if (!ent) return;
+        race.spotRestore[i] = ent.show;
+        ent.show = false;
+      });
+      return;
+    }
+    if (!race.spotRestore) return;
+    SPOTS.forEach((_, i) => {
+      const ent = v.entities.getById("spot-" + i);
+      if (!ent) return;
+      ent.show = race.spotRestore[i] !== false;
+    });
+    race.spotRestore = null;
+  }
+
   function setCourse(courseId, reset) {
     if (!race.enabled) return;
     race.courseId = courseId;
@@ -471,7 +551,7 @@
     hideResult();
     hideCountdown();
     players.forEach(p => {
-      p.ready = false;
+      p.ready = race.practice && p.id === 2;
       p.nextIndex = 0;
       p.nextDistance = null;
       p.passed = [];
@@ -483,6 +563,7 @@
       placePlayerAtStart(p);
       centerPad(p, false);
     });
+    window.SkyTag.reset(players, race);
     if (showMessage) setStatus("スタート位置に戻しました", 1500);
     resizeRaceViewers();
     renderUi(performance.now());
@@ -522,6 +603,7 @@
   }
 
   function addCourseMarkers() {
+    if (race.mode === "tag") return;
     if (!race.course) return;
     players.forEach(player => {
       const v = player.viewer;
@@ -569,6 +651,10 @@
   }
 
   function toggleReady(player, fromPad) {
+    if (race.practice && player.id === 2) {
+      player.ready = true;
+      return;
+    }
     if (!fromPad) pollPad(player);
     if (race.state !== "setup") return;
     if (!player.connected) {
@@ -584,15 +670,16 @@
   function beginCountdown() {
     if (!race.enabled || !race.course || race.state === "countdown" || race.state === "running") return;
     players.forEach(pollPad);
-    const missing = players.filter(p => !p.connected);
+    const required = requiredPlayers();
+    const missing = required.filter(p => !p.connected);
     if (missing.length) {
       setStatus("開始できません: " + missing.map(p => p.name).join(" / ") + " が未接続です", 2600);
       renderUi(performance.now());
       return;
     }
-    const notReady = players.filter(p => !p.ready);
+    const notReady = required.filter(p => !p.ready);
     if (notReady.length) {
-      setStatus("開始できません: 両プレイヤーをREADYにしてください", 2200);
+      setStatus(race.practice ? "開始できません: P1をREADYにしてください" : "開始できません: 両プレイヤーをREADYにしてください", 2200);
       return;
     }
     hideResult();
@@ -603,6 +690,7 @@
       p.finished = false;
       p.forced = false;
       p.finishMs = null;
+      if (race.practice && p.id === 2) p.ready = true;
       placePlayerAtStart(p);
     });
     race.pauseTotal = 0;
@@ -631,10 +719,10 @@
     if (!race.enabled || (race.state !== "running" && race.state !== "countdown")) return;
     const now = effectiveNow(performance.now());
     if (!race.startMs) race.startMs = now;
-    players.forEach(p => {
+    requiredPlayers().forEach(p => {
       if (!p.finished) finishPlayer(p, now, true);
     });
-    completeRace();
+    completeRace(now);
   }
 
   function finishPlayer(player, now, forced) {
@@ -647,7 +735,21 @@
     setStatus(player.name + (forced ? " END" : " GOAL"), 1300);
   }
 
-  function completeRace() {
+  function completeRace(now) {
+    if (race.mode === "tag") {
+      const scores = players.map(p => p.tagScore || 0);
+      race.winnerId = scores[0] === scores[1] ? null : scores[0] > scores[1] ? 1 : 2;
+      players.forEach(p => { p.finished = true; p.finishMs = timeForPlayer(p, now); });
+    }
+    if (race.practice) {
+      optionalPlayers().forEach(p => {
+        if (!p.finished) {
+          p.finished = true;
+          p.forced = true;
+          p.finishMs = null;
+        }
+      });
+    }
     race.state = "finished";
     race.paused = false;
     saveResult();
@@ -670,15 +772,17 @@
     updateDisconnectPause(now);
 
     if (race.state === "running" && !race.paused) {
-      players.forEach(p => {
+      requiredPlayers().forEach(p => {
         if (!p.finished && p.connected) {
           movePlayer(p, dt);
-          checkCheckpoint(p, now);
+          if (race.mode !== "tag") checkCheckpoint(p, now);
         }
       });
-      if (players.every(p => p.finished)) completeRace();
+      if (race.mode === "tag" && window.SkyTag.tick(players, race, dt, timeForPlayer(players[0], now))) completeRace(now);
+      else if (requiredPlayers().every(p => p.finished)) completeRace(now);
     }
 
+    window.SkyTag.render(players, race);
     renderUi(now);
     race.frameId = requestAnimationFrame(frameLoop);
   }
@@ -694,7 +798,7 @@
   function updateDisconnectPause(now) {
     if (race.state !== "running") return;
     const pauseOnDisconnect = ui.vsPauseOnDisconnect && ui.vsPauseOnDisconnect.checked;
-    const missing = players.filter(p => !p.connected && !p.finished);
+    const missing = requiredPlayers().filter(p => !p.connected && !p.finished);
     if (missing.length && pauseOnDisconnect && !race.paused) {
       race.paused = true;
       race.pauseStarted = now;
@@ -923,13 +1027,29 @@
     ui.vsP1Pad.textContent = p1.padName || "Gamepad index 0";
     ui.vsP2Pad.textContent = p2.padName || "Gamepad index 1";
     ui.vsReadyP1.textContent = p1.ready ? "P1 READY OK" : "P1 READY";
-    ui.vsReadyP2.textContent = p2.ready ? "P2 READY OK" : "P2 READY";
-    ui.vsStartBtn.disabled = !(race.state === "setup" && p1.connected && p2.connected && p1.ready && p2.ready);
+    ui.vsReadyP2.textContent = race.practice ? "P2 SKIP" : (p2.ready ? "P2 READY OK" : "P2 READY");
+    ui.vsReadyP2.disabled = !!race.practice;
+    if (ui.vsPracticeSolo) ui.vsPracticeSolo.checked = !!race.practice;
+    const required = requiredPlayers();
+    ui.vsStartBtn.disabled = !(race.state === "setup" && required.every(p => p.connected && p.ready));
     ui.vsForceEndBtn.disabled = !(race.state === "running" || race.state === "countdown");
     ui.vsFpsP1.textContent = "P1 " + (typeof fpsValue !== "undefined" ? fpsValue : "--") + "fps";
     ui.vsFpsP2.textContent = "P2 " + (race.p2Fps || "--") + "fps";
-    ui.vsGoalCount.textContent = players.filter(p => p.finished).length + " / 2 GOAL";
+    ui.vsGoalCount.textContent = required.filter(p => p.finished).length + " / " + required.length + " GOAL";
     ui.vsRaceStatus.textContent = statusText(now);
+    const tag = race.mode === "tag";
+    get("vsGameSelect").value = tag ? "tag" : "race";
+    ui.vsCourseSelect.hidden = tag;
+    document.querySelector(".vsTitle").textContent = tag ? "印西の空でおにごっこ" : "2P TIME RACE";
+    if (tag) {
+      const remaining = Math.max(0, 120000 - timeForPlayer(p1, now));
+      ui.vsGoalCount.textContent = "残り " + Math.ceil(remaining / 1000) + "秒";
+      players.forEach(p => {
+        ui["vsHudP" + p.id + "Time"].textContent = p.tagScore + " POINT";
+        ui["vsHudP" + p.id + "Next"].textContent = window.SkyTag.status(p, race);
+      });
+      if (race.state === "running" && !race.paused) ui.vsRaceStatus.textContent = "印西の空でおにごっこ";
+    }
     updateAxisBar(ui.vsP1AxisLX, p1.input.lx);
     updateAxisBar(ui.vsP1AxisLY, p1.input.ly);
     updateAxisBar(ui.vsP2AxisLX, p2.input.lx);
@@ -937,6 +1057,8 @@
   }
 
   function playerStatus(player) {
+    if (race.practice && player.id === 2 && !player.connected) return "P2なし確認";
+    if (race.practice && player.id === 2) return "確認モード";
     if (!player.connected) return "未接続";
     if (player.finished) return player.forced ? "END" : "GOAL";
     if (race.state === "running") return race.paused ? "PAUSE" : "走行中";
@@ -946,6 +1068,7 @@
 
   function nextText(player) {
     if (!race.course) return "CHECKPOINT --";
+    if (race.practice && player.id === 2 && !player.connected) return "P2なし確認";
     if (player.finished) return player.forced ? "END" : "GOAL";
     const cp = race.course.checkpoints[player.nextIndex];
     if (!cp) return "GOAL";
@@ -964,6 +1087,11 @@
     }
     if (!race.course) return "コースデータを読み込み中です";
     if (race.state === "setup") {
+      if (race.practice) {
+        if (!players[0].connected) return "P2なし確認: P1=index0 のゲームパッドを接続してください";
+        if (!players[0].ready) return "P2なし確認: P1をREADYにしてください";
+        return "P2なし確認: P1だけでSTARTできます";
+      }
       if (!players[0].connected || !players[1].connected) return "P1=index0 / P2=index1 のゲームパッドを接続してください";
       if (!players[0].ready || !players[1].ready) return "STARTボタンまたはAボタンで両プレイヤーをREADYにしてください";
       return "SPACEまたはSTARTで同時カウントダウンを開始できます";
@@ -1026,12 +1154,21 @@
       .slice()
       .sort((a, b) => (a.finishMs === null ? Infinity : a.finishMs) - (b.finishMs === null ? Infinity : b.finishMs))
       .map(p => {
-        const checkpoint = p.passed.length + "/" + (race.course ? race.course.checkpoints.length : 0) +
-          (p.forced ? " END" : "");
-        return "<tr><td>" + esc(p.name) + "</td><td>" + esc(formatClock(p.finishMs || 0)) +
+        const skippedPractice = race.practice && p.id === 2 && p.forced && p.finishMs === null;
+        const checkpoint = skippedPractice
+          ? "P2なし確認"
+          : p.passed.length + "/" + (race.course ? race.course.checkpoints.length : 0) + (p.forced ? " END" : "");
+        const timeText = p.finishMs === null ? "--" : formatClock(p.finishMs);
+        return "<tr><td>" + esc(p.name) + "</td><td>" + esc(timeText) +
           "</td><td>" + esc(checkpoint) + "</td></tr>";
       })
       .join("");
+    if (race.mode === "tag") {
+      ui.vsResultTitle.textContent = race.practice ? "練習終了" : winner ? winner.name + " WIN" : "DRAW";
+      ui.vsResultSummary.textContent = "印西の空でおにごっこ";
+      ui.vsResultRows.innerHTML = players.map(p => "<tr><td>" + esc(p.name) + "</td><td>" +
+        esc(formatClock(p.finishMs || 0)) + "</td><td>" + (p.tagScore || 0) + " POINT</td></tr>").join("");
+    }
     ui.vsResultModal.classList.add("show");
   }
 
@@ -1046,6 +1183,7 @@
       version: RACE_CONFIG.version,
       savedAt: new Date().toISOString(),
       mode: race.mode,
+      practice: !!race.practice,
       courseId: race.course.id,
       courseTitle: race.course.title,
       winnerId: race.winnerId,
@@ -1057,7 +1195,8 @@
         finished: p.finished,
         forced: p.forced,
         finishMs: p.finishMs,
-        checkpoints: p.passed
+        checkpoints: p.passed,
+        score: p.tagScore || 0
       }))
     };
     try {
@@ -1092,15 +1231,21 @@
   }
 
   function disableVsRace() {
+    window.SkyTag.clear(players);
+    clearMarkers();
     race.enabled = false;
     race.state = "idle";
     window.vsRaceModeEnabled = false;
     document.body.classList.remove("vsRaceMode");
+    document.body.classList.remove("vsPracticeMode");
     hideCountdown();
     hideResult();
     if (race.frameId) cancelAnimationFrame(race.frameId);
     race.frameId = 0;
+    setNormalSpotEntities(true);
+    restoreRaceExternalUi();
     restoreViewerProfile(players[0]);
+    if (players[1].viewer) { players[1].viewer.destroy(); players[1].viewer = null; players[1].restore = null; }
     try { players[0].viewer && players[0].viewer.resize(); } catch (e) {}
     const url = new URL(location.href);
     url.searchParams.delete("race");

@@ -17,11 +17,11 @@
   #vsCesium2, #vsRaceOverlay, #vsCountdown, #vsResultModal { display: none; }
   body.vsRaceMode { overflow: hidden; }
   body.vsRaceMode #cesiumContainer {
-    position: absolute; left: 0; right: auto; top: 50px; bottom: 154px;
+    position: absolute; left: 0; right: auto; top: 50px; bottom: 214px;
     width: 50vw; height: auto; border-right: 1px solid rgba(255,255,255,0.18);
   }
   body.vsRaceMode #vsCesium2 {
-    display: block; position: absolute; top: 50px; right: 0; bottom: 154px;
+    display: block; position: absolute; top: 50px; right: 0; bottom: 214px;
     width: 50vw; z-index: 1; background: #020617;
   }
   body.vsRaceMode #overlay, body.vsRaceMode #mvHeader, body.vsRaceMode #topLeftBar,
@@ -30,7 +30,9 @@
   body.vsRaceMode #trafficChip, body.vsRaceMode #presenceChip, body.vsRaceMode #rtPeers,
   body.vsRaceMode #stampBar, body.vsRaceMode #stampFeed, body.vsRaceMode #liteToast,
   body.vsRaceMode #ttCard, body.vsRaceMode #ttTarget, body.vsRaceMode #ttHud,
-  body.vsRaceMode #spotInfo, body.vsRaceMode #puzzlePanel, body.vsRaceMode #pickResult {
+  body.vsRaceMode #spotInfo, body.vsRaceMode #puzzlePanel, body.vsRaceMode #pickResult,
+  body.vsRaceMode #shipHud, body.vsRaceMode #nightTarget, body.vsRaceMode #nightTtModal,
+  body.vsRaceMode #nightCap {
     display: none !important;
   }
   body.vsRaceMode #vsRaceOverlay { display: block; }
@@ -82,7 +84,7 @@
   }
   body.vsRaceMode #vsCountdown.show { display: flex; }
   .vsPanel {
-    position: absolute; left: 0; right: 0; bottom: 0; min-height: 154px; box-sizing: border-box;
+    position: absolute; left: 0; right: 0; bottom: 0; min-height: 214px; box-sizing: border-box;
     display: grid; grid-template-columns: minmax(0,1fr) minmax(250px,320px) minmax(0,1fr);
     gap: 10px; padding: 10px 12px 12px;
     background: linear-gradient(180deg, rgba(15,23,42,0.9), rgba(2,6,23,0.96));
@@ -140,10 +142,10 @@
   }
   .vsResultActions { display: flex; gap: 8px; flex-wrap: wrap; }
   @media (max-width: 820px) {
-    body.vsRaceMode #cesiumContainer, body.vsRaceMode #vsCesium2 { top: 86px; bottom: 246px; }
+    body.vsRaceMode #cesiumContainer, body.vsRaceMode #vsCesium2 { top: 86px; bottom: 304px; }
     .vsTop { height: 86px; flex-wrap: wrap; }
     .vsHudRow { top: 86px; }
-    .vsPanel { min-height: 246px; grid-template-columns: 1fr 1fr; }
+    .vsPanel { min-height: 304px; grid-template-columns: 1fr 1fr; }
     .vsOpsPanel { grid-column: 1 / -1; grid-row: 1; }
     .vsPlayerPanel { grid-row: 2; }
     .vsAxis { grid-template-columns: 36px minmax(0,1fr) 36px minmax(0,1fr); }
@@ -1108,6 +1110,7 @@
 <div id="vsRaceOverlay" aria-live="polite">
   <div class="vsTop">
     <div class="vsTitle">2P TIME RACE</div>
+    <select id="vsGameSelect" title="Mode"><option value="race">2P RACE</option><option value="tag">印西の空でおにごっこ</option></select>
     <select id="vsCourseSelect" title="レースコース"></select>
     <div id="vsRaceStatus" class="vsStatus">2台のゲームパッドを接続してください</div>
     <button id="vsExitBtn" title="2Pレースを終了">終了</button>
@@ -1158,6 +1161,9 @@
       <div id="vsGoalCount" class="metric">0 / 2 GOAL</div>
       <label class="metric wide" title="切断時に時計を止め、再接続後に同じ状態から再開します">
         <input id="vsPauseOnDisconnect" type="checkbox" checked> 切断時PAUSE
+      </label>
+      <label class="metric wide" title="P2のゲームパッドが無い状態でも、P1だけでスタート確認できます。本番レースではOFFにしてください">
+        <input id="vsPracticeSolo" type="checkbox"> P2なし確認
       </label>
     </section>
 
@@ -1407,6 +1413,7 @@
   <p>Google Photorealistic 3D Tiles から印西市の街並みデータを取得しています。<br>通信環境により数十秒かかることがあります。</p>
 </div>
 
+<script src="admission.js?v=20260906-1"></script>
 <script src="map-core.js"></script>
 <script>
 "use strict";
@@ -1690,6 +1697,7 @@ function addGridLines() {
 const gridPrims = []; // グリッドの描画単位（ON/OFF 用）
 
 async function loadTileset() {
+  if (!await window.ensureMetaverseAdmission()) return;
   if (NO_TILES) {
     document.getElementById("overlay").style.display = "none";
     addGridLines();
@@ -1817,7 +1825,7 @@ const pinClampQueue = [];
 const pinClampSettled = [];
 const PIN_RECLAMP_MAX = 3; // 1ピンあたりの測り直し回数の上限（負荷対策）
 let pinClampTimer = null;
-function refreshPinShow(e) { e.show = !!(e.__clampReady && e.__wantVisible); }
+function refreshPinShow(e) { e.show = !!(e.__clampReady && e.__wantVisible) && !(window.vsRaceModeEnabled && String(e.id).startsWith("spot-")); }
 function setPinVisible(e, visible) { e.__wantVisible = visible; refreshPinShow(e); }
 // offsetM: 地表からどれだけ上に置くか(m)。文化財ピンは足元に置きたいので既定2m、
 // スポット看板は建物に隠れないよう大きめの値を渡す
@@ -2073,7 +2081,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-05a"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-06a"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -6259,7 +6267,8 @@ try {
   console.error("モード初期化に失敗:", e);
 }
 </script>
-<script src="vs-race.js?v=20260904-1"></script>
+<script src="sky-tag.js?v=20260906-1"></script>
+<script src="vs-race.js?v=20260906-1"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js"></script>
 </body>
