@@ -1697,6 +1697,12 @@ function addGridLines() {
 const gridPrims = []; // グリッドの描画単位（ON/OFF 用）
 
 async function loadTileset() {
+  // 会員受付（night.js が用意する）：CiDAO 登録者の確認が済むまで 3D都市データを要求しない（未登録者に1日30回の枠を使わせない・
+  // CiDAO 加入の導線）。night.js は本体スクリプトの直後に読まれるので、定義されるまで少し待つ。撮影モードと検証モードは素通り
+  if (!NO_TILES && !new URLSearchParams(location.search).get("cinema")) {
+    for (let i = 0; i < 200 && typeof window.ensureMetaverseReception !== "function"; i++) await new Promise(r => setTimeout(r, 50));
+    if (typeof window.ensureMetaverseReception === "function" && !await window.ensureMetaverseReception()) return;
+  }
   if (!await window.ensureMetaverseAdmission()) return;
   if (NO_TILES) {
     document.getElementById("overlay").style.display = "none";
@@ -2081,7 +2087,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-06a"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-06b"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態

@@ -36,7 +36,12 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-05g";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-06b";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
+  // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
+  const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1";
+  const CIDAO_ORIGIN = "https://cidao.vercel.app";
+  const SIGNUP_URL = CIDAO_ORIGIN + "/login?utm_source=metaverse&utm_medium=reception&utm_campaign=entry"; // 未登録者の登録導線（LINE ログイン＝登録）
   const NIGHT_FLOOR_HEIGHT = 70;            // 地中ロックの下限（楕円体高・標高約34m。コース一帯の地表は約60〜70m）
 
   // ---- 図柄（線画SVG） ----
@@ -958,17 +963,22 @@
     const cur = getLogin(claimSlot);
     inner.innerHTML =
       "<h2>👤 参加受付（CiDAO 登録者の確認）</h2>" +
-      "<p>このワールドの記録やレースは <b>CiDAO（市民DAO）の登録者</b> の名前で行います。会員証QR（CiDAO トップページの会員QR）か表示名で確認してください。2人対戦は1人目＝PLAYER 1、2人目＝PLAYER 2 になります。</p>" +
+      "<p>印西市３次元MAP は <b>CiDAO（市民DAO）の登録者</b> が使えます。会員証QR（CiDAO トップページの会員QR）か表示名で確認してください。2人対戦は1人目＝PLAYER 1、2人目＝PLAYER 2 になります。</p>" +
       '<div class="tabs"><button id="nightEntryTab1"' + (claimSlot === 1 ? ' class="on"' : "") + ">1人目" + (l1 ? "：" + ttEsc(l1.nick) : "（未）") + "</button>" +
       '<button id="nightEntryTab2"' + (claimSlot === 2 ? ' class="on"' : "") + ">2人目" + (l2 ? "：" + ttEsc(l2.nick) : "（未）") + "</button></div>" +
       (cur ? '<p>✅ ' + (claimSlot === 2 ? "2人目" : "1人目") + "：<b>" + ttEsc(cur.nick) + '</b> さん　<button class="sub" id="nightEntryClear">この人を外す</button></p>' : "") +
       claimSectionHtml(claimSlot === 2 ? "2人目" : "1人目") +
-      '<p><button class="go" id="nightEntryDone">✔ 受付を閉じる</button>' + (claimSlot === 1 && l1 ? '<button class="sub" id="nightEntryToTt">⏱ このままタイムレースへ</button>' : "") + "</p>" +
-      '<p class="note">受付をしなくても自由に飛べます。夜景タイムレースは1人目、2人対戦は1人目と2人目の確認が必要です。</p>' +
+      (RECEPTION_REQUIRED && !l1
+        ? '<div class="box" id="nightSignupBox"><b>🆕 まだ CiDAO に登録していない方</b><br>スマホで下の QR を読んで CiDAO に登録（無料・LINE でログイン）し、表示名を決めたら、この画面で「表示名」か「会員証QR」で入場してください。<br>' +
+          '<div id="nightSignupQr" style="display:inline-block;background:#fff;padding:8px;border-radius:8px;margin:8px 0"></div><br><a href="' + SIGNUP_URL + '" target="_blank" rel="noopener" style="color:#8fe9ff">' + CIDAO_ORIGIN + '/login</a></div>' +
+          '<p class="note">⛔ 印西市３次元MAP は CiDAO 登録者向けです。1人目の確認が済むまで 3D の街並みは読み込みません（1日の表示枠を大切に使うため）。</p>'
+        : '<p><button class="go" id="nightEntryDone">✔ 受付を閉じる</button>' + (claimSlot === 1 && l1 ? '<button class="sub" id="nightEntryToTt">⏱ このままタイムレースへ</button>' : "") + "</p>" +
+          '<p class="note">夜景タイムレースは1人目、2人対戦は1人目と2人目の確認が必要です。</p>') +
       '<p class="note" style="text-align:right">版 ' + NIGHT_VERSION + "</p>";
     document.getElementById("nightTtModal").classList.add("show");
     document.getElementById("nightEntryTab1").onclick = function () { stopQrScan(); openEntryModal(1); };
     document.getElementById("nightEntryTab2").onclick = function () { stopQrScan(); openEntryModal(2); };
+    if (document.getElementById("nightSignupQr")) drawSignupQr();
     const done = document.getElementById("nightEntryDone");
     if (done) done.onclick = function () {
       closeTtModal(); updateEntryChip();
@@ -984,6 +994,45 @@
     updateEntryChip();
   }
   window.openNightEntry = openEntryModal;
+  let qrLibLoading = null;
+  function loadQrLib() {
+    if (window.qrcode) return Promise.resolve();
+    if (qrLibLoading) return qrLibLoading;
+    qrLibLoading = new Promise(function (resolve, reject) {
+      const sc = document.createElement("script");
+      sc.src = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js";
+      sc.onload = resolve; sc.onerror = function () { reject(new Error("QR ライブラリを読み込めません")); };
+      document.head.appendChild(sc);
+    });
+    return qrLibLoading;
+  }
+  function drawSignupQr() {
+    const box = document.getElementById("nightSignupQr");
+    if (!box) return;
+    loadQrLib().then(function () {
+      const el = document.getElementById("nightSignupQr");
+      if (!el || !window.qrcode) return;
+      const qr = window.qrcode(0, "M");
+      qr.addData(SIGNUP_URL);
+      qr.make();
+      el.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0 });   // 白地に黒（反転QRは読めない端末がある）
+    }).catch(function () { if (box) box.textContent = "QR を表示できません。URL を直接開いてください。"; });
+  }
+
+  // 入場ゲート：index.html の loadTileset() が呼ぶ。1人目の確認が済んでいれば即 true、未確認なら受付を出して確認まで待つ
+  let receptionWaiters = [];
+  window.ensureMetaverseReception = function () {
+    if (!RECEPTION_REQUIRED || getLogin(1)) return Promise.resolve(true);
+    return new Promise(function (resolve) {
+      receptionWaiters.push(resolve);
+      openEntryModal(1);
+    });
+  };
+  function resolveReception() {
+    if (!getLogin(1)) return;
+    const w = receptionWaiters; receptionWaiters = [];
+    w.forEach(function (r) { r(true); });
+  }
 
   // 会員照合の入力欄（QR・表示名・LINE）。ログイン中は「別の人で参加」用に折りたたんで出す
   function claimSectionHtml(who) {
@@ -1075,7 +1124,14 @@
       stopQrScan();
       caption("👤 <b>" + ttEsc(d.nick) + "</b> さんで参加します" + (claimSlot === 2 ? "<small>（2人目）</small>" : ""), 2500);
       applyVsNames();
-      if (claimFrom === "entry") openEntryModal(claimSlot); else openTtModal();
+      if (claimFrom === "entry") {
+        if (claimSlot === 1 && receptionWaiters.length) {
+          // 入場待ちだった：受付を閉じて 3D の読み込みへ進む（2人目は受付チップから後で追加できる）
+          resolveReception();
+          closeTtModal(); updateEntryChip();
+          if (TOUR_PARAM && !tt.active && !tourRunning) startTour();
+        } else openEntryModal(claimSlot);
+      } else openTtModal();
       return true;
     } catch (e) { claimMsg("サーバーに繋がりません。", false); return false; }
   }
@@ -1268,6 +1324,7 @@
     if (e.key === "t" || e.key === "T") { if (!tt.active) openTtModal(); }
     if ((e.key === " " || e.key === "Enter") && tt.active && tt.waiting) { e.preventDefault(); ttReadyGo(); }
     if (e.key === "Escape") {
+      if (RECEPTION_REQUIRED && !getLogin(1) && claimFrom === "entry" && document.getElementById("nightTtModal").classList.contains("show")) return; // 入場受付は必須
       if (document.getElementById("nightTtModal").classList.contains("show")) closeTtModal();
       else if (tt.active) ttAbortNight("Esc キー");
     }
@@ -1284,12 +1341,13 @@
     return false;
   }
   setInterval(function () {
+    if (RECEPTION_REQUIRED && !getLogin(1) && receptionWaiters.length && !document.getElementById("nightTtModal").classList.contains("show")) openEntryModal(1);
     if (!window.nightOn) return;
     const anyKey = Object.keys(keys).some(function (k) { return keys[k]; });
     if (anyKey || (joyState && joyState.active) || gamepadActive()) noteInput();
     if (TOUR_PARAM && !tourRunning && !tt.active &&
         !document.getElementById("nightTtModal").classList.contains("show") &&
-        performance.now() - lastInputAt > IDLE_RESTART_MS) { clearLogin(1); clearLogin(2); updateEntryChip(); startTour(); }
+        performance.now() - lastInputAt > IDLE_RESTART_MS) { clearLogin(1); clearLogin(2); updateEntryChip(); if (RECEPTION_REQUIRED) openEntryModal(1); else startTour(); }
   }, 500);
 
   // 地中ロック：夜景モード中は楕円体高 NIGHT_FLOOR_HEIGHT を下限にし、地面（タイルの高さ）が取れるときはその 3m 上を下限にする。
@@ -1350,9 +1408,9 @@
     } catch (e) { /* 変数が無い版でも続ける */ }
     if (TOUR_PARAM && !cameBackFromLogin && !ENTRY_PARAM) startTour();
   }
-  if (cameBackFromLogin) { if (!window.nightOn) applyNight(true); setTimeout(openTtModal, 1200); }
+  if (cameBackFromLogin && !RECEPTION_REQUIRED) { if (!window.nightOn) applyNight(true); setTimeout(openTtModal, 1200); }
   if (!q.get("cinema")) {
     ensureEntryChip();
-    if (ENTRY_PARAM && !cameBackFromLogin) setTimeout(function () { openEntryModal(getLogin(1) ? 2 : 1); }, 800);
+    if (ENTRY_PARAM && !cameBackFromLogin && !(RECEPTION_REQUIRED && !getLogin(1))) setTimeout(function () { openEntryModal(getLogin(1) ? 2 : 1); }, 800);
   }
 })();
