@@ -1,6 +1,6 @@
 # CBIメタバース印西 引継ぎ
 
-最終更新: 2026-09-04
+最終更新: 2026-09-05
 
 ## 作業場所と公開先
 
@@ -53,6 +53,7 @@
 - **🌃 夜景モード 第6版（2026-09-05）：会場PC向けの参加方法・操作の改善**: (1) **右スティック**は夜景中だけ `padNormalize`（index.html の関数）を night.js が包み、軸2・3に「2乗×感度 `lookSens`（既定0.5）」を掛ける。感度は参加画面の select（localStorage `cbi-meta-night-looksens`）。(2) **タイムレースは準備OKの合図待ち**：`startTt` は `tt.waiting=true` でスタート地点に置くだけ、○／×ボタン（buttons[0|1]・`pollReadyButton`）かスペース／Enter で `ttReadyGo()` → `snapPadCenterNow(readGamepad())` で中心合わせ → 3.5秒 → 計測（サーバー start もこの時点）。待機中はゲート通過を数えない。(3) **参加方法を3つに**：`claim`（CiDAO API `metaverse-tt` の action）で **会員証QR（`/talent/<uuid>`・Webカメラ＋jsQR を jsdelivr から必要時読込）** または **表示名の入力**（両側 NFKC 正規化で比較・同名複数は 409 で断る）から12時間トークンを発行。LINE ログインは「別の方法」。CiDAO 8879b25／dfe86cb／9a60f0b。⛔ 表示名照合は本人確認が弱いので会場ではスタッフ立会い前提。members.display_name に一意制約は無い
 - **🌃 夜景モード 第7版（2026-09-05）：参加受付（1人目／2人目）**: `?entry=1` で入場時に `openEntryModal()`、右上チップ `#nightEntryChip`（cinema 以外で常設）。トークンは1人目 `cbi-meta-cidao-token-v1`／2人目 `cbi-meta-cidao-token-p2-v1`（`getLogin(slot)`／`clearLogin(slot)`）。照合 `claim()` は `claimSlot`／`claimFrom` で戻り先を切り替える。**2人対戦への反映は vs-race.js を触らず、`window.vsRacePlayers[0|1].name` を1秒ごとに上書き**（`applyVsNames`）。vs-race 側が名前を保持・保存する仕様に変えるときは night.js のこの上書きと調整すること。版表示 `NIGHT_VERSION`（参加画面・受付画面の右下）
 - **🌃 夜景モード 第8版（2026-09-05 夜）：受付の方針＝案B**：入場時の受付（`?entry=1`）は任意（閉じられる）。**会員照合が必須なのは、夜景タイムレース（1人目）と 2人対戦（1人目＋2人目）だけ**。2人対戦は night.js の `bindVsStartGate()` が `#vsStartBtn` の click を capture で先取りし、未受付なら受付画面を出す（vs-race.js は未変更）。一時的に入れた「entry=1 で受付必須」は 4507e36 で取り下げ。版表示 `NIGHT_VERSION`=2026-09-05g
+- **🧭 上部ボタン群のカテゴリ別メニュー（2026-09-05整理・版 2026-09-05a）**: `#topLeftBar` は常時表示5個（`puzzleBtn`／`ttBtn`／`nightBtn`(+夜景ON時のみ `nightTourBtn`・`nightTtBtn`)／`modeSwitchBtn`／`howtoBtn`）＋4つの `.tbGroup`（`#tbGroupPins` ピン表示＝pinToggle/shelter/kominkan/shop、`#tbGroupPlay` あそぶ＝reports/map/vsRace/pickMode/tonbi、`#tbGroupSound` 音＝bgm/bgmPick/bgmFile、`#tbGroupSettings` 設定＝lite/traffic/pad*/noTiles/grid/shot/rec）。**ボタンの id・ハンドラは不変**（`applyMode` の display 切替や night.js の `.on` もそのまま効く）。PC は `.tbGroupBtn` クリックで `.open`（他は閉じる・外側クリック／Esc で閉じる・別画面を開く項目 `CLOSE_AFTER` は押した時点で畳む）、スマホの ☰ 内は CSS で見出し付きの縦一覧に平坦化（`.tbGroupBtn` は pointer-events:none）。**新しいボタンを足すときは該当グループの `.tbMenu` に入れる**（最上位に置くと1行に収まらなくなる）。録画中は `recStart` が `#recBtn` を最上位へ移し `#topLeftBar.recording` でグループを隠す（停止時 `recHome` で戻す）。右の `#controlPanel` は既定非表示で `body.spotOpen` のとき表示（`setSpotPanel`・localStorage `cbi-meta-spotpanel-v1`・PCのみ復元・防災モードは自動で開く）。`#panelToggle` は `#mvHeader .hdrRight`（戻るリンクの隣）へ移動（night.js の受付チップ `#nightEntryChip` が top:52px right:10px を使うため）。スマホでは従来どおり右上 52px に absolute。⛔ 既知の不具合（未修正・plans 登録）：`recStart` が `CAPTURE_HIDE_IDS` と個別リストの両方で `puzzleBtn`／`howtoBtn` を隠すため、復元順の都合で録画停止後もこの2つが消えたまま（HEAD 以前から）
 - **🦅 旋回のバンク（通常操作・2026-09-02追加）**: 飛行モードで機首を回す（右スティック・ドラッグ）か横移動すると、トンビが曲がる側へ最大22°傾き、**画面（カメラのロール）も最大20°傾く**。まっすぐ飛ぶと毎秒40°で水平へ戻る。歩行モードでは傾けない。回る速さはフレーム時間で暴れるので 8:2 で平滑化（`yawTiltSmooth`）。Cesium のロールは正で右翼が下がる向き。実装は主ループの `cameraBankEnabled` ブロック（プレイ動画モードは自前で傾けるため false にする）。**実機コントローラーでの確認は未了**
 
 ## 文化財ピンの座標について（重要）

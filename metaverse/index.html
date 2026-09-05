@@ -251,10 +251,12 @@
     box-shadow: 0 4px 18px rgba(0,0,0,0.28);
   }
   #floodNotice b { color: #7fc8ff; }
+  /* 📍スポット（右パネルの開閉）。PC ではヘッダー右の「戻る」の隣、スマホでは従来どおり右上 52px の位置。
+     夜景の受付チップ（night.js が top:52px right:10px に出す）と重ねないため（2026-09-05） */
+  #mvHeader .hdrRight { display: flex; align-items: center; gap: 6px; pointer-events: auto; }
   #panelToggle {
-    position: absolute; top: 52px; right: 10px; z-index: 21;
     background: rgba(20, 30, 40, 0.8); color: #fff; border: none;
-    border-radius: 10px; padding: 8px 10px; font-size: 13px; cursor: pointer; display: none;
+    border-radius: 10px; padding: 6px 10px; font-size: 12px; cursor: pointer;
   }
 
   /* 操作説明 */
@@ -304,6 +306,27 @@
     border-radius: 10px; padding: 8px 12px; font-size: 13px; cursor: pointer;
   }
   #pinToggleBtn.off, #shelterToggleBtn.off, #kominkanToggleBtn.off, #shopToggleBtn.off { opacity: 0.55; }
+  /* 上部ボタン群のカテゴリ別メニュー（2026-09-05 整理。常時5個＋「ピン表示／あそぶ／音／設定」の開閉メニュー） */
+  .tbGroup { position: relative; }
+  .tbGroupBtn[aria-expanded="true"] { background: rgba(58, 123, 213, 0.85) !important; }
+  .tbMenu {
+    display: none; position: absolute; top: calc(100% + 4px); left: 0; z-index: 35;
+    flex-direction: column; gap: 4px; padding: 6px; min-width: max-content;
+    background: rgba(20, 30, 40, 0.94); border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+  }
+  .tbGroup.open .tbMenu { display: flex; }
+  .tbMenu button { width: 100%; text-align: left; background: rgba(255,255,255,0.06) !important; }
+  .tbMenu button:hover { background: rgba(58, 123, 213, 0.6) !important; }
+  /* 夜間遊覧・夜景TTは夜景ON（night.js が .on を付ける）のときだけ出す。
+     night.js 側の同じ CSS は夜景を一度入れるまで注入されず、初回は昼でも見えていた */
+  #nightTourBtn:not(.on), #nightTtBtn:not(.on), #nightHudBtn { display: none; }
+  /* 録画中はメニューを畳み、🎥録画ボタンだけを最上位に出す（recStart で移動する） */
+  #topLeftBar.recording .tbGroup { display: none; }
+  /* 右のスポット一覧は PC でも既定で閉じ、📍ボタンで開く（開閉は端末に記憶） */
+  #controlPanel { display: none; }
+  body.spotOpen #controlPanel { display: block; top: 92px; max-height: calc(100dvh - 150px); }
+  body.spotOpen #panelToggle { background: rgba(58, 123, 213, 0.85); }
   /* 🛍 お店ピンの情報パネルに出すリンク（ホームページ・オンラインショップ・SNS） */
   #spotInfoLinks a {
     display: block; margin-top: 6px; padding: 6px; border-radius: 8px;
@@ -939,13 +962,19 @@
     #mvHeader .title small { display: none; }
     #backLink { font-size: 11px; padding: 5px 9px; white-space: nowrap; }
     #controlPanel { display: none; top: 96px; width: min(64vw, 230px); max-height: calc(100dvh - 200px); }
-    #panelToggle { display: block; }
+    #panelToggle { position: absolute; top: 52px; right: 10px; z-index: 21; padding: 8px 10px; font-size: 13px; }
     #floodNotice { top: 96px; font-size: 11px; }
     /* 左上ボタン群は☰メニューに集約（重なり対策） */
     #menuToggle { display: block; }
-    #topLeftBar { display: none; flex-direction: column; align-items: flex-start; top: 96px; max-height: calc(100dvh - 210px); overflow-y: auto; }
+    #topLeftBar { display: none; flex-direction: column; align-items: flex-start; top: 96px; max-height: calc(100dvh - 210px); overflow-y: auto; max-width: calc(100vw - 20px); /* PC用の 100vw-240px だと 375px 幅で 135px に潰れ項目が切れる */ }
     #topLeftBar.open { display: flex; }
     #topLeftBar button { width: max-content; }
+    /* ☰メニュー内ではカテゴリを開閉せず、見出し付きの縦一覧として平らに並べる */
+    .tbGroup { width: auto; }
+    .tbGroupBtn { pointer-events: none; opacity: 0.7; font-size: 11px !important; padding: 4px 8px !important; background: transparent !important; }
+    .tbGroupBtn .caret { display: none; }
+    .tbMenu { display: flex; position: static; padding: 0 0 4px 10px; background: transparent; box-shadow: none; }
+    .tbMenu button { width: max-content; }
     #puzzlePanel { top: 96px; max-height: calc(100dvh - 200px); }
   }
 </style>
@@ -956,10 +985,11 @@
 <div id="mvHeader">
   <div class="title">🌏 CBIメタバース印西<small>印西市3Dワールド</small></div>
   <div id="presenceChip"></div>
-  <a id="backLink" href="../index.html">← CBIサイトへ戻る</a>
+  <div class="hdrRight">
+    <button id="panelToggle" title="右の「スポットへ移動」一覧（駅・商業施設・公共施設への移動、歩行／飛行モード、浸水シミュレーション）を開閉します">📍 スポット</button>
+    <a id="backLink" href="../index.html">← CBIサイトへ戻る</a>
+  </div>
 </div>
-
-<button id="panelToggle">📍 スポット</button>
 <button id="menuToggle">☰ メニュー</button>
 
 <div id="mobileMoveBar">
@@ -970,34 +1000,55 @@
 </div>
 
 <div id="topLeftBar">
+  <!-- 常時表示（2026-09-05 整理：残りは4つの開閉メニューへ。ボタンの id と処理は変えていない） -->
   <button id="puzzleBtn">🏛 印西市文化財<span class="badge" id="puzzleCount">0/50</span></button>
-  <button id="reportsBtn" title="印西市の指定・登録文化財50件の学習レポート一覧を別タブで開きます（A4用紙1枚の両面で読める・印刷できる）">📄 学習レポート</button>
-  <button id="mapBtn" title="文化財50か所の平面地図を別タブで開きます。集めた文化財と、いま飛んでいる場所が地図に出るので、横で見ながら道案内ができます">🗺 文化財マップ</button>
-  <button id="pinToggleBtn" title="地図上の文化財ピンの表示／非表示を切り替えます">📍 表示中</button>
-  <button id="shelterToggleBtn" class="off" title="印西市の指定避難所・特別避難所・広域避難場所（公式55施設）のピンを表示／非表示します">🏫 避難所</button>
-  <button id="kominkanToggleBtn" class="off" title="印西市の公民館・交流館・文化ホールのピンを表示／非表示します（クリックで各施設の市公式ページへ）">🏢 公民館</button>
-  <button id="shopToggleBtn" class="off" title="FreeFree掲示板に住所とリンクを載せたお店のピンを表示／非表示します（クリックでホームページ・オンラインショップ・SNSへ）">🛍 お店</button>
-  <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
-  <button id="vsRaceBtn" title="USBゲームパッド2台で左右2画面の同時タイムレースを開始します">🎮 2Pレース</button>
-  <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
   <button id="nightBtn" class="off" title="街を夜景にします。星空・光の列・空にうかぶ いんザイ君のイルミネーションが出ます（イルミライINZAI向け。もう一度押すと昼に戻ります）">🌃 夜景</button>
   <button id="nightTourBtn" title="東の空から、いんザイ君の光のゲート10か所を順にくぐって千葉ニュータウン中央駅に降りる自動遊覧（約70秒）。操作すると途中でやめられます">🛸 夜間遊覧</button>
   <button id="nightHudBtn" title="宇宙船の操縦席の枠（支柱・足元の計器）を出す／消す。縦長の画面では既定で消えます">🛸 操縦席の枠</button>
   <button id="nightTtBtn" title="夜景タイムトライアル。いんザイ君の光のゲート10か所を番号順にくぐり、ゴールまでのタイムを競います（サーバー公式計測・全国ランキング。夜景中は T キーでも開けます）">⏱ 夜景TT</button>
-  <button id="liteBtn" class="off" title="動きが重い端末向け。描画の解像度を下げ、街並みを粗めに読み、空の表現やトンビを止めて軽くします（もう一度押すと元に戻ります）">🪶 軽量モード</button>
-  <button id="trafficBtn" class="off" title="テザリングで使うときの見張り。今日この端末がダウンロードした3D都市データの推定量を表示し、上限を決めておくと8割で注意、超えたら自動で軽量モードに切り替えます">📶 通信量</button>
-  <button id="bgmBtn" class="off" title="BGMを流します（おまかせ：昼は「セビーリャの砦」、夜景モードではクリスマス3曲）。もう一度押すと止まります。曲は隣の「曲」ボタンで選べます">🎵 BGM</button>
-  <button id="bgmPickBtn" title="BGMの曲を一覧から選びます（甘茶の音楽工房の4曲・自前打ち込み2曲・端末の音楽ファイル）。次回もこの端末では同じ曲が使われます">🎵 曲: おまかせ</button>
-  <input type="file" id="bgmFile" accept="audio/*" style="display:none">
-  <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
-  <button id="padCenterBtn" style="display:none" title="スティックから手を離した状態で押してください。いまの値をそのまま「手を離した位置」として覚え直します（コントローラーのOPTIONSボタンでも同じことができます）">🎯 中心合わせ</button>
-  <button id="padDebugBtn" title="コントローラーを認識しているか、各スティックがどんな値を出しているかを画面に表示します">🩺 診断</button>
-  <button id="noTilesBtn" title="3Dの街並みを読み込むかどうかを切り替えます。読み込まない検証モードなら、ピン・メニュー・コントローラーの確認を1日30回の表示枠を使わずに行えます">🔧 検証モード</button>
-  <button id="gridBtn" style="display:none" title="検証モードの緯度経度グリッドを出す／消す">▦ グリッド</button>
+  <div class="tbGroup" id="tbGroupPins">
+    <button class="tbGroupBtn" type="button" aria-haspopup="true" aria-expanded="false" title="地図に出すピンの種類を選びます">📍 ピン表示 <span class="caret">▾</span></button>
+    <div class="tbMenu">
+      <button id="pinToggleBtn" title="地図上の文化財ピンの表示／非表示を切り替えます">🏛 文化財ピン：表示中</button>
+      <button id="shelterToggleBtn" class="off" title="印西市の指定避難所・特別避難所・広域避難場所（公式55施設）のピンを表示／非表示します">🏫 避難所</button>
+      <button id="kominkanToggleBtn" class="off" title="印西市の公民館・交流館・文化ホールのピンを表示／非表示します（クリックで各施設の市公式ページへ）">🏢 公民館</button>
+      <button id="shopToggleBtn" class="off" title="FreeFree掲示板に住所とリンクを載せたお店のピンを表示／非表示します（クリックでホームページ・オンラインショップ・SNSへ）">🛍 お店</button>
+    </div>
+  </div>
+  <div class="tbGroup" id="tbGroupPlay">
+    <button class="tbGroupBtn" type="button" aria-haspopup="true" aria-expanded="false" title="学習レポート・文化財マップ・2Pレース・位置修正・トンビ">🎮 あそぶ <span class="caret">▾</span></button>
+    <div class="tbMenu">
+      <button id="reportsBtn" title="印西市の指定・登録文化財50件の学習レポート一覧を別タブで開きます（A4用紙1枚の両面で読める・印刷できる）">📄 学習レポート</button>
+      <button id="mapBtn" title="文化財50か所の平面地図を別タブで開きます。集めた文化財と、いま飛んでいる場所が地図に出るので、横で見ながら道案内ができます">🗺 文化財マップ</button>
+      <button id="vsRaceBtn" title="USBゲームパッド2台で左右2画面の同時タイムレースを開始します">🎮 2Pレース</button>
+      <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
+      <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
+    </div>
+  </div>
+  <div class="tbGroup" id="tbGroupSound">
+    <button class="tbGroupBtn" type="button" aria-haspopup="true" aria-expanded="false" title="BGMの再生と曲の選択">🎵 音 <span class="caret">▾</span></button>
+    <div class="tbMenu">
+      <button id="bgmBtn" class="off" title="BGMを流します（おまかせ：昼は「セビーリャの砦」、夜景モードではクリスマス3曲）。もう一度押すと止まります。曲は隣の「曲」ボタンで選べます">🎵 BGM</button>
+      <button id="bgmPickBtn" title="BGMの曲を一覧から選びます（甘茶の音楽工房の4曲・自前打ち込み2曲・端末の音楽ファイル）。次回もこの端末では同じ曲が使われます">🎵 曲: おまかせ</button>
+      <input type="file" id="bgmFile" accept="audio/*" style="display:none">
+    </div>
+  </div>
+  <div class="tbGroup" id="tbGroupSettings">
+    <button class="tbGroupBtn" type="button" aria-haspopup="true" aria-expanded="false" title="軽量モード・通信量・コントローラー・検証モード・撮影・録画">⚙ 設定 <span class="caret">▾</span></button>
+    <div class="tbMenu">
+      <button id="liteBtn" class="off" title="動きが重い端末向け。描画の解像度を下げ、街並みを粗めに読み、空の表現やトンビを止めて軽くします（もう一度押すと元に戻ります）">🪶 軽量モード</button>
+      <button id="trafficBtn" class="off" title="テザリングで使うときの見張り。今日この端末がダウンロードした3D都市データの推定量を表示し、上限を決めておくと8割で注意、超えたら自動で軽量モードに切り替えます">📶 通信量</button>
+      <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
+      <button id="padCenterBtn" style="display:none" title="スティックから手を離した状態で押してください。いまの値をそのまま「手を離した位置」として覚え直します（コントローラーのOPTIONSボタンでも同じことができます）">🎯 中心合わせ</button>
+      <button id="padDebugBtn" title="コントローラーを認識しているか、各スティックがどんな値を出しているかを画面に表示します">🩺 診断</button>
+      <button id="noTilesBtn" title="3Dの街並みを読み込むかどうかを切り替えます。読み込まない検証モードなら、ピン・メニュー・コントローラーの確認を1日30回の表示枠を使わずに行えます">🔧 検証モード</button>
+      <button id="gridBtn" style="display:none" title="検証モードの緯度経度グリッドを出す／消す">▦ グリッド</button>
+      <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 撮影</button>
+      <button id="recBtn" title="画面を動画（WebM）で録画します。もう一度押すと停止して保存されます">🎥 録画</button>
+    </div>
+  </div>
   <button id="modeSwitchBtn" title="イベント用途と防災用途を切り替えます">🔀 モード切替</button>
-  <button id="shotBtn" title="いまの画面を画像（PNG）で保存します。ボタン類は写りません">📸 撮影</button>
-  <button id="recBtn" title="画面を動画（WebM）で録画します。もう一度押すと停止して保存されます">🎥 録画</button>
   <button id="howtoBtn">❓ 使い方</button>
 </div>
 
@@ -1867,10 +1918,51 @@ SPOTS.forEach((spot) => {
   spotButtonsEl.appendChild(btn);
 });
 
+// 右のスポット一覧は既定で閉じ、📍ボタンで開閉する（2026-09-05。PC では開閉状態を端末に記憶。
+// スマホは画面が狭いので毎回閉じた状態で始める）
+const SPOT_PANEL_KEY = "cbi-meta-spotpanel-v1";
+function setSpotPanel(open) {
+  document.body.classList.toggle("spotOpen", !!open);
+  try { localStorage.setItem(SPOT_PANEL_KEY, open ? "1" : "0"); } catch (e) {}
+}
 document.getElementById("panelToggle").onclick = function () {
-  const panel = document.getElementById("controlPanel");
-  panel.style.display = (panel.style.display === "block") ? "none" : "block";
+  setSpotPanel(!document.body.classList.contains("spotOpen"));
 };
+try {
+  const narrow = window.matchMedia("(pointer: coarse), (max-width: 640px)").matches;
+  if (!narrow && localStorage.getItem(SPOT_PANEL_KEY) === "1") setSpotPanel(true);
+} catch (e) {}
+
+// ---- 上部ボタン群のカテゴリ別メニュー（PC。☰メニュー内では CSS で見出し付きの縦一覧に平らに並ぶ）----
+(function () {
+  const bar = document.getElementById("topLeftBar");
+  const groups = Array.from(bar.querySelectorAll(".tbGroup"));
+  // 押すと別の画面や別タブが開く項目は、押した時点でメニューを畳む（切替系は状態が見えるよう開いたまま）
+  const CLOSE_AFTER = ["reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
+  function closeAll(except) {
+    groups.forEach((g) => {
+      if (g === except) return;
+      g.classList.remove("open");
+      g.querySelector(".tbGroupBtn").setAttribute("aria-expanded", "false");
+    });
+  }
+  groups.forEach((g) => {
+    const btn = g.querySelector(".tbGroupBtn");
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = !g.classList.contains("open");
+      closeAll(g);
+      g.classList.toggle("open", open);
+      btn.setAttribute("aria-expanded", String(open));
+    });
+    g.querySelector(".tbMenu").addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (b && CLOSE_AFTER.indexOf(b.id) >= 0) closeAll();
+    });
+  });
+  document.addEventListener("click", (e) => { if (!e.target.closest(".tbGroup")) closeAll(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
+})();
 
 // ============================================================
 // 移動操作（WASD＋ドラッグ視点＋仮想ジョイスティック）
@@ -1981,7 +2073,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04u"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-05a"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -4666,6 +4758,7 @@ function applyMode(mode) {
     document.getElementById("bunkazaiModal").classList.remove("show");
     document.getElementById("ttModal").classList.remove("show");
     if (!shelterPinsVisible) document.getElementById("shelterToggleBtn").click(); // 初回は避難所データも取得
+    if (typeof setSpotPanel === "function") setSpotPanel(true); // 浸水シミュレーションは右パネル内なので開いて見せる
   }
   // ピンの初期状態
   if (bunkazaiPinsVisible !== game) { bunkazaiPinsVisible = game; applyBunkazaiPinVisibility(); }
@@ -4776,7 +4869,7 @@ function applyBunkazaiPinVisibility() {
     if (e) setPinVisible(e, bunkazaiPinsVisible);
   }
   const btn = document.getElementById("pinToggleBtn");
-  btn.textContent = bunkazaiPinsVisible ? "📍 表示中" : "📍 非表示";
+  btn.textContent = bunkazaiPinsVisible ? "🏛 文化財ピン：表示中" : "🏛 文化財ピン：非表示"; // メニュー内で何のピンか分かるように（2026-09-05）
   btn.classList.toggle("off", !bunkazaiPinsVisible);
 }
 document.getElementById("pinToggleBtn").addEventListener("click", function () {
@@ -5228,6 +5321,7 @@ if (shotBtnEl) shotBtnEl.onclick = captureScreenshot;
 let mediaRecorder = null;
 let recChunks = [];
 let recRestored = [];
+let recHome = null; // 録画中に最上位へ出した🎥録画ボタンの元の置き場所
 let recIndicator = null;
 function recSetIndicator(on) {
   if (on) {
@@ -5266,6 +5360,13 @@ function recStart() {
     const el = document.getElementById(id);
     if (el) { recRestored.push([el, el.style.display]); el.style.display = "none"; }
   });
+  // カテゴリメニューは畳み、🎥録画ボタンだけを最上位に出す（停止後に元の「⚙ 設定」へ戻す）
+  const recBtnNode = document.getElementById("recBtn");
+  if (bar && recBtnNode && recBtnNode.parentNode !== bar) {
+    recHome = { parent: recBtnNode.parentNode, next: recBtnNode.nextSibling };
+    bar.classList.add("recording");
+    bar.appendChild(recBtnNode);
+  }
 
   const stream = viewer.canvas.captureStream(30);
   const types = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
@@ -5287,6 +5388,9 @@ function recStart() {
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
     recRestored.forEach(function (pair) { pair[0].style.display = pair[1]; });
     recRestored = [];
+    const barEl = document.getElementById("topLeftBar");
+    if (barEl) barEl.classList.remove("recording");
+    if (recHome) { recHome.parent.insertBefore(document.getElementById("recBtn"), recHome.next); recHome = null; }
     recSetIndicator(false);
     document.getElementById("recBtn").textContent = "🎥 録画";
   };

@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-05",
+          "title": "メタバース上部ボタン群のカテゴリ別メニュー化＋右スポット一覧の既定クローズ（PC/スマホ両方をブラウザ検証） 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（topLeftBar を常時5個＋4グループに再構成、ドロップダウン CSS/JS、controlPanel の body.spotOpen 制御、panelToggle をヘッダーへ、録画中の recBtn 移動、夜景ボタンの初回表示修正、版 2026-09-05a）",
+            "site/metaverse/CLAUDE_HANDOFF.md（🧭 上部ボタン群の節を追加）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "3択で「カテゴリ別メニュー化」「既定で閉じる」を選択後に実装。検証は ?notiles=1 で PC 幅（1行に収まる・4メニューの開閉・外側クリックで閉じる・録画開始/停止で recBtn が移動して戻る・防災モードで右パネルが自動で開く）とスマホ幅（☰内で見出し付き縦一覧・幅の潰れ解消）を確認。他セッションの未コミット差分（2Pレース・admission.js）はハンク単位で除外して commit。session: 68a0580d-2b65-4334-89dc-0a8ecc591129 / output: 42,603 / cost: $17.32"
+        },
+        {
+          "date": "2026-09-05",
           "title": "展示動画v2（752MB）と夜景動画2本を Google Drive へアップロード（中司さん操作）し、Drive 側の配置を API で確認 0.1時間",
           "category": "広報",
           "outputs": [
@@ -4878,6 +4891,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🎥 録画停止後に「🏛 印西市文化財」「❓ 使い方」ボタンが消えたままになる不具合の修正（recStart の二重非表示）",
+          "category": "保守",
+          "priority": "低",
+          "note": "recStart が CAPTURE_HIDE_IDS と個別リストの両方で puzzleBtn/howtoBtn を隠し、recRestored の復元が順方向のため後に積んだ display:none が勝つ。復元を逆順にするか個別リストから2件を外せば直る。HEAD 以前からの不具合で 2026-09-05 のツールバー整理時に発見（ついで修正はせず登録のみ）"
+        },
         {
           "due": "2026-09-08",
           "title": "📣 展示動画v2（Drive リンク）を CBI メンバーへ共有案内する（文案は 2026-09-05 に作成済み）",
