@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-05c";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-05d";          // 参加画面に出す版。反映されているかを一目で確かめるため
   const NIGHT_FLOOR_HEIGHT = 70;            // 地中ロックの下限（楕円体高・標高約34m。コース一帯の地表は約60〜70m）
 
   // ---- 図柄（線画SVG） ----
@@ -950,11 +950,16 @@
     document.getElementById("nightTtModal").classList.add("show");
     document.getElementById("nightEntryTab1").onclick = function () { stopQrScan(); openEntryModal(1); };
     document.getElementById("nightEntryTab2").onclick = function () { stopQrScan(); openEntryModal(2); };
-    document.getElementById("nightEntryDone").onclick = function () { closeTtModal(); updateEntryChip(); };
+    document.getElementById("nightEntryDone").onclick = function () {
+      closeTtModal(); updateEntryChip();
+      // 会場モード：受付を閉じたら自動遊覧を始める（受付中に遊覧が走って噛み合わないのを防ぐ）
+      if (TOUR_PARAM && !tt.active && !tourRunning) startTour();
+    };
     const clr = document.getElementById("nightEntryClear");
     if (clr) clr.onclick = function () { clearLogin(claimSlot); applyVsNames(); openEntryModal(claimSlot); };
     const toTt = document.getElementById("nightEntryToTt");
     if (toTt) toTt.onclick = function () { stopQrScan(); openTtModal(); };
+    lastInputAt = performance.now();   // 受付中は放置とみなさない
     bindClaimSection();
     updateEntryChip();
   }
@@ -1323,7 +1328,7 @@
         bunkazaiPinsVisible = false; applyBunkazaiPinVisibility();
       }
     } catch (e) { /* 変数が無い版でも続ける */ }
-    if (TOUR_PARAM && !cameBackFromLogin) startTour();
+    if (TOUR_PARAM && !cameBackFromLogin && !ENTRY_PARAM) startTour();
   }
   if (cameBackFromLogin) { if (!window.nightOn) applyNight(true); setTimeout(openTtModal, 1200); }
   if (!q.get("cinema")) {
