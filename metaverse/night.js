@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-05f";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-05g";          // 参加画面に出す版。反映されているかを一目で確かめるため
   const NIGHT_FLOOR_HEIGHT = 70;            // 地中ロックの下限（楕円体高・標高約34m。コース一帯の地表は約60〜70m）
 
   // ---- 図柄（線画SVG） ----
@@ -909,6 +909,24 @@
     if (ps[1] && l2) ps[1].name = l2.nick;
   }
   setInterval(applyVsNames, 1000);
+  // 2人対戦（vs-race.js）の START は、1人目・2人目の受付が済むまで通さない（名前がランキング・結果に出るため）。
+  // vs-race.js は触らず、START ボタンのクリックを先取り（capture）して受付画面を出す
+  let vsGateBound = false;
+  function bindVsStartGate() {
+    if (vsGateBound) return;
+    const btn = document.getElementById("vsStartBtn");
+    if (!btn) return;
+    vsGateBound = true;
+    btn.addEventListener("click", function (e) {
+      const l1 = getLogin(1), l2 = getLogin(2);
+      if (l1 && l2) return;
+      e.stopImmediatePropagation(); e.preventDefault();
+      applyVsNames();
+      openEntryModal(l1 ? 2 : 1);
+      claimMsg("2人対戦を始めるには、1人目と2人目の受付（会員証QR／表示名）が必要です。", false);
+    }, true);
+  }
+  setInterval(bindVsStartGate, 1000);
 
   // 参加受付：会場の入口で 1人目／2人目 を照合する画面。右上のチップからいつでも開ける
   let entryChip = null;
@@ -946,7 +964,7 @@
       (cur ? '<p>✅ ' + (claimSlot === 2 ? "2人目" : "1人目") + "：<b>" + ttEsc(cur.nick) + '</b> さん　<button class="sub" id="nightEntryClear">この人を外す</button></p>' : "") +
       claimSectionHtml(claimSlot === 2 ? "2人目" : "1人目") +
       '<p><button class="go" id="nightEntryDone">✔ 受付を閉じる</button>' + (claimSlot === 1 && l1 ? '<button class="sub" id="nightEntryToTt">⏱ このままタイムレースへ</button>' : "") + "</p>" +
-      '<p class="note">受付をしなくても自由に飛べます。タイムレースに参加するときだけ、1人目の確認が必要です。</p>' +
+      '<p class="note">受付をしなくても自由に飛べます。夜景タイムレースは1人目、2人対戦は1人目と2人目の確認が必要です。</p>' +
       '<p class="note" style="text-align:right">版 ' + NIGHT_VERSION + "</p>";
     document.getElementById("nightTtModal").classList.add("show");
     document.getElementById("nightEntryTab1").onclick = function () { stopQrScan(); openEntryModal(1); };
