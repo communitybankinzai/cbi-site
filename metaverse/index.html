@@ -1981,7 +1981,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04r"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04s"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -5497,13 +5497,21 @@ async function startPlayDemo() {
     dN = (tb[0].lat - tb[1].lat) * mLat; dE = (tb[0].lon - tb[1].lon) * mLon;
     const L = Math.hypot(dN, dE) || 1; dN /= L; dE /= L;
   }
-  const startLat = tb[0].lat + dN * 700 / mLat;
-  const startLon = tb[0].lon + dE * 700 / mLon;
-  const START_H = 120;                      // 楕円体高。地表（約60〜70m）から 50m ほど上。ここから上昇する
+  let startLat = tb[0].lat + dN * 700 / mLat;
+  let startLon = tb[0].lon + dE * 700 / mLon;
+  let startHeading = Math.atan2(-dE, -dN);
+  let START_H = 120;                        // 楕円体高。地表（約60〜70m）から 50m ほど上。ここから上昇する
+  // ?from=<index>：その文化財の真上（100m）から、1か所目へ向かう向きで始める。長い録画を途中から撮り直して
+  // つなぐ用（2026-09-05。通し録画の後半でタイルが粗くなり、その地点以降だけ撮り直した）
+  const fromB = BUNKAZAI[parseInt(q.get("from") || "-1", 10)];
+  if (fromB) {
+    startLat = fromB.lat; startLon = fromB.lon; START_H = 100;
+    startHeading = Math.atan2((tb[0].lon - fromB.lon) * mLon, (tb[0].lat - fromB.lat) * mLat);
+  }
   viewer.camera.cancelFlight();             // 起動時の flyToSpot（3秒）が残っていると位置が上書きされる
   viewer.camera.setView({
     destination: Cesium.Cartesian3.fromDegrees(startLon, startLat, START_H),
-    orientation: { heading: Math.atan2(-dE, -dN), pitch: Cesium.Math.toRadians(-4), roll: 0 },
+    orientation: { heading: startHeading, pitch: Cesium.Math.toRadians(-4), roll: 0 },
   });
 
   // ---- 自動操縦：トンビの飛び方をまねる ----
@@ -5697,8 +5705,12 @@ async function startPlayDemo() {
   }
 
   // ---- 開始 ----
-  say("🦅 鳥になって<br>印西の空を <b>飛ぶ</b>", 3000);
-  await sleep(2600);
+  if (q.get("nointro") === "1") {           // 途中から撮り直すときは冒頭のテロップと待ちを省く
+    await sleep(200);
+  } else {
+    say("🦅 鳥になって<br>印西の空を <b>飛ぶ</b>", 3000);
+    await sleep(2600);
+  }
   beginClimb(tb[0]);
   // 安全弁：何かの理由で精霊が出ないまま 80 秒たったら終える（録画を止められるように）
   setTimeout(function () {
