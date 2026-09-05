@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-09-05",
+          "title": "展示動画の粗いタイル区間（12分以降）を撮り直して接合・BGM再合成、イルミライ用の夜景遊覧動画（クリスマス3曲・5周17分）を録画・生成、他の利用者の印が黒い四角になる不具合修正、文化財ずかんの3カードに画面イメージ（動画自動再生）追加 1.1時間",
+          "category": "実装",
+          "outputs": [
+            "events/2026-11-03_武蔵屋/展示動画/展示用_全50か所_21分_BGM入り_1080p.mp4（v2・752MB）",
+            "events/irumirai/夜景動画/夜景用_いんザイ君ゲート10か所_5周17分_クリスマス3曲_1080p.mp4 ほか1周版",
+            "events/irumirai/BGM/（クリスマス曲3本・README）",
+            "scripts/promo/record_play.mjs（--night・--tilewait・rec=1・入力検知の記録）",
+            "site/metaverse/index.html（版 2026-09-04s→t：?from/?nointro、トンビSVGの width/height、?rec=1 で presence に入らない）",
+            "site/bunkazai/index.html・site/assets/screens/（画面イメージ4点）",
+            "cidao/2026-09-02_メタバースプレイ動画の自動生成.md（撮り直し・夜景録画の節を追記）、events/README.md"
+          ],
+          "hours": 1.1,
+          "partnerApproved": false,
+          "note": "接合：原本0〜728秒＋撮り直し（from=43・tilewait 24）8秒以降。夜景録画は1回目が仮想8.6秒で中断（rec=1 なしで RT 接続あり）、rec=1 の2回目で完走（4,141フレーム・実2時間38分）。黒い四角の原因は SVG に width/height が無く createImageBitmap が失敗する現象を実測で特定。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627 / output: 586,642 / cost: $501.79（累計。先に記録した 4.8h を差し引いた残りを計上）"
+        },
+        {
+          "date": "2026-09-05",
           "title": "発表スライドをhtml2pptx方式へ移行し、発表用・音声版の2本を生成 1.2時間",
           "category": "実装",
           "outputs": "academy/06_発表/build_h2p.py（新規・slides.md→html2pptx用HTML24枚）、academy/06_発表/fit_loop.py（新規・はみ出し自動調整）、academy/06_発表/build_two_pptx.ps1（html2pptx版へ更新）、academy/06_発表/add_animation.ps1（上端で段を判定する方式へ）、academy/06_発表/卒論発表スライド_発表用.pptx（1.62MB）・卒論発表スライド_音声版.pptx（8.27MB・音声24本）・卒論発表スライド.pdf（1.64MB）、C:\\Repos\\slides-h2p（html2pptx.js・convert.js・node_modules）",
@@ -4821,6 +4838,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-12",
+          "title": "🌃 夜景の自動遊覧中に通信量チップ（本日 推定○MB）が再表示されるのを止める（会場の tour=1 画面で目立つ）",
+          "category": "実装",
+          "priority": "中",
+          "note": "hideUiForTour で隠しても、通信モニタの更新（index.html の trafficChip 更新処理）が display を戻す。録画では drawbox で塗って回避した（2026-09-05）。修正は更新処理側で『遊覧中は表示しない』にするのが筋"
+        },
+        {
+          "due": "2026-09-08",
+          "title": "📤 展示動画v2（752MB）と夜景動画2本を Google Drive（展示動画／夜景動画フォルダ）へアップロードし、メンバーへ共有案内を送る",
+          "category": "広報",
+          "priority": "高",
+          "note": "OneDrive 側の原本は配置済み（2026-09-05）。Drive の展示動画フォルダには旧・無音版が残っているので差し替える。アップロードは中司さんの操作（Claude からの直接アップロードは容量が大きく未検証）"
+        },
         {
           "due": "2026-12-01",
           "title": "📉 卒業論文を20ページ以内に収める（文献・図表を含めて6ページ超過）",
