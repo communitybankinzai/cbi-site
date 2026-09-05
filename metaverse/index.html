@@ -1981,7 +1981,7 @@ const PAD_STUCK_LIMIT = 0.15;      // 吸収の対象はごく小さい入力だ
 const PAD_STUCK_AUTO = new URLSearchParams(location.search).get("padauto") === "1";
 const PAD_STUCK_NOTICE_MS = 20000; // 吸収したことを知らせる最短間隔
 const PAD_MIN_RANGE = 0.02;        // 可動域がこれ以下の向きは、もう倒せないものとして扱う
-const PAD_TUNING_VERSION = "2026-09-04s"; // 診断パネルに出す。反映されているかを一目で確かめるため
+const PAD_TUNING_VERSION = "2026-09-04t"; // 診断パネルに出す。反映されているかを一目で確かめるため
 const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
@@ -5935,7 +5935,9 @@ setInterval(rtRenderPeerList, 1000);
 // 画面上では「相手が進む方向」へ矢印が向く（遠ざかる相手は地平線の方、近づく相手は手前）
 // 他の利用者の印：上から見たトンビのシルエット（頭が進行方向。2026-09-03 に矢印から変更）
 const RT_BIRD = "data:image/svg+xml;utf8," + encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+  // width/height は必須。無いと Chrome の createImageBitmap が「SVG without natural dimensions」で失敗し、
+  // 黒い四角（画像の無いビルボード）として描かれる（2026-09-05 実機で発覚）
+  '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">' +
   '<path d="M32 4 C34 4 36 7 36 11 L36 20 C44 18 56 16 62 22 C58 26 48 30 38 32 L38 40 C41 44 44 50 42 58 L32 52 L22 58 C20 50 23 44 26 40 L26 32 C16 30 6 26 2 22 C8 16 20 18 28 20 L28 11 C28 7 30 4 32 4 Z"' +
   ' fill="#ffd166" stroke="#1a2533" stroke-width="2.5" stroke-linejoin="round"/></svg>');
 const RT_ARROW = RT_BIRD; // 旧名（参照が残っていても動くように）
@@ -6068,7 +6070,7 @@ function rtConnect() {
     b.addEventListener("click", function () { rtSendStamp(b.getAttribute("data-stamp")); });
   });
 }
-if (!new URLSearchParams(location.search).get("cinema")) { // 撮影・告知モードでは繋がない
+if (!new URLSearchParams(location.search).get("cinema") && !new URLSearchParams(location.search).get("rec")) { // 撮影・告知モード（?cinema／?rec=1）では繋がない。録画用の裏ブラウザが「いっしょに飛んでいる人」に出てしまうため
   try { rtConnect(); } catch (e) { console.warn("realtime 接続に失敗", e); }
 }
 
