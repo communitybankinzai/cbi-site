@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-05",
+          "title": "メタバースBGMをプリセット一覧（甘茶の音楽工房4曲・クリスマス3曲つづけて・自前2曲・端末ファイル）から選べるようにし、再生用m4aと出典READMEを追加 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（版 2026-09-04u：BGM_PRESETS・順送り再生・一覧パネル）",
+            "site/metaverse/assets/audio/amacha_*.m4a（4曲）・README.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "ユーザー要望「音楽はプリセットを選択する形がいい。ドライブから探し出すのがかなり大変」。ローカルで一覧表示・選択即再生・3曲の順送り（ended で次へ）・おまかせの昼夜切替を実測。session: 7a797c4f-e3d7-4f64-8666-7cc85ef78627（累計 output 約60万・$510。先の実績を差し引いた残りを計上）"
+        },
+        {
+          "date": "2026-09-05",
           "title": "展示動画の粗いタイル区間（12分以降）を撮り直して接合・BGM再合成、イルミライ用の夜景遊覧動画（クリスマス3曲・5周17分）を録画・生成、他の利用者の印が黒い四角になる不具合修正、文化財ずかんの3カードに画面イメージ（動画自動再生）追加 1.1時間",
           "category": "実装",
           "outputs": [
