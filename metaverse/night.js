@@ -33,7 +33,10 @@
   const GATE_MAX_POINTS = 2000;             // 1ゲートあたりの光の粒の上限（10ゲートで最大2万）
   const NIGHT_BEST_KEY = "cbi-meta-night-best-v1";
   const NIGHT_LOCAL_RANK_KEY = "cbi-meta-night-local-v1";
-  const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
+  const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
+  const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
+  const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
+  const NIGHT_VERSION = "2026-09-05c";          // 参加画面に出す版。反映されているかを一目で確かめるため
   const NIGHT_FLOOR_HEIGHT = 70;            // 地中ロックの下限（楕円体高・標高約34m。コース一帯の地表は約60〜70m）
 
   // ---- 図柄（線画SVG） ----
@@ -879,9 +882,10 @@
     try { localStorage.setItem(LOGIN_TOKEN_KEY, decodeURIComponent(m[1])); } catch (e) { /* 保存できなくても続ける */ }
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
   }
-  function getLogin() {
+  function tokenKey(slot) { return slot === 2 ? LOGIN_TOKEN_KEY_P2 : LOGIN_TOKEN_KEY; }
+  function getLogin(slot) {
     let tok = null;
-    try { tok = localStorage.getItem(LOGIN_TOKEN_KEY); } catch (e) { return null; }
+    try { tok = localStorage.getItem(tokenKey(slot)); } catch (e) { return null; }
     if (!tok) return null;
     try {
       const body = tok.split(".")[0].replace(/-/g, "+").replace(/_/g, "/");
@@ -890,11 +894,71 @@
       return { token: tok, nick: String(p.nick), uid: String(p.uid || "") };
     } catch (e) { return null; }
   }
-  function clearLogin() { try { localStorage.removeItem(LOGIN_TOKEN_KEY); } catch (e) { /* 同上 */ } }
+  function clearLogin(slot) { try { localStorage.removeItem(tokenKey(slot)); } catch (e) { /* 同上 */ } }
   function loginUrl() {
     return AUTH_URL + "?return=" + encodeURIComponent(location.origin + location.pathname + location.search);
   }
   window.nightLogin = getLogin;
+
+  // 2人対戦（vs-race.js）が動いていれば、照合した名前を PLAYER 1／2 に入れる（vs-race.js は触らず、公開されている vsRacePlayers に書く）
+  function applyVsNames() {
+    const ps = window.vsRacePlayers;
+    if (!ps || !ps.length) return;
+    const l1 = getLogin(1), l2 = getLogin(2);
+    if (ps[0] && l1) ps[0].name = l1.nick;
+    if (ps[1] && l2) ps[1].name = l2.nick;
+  }
+  setInterval(applyVsNames, 1000);
+
+  // 参加受付：会場の入口で 1人目／2人目 を照合する画面。右上のチップからいつでも開ける
+  let entryChip = null;
+  function ensureEntryChip() {
+    if (entryChip) return;
+    const st = document.createElement("style");
+    st.textContent = "#nightEntryChip{position:absolute;top:52px;right:10px;z-index:61;background:rgba(20,30,40,0.85);color:#fff;border:1px solid rgba(120,230,255,0.4);border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer;line-height:1.5;}" +
+      "#nightEntryChip b{color:#ffd166}" +
+      "#nightTtModal .tabs button{background:#2a3a55;color:#fff;margin:0 6px 8px 0;}#nightTtModal .tabs button.on{background:#ffd166;color:#1a2533;font-weight:bold;}";
+    document.head.appendChild(st);
+    entryChip = document.createElement("div");
+    entryChip.id = "nightEntryChip";
+    entryChip.title = "参加受付（会員証QR／表示名で1人目・2人目を照合）";
+    entryChip.onclick = function () { openEntryModal(getLogin(1) ? 2 : 1); };
+    document.body.appendChild(entryChip);
+    updateEntryChip();
+  }
+  function updateEntryChip() {
+    if (!entryChip) return;
+    const l1 = getLogin(1), l2 = getLogin(2);
+    entryChip.innerHTML = "👤 受付　1人目：<b>" + (l1 ? ttEsc(l1.nick) : "未") + "</b>　2人目：<b>" + (l2 ? ttEsc(l2.nick) : "未") + "</b>";
+  }
+  function openEntryModal(slot) {
+    ensureHud(); ensureEntryChip();
+    if (tourRunning) cancelTour();
+    claimSlot = slot === 2 ? 2 : 1; claimFrom = "entry";
+    const inner = document.getElementById("nightTtInner");
+    const l1 = getLogin(1), l2 = getLogin(2);
+    const cur = getLogin(claimSlot);
+    inner.innerHTML =
+      "<h2>👤 参加受付（CiDAO 登録者の確認）</h2>" +
+      "<p>このワールドの記録やレースは <b>CiDAO（市民DAO）の登録者</b> の名前で行います。会員証QR（CiDAO トップページの会員QR）か表示名で確認してください。2人対戦は1人目＝PLAYER 1、2人目＝PLAYER 2 になります。</p>" +
+      '<div class="tabs"><button id="nightEntryTab1"' + (claimSlot === 1 ? ' class="on"' : "") + ">1人目" + (l1 ? "：" + ttEsc(l1.nick) : "（未）") + "</button>" +
+      '<button id="nightEntryTab2"' + (claimSlot === 2 ? ' class="on"' : "") + ">2人目" + (l2 ? "：" + ttEsc(l2.nick) : "（未）") + "</button></div>" +
+      (cur ? '<p>✅ ' + (claimSlot === 2 ? "2人目" : "1人目") + "：<b>" + ttEsc(cur.nick) + '</b> さん　<button class="sub" id="nightEntryClear">この人を外す</button></p>' : "") +
+      claimSectionHtml(claimSlot === 2 ? "2人目" : "1人目") +
+      '<p><button class="go" id="nightEntryDone">✔ 受付を閉じる</button>' + (claimSlot === 1 && l1 ? '<button class="sub" id="nightEntryToTt">⏱ このままタイムレースへ</button>' : "") + "</p>" +
+      '<p class="note" style="text-align:right">版 ' + NIGHT_VERSION + "</p>";
+    document.getElementById("nightTtModal").classList.add("show");
+    document.getElementById("nightEntryTab1").onclick = function () { stopQrScan(); openEntryModal(1); };
+    document.getElementById("nightEntryTab2").onclick = function () { stopQrScan(); openEntryModal(2); };
+    document.getElementById("nightEntryDone").onclick = function () { closeTtModal(); updateEntryChip(); };
+    const clr = document.getElementById("nightEntryClear");
+    if (clr) clr.onclick = function () { clearLogin(claimSlot); applyVsNames(); openEntryModal(claimSlot); };
+    const toTt = document.getElementById("nightEntryToTt");
+    if (toTt) toTt.onclick = function () { stopQrScan(); openTtModal(); };
+    bindClaimSection();
+    updateEntryChip();
+  }
+  window.openNightEntry = openEntryModal;
 
   // 会員照合の入力欄（QR・表示名・LINE）。ログイン中は「別の人で参加」用に折りたたんで出す
   function claimSectionHtml(who) {
@@ -904,21 +968,21 @@
       '<div class="box"><b>⌨ CiDAO の表示名（ニックネーム）を入力</b><br>' +
       '<input id="nightTtClaimName" maxlength="40" placeholder="CiDAO に登録した表示名" style="margin:6px 0"><button class="go" id="nightTtClaim">この名前で参加</button>' +
       '<p class="note">登録と一致した表示名だけ参加できます。同じ表示名の人が複数いるときは LINE ログインか会員証QRをお願いします。</p></div>' +
-      '<p><button class="login" id="nightTtLogin">🔐 LINE でログインして参加' + (who ? "（" + who + "）" : "（別の方法）") + '</button></p>' +
+      (claimSlot === 2 ? "" : '<p><button class="login" id="nightTtLogin">🔐 LINE でログインして参加' + (who ? "（" + who + "）" : "（別の方法）") + '</button></p>') +
       '<p class="note" id="nightTtClaimMsg"></p>';
   }
   function bindClaimSection() {
     const login = document.getElementById("nightTtLogin");
     if (login) login.onclick = function () {
-      clearLogin();
+      clearLogin(1);
       try { sessionStorage.setItem("cbi-meta-night-login-pending", "1"); } catch (e) { /* 同上 */ }
       location.href = loginUrl();
     };
     const claimBtn = document.getElementById("nightTtClaim"), nameEl = document.getElementById("nightTtClaimName");
-    if (claimBtn) claimBtn.onclick = function () { clearLogin(); claimByName(nameEl.value); };
-    if (nameEl) nameEl.onkeydown = function (e) { if (e.key === "Enter") { clearLogin(); claimByName(this.value); } };
+    if (claimBtn) claimBtn.onclick = function () { clearLogin(claimSlot); claimByName(nameEl.value); };
+    if (nameEl) nameEl.onkeydown = function (e) { if (e.key === "Enter") { clearLogin(claimSlot); claimByName(this.value); } };
     const scan = document.getElementById("nightTtScan"), stop = document.getElementById("nightTtScanStop");
-    if (scan) scan.onclick = function () { clearLogin(); startQrScan(); };
+    if (scan) scan.onclick = function () { clearLogin(claimSlot); startQrScan(); };
     if (stop) stop.onclick = stopQrScan;
   }
   async function openTtModal() {
@@ -945,10 +1009,12 @@
       '<p>🎮 右スティック（視点）の速さ：<select id="nightLookSens">' + LOOK_SENS_OPTIONS.map(function (o) {
         return '<option value="' + o[0] + '"' + (parseFloat(o[0]) === lookSens ? " selected" : "") + ">" + o[1] + "</option>";
       }).join("") + '</select> <small>小さく倒したときは細かく、大きく倒したときだけ速く回ります</small></p>' +
-      '<div id="nightTtRank"><p>ランキングを読み込み中…</p></div>';
+      '<div id="nightTtRank"><p>ランキングを読み込み中…</p></div>' +
+      '<p class="note" style="text-align:right">版 ' + NIGHT_VERSION + '</p>';
     document.getElementById("nightTtModal").classList.add("show");
     document.getElementById("nightLookSens").onchange = function () { setLookSens(parseFloat(this.value)); };
     if (login) document.getElementById("nightTtGo").onclick = function () { startTt(login.nick, login.token); };
+    claimSlot = 1; claimFrom = "tt";
     bindClaimSection();
     document.getElementById("nightTtClose").onclick = closeTtModal;
     Array.prototype.forEach.call(document.querySelectorAll('input[name="nightCourse"]'), function (r) {
@@ -963,13 +1029,15 @@
       rankEl.innerHTML = rankingTable(loadLocal(), myName, "🏆 この端末の順位表（サーバーに繋がらないため参考記録）");
     }
   }
-  function closeTtModal() { stopQrScan(); document.getElementById("nightTtModal").classList.remove("show"); }
+  function closeTtModal() { stopQrScan(); document.getElementById("nightTtModal").classList.remove("show"); updateEntryChip(); }
 
   // ---- 会員照合（表示名／会員証QR）：CiDAO API の claim が署名トークンを返す ----
   function claimMsg(text, ok) {
     const el = document.getElementById("nightTtClaimMsg");
     if (el) { el.textContent = text; el.style.color = ok ? "#6ee7a8" : "#ff9ecb"; }
   }
+  let claimSlot = 1;               // いま照合している人（1=1人目／2=2人目）
+  let claimFrom = "tt";            // 照合後に戻る画面（tt=参加画面／entry=参加受付）
   async function claim(payload) {
     claimMsg("照合しています…", true);
     try {
@@ -978,10 +1046,11 @@
       if (res.status === 409) { claimMsg("同じ表示名の会員が複数いるため特定できません。LINE ログインで参加してください。", false); return false; }
       if (!res.ok) { claimMsg("照合できませんでした（" + res.status + "）。しばらくして再度お試しください。", false); return false; }
       const d = await res.json();
-      try { localStorage.setItem(LOGIN_TOKEN_KEY, d.token); } catch (e) { /* 保存できなくても続ける */ }
+      try { localStorage.setItem(tokenKey(claimSlot), d.token); } catch (e) { /* 保存できなくても続ける */ }
       stopQrScan();
-      caption("👤 <b>" + ttEsc(d.nick) + "</b> さんで参加します", 2500);
-      openTtModal();
+      caption("👤 <b>" + ttEsc(d.nick) + "</b> さんで参加します" + (claimSlot === 2 ? "<small>（2人目）</small>" : ""), 2500);
+      applyVsNames();
+      if (claimFrom === "entry") openEntryModal(claimSlot); else openTtModal();
       return true;
     } catch (e) { claimMsg("サーバーに繋がりません。", false); return false; }
   }
@@ -1082,7 +1151,7 @@
         tt.trialId = null; tt.official = false;
         // ログインの期限切れ・偽トークンはサーバーが 401 で断る → 中止してログインし直してもらう
         if (/401/.test(String(e && e.message))) {
-          clearLogin();
+          clearLogin(1);
           ttAbortNight("ログインの有効期限が切れました。もう一度ログインしてください");
           setTimeout(openTtModal, 1500);
         }
@@ -1136,7 +1205,7 @@
     inner.innerHTML = h;
     document.getElementById("nightTtModal").classList.add("show");
     document.getElementById("nightTtAgain").onclick = function () { openTtModal(); };
-    document.getElementById("nightTtNext").onclick = function () { clearLogin(); openTtModal(); };
+    document.getElementById("nightTtNext").onclick = function () { clearLogin(1); openTtModal(); };
     document.getElementById("nightTtClose2").onclick = closeTtModal;
     const info = await fetchInfo();
     const rankEl = document.getElementById("nightTtRank2");
@@ -1195,7 +1264,7 @@
     if (anyKey || (joyState && joyState.active) || gamepadActive()) noteInput();
     if (TOUR_PARAM && !tourRunning && !tt.active &&
         !document.getElementById("nightTtModal").classList.contains("show") &&
-        performance.now() - lastInputAt > IDLE_RESTART_MS) { clearLogin(); startTour(); }
+        performance.now() - lastInputAt > IDLE_RESTART_MS) { clearLogin(1); clearLogin(2); updateEntryChip(); startTour(); }
   }, 500);
 
   // 地中ロック：夜景モード中は楕円体高 NIGHT_FLOOR_HEIGHT を下限にし、地面（タイルの高さ）が取れるときはその 3m 上を下限にする。
@@ -1257,4 +1326,8 @@
     if (TOUR_PARAM && !cameBackFromLogin) startTour();
   }
   if (cameBackFromLogin) { if (!window.nightOn) applyNight(true); setTimeout(openTtModal, 1200); }
+  if (!q.get("cinema")) {
+    ensureEntryChip();
+    if (ENTRY_PARAM && !cameBackFromLogin) setTimeout(function () { openEntryModal(getLogin(1) ? 2 : 1); }, 800);
+  }
 })();
