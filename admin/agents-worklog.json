@@ -17,6 +17,23 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-06",
+          "title": "別セッション（Codex）の2人対戦・入場枠の未コミット作業を引き継ぎ、入場枠APIを日単位に直して公開 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/admission.js（新規・引継ぎ）",
+            "site/metaverse/sky-tag.js（新規・引継ぎ）",
+            "site/metaverse/vs-race.js",
+            "site/metaverse/index.html（版 2026-09-06a）",
+            "C:\\Repos\\cidao src/app/api/metaverse-admission/route.ts（累計→日単位・上限を app_settings で変更可）",
+            "site/admin/changelog.json（2件）",
+            "site/metaverse/CLAUDE_HANDOFF.md"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "引き継ぎ時点で cidao 側の入場枠APIは未コミット（本番404）で、site 側が先に commit されると入場が全員お断りになる状態だった。累計30回（二度と入れない）を Google の集計日に合わせた日単位に直し、上限を app_settings で変えられるようにして両方 push。ヘッドレスで 2P RACE／おにごっこ の起動、入場枠の許可／満了画面を確認（検証で当日枠を2回消費）。実機（パッド2台）未確認。session: 9bb79d7f-6ee9-4e3f-83ee-7ae28ddef41c（累計。先の実績を差し引いた残りを計上）"
+        },
+        {
           "date": "2026-09-05",
           "title": "メタバース上部ボタン群のカテゴリ別メニュー化＋右スポット一覧の既定クローズ（PC/スマホ両方をブラウザ検証） 0.5時間",
           "category": "実装",
@@ -4891,6 +4908,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-13",
+          "title": "🎫 イベント当日は Google の root 枠と一緒に、入場枠API の上限（app_settings metaverse_admission.limit）も引き上げる",
+          "category": "事務",
+          "priority": "高",
+          "note": "入場枠を自前で数えるようにしたため、Google 側だけ上げても自前の30回で止まる。当日朝に両方を上げ、終了後に戻す（既存の予定『root requests/日の枠を引き上げる』とセットで実施）"
+        },
         {
           "due": "未定",
           "title": "🔐 入場受付を「CiDAO 加入の導線」として設計・実装する（3D読み込みは受付後・未登録者は登録へ誘導）",
