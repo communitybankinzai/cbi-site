@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-06",
+          "title": "メタバースの入場受付を必須化（CiDAO 登録者の確認→入場枠→3D読み込みの順に組み替え、未登録者向け登録QRを受付画面に追加）0.5時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/night.js（RECEPTION_REQUIRED／ensureMetaverseReception／登録QR／必須モードの受付画面）",
+            "site/metaverse/index.html（loadTileset の先頭で受付を待つ）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json",
+            "cidao/2026-09-04_メタバース夜景フライトモード（イルミライ向け）.md"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "ヘッドレス（puppeteer・?notiles 無し）で確認：照合前は受付が出て閉じるボタン無し・登録QR（SVG）表示・入場枠API と 3D Tiles の要求ゼロ・Esc 無効／表示名で照合すると受付が閉じ、入場枠 POST → root.json 要求の順（localhost は 403 で正常）。cinema／notiles は対象外。防災モードも受付必須になる点は要判断として plans に登録。session: 9bb79d7f-6ee9-4e3f-83ee-7ae28ddef41c / output: 415,752 / cost: $322.00（このセッション累計。差分 0.46h）"
+        },
+        {
+          "date": "2026-09-06",
           "title": "別セッション（Codex）の2人対戦・入場枠の未コミット作業を引き継ぎ、入場枠APIを日単位に直して公開 0.4時間",
           "category": "実装",
           "outputs": [
@@ -4909,18 +4924,25 @@
       ],
       "plans": [
         {
+          "due": "2026-09-13",
+          "title": "🔐 防災モード（?mode=bousai）と文化財めぐりも入場受付を必須のままにするか決める（災害MAPからの平時導線が受付で止まる）",
+          "category": "実装",
+          "priority": "高",
+          "note": "2026-09-06 の必須化は cinema／notiles 以外の全モードに掛かる。災害MAPヘッダーの「メタバース印西（3D）」リンクから来た人も CiDAO 登録が要る。選択肢：(A) 全モード必須のまま（加入導線を最優先）(B) 防災モードだけ免除（?mode=bousai を RECEPTION_REQUIRED から外す）(C) 文化財めぐりも免除。推奨 A（1日30枠の節約と加入導線の両立）。決めたら night.js の RECEPTION_REQUIRED を1行直す"
+        },
+        {
+          "due": "2026-09-20",
+          "title": "📈 入場受付の効果測定：登録QR（utm_source=metaverse）経由で CiDAO に登録した人数を数えられるようにする",
+          "category": "実装",
+          "priority": "中",
+          "note": "登録QRの URL に utm_source=metaverse&utm_medium=reception&utm_campaign=entry を付けてあるが、CiDAO 側は utm を保存していない。案：/login で utm を cookie に持ち、auth/callback で members に signup_source を残す。受付画面でも「新規登録→即入場」の件数を app_settings に日次で数える。イベント後に『受付で何人が新規登録したか』を報告するため"
+        },
+        {
           "due": "2026-11-13",
           "title": "🎫 イベント当日は Google の root 枠と一緒に、入場枠API の上限（app_settings metaverse_admission.limit）も引き上げる",
           "category": "事務",
           "priority": "高",
           "note": "入場枠を自前で数えるようにしたため、Google 側だけ上げても自前の30回で止まる。当日朝に両方を上げ、終了後に戻す（既存の予定『root requests/日の枠を引き上げる』とセットで実施）"
-        },
-        {
-          "due": "未定",
-          "title": "🔐 入場受付を「CiDAO 加入の導線」として設計・実装する（3D読み込みは受付後・未登録者は登録へ誘導）",
-          "category": "実装",
-          "priority": "中",
-          "note": "2026-09-06 中司さん方針：30回/日の枠を守るためだけでなく、CiDAO 加入者を増やす導線として入場受付を設計する。案：①入場画面＝登録者は会員証QR／表示名で即入場、未登録者には『CiDAO に登録すると入場・記録・レースに参加できる』と登録QR（スマホで LINE 登録→表示名設定→戻る）を出す ②登録前でも魅力が伝わるよう、受付画面の背景で自動遊覧（タイル読込なしの動画 or 軽量表示）を流す ③登録→メタバースへ戻る導線（初回ログインの表示名確認画面から戻れない問題を先に直す） ④会場では受付QRを紙でも掲示 ⑤導線の効果測定：メタバース経由の登録数（utm／referrer を members に記録 or app_settings で日次集計）。技術：index.html の loadTileset() を受付確認後に呼ぶ（root request を未登録者に使わせない）。受付部品は night.js の claim（会員証QR・表示名・LINE）を流用。⚠ 別セッション（Codex・2人対戦）が admission.js（/api/metaverse-admission で30回の入場枠をサーバー側で数え、超過時は入場お断り画面）を未コミットで実装中。入場受付はこの admission の後段に置く前提で、着手前に共有ボードで分担を確認する。一般利用（文化財学習・防災）が登録必須になる影響は代表と確認する"
         },
         {
           "due": "未定",
