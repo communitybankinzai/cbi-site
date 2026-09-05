@@ -393,20 +393,40 @@ const UNREAD_POLL_MS = 30000;
       const r = await gasCall({ action: 'listSnsQueue', password: state.password });
       if (!r || !r.ok) { wrap.innerHTML = '<p class="meta-note">取得失敗: ' + esc((r && r.error) || 'unknown') + '</p>'; return; }
       if (!r.queue.length) { wrap.innerHTML = '<p class="meta-note">予約はまだありません</p>'; return; }
-      wrap.innerHTML = r.queue.map(q => `
+      // 予約中・処理中は上にカードで開いて表示し、終わったもの（投稿済み・一部・失敗・取消）は
+      // 1行にたたんで下にまとめる（2026-09-05「終わったものはたたんで見やすく」）。クリックで開く
+      const isVideo = (u) => /\.(mp4|mov)(\?|#|$)/i.test(u || '');
+      const media = (q) => q.imageUrl ? (isVideo(q.imageUrl)
+        ? `<video src="${esc(q.imageUrl)}" controls preload="metadata" playsinline style="max-width: 160px; max-height: 240px; border-radius: 8px; margin: 4px 0; border: 1px solid var(--c-line); background:#000;"></video>`
+        : `<a href="${esc(q.imageUrl)}" target="_blank" rel="noopener"><img src="${esc(q.imageUrl)}" alt="投稿画像" style="max-width: 160px; max-height: 160px; border-radius: 8px; margin: 4px 0; border: 1px solid var(--c-line);"></a>`) : '';
+      const tags = (q) => `${q.threads ? ' / Threads' : ''}${q.instagram ? ' / Instagram' : ''}${isVideo(q.imageUrl) ? ' / 🎬動画' : ''}`;
+      const body = (q) => `
+          <p style="font-size: 0.8rem; white-space: pre-wrap; margin: 6px 0; color: var(--c-ink-sub);">${esc(q.text)}</p>
+          ${media(q)}
+          ${q.note ? `<p style="font-size: 0.7rem; color: var(--c-ink-sub);">${esc(q.note)}</p>` : ''}`;
+      const active = r.queue.filter(q => q.status === 'scheduled' || q.status === 'processing');
+      const done = r.queue.filter(q => !(q.status === 'scheduled' || q.status === 'processing')).slice().reverse(); // 新しい順
+      const cards = active.map(q => `
         <div style="border: 1px solid var(--c-line); border-radius: var(--radius); padding: 10px; margin-bottom: 8px;">
           <div style="display: flex; justify-content: space-between; gap: 8px; align-items: baseline;">
             <strong style="font-size: 0.85rem;">${esc(q.scheduledAt)}</strong>
-            <span style="font-size: 0.75rem;">${esc(SNSQ_STATUS_LABEL[q.status] || q.status)}
-              ${q.threads ? ' / Threads' : ''}${q.instagram ? ' / Instagram' : ''}${/\.(mp4|mov)(\?|#|$)/i.test(q.imageUrl || '') ? ' / 🎬動画' : ''}</span>
+            <span style="font-size: 0.75rem;">${esc(SNSQ_STATUS_LABEL[q.status] || q.status)}${tags(q)}</span>
           </div>
-          <p style="font-size: 0.8rem; white-space: pre-wrap; margin: 6px 0; color: var(--c-ink-sub);">${esc(q.text)}</p>
-          ${q.imageUrl ? (/\.(mp4|mov)(\?|#|$)/i.test(q.imageUrl)
-            ? `<video src="${esc(q.imageUrl)}" controls preload="metadata" playsinline style="max-width: 160px; max-height: 240px; border-radius: 8px; margin: 4px 0; border: 1px solid var(--c-line); background:#000;"></video>`
-            : `<a href="${esc(q.imageUrl)}" target="_blank" rel="noopener"><img src="${esc(q.imageUrl)}" alt="投稿画像" style="max-width: 160px; max-height: 160px; border-radius: 8px; margin: 4px 0; border: 1px solid var(--c-line);"></a>`) : ''}
-          ${q.note ? `<p style="font-size: 0.7rem; color: var(--c-ink-sub);">${esc(q.note)}</p>` : ''}
+          ${body(q)}
           ${q.status === 'scheduled' ? `<button type="button" class="btn btn-ghost btn-sm" data-snsq-cancel="${esc(q.id)}">取消</button>` : ''}
         </div>`).join('');
+      const rows = done.map(q => `
+        <details style="border: 1px solid var(--c-line); border-radius: var(--radius); padding: 4px 10px; margin-bottom: 4px;">
+          <summary style="cursor: pointer; font-size: 0.8rem; display: flex; gap: 8px; align-items: baseline; list-style: none;">
+            <span style="color: var(--c-ink-sub); flex: none;">▸</span>
+            <strong style="flex: none;">${esc(q.scheduledAt)}</strong>
+            <span style="flex: none;">${esc(SNSQ_STATUS_LABEL[q.status] || q.status)}${tags(q)}</span>
+            <span style="color: var(--c-ink-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${esc((q.text || '').replace(/\s+/g, ' ').slice(0, 40))}</span>
+          </summary>
+          ${body(q)}
+        </details>`).join('');
+      wrap.innerHTML = (active.length ? cards : '<p class="meta-note">予約中の投稿はありません</p>') +
+        (done.length ? `<details style="margin-top: 10px;"><summary style="cursor: pointer; font-size: 0.8rem; color: var(--c-ink-sub);">▸ 終わった投稿（${done.length}件）を見る</summary><div style="margin-top: 6px;">${rows}</div></details>` : '');
       wrap.querySelectorAll('[data-snsq-cancel]').forEach(b => {
         b.addEventListener('click', async () => {
           if (!confirm('この予約を取り消しますか？')) return;
