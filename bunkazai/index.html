@@ -51,6 +51,10 @@
   }
   .way-meta { margin-top: 14px; font-size: 12px; color: var(--c-ink-sub); line-height: 1.9; }
   .way-go { display: inline-block; margin-top: 16px; font-size: 13px; font-weight: 700; color: var(--c-navy); }
+  /* 画面イメージ（2026-09-05）：カードの下部に実際の画面を出し、何が開くか分かるようにする。動画は無音・自動再生・ループ */
+  .way-shot { display: block; margin: 16px -4px 0; border-radius: 10px; overflow: hidden; background: #e9e4d8; aspect-ratio: 16 / 9; }
+  .way-shot img, .way-shot video { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .way-shot-cap { display: block; margin-top: 6px; font-size: 11px; color: var(--c-ink-sub); text-align: center; }
 
   /* 内訳の数字 */
   .bz-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 0 0 34px; }
@@ -136,6 +140,8 @@
             スマートフォン向け・記録は端末内に保存
           </p>
           <span class="way-go">▶ 冒険をはじめる</span>
+          <span class="way-shot"><img src="../assets/screens/adventure_map.jpg" alt="いんざい冒険図鑑リアルの地図画面。印西市内に50件の文化財ピンが並ぶ" loading="lazy"></span>
+          <span class="way-shot-cap">画面イメージ：地図に50件のピン。近づくと精霊が出ます</span>
         </a>
 
         <a class="card" href="../metaverse/?mode=event">
@@ -148,6 +154,8 @@
             50件そろえると認定証を発行
           </p>
           <span class="way-go">▶ 3Dで見る</span>
+          <span class="way-shot"><video src="../assets/screens/metaverse_play_640.mp4" poster="../assets/screens/metaverse_play_poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="メタバース印西のプレイ動画。トンビになって印西の空を飛び、文化財の精霊を集める"></video></span>
+          <span class="way-shot-cap">プレイ動画（69秒・無音）：鳥になって50か所をめぐるダイジェスト</span>
         </a>
 
         <a class="card" href="../metaverse/reports.html">
@@ -160,6 +168,8 @@
             本文の記述すべてに出典番号つき
           </p>
           <span class="way-go">▶ レポートを読む</span>
+          <span class="way-shot"><img src="../assets/screens/reports_list.jpg" alt="学習レポート一覧の画面。文化財ごとに読む・印刷・PDFのボタンが並ぶ" loading="lazy"></span>
+          <span class="way-shot-cap">画面イメージ：一覧から「読む」「印刷」「PDF」を選べます</span>
         </a>
       </div>
     </div>
