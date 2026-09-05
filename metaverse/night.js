@@ -96,6 +96,27 @@
   const AEON = { lon: 140.111502, lat: 35.800167 };
 
   window.nightOn = false;                   // index.html の applyLite が空の表現を切るかどうかの判断に読む
+
+  // 右スティック（視点）の効きが強く行き過ぎるため、夜景中は 2乗カーブ（小さな倒しはより小さく）＋感度倍率を掛ける。
+  // index.html の padNormalize（軸ごとの -1〜1 正規化）を包む形にし、index.html は変更しない
+  const LOOK_SENS_KEY = "cbi-meta-night-looksens";
+  const LOOK_SENS_OPTIONS = [["0.35", "ゆっくり"], ["0.5", "ふつう（推奨）"], ["0.75", "やや速い"], ["1", "元のまま"]];
+  let lookSens = 0.5;
+  try { const v = parseFloat(localStorage.getItem(LOOK_SENS_KEY)); if (v > 0 && v <= 1) lookSens = v; } catch (e) { /* 既定へ */ }
+  function setLookSens(v) {
+    lookSens = v;
+    try { localStorage.setItem(LOOK_SENS_KEY, String(v)); } catch (e) { /* 保存できなくても続ける */ }
+  }
+  window.setNightLookSens = setLookSens;
+  if (typeof padNormalize === "function") {
+    const origPadNormalize = padNormalize;
+    padNormalize = function (raw, ch) {
+      const v = origPadNormalize(raw, ch);
+      if (!window.nightOn || (ch !== 2 && ch !== 3) || v === 0) return v;
+      const a = Math.abs(v);
+      return Math.sign(v) * a * a * lookSens;
+    };
+  }
   function makeGateObjects() {
     return COURSE.map(function (g, i) {
       return { def: g, index: i, points: null, base: [], frame: null, inv: null, halfW: 0, halfH: 0,
@@ -481,6 +502,7 @@
     });
   }
   function onGatePass(g) {
+    if (tt.active && tt.waiting) return;
     if (tt.active) {
       if (g.index === tt.pos) {
         burst(g);
@@ -647,7 +669,9 @@
       const arrow = relArrow(bearingDeg(c, next));
       const dh = Math.round(next.height - c.height);
       txt += " ／ 次 <b>" + (tt.pos + 1) + "</b>/" + COURSE.length + " " + arrow + " <b>" + dist + "</b> m" + (Math.abs(dh) > 20 ? (dh > 0 ? " ↑" : " ↓") + Math.abs(dh) + "m" : "");
-      const el = tt.countdownEnd > performance.now()
+      const el = tt.waiting
+        ? "<b>READY?</b><small>○ボタン／スペースで スタート</small>"
+        : tt.countdownEnd > performance.now()
         ? "<b>" + Math.ceil((tt.countdownEnd - performance.now()) / 1000) + "</b><small>スタートまで</small>"
         : "⏱ <b>" + ttFormat(performance.now() - tt.startMs) + "</b><small>" + tt.name + "　" + (tt.pos) + "/" + COURSE.length + " ゲート通過</small>";
       ttEl.innerHTML = el;
@@ -812,7 +836,7 @@
   // ------------------------------------------------------------
   // ⏱ 夜景タイムトライアル
   // ------------------------------------------------------------
-  const tt = { active: false, pos: 0, startMs: 0, countdownEnd: 0, name: "", trialId: null, queue: Promise.resolve(), official: false };
+  const tt = { active: false, waiting: false, pos: 0, startMs: 0, countdownEnd: 0, name: "", trialId: null, queue: Promise.resolve(), official: false, token: "" };
   window.nightTtState = tt;                 // 検証スクリプトから状態を見るため
   function bestKey() { return NIGHT_BEST_KEY + "-" + courseKey; }
   function localKey() { return NIGHT_LOCAL_RANK_KEY + "-" + courseKey; }
@@ -890,8 +914,12 @@
           '<p><button class="go" id="nightTtGo">🛸 スタート</button><button class="sub" id="nightTtClose">閉じる</button><button class="sub" id="nightTtLogout">別の人でログイン</button></p>'
         : '<p>このタイムレースは <b>CiDAO（市民DAO）の登録者</b> だけが参加できます。LINE でログインすると、この画面に戻ってきます。</p>' +
           '<p><button class="login" id="nightTtLogin">🔐 CiDAO でログインして参加</button><button class="sub" id="nightTtClose">閉じる</button></p>') +
+      '<p>🎮 右スティック（視点）の速さ：<select id="nightLookSens">' + LOOK_SENS_OPTIONS.map(function (o) {
+        return '<option value="' + o[0] + '"' + (parseFloat(o[0]) === lookSens ? " selected" : "") + ">" + o[1] + "</option>";
+      }).join("") + '</select> <small>小さく倒したときは細かく、大きく倒したときだけ速く回ります</small></p>' +
       '<div id="nightTtRank"><p>ランキングを読み込み中…</p></div>';
     document.getElementById("nightTtModal").classList.add("show");
+    document.getElementById("nightLookSens").onchange = function () { setLookSens(parseFloat(this.value)); };
     if (login) {
       document.getElementById("nightTtGo").onclick = function () { startTt(login.nick, login.token); };
       document.getElementById("nightTtLogout").onclick = function () { clearLogin(); openTtModal(); };
@@ -922,17 +950,30 @@
     hideUiForTour(["helpBox"]);            // 操作方法（左下）はレース中も見えるように残す
     if (typeof setMode === "function" && walkMode) setMode(false);
     gates.forEach(function (g) { g.prevSide = null; g._emph = undefined; });
-    tt.active = true; tt.pos = 0; tt.name = name; tt.trialId = null; tt.official = false;
-    tt.countdownEnd = performance.now() + 3500;
-    tt.startMs = tt.countdownEnd;
+    tt.active = true; tt.waiting = true; tt.pos = 0; tt.name = name; tt.trialId = null; tt.official = false; tt.token = token || "";
+    tt.countdownEnd = 0; tt.startMs = 0;
     viewer.camera.setView({
       destination: Cesium.Cartesian3.fromDegrees(START_POINT.lon, START_POINT.lat, START_POINT.height),
       orientation: { heading: Cesium.Math.toRadians(bearingDeg(START_POINT, COURSE[0])), pitch: 0, roll: 0 },
     });
-    caption("🛸 <b>3・2・1</b> でスタート<br><small>1番のゲート（" + COURSE[0].name + "の上空）は正面。番号順に くぐろう</small>", 3500);
-    // サーバーへ開始登録（通過報告はこの後に直列で送る）
+    // すぐにカウントダウンせず、準備の合図を待つ（コントローラーの中心合わせが済む前に始まって焦る、との指摘）
+    caption("🎮 準備ができたら <b>○ボタン</b>（スペース／Enter でも可）で スタート<br><small>スティックから手を離して押すと、その位置を中心に合わせ直します。1番のゲート（" + COURSE[0].name + "の上空）は正面</small>", 0);
+  }
+  // 準備OK → 中心合わせ → 3・2・1 → 計測開始（サーバーへの開始登録もこの瞬間）
+  let readyBtnPrev = false;
+  function ttReadyGo() {
+    if (!tt.active || !tt.waiting) return;
+    tt.waiting = false;
+    try {
+      const pad = (typeof readGamepad === "function") ? readGamepad() : null;
+      if (pad && typeof snapPadCenterNow === "function") snapPadCenterNow(pad);
+    } catch (e) { /* コントローラーが無ければ何もしない */ }
+    gates.forEach(function (g) { g.prevSide = null; });
+    tt.countdownEnd = performance.now() + 3500;
+    tt.startMs = tt.countdownEnd;
+    caption("🛸 <b>3・2・1</b> でスタート<br><small>番号順に くぐろう</small>", 3500);
     tt.queue = ttApiPost({
-      action: "start", name: name, ageKey: "night", courseKey: COURSES[courseKey].serverKey, token: token || "",
+      action: "start", name: tt.name, ageKey: "night", courseKey: COURSES[courseKey].serverKey, token: tt.token,
       quizRatePct: 100, quizAnswers: 0, checkpoints: COURSE.length,
     }).then(function (d) { tt.trialId = d.trialId || null; tt.official = !!tt.trialId; })
       .catch(function (e) {
@@ -945,6 +986,17 @@
         }
       });
     setTimeout(function () { if (tt.active) caption("🚀 <b>GO!</b>", 1500); }, 3500);
+  }
+  window.nightTtReadyGo = ttReadyGo;
+  function pollReadyButton() {
+    if (!tt.active || !tt.waiting) { readyBtnPrev = false; return; }
+    let pressed = false;
+    try {
+      const pad = (typeof readGamepad === "function") ? readGamepad() : null;
+      if (pad) pressed = !!((pad.buttons[0] && pad.buttons[0].pressed) || (pad.buttons[1] && pad.buttons[1].pressed));
+    } catch (e) { pressed = false; }
+    if (pressed && !readyBtnPrev) ttReadyGo();
+    readyBtnPrev = pressed;
   }
   function ttCheckpoint(pos) {
     tt.queue = tt.queue.then(function () {
@@ -992,7 +1044,7 @@
   }
   function ttAbortNight(reason) {
     if (!tt.active) return;
-    tt.active = false;
+    tt.active = false; tt.waiting = false;
     tt.trialId = null;
     gates.forEach(function (g) { g._emph = undefined; });
     caption("⏹ タイムトライアル中止<small>" + (reason || "") + "</small>", 3000);
@@ -1017,6 +1069,7 @@
     const typing = e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA");
     if (typing) return;
     if (e.key === "t" || e.key === "T") { if (!tt.active) openTtModal(); }
+    if ((e.key === " " || e.key === "Enter") && tt.active && tt.waiting) { e.preventDefault(); ttReadyGo(); }
     if (e.key === "Escape") {
       if (document.getElementById("nightTtModal").classList.contains("show")) closeTtModal();
       else if (tt.active) ttAbortNight("Esc キー");
@@ -1065,6 +1118,7 @@
   viewer.clock.onTick.addEventListener(function () {
     if (!window.nightOn) return;
     if (!walkMode) keepAboveFloor();
+    pollReadyButton();
     checkPass();
     updateHud(tt.active);
     updateTargetMarker();
