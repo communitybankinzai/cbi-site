@@ -896,6 +896,31 @@
   }
   window.nightLogin = getLogin;
 
+  // 会員照合の入力欄（QR・表示名・LINE）。ログイン中は「別の人で参加」用に折りたたんで出す
+  function claimSectionHtml(who) {
+    return '<div class="box"><b>📷 会員証QRを読む</b>（CiDAO のトップページに出る会員QRを、この端末のカメラにかざす）<br>' +
+      '<button class="go" id="nightTtScan">📷 カメラで読む</button><button class="sub" id="nightTtScanStop" style="display:none">停止</button>' +
+      '<div id="nightTtScanBox" style="display:none;margin-top:6px"><video id="nightTtVideo" playsinline muted style="width:100%;max-height:240px;background:#000;border-radius:8px"></video><canvas id="nightTtCanvas" style="display:none"></canvas><p class="note" id="nightTtScanMsg">QR をカメラの中央に…</p></div></div>' +
+      '<div class="box"><b>⌨ CiDAO の表示名（ニックネーム）を入力</b><br>' +
+      '<input id="nightTtClaimName" maxlength="40" placeholder="CiDAO に登録した表示名" style="margin:6px 0"><button class="go" id="nightTtClaim">この名前で参加</button>' +
+      '<p class="note">登録と一致した表示名だけ参加できます。同じ表示名の人が複数いるときは LINE ログインか会員証QRをお願いします。</p></div>' +
+      '<p><button class="login" id="nightTtLogin">🔐 LINE でログインして参加' + (who ? "（" + who + "）" : "（別の方法）") + '</button></p>' +
+      '<p class="note" id="nightTtClaimMsg"></p>';
+  }
+  function bindClaimSection() {
+    const login = document.getElementById("nightTtLogin");
+    if (login) login.onclick = function () {
+      clearLogin();
+      try { sessionStorage.setItem("cbi-meta-night-login-pending", "1"); } catch (e) { /* 同上 */ }
+      location.href = loginUrl();
+    };
+    const claimBtn = document.getElementById("nightTtClaim"), nameEl = document.getElementById("nightTtClaimName");
+    if (claimBtn) claimBtn.onclick = function () { clearLogin(); claimByName(nameEl.value); };
+    if (nameEl) nameEl.onkeydown = function (e) { if (e.key === "Enter") { clearLogin(); claimByName(this.value); } };
+    const scan = document.getElementById("nightTtScan"), stop = document.getElementById("nightTtScanStop");
+    if (scan) scan.onclick = function () { clearLogin(); startQrScan(); };
+    if (stop) stop.onclick = stopQrScan;
+  }
   async function openTtModal() {
     ensureHud();
     if (tourRunning) cancelTour();
@@ -913,35 +938,18 @@
       (best ? "<p>🏅 この端末のベスト：<b>" + ttFormat(best.elapsedMs) + "</b>（" + ttEsc(best.name) + "・" + ttEsc(best.date) + "）</p>" : "") +
       (login
         ? '<p>👤 ログイン中：<b>' + ttEsc(login.nick) + '</b> さん（ランキングにはこの表示名で載ります）</p>' +
-          '<p><button class="go" id="nightTtGo">🛸 スタート</button><button class="sub" id="nightTtClose">閉じる</button><button class="sub" id="nightTtLogout">別の人でログイン</button></p>'
+          '<p><button class="go" id="nightTtGo">🛸 スタート</button><button class="sub" id="nightTtClose">閉じる</button></p>' +
+          '<details id="nightTtSwitch"><summary style="cursor:pointer;color:#8fe9ff">👥 別の人で参加する（会員証QR／表示名／LINE）</summary>' + claimSectionHtml("別の人") + '</details>'
         : '<p>このタイムレースは <b>CiDAO（市民DAO）の登録者</b> だけが参加できます。次のどれかで参加してください。</p>' +
-          '<div class="box"><b>📷 会員証QRを読む</b>（CiDAO のトップページに出る会員QRを、この端末のカメラにかざす）<br>' +
-          '<button class="go" id="nightTtScan">📷 カメラで読む</button><button class="sub" id="nightTtScanStop" style="display:none">停止</button>' +
-          '<div id="nightTtScanBox" style="display:none;margin-top:6px"><video id="nightTtVideo" playsinline muted style="width:100%;max-height:240px;background:#000;border-radius:8px"></video><canvas id="nightTtCanvas" style="display:none"></canvas><p class="note" id="nightTtScanMsg">QR をカメラの中央に…</p></div></div>' +
-          '<div class="box"><b>⌨ CiDAO の表示名（ニックネーム）を入力</b><br>' +
-          '<input id="nightTtClaimName" maxlength="40" placeholder="CiDAO に登録した表示名" style="margin:6px 0"><button class="go" id="nightTtClaim">この名前で参加</button>' +
-          '<p class="note">登録と一致した表示名だけ参加できます。同じ表示名の人が複数いるときは LINE ログインをお願いします。</p></div>' +
-          '<p><button class="login" id="nightTtLogin">🔐 LINE でログインして参加（別の方法）</button><button class="sub" id="nightTtClose">閉じる</button></p>' +
-          '<p class="note" id="nightTtClaimMsg"></p>') +
+          claimSectionHtml("") + '<p><button class="sub" id="nightTtClose">閉じる</button></p>') +
       '<p>🎮 右スティック（視点）の速さ：<select id="nightLookSens">' + LOOK_SENS_OPTIONS.map(function (o) {
         return '<option value="' + o[0] + '"' + (parseFloat(o[0]) === lookSens ? " selected" : "") + ">" + o[1] + "</option>";
       }).join("") + '</select> <small>小さく倒したときは細かく、大きく倒したときだけ速く回ります</small></p>' +
       '<div id="nightTtRank"><p>ランキングを読み込み中…</p></div>';
     document.getElementById("nightTtModal").classList.add("show");
     document.getElementById("nightLookSens").onchange = function () { setLookSens(parseFloat(this.value)); };
-    if (login) {
-      document.getElementById("nightTtGo").onclick = function () { startTt(login.nick, login.token); };
-      document.getElementById("nightTtLogout").onclick = function () { clearLogin(); openTtModal(); };
-    } else {
-      document.getElementById("nightTtLogin").onclick = function () {
-        try { sessionStorage.setItem("cbi-meta-night-login-pending", "1"); } catch (e) { /* 同上 */ }
-        location.href = loginUrl();
-      };
-      document.getElementById("nightTtClaim").onclick = function () { claimByName(document.getElementById("nightTtClaimName").value); };
-      document.getElementById("nightTtClaimName").onkeydown = function (e) { if (e.key === "Enter") claimByName(this.value); };
-      document.getElementById("nightTtScan").onclick = startQrScan;
-      document.getElementById("nightTtScanStop").onclick = stopQrScan;
-    }
+    if (login) document.getElementById("nightTtGo").onclick = function () { startTt(login.nick, login.token); };
+    bindClaimSection();
     document.getElementById("nightTtClose").onclick = closeTtModal;
     Array.prototype.forEach.call(document.querySelectorAll('input[name="nightCourse"]'), function (r) {
       r.onchange = function () { setCourse(r.value); openTtModal(); };
@@ -1123,11 +1131,12 @@
       "<p style='font-size:30px;margin:4px 0;'>⏱ <b style='color:#ffd166'>" + ttFormat(ms) + "</b>" +
       (official ? " <small>（公式記録" + (result.flagged ? "・事務局確認対象" : "") + (result.recordCode ? "・記録コード " + ttEsc(result.recordCode) : "") + "）</small>" : " <small>（参考記録・サーバーに繋がりませんでした）</small>") + "</p>";
     if (official && typeof ttRankHtml === "function") h += ttRankHtml(result.rank);
-    h += '<p><button class="go" id="nightTtAgain">🔁 もう一度</button><button class="sub" id="nightTtClose2">閉じる</button></p>' +
+    h += '<p><button class="go" id="nightTtAgain">🔁 もう一度（同じ人）</button><button class="sub" id="nightTtNext">👥 次の人へ（ログイン解除）</button><button class="sub" id="nightTtClose2">閉じる</button></p>' +
       '<div id="nightTtRank2"><p>ランキングを読み込み中…</p></div>';
     inner.innerHTML = h;
     document.getElementById("nightTtModal").classList.add("show");
     document.getElementById("nightTtAgain").onclick = function () { openTtModal(); };
+    document.getElementById("nightTtNext").onclick = function () { clearLogin(); openTtModal(); };
     document.getElementById("nightTtClose2").onclick = closeTtModal;
     const info = await fetchInfo();
     const rankEl = document.getElementById("nightTtRank2");
@@ -1186,7 +1195,7 @@
     if (anyKey || (joyState && joyState.active) || gamepadActive()) noteInput();
     if (TOUR_PARAM && !tourRunning && !tt.active &&
         !document.getElementById("nightTtModal").classList.contains("show") &&
-        performance.now() - lastInputAt > IDLE_RESTART_MS) startTour();
+        performance.now() - lastInputAt > IDLE_RESTART_MS) { clearLogin(); startTour(); }
   }, 500);
 
   // 地中ロック：夜景モード中は楕円体高 NIGHT_FLOOR_HEIGHT を下限にし、地面（タイルの高さ）が取れるときはその 3m 上を下限にする。
