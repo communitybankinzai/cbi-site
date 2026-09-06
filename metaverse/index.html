@@ -6024,8 +6024,8 @@ if (!new URLSearchParams(location.search).get("cinema")) { // 撮影・告知モ
 // ============================================================
 // 🛰 他の利用者の位置（光点）と定型スタンプ — Supabase Realtime（2026-09-02・段階2＋3の一部）
 // 各画面が Presence チャネル "metaverse-world" に自分の位置（経度・緯度・高さ・向き）を
-// 移動したときだけ約1.5秒ごとに載せ、他の画面はそれを光点＋「利用者NNN」で描く。
-// 番号は匿名のセッションIDから作る（名前入力なし＝個人特定・不適切名の問題を起こさない）。
+// 移動したときだけ約1.5秒ごとに載せ、他の画面はそれを光点＋名前で描く。
+// 名前は入場受付で確認した CiDAO の表示名（自由入力なし）。受付前は匿名のセッションIDから作る「利用者NNN」。
 // 会話は定型スタンプ4種のみ（自由入力なし）。DBには何も書かず、切断すれば消える。
 // 上の在席表示（人数）とは別系統。Realtime に繋がらなくても3D表示は動く。
 // ============================================================
@@ -6040,6 +6040,12 @@ const rtOthers = {};              // セッションID → { ent, num, from, to,
 let rtLastSent = null, rtLastSentAt = 0, rtLastStampAt = 0;
 
 function rtNum(key) { return (parseInt(key.slice(0, 6), 16) % 900) + 100; }
+// 表示名：入場受付で確認した CiDAO の表示名（1人目）を載せる。受付前・受付なしの画面は匿名の「利用者NNN」のまま（2026-09-06 中司さん指示）
+function rtMyNick() {
+  try { const l = (typeof window.nightLogin === "function") ? window.nightLogin(1) : null; return l && l.nick ? String(l.nick).slice(0, 20) : ""; } catch (e) { return ""; }
+}
+function rtName(o) { return o.nick ? o.nick : "利用者" + o.num; }
+function rtEsc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 function rtMyPos() {
   const c = Cesium.Cartographic.fromCartesian(viewer.camera.position);
   return {
@@ -6052,7 +6058,7 @@ function rtMyPos() {
 function rtMoved(a, b) {
   if (!a) return true;
   const dh = Math.abs(((a.hd - b.hd + 540) % 360) - 180);
-  return Math.abs(a.lon - b.lon) > 0.00001 || Math.abs(a.lat - b.lat) > 0.00001 || Math.abs(a.h - b.h) > 0.5 || dh > 10;
+  return Math.abs(a.lon - b.lon) > 0.00001 || Math.abs(a.lat - b.lat) > 0.00001 || Math.abs(a.h - b.h) > 0.5 || dh > 10 || (a.n || "") !== (b.n || "");
 }
 // 受け取った2点の間を時間で補間する（1.5秒おきの座標をそのまま出すとカクつく）
 function rtPosOf(o) {
@@ -6092,7 +6098,7 @@ function rtRenderPeerList() {
     const r = rtRelTo(p);
     const dist = r.dist >= 1000 ? (r.dist / 1000).toFixed(1) + "km" : Math.round(r.dist) + "m";
     const vert = r.up > 60 ? "↑" : (r.up < -60 ? "↓" : "");
-    return '<div class="peer" data-key="' + k + '" title="タップするとこの人の方を向きます">🛰 利用者' + o.num +
+    return '<div class="peer" data-key="' + k + '" title="タップするとこの人の方を向きます">🛰 ' + rtEsc(rtName(o)) +
       '　<b>' + r.word + '</b>（' + r.compass + '）約' + dist + vert + '</div>';
   });
   el.innerHTML = '<div class="peerHead">いっしょに飛んでいる人（タップでその方向を向く）</div>' + rows.join("");
@@ -6106,7 +6112,7 @@ document.getElementById("rtPeers").addEventListener("click", function (ev) {
   if (!p) return;
   const r = rtRelTo(p);
   viewer.camera.setView({ orientation: { heading: r.bearing, pitch: viewer.camera.pitch, roll: 0 } });
-  showPickResult("利用者" + o.num + " の方を向きました（" + r.compass + "・約" + Math.round(r.dist) + "m）", 3000);
+  showPickResult(rtName(o) + " の方を向きました（" + r.compass + "・約" + Math.round(r.dist) + "m）", 3000);
 });
 setInterval(rtRenderPeerList, 1000);
 // 向き付きの光点（2026-09-02）。上向きの矢印画像を、相手の向き（水平ベクトル）に世界座標で揃える。
@@ -6143,7 +6149,7 @@ function rtEnsure(key) {
     },
     label: {
       text: new Cesium.CallbackProperty(function () {
-        return (o.stampUntil > Date.now() ? o.stamp + "\n" : "") + "利用者" + o.num;
+        return (o.stampUntil > Date.now() ? o.stamp + "\n" : "") + rtName(o);
       }, false),
       font: "bold 13px sans-serif", fillColor: Cesium.Color.WHITE,
       outlineColor: Cesium.Color.BLACK, outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
@@ -6175,6 +6181,7 @@ function rtSync() {
     if (!isFinite(p.lon) || !isFinite(p.lat) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) return;
     seen[key] = true;
     const o = rtEnsure(key);
+    o.nick = (typeof p.n === "string") ? p.n.slice(0, 20) : "";
     if (!o.to || rtMoved(o.to, p)) { o.from = o.cur || p; o.to = p; o.t0 = now; o.t1 = now + RT_SEND_MS; }
   });
   Object.keys(rtOthers).forEach(function (key) { if (!seen[key]) rtRemove(key); });
@@ -6194,6 +6201,7 @@ function rtSendTick() {
   const now = Date.now();
   if (now - rtLastSentAt < RT_SEND_MS) return;
   const p = rtMyPos();
+  p.n = rtMyNick();
   if (!rtMoved(rtLastSent, p)) return;
   rtLastSent = p; rtLastSentAt = now;
   p.m = (typeof currentMode !== "undefined" ? currentMode : "event");
@@ -6225,7 +6233,7 @@ function rtOnStamp(p) {
   if (now - o.lastStampAt < 1500) return;           // 相手側の連打も抑える
   o.lastStampAt = now;
   o.stamp = STAMPS[p.code]; o.stampUntil = now + STAMP_SHOW_MS;
-  rtFeed("利用者" + o.num, STAMPS[p.code]);
+  rtFeed(rtName(o), STAMPS[p.code]);
 }
 function rtConnect() {
   if (typeof supabase === "undefined" || !supabase.createClient) return; // CDN が読めないときは光点なしで動く
