@@ -1022,7 +1022,7 @@
           <span class="meta-note" id="mv-usage-updated"></span>
         </div>
         <p class="panel-desc">
-          3Dワールド画面の右上に出ている数字と同じものを、運営側で見やすく並べたものです（60秒ごとに自動更新）。
+          3Dワールド画面の右上に出ている数字と、2Dの災害状況整合MAPの閲覧者数を、運営側で見やすく並べたものです（60秒ごとに自動更新）。
         </p>
         <p class="panel-desc mv-cost-note">
           <b>費用の見方</b>：Google への支払いが発生するのは「3Dワールドを開いた回数（root リクエスト）」だけです。
@@ -1038,7 +1038,9 @@
         </p>
         <div class="mv-kpi-grid" id="mv-kpi-grid">
           <div class="mv-kpi"><div class="mv-kpi-label">👥 いま参加中</div><div class="mv-kpi-value" id="mv-kpi-now">–</div><div class="mv-kpi-sub" id="mv-kpi-now-sub">直近90秒以内に合図のあった端末数</div></div>
-          <div class="mv-kpi"><div class="mv-kpi-label">📅 本日の利用者</div><div class="mv-kpi-value" id="mv-kpi-visitors">–</div><div class="mv-kpi-sub" id="mv-kpi-visitors-sub">1ブラウザ＝1人として集計</div></div>
+          <div class="mv-kpi"><div class="mv-kpi-label">📅 本日の利用者</div><div class="mv-kpi-value" id="mv-kpi-visitors">–</div><div class="mv-kpi-sub" id="mv-kpi-visitors-sub">3Dワールドのみ・1ブラウザ＝1人として集計</div></div>
+          <div class="mv-kpi"><div class="mv-kpi-label">🗺 災害MAP いま</div><div class="mv-kpi-value" id="mv-kpi-dmap-now">–</div><div class="mv-kpi-sub">2Dの災害状況整合MAPを開いている端末数（直近90秒）</div></div>
+          <div class="mv-kpi"><div class="mv-kpi-label">🗺 災害MAP 本日</div><div class="mv-kpi-value" id="mv-kpi-dmap-today">–</div><div class="mv-kpi-sub">本日このMAPを見た人数（重複なし・日本時間）。3Dとは別集計で費用は発生しません</div></div>
           <div class="mv-kpi"><div class="mv-kpi-label">🧱 本日のタイル取得</div><div class="mv-kpi-value" id="mv-kpi-tiles">–</div><div class="mv-kpi-sub" id="mv-kpi-tiles-sub">無償だが回数上限あり（50万回／日）。費用には影響しません</div></div>
           <div class="mv-kpi mv-kpi-cost"><div class="mv-kpi-label">💰 閲覧開始枠の消化<span class="mv-kpi-tag">費用が出るのはここだけ</span></div><div class="mv-kpi-value" id="mv-kpi-quota">–</div><div class="mv-kpi-sub"><div class="mv-bar"><div class="mv-bar-fill" id="mv-kpi-quota-bar"></div></div>3Dワールドを開いた回数／1日の上限</div></div>
         </div>

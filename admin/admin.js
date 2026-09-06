@@ -2213,8 +2213,14 @@ const UNREAD_POLL_MS = 30000;
       fetch(MV_USAGE_API, { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error('usage HTTP ' + r.status); return r.json(); }).catch(e => { errors.push(e.message); return null; }),
     ]);
     if (presence) {
-      $('mv-kpi-now').textContent = mvFmt(presence.total) + ' 人';
-      $('mv-kpi-now-sub').textContent = 'イベント用途 ' + mvFmt(presence.event) + ' ／ 防災用途 ' + mvFmt(presence.bousai) + '（直近90秒以内）';
+      // total には2Dの災害MAPも含まれる。この枠は3Dワールド（課金対象）の人数なので3Dだけを出す
+      const mv3d = (Number(presence.event) || 0) + (Number(presence.bousai) || 0);
+      $('mv-kpi-now').textContent = mvFmt(mv3d) + ' 人';
+      $('mv-kpi-now-sub').textContent = '3Dワールドのみ。イベント用途 ' + mvFmt(presence.event) + ' ／ 防災用途 ' + mvFmt(presence.bousai) + '（直近90秒以内）';
+      // 2Dの災害MAPは3Dとは別プロダクト。混ぜると課金の判断を誤るので独立したKPIで出す
+      $('mv-kpi-dmap-now').textContent = mvFmt(presence.disasterMap) + ' 人';
+      const dToday = presence.today && typeof presence.today.disasterMap === 'number' ? presence.today.disasterMap : null;
+      $('mv-kpi-dmap-today').textContent = dToday === null ? '–' : (mvFmt(dToday) + ' 人');
     }
     if (usage) {
       const lim = usage.rootLimitPerDay || 30;
