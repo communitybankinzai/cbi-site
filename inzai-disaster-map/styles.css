@@ -2465,3 +2465,7 @@ body.embed-mode .cbi-home-link {
 .quake-brief.is-strong { background: #fdecea; border-color: #e6a9a2; }
 .quake-brief-label { flex: 0 0 auto; font-weight: 700; color: #16324f; }
 .quake-brief-body { color: #33404f; }
+
+/* 震度分布レイヤーの状態表示 */
+#quake-intensity-status { display: block; font-size: 11px; color: #5a6675; margin-left: 22px; }
+#quake-intensity-status.is-error { color: #c0392b; }

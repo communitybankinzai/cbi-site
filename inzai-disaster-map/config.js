@@ -17,7 +17,7 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     jshisPshmWmsUrl: "https://www.j-shis.bosai.go.jp/map/wms/pshm/Y2024",
     jshisGroundWmsUrl: "https://www.j-shis.bosai.go.jp/map/wms/sstrct/V4",
     hostOrigin: window.location.origin,
-    appVersion: "2026.09.06.8"
+    appVersion: "2026.09.06.9"
   },
   window.CBI_DISASTER_CONFIG || {}
 );

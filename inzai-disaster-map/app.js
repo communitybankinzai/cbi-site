@@ -2965,6 +2965,11 @@ function renderPastFloodMarkers() {
 }
 
 function toggleOverlay(name, checked) {
+  if (name === "quakeIntensity") {
+    if (checked) { ensureQuakeIntensityLayer(); quakeIntensityLayer.addTo(map); }
+    else map.removeLayer(quakeIntensityLayer);
+    return;
+  }
   if (Object.prototype.hasOwnProperty.call(kikikuruLayers, name)) {
     if (checked) { refreshKikikuru(true); kikikuruLayers[name].addTo(map); }
     else map.removeLayer(kikikuruLayers[name]);
@@ -3062,6 +3067,141 @@ async function refreshRainNowcast(showLayer) {
     status.classList.add("is-error");
     if (showLayer) document.querySelector('[data-overlay="rainNowcast"]').checked = false;
     appendSystemWorkLog("リアルタイム降水レイヤー", "blocked", `気象庁の最新降水データを取得できませんでした: ${error?.message || "不明なエラー"}`, "通信状態と気象庁配信URLを確認する");
+  }
+}
+
+// ============================================================
+// 🎯 震度分布（直近の地震・市町村ごと）
+// 気象庁の震源・震度情報の詳細JSONには市町村ごとの震度が入っている。
+// 面的な震度分布のタイル配信は公開されていない（2026-09-06調査）ため、
+// 市町村の代表点に色分けした丸を置いて「印西とその周りがどれだけ揺れたか」を示す。
+// 座標は国土地理院の住所検索で1度だけ引き、端末内に保存して使い回す。
+// ============================================================
+const quakeIntensityLayer = L.layerGroup();
+const QUAKE_CITY_CACHE_KEY = "cbi-disaster-quake-city-points-v1";
+const QUAKE_INTENSITY_COLORS = {
+  "1": "#b6c7dd", "2": "#79a6d2", "3": "#7fb069", "4": "#ffd166",
+  "5-": "#f4a261", "5+": "#e76f51", "6-": "#d1495b", "6+": "#9d0208", "7": "#6a040f"
+};
+// 関東以外まで丸を置いても印西市の地図では意味がないので、対象を絞る
+const QUAKE_TARGET_PREFS = ["千葉県", "茨城県", "埼玉県", "東京都", "神奈川県", "群馬県", "栃木県"];
+const QUAKE_CITY_LIMIT = 120;
+let quakeIntensityLoaded = false;
+
+function loadQuakeCityCache() {
+  try {
+    return JSON.parse(localStorage.getItem(QUAKE_CITY_CACHE_KEY) || "{}") || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveQuakeCityCache(cache) {
+  try {
+    localStorage.setItem(QUAKE_CITY_CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    // 保存できなくても表示は続ける
+  }
+}
+
+// 「茨城鹿嶋市」のように県名の一部が頭に付く表記があるため、検索前に落とす
+function quakeCityQuery(prefName, cityName) {
+  const bare = String(prefName).replace(/[都道府県]$/, "");
+  const name = String(cityName).startsWith(bare) ? String(cityName).slice(bare.length) : String(cityName);
+  return `${prefName}${name}`;
+}
+
+async function geocodeCity(query) {
+  const url = `https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(query)}`;
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const rows = await response.json();
+  const point = Array.isArray(rows) ? rows[0]?.geometry?.coordinates : null;
+  if (!Array.isArray(point) || point.length < 2) return null;
+  return { lat: Number(point[1]), lon: Number(point[0]) };
+}
+
+async function ensureQuakeIntensityLayer() {
+  if (quakeIntensityLoaded) return;
+  quakeIntensityLoaded = true;
+  const status = document.getElementById("quake-intensity-status");
+  const setStatus = (text, isError) => {
+    if (!status) return;
+    status.textContent = text;
+    status.classList.toggle("is-error", Boolean(isError));
+  };
+  setStatus("直近の地震を確認中");
+  try {
+    const listUrl = String(APP_CONFIG.earthquakeListEndpoint || "https://www.jma.go.jp/bosai/quake/data/list.json");
+    const listResponse = await fetch(`${listUrl}${listUrl.includes("?") ? "&" : "?"}_=${Date.now()}`, { cache: "no-store" });
+    if (!listResponse.ok) throw new Error(`HTTP ${listResponse.status}`);
+    const list = await listResponse.json();
+    const latest = (Array.isArray(list) ? list : []).find(item =>
+      String(item.ttl || "").includes("震源・震度") && item.ift !== "取消" && item.json);
+    if (!latest) throw new Error("震度情報がありません");
+
+    const detailUrl = `https://www.jma.go.jp/bosai/quake/data/${latest.json}`;
+    const detailResponse = await fetch(detailUrl, { cache: "no-store" });
+    if (!detailResponse.ok) throw new Error(`詳細 HTTP ${detailResponse.status}`);
+    const detail = await detailResponse.json();
+
+    const observation = detail?.Body?.Intensity?.Observation;
+    const cities = [];
+    (observation?.Pref || []).forEach(pref => {
+      if (!QUAKE_TARGET_PREFS.includes(String(pref.Name))) return;
+      (pref.Area || []).forEach(area => {
+        (area.City || []).forEach(city => {
+          if (!city?.Code || !city?.MaxInt) return;
+          cities.push({ code: String(city.Code), name: String(city.Name), pref: String(pref.Name), intensity: String(city.MaxInt) });
+        });
+      });
+    });
+    if (!cities.length) {
+      quakeIntensityLayer.clearLayers();
+      setStatus(`${formatDateTime(toDateTimeLocal(latest.at))}の地震：関東で震度の記録はありません`);
+      return;
+    }
+
+    const cache = loadQuakeCityCache();
+    const targets = cities.slice(0, QUAKE_CITY_LIMIT);
+    for (const city of targets) {
+      if (cache[city.code]) continue;
+      try {
+        const point = await geocodeCity(quakeCityQuery(city.pref, city.name));
+        if (point) cache[city.code] = point;
+      } catch {
+        // 1件失敗しても他の市町村は描く
+      }
+    }
+    saveQuakeCityCache(cache);
+
+    quakeIntensityLayer.clearLayers();
+    let drawn = 0;
+    targets.forEach(city => {
+      const point = cache[city.code];
+      if (!point) return;
+      const color = QUAKE_INTENSITY_COLORS[city.intensity] || "#9aa5b1";
+      const rank = intensityRank(city.intensity);
+      const marker = L.circleMarker([point.lat, point.lon], {
+        radius: 8 + Math.min(rank, 7),
+        color: "#ffffff",
+        weight: 2,
+        fillColor: color,
+        fillOpacity: 0.9
+      });
+      marker.bindPopup(
+        `<strong>${escapeHtml(city.name)}</strong><br>` +
+        `震度 ${escapeHtml(intensityLabel(city.intensity))}<br>` +
+        `<span style="font-size:11px;">${escapeHtml(formatDateTime(toDateTimeLocal(latest.at)))} ${escapeHtml(latest.anm || "")}${latest.mag ? ` M${escapeHtml(String(latest.mag))}` : ""}</span><br>` +
+        `<span style="font-size:11px;">丸は市町村の代表点です。市内すべてが同じ震度という意味ではありません。</span>`
+      );
+      marker.addTo(quakeIntensityLayer);
+      drawn += 1;
+    });
+    setStatus(`${formatDateTime(toDateTimeLocal(latest.at))} ${latest.anm || ""}${latest.mag ? ` M${latest.mag}` : ""}・最大震度${intensityLabel(latest.maxi)}／関東${drawn}市町村`);
+  } catch (error) {
+    quakeIntensityLoaded = false;
+    setStatus(`取得できません（${error?.message || "接続エラー"}）`, true);
   }
 }
 
