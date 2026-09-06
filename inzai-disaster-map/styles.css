@@ -2469,3 +2469,17 @@ body.embed-mode .cbi-home-link {
 /* 震度分布レイヤーの状態表示 */
 #quake-intensity-status { display: block; font-size: 11px; color: #5a6675; margin-left: 22px; }
 #quake-intensity-status.is-error { color: #c0392b; }
+
+/* アメダス実況の雨量カード */
+.amedas-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.amedas-item { padding: 8px 10px; border: 1px solid #d5dbe4; border-radius: 8px; background: #f7f9fc; }
+.amedas-item.is-moderate { background: #fff8e6; border-color: #e6c46d; }
+.amedas-item.is-heavy { background: #ffeddd; border-color: #e08a3c; }
+.amedas-item.is-extreme { background: #fdecea; border-color: #c0392b; }
+.amedas-name { font-size: 12px; color: #5a6675; }
+.amedas-main { font-size: 22px; font-weight: 700; color: #16324f; line-height: 1.2; }
+.amedas-main span { font-size: 12px; font-weight: 400; margin-left: 3px; color: #5a6675; }
+.amedas-sub { font-size: 11px; color: #5a6675; margin-top: 2px; }
+.amedas-note { font-size: 11px; color: #5a6675; margin-top: 6px; line-height: 1.6; }
+#rain-forecast-status { display: block; font-size: 11px; color: #5a6675; margin-left: 22px; }
+#rain-forecast-status.is-error { color: #c0392b; }

@@ -754,6 +754,8 @@ refreshWeatherWarnings(false);
 refreshEarthquakeSummary(false);
 initTimeline();
 initQuickNav();
+refreshAmedas(false);
+refreshRainForecast(false);
 renderRoadFloodSites();
 initIntegration();
 applyTrialRecordFromQuery();
@@ -814,6 +816,7 @@ function bindEvents() {
     document.getElementById(id).addEventListener("input", updateLocationWebSearchLink);
   });
   document.getElementById("refresh-earthquake-button").addEventListener("click", () => refreshEarthquakeSummary(true));
+  document.getElementById("refresh-amedas-button")?.addEventListener("click", () => refreshAmedas(true));
   document.getElementById("refresh-weather-warning-button").addEventListener("click", () => refreshWeatherWarnings(true));
   document.getElementById("refresh-sns-monitor-button").addEventListener("click", () => refreshSnsMonitor(true));
   document.getElementById("sns-monitor-list").addEventListener("click", handleSnsMonitorAction);
@@ -2970,6 +2973,11 @@ function renderPastFloodMarkers() {
 }
 
 function toggleOverlay(name, checked) {
+  if (name === "rainForecast") {
+    if (checked) { refreshRainForecast(true); rainForecastLayer.addTo(map); }
+    else map.removeLayer(rainForecastLayer);
+    return;
+  }
   if (name === "quakeIntensity") {
     if (checked) { ensureQuakeIntensityLayer(); quakeIntensityLayer.addTo(map); }
     else map.removeLayer(quakeIntensityLayer);
@@ -3207,6 +3215,125 @@ async function ensureQuakeIntensityLayer() {
   } catch (error) {
     quakeIntensityLoaded = false;
     setStatus(`取得できません（${error?.message || "接続エラー"}）`, true);
+  }
+}
+
+// ============================================================
+// 🌧 アメダス実況（印西市の周囲）と降水短時間予報
+// キキクルは「危険度の判定結果」で、いま何ミリ降っているかは分からない。
+// 行動を決めるには実況の雨量が要るので、市内に観測点がない印西市の代わりに
+// 周囲4地点（我孫子・佐倉・成田・船橋）の値を並べる。
+// ============================================================
+const AMEDAS_STATIONS = [
+  { code: "45061", name: "我孫子" },
+  { code: "45116", name: "佐倉" },
+  { code: "45121", name: "成田" },
+  { code: "45106", name: "船橋" }
+];
+let amedasTimer = null;
+
+function amedasValue(entry, key) {
+  const value = entry?.[key];
+  // [値, 品質フラグ] の形。品質フラグ0が正常値
+  if (!Array.isArray(value) || value[1] !== 0 || typeof value[0] !== "number") return null;
+  return value[0];
+}
+
+function amedasClass(mmPerHour) {
+  if (mmPerHour === null) return "";
+  if (mmPerHour >= 50) return "is-extreme";
+  if (mmPerHour >= 30) return "is-heavy";
+  if (mmPerHour >= 10) return "is-moderate";
+  return "";
+}
+
+async function refreshAmedas(manual) {
+  const node = document.getElementById("amedas-content");
+  const status = document.getElementById("amedas-status");
+  if (!node) return;
+  if (manual) node.innerHTML = '<div class="detail-empty">最新の観測値を取得中です。</div>';
+  try {
+    const timeText = await (await fetch(`https://www.jma.go.jp/bosai/amedas/data/latest_time.txt?_=${Date.now()}`, { cache: "no-store" })).text();
+    const at = new Date(timeText.trim());
+    if (Number.isNaN(at.getTime())) throw new Error("観測時刻を取得できません");
+    const stamp = `${at.getFullYear()}${String(at.getMonth() + 1).padStart(2, "0")}${String(at.getDate()).padStart(2, "0")}${String(at.getHours()).padStart(2, "0")}${String(at.getMinutes()).padStart(2, "0")}00`;
+    const response = await fetch(`https://www.jma.go.jp/bosai/amedas/data/map/${stamp}.json`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+
+    const rows = AMEDAS_STATIONS.map(station => {
+      const entry = data[station.code];
+      return {
+        name: station.name,
+        h1: amedasValue(entry, "precipitation1h"),
+        h24: amedasValue(entry, "precipitation24h"),
+        m10: amedasValue(entry, "precipitation10m")
+      };
+    });
+    const maxH1 = Math.max(...rows.map(r => (r.h1 === null ? -1 : r.h1)));
+
+    node.innerHTML = `
+      <div class="amedas-grid">
+        ${rows.map(row => `
+          <div class="amedas-item ${amedasClass(row.h1)}">
+            <div class="amedas-name">${escapeHtml(row.name)}</div>
+            <div class="amedas-main">${row.h1 === null ? "—" : escapeHtml(String(row.h1))}<span>mm/h</span></div>
+            <div class="amedas-sub">24時間 ${row.h24 === null ? "—" : escapeHtml(String(row.h24))}mm ／ 10分 ${row.m10 === null ? "—" : escapeHtml(String(row.m10))}mm</div>
+          </div>
+        `).join("")}
+      </div>
+      <div class="amedas-note">印西市内に気象庁の雨量観測点がないため、周囲4地点の実況です。1時間30mm以上で橙、50mm以上で赤になります。</div>
+    `;
+    if (status) {
+      status.textContent = `${formatDateTime(toDateTimeLocal(at.toISOString()))}時点 ・ 最大 ${maxH1 < 0 ? "—" : maxH1}mm/h`;
+      status.classList.remove("is-error");
+    }
+  } catch (error) {
+    node.innerHTML = '<div class="detail-empty">観測値を取得できませんでした。</div>';
+    if (status) {
+      status.textContent = `取得できません（${error?.message || "接続エラー"}）`;
+      status.classList.add("is-error");
+    }
+  }
+}
+
+// 降水短時間予報（この先1時間の雨の予想）。実況の雨雲レーダーとは別配信
+const rainForecastLayer = L.tileLayer("", {
+  attribution: "気象庁 降水短時間予報",
+  opacity: 0.55,
+  maxNativeZoom: 10,
+  maxZoom: 18,
+  zIndex: 448,
+  updateWhenIdle: true
+});
+
+async function refreshRainForecast(showLayer) {
+  const status = document.getElementById("rain-forecast-status");
+  try {
+    const response = await fetch(`https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N2.json?_=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const times = await response.json();
+    // 先頭が最も先の時刻。いまから約30分後の予想を出す（直近すぎると実況と変わらない）
+    const candidates = (Array.isArray(times) ? times : []).filter(item => item?.elements?.includes("hrpns"));
+    const target = candidates[Math.max(0, candidates.length - 7)] || candidates[0];
+    if (!target) throw new Error("予報時刻がありません");
+    rainForecastLayer.setUrl(`https://www.jma.go.jp/bosai/jmatile/data/nowc/${target.basetime}/none/${target.validtime}/surf/hrpns/{z}/{x}/{y}.png`, false);
+    if (status) {
+      status.textContent = `${formatJmaTime(target.validtime)}の予想`;
+      status.classList.remove("is-error");
+    }
+    if (document.querySelector('[data-overlay="rainForecast"]')?.checked && !map.hasLayer(rainForecastLayer)) {
+      rainForecastLayer.addTo(map);
+    }
+  } catch (error) {
+    if (status) {
+      status.textContent = "取得できません";
+      status.classList.add("is-error");
+    }
+    if (showLayer) {
+      const box = document.querySelector('[data-overlay="rainForecast"]');
+      if (box) box.checked = false;
+    }
   }
 }
 
@@ -3460,6 +3587,10 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 setInterval(() => refreshEarthquakeSummary(false), 10 * 60 * 1000);
+setInterval(() => refreshAmedas(false), 5 * 60 * 1000);
+setInterval(() => {
+  if (document.querySelector('[data-overlay="rainForecast"]')?.checked) refreshRainForecast(false);
+}, 10 * 60 * 1000);
 setInterval(() => refreshWeatherWarnings(false), 5 * 60 * 1000);
 
 function initBoundary() {
