@@ -2422,3 +2422,6 @@ body.embed-mode .cbi-home-link {
 .past-flood-count { font-size: 10px; color: #0d47a1; background: #dbe7f7; border-radius: 8px; padding: 0 5px; }
 .past-flood-all { font-size: 11px; padding: 1px 8px; border: 1px solid #b3c6e0; border-radius: 10px; background: #fff; cursor: pointer; }
 .past-flood-empty { color: #777; font-size: 11px; }
+
+/* 土砂災害区域（市公表）マーカーの凡例 */
+.legend-marker { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 700; vertical-align: -3px; margin: 0 1px; }
