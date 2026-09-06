@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-06h";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-06i";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1";
@@ -194,20 +194,42 @@
       "  vec3 p = fsInput.attributes.positionWC - vec3(-3960000.0, 3310000.0, 3730000.0);",
       "  float glowVar = 0.6 + 0.4 * nightHash(floor(p / 40.0));",
       //   にじみは遠くほど強く（最大 2.6 倍）。上空から見ると点は消えるので、街の明るさはこのにじみが担う
-      "  night += vec3(0.26, 0.17, 0.06) * built * glowVar * mix(1.0, 2.6, far);",
-      // 窓明かり・街灯：世界座標をセルに区切り、セルごとの乱数で灯す。遠いほどセルを大きくして、上空からも点が消えないようにする
+      //   近距離（〜500m）はにじみを弱めて夜らしく暗くする（近くは窓と街灯が主役）
+      "  float nearF = 1.0 - smoothstep(500.0, 1200.0, dist);",
+      "  night += vec3(0.26, 0.17, 0.06) * built * glowVar * mix(1.0, 2.6, far) * mix(1.0, 0.45, nearF);",
+      // ---- 近距離：壁面に窓の格子（3.2m ごとの階 × 2.8m ごとの窓。約45% を点灯、暖色と白色を混ぜる）。屋根は暗いまま
+      //   地表の東・北・上の向きを出し、高さ＝階、壁に沿った方向＝窓の列にする（壁の法線が南北向きなら壁は東西に延びるので東方向の座標を使う）
+      "  vec3 up = normalize(fsInput.attributes.positionWC);",
+      "  vec3 east = normalize(cross(vec3(0.0, 0.0, 1.0), up));",
+      "  vec3 north = cross(up, east);",
+      "  float hgt = dot(p, up); float ue = dot(p, east); float un = dot(p, north);",
+      "  float along = mix(un, ue, step(0.5, abs(dot(gn, mat3(czm_view3D) * north))));",
+      "  float fl = floor(hgt / 3.2); float fy = fract(hgt / 3.2);",
+      "  float ca = floor(along / 2.8); float fa = fract(along / 2.8);",
+      "  float winShape = step(0.25, fy) * step(fy, 0.75) * step(0.2, fa) * step(fa, 0.8);",
+      "  float bId = nightHash(floor(vec3(ue, un, 0.0) / 30.0));",
+      "  float lit = step(0.55, nightHash(vec3(ca, fl, bId * 100.0)));",
+      "  float winNear = built * wall * winShape * lit;",
+      "  vec3 warmNear = mix(vec3(1.0, 0.84, 0.52), vec3(0.78, 0.9, 1.0), step(0.65, nightHash(vec3(fl, ca, bId * 50.0 + 1.0))));",
+      // ---- 近距離：地面（道路・駐車場）は街灯の光だまり。18m 間隔の格子の半分に街灯があり、中心から丸く減衰する
+      "  vec2 lc = vec2(ue, un) / 18.0;",
+      "  vec2 lf = fract(lc) - 0.5;",
+      "  float hasLamp = step(0.5, nightHash(vec3(floor(lc), 5.0)));",
+      "  float pool = smoothstep(0.5, 0.08, length(lf)) * hasLamp;",
+      "  float lampNear = pool * built * smoothstep(0.2, 0.08, sat) * (1.0 - wall);",
+      // ---- 遠距離（500m〜）：世界座標をセルに区切り、セルごとの乱数で灯す。遠いほどセルを大きくして、上空からも点が消えないようにする
       "  float cellSize = 6.0 * exp2(floor(log2(max(1.0, dist / 700.0))));",
       "  vec3 cell = floor(p / cellSize);",
       "  float h = nightHash(cell);",
-      // 窓明かりは壁面に（屋根には 3% だけ設備の灯り）。倉庫の屋根が窓だらけに光るのを防ぐ
-      //   屋根の灯りは近くでは 3%（設備の灯り程度）、遠く（2.5km 以上）では 14% まで増やす：上空から住宅の密集が光の塊として分かるように
+      //   屋根の灯りは近くでは 3%（設備の灯り程度）、遠く（3km 以上）では 22% まで増やす：上空から住宅の密集が光の塊として分かるように
       "  float roofRate = mix(0.03, 0.22, smoothstep(600.0, 3000.0, dist));",
-      "  float win = built * (step(0.86, h) * wall + step(1.0 - roofRate, h) * (1.0 - wall) * 0.8);",
-      "  vec3 warm = mix(vec3(1.0, 0.84, 0.52), vec3(0.72, 0.88, 1.0), step(0.6, nightHash(cell + 7.0)));",
-      // 街灯：色味の薄い面（道路・駐車場）に、12m 角のセルでまばらに橙色。窓より少なく明るい
+      "  float winFar = built * (step(0.86, h) * wall + step(1.0 - roofRate, h) * (1.0 - wall) * 0.8);",
+      "  vec3 warmFar = mix(vec3(1.0, 0.84, 0.52), vec3(0.72, 0.88, 1.0), step(0.6, nightHash(cell + 7.0)));",
       "  vec3 cell2 = floor(p / (cellSize * 2.0));",
-      "  float lamp = step(0.93, nightHash(cell2 + 3.0)) * built * smoothstep(0.18, 0.08, sat) * (1.0 - wall);",
-      "  material.diffuse = night + warm * win * 0.9 + vec3(1.0, 0.72, 0.35) * lamp * 1.1;",
+      "  float lampFar = step(0.93, nightHash(cell2 + 3.0)) * built * smoothstep(0.18, 0.08, sat) * (1.0 - wall);",
+      "  vec3 nearLight = warmNear * winNear * 0.95 + vec3(1.0, 0.75, 0.4) * lampNear * 0.8;",
+      "  vec3 farLight = warmFar * winFar * 0.9 + vec3(1.0, 0.72, 0.35) * lampFar * 1.1;",
+      "  material.diffuse = night + mix(farLight, nearLight, nearF);",
       "}",
     ].join("\n"),
   });
