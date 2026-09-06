@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-06d";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-06e";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1";
@@ -177,7 +177,7 @@
       "  float soil = (1.0 - veg) * smoothstep(0.42, 0.22, lum) * step(c.b, c.r);",
       "  float mx = max(c.r, max(c.g, c.b)); float sat = (mx - min(c.r, min(c.g, c.b))) / max(mx, 0.001);",
       //   暖色で明るい面（ゴルフ場の冬芝・砂地・裸地）は人工物に含めない（本番確認でゴルフ場が光ったため。2026-09-06）
-      "  float warmGround = step(c.b + 0.03, c.r) * smoothstep(0.10, 0.22, sat);",
+      "  float warmGround = step(c.b + 0.06, c.r) * smoothstep(0.16, 0.28, sat) * smoothstep(0.35, 0.50, lum);",
       "  float built = (1.0 - veg) * (1.0 - soil) * (1.0 - warmGround) * smoothstep(0.22, 0.45, lum);",
       //   面の向き：画面微分から幾何法線を出し、鉛直（上）方向との角度で壁面（縦）か屋根・地面（横）かを見分ける
       "  vec3 gn = normalize(cross(dFdx(fsInput.attributes.positionEC), dFdy(fsInput.attributes.positionEC)));",
@@ -189,14 +189,16 @@
       // 市街地のにじみ：人工物の面に薄い橙色を足す。遠くから見たとき「明るい帯＝街」「暗い塊＝森」に見える主役はこれ
       "  vec3 p = fsInput.attributes.positionWC - vec3(-3960000.0, 3310000.0, 3730000.0);",
       "  float glowVar = 0.6 + 0.4 * nightHash(floor(p / 40.0));",
-      "  night += vec3(0.20, 0.13, 0.05) * built * glowVar;",
+      "  night += vec3(0.26, 0.17, 0.06) * built * glowVar;",
       // 窓明かり・街灯：世界座標をセルに区切り、セルごとの乱数で灯す。遠いほどセルを大きくして、上空からも点が消えないようにする
       "  float dist = length(fsInput.attributes.positionEC);",
       "  float cellSize = 6.0 * exp2(floor(log2(max(1.0, dist / 700.0))));",
       "  vec3 cell = floor(p / cellSize);",
       "  float h = nightHash(cell);",
       // 窓明かりは壁面に（屋根には 3% だけ設備の灯り）。倉庫の屋根が窓だらけに光るのを防ぐ
-      "  float win = built * (step(0.86, h) * wall + step(0.97, h) * (1.0 - wall) * 0.6);",
+      //   屋根の灯りは近くでは 3%（設備の灯り程度）、遠く（2.5km 以上）では 14% まで増やす：上空から住宅の密集が光の塊として分かるように
+      "  float roofRate = mix(0.03, 0.14, smoothstep(600.0, 2500.0, dist));",
+      "  float win = built * (step(0.86, h) * wall + step(1.0 - roofRate, h) * (1.0 - wall) * 0.8);",
       "  vec3 warm = mix(vec3(1.0, 0.84, 0.52), vec3(0.72, 0.88, 1.0), step(0.6, nightHash(cell + 7.0)));",
       // 街灯：色味の薄い面（道路・駐車場）に、12m 角のセルでまばらに橙色。窓より少なく明るい
       "  vec3 cell2 = floor(p / (cellSize * 2.0));",
