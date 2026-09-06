@@ -2656,7 +2656,10 @@ function bgmStop() {
 (function bgmInit() {
   const btn = document.getElementById("bgmBtn");
   if (!btn) return;
-  btn.addEventListener("click", function () { (bgmAudio && !bgmAudio.paused) ? bgmStop() : bgmStart(); });
+  btn.addEventListener("click", function () {
+    if (bgmAudio && !bgmAudio.paused) { bgmStop(); window.bgmUserOff = true; }   // 手で止めたら夜間遊覧でも自動では鳴らさない（night.js が見る）
+    else { bgmStart(); window.bgmUserOff = false; }
+  });
   try { if (localStorage.getItem(BGM_KEY) === "1") btn.textContent = "🎵 BGM（前回ON）"; } catch (e) {}
   // 端末に保存してある曲があれば読み込む
   const pick = document.getElementById("bgmPickBtn"), file = document.getElementById("bgmFile");

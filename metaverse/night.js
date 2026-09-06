@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-06g";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-06h";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1";
@@ -179,7 +179,10 @@
       //   暖色で明るい面（ゴルフ場の冬芝・砂地・裸地）は人工物に含めない（本番確認でゴルフ場が光ったため。2026-09-06）
       //   ゴルフ場の冬芝・砂地は「明るくて赤みが青より強い」。住宅地の道路・屋根は暗め（lum 0.3〜0.45）か無彩色なので残る
       "  float warmGround = step(c.b + 0.03, c.r) * smoothstep(0.10, 0.22, sat);",
-      "  float built = (1.0 - veg) * (1.0 - soil) * (1.0 - warmGround) * smoothstep(0.22, 0.45, lum);",
+      //   遠く（1.5〜6km）のタイルは解像度が粗く写真が暗くぼやけるので、明るさの条件を緩めて人工物を拾う（2026-09-06 中司さん指摘「高高度から見たときに光はほとんど見えない」）
+      "  float dist = length(fsInput.attributes.positionEC);",
+      "  float far = smoothstep(1500.0, 6000.0, dist);",
+      "  float built = (1.0 - veg) * (1.0 - soil) * (1.0 - warmGround) * smoothstep(mix(0.22, 0.13, far), mix(0.45, 0.28, far), lum);",
       //   面の向き：画面微分から幾何法線を出し、鉛直（上）方向との角度で壁面（縦）か屋根・地面（横）かを見分ける
       "  vec3 gn = normalize(cross(dFdx(fsInput.attributes.positionEC), dFdy(fsInput.attributes.positionEC)));",
       "  vec3 upEC = normalize(mat3(czm_view3D) * normalize(fsInput.attributes.positionWC));",
@@ -190,15 +193,15 @@
       // 市街地のにじみ：人工物の面に薄い橙色を足す。遠くから見たとき「明るい帯＝街」「暗い塊＝森」に見える主役はこれ
       "  vec3 p = fsInput.attributes.positionWC - vec3(-3960000.0, 3310000.0, 3730000.0);",
       "  float glowVar = 0.6 + 0.4 * nightHash(floor(p / 40.0));",
-      "  night += vec3(0.26, 0.17, 0.06) * built * glowVar;",
+      //   にじみは遠くほど強く（最大 2.6 倍）。上空から見ると点は消えるので、街の明るさはこのにじみが担う
+      "  night += vec3(0.26, 0.17, 0.06) * built * glowVar * mix(1.0, 2.6, far);",
       // 窓明かり・街灯：世界座標をセルに区切り、セルごとの乱数で灯す。遠いほどセルを大きくして、上空からも点が消えないようにする
-      "  float dist = length(fsInput.attributes.positionEC);",
       "  float cellSize = 6.0 * exp2(floor(log2(max(1.0, dist / 700.0))));",
       "  vec3 cell = floor(p / cellSize);",
       "  float h = nightHash(cell);",
       // 窓明かりは壁面に（屋根には 3% だけ設備の灯り）。倉庫の屋根が窓だらけに光るのを防ぐ
       //   屋根の灯りは近くでは 3%（設備の灯り程度）、遠く（2.5km 以上）では 14% まで増やす：上空から住宅の密集が光の塊として分かるように
-      "  float roofRate = mix(0.03, 0.14, smoothstep(600.0, 2500.0, dist));",
+      "  float roofRate = mix(0.03, 0.22, smoothstep(600.0, 3000.0, dist));",
       "  float win = built * (step(0.86, h) * wall + step(1.0 - roofRate, h) * (1.0 - wall) * 0.8);",
       "  vec3 warm = mix(vec3(1.0, 0.84, 0.52), vec3(0.72, 0.88, 1.0), step(0.6, nightHash(cell + 7.0)));",
       // 街灯：色味の薄い面（道路・駐車場）に、12m 角のセルでまばらに橙色。窓より少なく明るい
@@ -810,6 +813,11 @@
   async function startTour() {
     if (tourRunning || tt.active) return;
     tourRunning = true;
+    // 夜間遊覧では BGM を自動で流す（2026-09-06 中司さん指示）。曲は「🎵 曲」で選んだもの（おまかせ＝夜景はクリスマス3曲）。
+    // 受付のクリックを経ているので自動再生の制限に掛からない。利用者が「🎵 BGM」で止めた後は、再読み込みまで勝手に鳴らさない
+    try {
+      if (typeof bgmStart === "function" && !window.bgmUserOff && !(typeof bgmAudio !== "undefined" && bgmAudio && !bgmAudio.paused)) bgmStart();
+    } catch (e) { /* 音が出なくても遊覧は続ける */ }
     const token = ++tourToken;
     const alive = function () { return token === tourToken; };
     const stop = function () { tourRunning = false; };
