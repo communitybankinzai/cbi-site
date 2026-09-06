@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-06",
+          "title": "夜景モードの地上のあかり増強（植生・ゴルフ場を除いた人工物にだけ灯す）、光点の名前を表示名に、CiDAO 側の受付経由登録数の記録と初回ログインの戻り導線 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/night.js（nightShader 第2〜5案 c〜g・版 2026-09-06g）",
+            "site/metaverse/index.html（Presence に表示名 n・rtName/rtEsc）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json（3件）",
+            "C:/Repos/cidao: supabase/migrations/20260906120000_members_signup_source.sql（本番適用済み）, src/lib/signup-source.ts, src/app/login/page.tsx, src/app/api/metaverse-auth/route.ts, src/app/auth/callback/route.ts, src/app/me/edit/page.tsx, src/app/admin/timetrial/page.tsx",
+            "cidao/2026-09-04_メタバース夜景フライトモード（イルミライ向け）.md（第8版）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "検証：本番を puppeteer で開き受付を表示名で通して 3 視点撮影（c/d/e/f/g の 5 回＝入場枠 5 消費、本日 14/30）。g 版で『住宅地・倉庫は光の塊、森・ゴルフ場は暗い』を目視確認。CiDAO は tsc/eslint/next build 通過、本番で /login の utm Cookie と metaverse-auth の Cookie 付与を確認。LINE の実ログイン往復は自動検証不可のため実機確認項目に登録。防災モードの受付必須は中司さん決定。session: 9bb79d7f-6ee9-4e3f-83ee-7ae28ddef41c / output: 466,231 / cost: $336.00（累計。差分 0.5h）"
+        },
+        {
+          "date": "2026-09-06",
           "title": "メタバースの入場受付を必須化（CiDAO 登録者の確認→入場枠→3D読み込みの順に組み替え、未登録者向け登録QRを受付画面に追加）0.5時間",
           "category": "実装",
           "outputs": [
@@ -4924,20 +4940,6 @@
       ],
       "plans": [
         {
-          "due": "2026-09-13",
-          "title": "🔐 防災モード（?mode=bousai）と文化財めぐりも入場受付を必須のままにするか決める（災害MAPからの平時導線が受付で止まる）",
-          "category": "実装",
-          "priority": "高",
-          "note": "2026-09-06 の必須化は cinema／notiles 以外の全モードに掛かる。災害MAPヘッダーの「メタバース印西（3D）」リンクから来た人も CiDAO 登録が要る。選択肢：(A) 全モード必須のまま（加入導線を最優先）(B) 防災モードだけ免除（?mode=bousai を RECEPTION_REQUIRED から外す）(C) 文化財めぐりも免除。推奨 A（1日30枠の節約と加入導線の両立）。決めたら night.js の RECEPTION_REQUIRED を1行直す"
-        },
-        {
-          "due": "2026-09-20",
-          "title": "📈 入場受付の効果測定：登録QR（utm_source=metaverse）経由で CiDAO に登録した人数を数えられるようにする",
-          "category": "実装",
-          "priority": "中",
-          "note": "登録QRの URL に utm_source=metaverse&utm_medium=reception&utm_campaign=entry を付けてあるが、CiDAO 側は utm を保存していない。案：/login で utm を cookie に持ち、auth/callback で members に signup_source を残す。受付画面でも「新規登録→即入場」の件数を app_settings に日次で数える。イベント後に『受付で何人が新規登録したか』を報告するため"
-        },
-        {
           "due": "2026-11-13",
           "title": "🎫 イベント当日は Google の root 枠と一緒に、入場枠API の上限（app_settings metaverse_admission.limit）も引き上げる",
           "category": "事務",
@@ -4987,13 +4989,6 @@
           "note": "CiDAO 登録者限定にしたため、会場では来客ごとに LINE ログインが要る。自分のスマホから遊ぶ導線（QR）を主にするか、会場PCで交代ログインするかの判断。初回ログイン（表示名未設定）の人は /me/edit?welcome=1 に流れてメタバースへ戻らないので、その案内も要る 2026-09-05：会員証QR読取・表示名入力での参加を追加したので、来場者ごとの LINE ログインは不要になった。会場では Web カメラを用意し、QR 読取の実機確認を行う。"
         },
         {
-          "due": "未定",
-          "title": "🌃 CiDAO 初回ログイン（表示名の確認画面）からメタバースへ戻れるようにする",
-          "category": "実装",
-          "priority": "低",
-          "note": "auth/callback は mv_return Cookie を見て /api/metaverse-auth へ戻すが、初回ログイン・退会復元の分岐が先に走るため戻れない。/me/edit の保存後に Cookie を見て戻す小改修"
-        },
-        {
           "due": "2026-09-05",
           "title": "📣 看板作り告知（q1788504185149・9/5 12:00）の投稿結果を確認する（結果メモが Threads/Instagram とも成功か、動画が再生されるか）",
           "category": "広報",
@@ -5014,7 +5009,7 @@
           "title": "🌃 夜景フライトモードを会場用PC（プロジェクタ＋コントローラー）で実機確認する",
           "category": "実装",
           "priority": "高",
-          "note": "URL: ?night=1&tour=1&mode=event。確認点：街の暗さと窓明かりの見え方（ヘッドレスでは粗いタイルしか読めず未確認）／ブルームの負荷（重ければ軽量モードでブルームOFF）／いんザイ君をくぐったときの弾け／自動遊覧の中断と150秒放置での再開／コントローラーでの操縦。ゲート位置・大きさは night.js の GATE 定数で調整"
+          "note": "URL: ?night=1&tour=1&mode=event。確認点：街の暗さと窓明かりの見え方（ヘッドレスでは粗いタイルしか読めず未確認）／ブルームの負荷（重ければ軽量モードでブルームOFF）／いんザイ君をくぐったときの弾け／自動遊覧の中断と150秒放置での再開／コントローラーでの操縦。ゲート位置・大きさは night.js の GATE 定数で調整／2026-09-06 追加項目：①新規の LINE アカウントで受付→表示名の確認画面→保存で３次元MAPへ戻るか（初回ログインの戻り導線。自動検証不可）②登録QRをスマホで読んで登録→表示名で入場→管理画面「タイムトライアル記録」の受付経由の人数が増えるか ③夜景 g 版の地上のあかりがプロジェクタで見て自然か（ゴルフ場が暗い・住宅地が光る）"
         },
         {
           "due": "2026-11-13",
