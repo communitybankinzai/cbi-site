@@ -2450,3 +2450,12 @@ body.embed-mode .cbi-home-link {
   }
   .quick-nav-btn.is-current { background: #16324f; border-color: #16324f; color: #fff; }
 }
+
+/* キキクル（気象庁 危険度分布）の色の凡例。黄は斜線ハッチングで描かれる */
+.kikikuru-legend { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+.kk-item { display: inline-flex; align-items: center; gap: 5px; }
+.kk-chip { display: inline-block; width: 16px; height: 12px; border: 1px solid #9aa5b1; border-radius: 2px; flex: 0 0 auto; }
+.kk-y { background: repeating-linear-gradient(45deg, #f2e700 0 3px, #fffbe0 3px 6px); }
+.kk-r { background: #ff2800; }
+.kk-p { background: #aa00aa; }
+.kk-k { background: #0c0c0c; }
