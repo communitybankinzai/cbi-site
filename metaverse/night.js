@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-06c";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-06d";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1";
@@ -175,7 +175,15 @@
       //   植生：緑が赤・青より強い（森・林・芝・畑の作物）。土・畑：暗くて赤み（茶色）。人工物：明るめで色味の薄い面（屋根・道路・駐車場）
       "  float veg = smoothstep(0.0, 0.07, c.g - max(c.r, c.b));",
       "  float soil = (1.0 - veg) * smoothstep(0.42, 0.22, lum) * step(c.b, c.r);",
-      "  float built = (1.0 - veg) * (1.0 - soil) * smoothstep(0.22, 0.45, lum);",
+      "  float mx = max(c.r, max(c.g, c.b)); float sat = (mx - min(c.r, min(c.g, c.b))) / max(mx, 0.001);",
+      //   暖色で明るい面（ゴルフ場の冬芝・砂地・裸地）は人工物に含めない（本番確認でゴルフ場が光ったため。2026-09-06）
+      "  float warmGround = step(c.b + 0.03, c.r) * smoothstep(0.10, 0.22, sat);",
+      "  float built = (1.0 - veg) * (1.0 - soil) * (1.0 - warmGround) * smoothstep(0.22, 0.45, lum);",
+      //   面の向き：画面微分から幾何法線を出し、鉛直（上）方向との角度で壁面（縦）か屋根・地面（横）かを見分ける
+      "  vec3 gn = normalize(cross(dFdx(fsInput.attributes.positionEC), dFdy(fsInput.attributes.positionEC)));",
+      "  vec3 upEC = normalize(mat3(czm_view3D) * normalize(fsInput.attributes.positionWC));",
+      "  float horiz = abs(dot(gn, upEC));",
+      "  float wall = 1.0 - smoothstep(0.45, 0.75, horiz);",
       // 昼の写真を暗く・青みがけて夜にする（真っ黒にはせず、街の形が分かる程度に残す）
       "  vec3 night = c * vec3(0.11, 0.14, 0.26) + vec3(0.01, 0.015, 0.045);",
       // 市街地のにじみ：人工物の面に薄い橙色を足す。遠くから見たとき「明るい帯＝街」「暗い塊＝森」に見える主役はこれ
@@ -187,12 +195,12 @@
       "  float cellSize = 6.0 * exp2(floor(log2(max(1.0, dist / 700.0))));",
       "  vec3 cell = floor(p / cellSize);",
       "  float h = nightHash(cell);",
-      "  float win = step(0.86, h) * built;",
+      // 窓明かりは壁面に（屋根には 3% だけ設備の灯り）。倉庫の屋根が窓だらけに光るのを防ぐ
+      "  float win = built * (step(0.86, h) * wall + step(0.97, h) * (1.0 - wall) * 0.6);",
       "  vec3 warm = mix(vec3(1.0, 0.84, 0.52), vec3(0.72, 0.88, 1.0), step(0.6, nightHash(cell + 7.0)));",
       // 街灯：色味の薄い面（道路・駐車場）に、12m 角のセルでまばらに橙色。窓より少なく明るい
-      "  float mx = max(c.r, max(c.g, c.b)); float sat = (mx - min(c.r, min(c.g, c.b))) / max(mx, 0.001);",
       "  vec3 cell2 = floor(p / (cellSize * 2.0));",
-      "  float lamp = step(0.93, nightHash(cell2 + 3.0)) * built * smoothstep(0.18, 0.08, sat);",
+      "  float lamp = step(0.93, nightHash(cell2 + 3.0)) * built * smoothstep(0.18, 0.08, sat) * (1.0 - wall);",
       "  material.diffuse = night + warm * win * 0.9 + vec3(1.0, 0.72, 0.35) * lamp * 1.1;",
       "}",
     ].join("\n"),
