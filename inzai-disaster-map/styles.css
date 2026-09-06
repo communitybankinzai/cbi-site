@@ -2487,3 +2487,16 @@ body.embed-mode .cbi-home-link {
 /* 冠水した道路（市民の投稿）レイヤーの状態表示 */
 #kansui-status { display: block; font-size: 11px; color: #5a6675; margin-left: 22px; }
 #kansui-status.is-error { color: #c0392b; }
+
+/* CBI rainfall scenario; official hazards retain their own controls. */
+.cbi-simulation { border-top: 3px solid #713b8f; }
+.cbi-simulation p { font-size: 12px; line-height: 1.7; }
+.cbi-simulation form { display: grid; gap: 10px; }
+.cbi-simulation input[type=number] { width: 100%; min-height: 38px; padding: 6px 9px; border: 1px solid #aab8c3; border-radius: 6px; background: #fff; color: #172b3a; }
+.cbi-simulation details { font-size: 12px; padding: 8px; background: #f2eef7; border-radius: 6px; }
+.cbi-simulation summary { cursor: pointer; margin-bottom: 8px; }
+.cbi-simulation-scale { height: 14px; margin-top: 10px; border: 1px solid #8494a1; background: linear-gradient(to right, rgb(224,238,245), rgb(102,30,142)); }
+.cbi-simulation-scale-label { display: flex; justify-content: space-between; font-size: 11px; }
+.cbi-simulation-map-note { max-width: 300px; white-space: pre-line; padding: 8px 10px; border: 2px solid #713b8f; border-radius: 6px; background: rgba(255,255,255,.96); color: #30213d; font-size: 11px; line-height: 1.5; box-shadow: 0 1px 5px #0003; pointer-events: none; }
+.cbi-simulation-raster { image-rendering: pixelated; }
+@media(max-width:600px) { .cbi-simulation-map-note { max-width: 235px; font-size: 10px; } }

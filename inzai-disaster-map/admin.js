@@ -1,5 +1,5 @@
 const WORK_LOG_KEY = "inzai-disaster-work-log-v1";
-const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260822-v9";
+const WORK_LOG_SEED_KEY = "inzai-disaster-work-log-seed-20260907-v10";
 const statusLabels = {
   planned: "検討中",
   testing: "試験中",
@@ -8,6 +8,17 @@ const statusLabels = {
 };
 
 const initialRecords = [
+{
+  "id": "seed-cbi-rain-simulation",
+  "feature": "CBI独自シミュレーション・雨量条件の参考推定",
+  "status": "testing",
+  "owner": "CBI",
+  "loggedAt": "2026-09-07T00:00:00+09:00",
+  "summary": "雨量・継続時間を入力して100m地形由来の未校正参考指標を重ね表示する機能を追加。任意の感度式による比較で、物理的な浸水深・冠水確率・公式予報ではない。流出率・排水相当量は全域一定の仮定。条件変更時は旧結果を消す。",
+  "nextAction": "過去の冠水・確認済み非冠水と同時刻降雨で検証し、排水網・路面高・河川水位を取得して流出/管路/地表流モデルを実装する。",
+  "referenceUrl": "./simulation-method.html",
+  "origin": "seed"
+},
   {
     id: "seed-meta-api",
     feature: "Instagram・Threadsの広域API取込",

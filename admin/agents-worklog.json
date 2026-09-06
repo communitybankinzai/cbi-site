@@ -17,6 +17,21 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-07",
+          "title": "CBI独自シミュレーションの雨量入力・防災MAP重ね表示と必要データ整理",
+          "category": "実装",
+          "outputs": [
+            "inzai-disaster-map/cbi-simulation-core.js",
+            "inzai-disaster-map/cbi-simulation.js",
+            "inzai-disaster-map/simulation-method.html",
+            "inzai-disaster-map/simulation-data/",
+            "inzai-disaster-map/cbi-simulation.test.cjs"
+          ],
+          "hours": null,
+          "partnerApproved": false,
+          "note": "雨量と継続時間から未校正の感度指標を計算。仮定を表示し浸水深・確率・通行可否を出さない。7件のテストと構文確認成功。ブラウザUI検証はwebview接続タイムアウトで未完。工数集計スクリプトはClaude transcript専用のため当Codexセッションを見つけられず、hoursは未計測(null)。\nsession: 01a075ba-c52f-7770-a8b5-8d0663667c22 / output: 未取得 / cost: 未取得"
+        },
+        {
           "date": "2026-09-06",
           "title": "9/6大雨 第4弾：アメダス雨量・雨雲予想・気象庁XML・県避難情報・冠水道路レイヤーの実装とSNS発信4本 1.3時間",
           "category": "実装",
@@ -115,7 +130,7 @@
           "title": "卒業論文を20ページへ削減（本文4,000字減・参考文献の精選）と COCoLa 記述の整理 1.0時間",
           "category": "実装",
           "outputs": "academy/01_草稿/第1〜6章.md（本文 29,696→25,720字）、academy/01_草稿/参考文献.md（29件→22件）、academy/05_提出版/卒業論文_CitizenDAO行政連携モデルの提案_最新版.docx（26→23ページ）、academy/05_提出版/卒業論文_確認用.pdf、site/thesis/paper.html",
-          "hours": 1.0,
+          "hours": 1,
           "partnerApproved": false,
           "note": "Word COM で実測しながら削減。26ページ→23ページ（表紙1＋目次2＋本文19＋参考文献2＝本文20ページ）。当初 6ページ超過と誤って報告したが、表紙・目次を除く実際の超過は3ページだった。書式（行間1.00）で詰める案は中司さんの判断で不採用とし、行間1.05のまま内容と参考文献で吸収した。COCoLa の言及は代表辞任済みのため、CiDAO 参加者の記述と謝辞から外し、イルミライの事例1箇所だけ残した（中司さんの指示：イルミライはOK、DAOは×）。hours は前回記録（output 1,337,257）からの差分 96,411 で算出。session: 8f104510-74de-47bf-8249-672356aedc78 / output: 1,433,668 / cost: $427.98"
         },
@@ -5096,6 +5111,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "CBI内水モデルの校正データ整備と物理モデル化",
+          "category": "調査",
+          "priority": "高",
+          "status": "保留",
+          "blockedBy": "複数豪雨の冠水/確認済み非冠水・同時刻降雨と排水/路面データが未取得",
+          "note": "simulation-method.htmlの優先表に従って市へ依頼するデータを整備する。外部への依頼は未実施。流出・管路・地表流・放流境界の実装後、独立した豪雨で検証。現在の任意感度式を精度検証済み予測と扱わない。"
+        },
         {
           "due": "未定",
           "title": "🚗 みんつく千葉冠水マップ運営（X: @change_support_）からの返信対応",
