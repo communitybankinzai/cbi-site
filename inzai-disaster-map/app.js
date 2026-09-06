@@ -1515,7 +1515,12 @@ function renderTimeline(payload) {
   ].filter(Boolean).join(" ・ ");
 
   if (!items.length) {
-    list.innerHTML = '<div class="detail-empty">この期間の公式発表・発信はありません。</div>';
+    // 対象日が過去のまま「発表はありません」と出ると、災害の最中に
+    // 「今日は何も出ていない」と誤読される。今日の件数を調べて誘導する
+    const today = dateStamp().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
+    const viewing = getFormValue("incident-date") || today;
+    list.innerHTML = `<div class="detail-empty">${escapeHtml(viewing)}の公式発表・発信はありません。</div>`;
+    if (viewing !== today) checkTimelineToday(today);
     return;
   }
 
@@ -1551,6 +1556,31 @@ function renderTimeline(payload) {
       </article>`);
   });
   list.innerHTML = html.join("");
+}
+
+// 対象日に発表が無いとき、今日は何件あるかを調べて切替リンクを出す
+async function checkTimelineToday(today) {
+  const endpoint = String(APP_CONFIG.timelineEndpoint || "").trim();
+  const list = document.getElementById("timeline-list");
+  if (!endpoint || !list) return;
+  try {
+    const params = new URLSearchParams({ date: today, days: "1", _: String(Date.now()) });
+    const response = await fetch(`${endpoint}?${params}`, { headers: { Accept: "application/json" }, cache: "no-store" });
+    if (!response.ok) return;
+    const payload = await response.json();
+    const count = Array.isArray(payload?.items) ? payload.items.length : 0;
+    if (!count) return;
+    list.insertAdjacentHTML("beforeend",
+      `<div class="timeline-today-hint">本日（${escapeHtml(today)}）は${count}件の発表があります。<button type="button" id="timeline-jump-today">今日の発表を見る</button></div>`);
+    document.getElementById("timeline-jump-today")?.addEventListener("click", () => {
+      const input = document.getElementById("incident-date");
+      if (!input) return;
+      input.value = today;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  } catch (error) {
+    // 補助表示なので失敗しても何もしない
+  }
 }
 
 function handleTimelineListClick(event) {
