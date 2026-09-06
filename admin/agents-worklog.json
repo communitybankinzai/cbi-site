@@ -28,7 +28,7 @@
           ],
           "hours": 0.2,
           "partnerApproved": false,
-          "note": "検証：ローカル（notiles・tour=1）で遊覧開始→amacha_xmas_machi.m4a が再生中、BGM ボタンで停止→bgmUserOff。シェーダーは WebGL2 単体コンパイル OK。本番 4,000m 上空の撮影で市街地が光の塊（2 回目。1 回目はタイル取得が途中停止）。斜め 2,900m はヘッドレスでタイルが揃わず未確認→中司さんの再読み込みで確認依頼。入場枠 17/30。session: 9bb79d7f-6ee9-4e3f-83ee-7ae28ddef41c / output: 489,000 前後 / cost: 下の行参照"
+          "note": "検証：ローカル（notiles・tour=1）で遊覧開始→amacha_xmas_machi.m4a が再生中、BGM ボタンで停止→bgmUserOff。シェーダーは WebGL2 単体コンパイル OK。本番 4,000m 上空の撮影で市街地が光の塊（2 回目。1 回目はタイル取得が途中停止）。斜め 2,900m はヘッドレスでタイルが揃わず未確認→中司さんの再読み込みで確認依頼。入場枠 17/30。session: 9bb79d7f-6ee9-4e3f-83ee-7ae28ddef41c / output: 488,564 / cost: $342.20（累計。差分 0.2h）"
         },
         {
           "date": "2026-09-06",
