@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-06e";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-06f";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1";
@@ -177,7 +177,8 @@
       "  float soil = (1.0 - veg) * smoothstep(0.42, 0.22, lum) * step(c.b, c.r);",
       "  float mx = max(c.r, max(c.g, c.b)); float sat = (mx - min(c.r, min(c.g, c.b))) / max(mx, 0.001);",
       //   暖色で明るい面（ゴルフ場の冬芝・砂地・裸地）は人工物に含めない（本番確認でゴルフ場が光ったため。2026-09-06）
-      "  float warmGround = step(c.b + 0.06, c.r) * smoothstep(0.16, 0.28, sat) * smoothstep(0.35, 0.50, lum);",
+      //   ゴルフ場の冬芝・砂地は「明るくて赤みが青より強い」。住宅地の道路・屋根は暗め（lum 0.3〜0.45）か無彩色なので残る
+      "  float warmGround = smoothstep(0.04, 0.10, c.r - c.b) * smoothstep(0.38, 0.50, lum);",
       "  float built = (1.0 - veg) * (1.0 - soil) * (1.0 - warmGround) * smoothstep(0.22, 0.45, lum);",
       //   面の向き：画面微分から幾何法線を出し、鉛直（上）方向との角度で壁面（縦）か屋根・地面（横）かを見分ける
       "  vec3 gn = normalize(cross(dFdx(fsInput.attributes.positionEC), dFdy(fsInput.attributes.positionEC)));",
