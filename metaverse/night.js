@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-06i";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-06j";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1";
@@ -216,7 +216,8 @@
       "  vec2 lf = fract(lc) - 0.5;",
       "  float hasLamp = step(0.5, nightHash(vec3(floor(lc), 5.0)));",
       "  float pool = smoothstep(0.5, 0.08, length(lf)) * hasLamp;",
-      "  float lampNear = pool * built * smoothstep(0.2, 0.08, sat) * (1.0 - wall);",
+      //   光だまりは暗めの無彩色の面（アスファルト）だけ。明るい屋根（倉庫・商業施設）に丸い光が付かないように（本番 89m で確認して除外）
+      "  float lampNear = pool * built * smoothstep(0.2, 0.08, sat) * smoothstep(0.52, 0.36, lum) * (1.0 - wall);",
       // ---- 遠距離（500m〜）：世界座標をセルに区切り、セルごとの乱数で灯す。遠いほどセルを大きくして、上空からも点が消えないようにする
       "  float cellSize = 6.0 * exp2(floor(log2(max(1.0, dist / 700.0))));",
       "  vec3 cell = floor(p / cellSize);",
