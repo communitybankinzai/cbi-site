@@ -2429,3 +2429,24 @@ body.embed-mode .cbi-home-link {
 /* 対象日に発表が無いときの「今日は◯件」誘導 */
 .timeline-today-hint { margin-top: 6px; padding: 8px 10px; border-radius: 8px; background: #fff6e5; border: 1px solid #f0c36d; font-size: 12px; line-height: 1.6; }
 .timeline-today-hint button { margin-left: 6px; padding: 2px 10px; border: 1px solid #b7791f; border-radius: 10px; background: #fff; color: #7b4b0a; cursor: pointer; font-size: 12px; }
+
+/* スマホ用の画面内ジャンプバー（PCでは不要なので非表示） */
+.quick-nav { display: none; }
+@media (max-width: 820px) {
+  .quick-nav {
+    display: flex; align-items: center; gap: 8px;
+    position: sticky; top: 0; z-index: 1200;
+    padding: 6px 10px; background: #ffffff;
+    border-bottom: 1px solid #d5dbe4; box-shadow: 0 2px 6px rgba(15, 30, 60, 0.08);
+    overflow: hidden;
+  }
+  .quick-nav-label { font-size: 11px; color: #5a6675; white-space: nowrap; }
+  .quick-nav-items { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .quick-nav-items::-webkit-scrollbar { display: none; }
+  .quick-nav-btn {
+    flex: 0 0 auto; padding: 6px 12px; min-height: 34px;
+    border: 1px solid #b9c4d3; border-radius: 17px; background: #f7f9fc;
+    color: #16324f; font-size: 13px; white-space: nowrap; cursor: pointer;
+  }
+  .quick-nav-btn.is-current { background: #16324f; border-color: #16324f; color: #fff; }
+}

@@ -742,6 +742,7 @@ refreshRainNowcast(false);
 refreshWeatherWarnings(false);
 refreshEarthquakeSummary(false);
 initTimeline();
+initQuickNav();
 renderRoadFloodSites();
 initIntegration();
 applyTrialRecordFromQuery();
@@ -1584,6 +1585,29 @@ async function checkTimelineToday(today) {
   } catch (error) {
     // 補助表示なので失敗しても何もしない
   }
+}
+
+// スマホでは縦に長く積むため、上部の「見たい情報へ」バーで各エリアへ飛べるようにする。
+// 災害時に必要なのは 避難所・警報・公式発表 なので、その並びを優先している。
+function initQuickNav() {
+  const nav = document.getElementById("quick-nav");
+  if (!nav) return;
+  nav.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-jump]");
+    if (!button) return;
+    const target = document.getElementById(button.dataset.jump);
+    if (!target) return;
+    // バー自体が上部に固定されるので、その高さ分だけ余白をとって隠れないようにする
+    const offset = nav.getBoundingClientRect().height + 8;
+    const top = Math.max(0, target.getBoundingClientRect().top + window.pageYOffset - offset);
+    window.scrollTo({ top, behavior: "smooth" });
+    // 端末やブラウザ設定によっては smooth が無視されて動かないことがある（実測）。
+    // 少し待って動いていなければ即時スクロールで確実に移動させる
+    window.setTimeout(() => {
+      if (Math.abs(window.pageYOffset - top) > 40) window.scrollTo(0, top);
+    }, 350);
+    nav.querySelectorAll(".quick-nav-btn").forEach(b => b.classList.toggle("is-current", b === button));
+  });
 }
 
 function handleTimelineListClick(event) {
