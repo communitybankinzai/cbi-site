@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-06",
+          "title": "9/6大雨の実戦対応 第2弾：警報パーサのバグ2件修正・巡回対象のWEB点検・アクセス数の可視化（MAP/管理画面）・スマホ用ジャンプバー・3D導線の削除 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao: src/lib/disaster-timeline.ts（警報の最新報採用＋48時間全件）, src/app/api/metaverse-presence/route.ts（today集計）, src/app/api/metaverse-usage/route.ts（災害MAP除外）（4593fe2, 280170a, 0bc389f, 35f7d20）",
+            "site/inzai-disaster-map/: 対象日0件時の今日誘導, 閲覧チップに本日人数, スマホ用quick-nav, 3Dリンク削除, CLAUDE_HANDOFF.md（8545933, 6f46ebb, dc4c387, 5c4fade）",
+            "site/admin/: 災害MAPのKPI2枚追加・3D集計と分離（9420752）",
+            "site/metaverse/CLAUDE_HANDOFF.md（導線削除の記録）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "警報パーサが配列先頭を最新と誤認し9/3の解除を表示していた実害を発見・修正（タイムライン6件→10件に増加を本番実測）。巡回対象は16-5-0/16-5-3を点検し追加不要と判断（日付付き一覧なし）。スマホ幅375pxで5ジャンプ先すべてバー直下8px配置を実測、smooth無効環境向けフォールバック実装。文化財ポップアップの3Dリンクは既定OFFの平時レイヤーのため残す判断（A案）。前回記録(769,625)以降の差分 41,069 で 0.4h。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 810,694 / cost: $533.61"
+        },
+        {
+          "date": "2026-09-06",
           "title": "卒業論文を20ページへ削減（本文4,000字減・参考文献の精選）と COCoLa 記述の整理 1.0時間",
           "category": "実装",
           "outputs": "academy/01_草稿/第1〜6章.md（本文 29,696→25,720字）、academy/01_草稿/参考文献.md（29件→22件）、academy/05_提出版/卒業論文_CitizenDAO行政連携モデルの提案_最新版.docx（26→23ページ）、academy/05_提出版/卒業論文_確認用.pdf、site/thesis/paper.html",
@@ -5002,6 +5016,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🗺 災害MAPの手入力記録（避難所開設・通行止め・被害候補）をSupabaseへ共有保存する",
+          "category": "実装",
+          "priority": "高",
+          "note": "9/6の大雨で手動入力した12施設の開設情報が入力した端末にしか無く、他の人には見えないことが実戦で確認された。「市民のみんながいつでも使えるMAP」にするための本丸。認証・権限・承認・監査ログの設計を伴うため、SNS候補の状態保存（既存課題2）と同時に設計する"
+        },
         {
           "due": "未定",
           "title": "🏫 55施設リスト外の避難所（例: 印旛公民館・9/6開設）も手動開設入力で扱えるようにする（自由入力の施設追加 or 市CSVの更新確認）",
