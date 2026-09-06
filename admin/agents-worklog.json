@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-06",
+          "title": "9/6大雨の実戦対応 第3弾：情報源2種の新設（X購読・県避難情報）＋震度分布レイヤー＋投稿画像の自動生成＋スマホ承認ページ＋公式優先の修正 0.9時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao: disaster-timeline.ts（x-timeline / chiba-hinan-list / 429対策）, disaster/approve ページ・アクション（300f449, 1d269bb, ea6c118 ほか）",
+            "site/inzai-disaster-map/: 直近の地震1行, 震度分布レイヤー, 公式優先, 対象日既定, キキクル凡例, 3D導線削除（4ed47a2, 389c0a8, cac68a5 ほか）",
+            "site/scripts/make_disaster_map_image.py（投稿画像の自動生成）",
+            "site/admin/: 災害MAPのKPI追加",
+            "SNS投稿4本（Threads/Instagram 各4）"
+          ],
+          "hours": 0.9,
+          "partnerApproved": false,
+          "note": "X（旧Twitter）は syndication 経由で指定アカウントの購読が無認証で可能と判明し「有料で不可」の結論を訂正。千葉県防災ポータルの避難情報一覧（市町村の開設・閉鎖）も情報源化し本番で success 1件を実測（市の放送より早く変化が出る経路を確保）。避難所は手動入力が公式より優先される作りで情報が古く見えていたため公式優先へ修正。投稿画像はタイル合成で自動生成できるようにし、同じ写真の使い回しを解消。前回記録(869,519)以降の差分で算出。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341"
+        },
+        {
+          "date": "2026-09-06",
           "title": "発表フォルダの整理（旧方式のファイルを退避）0.1時間",
           "category": "保守",
           "outputs": "academy/06_発表/卒論発表スライド.pptx（削除）、academy/06_発表/_旧方式/（build_pptx.py・fix_layout.ps1・README.md を新設して移動）、academy/06_発表/add_audio_to_pptx.ps1（案内を現行手順へ更新）",
@@ -5066,13 +5081,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "未定",
-          "title": "📡 X（旧Twitter）公開アカウントの情報源を本番登録する（千葉県防災 @chibaken_saigai・印西市長 @Fujishiro_1102）",
-          "category": "実装",
-          "priority": "中",
-          "note": "2026-09-06にkind x-timelineを実装・push済み（syndication経由・無認証で取得可を実測。千葉県防災17件・市長126件）。管理画面/admin/disaster-sourcesから screenName を config に入れて登録するだけ。短時間に連続アクセスすると429になるため巡回間隔10分は維持すること。**これによりXは『有料で不可』ではなく『検索は不可・指定アカウントの購読は可能』に結論が変わった**"
-        },
         {
           "due": "2026-09-13",
           "title": "🚨 警戒レベル4相当以上を自動でSNS投稿する仕組み（A案：レベル4以上は自動、それ未満は管理画面で承認）",
