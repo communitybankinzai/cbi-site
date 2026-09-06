@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-06",
+          "title": "発表フォルダの整理（旧方式のファイルを退避）0.1時間",
+          "category": "保守",
+          "outputs": "academy/06_発表/卒論発表スライド.pptx（削除）、academy/06_発表/_旧方式/（build_pptx.py・fix_layout.ps1・README.md を新設して移動）、academy/06_発表/add_audio_to_pptx.ps1（案内を現行手順へ更新）",
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "html2pptx 方式へ移行したことで、python-pptx 方式の成果物とスクリプトが残り取り違えの元になっていた。pptx は削除（OneDriveのごみ箱に残る）、スクリプトは _旧方式/ へ移動し、README.md に「なぜやめたか」と現行の作り方を書いた。add_audio_to_pptx.ps1 のコメントとエラーメッセージが build_pptx.py を案内していたので fit_loop.py に直した。現行の生成は build_h2p.py で動作確認済み。session: 8f104510-74de-47bf-8249-672356aedc78"
+        },
+        {
+          "date": "2026-09-06",
           "title": "発表スライド9枚目の分かりにくさを解消（団体・選挙の唐突さ）0.3時間",
           "category": "実装",
           "outputs": "academy/06_発表/slides.md（6枚目leadに参加者を明示・9枚目のsubを2段落へ・選挙の理由を追記・他の枚を詰めて20.0分維持）、academy/06_発表/audio/（24本を再生成）、卒論発表スライド_発表用.pptx（クリック78・効果367）・卒論発表スライド_音声版.pptx（音声24・効果447）・卒論発表スライド.pdf、site/thesis/（slides.html・audio）",
