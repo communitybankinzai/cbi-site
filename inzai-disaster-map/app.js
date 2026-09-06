@@ -313,10 +313,13 @@ function saveShelterManualOverrides() {
 // 手動入力を優先した実効開設状態。manual が null なら公式判定のまま
 function effectiveShelterOpening(shelter) {
   const manual = normalizeManualEntry(shelterManualOverrides[shelter.id]);
-  return {
-    status: manual ? manual.status : (shelter.openingStatus || "not-announced"),
-    manual
-  };
+  const official = shelter.openingStatus || "not-announced";
+  // 手動入力は「公式の反映が遅いときの補完」なので、市が開設・閉鎖を明示したら公式を優先する。
+  // これをしないと、公式発表後も古い手動入力（入力時刻のまま）が表示され続けて情報が古く見える
+  if (official !== "not-announced") {
+    return { status: official, manual: null, supersededManual: manual };
+  }
+  return { status: manual ? manual.status : official, manual };
 }
 
 // 旧形式（time 1つ）の保存データを openedTime / closedTime 形式へ読み替える
@@ -1663,11 +1666,12 @@ function renderShelters() {
   const suitableCount = filtered.filter(shelter => shelter.suitableFor?.[filters.hazard]).length;
   const openCount = officialShelters.filter(shelter => effectiveShelterOpening(shelter).status === "open").length;
   const manualCount = Object.keys(shelterManualOverrides).length;
+  const supersededCount = officialShelters.filter(shelter => effectiveShelterOpening(shelter).supersededManual).length;
   const updateTime = shelterPayload?.fetchedAt ? formatDateTime(toDateTimeLocal(shelterPayload.fetchedAt)) : "";
   summary.classList.remove("is-error");
   summary.innerHTML = `
     <strong>${escapeHtml(hazardLabels[filters.hazard] || filters.hazard)}対応 ${suitableCount} / 表示${filtered.length}施設</strong>
-    <span>開設中 ${openCount}施設${manualCount ? `（うち手動入力 ${manualCount}件を含む）` : ""}${updateTime ? ` ・ ${escapeHtml(updateTime)}取得` : ""}</span>
+    <span>開設中 ${openCount}施設${manualCount ? `（手動入力 ${manualCount}件${supersededCount ? `・うち${supersededCount}件は公式で確認済み` : ""}）` : ""}${updateTime ? ` ・ ${escapeHtml(updateTime)}取得` : ""}</span>
     <span>${escapeHtml(shelterPayload?.openingInformation || "公式の開設発表を確認中です。")}</span>
   `;
 
@@ -1710,6 +1714,7 @@ function buildShelterPopup(shelter, hazard) {
     </div>
     <div>${escapeHtml(shelter.kindLabel)} / ${escapeHtml(shelter.address)}</div>
     ${shelter.phone ? `<div class="detail-meta">電話 ${escapeHtml(shelter.phone)}</div>` : ""}
+    ${effective.supersededManual ? `<div class="shelter-evidence"><strong>手動入力は公式発表で確認済み</strong><span>${escapeHtml(formatDateTime(toDateTimeLocal(effective.supersededManual.confirmedAt)))}に運用者が入力した内容は、市の公式発表と一致したため公式の表示に切り替えました。</span></div>` : ""}
     ${manual ? `<div class="shelter-evidence is-manual"><strong>手動入力（${escapeHtml(manual.source || "出典未記入")}）</strong><span>${escapeHtml(manualTimeLabel(manual) ? `${manualTimeLabel(manual)} ・ ` : "")}${escapeHtml(formatDateTime(toDateTimeLocal(manual.confirmedAt)))}に運用者が確認・入力。公式発表ではありません。</span></div>` : ""}
     ${evidence ? `<div class="shelter-evidence"><strong>${escapeHtml(evidence.title || "印西市防災速報")}</strong><span>${escapeHtml(truncateText(evidence.message || "", 140))}</span><a href="${escapeAttribute(evidence.sourceUrl)}" target="_blank" rel="noreferrer">公式発表を確認</a></div>` : manual ? "" : '<div class="popup-contact-note">現在の開設を示す公式発表は確認されていません。</div>'}
     <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">出典: 印西市わが街ガイド オープンデータ</a>
