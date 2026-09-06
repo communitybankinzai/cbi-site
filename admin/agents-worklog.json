@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-06",
+          "title": "9/6大雨のSNS即時発信（公式発表まとめ文の精査・MAP画面撮影・Threads/Instagram同時投稿）＋発信可否の判断整理 0.3時間",
+          "category": "広報",
+          "outputs": [
+            "Threads投稿 18135069841615994（短文版＋MAP画像）",
+            "Instagram投稿 18115898687293492（詳細版＋MAP画像）",
+            "site/assets/sns/2026-09-06_ooame/map.png（2daf5bc）",
+            "scratchpad/sns_ooame_0906.txt（本文）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "文面は当日実測の公式発表のみ（気象庁概況60mm/h・250mm/24h、線状降水帯半日前予測、市の特別避難所10施設）で構成し、時刻明記＋「避難判断は市公式で」を付記。画像はMAP画面（雨雲レーダー・キキクル・避難所・凡例・出典表記入り、Claudeウィンドウ写り込みはクロップで除去）。投稿はcidaoのsns-dispatchと同じGraph APIフローをローカルから実行（トークンはapp_settings、値は非出力）。Facebookはトークン未登録でスキップ。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341"
+        },
+        {
+          "date": "2026-09-06",
           "title": "9/6大雨の実対応：避難所開設の反映手順特定（LINE本文に施設名なし→市ページ本文で9/10施設照合）＋避難所カテゴリを情報源に逐次登録（実運用1号）＋土・特マーカー凡例追加 0.2時間",
           "category": "実装",
           "outputs": [
