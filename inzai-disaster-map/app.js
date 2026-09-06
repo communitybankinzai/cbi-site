@@ -1238,7 +1238,7 @@ function presenceSessionId() {
   return id;
 }
 
-function renderPresence(count) {
+function renderPresence(count, todayCount) {
   const chip = document.getElementById("presence-chip");
   if (!chip) return;
   if (typeof count !== "number") {
@@ -1246,7 +1246,10 @@ function renderPresence(count) {
     chip.classList.remove("is-active");
     return;
   }
-  chip.textContent = `👥 いま ${count}人が閲覧中`;
+  // 今この瞬間の人数に加えて、本日このMAPを見た延べ人数（重複なし）も出す。
+  // 災害時にどれだけ届いているかを運営が画面上で確認できるようにするため
+  const today = Number.isFinite(todayCount) ? `・本日 ${todayCount}人` : "";
+  chip.textContent = `👥 いま ${count}人が閲覧中${today}`;
   chip.classList.toggle("is-active", count > 1);
 }
 
@@ -1261,7 +1264,7 @@ async function sendPresence() {
     });
     if (!response.ok) throw new Error(`presence HTTP ${response.status}`);
     const payload = await response.json();
-    renderPresence(Number(payload.disasterMap ?? payload.total ?? 0));
+    renderPresence(Number(payload.disasterMap ?? payload.total ?? 0), Number(payload?.today?.disasterMap));
   } catch {
     renderPresence(null);
   }
