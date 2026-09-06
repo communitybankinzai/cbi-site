@@ -27,6 +27,7 @@ GSI = 'https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'
 KIKIKURU = 'https://www.jma.go.jp/bosai/jmatile/data/risk/{base}/{member}/{valid}/surf/{elem}/{z}/{x}/{y}.png'
 NOWCAST = 'https://www.jma.go.jp/bosai/jmatile/data/nowc/{base}/none/{valid}/surf/hrpns/{z}/{x}/{y}.png'
 SHELTERS = 'https://cidao.vercel.app/api/disaster/inzai-shelters'
+KANSUI = 'https://cidao.vercel.app/api/disaster/kansui'
 
 # 市の公開CSV（55施設）に無いが、放送で開設が告げられる施設。座標は国土地理院の住所検索
 EXTRA_SHELTERS = [
@@ -250,8 +251,25 @@ def main(out_path):
     kiki = kikikuru_state(*risk) if risk else {}
     kiki_line = '／'.join(k + 'キキクル ' + v for k, v in kiki.items()) if kiki else 'キキクル：印西市に危険度の色なし'
 
+    # 市民投稿の「冠水した道路」を紫の線で重ねる（同じ雨で再び冠水しやすい道）
+    kansui = fetch_json(KANSUI) or {}
+    kansui_count = 0
+    for road in (kansui.get('roads') or []):
+        pts = []
+        for lat, lon in road.get('path') or []:
+            pts.append(((lon2x(lon, ZOOM) - x0) * TILE, (lat2y(lat, ZOOM) - y0) * TILE))
+        # 縮小して見るSNSでは細い線が消えるので、白い縁取りを敷いてから太い紫を重ねる
+        if len(pts) >= 2:
+            draw.line(pts, fill=(255, 255, 255, 220), width=14, joint='curve')
+            draw.line(pts, fill=(124, 45, 160, 255), width=9, joint='curve')
+        elif pts:
+            px, py = pts[0]
+            draw.ellipse([px - 9, py - 9, px + 9, py + 9], fill=(255, 255, 255, 220))
+            draw.ellipse([px - 6, py - 6, px + 6, py + 6], fill=(124, 45, 160, 255))
+        kansui_count += 1
+
     stamp = datetime.now(JST)
-    header_h, footer_h = 104, 96
+    header_h, footer_h = 104, 124
     out = Image.new('RGB', (size[0], size[1] + header_h + footer_h), (255, 255, 255))
     out.paste(canvas.convert('RGB'), (0, header_h))
     d = ImageDraw.Draw(out)
@@ -275,12 +293,16 @@ def main(out_path):
         limit = size[0] - 64
         while names and d.textlength(names + '…', font=small) > limit:
             names = names[:-1]
-        d.text((44, fy + 34), names + ('…' if names != '／'.join(open_names) else ''), font=small, fill=(60, 72, 88))
+        d.text((44, fy + 30), names + ('…' if names != '／'.join(open_names) else ''), font=small, fill=(60, 72, 88))
     else:
         d.text((20, fy + 12), '現在、開設中の避難所はありません', font=smallb, fill=(22, 50, 79))
-    d.text((20, fy + 62), '出典：国土地理院（淡色地図）／気象庁（' + '・'.join(notes or ['危険度分布']) + '）／印西市（避難所）',
+    if kansui_count:
+        d.line([(18, fy + 60), (40, fy + 60)], fill=(124, 45, 160), width=9)
+        d.text((44, fy + 52), '紫の線＝8月の豪雨などで冠水した道路（市民の投稿 ' + str(kansui_count) + '件）', font=smallb, fill=(22, 50, 79))
+    d.text((20, fy + 78), '出典：国土地理院（淡色地図）／気象庁（' + '・'.join(notes or ['危険度分布']) + '）／印西市（避難所）'
+           + ('／みんなでつくる千葉豪雨冠水道路マップ（冠水道路）' if kansui_count else ''),
            font=small, fill=(90, 102, 117))
-    d.text((20, fy + 78), 'communitybankinzai.github.io/cbi-site/inzai-disaster-map/　※避難の判断は市の公式情報に従ってください',
+    d.text((20, fy + 96), 'communitybankinzai.github.io/cbi-site/inzai-disaster-map/　※避難の判断は市の公式情報に従ってください',
            font=small, fill=(90, 102, 117))
 
     out.save(out_path, 'PNG')
