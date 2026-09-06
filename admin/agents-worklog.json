@@ -5102,7 +5102,7 @@
           "category": "事務",
           "priority": "高",
           "status": "待ち",
-          "blockedBy": "運営者からのDM返信。2026-09-06深夜に中司さんがDM送付（出典明記・投稿は本家誘導・10分キャッシュ・停止の申し出）。停止要請があれば site/inzai-disaster-map の kansui レイヤーと CiDAO の /api/disaster/kansui を無効化する"
+          "blockedBy": "運営者（X: @change_support_）からの返信。2026-09-06 23:30に中司さんがXの公開コメントで連絡済み（DMは送信不可だった）。内容＝出典明記・投稿は本家誘導・取得は10分に1回・事前相談しなかったことの謝罪・不可であれば即停止。停止要請があれば site/inzai-disaster-map の kansui レイヤーと CiDAO の /api/disaster/kansui を無効化する"
         },
         {
           "due": "2026-09-13",
