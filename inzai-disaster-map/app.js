@@ -3065,6 +3065,30 @@ async function refreshRainNowcast(showLayer) {
   }
 }
 
+// 警報・注意報カードのすぐ下に「直近の地震」を1行で出す。
+// 地震情報は別カードにあるが、災害時に下までスクロールしないと気づけないため、
+// 気象の警報と同じ視線の位置で分かるようにする（12時間以内の地震だけ）。
+function renderQuakeBrief(latest, inzaiIntensity) {
+  const node = document.getElementById("quake-brief");
+  if (!node) return;
+  const at = toDateTimeLocal(latest?.at);
+  const happenedAt = at ? new Date(at).getTime() : NaN;
+  if (!Number.isFinite(happenedAt) || Date.now() - happenedAt > 12 * 60 * 60 * 1000) {
+    node.hidden = true;
+    return;
+  }
+  const rank = intensityRank(inzaiIntensity || latest?.maxi);
+  node.hidden = false;
+  node.className = `quake-brief${rank >= 4 ? " is-strong" : ""}`;
+  node.innerHTML = `
+    <span class="quake-brief-label">直近の地震</span>
+    <span class="quake-brief-body">${escapeHtml(formatDateTime(at))}　${escapeHtml(latest.anm || "震源地不明")}${latest.mag ? ` M${escapeHtml(String(latest.mag))}` : ""}
+      ${inzaiIntensity
+        ? `／<strong>印西市 震度${escapeHtml(intensityLabel(inzaiIntensity))}</strong>`
+        : `／最大震度${escapeHtml(intensityLabel(latest.maxi))}（印西市の震度記録なし）`}</span>
+  `;
+}
+
 async function refreshEarthquakeSummary(manual) {
   const node = document.getElementById("earthquake-summary-content");
   const endpoint = String(APP_CONFIG.earthquakeListEndpoint || "https://www.jma.go.jp/bosai/quake/data/list.json");
@@ -3082,6 +3106,7 @@ async function refreshEarthquakeSummary(manual) {
     ));
     if (!latest) throw new Error("表示対象の地震情報がありません");
     const inzaiIntensity = inzai ? findCityIntensity(inzai, "1223100") : "";
+    renderQuakeBrief(latest, inzaiIntensity);
 
     // 地図用: 座標が取れた地震を新しい順に最大20件保持する。
     // 印西市に震度記録がある地震は、市内への影響が分かるよう優先して残す

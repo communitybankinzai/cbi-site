@@ -2459,3 +2459,9 @@ body.embed-mode .cbi-home-link {
 .kk-r { background: #ff2800; }
 .kk-p { background: #aa00aa; }
 .kk-k { background: #0c0c0c; }
+
+/* 警報カード下の「直近の地震」1行 */
+.quake-brief { display: flex; gap: 8px; align-items: baseline; margin-top: 8px; padding: 7px 10px; border-radius: 8px; background: #eef3f9; border: 1px solid #cdd8e6; font-size: 12px; line-height: 1.6; }
+.quake-brief.is-strong { background: #fdecea; border-color: #e6a9a2; }
+.quake-brief-label { flex: 0 0 auto; font-weight: 700; color: #16324f; }
+.quake-brief-body { color: #33404f; }
