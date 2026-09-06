@@ -2973,6 +2973,11 @@ function renderPastFloodMarkers() {
 }
 
 function toggleOverlay(name, checked) {
+  if (name === "kansui") {
+    if (checked) { ensureKansuiLayer(); kansuiLayer.addTo(map); }
+    else map.removeLayer(kansuiLayer);
+    return;
+  }
   if (name === "rainForecast") {
     if (checked) { refreshRainForecast(true); rainForecastLayer.addTo(map); }
     else map.removeLayer(rainForecastLayer);
@@ -3334,6 +3339,54 @@ async function refreshRainForecast(showLayer) {
       const box = document.querySelector('[data-overlay="rainForecast"]');
       if (box) box.checked = false;
     }
+  }
+}
+
+// ============================================================
+// 🚗 冠水した道路（みんつく千葉冠水マップ・市民の投稿）
+// 有志プロジェクト「みんなでつくる千葉豪雨冠水道路マップ」に市民が投稿した、
+// 令和8年8月千葉豪雨などで実際に冠水した道路。8月に冠水した道は同じ雨で再び冠水
+// しやすく、そこを避けられれば車の水没・放置を減らせる。
+// 取得は CiDAO 経由（先方サーバーへの負担を避けるため10分キャッシュ・印西市域のみ）。
+// 投稿の受け付けは本家が行っているので、追加はリンク先でしてもらう。
+// ============================================================
+const kansuiLayer = L.layerGroup();
+let kansuiLoaded = false;
+
+async function ensureKansuiLayer() {
+  if (kansuiLoaded) return;
+  kansuiLoaded = true;
+  const status = document.getElementById("kansui-status");
+  const setStatus = (text, isError) => {
+    if (!status) return;
+    status.textContent = text;
+    status.classList.toggle("is-error", Boolean(isError));
+  };
+  const endpoint = String(APP_CONFIG.kansuiEndpoint || "").trim();
+  if (!endpoint) { setStatus("配信先が設定されていません", true); return; }
+  setStatus("読み込み中");
+  try {
+    const response = await fetch(endpoint, { headers: { Accept: "application/json" }, cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    kansuiLayer.clearLayers();
+    (payload.roads || []).forEach(road => {
+      if (!Array.isArray(road.path) || !road.path.length) return;
+      const shape = road.path.length === 1
+        ? L.circleMarker(road.path[0], { radius: 6, color: "#ffffff", weight: 2, fillColor: "#8e44ad", fillOpacity: 0.9 })
+        : L.polyline(road.path, { color: "#8e44ad", weight: 5, opacity: 0.8 });
+      shape.bindPopup(
+        `<strong>🚗 冠水した道路（市民の投稿）</strong><br>` +
+        `投稿日 ${escapeHtml(formatDateTime(toDateTimeLocal(road.createdAt)) || "不明")}<br>` +
+        `<span style="font-size:11px;">令和8年8月の豪雨などで冠水したと投稿された区間です。公式に確認された通行止めではありません。同じ雨で再び冠水するおそれがあるため、通行を避ける判断の参考にしてください。</span><br>` +
+        `<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">出典・投稿はこちら: みんなでつくる千葉豪雨冠水道路マップ</a>`
+      );
+      shape.addTo(kansuiLayer);
+    });
+    setStatus(`${payload.count || 0}件 ・ ${formatDateTime(toDateTimeLocal(payload.generatedAt)) || ""}時点`);
+  } catch (error) {
+    kansuiLoaded = false;
+    setStatus(`取得できません（${error?.message || "接続エラー"}）`, true);
   }
 }
 

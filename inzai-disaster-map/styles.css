@@ -2483,3 +2483,7 @@ body.embed-mode .cbi-home-link {
 .amedas-note { font-size: 11px; color: #5a6675; margin-top: 6px; line-height: 1.6; }
 #rain-forecast-status { display: block; font-size: 11px; color: #5a6675; margin-left: 22px; }
 #rain-forecast-status.is-error { color: #c0392b; }
+
+/* 冠水した道路（市民の投稿）レイヤーの状態表示 */
+#kansui-status { display: block; font-size: 11px; color: #5a6675; margin-left: 22px; }
+#kansui-status.is-error { color: #c0392b; }
