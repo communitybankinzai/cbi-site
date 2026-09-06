@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-06",
+      "type": "content",
+      "target": "inzai-disaster-map",
+      "title": "ヘッダーから「メタバース印西（3D）」ボタンを削除",
+      "detail": "災害の最中に見る画面から3Dワールドへ飛べると、緊急時にそぐわないゲーム的な印象を与えるため導線を外した。3Dの浸水シミュレーションは平時の地形理解用として site/metaverse/ に残る。",
+      "author": "A1 Core"
+    },
+    {
+      "date": "2026-09-06",
       "type": "feature",
       "target": "inzai-disaster-map",
       "title": "スマホ画面の上部に「見たい情報へ」ジャンプバーを追加",
