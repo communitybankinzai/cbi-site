@@ -737,6 +737,14 @@ roadDrawingLayer.addTo(map);
 boundaryLayer.addTo(map);
 shelterLayer.addTo(map);
 
+// 対象日はHTMLに固定値を書かず、開いた日（日本時間）を既定にする。
+// 2026-09-06 まで value="2026-08-13" が埋め込まれており、市民が開くと8月の日付のまま
+// 「本日の発表はありません」と見えていた。過去の記録は日付を選び直せば従来どおり見られる
+(function initIncidentDate() {
+  const input = document.getElementById("incident-date");
+  if (input && !input.value) input.value = todayJst();
+})();
+
 initBoundary();
 refreshRainNowcast(false);
 refreshWeatherWarnings(false);
@@ -1825,7 +1833,7 @@ function applyTrialRecordFromQuery() {
   const params = new URLSearchParams(window.location.search);
   if (params.get("trial") !== "yawata") return;
   const id = "trial-yawata-palette";
-  const incidentDate = getFormValue("incident-date") || "2026-08-13";
+  const incidentDate = getFormValue("incident-date") || todayJst();
   if (!records.some(record => record.id === id)) {
     records = [...records, {
       id,
@@ -5326,6 +5334,12 @@ function csvCell(value) {
 
 function dateStamp() {
   return new Date().toISOString().slice(0, 10).replaceAll("-", "");
+}
+
+// 日本時間の今日（YYYY-MM-DD）。対象日の既定値に使う。
+// UTC基準の toISOString だと日本の早朝に前日になってしまうため、必ずJSTで求める
+function todayJst() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo" }).format(new Date());
 }
 
 function nowLocalInput() {
