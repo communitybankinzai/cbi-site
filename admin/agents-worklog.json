@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-06",
+          "title": "発表用スライドにクリック送りのアニメーションを追加 0.2時間",
+          "category": "実装",
+          "outputs": "academy/06_発表/add_animation.ps1（-Mode click を追加・段のまとめ方を自動で粗くする処理）、academy/06_発表/卒論発表スライド_発表用.pptx（クリック79回・効果369）、academy/06_発表/卒論発表スライド.pdf",
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "自分で読み上げる版にもアニメーションを付けた。段ごとに出すと173回のクリックが要るため、1枚の段数が6を超える場合は上端の判定幅を8→14→20→28→40ptと広げてまとめ直す処理を入れ、79回（1枚平均3.3回）に抑えた。段の先頭だけクリックで出し、同じ段の残りは同時に出る。実測: 発表用=クリック79・同時290・自動送りなし／音声版=クリック0・同時446・音声24・自動送り24枚。作業中に add_animation.ps1 を一度空にしてしまった（書き込み用オープンを先に評価する書き方をした）ため Write で復元済み。session: 8f104510-74de-47bf-8249-672356aedc78 / output: 1,494,993"
+        },
+        {
+          "date": "2026-09-06",
           "title": "発表スライドを20分に収め、PPTXの体裁をPPTX優先で作り直し 0.4時間",
           "category": "実装",
           "outputs": "academy/06_発表/slides.md（口述 6,804→6,642字）、academy/06_発表/build_h2p.py（head/bodyの分割・文字と図版の拡大・text-wrap balance）、academy/06_発表/fit_loop.py（下端エラーの検出・詰め下限0.30）、academy/06_発表/audio/（24本を再生成）、卒論発表スライド_発表用.pptx（1.62MB）・卒論発表スライド_音声版.pptx（8.08MB）・卒論発表スライド.pdf（1.66MB）、site/thesis/（slides.html・audio 6本更新）",
