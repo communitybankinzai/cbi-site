@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-06",
+          "title": "9/6大雨 第2報のSNS発信＋防災行政無線の取込不具合の修正＋対象日固定バグ修正＋キキクル凡例 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "Threads 18138967672719370 / Instagram 18094605467354069（第2報・MAP画像つき）",
+            "C:\\Repos\\cidao: src/lib/inzai-city-alerts.ts（ae1c5c6）",
+            "site/inzai-disaster-map/: 対象日の固定値撤去・キキクル凡例（3758060, a3b6d21）",
+            "site/assets/sns/2026-09-06_ooame/map2.png（d2a63c2）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "【重大】防災行政無線XMLのタグが小文字（datetime/title/message）なのに大文字で読んでおり、一度も取り込めていなかった→修正して5件取得を実測。LINEの約2分後に届く最速の公式情報が復活。【重大】対象日がHTMLに2026-08-13で固定されており、誰が開いても8月の日付になっていた→開いた日を既定に。第2報は土砂災害注意報の発表（17:44）と線状降水帯の可能性（県17:10）を根拠に発信。前回記録(810,694)以降の差分で算出。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341"
+        },
+        {
+          "date": "2026-09-06",
           "title": "発表用スライドにクリック送りのアニメーションを追加 0.2時間",
           "category": "実装",
           "outputs": "academy/06_発表/add_animation.ps1（-Mode click を追加・段のまとめ方を自動で粗くする処理）、academy/06_発表/卒論発表スライド_発表用.pptx（クリック79回・効果369）、academy/06_発表/卒論発表スライド.pdf",
