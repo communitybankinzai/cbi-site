@@ -17,6 +17,12 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-07", "title": "鳶・白鳥の羽ばたき付き3Dモデルと確認画面を作成",
+          "category": "実装", "partnerApproved": false,
+          "outputs": ["site/metaverse/assets/tonbi/kite.glb", "site/metaverse/assets/tonbi/swan.glb", "site/metaverse/bird-preview.html"],
+          "note": "独立翼・首・尾、PBRテクスチャ、Wingbeatを実装。2種類4方向・アニメーション・モバイルと地図課金なしの2Pテストを確認。まだ実写水準ではない。"
+        },
+        {
           "date": "2026-09-07", "title": "鬼ごっこの接触得点・照準進捗・直接起動メニューを追加",
           "category": "実装", "partnerApproved": false,
           "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/index.html", "site/metaverse/CLAUDE_HANDOFF.md"],

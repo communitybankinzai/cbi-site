@@ -121,7 +121,7 @@
       select.addEventListener("change", () => {
         p.aircraft = select.value;
         const opponent = players[1 - i];
-        if (opponent.tagEntity) opponent.tagEntity.model.uri = window.SkyTag.birdModel(p.aircraft);
+        if (opponent.tagEntity) opponent.tagEntity.model.uri = window.SkyTag.aircraftUri(p.aircraft);
       });
       document.querySelector(i === 0 ? ".vsP1" : ".vsP2").appendChild(select);
     });
