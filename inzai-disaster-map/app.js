@@ -319,6 +319,17 @@ function effectiveShelterOpening(shelter) {
   if (official !== "not-announced") {
     return { status: official, manual: null, supersededManual: manual };
   }
+  // 「１６時、すべての避難所を閉鎖します」のように施設名を挙げない放送は、
+  // 公式には施設ごとの判定にならない。放送より前に入力された手動の「開設中」は
+  // その時点で無効になったものとして扱う（古い開設中が残り続けるのを防ぐ）。
+  const blanket = shelterPayload && shelterPayload.blanketClosure;
+  if (blanket && manual && manual.status === "open") {
+    const closedAt = Date.parse(String(blanket.publishedAt || "").replace(/-/g, "/"));
+    const confirmedAt = Date.parse(manual.confirmedAt || "");
+    if (Number.isFinite(closedAt) && (!Number.isFinite(confirmedAt) || confirmedAt < closedAt)) {
+      return { status: "closed", manual: null, supersededManual: manual, blanketClosure: blanket };
+    }
+  }
   return { status: manual ? manual.status : official, manual };
 }
 
