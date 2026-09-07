@@ -1035,6 +1035,7 @@ if (location.protocol === "file:") {
       <button id="reportsBtn" title="印西市の指定・登録文化財50件の学習レポート一覧を別タブで開きます（A4用紙1枚の両面で読める・印刷できる）">📄 学習レポート</button>
       <button id="mapBtn" title="文化財50か所の平面地図を別タブで開きます。集めた文化財と、いま飛んでいる場所が地図に出るので、横で見ながら道案内ができます">🗺 文化財マップ</button>
       <button id="vsRaceBtn" title="USBゲームパッド2台で左右2画面の同時タイムレースを開始します">🎮 2Pレース</button>
+      <button id="skyTagBtn" onclick="location.href='?mode=event&amp;race=tag&amp;v=20260907-3'">おにごっこ／ドッグファイト</button>
       <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
       <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
     </div>
@@ -6295,8 +6296,8 @@ try {
   console.error("モード初期化に失敗:", e);
 }
 </script>
-<script src="sky-tag.js?v=20260907-2"></script>
-<script src="vs-race.js?v=20260907-2"></script>
+<script src="sky-tag.js?v=20260907-3"></script>
+<script src="vs-race.js?v=20260907-3"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260907-1"></script>
 </body>

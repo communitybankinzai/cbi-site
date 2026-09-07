@@ -17,6 +17,12 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-07", "title": "鬼ごっこの接触得点・照準進捗・直接起動メニューを追加",
+          "category": "実装", "partnerApproved": false,
+          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/index.html", "site/metaverse/CLAUDE_HANDOFF.md"],
+          "note": "8m接触は双方1点、12m超で再判定。照準の中央表示。公開先に白鳥版が届いていることを確認し、更新版の入口を追加。"
+        },
+        {
           "date": "2026-09-07",
           "title": "内水リスク推定の生成スクリプトを書き直し、面積・傾斜・流下の3つの誤りを修正（topo-0.2.0） 0.5時間",
           "category": "実装",

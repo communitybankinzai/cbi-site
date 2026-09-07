@@ -14,6 +14,7 @@
     player.tagLock = eligible ? player.tagLock + dt : 0;
     if (player.tagLock >= HOLD) {
       player.tagScore++;
+      player.tagFeedback = "照準成功 +1";
       player.tagLock = 0;
       player.tagCooldown = 3;
     }
@@ -136,7 +137,8 @@
   }
   function reset(players, race) {
     clear(players);
-    players.forEach(p => { p.tagScore = 0; p.tagLock = 0; p.tagCooldown = 0; });
+    race.tagTouchLatched = false;
+    players.forEach(p => { p.tagScore = 0; p.tagLock = 0; p.tagCooldown = 0; p.tagFeedback = ""; });
     if (race.mode !== "tag") return;
     const C = Cesium;
     players.forEach((p, i) => {
@@ -162,6 +164,9 @@
       });
       const ring = document.createElement("div");
       ring.style.cssText = "position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #ffffff88;border-radius:50%;pointer-events:none;box-sizing:border-box;z-index:4";
+      const progress = document.createElement("div");
+      progress.style.cssText = "position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);width:160px;max-width:42vw;text-align:center;color:#fff;font:bold 14px sans-serif;text-shadow:0 1px 4px #000;background:#07140fdd;border-radius:4px;padding:5px;box-sizing:border-box";
+      ring.appendChild(progress);
       p.viewer.container.appendChild(ring); p.tagReticle = ring;
       const scope = document.createElement("div");
       scope.className = "tagScope";
@@ -220,6 +225,17 @@
   }
   function tick(players, race, dt, elapsed) {
     if (elapsed >= DURATION) return true;
+    const separation = relative(players[0], players[1]).distance;
+    if (separation > 12) race.tagTouchLatched = false;
+    if (separation <= 8 && !race.tagTouchLatched && players[0].connected && (players[1].connected || race.practice)) {
+      race.tagTouchLatched = true;
+      players.forEach((p, i) => {
+        if (race.practice && i === 1) return;
+        p.tagScore++; p.tagLock = 0; p.tagCooldown = 3;
+        p.tagFeedback = "タッチ！ +1";
+      });
+      return false;
+    }
     players.forEach((p, i) => {
       const other = players[1 - i], rel = relative(p, other);
       advance(p, p.connected && (other.connected || race.practice) && !(race.practice && i === 1) && canLock(rel.distance, rel.dot), dt);
@@ -238,11 +254,15 @@
       ring.style.width = size + "px"; ring.style.height = size + "px";
       ring.style.borderColor = p.tagCooldown > 0 ? "#ffd45b" : p.tagLock > 0 ? "#70efb4" : "#ffffff88";
       ring.style.background = p.tagLock > 0 ? "rgba(80,220,140,0.08)" : "transparent";
+      const progress = ring.firstChild;
+      progress.textContent = p.tagCooldown > 0 ? p.tagFeedback : p.tagLock > 0 ? "捕捉 " + p.tagLock.toFixed(1) + " / 3.0秒" : "照準 0 / 3.0秒";
+      progress.style.color = p.tagCooldown > 0 ? "#ffd45b" : p.tagLock > 0 ? "#70efb4" : "#d2ddd8";
+      progress.style.fontSize = p.tagCooldown > 0 ? "18px" : "14px";
     });
   }
   function status(p, race) {
     if (race.practice && p.id === 2) return "練習ターゲット";
-    if (p.tagCooldown > 0) return "捕まえた！ +1";
+    if (p.tagCooldown > 0) return p.tagFeedback;
     if (p.tagLock > 0) return "捕捉 " + p.tagLock.toFixed(1) + " / 3.0秒";
     const r = p.tagRelative;
     if (!r) return "相手を探索中";
