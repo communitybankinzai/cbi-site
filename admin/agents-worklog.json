@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-09-07",
+          "title": "内水リスク推定の技術仕様公開（合成式の逆算・座標系の誤り発見）＋道路リスクを防災MAPへ 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/simulation-spec.html（新規・専門家向け技術仕様）",
+            "site/inzai-disaster-map/simulation-method.html（座標系の記述を訂正・仕様への誘導）",
+            "site/inzai-disaster-map/naisui.html（技術仕様へのリンク）",
+            "site/inzai-disaster-map/app.js（roadRisk レイヤー・Canvas レンダラ）",
+            "site/inzai-disaster-map/index.html（既定OFFのレイヤーと凡例）",
+            "site/inzai-disaster-map/styles.css（凡例の線スタイル）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（対外説明で間違えてはいけない2点を明記）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "「専門家からの問い合わせに細部まで答えられるようにしたい」との依頼を受けて技術仕様を作成。生成スクリプトが手元にないため、公開データ map_grid.json の5レイヤーから合成式を逆算し、有効セル74,110すべてで最大誤差0.12点であることを確認した（score = 100×[0.25·clip(−相対標高/5m)+0.35·clip(窪地/2m)+0.25·clip(log10(集水)/log10(1e6))+0.15·clip(1−傾斜/10°)]）。その過程で、status.json が processing_crs: EPSG:32654 と記録しているのに実際の transform はWebメルカトル(EPSG:3857)である食い違いを発見。100m格子は地上約81.1mで、集水面積が約1.52倍過大・傾斜が約19%過小になる。全域一様の系統誤差だが集水面積を絶対値で引用できないため、影響とともに開示し simulation-method.html の記述も訂正した。また『排水能力と雨量のバランスで冠水箇所が決まる』という理解は誤りであることを指摘した（E/(E+50)は全体共通のスカラーで、排水も全域一律の定数。雨量を変えても地点間の順位は変わらない）。道路リスクは当初A案（重ねない）が選ばれたがB案（既定OFFのレイヤー）に変更され、防災MAPへ実装。本番で既定OFF・ON時に22,902区間の読み込みを実測確認。前回記録(1,121,488)以降の差分で算出。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 1,162,750 / cost: $681.86"
+        },
+        {
+          "date": "2026-09-07",
           "title": "避難所の一斉閉鎖バグ修正＋内水リスク推定ページのCBIサイト移植（道路色分け）＋SNS発信 0.6時間",
           "category": "実装",
           "outputs": [
@@ -5164,6 +5182,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-21",
+          "title": "🌧 印西市下水道課へ雨水排水区の区域界（GIS）と区ごとの計画降雨強度を照会する",
+          "category": "調査",
+          "priority": "高",
+          "note": "内水リスク推定の最大の欠落は、排水能力が全域一律の定数（既定0）で場所差を一切表せないこと。管路モデルを作らなくても、排水区ポリゴンと区ごとの計画降雨強度があれば D を区ごとの値にでき、費用対効果が最も高い次の一歩になる。段階2（管渠台帳・ポンプ能力曲線・放流先水位）はその後。必要データの整理は simulation-spec.html 第7節に記載済み。"
+        },
         {
           "due": "2026-09-14",
           "title": "🧮 内水リスクの生成スクリプト pipeline/build_static.py を Codex 側から回収する",
