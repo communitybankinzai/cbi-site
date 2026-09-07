@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>印西市 内水リスク推定（研究用）｜Community Bank INZAI</title>
+<meta name="description" content="国土地理院の標高データから、印西市周辺で雨水がたまりやすい地形を推定した研究用の地図です。未校正で、通行可否や浸水深を示すものではありません。">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--ink:#243546;--sub:#5a6675;--line:#bdc9d0;--accent:#713b8f;--bg:#f7f8fa}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.7 system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:#1f3350;color:#fff;padding:14px 20px}
+header .kicker{font-size:11px;letter-spacing:.14em;color:#9fb6d4;margin:0}
+header h1{font-size:20px;margin:2px 0 0}
+.hdrTag{float:right;background:#31496b;border:1px solid #4d688f;color:#dce8f7;font-size:12px;padding:6px 12px;border-radius:6px;margin-top:4px}
+.wrap{display:flex;gap:0;align-items:stretch;min-height:calc(100vh - 62px)}
+.side{width:300px;flex:0 0 300px;background:#fff;border-right:1px solid var(--line);padding:18px;overflow-y:auto;max-height:calc(100vh - 62px)}
+.mapbox{flex:1;position:relative;min-width:0}
+#map{position:absolute;inset:0}
+.notice{background:#eaf3f6;border-left:4px solid #3f8ea3;padding:12px;font-size:13px;border-radius:0 4px 4px 0;margin:0 0 18px}
+h2{font-size:15px;margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h2:first-of-type{margin-top:0}
+label.layer{display:block;margin:9px 0;font-size:14px;cursor:pointer}
+label.layer input{margin-right:8px;transform:translateY(1px)}
+label.layer small{display:block;margin-left:24px;color:var(--sub);font-size:11.5px;line-height:1.5}
+.hint{font-size:12px;color:var(--sub);margin:10px 0 0}
+.opacity{margin:14px 0 0;font-size:12px;color:var(--sub)}
+.opacity input{width:100%}
+a{color:#245b91}
+.srcnote{font-size:11.5px;color:var(--sub);line-height:1.6}
+.legend{position:absolute;left:12px;bottom:22px;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:6px;padding:12px 14px;font-size:12px;max-width:270px;z-index:600;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.legend h3{margin:0 0 8px;font-size:12.5px}
+.legend .row{display:flex;align-items:center;gap:8px;margin:4px 0}
+.legend .sw{width:20px;height:12px;border-radius:2px;flex:0 0 20px;border:1px solid rgba(0,0,0,.15)}
+.legend p{margin:8px 0 0;color:var(--sub);font-size:11px;line-height:1.5}
+.banner{position:absolute;left:50%;transform:translateX(-50%);top:10px;z-index:600;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:6px;padding:8px 14px;font-size:12px;max-width:min(620px,86%);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+#status{font-size:12px;color:var(--sub);margin:10px 0 0;min-height:1.5em}
+@media (max-width:820px){
+  .wrap{display:block}
+  .side{width:auto;flex:none;max-height:none;border-right:0;border-bottom:1px solid var(--line)}
+  .mapbox{height:70vh;position:relative}
+  .legend{max-width:200px;font-size:11px;padding:9px 10px}
+}
+</style>
+</head>
+<body>
+<header>
+  <span class="hdrTag">静的地形モデル・未校正</span>
+  <p class="kicker">PLUVIAL RISK / RESEARCH MAP</p>
+  <h1>印西市 内水リスク推定</h1>
+</header>
+
+<div class="wrap">
+  <div class="side">
+    <p class="notice">現在の雨量を反映した情報ではありません。地形による傾向を確認するための研究用MAPです。</p>
+
+    <h2>表示レイヤー</h2>
+    <div id="layers">
+      <label class="layer"><input type="checkbox" data-layer="score" checked> 内水リスク（地形のみ）
+        <small>窪地・集水・低さ・平坦さを合成した指標。0〜100の相対値で、浸水の深さや確率ではありません。</small></label>
+      <label class="layer"><input type="checkbox" data-layer="elevation"> 標高
+        <small>低い土地ほど濃い青。</small></label>
+      <label class="layer"><input type="checkbox" data-layer="depression_depth"> 窪地
+        <small>周囲より落ち込んだ深さ。水の逃げ場がない場所。</small></label>
+      <label class="layer"><input type="checkbox" data-layer="flow_accumulation_m2"> 集水リスク
+        <small>その地点へ地形上流から流れ込む面積。</small></label>
+      <label class="layer"><input type="checkbox" data-layer="relative_elevation"> 相対的な低さ
+        <small>周辺と比べてどれだけ低いか。</small></label>
+    </div>
+    <p class="hint">複数の面レイヤーは重なります。比較する項目だけを選ぶと見やすくなります。</p>
+    <div class="opacity">
+      重ねる濃さ <span id="opv">70</span>%
+      <input id="opacity" type="range" min="10" max="100" value="70">
+    </div>
+    <p id="status">地形データを読み込んでいます…</p>
+
+    <h2>この地図の限界</h2>
+    <p class="srcnote">
+      下水道・側溝・ポンプの排水能力、河川の氾濫、実際の降雨は<strong>反映していません</strong>。
+      重み付けは仮設定で、実際の冠水実績との照合（校正）は行っていません。
+      <strong>通行できるかどうかを示すものではありません。</strong>
+      通行判断には現地の状況と行政の情報を確認してください。
+    </p>
+    <p class="srcnote">
+      道路ごとのリスク判定は、通行不能とみなす基準が未検証のため<strong>このページには掲載していません</strong>。
+    </p>
+    <p class="srcnote"><a href="./simulation-method.html">▶ 計算方法・仮定した数値・精度向上に必要なデータ</a></p>
+
+    <h2>公式ハザード参考</h2>
+    <p class="srcnote">区域のGISデータは未取得です。公式資料を別画面で確認してください。</p>
+    <p class="srcnote"><a href="https://www.city.inzai.lg.jp/bousaiportal/0000008837.html" target="_blank" rel="noopener">印西市の公式ハザードマップ ↗</a></p>
+    <p class="srcnote">公式の内水想定の参考条件：2008-08-30 我孫子観測所 最大1時間105 mm。元の時系列降雨は未取得。この推定とは別の情報です。</p>
+
+    <h2>関連</h2>
+    <p class="srcnote">
+      <a href="./">▶ 印西市 災害状況整合MAP（警報・雨量・避難所・冠水した道路）</a><br>
+      雨量を入力して重ねる「CBI独自シミュレーション」は、こちらの地図にあります。
+    </p>
+    <p class="srcnote">
+      <a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noopener">▶ みんなでつくる千葉豪雨冠水道路マップ ↗</a><br>
+      市民が実際に冠水した道路を投稿している有志のプロジェクトです。冠水情報の投稿はこちらへ。
+    </p>
+
+    <h2>出典と版</h2>
+    <p class="srcnote">
+      標高：国土地理院 標高タイル（1m／5m／10m）<br>
+      背景地図：地理院タイル<br>
+      モデル版：<span id="ver">topo-0.1.0</span>／生成：<span id="gen">—</span><br>
+      作成：Community Bank INZAI（印西市市民活動団体登録 ０８－００１）
+    </p>
+    <p class="srcnote"><a href="./simulation-data/status.json">パラメータ・仮定の一覧（JSON）</a> ／ <a href="./simulation-data/sources.json">標高データの取得元（JSON）</a></p>
+  </div>
+
+  <div class="mapbox">
+    <div id="map"></div>
+    <div class="banner">地形モデル推定｜降雨・排水能力は未反映。通行判断には現地・行政情報を確認してください。</div>
+    <div class="legend" id="legend"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(() => {
+  'use strict';
+  const map = L.map('map', { center: [35.832, 140.145], zoom: 12, zoomControl: true });
+  L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', {
+    attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">地理院タイル</a>',
+    maxZoom: 18
+  }).addTo(map);
+
+  const pane = map.createPane('gridPane');
+  pane.style.zIndex = '390';
+  pane.style.pointerEvents = 'none';
+
+  const statusEl = document.getElementById('status');
+  const opacityEl = document.getElementById('opacity');
+  const opvEl = document.getElementById('opv');
+  const legendEl = document.getElementById('legend');
+
+  // レイヤーごとの色。null（未解析・欠測）は透明のままにして 0 で埋めない。
+  const DEFS = {
+    score: {
+      label: '内水リスク（地形のみ）',
+      // 低い→高い：青緑 → 黄 → 橙。冠水の深さでも確率でもない相対指標。
+      stops: [[0, [63, 142, 163]], [40, [242, 201, 76]], [100, [224, 123, 57]]],
+      legend: [['#3f8ea3', '低い'], ['#f2c94c', '中くらい'], ['#e07b39', '高い']],
+      note: '窪地・集水・低さ・平坦さの合成指標（0〜100）。浸水深・確率・通行可否ではありません。'
+    },
+    elevation: {
+      label: '標高',
+      // 低い土地ほど濃い青（stops の 0 側が濃い色なので invert は不要）
+      stops: [[0, [21, 61, 122]], [100, [222, 236, 247]]],
+      legend: [['#153d7a', '低い'], ['#7ba7d4', '中くらい'], ['#deecf7', '高い']],
+      note: '国土地理院の標高タイルを100m格子にしたもの。'
+    },
+    depression_depth: {
+      label: '窪地',
+      stops: [[0, [237, 222, 245]], [100, [110, 30, 143]]],
+      legend: [['#ede0f5', '浅い'], ['#6e1e8f', '深い']],
+      note: '周囲より落ち込んだ深さ。深いほど濃い紫。'
+    },
+    flow_accumulation_m2: {
+      label: '集水リスク',
+      stops: [[0, [219, 234, 246]], [100, [12, 74, 138]]],
+      log: true,
+      legend: [['#dbeaf6', '小さい'], ['#0c4a8a', '大きい']],
+      note: '地形上流から流れ込む面積（対数目盛）。'
+    },
+    relative_elevation: {
+      label: '相対的な低さ',
+      stops: [[0, [232, 240, 246]], [100, [26, 95, 122]]],
+      invert: true,
+      legend: [['#1a5f7a', '周りより低い'], ['#e8f0f6', '周りより高い']],
+      note: '周辺との高さの差。'
+    }
+  };
+
+  const overlays = {};
+  let grid = null;
+
+  function ramp(stops, t) {
+    const x = Math.max(0, Math.min(100, t * 100));
+    for (let i = 1; i < stops.length; i++) {
+      if (x <= stops[i][0]) {
+        const [a, ca] = stops[i - 1], [b, cb] = stops[i];
+        const f = b === a ? 0 : (x - a) / (b - a);
+        return [0, 1, 2].map(c => Math.round(ca[c] + (cb[c] - ca[c]) * f));
+      }
+    }
+    return stops[stops.length - 1][1];
+  }
+
+  function buildOverlay(key) {
+    const def = DEFS[key];
+    const values = grid.values[key];
+    if (!Array.isArray(values)) return null;
+    const finite = values.filter(v => v !== null && Number.isFinite(v));
+    if (!finite.length) return null;
+    let lo = Math.min(...finite), hi = Math.max(...finite);
+    if (def.log) { lo = Math.log10(Math.max(1, lo)); hi = Math.log10(Math.max(1, hi)); }
+    const span = hi - lo || 1;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = grid.width; canvas.height = grid.height;
+    const ctx = canvas.getContext('2d');
+    const img = ctx.createImageData(grid.width, grid.height);
+    for (let i = 0; i < values.length; i++) {
+      const raw = values[i];
+      if (raw === null || !Number.isFinite(raw)) continue; // 欠測は透明のまま
+      let v = def.log ? Math.log10(Math.max(1, raw)) : raw;
+      let t = (v - lo) / span;
+      if (def.invert) t = 1 - t;
+      const rgb = ramp(def.stops, key === 'score' ? raw / 100 : t);
+      img.data[i * 4] = rgb[0];
+      img.data[i * 4 + 1] = rgb[1];
+      img.data[i * 4 + 2] = rgb[2];
+      img.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    return L.imageOverlay(canvas.toDataURL('image/png'), grid.bounds, {
+      pane: 'gridPane',
+      opacity: Number(opacityEl.value) / 100,
+      interactive: false,
+      alt: def.label + '：未校正の地形指標'
+    });
+  }
+
+  function renderLegend() {
+    const on = Object.keys(DEFS).filter(k => overlays[k] && map.hasLayer(overlays[k]));
+    if (!on.length) { legendEl.style.display = 'none'; return; }
+    legendEl.style.display = '';
+    legendEl.innerHTML = on.map(k => {
+      const def = DEFS[k];
+      const rows = def.legend.map(([c, t]) => `<div class="row"><span class="sw" style="background:${c}"></span><span>${t}</span></div>`).join('');
+      return `<h3>${def.label}</h3>${rows}<p>${def.note}</p>`;
+    }).join('<hr style="border:0;border-top:1px solid #e3e8ec;margin:10px 0">')
+      + '<p>白い部分は未解析・欠測を含みます。</p>';
+  }
+
+  function toggle(key, checked) {
+    if (!grid) return;
+    if (checked) {
+      if (!overlays[key]) overlays[key] = buildOverlay(key);
+      if (overlays[key]) overlays[key].addTo(map);
+    } else if (overlays[key]) {
+      map.removeLayer(overlays[key]);
+    }
+    renderLegend();
+  }
+
+  document.querySelectorAll('#layers input[type=checkbox]').forEach(input => {
+    input.addEventListener('change', () => toggle(input.dataset.layer, input.checked));
+  });
+  opacityEl.addEventListener('input', () => {
+    opvEl.textContent = opacityEl.value;
+    Object.values(overlays).forEach(o => o && o.setOpacity(Number(opacityEl.value) / 100));
+  });
+
+  fetch('./simulation-data/map_grid.json')
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(json => {
+      grid = json;
+      map.fitBounds(grid.bounds);
+      document.querySelectorAll('#layers input:checked').forEach(i => toggle(i.dataset.layer, true));
+      const cells = (grid.values.score || []).filter(v => v !== null && Number.isFinite(v)).length;
+      statusEl.textContent = `100mの格子 ${cells.toLocaleString()} マスを表示中（範囲は市境ではなく矩形）。`;
+      return fetch('./simulation-data/status.json').then(r => r.ok ? r.json() : null);
+    })
+    .then(st => {
+      if (!st) return;
+      const v = st.metadata && st.metadata.model_version;
+      if (v) document.getElementById('ver').textContent = v;
+      if (st.generated_at) {
+        const d = new Date(st.generated_at);
+        if (!isNaN(d)) document.getElementById('gen').textContent =
+          d.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' });
+      }
+    })
+    .catch(err => { statusEl.textContent = '地形データを読み込めませんでした（' + err.message + '）。時間をおいて再読み込みしてください。'; });
+})();
+</script>
+</body>
+</html>
