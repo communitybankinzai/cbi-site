@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260907e">
+    <link rel="stylesheet" href="./styles.css?v=20260907f">
   </head>
   <body>
     <div class="app-shell">
@@ -127,6 +127,9 @@
                   <img src="https://www.j-shis.bosai.go.jp/map/wms/sstrct/V4?version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=Z-V4-JAPAN-AMP-VS400_M250-IDARV2&amp;format=image/png&amp;STYLE=default" alt="J-SHIS 表層地盤の増幅率の凡例" loading="lazy">
                 </figure>
               </div>
+              <label><input type="checkbox" data-overlay="landformFc"> 🗾 土地の成り立ち（治水地形分類図・国土地理院）</label>
+              <div class="jshis-layer-note">国土地理院が作った、土地がどうやってできたかを示す地図です。氾濫平野・後背湿地・旧河道・自然堤防などが色分けされていて、<strong>標高だけでは分からない「昔から水が集まってきた土地か」</strong>が読み取れます。<a href="https://maps.gsi.go.jp/legend/lcmfc2_legend.jpg" target="_blank" rel="noreferrer">凡例を見る</a></div>
+              <div class="jshis-layer-note">市民が投稿した冠水実績（977地点）と突き合わせたところ、<strong>現河道・水面で4.35倍、後背湿地で1.62倍</strong>冠水が起きており、逆に<strong>自然堤防では0.12倍、山地では0.09倍</strong>と、土地の成り立ちどおりの結果になりました。<strong>ただし利根川など一級河川沿いが対象のため、市域の一部しか描かれていません</strong>（印西市の冠水報告地点の74.7%は範囲外）。色が付いていない場所が安全という意味ではありません。</div>
               <label class="live-layer-label"><input type="checkbox" data-overlay="terrainRisk"> 🟠 地形の冠水リスク（面・仮設定）<span id="terrain-risk-status">ONにすると読み込みます</span></label>
               <div class="jshis-layer-note">窪地・周りとの高さの差・集水・平坦さを合成した地形の指標です。<strong>雨量は入っていません。</strong>下の道路リスクと同じ元データで、面で塗ったものです。</div>
               <div class="jshis-layer-note road-risk-legend">
@@ -1236,9 +1239,9 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
-    <script src="./config.js?v=20260907e"></script>
-    <script src="./app.js?v=20260907e"></script>
-    <script src="./cbi-simulation-core.js?v=20260907e"></script>
-    <script src="./cbi-simulation.js?v=20260907e"></script>
+    <script src="./config.js?v=20260907f"></script>
+    <script src="./app.js?v=20260907f"></script>
+    <script src="./cbi-simulation-core.js?v=20260907f"></script>
+    <script src="./cbi-simulation.js?v=20260907f"></script>
   </body>
 </html>

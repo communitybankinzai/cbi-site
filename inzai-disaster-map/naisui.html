@@ -69,6 +69,8 @@ a{color:#245b91}
         <small>その地点へ地形上流から流れ込む面積。</small></label>
       <label class="layer"><input type="checkbox" data-layer="relative_elevation"> 相対的な低さ
         <small>周辺と比べてどれだけ低いか。</small></label>
+      <label class="layer"><input type="checkbox" data-gsi="lcmfc2"> 土地の成り立ち（治水地形分類図）
+        <small>国土地理院。氾濫平野・後背湿地・旧河道・自然堤防などの分類。<strong>一級河川沿いが対象のため市域の一部のみ</strong>。<a href="https://maps.gsi.go.jp/legend/lcmfc2_legend.jpg" target="_blank" rel="noopener">凡例</a></small></label>
     </div>
     <p class="hint">複数の面レイヤーは重なります。比較する項目だけを選ぶと見やすくなります。</p>
     <div class="opacity">
@@ -311,9 +313,20 @@ a{color:#245b91}
       });
   }
 
+  // 国土地理院の治水地形分類図。CBIの推定には組み込まず、見比べるためだけに重ねる。
+  const gsiLayers = {
+    lcmfc2: L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/lcmfc2/{z}/{x}/{y}.png', {
+      opacity: 0.6, maxZoom: 16, maxNativeZoom: 16,
+      attribution: '<a href="https://www.gsi.go.jp/bousaichiri/fc_index.html" target="_blank" rel="noopener">治水地形分類図（国土地理院）</a>'
+    })
+  };
+
   document.querySelectorAll('#layers input[type=checkbox]').forEach(input => {
     input.addEventListener('change', () => {
-      if (input.dataset.road) toggleRoads(input.checked);
+      if (input.dataset.gsi) {
+        const l = gsiLayers[input.dataset.gsi];
+        if (input.checked) l.addTo(map); else map.removeLayer(l);
+      } else if (input.dataset.road) toggleRoads(input.checked);
       else toggle(input.dataset.layer, input.checked);
     });
   });

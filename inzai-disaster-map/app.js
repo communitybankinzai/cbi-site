@@ -601,6 +601,19 @@ const hazardLayers = {
     attribution: "ハザードマップポータルサイト",
     opacity: 0.56,
     maxZoom: 17
+  }),
+  // 国土地理院の治水地形分類図。土地の成り立ち（氾濫平野・後背湿地・旧河道・
+  // 自然堤防など）を示した図で、標高だけでは分からない「昔から水が集まってきた土地か」
+  // が読み取れる。2026-09-07にみんつくの冠水実績と突き合わせたところ、
+  // 現河道・水面 4.35倍、後背湿地 1.62倍、微高地（自然堤防）0.12倍、山地 0.09倍と、
+  // 物理的に納得できる並びになった。
+  // ただし一級河川沿いが対象で、印西市の冠水報告地点の74.7%は整備範囲の外だった。
+  // そのため CBI の推定モデルには組み込まず、参考レイヤーとして重ねるだけにしている。
+  landformFc: L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/lcmfc2/{z}/{x}/{y}.png", {
+    attribution: '<a href="https://www.gsi.go.jp/bousaichiri/fc_index.html" target="_blank" rel="noreferrer">治水地形分類図（国土地理院）</a>',
+    opacity: 0.56,
+    maxZoom: 16,
+    maxNativeZoom: 16
   })
 };
 
