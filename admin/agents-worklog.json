@@ -17,9 +17,15 @@
     "A1": {
       "actuals": [
         {
-          "date": "2026-09-08", "title": "鬼ごっこ開始位置と方向案内・2P地図設定を修正",
-          "category": "実装", "partnerApproved": false,
-          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/vs-race.js", "site/metaverse/verify-tag-guidance.cjs"],
+          "date": "2026-09-08",
+          "title": "鬼ごっこ開始位置と方向案内・2P地図設定を修正",
+          "category": "実装",
+          "partnerApproved": false,
+          "outputs": [
+            "site/metaverse/sky-tag.js",
+            "site/metaverse/vs-race.js",
+            "site/metaverse/verify-tag-guidance.cjs"
+          ],
           "note": "600m対向配置、照準付近の方向・高度・距離。2P globe非表示とタイルエラー通知。地図課金を伴う実データ検証は未実施。写実的3D素材への置換は未完了。"
         },
         {
@@ -5268,14 +5274,16 @@
           "title": "🔔 自動SNS投稿の承認リンクをスマホへ届ける手段を決めて実装する",
           "category": "実装",
           "priority": "高",
-          "note": "レベル3で承認待ちを作っても、リンクが中司さんの手元に届かない。候補：Web Push（src/lib/push.ts にあり・端末の購読が必要）／Resend（2026-09-06 に 403 code 1010 で失敗）／GAS Gmail（動作実績あり・Vercel に環境変数の追加が必要）。9/6は手作業でメール送信して凌いだ。次の大雨までに決める。"
+          "note": "レベル3で承認待ちを作っても、リンクが中司さんの手元に届かない。候補：Web Push（src/lib/push.ts にあり・端末の購読が必要）／Resend（2026-09-06 に 403 code 1010 で失敗）／GAS Gmail（動作実績あり・Vercel に環境変数の追加が必要）。9/6は手作業でメール送信して凌いだ。次の大雨までに決める。 2026-09-08 時点では approvalLevel を 4 に上げて承認待ちを作らない運用にしている。通知手段ができたら approvalLevel を 3 に戻すこと。"
         },
         {
-          "due": "2026-09-13",
-          "title": "🚨 自動SNS投稿を有効にするか判断し、有効にするなら最初の1件を見届ける",
+          "due": "未定",
+          "title": "🚨 自動SNS投稿の最初の発報を見届ける（2026-09-08 レベル4以上で稼働開始）",
           "category": "保守",
           "priority": "高",
-          "note": "実装・検証は済んでいるが既定は停止中。管理画面 /admin/disaster-sources のパネルで入切する。9/6の実データでは誤発報が0件だったが、実際に発報する場面はまだ経験していない。最初に発報したときは本文と時刻を必ず目視で確認すること。誤りがあれば即座に enabled を false に戻す。"
+          "note": "2026-09-08 に enabled:true / autoLevel:4 / approvalLevel:4 / media:[threads] で有効化。approvalLevel を 4 にしてあるのでレベル3では何も起きない（承認リンクの通知手段が未実装のため）。",
+          "status": "待ち",
+          "blockedBy": "印西市に警戒レベル4以上の情報が実際に発表されること。それまで発報の機会が無い。発報したら本文・時刻・宛先を目視で確認し、おかしければ管理画面 /admin/disaster-sources のチェックを外して即停止する。"
         },
         {
           "due": "未定",
