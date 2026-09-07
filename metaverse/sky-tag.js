@@ -216,6 +216,12 @@
   function aircraftUri(kind) {
     return "assets/tonbi/" + (kind === "swan" ? "swan" : "kite") + ".glb?v=20260907-4";
   }
+  function placeAtStart(player) {
+    const halfSeparationDegrees = 300 / 111000;
+    const first = player.id === 1;
+    player.viewer.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(140.115, 35.805 + (first ? -1 : 1) * halfSeparationDegrees, 240),
+      orientation: { heading: first ? 0 : Math.PI, pitch: 0, roll: 0 } });
+  }
   function reset(players, race) {
     clear(players);
     race.tagTouchLatched = false;
@@ -224,8 +230,7 @@
     const C = Cesium;
     players.forEach((p, i) => {
       const other = players[1 - i];
-      p.viewer.camera.setView({ destination: C.Cartesian3.fromDegrees(140.115, 35.805 + i * 0.001, 240),
-        orientation: { heading: 0, pitch: 0, roll: 0 } });
+      placeAtStart(p);
       p.tagEntity = p.viewer.entities.add({
         position: new C.CallbackProperty(() => other.viewer.camera.positionWC, false),
         orientation: new C.CallbackProperty(() => {
@@ -248,6 +253,10 @@
       const progress = document.createElement("div");
       progress.style.cssText = "position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);width:160px;max-width:42vw;text-align:center;color:#fff;font:bold 14px sans-serif;text-shadow:0 1px 4px #000;background:#07140fdd;border-radius:4px;padding:5px;box-sizing:border-box";
       ring.appendChild(progress);
+      const guidance = document.createElement("div");
+      guidance.className = "tagGuidance";
+      guidance.style.cssText = "position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:190px;max-width:42vw;white-space:pre-line;text-align:center;color:#fff;font:bold 13px/1.5 sans-serif;text-shadow:0 1px 3px #000;background:#07140fe8;padding:5px;box-sizing:border-box;border-radius:4px";
+      ring.appendChild(guidance);
       p.viewer.container.appendChild(ring); p.tagReticle = ring;
       const scope = document.createElement("div");
       scope.className = "tagScope";
@@ -304,6 +313,12 @@
     return { distance, dot: C.Cartesian3.dot(direction, cam.directionWC),
       side: C.Cartesian3.dot(direction, cam.rightWC), up: C.Cartesian3.dot(direction, cam.upWC) };
   }
+  function targetGuidance(rel, altitude, heightDifference) {
+    const horizontal = rel.side > 0.025 ? "→ 右" : rel.side < -0.025 ? "← 左" : "左右中央";
+    const vertical = rel.up > 0.025 ? "↑ 上" : rel.up < -0.025 ? "↓ 下" : "上下中央";
+    const front = rel.dot < 0 ? "後方・反転 " : "";
+    return front + horizontal + "  " + vertical + "\n高度 " + Math.round(altitude) + "m / 差 " + (heightDifference >= 0 ? "+" : "") + Math.round(heightDifference) + "m\n距離 " + Math.round(rel.distance) + "m";
+  }
   function tick(players, race, dt, elapsed) {
     if (elapsed >= DURATION) return true;
     const separation = relative(players[0], players[1]).distance;
@@ -332,6 +347,9 @@
       drawScope(p, players[1 - i]);
       const ring = p.tagReticle;
       if (!ring) return;
+      const targetAltitude = Cesium.Cartographic.fromCartesian(other.viewer.camera.positionWC).height;
+      const ownAltitude = Cesium.Cartographic.fromCartesian(p.viewer.camera.positionWC).height;
+      ring.lastChild.textContent = targetGuidance(p.tagRelative, targetAltitude, targetAltitude - ownAltitude);
       const height = p.viewer.container.clientHeight;
       const size = height * Math.tan(ANGLE) / Math.tan(p.viewer.camera.frustum.fovy / 2);
       ring.style.width = size + "px"; ring.style.height = size + "px";
@@ -352,5 +370,5 @@
     const direction = r.dot < 0 ? "後ろ" : Math.abs(r.side) > 0.12 ? r.side > 0 ? "右" : "左" : Math.abs(r.up) > 0.12 ? r.up > 0 ? "上" : "下" : "正面";
     return "相手 " + direction + " " + Math.round(r.distance) + "m";
   }
-  root.SkyTag = { reset, clear, tick, render, status, canLock, advance, birdModel, scopePoint, aircraftUri };
+  root.SkyTag = { reset, clear, tick, render, status, canLock, advance, birdModel, scopePoint, aircraftUri, targetGuidance, placeAtStart };
 })(typeof window !== "undefined" ? window : globalThis);

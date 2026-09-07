@@ -17,6 +17,12 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-08", "title": "鬼ごっこ開始位置と方向案内・2P地図設定を修正",
+          "category": "実装", "partnerApproved": false,
+          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/vs-race.js", "site/metaverse/verify-tag-guidance.cjs"],
+          "note": "600m対向配置、照準付近の方向・高度・距離。2P globe非表示とタイルエラー通知。地図課金を伴う実データ検証は未実施。写実的3D素材への置換は未完了。"
+        },
+        {
           "date": "2026-09-07",
           "title": "警戒レベルによる自動SNS投稿の実装（誤発報の安全装置つき・既定は停止中） 0.5時間",
           "category": "実装",

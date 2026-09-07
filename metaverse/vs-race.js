@@ -395,6 +395,7 @@
       contextOptions: { webgl: { preserveDrawingBuffer: false } }
     });
     players[1].viewer = v;
+    v.scene.globe.show = false;
     try { v.scene.backgroundColor = Cesium.Color.fromCssColorString("#020617"); } catch (e) {}
     try { v.scene.screenSpaceCameraController.enableInputs = false; } catch (e) {}
     try { v.scene.skyAtmosphere.show = false; } catch (e) {}
@@ -417,20 +418,35 @@
   }
 
   async function loadSecondTiles(v) {
-    if (!await window.ensureMetaverseAdmission()) return;
-    if (typeof GOOGLE_3DTILES_URL === "undefined") return;
-    Cesium.Cesium3DTileset.fromUrl(GOOGLE_3DTILES_URL, {
+    const notice = document.createElement("div");
+    notice.className = "vsTileNotice";
+    notice.style.cssText = "position:absolute;left:12px;right:12px;top:70px;z-index:6;text-align:center;color:#fff;background:#172025e8;padding:8px;font:14px sans-serif;pointer-events:none";
+    notice.textContent = "2Pの街並みを読み込み中…";
+    v.container.appendChild(notice);
+    const fail = err => {
+      if (v.isDestroyed()) return;
+      const message = String(err && (err.message || err.statusCode) || err || "");
+      notice.hidden = false;
+      notice.textContent = /429|quota|RESOURCE_EXHAUSTED/i.test(message)
+        ? "2Pの地図取得上限に達しました。時間をおいて再度お試しください。"
+        : "2Pの街並みを取得できません。通信・地図APIの制限を確認してください。";
+      console.warn("VS race P2 tiles failed:", err);
+    };
+    try {
+    if (!await window.ensureMetaverseAdmission()) { notice.textContent = "2Pの地図読み込みは入場制限により停止しました"; return; }
+    if (v.isDestroyed()) return;
+    if (typeof GOOGLE_3DTILES_URL === "undefined") throw new Error("Missing map URL");
+    const tiles = await Cesium.Cesium3DTileset.fromUrl(GOOGLE_3DTILES_URL, {
       showCreditsOnScreen: true,
       maximumScreenSpaceError: 24,
       dynamicScreenSpaceError: true
-    }).then(tiles => {
-      v.scene.primitives.add(tiles);
-      setStatus("2画面目の3D都市データを読み込みました", 1800);
-    }).catch(err => {
-      console.warn("VS race P2 tiles failed:", err);
-      setStatus("2画面目の3D都市データを読み込めませんでした。検証モードで確認してください", 5000);
-      addGridToViewer(v, "vs-p2-grid-fallback");
     });
+      if (v.isDestroyed()) { tiles.destroy(); return; }
+      v.scene.primitives.add(tiles);
+      let failed = false;
+      tiles.tileFailed.addEventListener(err => { failed = true; fail(err); });
+      tiles.tileVisible.addEventListener(() => { if (!failed) notice.hidden = true; });
+    } catch (err) { fail(err); }
   }
 
   function addGridToViewer(v, prefix) {
@@ -586,6 +602,7 @@
 
   function placePlayerAtStart(player) {
     if (!race.course || !player.viewer) return;
+    if (race.mode === "tag") { window.SkyTag.placeAtStart(player); return; }
     const cp = race.course.checkpoints[0];
     const base = race.course.start || offsetMeters(cp, 0, -260, DEFAULT_HEIGHT);
     const laneEast = player.id === 1 ? -42 : 42;
