@@ -57,8 +57,10 @@ a{color:#245b91}
 
     <h2>表示レイヤー</h2>
     <div id="layers">
-      <label class="layer"><input type="checkbox" data-layer="score" checked> 内水リスク（地形のみ）
+      <label class="layer"><input type="checkbox" data-layer="score"> 内水リスク（地形のみ）
         <small>窪地・集水・低さ・平坦さを合成した指標。0〜100の相対値で、浸水の深さや確率ではありません。</small></label>
+      <label class="layer"><input type="checkbox" data-road="1" checked> 道路リスク（概略・仮表示）
+        <small>道路が通っている地形の傾向を色分けしたものです。排水能力・路面高・アンダーパスは未考慮で、<strong>通行できるかどうかではありません</strong>。</small></label>
       <label class="layer"><input type="checkbox" data-layer="elevation"> 標高
         <small>低い土地ほど濃い青。</small></label>
       <label class="layer"><input type="checkbox" data-layer="depression_depth"> 窪地
@@ -83,7 +85,8 @@ a{color:#245b91}
       通行判断には現地の状況と行政の情報を確認してください。
     </p>
     <p class="srcnote">
-      道路ごとのリスク判定は、通行不能とみなす基準が未検証のため<strong>このページには掲載していません</strong>。
+      道路の色は、その道が通っている地形の指標を当てはめた<strong>概略・仮表示</strong>です。
+      通行不能とみなす基準は未検証で、実際に通れるかどうかを示すものではありません。
     </p>
     <p class="srcnote"><a href="./simulation-method.html">▶ 計算方法・仮定した数値・精度向上に必要なデータ</a></p>
 
@@ -105,6 +108,7 @@ a{color:#245b91}
     <h2>出典と版</h2>
     <p class="srcnote">
       標高：国土地理院 標高タイル（1m／5m／10m）<br>
+      道路：© OpenStreetMap contributors（ODbL 1.0）<br>
       背景地図：地理院タイル<br>
       モデル版：<span id="ver">topo-0.1.0</span>／生成：<span id="gen">—</span><br>
       作成：Community Bank INZAI（印西市市民活動団体登録 ０８－００１）
@@ -226,15 +230,23 @@ a{color:#245b91}
     });
   }
 
+  function roadLegendHtml() {
+    if (!map.hasLayer(roadLayer) || !roadMeta) return '';
+    const names = roadMeta.classes || [];
+    const rows = ROAD_STYLE.map((st, i) => `<div class="row"><span class="sw" style="background:${st.color};height:${Math.max(3, st.weight)}px"></span><span>${names[i] || ''}</span></div>`).join('');
+    return `<h3>道路リスク（概略・仮表示）</h3>${rows}<p>道路が通っている地形の傾向です。排水能力・路面高・アンダーパスは未考慮で、通行可否ではありません。</p>`;
+  }
+
   function renderLegend() {
     const on = Object.keys(DEFS).filter(k => overlays[k] && map.hasLayer(overlays[k]));
-    if (!on.length) { legendEl.style.display = 'none'; return; }
+    const road = roadLegendHtml();
+    if (!on.length && !road) { legendEl.style.display = 'none'; return; }
     legendEl.style.display = '';
-    legendEl.innerHTML = on.map(k => {
+    legendEl.innerHTML = [road].filter(Boolean).concat(on.map(k => {
       const def = DEFS[k];
       const rows = def.legend.map(([c, t]) => `<div class="row"><span class="sw" style="background:${c}"></span><span>${t}</span></div>`).join('');
       return `<h3>${def.label}</h3>${rows}<p>${def.note}</p>`;
-    }).join('<hr style="border:0;border-top:1px solid #e3e8ec;margin:10px 0">')
+    })).join('<hr style="border:0;border-top:1px solid #e3e8ec;margin:10px 0">')
       + '<p>白い部分は未解析・欠測を含みます。</p>';
   }
 
@@ -249,8 +261,60 @@ a{color:#245b91}
     renderLegend();
   }
 
+  // ── 道路リスク（概略・仮表示） ──
+  // 道路が通っている地形の傾向を色分けしたもの。通行可否ではない。
+  // 22,000本を超える線を描くので Canvas レンダラを使う（SVGだと重すぎる）。
+  const ROAD_STYLE = [
+    { color: '#2f8ba3', weight: 1.6 },  // 0 冠水リスク低
+    { color: '#e8b23a', weight: 1.6 },  // 1 注意
+    { color: '#df7038', weight: 2.2 },  // 2 冠水リスク高
+    { color: '#8e44ad', weight: 3.4 },  // 3 使用困難となる可能性あり（太くしないと埋もれる）
+    { color: '#8a9099', weight: 1.4, dashArray: '4 4' }, // 4 判定保留・情報不足
+  ];
+  const roadRenderer = L.canvas({ padding: 0.3 });
+  const roadLayer = L.layerGroup();
+  let roadMeta = null, roadLoading = null;
+
+  function loadRoads() {
+    if (roadLoading) return roadLoading;
+    roadLoading = fetch('./simulation-data/road_risk.json')
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(data => {
+        roadMeta = data;
+        const q = data.quantize || 100000;
+        (data.lines || []).forEach(arr => {
+          const cls = arr[0];
+          let lat = arr[1], lon = arr[2];
+          const pts = [[lat / q, lon / q]];
+          for (let i = 3; i < arr.length; i += 2) {
+            lat += arr[i]; lon += arr[i + 1];
+            pts.push([lat / q, lon / q]);
+          }
+          L.polyline(pts, Object.assign({
+            renderer: roadRenderer, interactive: false, lineCap: 'butt'
+          }, ROAD_STYLE[cls] || ROAD_STYLE[4])).addTo(roadLayer);
+        });
+        return data;
+      })
+      .catch(err => { roadLoading = null; throw err; });
+    return roadLoading;
+  }
+
+  function toggleRoads(checked) {
+    const input = document.querySelector('#layers input[data-road]');
+    if (!checked) { map.removeLayer(roadLayer); renderLegend(); return; }
+    loadRoads().then(() => { roadLayer.addTo(map); renderLegend(); })
+      .catch(err => {
+        if (input) input.checked = false;
+        statusEl.textContent = '道路データを読み込めませんでした（' + err.message + '）。';
+      });
+  }
+
   document.querySelectorAll('#layers input[type=checkbox]').forEach(input => {
-    input.addEventListener('change', () => toggle(input.dataset.layer, input.checked));
+    input.addEventListener('change', () => {
+      if (input.dataset.road) toggleRoads(input.checked);
+      else toggle(input.dataset.layer, input.checked);
+    });
   });
   opacityEl.addEventListener('input', () => {
     opvEl.textContent = opacityEl.value;
@@ -262,7 +326,9 @@ a{color:#245b91}
     .then(json => {
       grid = json;
       map.fitBounds(grid.bounds);
-      document.querySelectorAll('#layers input:checked').forEach(i => toggle(i.dataset.layer, true));
+      document.querySelectorAll('#layers input:checked').forEach(i => {
+        if (i.dataset.road) toggleRoads(true); else toggle(i.dataset.layer, true);
+      });
       const cells = (grid.values.score || []).filter(v => v !== null && Number.isFinite(v)).length;
       statusEl.textContent = `100mの格子 ${cells.toLocaleString()} マスを表示中（範囲は市境ではなく矩形）。`;
       return fetch('./simulation-data/status.json').then(r => r.ok ? r.json() : null);
