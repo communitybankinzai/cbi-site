@@ -18,9 +18,42 @@
       "actuals": [
         {
           "date": "2026-09-07",
+          "title": "避難所の一斉閉鎖バグ修正＋内水リスク推定ページのCBIサイト移植（道路色分け）＋SNS発信 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/api/disaster/inzai-shelters/route.ts（一斉閉鎖の検出・開設済み施設限定）",
+            "site/inzai-disaster-map/app.js（一斉閉鎖より古い手動入力の無効化）",
+            "site/inzai-disaster-map/naisui.html（新規・内水リスク推定 研究用ページ）",
+            "site/inzai-disaster-map/simulation-data/road_risk.json（新規・車道18,024本→22,902線・1.15MB）",
+            "site/inzai-disaster-map/index.html（導線追加・キャッシュ更新）",
+            "site/assets/sns/2026-09-07_naisui/shot_naisui.png",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "16:00の防災行政無線「１６時、すべての避難所を閉鎖します。」が施設名を挙げないため施設名照合に一致せず、16:10時点で13施設が開設中のまま表示されていた（中司さんの指摘で発覚）。一斉閉鎖の表現を別に検出し、開設が発表されていた施設だけを閉鎖に切り替える形で修正。本番APIで開設0/閉鎖13/発表なし43を実測し、本番MAPでも開設中0施設を確認。最初の実装では未開設の43施設まで閉鎖にしてしまい、方針（発表なしは閉鎖扱いにしない）に反したため絞り込み直した。内水リスク推定はChatGPT側（*.chatgpt.site・ログイン必須で第三者が開けない）にしかなかったため、既にサイトにある map_grid.json を使ってCBIサイトへ移植。道路色分けはOSM車道18,024本に地形指標を割り当て、区分の変わり目で線を切って22,902本にし、1e-5度量子化＋差分で1.15MB（gzip転送433KB）に収めた。SNSはThreads 18140024089519963・Instagram 18141924130600124 に投稿済み。画像は中司さんのスクショの右下にClaude通知（別事業の作業内容）が写り込んでいたため出典パネルに差し替えた。前回記録(1,064,141)以降の差分で算出。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 1,121,488 / cost: $675.84"
+        },
+        {
+          "date": "2026-09-07",
+          "title": "鳶モデル詳細化・本埜の白鳥選択・宙返り対応",
+          "category": "実装",
+          "partnerApproved": false,
+          "outputs": [
+            "site/metaverse/sky-tag.js",
+            "site/metaverse/vs-race.js",
+            "site/metaverse/index.html"
+          ],
+          "note": "鬼ごっこに機体ごとの姿と局所軸による360度回転を追加。鳶／白鳥の性能は共通。"
+        },
+        {
+          "date": "2026-09-07",
           "title": "親の会員IDによる2P家族参加とローカルHTML起動を修正",
           "category": "実装",
-          "outputs": ["site/metaverse/night.js", "site/metaverse/index.html", "site/metaverse/CLAUDE_HANDOFF.md"],
+          "outputs": [
+            "site/metaverse/night.js",
+            "site/metaverse/index.html",
+            "site/metaverse/CLAUDE_HANDOFF.md"
+          ],
           "partnerApproved": false,
           "note": "確認済み1Pと同じIDで2P参加するボタンを追加。P1/P2表示名を区別。file:はHTTPS公開URLへ移動。2P中に受付モーダルを隠していたCSSを修正。構文チェック済み。実機ブラウザーの最終操作確認は自動起動タイムアウトにより未完了。"
         },
@@ -28,7 +61,11 @@
           "date": "2026-09-07",
           "title": "空中対戦の各画面に索敵スコープを追加",
           "category": "実装",
-          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/index.html", "site/metaverse/CLAUDE_HANDOFF.md"],
+          "outputs": [
+            "site/metaverse/sky-tag.js",
+            "site/metaverse/index.html",
+            "site/metaverse/CLAUDE_HANDOFF.md"
+          ],
           "partnerApproved": false,
           "note": "相手の前後左右・距離・高度差、500m/1km/2km自動レンジ、圏外方向、捕捉リング。追加地図通信なし。"
         },
@@ -5127,6 +5164,28 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-14",
+          "title": "🧮 内水リスクの生成スクリプト pipeline/build_static.py を Codex 側から回収する",
+          "category": "実装",
+          "priority": "高",
+          "note": "解析の重み・式・手法（Priority-Flood／D8）と成果グリッド map_grid.json は手元にあるが、DEMタイルから指標を作り直すスクリプトだけが ChatGPT 側にあり回収できていない。解析範囲を広げる・100mより細かくする・標高データを更新する、のいずれをやるにも必要になる。回収できない場合は status.json と simulation-method.html の記載から Python で書き直す。"
+        },
+        {
+          "due": "未定",
+          "title": "🚗 道路リスクの「通行不能とみなす基準」を検証する",
+          "category": "分析",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "複数の豪雨における冠水実績・確認済み非冠水と同時刻の雨量がそろうこと。現在の区分（score 25/50/75）は status.json でも road_impassable_threshold: UNVERIFIED であり、実績と照合するまでは概略・仮表示のまま据え置く。みんつく千葉冠水マップの投稿を校正に使えるかは運営者の許諾次第"
+        },
+        {
+          "due": "2026-09-14",
+          "title": "📱 内水リスク推定ページをスマホ実機で確認する（道路22,902本のCanvas描画）",
+          "category": "保守",
+          "priority": "中",
+          "note": "PCのブラウザでは描画・凡例・レイヤー切替を確認済み。転送量は gzip 433KB。低スペック端末での描画時間とスクロールの重さは未確認。重い場合は拡大率に応じて描く本数を間引くか、区分ごとにファイルを分ける。"
+        },
         {
           "due": "2026-11-13",
           "title": "🌃 イルミライ会場上映の前日までに 3D表示枠（root）を 30 → 200 へ引き上げる",
