@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>内水リスク推定 技術仕様｜Community Bank INZAI</title>
+<meta name="description" content="印西市 内水リスク推定（topo-0.1.0 / cbi-rain-sensitivity-0.2.0）の計算式・パラメータ・座標系・既知の不正確さを、検証結果とともに開示するページです。">
+<style>
+body{font:16px/1.85 system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;max-width:960px;margin:32px auto;padding:0 20px;color:#243546}
+h1{font-size:26px;margin-bottom:4px}
+.lead{color:#5a6675;font-size:14px;margin-top:0}
+h2{font-size:20px;margin-top:38px;padding-bottom:6px;border-bottom:2px solid #d7dee4}
+h3{font-size:16px;margin-top:26px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:14px 0}
+td,th{border:1px solid #bdc9d0;padding:10px;text-align:left;vertical-align:top}
+th{background:#f2f5f7}
+.table{overflow-x:auto}
+code{background:#f0f3f5;padding:1px 5px;border-radius:3px;font-size:13.5px}
+.formula{background:#f7f9fa;border:1px solid #d7dee4;border-radius:6px;padding:14px 18px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;line-height:1.9;overflow-x:auto}
+.warn{padding:16px 18px;background:#fdf0ea;border-left:5px solid #d35400;border-radius:0 5px 5px 0;margin:18px 0}
+.warn h3{margin-top:0}
+.notice{padding:16px 18px;background:#f1eaf7;border-left:5px solid #713b8f;border-radius:0 5px 5px 0}
+.ok{padding:14px 18px;background:#eef6ef;border-left:5px solid #3d8b4a;border-radius:0 5px 5px 0;font-size:14px}
+a{color:#245b91}
+.meta{font-size:13px;color:#5a6675}
+ul{padding-left:1.3em}
+li{margin:5px 0}
+</style>
+</head>
+<body>
+
+<p class="meta"><a href="./naisui.html">← 内水リスク推定MAPへ</a> ／ <a href="./simulation-method.html">計算方法の概要</a> ／ <a href="./">防災MAPへ</a></p>
+
+<h1>内水リスク推定 技術仕様</h1>
+<p class="lead">
+  地形モデル <code>topo-0.1.0</code>／雨量シナリオ <code>cbi-rain-sensitivity-0.2.0</code>／道路割当 2026-09-07<br>
+  作成：Community Bank INZAI（印西市市民活動団体登録 ０８－００１）・非営利・無償公開
+</p>
+
+<div class="notice">
+  <strong>このページの位置づけ</strong><br>
+  専門家の方が計算の中身を検証できるように、式・パラメータ・座標系・<strong>既知の誤り</strong>まで包み隠さず書いたものです。
+  このモデルは<strong>未校正</strong>で、浸水深・冠水確率・通行可否のいずれも出力しません。
+  記載内容に誤りや改善点をお気づきの場合は、末尾の連絡先までご指摘ください。
+</div>
+
+<h2>1. 何を計算し、何を計算していないか</h2>
+
+<div class="table">
+<table>
+<thead><tr><th></th><th>内容</th></tr></thead>
+<tbody>
+<tr><th>計算しているもの</th><td>地形だけから求めた「雨水がたまりやすい傾向」の<strong>相対指標（0〜100の無次元量）</strong>。および、一様・一定の雨を仮定したときの、その指標の縮小表示。</td></tr>
+<tr><th>計算していないもの</th><td>浸水深（m）、冠水確率、通行可否、湛水の継続時間、氾濫の時間変化、外水（河川）氾濫、下水道・側溝・ポンプによる排水、先行降雨による土壌の湿り、解析範囲外からの流入。</td></tr>
+<tr><th>校正の状態</th><td><strong>未校正。</strong>重み・しきい値はいずれも仮設定で、実際の冠水実績との照合を行っていません。したがって見逃し率・誤警報率は不明です。</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>2. 入力データ</h2>
+
+<div class="table">
+<table>
+<thead><tr><th>データ</th><th>出典・取得方法</th><th>諸元</th></tr></thead>
+<tbody>
+<tr><td>標高</td><td>国土地理院 標高タイル（<code>dem1a_png</code>／<code>dem5a_png</code>／<code>dem5b_png</code>／<code>dem5c_png</code>／<code>dem_png</code> の優先順で、値のあるものを採用）</td><td>タイルズーム 12。2026-09-06 取得。取得URL・チェックサム・使用画素数は <a href="./simulation-data/sources.json">sources.json</a> に全件記録</td></tr>
+<tr><td>道路</td><td>OpenStreetMap（Overpass API・ODbL 1.0）<br><code>[out:json];way["highway"](35.72,140.07,35.91,140.32);out body geom;</code></td><td>2026-09-06 取得の全34,879本のうち、車道13種18,024本を使用</td></tr>
+<tr><td>公式ハザード区域</td><td><strong>未取得。</strong>市の公式ハザードマップはPDFのみで、区域のGISデータを入手できていません</td><td>参照リンクのみ</td></tr>
+<tr><td>降雨</td><td><strong>未接続。</strong>利用者が数値で入力する方式</td><td>レーダー雨量（XRAIN等）との連動は未実装</td></tr>
+<tr><td>排水施設</td><td><strong>未取得。</strong></td><td>全域一律の定数として扱う（第5節）</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>3. 地形指標の算出（topo-0.1.0）</h2>
+
+<h3>3.1 格子</h3>
+<p>
+標高タイルを格子へ集約します。格子は <strong>283列 × 266行</strong>、範囲は南西 (35.717910, 140.067782)、北東 (35.911679, 140.322005) の<strong>矩形</strong>です。
+行政界ではないため、白井市・栄町・成田市など隣接自治体を含みます。有効セルは74,110（欠測を除く）。
+</p>
+
+<h3>3.2 窪地処理と流向・流量</h3>
+<ul>
+  <li><strong>窪地埋め</strong>：Priority-Flood。埋める前後の標高差を「窪地深さ（<code>depression_depth</code>, m）」として保持します。</li>
+  <li><strong>流向</strong>：D8（8方向の最急勾配1方向へ流す）。</li>
+  <li><strong>流量</strong>：上流セル数の積算に1セルの面積を掛けたもの（<code>flow_accumulation_m2</code>, m²）。</li>
+  <li><strong>相対標高</strong>（<code>relative_elevation</code>, m）：周辺との高さの差。負が「周りより低い」。</li>
+  <li><strong>傾斜</strong>（<code>slope</code>, 度）。</li>
+</ul>
+
+<h3>3.3 合成式（本ページ公開時にデータから逆算・検証した）</h3>
+<p>
+公開している <a href="./simulation-data/map_grid.json">map_grid.json</a> の5レイヤーから、<code>score</code> は次の式で再現できます。
+</p>
+<div class="formula">
+score = 100 × [ 0.25 · clip( −相対標高 / 5 m )<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.35 · clip( 窪地深さ / 2 m )<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.25 · clip( log₁₀( max(1, 集水面積) ) / log₁₀(10⁶) )<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.15 · clip( 1 − 傾斜 / 10° ) ]<br><br>
+clip(x) = min(1, max(0, x))
+</div>
+<div class="ok">
+<strong>検証：</strong>有効セル74,110すべてで上式と保存値を突き合わせ、<strong>最大誤差 0.12 点</strong>（保存値の丸めの範囲）、誤差0.5点を超えるセルは0件でした。
+重み（0.25／0.35／0.25／0.15）と正規化スケール（5 m／2 m／10⁶ m²／10°）は <a href="./simulation-data/status.json">status.json</a> の記載と一致します。
+</div>
+<p class="meta">
+※ 重みとスケールの根拠：<strong>ありません。</strong>文献値でも実績からの推定値でもなく、開発時に置いた仮の値です（status.json も <code>calibration_status: 仮設定・未校正</code> と記録しています）。
+</p>
+
+<h3>3.4 区分（道路の色分けに使用）</h3>
+<div class="table">
+<table>
+<thead><tr><th>score</th><th>区分</th><th>該当した道路線</th></tr></thead>
+<tbody>
+<tr><td>0 以上 25 未満</td><td>冠水リスク低</td><td>764</td></tr>
+<tr><td>25 以上 50 未満</td><td>注意</td><td>18,078</td></tr>
+<tr><td>50 以上 75 未満</td><td>冠水リスク高</td><td>3,418</td></tr>
+<tr><td>75 以上</td><td>使用困難となる可能性あり</td><td>426</td></tr>
+<tr><td>欠測</td><td>判定保留・情報不足</td><td>216</td></tr>
+</tbody>
+</table>
+</div>
+<p class="meta">しきい値 25／50／75 も仮設定です。status.json は <code>road_impassable_threshold: "UNVERIFIED"</code> と記録しています。</p>
+
+<h2>4. 道路への割り当て</h2>
+<ul>
+  <li>対象：OSM の <code>highway</code> が motorway／trunk／primary／secondary／tertiary（および各 _link）／unclassified／residential／living_street の18,024本。歩道・階段・農道・敷地内通路（footway, path, steps, cycleway, track, service 等）は除外。</li>
+  <li>各ノードの座標が入る格子セルの <code>score</code> から区分を決め、<strong>区分が変わる位置で線を分割</strong>して22,902本の線分にしています（切れ目の点は両側に含め、隙間を作りません）。</li>
+  <li>格子の行の引き当てには、緯度をそのまま比例配分せず<strong>メルカトルY座標に変換してから</strong>引いています（比例配分では最大で数十mずれるため）。</li>
+  <li>配信データは座標を1×10⁻⁵度（約1.1 m）に量子化し、線ごとの差分で保持（<a href="./simulation-data/road_risk.json">road_risk.json</a>・1.15 MB／gzip転送 約433 KB）。</li>
+</ul>
+<p><strong>この割り当ては「その道が通っている地形の傾向」であって、道路構造の評価ではありません。</strong>路面高、縁石、アンダーパス、橋・高架（橋の上と下の道を区別していません）、side walk の有無はいずれも未考慮です。</p>
+
+<h2>5. 雨量シナリオ（cbi-rain-sensitivity-0.2.0）</h2>
+<p>防災MAPの「CBI独自シミュレーション」で、雨量 R（mm/h）と継続時間 T（時間）を入力したときの計算です。</p>
+<div class="formula">
+E = max( 0, R × C − D ) × T<br>
+参考指標 = score × E / ( E + 50 )
+</div>
+<div class="table">
+<table>
+<thead><tr><th>記号</th><th>意味</th><th>既定値</th><th>備考</th></tr></thead>
+<tbody>
+<tr><td>C</td><td>流出率</td><td>0.8</td><td>市内の実測値ではありません。全域一律。</td></tr>
+<tr><td>D</td><td>排水相当量（mm/h）</td><td>0</td><td><strong>全域一律の定数です。場所ごとの排水能力の差を表せません。</strong></td></tr>
+<tr><td>50</td><td>感度の尺度（mm）</td><td>—</td><td>表示の効き方を決める<strong>任意の仮尺度</strong>で、冠水が始まる基準ではありません。</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="warn">
+<h3>この式の重要な性質（誤解されやすい点）</h3>
+<p>
+<code>E / (E + 50)</code> は<strong>地図全体に共通のスカラー</strong>です。したがって雨量や継続時間を変えても、
+<strong>全セルが同じ倍率で薄く／濃くなるだけで、地点どうしの危険度の順位は一切変わりません。</strong>
+「50 mm/h なら A地区が、100 mm/h なら B地区が危ない」といった、雨の強さによる危険箇所の入れ替わりは表現できません。
+</p>
+<p style="margin-bottom:0">
+また E は単純な水収支であって湛水深ではなく、同じ E であれば降り方（ピークの時刻・降雨波形）が違っても同じ結果になります。
+入力を 0 にしても、残留水や外水氾濫を考慮しないため「安全」を意味しません。
+</p>
+</div>
+
+<h2>6. 既知の不正確さ</h2>
+
+<div class="warn">
+<h3>6.1 座標系の記載と実装の食い違い（2026-09-07 に発見）</h3>
+<p>
+<a href="./simulation-data/status.json">status.json</a> は <code>processing_crs: "EPSG:32654"</code>（UTM 54N）、<code>cell_size_m: 100</code> と記録していますが、
+実際の格子の <code>transform</code> の原点は (15592274.14, 4288475.28) で、これは<strong>Webメルカトル（EPSG:3857）</strong>の値と小数点以下まで一致します
+（UTM 54N なら東距32万・北距397万程度になるはずで、桁が違います）。<code>simulation-method.html</code> の「描画用にWeb Mercatorへ変換」という記述も、実際には計算自体がWebメルカトル上で行われているため正確ではありません。
+</p>
+<p><strong>この食い違いが結果に与える影響（北緯35.8°・縮尺係数 1/cos35.8° ≒ 1.233）：</strong></p>
+<div class="table">
+<table>
+<thead><tr><th>項目</th><th>記載</th><th>実際</th><th>影響</th></tr></thead>
+<tbody>
+<tr><td>セル寸法</td><td>100 m</td><td><strong>地上 約81.1 m</strong></td><td>格子は宣言より細かい。位置のずれではなく寸法の呼び方の問題</td></tr>
+<tr><td>集水面積 <code>flow_accumulation_m2</code></td><td>1セル=10,000 m²</td><td>1セル=約6,580 m²</td><td><strong>約1.52倍に過大</strong>。log₁₀スケールなので score への寄与は 0.25×log₁₀(1.52)/6 ≒ <strong>+0.0076（100点満点で約0.8点）の系統的な上振れ</strong></td></tr>
+<tr><td>傾斜 <code>slope</code></td><td>—</td><td>水平距離が1.233倍で計算</td><td><strong>約19%過小評価</strong>。平坦度の項（重み0.15）を通じて score をわずかに押し上げる向き</td></tr>
+<tr><td>相対標高の近傍範囲</td><td>5 m スケール</td><td>—</td><td>近傍の取り方が格子単位なら、地上での参照半径が宣言より狭い</td></tr>
+</tbody>
+</table>
+</div>
+<p style="margin-bottom:0">
+影響は<strong>全域にほぼ一様にかかる系統誤差</strong>で、地点どうしの相対的な順位を大きく入れ替えるものではないと考えていますが、
+集水面積を絶対値（m²）として引用することはできません。修正には格子の再生成が必要で、生成スクリプトを回収したうえで対応する予定です。
+それまでの間、<strong>本ページの記載を正とし、status.json の <code>processing_crs</code> と <code>cell_size_m</code> は信頼しないでください。</strong>
+</p>
+</div>
+
+<h3>6.2 その他の限界</h3>
+<ul>
+  <li><strong>排水が場所によらない</strong>：管路・側溝・ポンプ・調整池は未実装。D は全域一律の定数です（第7節）。</li>
+  <li><strong>解析範囲外からの流入を考慮しない</strong>：矩形の縁で流域が切れています。</li>
+  <li><strong>河川氾濫（外水）を含まない</strong>：利根川・印旛沼水系の氾濫は別の現象です。</li>
+  <li><strong>先行降雨・土壌の湿りを考慮しない</strong>：流出率は固定です。</li>
+  <li><strong>橋の上と下を区別しない</strong>：DEMは橋面を拾うことがあり、アンダーパスの路面高は表せません。</li>
+  <li><strong>公式の内水ハザードとは別物</strong>：市の公式想定は特定の降雨条件（2008-08-30 我孫子観測所 最大1時間105 mm）に対する想定図であり、現況の正解データではありません。当方はその区域データを取得できていないため、照合も行っていません。</li>
+  <li><strong>生成スクリプトが手元にない</strong>：<code>pipeline/build_static.py</code> は外部環境にあり回収できていません。第3節の式はデータからの逆算により全セルで検証したものです。</li>
+</ul>
+
+<h2>7. 排水能力を反映するために必要なデータ</h2>
+<p>
+「排水能力は場所によって異なる」というご指摘のとおりで、現行モデルの最大の欠落はここです。
+費用対効果の高い順に3段階で整理します。
+</p>
+
+<h3>段階1：排水区ごとの計画降雨強度（最小の一歩）</h3>
+<div class="table">
+<table>
+<thead><tr><th>必要なもの</th><th>粒度</th><th>入手先</th><th>できるようになること</th></tr></thead>
+<tbody>
+<tr><td>雨水排水区の区域界（GIS）と、区ごとの計画降雨強度・整備状況</td><td>排水区ポリゴン</td><td>印西市 下水道課（公共下水道事業計画・雨水計画）</td><td>D（排水相当量）を全域一律から<strong>排水区ごとの値</strong>にできる。管路モデルを作らずに場所差を入れられる</td></tr>
+<tr><td>都市下水路・農業排水路の系統</td><td>路線</td><td>市・土地改良区</td><td>下水道区域外（農地・調整区域）の扱いを分けられる</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>段階2：施設の諸元（実際の排水を計算する）</h3>
+<div class="table">
+<table>
+<thead><tr><th>必要なもの</th><th>必要な項目</th><th>入手先</th></tr></thead>
+<tbody>
+<tr><td>雨水管渠台帳</td><td>管種・管径・延長・勾配・<strong>管底高（インバート）</strong>・上下流の接続関係・合流／分流の別</td><td>印西市 下水道課</td></tr>
+<tr><td>マンホール・雨水ます</td><td>位置・地盤高・蓋高、ますの数と呑み口の形状</td><td>同上</td></tr>
+<tr><td>ポンプ場・排水機場</td><td>台数・<strong>能力曲線（Q–H）</strong>・起動／停止水位・実運転記録・停電時の扱い</td><td>市／千葉県</td></tr>
+<tr><td>調整池・貯留施設</td><td>容量・越流堰高・オリフィス径・常時水位</td><td>市／開発事業者</td></tr>
+<tr><td>放流先の水位</td><td>河川・水路の水位時系列、吐口の管底高、逆流防止弁（フラップゲート）の有無と操作</td><td>千葉県 河川課／国交省</td></tr>
+<tr><td>維持管理の記録</td><td>閉塞・堆積・清掃履歴、過去の溢水通報</td><td>市</td></tr>
+</tbody>
+</table>
+</div>
+<p class="meta">
+※ 排水能力は「管径」だけでは決まりません。<strong>下流の水位（放流先の背水）で上流の能力が落ちる</strong>ため、管路の接続関係と放流先水位が揃って初めて意味のある計算になります。
+これが「場所によって異なる」ことの主因で、管径から機械的に推定できない理由でもあります。
+</p>
+
+<h3>段階3：地表と検証（モデルを信用に足るものにする）</h3>
+<div class="table">
+<table>
+<thead><tr><th>必要なもの</th><th>必要な項目・粒度</th><th>入手先</th></tr></thead>
+<tbody>
+<tr><td><strong>冠水実績と、確認済みの非冠水</strong></td><td>範囲・深さ・開始と解消の時刻・写真・道路規制・原因。複数の豪雨イベント別。<strong>未報告を非冠水とみなさない</strong></td><td>市・消防・道路管理者。市民投稿（みんつく千葉冠水マップ等）は許諾を得たうえで</td></tr>
+<tr><td>降雨の時系列・空間分布</td><td>レーダー雨量250 m級・5分以下、地上雨量計、先行降雨</td><td>XRAIN（河川情報センター・有償配信）、市の観測記録</td></tr>
+<tr><td>高解像度の標高</td><td>1 m級DEM（航空レーザ）、計測年、標高基準。橋面と路面の区別</td><td>国土地理院／現地測量</td></tr>
+<tr><td>路面高・アンダーパス</td><td>縦横断図、最低路面高、縁石高、側溝断面。六軒ガード下等を優先</td><td>道路台帳</td></tr>
+<tr><td>土地被覆・浸透能</td><td>不透水面率、土壌分類、浸透試験、建物フットプリント</td><td>JAXA土地被覆図＋市の整備図＋現地試験</td></tr>
+</tbody>
+</table>
+</div>
+<p>
+検証は<strong>校正用と検証用のイベントを分けて</strong>行い、見逃し率・誤警報率、浸水深と発生時刻の誤差を示したうえで、
+適用範囲と誤差を明らかにしてから予報雨量との自動連動へ進む、という順序を守ります。
+</p>
+
+<h2>8. 再現と照会</h2>
+<ul>
+  <li>格子データ：<a href="./simulation-data/map_grid.json">map_grid.json</a>（283×266、score／elevation／slope／depression_depth／flow_accumulation_m2／relative_elevation）</li>
+  <li>パラメータと生成日時：<a href="./simulation-data/status.json">status.json</a>（※ 6.1 の食い違いに注意）</li>
+  <li>標高データの取得元・チェックサム：<a href="./simulation-data/sources.json">sources.json</a></li>
+  <li>道路の色分けデータ：<a href="./simulation-data/road_risk.json">road_risk.json</a></li>
+  <li>雨量シナリオの実装：<a href="./cbi-simulation-core.js">cbi-simulation-core.js</a>（計算部・約20行）</li>
+  <li>地図の実装：<a href="./naisui.html">naisui.html</a></li>
+</ul>
+<p>
+第3節の合成式は上記データから逆算し全セルで検証したものです。同じ手順で第三者が検証できます。
+</p>
+<p class="meta">
+ご指摘・照会先：Community Bank INZAI　communitybankinzai@gmail.com<br>
+本モデルは行政の発表する情報に代わるものではありません。避難や通行の判断は、必ず印西市および気象庁の公式情報に従ってください。
+</p>
+
+<p class="meta" style="margin-top:32px"><a href="./naisui.html">← 内水リスク推定MAPへ</a> ／ <a href="./simulation-method.html">計算方法の概要</a> ／ <a href="./">防災MAPへ</a></p>
+
+</body>
+</html>
