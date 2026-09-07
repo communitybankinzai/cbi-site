@@ -17,15 +17,26 @@
     "A1": {
       "actuals": [
         {
-          "date": "2026-09-08", "title": "2秒捕捉・被捕捉通知と2P白鳥初期値",
-          "category": "実装", "partnerApproved": false,
-          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/vs-race.js", "site/metaverse/verify-tag-guidance.cjs"],
+          "date": "2026-09-08",
+          "title": "2秒捕捉・被捕捉通知と2P白鳥初期値",
+          "category": "実装",
+          "partnerApproved": false,
+          "outputs": [
+            "site/metaverse/sky-tag.js",
+            "site/metaverse/vs-race.js",
+            "site/metaverse/verify-tag-guidance.cjs"
+          ],
           "note": "捕捉2秒・自動タッチと被捕捉警告。白鳥初期値は2P共通機体選択。1Pの旧トンビ画像レイヤーは別実装で未変更。オンライン多人版と写実モデルは未実装。"
         },
         {
-          "date": "2026-09-08", "title": "ゲーム内の羽ばたき再生条件・時計設定を修正",
-          "category": "実装", "partnerApproved": false,
-          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/vs-race.js"],
+          "date": "2026-09-08",
+          "title": "ゲーム内の羽ばたき再生条件・時計設定を修正",
+          "category": "実装",
+          "partnerApproved": false,
+          "outputs": [
+            "site/metaverse/sky-tag.js",
+            "site/metaverse/vs-race.js"
+          ],
           "note": "Playwrightで両CesiumモデルのleftWing行列が無入力時にも変化することを検証。有料地図要求0。写実モデルは未完了。"
         },
         {
@@ -6341,6 +6352,19 @@
     "A8": {
       "actuals": [
         {
+          "date": "2026-09-08",
+          "title": "Anthropic 残高急減の原因調査（Admin API 全件突合・キー別帰属の特定） 0.3時間",
+          "category": "分析",
+          "outputs": [
+            "調査のみ（site/ 変更なし）",
+            "cost_report 8/1〜9/6 全件取得・usage_report と api_key_id 別に突合",
+            "Claude Code ローカルログ 329セッション/1.7GB を集計し API クレジット非消費を確認"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "推定残高 $4.16（基準 $19.45 − 7/27以降 $15.29）。急減の主因は nsfactory-accounting キー（8/1以降 $7.73・うち 8/25以降が $7.4）で、CiDAO 本番 cidao-production-v3 は $6.50 とほぼ平準。日次は 8/1-8/24 平均 $0.155 → 8/25-9/6 平均 $0.75 で 4.7倍。スパイクは 8/30 Haiku 入力100万トークン $1.64、8/25 Opus5 出力 $1.19、9/1 Opus5 キャッシュ書込 $1.49（これのみ CiDAO 本番）、9/5 Sonnet5 入力39万 $0.96。Claude Code の消費は cost_report・usage_report のどちらにも現れず、API クレジットを食っていないことを実測で確認（ローカルログ定価換算では日 $1,000超だがサブスク側）。cost_report の amount がセント建てである点は逆算単価が定価の正確に100倍で一致することを再確認。session: 1ef313d1-b3b9-47ab-8d0f-391fc99fe747 / output: 27,843 / cost: $3.02"
+        },
+        {
           "date": "2026-08-28",
           "title": "決裁規程の議案版を作成（【要決定】4箇所を確定・補足説明つき） 0.2時間",
           "category": "事務",
@@ -6500,6 +6524,22 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "N's factory 用と CBI 用で Anthropic ワークスペースを分けるか決める",
+          "category": "その他",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "中司さんによる方針判断（ワークスペースを分けると組織のコスト集計が分かれる影響がある。A1 の予定「ローカル開発用の APIキーをどう用意するか決める」と同じ論点）",
+          "note": "2026-09-08 の調査で、8/25 以降の残高急減の主因が nsfactory-accounting キー（レザークラフト側・$7.73）であり、CBI/CiDAO 側（$6.50）ではないことが判明。現状は同一クレジット残高を2事業で共有しているため、片方の消費で CiDAO の AI 機能（チラシ抽出・提案分類・団体マッチング）が止まる。ワークスペースを分ければキー別に残高と上限を管理でき、事業ごとの費用も市への提出資料でそのまま使える。"
+        },
+        {
+          "due": "2026-09-15",
+          "title": "nsfactory-accounting キーの 8/30 の入力100万トークン投入が意図どおりか確認する",
+          "category": "調査",
+          "priority": "中",
+          "note": "2026-09-08 の調査で判明。8/30 に Haiku 4.5 へ入力 999,195 トークン・出力 106,617 トークン（$1.64）を1日で投入しており、8/27 にも約半分の規模（$0.88）がある。同じ資料を繰り返し全文投入している可能性があるため、呼び出し元スクリプトを確認する。レザークラフト側フォルダは横断 grep がタイムアウトするので、対象を絞って探すこと。CBI 管轄外だが同一クレジットを消費するため無関係ではない。"
+        },
+        {
           "due": "2026-09-30",
           "title": "予算アラート「メタバース Map Tiles 月額」のスコープと名前の不一致を直す",
           "category": "事務",
@@ -6507,11 +6547,11 @@
           "note": "名前は Map Tiles だがスコープはプロジェクト全体で、実際に鳴っているのは Gemini API の費用。2026-09-01にこの取り違えで誤った結論（メタバースが課金を生んでいる）を出した。対応案は2つ：(a) 予算のスコープをサービス=Map Tiles APIに絞る (b) 名前を『creators-map 全体』に変えてMap Tiles用の予算を別に作る。**推奨は(b)**（Gemini APIの費用も見張る必要があるため）。Billing Budgets API は未有効なので、有効化すれば scripts/gcp-maptiles-audit.ps1 でスコープを自動確認できる：gcloud services enable billingbudgets.googleapis.com --project=creators-map。根拠は cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md"
         },
         {
-          "due": "2026-09-05",
-          "title": "Anthropic のクレジット残高を補充する（2026-09-01時点で $9.16）",
+          "due": "2026-09-12",
+          "title": "Anthropic のクレジット残高を補充する（2026-09-08時点の推定残高 $4.16）",
           "category": "事務",
           "priority": "高",
-          "note": "広報いんざいの取り込みは1号あたり約$0.35で当面まかなえるが、A1の予定にある「団体情報の自動拡充 220件バッチ」は最低$30が必要で、この残高では完走できない。残高切れはAI機能が quota エラーで止まる形で表面化し、今回のAPIキー期限切れと同様に気づきにくい。/api/cron/cost-alert が残高低下も拾う設計になっているかの確認もあわせて行う"
+          "note": "2026-09-08 の調査で推定残高 $4.16、直近7日平均 $0.715/日 のため残り約6日と算出。閾値 $5 を割ったため cost-alert が発報。補充額は A1 の予定「団体情報の自動拡充 220件バッチ」が最低 $30 必要なため $30〜50 を推奨。補充したら .env.local と Vercel の CREDIT_BASELINE_USD / CREDIT_BASELINE_AT を更新すること（更新しないと残高計算がずれ続ける）。"
         },
         {
           "due": "未定",
