@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-07",
+          "title": "親の会員IDによる2P家族参加とローカルHTML起動を修正",
+          "category": "実装",
+          "outputs": ["site/metaverse/night.js", "site/metaverse/index.html", "site/metaverse/CLAUDE_HANDOFF.md"],
+          "partnerApproved": false,
+          "note": "確認済み1Pと同じIDで2P参加するボタンを追加。P1/P2表示名を区別。file:はHTTPS公開URLへ移動。2P中に受付モーダルを隠していたCSSを修正。構文チェック済み。実機ブラウザーの最終操作確認は自動起動タイムアウトにより未完了。"
+        },
+        {
+          "date": "2026-09-07",
+          "title": "空中対戦の各画面に索敵スコープを追加",
+          "category": "実装",
+          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/index.html", "site/metaverse/CLAUDE_HANDOFF.md"],
+          "partnerApproved": false,
+          "note": "相手の前後左右・距離・高度差、500m/1km/2km自動レンジ、圏外方向、捕捉リング。追加地図通信なし。"
+        },
+        {
+          "date": "2026-09-07",
           "title": "CBI独自シミュレーションの雨量入力・防災MAP重ね表示と必要データ整理",
           "category": "実装",
           "outputs": [

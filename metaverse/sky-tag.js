@@ -66,6 +66,8 @@
     players.forEach(p => {
       if (p.tagEntity && p.viewer) p.viewer.entities.remove(p.tagEntity);
       if (p.tagReticle) p.tagReticle.remove();
+      if (p.tagScope) p.tagScope.remove();
+      p.tagScope = null;
       p.tagEntity = null; p.tagReticle = null;
     });
   }
@@ -92,7 +94,52 @@
       const ring = document.createElement("div");
       ring.style.cssText = "position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #ffffff88;border-radius:50%;pointer-events:none;box-sizing:border-box;z-index:4";
       p.viewer.container.appendChild(ring); p.tagReticle = ring;
+      const scope = document.createElement("div");
+      scope.className = "tagScope";
+      scope.style.cssText = "position:absolute;right:8px;bottom:32px;width:clamp(88px,30%,140px);z-index:5;pointer-events:none;color:#fff;font:12px sans-serif;text-align:center;background:#081714d9;border-radius:6px;padding:5px;box-sizing:border-box";
+      const canvas = document.createElement("canvas");
+      canvas.width = 280; canvas.height = 280;
+      canvas.style.cssText = "display:block;width:100%;aspect-ratio:1";
+      const readout = document.createElement("div");
+      readout.style.cssText = "line-height:1.4;overflow-wrap:anywhere;white-space:pre-line";
+      scope.append(canvas, readout); p.viewer.container.appendChild(scope);
+      p.tagScope = scope;
     });
+  }
+  function scopePoint(east, north, heading, range) {
+    const right = east * Math.cos(heading) - north * Math.sin(heading);
+    const forward = east * Math.sin(heading) + north * Math.cos(heading);
+    const distance = Math.hypot(right, forward);
+    const divisor = Math.max(range, distance);
+    return { x: right / divisor, y: -forward / divisor, outside: distance > range };
+  }
+  function drawScope(p, other) {
+    if (!p.tagScope) return;
+    const C = Cesium, camera = p.viewer.camera;
+    const frame = C.Transforms.eastNorthUpToFixedFrame(camera.positionWC);
+    const inverse = C.Matrix4.inverseTransformation(frame, new C.Matrix4());
+    const local = C.Matrix4.multiplyByPoint(inverse, other.viewer.camera.positionWC, new C.Cartesian3());
+    const horizontal = Math.hypot(local.x, local.y);
+    const range = horizontal <= 500 ? 500 : horizontal <= 1000 ? 1000 : 2000;
+    const point = scopePoint(local.x, local.y, camera.heading, range);
+    const altitude = C.Cartographic.fromCartesian(other.viewer.camera.positionWC).height - C.Cartographic.fromCartesian(camera.positionWC).height;
+    const color = p.tagLock > 0 ? "#70efb4" : other.color;
+    const canvas = p.tagScope.firstChild, ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 280, 280);
+    ctx.lineWidth = 2; ctx.strokeStyle = "#7cc9aa88";
+    for (const radius of [52, 104]) { ctx.beginPath(); ctx.arc(140, 140, radius, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(36, 140); ctx.lineTo(244, 140); ctx.moveTo(140, 36); ctx.lineTo(140, 244); ctx.stroke();
+    ctx.fillStyle = "#d1e9df"; ctx.font = "22px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("前", 140, 25); ctx.fillText("後", 140, 275);
+    ctx.fillText("左", 16, 148); ctx.fillText("右", 264, 148);
+    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.moveTo(140, 128); ctx.lineTo(133, 148); ctx.lineTo(147, 148); ctx.closePath(); ctx.fill();
+    const x = 140 + point.x * 96, y = 140 + point.y * 96;
+    ctx.strokeStyle = color; ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill();
+    if (p.tagLock > 0) { ctx.beginPath(); ctx.arc(x, y, 14, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p.tagLock / HOLD); ctx.stroke(); }
+    const distance = Math.round(p.tagRelative.distance);
+    p.tagScope.lastChild.textContent = "P" + other.id + " · " + distance + "m\n" + (altitude >= 0 ? "上 " : "下 ") + Math.abs(Math.round(altitude)) + "m · " + (range / 1000) + "km" + (point.outside ? " 圏外" : "");
+    p.tagScope.setAttribute("aria-label", "索敵スコープ " + status(p, {}) + " 高度差 " + Math.round(altitude) + "m");
   }
   function relative(p, other) {
     const C = Cesium, cam = p.viewer.camera;
@@ -114,6 +161,7 @@
     if (race.mode !== "tag") return;
     players.forEach((p, i) => {
       p.tagRelative = relative(p, players[1 - i]);
+      drawScope(p, players[1 - i]);
       const ring = p.tagReticle;
       if (!ring) return;
       const height = p.viewer.container.clientHeight;
@@ -132,5 +180,5 @@
     const direction = r.dot < 0 ? "後ろ" : Math.abs(r.side) > 0.12 ? r.side > 0 ? "右" : "左" : Math.abs(r.up) > 0.12 ? r.up > 0 ? "上" : "下" : "正面";
     return "相手 " + direction + " " + Math.round(r.distance) + "m";
   }
-  root.SkyTag = { reset, clear, tick, render, status, canLock, advance, birdModel };
+  root.SkyTag = { reset, clear, tick, render, status, canLock, advance, birdModel, scopePoint };
 })(typeof window !== "undefined" ? window : globalThis);

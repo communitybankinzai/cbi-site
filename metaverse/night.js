@@ -965,8 +965,9 @@
     const ps = window.vsRacePlayers;
     if (!ps || !ps.length) return;
     const l1 = getLogin(1), l2 = getLogin(2);
-    if (ps[0] && l1) ps[0].name = l1.nick;
-    if (ps[1] && l2) ps[1].name = l2.nick;
+    const shared = l1 && l2 && l1.uid === l2.uid;
+    if (ps[0] && l1) ps[0].name = l1.nick + (shared ? " P1" : "");
+    if (ps[1] && l2) ps[1].name = l2.nick + (shared ? " P2" : "");
   }
   setInterval(applyVsNames, 1000);
   // 2人対戦（vs-race.js）の START は、1人目・2人目の受付が済むまで通さない（名前がランキング・結果に出るため）。
@@ -1022,6 +1023,7 @@
       '<div class="tabs"><button id="nightEntryTab1"' + (claimSlot === 1 ? ' class="on"' : "") + ">1人目" + (l1 ? "：" + ttEsc(l1.nick) : "（未）") + "</button>" +
       '<button id="nightEntryTab2"' + (claimSlot === 2 ? ' class="on"' : "") + ">2人目" + (l2 ? "：" + ttEsc(l2.nick) : "（未）") + "</button></div>" +
       (cur ? '<p>✅ ' + (claimSlot === 2 ? "2人目" : "1人目") + "：<b>" + ttEsc(cur.nick) + '</b> さん　<button class="sub" id="nightEntryClear">この人を外す</button></p>' : "") +
+      (claimSlot === 2 && l1 ? '<p><button class="go" id="nightEntryFamily">1人目と同じ会員IDで参加</button></p>' : "") +
       claimSectionHtml(claimSlot === 2 ? "2人目" : "1人目") +
       (RECEPTION_REQUIRED && !l1
         ? '<div class="box" id="nightSignupBox"><b>🆕 まだ CiDAO に登録していない方</b><br>スマホで下の QR を読んで CiDAO に登録（無料・LINE でログイン）し、表示名を決めたら、この画面で「表示名」か「会員証QR」で入場してください。<br>' +
@@ -1034,6 +1036,14 @@
     document.getElementById("nightEntryTab1").onclick = function () { stopQrScan(); openEntryModal(1); };
     document.getElementById("nightEntryTab2").onclick = function () { stopQrScan(); openEntryModal(2); };
     if (document.getElementById("nightSignupQr")) drawSignupQr();
+    const family = document.getElementById("nightEntryFamily");
+    if (family) family.onclick = function () {
+      const parent = getLogin(1);
+      if (!parent) { openEntryModal(1); return; }
+      try { localStorage.setItem(tokenKey(2), parent.token); }
+      catch (e) { claimMsg("受付情報を保存できません。ブラウザーの保存設定を確認してください。", false); return; }
+      stopQrScan(); applyVsNames(); openEntryModal(2);
+    };
     const done = document.getElementById("nightEntryDone");
     if (done) done.onclick = function () {
       closeTtModal(); updateEntryChip();

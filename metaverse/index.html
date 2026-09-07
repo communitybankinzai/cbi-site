@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<script>
+if (location.protocol === "file:") {
+  location.replace("https://communitybankinzai.github.io/cbi-site/metaverse/" + location.search + location.hash);
+}
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CBIメタバース印西 | 印西市3Dワールド</title>
@@ -31,11 +36,13 @@
   body.vsRaceMode #stampBar, body.vsRaceMode #stampFeed, body.vsRaceMode #liteToast,
   body.vsRaceMode #ttCard, body.vsRaceMode #ttTarget, body.vsRaceMode #ttHud,
   body.vsRaceMode #spotInfo, body.vsRaceMode #puzzlePanel, body.vsRaceMode #pickResult,
-  body.vsRaceMode #shipHud, body.vsRaceMode #nightTarget, body.vsRaceMode #nightTtModal,
+  body.vsRaceMode #shipHud, body.vsRaceMode #nightTarget,
   body.vsRaceMode #nightCap {
     display: none !important;
   }
   body.vsRaceMode #vsRaceOverlay { display: block; }
+  body.vsRaceMode #howtoModal, body.vsRaceMode #nightEntryChip { display: none !important; }
+  body.vsRaceMode #nightTtModal.show { display: flex !important; z-index: 200; }
   #vsRaceOverlay {
     position: absolute; inset: 0; z-index: 70; color: #fff; pointer-events: none;
     font-family: inherit;
@@ -142,10 +149,14 @@
   }
   .vsResultActions { display: flex; gap: 8px; flex-wrap: wrap; }
   @media (max-width: 820px) {
+    .vsTitle { display: none; }
+    .vsPlayerHud { flex-direction: column; gap: 2px; padding: 8px; }
+    .vsTime { font-size: 18px; }
+    .vsPlayerPanel button { min-width: 0; font-size: 11px; padding: 3px; }
     body.vsRaceMode #cesiumContainer, body.vsRaceMode #vsCesium2 { top: 86px; bottom: 304px; }
     .vsTop { height: 86px; flex-wrap: wrap; }
     .vsHudRow { top: 86px; }
-    .vsPanel { min-height: 304px; grid-template-columns: 1fr 1fr; }
+    .vsPanel { height: 304px; min-height: 0; overflow-y: auto; grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
     .vsOpsPanel { grid-column: 1 / -1; grid-row: 1; }
     .vsPlayerPanel { grid-row: 2; }
     .vsAxis { grid-template-columns: 36px minmax(0,1fr) 36px minmax(0,1fr); }
@@ -6284,9 +6295,9 @@ try {
   console.error("モード初期化に失敗:", e);
 }
 </script>
-<script src="sky-tag.js?v=20260906-1"></script>
+<script src="sky-tag.js?v=20260907-1"></script>
 <script src="vs-race.js?v=20260906-1"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
-<script src="night.js"></script>
+<script src="night.js?v=20260907-1"></script>
 </body>
 </html>
