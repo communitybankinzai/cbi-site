@@ -17,6 +17,12 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-08", "title": "ゲーム内の羽ばたき再生条件・時計設定を修正",
+          "category": "実装", "partnerApproved": false,
+          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/vs-race.js"],
+          "note": "Playwrightで両CesiumモデルのleftWing行列が無入力時にも変化することを検証。有料地図要求0。写実モデルは未完了。"
+        },
+        {
           "date": "2026-09-08",
           "title": "鬼ごっこ開始位置と方向案内・2P地図設定を修正",
           "category": "実装",

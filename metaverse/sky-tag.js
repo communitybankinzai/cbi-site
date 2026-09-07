@@ -343,7 +343,7 @@
     players.forEach((p, i) => {
       p.tagRelative = relative(p, players[1 - i]);
       const other = players[1 - i];
-      if (p.tagEntity) p.tagEntity.model.runAnimations = race.state === "running" && !race.paused && (Math.abs(other.input.ly) > 0.15 || other.input.boost);
+      if (p.tagEntity) p.tagEntity.model.runAnimations = race.state === "running" && !race.paused;
       drawScope(p, players[1 - i]);
       const ring = p.tagReticle;
       if (!ring) return;

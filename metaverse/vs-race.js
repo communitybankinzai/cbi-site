@@ -479,6 +479,7 @@
     if (!v) return;
     if (!player.restore) {
       player.restore = {
+        shouldAnimate: v.clock.shouldAnimate,
         resolutionScale: v.resolutionScale,
         targetFrameRate: v.targetFrameRate,
         inputs: v.scene && v.scene.screenSpaceCameraController
@@ -490,6 +491,7 @@
         msaa: v.scene ? v.scene.msaaSamples : undefined
       };
     }
+    v.clock.shouldAnimate = true;
     try { v.resolutionScale = 0.72; } catch (e) {}
     try { v.targetFrameRate = 30; } catch (e) {}
     try { v.scene.screenSpaceCameraController.enableInputs = false; } catch (e) {}
@@ -501,6 +503,7 @@
     const v = player.viewer;
     const r = player.restore;
     if (!v || !r) return;
+    v.clock.shouldAnimate = r.shouldAnimate;
     try { v.resolutionScale = r.resolutionScale; } catch (e) {}
     try { v.targetFrameRate = r.targetFrameRate; } catch (e) {}
     try { v.scene.screenSpaceCameraController.enableInputs = r.inputs; } catch (e) {}

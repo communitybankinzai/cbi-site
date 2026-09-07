@@ -18,8 +18,9 @@ wings and the tail; the neck is separate for future head/neck motion.
 The neutral pose is a glide. Model coordinates use +X forward and +Y up.
 Cesium's glTF axis conversion is accounted for in the opponent orientation.
 
-The game enables the clip while the other player moves forward/backward or
-boosts. Flight bank and pitch follow the player's actual camera orientation.
+The game enables the clip throughout active play, including neutral controls.
+Both Cesium clocks advance during the match and restore their previous setting
+on exit. Flight bank and pitch follow the player's actual camera orientation.
 
 ## Rebuild
 

@@ -1,5 +1,9 @@
 # CBIメタバース印西 引継ぎ
 
+## 2026-09-08 羽ばたき停止修正
+
+JS版20260908-2。runAnimationsは対戦中・非ポーズで常時有効（前後入力条件を撤去）。applyViewerRaceProfileで両viewerのclock.shouldAnimate=true、退出時に元値復元。ローカルPlaywrightで両Cesium ModelのgetNode('leftWing').matrixが無入力で350ms後に変わること、activeAnimations.length>0を確認。画像の見た目はユーザー要求未達で写実モデル置換は未完了。画像生成だけで可動3D完成を約束しない。
+
 ## 2026-09-08 開始位置・方向案内・2P地図
 
 SkyTag.placeAtStartで同じ楕円体高240m、南北約600m、互いに正対する配置。vs-raceのSTARTが通常コース位置で上書きしていたためtag時は同じ関数に分岐。照準上に左右上下矢印・後方注意・高度/高度差/距離を追加。高度はCesiumの楕円体高で標高とは異なる。2Pのglobe.showをP1同様falseにし、タイル取得失敗や429の通知を右画面に残す。地図なしテストで検証し、実タイル取得は未検証。JS版20260908-1。写実モデルはユーザーが現モデル品質を却下しており未完了。現環境に3D生成ツールはなく画像生成のみでは可動3Dにならない。有料素材は購入・Web利用ライセンス・軽量化を要確認（VFX Grace鳶候補320USD）。購入未実施。
