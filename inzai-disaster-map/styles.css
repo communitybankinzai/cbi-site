@@ -2500,3 +2500,10 @@ body.embed-mode .cbi-home-link {
 .cbi-simulation-map-note { max-width: 300px; white-space: pre-line; padding: 8px 10px; border: 2px solid #713b8f; border-radius: 6px; background: rgba(255,255,255,.96); color: #30213d; font-size: 11px; line-height: 1.5; box-shadow: 0 1px 5px #0003; pointer-events: none; }
 .cbi-simulation-raster { image-rendering: pixelated; }
 @media(max-width:600px) { .cbi-simulation-map-note { max-width: 235px; font-size: 10px; } }
+
+/* 道路の冠水リスク傾向レイヤーの凡例 */
+.road-risk-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.road-risk-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend-line { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+#road-risk-status { display: block; font-size: 11px; color: #5a6675; margin-left: 22px; }
+#road-risk-status.is-error { color: #c0392b; }

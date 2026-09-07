@@ -2984,6 +2984,11 @@ function renderPastFloodMarkers() {
 }
 
 function toggleOverlay(name, checked) {
+  if (name === "roadRisk") {
+    if (checked) { ensureRoadRiskLayer(); roadRiskLayer.addTo(map); }
+    else map.removeLayer(roadRiskLayer);
+    return;
+  }
   if (name === "kansui") {
     if (checked) { ensureKansuiLayer(); kansuiLayer.addTo(map); }
     else map.removeLayer(kansuiLayer);
@@ -3350,6 +3355,61 @@ async function refreshRainForecast(showLayer) {
       const box = document.querySelector('[data-overlay="rainForecast"]');
       if (box) box.checked = false;
     }
+  }
+}
+
+// ============================================================
+// 🚗 道路の冠水リスク傾向（地形のみ・未校正）
+// 国土地理院の標高から作った地形指標を、OSMの車道に割り当てて色分けしたもの。
+// 排水能力・路面高・アンダーパスは未考慮で、通行できるかどうかではない。
+// しきい値は未検証（status.json の road_impassable_threshold = UNVERIFIED）なので、
+// 既定OFFにして、見たい人だけが出す扱いにしている（2026-09-07 B案）。
+// 22,000本を超える線を描くので Canvas レンダラを使う（SVGでは重すぎる）。
+// ============================================================
+const ROAD_RISK_STYLE = [
+  { color: "#2f8ba3", weight: 1.6 },
+  { color: "#e8b23a", weight: 1.6 },
+  { color: "#df7038", weight: 2.2 },
+  { color: "#8e44ad", weight: 3.4 },
+  { color: "#8a9099", weight: 1.4, dashArray: "4 4" }
+];
+const roadRiskLayer = L.layerGroup();
+let roadRiskLoaded = false;
+
+async function ensureRoadRiskLayer() {
+  if (roadRiskLoaded) return;
+  roadRiskLoaded = true;
+  const status = document.getElementById("road-risk-status");
+  const setStatus = (text, isError) => {
+    if (!status) return;
+    status.textContent = text;
+    status.classList.toggle("is-error", Boolean(isError));
+  };
+  setStatus("読み込み中（約0.4MB）");
+  try {
+    const response = await fetch("./simulation-data/road_risk.json", { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const renderer = L.canvas({ padding: 0.3 });
+    const quantize = payload.quantize || 100000;
+    roadRiskLayer.clearLayers();
+    (payload.lines || []).forEach(entry => {
+      const cls = entry[0];
+      let lat = entry[1], lon = entry[2];
+      const points = [[lat / quantize, lon / quantize]];
+      for (let i = 3; i < entry.length; i += 2) {
+        lat += entry[i]; lon += entry[i + 1];
+        points.push([lat / quantize, lon / quantize]);
+      }
+      L.polyline(points, Object.assign(
+        { renderer, interactive: false, lineCap: "butt" },
+        ROAD_RISK_STYLE[cls] || ROAD_RISK_STYLE[4]
+      )).addTo(roadRiskLayer);
+    });
+    setStatus(`${(payload.lines || []).length.toLocaleString()}区間 ・ 地形モデル ${payload.model || ""}・未校正`);
+  } catch (error) {
+    roadRiskLoaded = false;
+    setStatus(`取得できません（${error?.message || "接続エラー"}）`, true);
   }
 }
 
