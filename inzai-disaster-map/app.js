@@ -2984,6 +2984,11 @@ function renderPastFloodMarkers() {
 }
 
 function toggleOverlay(name, checked) {
+  if (name === "terrainRisk") {
+    if (checked) { ensureTerrainRiskLayer(); terrainRiskLayer.addTo(map); }
+    else map.removeLayer(terrainRiskLayer);
+    return;
+  }
   if (name === "roadRisk") {
     if (checked) { ensureRoadRiskLayer(); roadRiskLayer.addTo(map); }
     else map.removeLayer(roadRiskLayer);
@@ -3355,6 +3360,87 @@ async function refreshRainForecast(showLayer) {
       const box = document.querySelector('[data-overlay="rainForecast"]');
       if (box) box.checked = false;
     }
+  }
+}
+
+// ============================================================
+// 🟠 地形の冠水リスク（面・仮設定）
+// 窪地・相対的な低さ・集水・平坦さを合成した地形指標（0〜100）を面で塗る。
+// 道路レイヤーと同じ元データ（map_grid.json の score）で、雨量は入っていない。
+// 「CBI独自シミュレーション」は同じ score に雨量の係数を掛けたもので、
+// こちらは係数を掛けない素の地形指標。順位はどちらも同じになる。
+// 道路の下・ピンの下に来るよう専用ペイン（z-index 385）へ置く。
+// ============================================================
+const terrainRiskLayer = L.layerGroup();
+let terrainRiskLoaded = false;
+
+async function ensureTerrainRiskLayer() {
+  if (terrainRiskLoaded) return;
+  terrainRiskLoaded = true;
+  const status = document.getElementById("terrain-risk-status");
+  const setStatus = (text, isError) => {
+    if (!status) return;
+    status.textContent = text;
+    status.classList.toggle("is-error", Boolean(isError));
+  };
+  setStatus("読み込み中（約0.5MB）");
+  try {
+    if (!map.getPane("terrainRiskPane")) {
+      const pane = map.createPane("terrainRiskPane");
+      pane.style.zIndex = "385";
+      pane.style.pointerEvents = "none";
+    }
+    const response = await fetch("./simulation-data/map_grid.json", { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const grid = await response.json();
+    const scores = grid?.values?.score;
+    if (!Array.isArray(scores)) throw new Error("地形データの形式を確認できません");
+
+    // 低い→高い：青緑→黄→橙。研究用MAP（naisui.html）と同じ配色にそろえる
+    const stops = [[0, [63, 142, 163]], [40, [242, 201, 76]], [100, [224, 123, 57]]];
+    const ramp = value => {
+      const x = Math.max(0, Math.min(100, value));
+      for (let i = 1; i < stops.length; i += 1) {
+        if (x <= stops[i][0]) {
+          const [a, ca] = stops[i - 1];
+          const [b, cb] = stops[i];
+          const f = b === a ? 0 : (x - a) / (b - a);
+          return [0, 1, 2].map(ch => Math.round(ca[ch] + (cb[ch] - ca[ch]) * f));
+        }
+      }
+      return stops[stops.length - 1][1];
+    };
+
+    const canvas = document.createElement("canvas");
+    canvas.width = grid.width;
+    canvas.height = grid.height;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("このブラウザでは描画できません");
+    const pixels = context.createImageData(grid.width, grid.height);
+    let valid = 0;
+    scores.forEach((value, index) => {
+      if (value === null || !Number.isFinite(value)) return; // 欠測は透明のまま（0で埋めない）
+      valid += 1;
+      const rgb = ramp(value);
+      pixels.data[index * 4] = rgb[0];
+      pixels.data[index * 4 + 1] = rgb[1];
+      pixels.data[index * 4 + 2] = rgb[2];
+      pixels.data[index * 4 + 3] = 255;
+    });
+    if (!valid) throw new Error("有効な地形データがありません");
+    context.putImageData(pixels, 0, 0);
+
+    terrainRiskLayer.clearLayers();
+    L.imageOverlay(canvas.toDataURL("image/png"), grid.bounds, {
+      pane: "terrainRiskPane",
+      opacity: 0.55,
+      interactive: false,
+      alt: "地形の冠水リスク（未校正の相対指標）"
+    }).addTo(terrainRiskLayer);
+    setStatus(`${valid.toLocaleString()}マス（100m格子）・未校正`);
+  } catch (error) {
+    terrainRiskLoaded = false;
+    setStatus(`取得できません（${error?.message || "接続エラー"}）`, true);
   }
 }
 

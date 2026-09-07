@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260907c">
+    <link rel="stylesheet" href="./styles.css?v=20260907d">
   </head>
   <body>
     <div class="app-shell">
@@ -129,6 +129,14 @@
               </div>
               <label><input type="checkbox" data-overlay="roadFlood"> 参考: 道路冠水注意箇所（平常時）</label>
               <label><input type="checkbox" data-overlay="pastFlood"> 🌊 過去の冠水実績（確認済み・対象日によらず表示）</label>
+              <label class="live-layer-label"><input type="checkbox" data-overlay="terrainRisk"> 🟠 地形の冠水リスク（面・仮設定）<span id="terrain-risk-status">ONにすると読み込みます</span></label>
+              <div class="jshis-layer-note">窪地・周りとの高さの差・集水・平坦さを合成した地形の指標です。<strong>雨量は入っていません。</strong>下の道路リスクと同じ元データで、面で塗ったものです。</div>
+              <div class="jshis-layer-note road-risk-legend">
+                <span><span class="legend-line" style="background:#3f8ea3;height:10px"></span>低い</span>
+                <span><span class="legend-line" style="background:#f2c94c;height:10px"></span>中くらい</span>
+                <span><span class="legend-line" style="background:#e07b39;height:10px"></span>高い</span>
+              </div>
+              <div class="jshis-layer-note">浸水の深さでも冠水する確率でもない、<strong>未校正の相対指標</strong>です。白い部分は未解析・欠測を含みます。雨量を入れて比べたいときは右側の「CBI独自シミュレーション」を使ってください。</div>
               <label class="live-layer-label"><input type="checkbox" data-overlay="roadRisk"> 🚗 道路の冠水リスク傾向（地形のみ・未校正）<span id="road-risk-status">ONにすると読み込みます</span></label>
               <div class="jshis-layer-note">国土地理院の標高から作った地形の指標を、OpenStreetMapの車道に割り当てて色分けしたものです。<strong>排水能力・路面高・アンダーパスは未考慮で、通行できるかどうかではありません。</strong>公式の通行止め情報が最優先です。</div>
               <div class="jshis-layer-note road-risk-legend">
@@ -1231,9 +1239,9 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
-    <script src="./config.js?v=20260907c"></script>
-    <script src="./app.js?v=20260907c"></script>
-    <script src="./cbi-simulation-core.js?v=20260907c"></script>
-    <script src="./cbi-simulation.js?v=20260907c"></script>
+    <script src="./config.js?v=20260907d"></script>
+    <script src="./app.js?v=20260907d"></script>
+    <script src="./cbi-simulation-core.js?v=20260907d"></script>
+    <script src="./cbi-simulation.js?v=20260907d"></script>
   </body>
 </html>
