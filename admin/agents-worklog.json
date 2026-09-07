@@ -17,15 +17,44 @@
     "A1": {
       "actuals": [
         {
-          "date": "2026-09-07", "title": "鳶・白鳥の羽ばたき付き3Dモデルと確認画面を作成",
-          "category": "実装", "partnerApproved": false,
-          "outputs": ["site/metaverse/assets/tonbi/kite.glb", "site/metaverse/assets/tonbi/swan.glb", "site/metaverse/bird-preview.html"],
+          "date": "2026-09-07",
+          "title": "冠水実績での校正・公開データ検証・利用条件の明記・SNS発信（ツリー含む） 1.6時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/LICENSE.md（新規・MIT＋ODbL 1.0）",
+            "site/inzai-disaster-map/app.js・index.html・naisui.html（治水地形分類図レイヤー、地形リスク面、2レイヤー削除）",
+            "site/inzai-disaster-map/simulation-spec.html（利用条件への導線）",
+            "scripts/promo/shoot_naisui.mjs（新規・実画面撮影。COCoLa依存を解消）",
+            "site/assets/sns/2026-09-07_naisui/（実画面4枚＋比較画像2枚）",
+            "cidao/2026-09-07_内水リスク推定の校正（冠水実績との照合）.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 1.6,
+          "partnerApproved": false,
+          "note": "みんつく運営の許可を得て、冠水実績355区間・977地点でモデルの当たり具合を初めて実測。区間単位の分割で20回検証し、AUC 0.671±0.015（2つの道を比べて危ない方を当てられるのが3回に2回）。冠水リスク高の区分で実際の冠水が2.36倍、使用困難で3.08倍、冠水リスク低では0.15倍と、「危険を当てる」より「安全を外さない」方向に価値があることが分かった。重みの最適化は学習側0.697→0.732に上がるが検証側は0.653のまま動かず、355区間では変更を正当化できないため見送り。公開データの活用可否も検証：治水地形分類図は見かけAUC 0.698だったが、冠水報告地点の74.7%が整備範囲外という交絡（市街地バイアス）で説明でき、当初報告した+0.090は撤回した。土地条件図は0.582・明治期の低湿地は0.571でいずれもCBIモデルに劣り、組み込むと悪化するため不採用。治水地形分類図のみ参考レイヤーとして追加（分類ごとの倍率は現河道4.35倍・後背湿地1.62倍・自然堤防0.12倍と物理的に妥当）。ライセンス未設定（法的に再利用不可の状態）を発見し、コードMIT・road_risk.jsonはODbL 1.0（OSM派生のshare-alike）で明記。適用範囲は inzai-disaster-map/ 配下に限定（metaverse/photos/ は市HPからの転載許可物のため対象外）。SNSは Threads 17876576379553597・Instagram 18101562485106440 に投稿し、オープンソース化と「発信すべき人が発信するにはどうすべきか」の問いかけを Threads ツリー5本で追加（18190180303399800／17948697945277138／18175263628451000／18177334708429628／18199788463330812）。文面は中司さんの指摘を受け『冠水した場所を集めるのは市民にできている（みんつくが実証）』へ修正した。撮影スクリプトは当初 C:\\COCoLa の puppeteer を使おうとしたが、脱退した団体のフォルダへの依存は不適切との指摘を受け、CBI配下に puppeteer を導入して解消（COCoLaへの書き込みは無かったことを確認済み）。前回記録(1,162,750)以降の差分で算出。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 1,324,953"
+        },
+        {
+          "date": "2026-09-07",
+          "title": "鳶・白鳥の羽ばたき付き3Dモデルと確認画面を作成",
+          "category": "実装",
+          "partnerApproved": false,
+          "outputs": [
+            "site/metaverse/assets/tonbi/kite.glb",
+            "site/metaverse/assets/tonbi/swan.glb",
+            "site/metaverse/bird-preview.html"
+          ],
           "note": "独立翼・首・尾、PBRテクスチャ、Wingbeatを実装。2種類4方向・アニメーション・モバイルと地図課金なしの2Pテストを確認。まだ実写水準ではない。"
         },
         {
-          "date": "2026-09-07", "title": "鬼ごっこの接触得点・照準進捗・直接起動メニューを追加",
-          "category": "実装", "partnerApproved": false,
-          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/index.html", "site/metaverse/CLAUDE_HANDOFF.md"],
+          "date": "2026-09-07",
+          "title": "鬼ごっこの接触得点・照準進捗・直接起動メニューを追加",
+          "category": "実装",
+          "partnerApproved": false,
+          "outputs": [
+            "site/metaverse/sky-tag.js",
+            "site/metaverse/index.html",
+            "site/metaverse/CLAUDE_HANDOFF.md"
+          ],
           "note": "8m接触は双方1点、12m超で再判定。照準の中央表示。公開先に白鳥版が届いていることを確認し、更新版の入口を追加。"
         },
         {
@@ -5213,6 +5242,20 @@
       ],
       "plans": [
         {
+          "due": "2026-09-08",
+          "title": "📣 オープンソース化と「誰がつくるべきか」の問いかけをInstagramへ単独投稿する",
+          "category": "広報",
+          "priority": "中",
+          "note": "Threadsではツリー5本で投稿済み。Instagramは同日に2本続けると露出を食い合うため翌朝に回した。文面は scratchpad の sns_0907b_long.txt（1,818字）。画像は site/assets/sns/2026-09-07_naisui/compare_map.png または map_roadrisk.png。"
+        },
+        {
+          "due": "未定",
+          "title": "🌊 「ここは冠水しなかった」という記録を集める方法を考える",
+          "category": "分析",
+          "priority": "中",
+          "note": "今回の校正で最大の制約になった点。投稿型の仕組みでは冠水した場所しか集まらず、誤警報率が原理的に測れない（未報告を非冠水とみなしてはいけない）。みんつくの仕組みに『通れた』の投稿を足せるか、市の道路パトロール記録で代替できるか、などを検討する。SNS投稿でも市民に問いかけている。"
+        },
+        {
           "due": "2026-09-21",
           "title": "🧪 内水リスク推定の校正：みんつくの冠水実績と地形指標の当たり具合を測る",
           "category": "分析",
@@ -5264,8 +5307,9 @@
           "title": "🚗 みんつく千葉冠水マップ運営（X: @change_support_）からの返信対応",
           "category": "事務",
           "priority": "高",
-          "status": "待ち",
-          "blockedBy": "運営者（X: @change_support_）からの返信。2026-09-06 23:30に中司さんがXの公開コメントで連絡済み（DMは送信不可だった）。内容＝出典明記・投稿は本家誘導・取得は10分に1回・事前相談しなかったことの謝罪・不可であれば即停止。停止要請があれば site/inzai-disaster-map の kansui レイヤーと CiDAO の /api/disaster/kansui を無効化する"
+          "status": "完了扱い",
+          "blockedBy": "運営者（X: @change_support_）からの返信。2026-09-06 23:30に中司さんがXの公開コメントで連絡済み（DMは送信不可だった）。内容＝出典明記・投稿は本家誘導・取得は10分に1回・事前相談しなかったことの謝罪・不可であれば即停止。停止要請があれば site/inzai-disaster-map の kansui レイヤーと CiDAO の /api/disaster/kansui を無効化する",
+          "note": "2026-09-07に中司さんが利用許可を取得したとの報告。同日、冠水実績977地点をモデルの校正に使用した。停止要請は無い。"
         },
         {
           "due": "2026-09-13",
