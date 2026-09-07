@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>内水リスク推定 技術仕様｜Community Bank INZAI</title>
-<meta name="description" content="印西市 内水リスク推定（topo-0.1.0 / cbi-rain-sensitivity-0.2.0）の計算式・パラメータ・座標系・既知の不正確さを、検証結果とともに開示するページです。">
+<meta name="description" content="印西市 内水リスク推定（topo-0.2.0 / cbi-rain-sensitivity-0.2.0）の計算式・パラメータ・座標系・既知の不正確さを、検証結果とともに開示するページです。">
 <style>
 body{font:16px/1.85 system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;max-width:960px;margin:32px auto;padding:0 20px;color:#243546}
 h1{font-size:26px;margin-bottom:4px}
@@ -33,7 +33,7 @@ li{margin:5px 0}
 
 <h1>内水リスク推定 技術仕様</h1>
 <p class="lead">
-  地形モデル <code>topo-0.1.0</code>／雨量シナリオ <code>cbi-rain-sensitivity-0.2.0</code>／道路割当 2026-09-07<br>
+  地形モデル <code>topo-0.2.0</code>（2026-09-07 更新）／雨量シナリオ <code>cbi-rain-sensitivity-0.2.0</code><br>
   作成：Community Bank INZAI（印西市市民活動団体登録 ０８－００１）・非営利・無償公開
 </p>
 
@@ -63,7 +63,7 @@ li{margin:5px 0}
 <table>
 <thead><tr><th>データ</th><th>出典・取得方法</th><th>諸元</th></tr></thead>
 <tbody>
-<tr><td>標高</td><td>国土地理院 標高タイル（<code>dem1a_png</code>／<code>dem5a_png</code>／<code>dem5b_png</code>／<code>dem5c_png</code>／<code>dem_png</code> の優先順で、値のあるものを採用）</td><td>タイルズーム 12。2026-09-06 取得。取得URL・チェックサム・使用画素数は <a href="./simulation-data/sources.json">sources.json</a> に全件記録</td></tr>
+<tr><td>標高</td><td>国土地理院 標高タイル（<code>dem1a_png</code>／<code>dem5a_png</code>／<code>dem5b_png</code>／<code>dem5c_png</code>／<code>dem_png</code> の優先順で、値のあるものを採用）</td><td>タイルズーム 13（地上 約15.5 m／画素）。107枚。取得URL・チェックサム・使用画素数は <a href="./simulation-data/sources.json">sources.json</a> に全件記録</td></tr>
 <tr><td>道路</td><td>OpenStreetMap（Overpass API・ODbL 1.0）<br><code>[out:json];way["highway"](35.72,140.07,35.91,140.32);out body geom;</code></td><td>2026-09-06 取得の全34,879本のうち、車道13種18,024本を使用</td></tr>
 <tr><td>公式ハザード区域</td><td><strong>未取得。</strong>市の公式ハザードマップはPDFのみで、区域のGISデータを入手できていません</td><td>参照リンクのみ</td></tr>
 <tr><td>降雨</td><td><strong>未接続。</strong>利用者が数値で入力する方式</td><td>レーダー雨量（XRAIN等）との連動は未実装</td></tr>
@@ -72,26 +72,28 @@ li{margin:5px 0}
 </table>
 </div>
 
-<h2>3. 地形指標の算出（topo-0.1.0）</h2>
+<h2>3. 地形指標の算出（topo-0.2.0）</h2>
 
 <h3>3.1 格子</h3>
 <p>
-標高タイルを格子へ集約します。格子は <strong>283列 × 266行</strong>、範囲は南西 (35.717910, 140.067782)、北東 (35.911679, 140.322005) の<strong>矩形</strong>です。
-行政界ではないため、白井市・栄町・成田市など隣接自治体を含みます。有効セルは74,110（欠測を除く）。
+標高タイルの画素を、各セルに入るぶんだけ平均して集約します。格子は <strong>283列 × 266行</strong>、範囲は南西 (35.717910, 140.067782)、北東 (35.911679, 140.322005) の<strong>矩形</strong>です。
+行政界ではないため、白井市・栄町・成田市など隣接自治体を含みます。<strong>有効セルは75,278（欠測なし）</strong>。
+格子は Web メルカトル（EPSG:3857）で 1セル＝メルカトル上の100 m。<strong>地上では約81 m</strong>にあたるため、
+面積・距離・傾斜は行ごとの縮尺係数 cos(φ) を掛けて地上値に直して計算しています。
 </p>
 
 <h3>3.2 窪地処理と流向・流量</h3>
 <ul>
-  <li><strong>窪地埋め</strong>：Priority-Flood。埋める前後の標高差を「窪地深さ（<code>depression_depth</code>, m）」として保持します。</li>
+  <li><strong>窪地埋め</strong>：Priority-Flood。埋める前後の標高差を「窪地深さ（<code>depression_depth</code>, m）」として保持します。単純に埋めると窪地の跡が完全に平坦になり D8 が下流を選べなくなるため、流下計算には内側へ進むごとに 1×10⁻⁵ m を足した ε 版の標高を使います（Barnes ほか）。窪地深さは ε を足さない方から求めます。</li>
   <li><strong>流向</strong>：D8（8方向の最急勾配1方向へ流す）。</li>
-  <li><strong>流量</strong>：上流セル数の積算に1セルの面積を掛けたもの（<code>flow_accumulation_m2</code>, m²）。</li>
-  <li><strong>相対標高</strong>（<code>relative_elevation</code>, m）：周辺との高さの差。負が「周りより低い」。</li>
-  <li><strong>傾斜</strong>（<code>slope</code>, 度）。</li>
+  <li><strong>流量</strong>：上流から流れ込むセルの<strong>地上面積</strong>の積算（<code>flow_accumulation_m2</code>, m²）。1セルは約6,560〜6,592 m²。</li>
+  <li><strong>相対標高</strong>（<code>relative_elevation</code>, m）：<strong>半径3セル（地上 約240 m）の円形近傍の平均</strong>との差。負が「周りより低い」。</li>
+  <li><strong>傾斜</strong>（<code>slope</code>, 度）：Horn 法（3×3）。地上セル寸法で除算します。</li>
 </ul>
 
 <h3>3.3 合成式（本ページ公開時にデータから逆算・検証した）</h3>
 <p>
-公開している <a href="./simulation-data/map_grid.json">map_grid.json</a> の5レイヤーから、<code>score</code> は次の式で再現できます。
+この合成式は、前の版（topo-0.1.0）の公開データから逆算して確定させたものです。生成スクリプトが外部環境にあり回収できなかったため、出力から式を復元しました。
 </p>
 <div class="formula">
 score = 100 × [ 0.25 · clip( −相対標高 / 5 m )<br>
@@ -101,7 +103,7 @@ score = 100 × [ 0.25 · clip( −相対標高 / 5 m )<br>
 clip(x) = min(1, max(0, x))
 </div>
 <div class="ok">
-<strong>検証：</strong>有効セル74,110すべてで上式と保存値を突き合わせ、<strong>最大誤差 0.12 点</strong>（保存値の丸めの範囲）、誤差0.5点を超えるセルは0件でした。
+<strong>検証：</strong>前の版の有効セル74,110すべてで上式と保存値を突き合わせ、<strong>最大誤差 0.12 点</strong>（保存値の丸めの範囲）、誤差0.5点を超えるセルは0件でした。現在の版はこの式をそのまま実装しています（<a href="./pipeline/build_static.py">build_static.py</a>）。
 重み（0.25／0.35／0.25／0.15）と正規化スケール（5 m／2 m／10⁶ m²／10°）は <a href="./simulation-data/status.json">status.json</a> の記載と一致します。
 </div>
 <p class="meta">
@@ -113,11 +115,11 @@ clip(x) = min(1, max(0, x))
 <table>
 <thead><tr><th>score</th><th>区分</th><th>該当した道路線</th></tr></thead>
 <tbody>
-<tr><td>0 以上 25 未満</td><td>冠水リスク低</td><td>764</td></tr>
-<tr><td>25 以上 50 未満</td><td>注意</td><td>18,078</td></tr>
-<tr><td>50 以上 75 未満</td><td>冠水リスク高</td><td>3,418</td></tr>
-<tr><td>75 以上</td><td>使用困難となる可能性あり</td><td>426</td></tr>
-<tr><td>欠測</td><td>判定保留・情報不足</td><td>216</td></tr>
+<tr><td>0 以上 25 未満</td><td>冠水リスク低</td><td>1,522</td></tr>
+<tr><td>25 以上 50 未満</td><td>注意</td><td>18,668</td></tr>
+<tr><td>50 以上 75 未満</td><td>冠水リスク高</td><td>3,804</td></tr>
+<tr><td>75 以上</td><td>使用困難となる可能性あり</td><td>477</td></tr>
+<tr><td>欠測</td><td>判定保留・情報不足</td><td>132</td></tr>
 </tbody>
 </table>
 </div>
@@ -126,9 +128,9 @@ clip(x) = min(1, max(0, x))
 <h2>4. 道路への割り当て</h2>
 <ul>
   <li>対象：OSM の <code>highway</code> が motorway／trunk／primary／secondary／tertiary（および各 _link）／unclassified／residential／living_street の18,024本。歩道・階段・農道・敷地内通路（footway, path, steps, cycleway, track, service 等）は除外。</li>
-  <li>各ノードの座標が入る格子セルの <code>score</code> から区分を決め、<strong>区分が変わる位置で線を分割</strong>して22,902本の線分にしています（切れ目の点は両側に含め、隙間を作りません）。</li>
+  <li>各ノードの座標が入る格子セルの <code>score</code> から区分を決め、<strong>区分が変わる位置で線を分割</strong>して24,603本の線分にしています（切れ目の点は両側に含め、隙間を作りません）。</li>
   <li>格子の行の引き当てには、緯度をそのまま比例配分せず<strong>メルカトルY座標に変換してから</strong>引いています（比例配分では最大で数十mずれるため）。</li>
-  <li>配信データは座標を1×10⁻⁵度（約1.1 m）に量子化し、線ごとの差分で保持（<a href="./simulation-data/road_risk.json">road_risk.json</a>・1.15 MB／gzip転送 約433 KB）。</li>
+  <li>配信データは座標を1×10⁻⁵度（約1.1 m）に量子化し、線ごとの差分で保持（<a href="./simulation-data/road_risk.json">road_risk.json</a>・1.18 MB）。</li>
 </ul>
 <p><strong>この割り当ては「その道が通っている地形の傾向」であって、道路構造の評価ではありません。</strong>路面高、縁石、アンダーパス、橋・高架（橋の上と下の道を区別していません）、side walk の有無はいずれも未考慮です。</p>
 
@@ -164,31 +166,44 @@ E = max( 0, R × C − D ) × T<br>
 
 <h2>6. 既知の不正確さ</h2>
 
-<div class="warn">
-<h3>6.1 座標系の記載と実装の食い違い（2026-09-07 に発見）</h3>
+<div class="ok">
+<h3 style="margin-top:0">6.1 座標系の不整合は修正しました（topo-0.2.0）</h3>
 <p>
-<a href="./simulation-data/status.json">status.json</a> は <code>processing_crs: "EPSG:32654"</code>（UTM 54N）、<code>cell_size_m: 100</code> と記録していますが、
-実際の格子の <code>transform</code> の原点は (15592274.14, 4288475.28) で、これは<strong>Webメルカトル（EPSG:3857）</strong>の値と小数点以下まで一致します
-（UTM 54N なら東距32万・北距397万程度になるはずで、桁が違います）。<code>simulation-method.html</code> の「描画用にWeb Mercatorへ変換」という記述も、実際には計算自体がWebメルカトル上で行われているため正確ではありません。
+前の版（topo-0.1.0）は <code>status.json</code> に <code>processing_crs: "EPSG:32654"</code>（UTM 54N）・<code>cell_size_m: 100</code> と記録しながら、
+実際には Web メルカトル（EPSG:3857）の100 mをそのまま地上100 mとして扱っていました。北緯35.8度では地上約81.1 mにあたるため、
+<strong>集水面積が約1.52倍に過大、傾斜が約19%過小</strong>になっていました（実際、旧データの集水面積の最小値は1セル＝10,000 m²でした）。
 </p>
-<p><strong>この食い違いが結果に与える影響（北緯35.8°・縮尺係数 1/cos35.8° ≒ 1.233）：</strong></p>
+<p>
+現在の版では、格子は Web メルカトルのまま（表示の重ね位置を変えないため）で、
+<strong>面積・距離・傾斜の計算時に行ごとの縮尺係数 cos(φ) を掛けて地上値に直しています</strong>。
+1セルの地上面積は6,560〜6,592 m²です。UTM へ移さなかったのは、この地域では子午線収差により最大約100 mの回転ずれが生じ、
+地図への重ね合わせが崩れるためです。
+</p>
+<p style="margin-bottom:0">
+あわせて、窪地を埋めた後の平坦部で D8 の流れが止まる不具合も見つかり、ε 版で修正しました
+（修正前は集水面積の平均が本来の47分の1になっていました）。
+</p>
+</div>
+
 <div class="table">
 <table>
-<thead><tr><th>項目</th><th>記載</th><th>実際</th><th>影響</th></tr></thead>
+<thead><tr><th>項目</th><th>旧 topo-0.1.0</th><th>新 topo-0.2.0</th></tr></thead>
 <tbody>
-<tr><td>セル寸法</td><td>100 m</td><td><strong>地上 約81.1 m</strong></td><td>格子は宣言より細かい。位置のずれではなく寸法の呼び方の問題</td></tr>
-<tr><td>集水面積 <code>flow_accumulation_m2</code></td><td>1セル=10,000 m²</td><td>1セル=約6,580 m²</td><td><strong>約1.52倍に過大</strong>。log₁₀スケールなので score への寄与は 0.25×log₁₀(1.52)/6 ≒ <strong>+0.0076（100点満点で約0.8点）の系統的な上振れ</strong></td></tr>
-<tr><td>傾斜 <code>slope</code></td><td>—</td><td>水平距離が1.233倍で計算</td><td><strong>約19%過小評価</strong>。平坦度の項（重み0.15）を通じて score をわずかに押し上げる向き</td></tr>
-<tr><td>相対標高の近傍範囲</td><td>5 m スケール</td><td>—</td><td>近傍の取り方が格子単位なら、地上での参照半径が宣言より狭い</td></tr>
+<tr><td>有効セル</td><td>74,110</td><td><strong>75,278（欠測なし）</strong></td></tr>
+<tr><td>標高タイル</td><td>ズーム12（約31 m／画素）</td><td><strong>ズーム13（約15.5 m／画素）・セル内平均</strong></td></tr>
+<tr><td>1セルの面積</td><td>10,000 m²（誤り）</td><td><strong>6,560〜6,592 m²</strong></td></tr>
+<tr><td>集水面積の平均</td><td>1,179,077 m²</td><td>792,375 m²</td></tr>
+<tr><td>傾斜の平均</td><td>1.205°</td><td>1.300°</td></tr>
+<tr><td>score の平均</td><td>40.7</td><td>40.5</td></tr>
+<tr><td colspan="3">新旧の相関 0.888。<strong>区分（低／注意／高／使用困難）が変わらないセルは86.8%</strong>。
+標高が下位10%のセルの平均scoreは62.4、上位10%は30.3で、低い土地ほど高い値になっています。</td></tr>
 </tbody>
 </table>
 </div>
-<p style="margin-bottom:0">
-影響は<strong>全域にほぼ一様にかかる系統誤差</strong>で、地点どうしの相対的な順位を大きく入れ替えるものではないと考えていますが、
-集水面積を絶対値（m²）として引用することはできません。修正には格子の再生成が必要で、生成スクリプトを回収したうえで対応する予定です。
-それまでの間、<strong>本ページの記載を正とし、status.json の <code>processing_crs</code> と <code>cell_size_m</code> は信頼しないでください。</strong>
+<p class="meta">
+※ どちらの版も未校正なので、「新しい方が実際の冠水をよく当てる」ことを示したわけではありません。
+新しい版で確かに良くなったのは、<strong>地上の面積と距離が正しくなったこと・欠測が無くなったこと・処理が公開され再現できること</strong>の3点です。
 </p>
-</div>
 
 <h3>6.2 その他の限界</h3>
 <ul>
@@ -198,7 +213,7 @@ E = max( 0, R × C − D ) × T<br>
   <li><strong>先行降雨・土壌の湿りを考慮しない</strong>：流出率は固定です。</li>
   <li><strong>橋の上と下を区別しない</strong>：DEMは橋面を拾うことがあり、アンダーパスの路面高は表せません。</li>
   <li><strong>公式の内水ハザードとは別物</strong>：市の公式想定は特定の降雨条件（2008-08-30 我孫子観測所 最大1時間105 mm）に対する想定図であり、現況の正解データではありません。当方はその区域データを取得できていないため、照合も行っていません。</li>
-  <li><strong>生成スクリプトが手元にない</strong>：<code>pipeline/build_static.py</code> は外部環境にあり回収できていません。第3節の式はデータからの逆算により全セルで検証したものです。</li>
+  <li><strong>前の版の定義を完全には復元できていない</strong>：相対標高の近傍の取り方と傾斜の求め方は、旧データから逆算しても一致しませんでした（最良の当てはめでも平均誤差0.38 m／0.32度が残る）。現在の版は<strong>本実装で定義を決め直し、明記したもの</strong>です（半径3セルの円形近傍・Horn 法）。旧版と数値が完全に一致することはありません。</li>
 </ul>
 
 <h2>7. 排水能力を反映するために必要なデータ</h2>
@@ -263,9 +278,10 @@ E = max( 0, R × C − D ) × T<br>
   <li>道路の色分けデータ：<a href="./simulation-data/road_risk.json">road_risk.json</a></li>
   <li>雨量シナリオの実装：<a href="./cbi-simulation-core.js">cbi-simulation-core.js</a>（計算部・約20行）</li>
   <li>地図の実装：<a href="./naisui.html">naisui.html</a></li>
+  <li><strong>生成スクリプト：<a href="./pipeline/build_static.py">pipeline/build_static.py</a></strong>（標高タイル取得→格子化→Priority-Flood→D8→指標→合成）、<a href="./pipeline/build_roads.py">pipeline/build_roads.py</a>（道路への割り当て）、<a href="./pipeline/fetch_roads.py">pipeline/fetch_roads.py</a>（OSM取得）</li>
 </ul>
 <p>
-第3節の合成式は上記データから逆算し全セルで検証したものです。同じ手順で第三者が検証できます。
+生成スクリプトを公開しているので、<code>python pipeline/build_static.py</code> で第三者が同じ格子を作り直せます。標高タイルはキャッシュされ、2回目以降は地理院サーバーへ取りに行きません。
 </p>
 <p class="meta">
 ご指摘・照会先：Community Bank INZAI　communitybankinzai@gmail.com<br>
