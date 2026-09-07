@@ -1,7 +1,7 @@
 (function (root) {
   "use strict";
   const DURATION = 120000, RANGE = 350, HOLD = 3, ANGLE = 7 * Math.PI / 180;
-  let modelUri;
+  const modelUris = {};
   function canLock(distance, forwardDot) {
     return distance >= 8 && distance <= RANGE && forwardDot >= Math.cos(ANGLE);
   }
@@ -20,8 +20,9 @@
   }
   // A small solid glTF, authored with a forked tail and swept, fingered wings.
   // +X is forward; glTF +Y is up. No billboard: rear and side views have real depth.
-  function birdModel() {
-    if (modelUri) return modelUri;
+  function birdModel(kind = "kite") {
+    if (modelUris[kind]) return modelUris[kind];
+    const swan = kind === "swan";
     const vertices = [], colors = [];
     function tri(a, b, c, color) {
       for (const v of [a, b, c]) { vertices.push(...v); colors.push(...color, 1); }
@@ -38,14 +39,74 @@
         tri(top(a), bottom(b), top(b), color);
       }
     }
-    solid([[1.9, 0, 0], [0.6, 0, 0.42], [-1.5, 0, 0.24], [-1.5, 0, -0.24], [0.6, 0, -0.42]], 0.32, [0.36, 0.24, 0.14]);
+    function surface(sample, rows, columns, color) {
+      function vertex(i, j) { return sample(i / rows, j / columns); }
+      function face(a, b, c) {
+        for (const v of [a, b, c]) {
+          vertices.push(...v.p);
+          colors.push(...color.map(channel => channel * v.shade), 1);
+        }
+      }
+      for (let i = 0; i < rows; i++) for (let j = 0; j < columns; j++) {
+        const a = vertex(i, j), b = vertex(i + 1, j), c = vertex(i + 1, j + 1), d = vertex(i, j + 1);
+        face(a, b, c); face(a, c, d);
+      }
+    }
+    function oval(center, radius, color, rows = 12, columns = 20) {
+      surface((u, v) => {
+        const latitude = Math.PI * u, longitude = 2 * Math.PI * v;
+        const n = [Math.cos(latitude), Math.sin(latitude) * Math.sin(longitude), Math.sin(latitude) * Math.cos(longitude)];
+        return { p: center.map((c, i) => c + radius[i] * n[i]), shade: 0.66 + 0.3 * Math.max(0, n[1]) + 0.12 * n[2] };
+      }, rows, columns, color);
+    }
+    function feather(base, tip, width, color) {
+      const dx = tip[0] - base[0], dz = tip[2] - base[2], length = Math.hypot(dx, dz);
+      surface((u, v) => {
+        const angle = 2 * Math.PI * v, spread = Math.pow(Math.sin(Math.PI * u), 0.6);
+        const across = Math.cos(angle) * width * spread;
+        return { p: [base[0] + dx * u - dz / length * across,
+          base[1] + (tip[1] - base[1]) * u + Math.sin(angle) * 0.045 * spread + 0.06 * Math.sin(Math.PI * u),
+          base[2] + dz * u + dx / length * across],
+          shade: (0.78 + 0.2 * Math.sin(angle)) * (u > 0.86 ? 0.66 : 1) * (1 - 0.09 * Math.pow(Math.sin(u * Math.PI * 7), 8)) };
+      }, 12, 8, color);
+    }
+    if (swan) {
+      oval([-0.25, 0, 0], [1.7, 0.66, 0.65], [0.96, 0.97, 1]);
+      for (let i = 0; i < 12; i++) {
+        const t = i / 11;
+        oval([0.85 + t * 2.6, 0.14 + Math.sin(t * Math.PI) * 0.2, 0], [0.3, 0.2 - t * 0.05, 0.2 - t * 0.05], [0.98, 0.98, 1], 8, 12);
+      }
+      oval([3.65, 0.2, 0], [0.42, 0.3, 0.25], [1, 1, 1]);
+      oval([4.05, 0.1, 0], [0.32, 0.12, 0.14], [0.95, 0.66, 0.13]);
+      oval([4.27, 0.085, 0], [0.14, 0.08, 0.12], [0.07, 0.07, 0.08]);
+    } else {
+    oval([-0.15, 0, 0], [1.5, 0.52, 0.48], [0.46, 0.32, 0.19]);
+    oval([1.05, 0.12, 0], [0.65, 0.4, 0.32], [0.52, 0.39, 0.25]);
+    oval([1.62, 0.21, 0], [0.43, 0.36, 0.3], [0.62, 0.5, 0.34]);
+    oval([1.97, 0.14, 0], [0.31, 0.15, 0.15], [0.49, 0.44, 0.29]);
+    oval([2.13, 0.035, 0], [0.11, 0.16, 0.09], [0.18, 0.16, 0.12]);
+    }
     for (const side of [-1, 1]) {
-      const wing = [[0.7, 0, 0.25], [0.8, 0.08, 1.8], [0, 0.12, 3.8], [-0.8, 0.18, 6],
-        [-1.05, 0.15, 5.8], [-0.75, 0.12, 4.9], [-1.3, 0.12, 5.5], [-1.1, 0.1, 4.5],
-        [-1.65, 0.1, 5], [-1.4, 0.08, 3.9], [-1.8, 0.08, 4.3], [-1.4, 0, 2], [-0.7, 0, 0.3]];
-      solid(wing.map(p => [p[0], p[1], p[2] * side]), 0.055, [0.29, 0.19, 0.11]);
-      solid([[-1, 0, side * 0.16], [-3, 0, side * 1.15], [-2.3, 0, 0]], 0.065, [0.44, 0.3, 0.17]);
-      solid([[1.5, 0.08, side * 0.17], [2.2, 0, 0], [1.7, 0.12, 0]], 0.08, [0.75, 0.62, 0.3]);
+      if (swan) {
+        oval([3.77, 0.29, side * 0.22], [0.05, 0.05, 0.025], [0.03, 0.03, 0.035], 8, 12);
+      } else {
+      oval([1.71, 0.29, side * 0.264], [0.09, 0.085, 0.045], [0.95, 0.63, 0.16], 8, 12);
+      oval([1.735, 0.3, side * 0.3], [0.046, 0.052, 0.019], [0.045, 0.038, 0.03], 8, 12);
+      }
+      oval([0.15, 0.07, side * 1.7], [0.66, 0.17, 1.75], swan ? [0.94, 0.96, 1] : [0.4, 0.29, 0.18]);
+      // Overlapping secondaries, separated finger-like primaries, and shorter coverts.
+      for (let i = 0; i < 13; i++) {
+        const z = 0.45 + i * 0.235;
+        feather([0.5 - i * 0.035, 0.04, side * z], [-1.3 - i * 0.022, -0.04, side * (z + 0.26)], 0.2, swan ? [0.93, 0.95, 0.99] : [0.47, 0.34, 0.21]);
+        feather([0.6 - i * 0.035, 0.21, side * z], [-0.45 - i * 0.026, 0.15, side * (z + 0.17)], 0.18, swan ? [1, 1, 1] : [0.53, 0.4, 0.25]);
+      }
+      for (let i = 0; i < 7; i++) {
+        feather([0.18 - i * 0.14, 0.1, side * (2.75 + i * 0.15)],
+          [0.5 - i * 0.42, 0.26 - i * 0.025, side * (5.7 - Math.abs(i - 2) * 0.18)], 0.23, swan ? [0.94, 0.96, 1] : [0.35, 0.25, 0.16]);
+      }
+      for (let i = 0; i < 5; i++) {
+        feather([-1.05, -0.03, side * (0.035 + i * 0.065)], [swan ? -2.8 + i * 0.12 : -2.55 - i * 0.16, -0.02, side * (0.08 + i * 0.245)], 0.18, swan ? [0.97, 0.98, 1] : [0.5, 0.35, 0.21]);
+      }
     }
     const data = new Float32Array([...vertices, ...colors]);
     const bytes = new Uint8Array(data.buffer);
@@ -55,12 +116,14 @@
       buffers: [{ byteLength: bytes.length, uri: "data:application/octet-stream;base64," + btoa(binary) }],
       bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: vertices.length * 4 },
         { buffer: 0, byteOffset: vertices.length * 4, byteLength: colors.length * 4 }],
-      accessors: [{ bufferView: 0, componentType: 5126, count: vertices.length / 3, type: "VEC3", min: [-3, -0.4, -6], max: [2.2, 0.4, 6] },
+      accessors: [{ bufferView: 0, componentType: 5126, count: vertices.length / 3, type: "VEC3",
+        min: [0, 1, 2].map(axis => vertices.reduce((min, v, i) => i % 3 === axis ? Math.min(min, v) : min, Infinity)),
+        max: [0, 1, 2].map(axis => vertices.reduce((max, v, i) => i % 3 === axis ? Math.max(max, v) : max, -Infinity)) },
         { bufferView: 1, componentType: 5126, count: colors.length / 4, type: "VEC4" }],
       materials: [{ doubleSided: true, extensions: { KHR_materials_unlit: {} } }],
       meshes: [{ primitives: [{ attributes: { POSITION: 0, COLOR_0: 1 }, material: 0 }] }] };
-    modelUri = "data:model/gltf+json;base64," + btoa(JSON.stringify(gltf));
-    return modelUri;
+    modelUris[kind] = "data:model/gltf+json;base64," + btoa(JSON.stringify(gltf));
+    return modelUris[kind];
   }
   function clear(players) {
     players.forEach(p => {
@@ -82,9 +145,15 @@
         orientation: { heading: 0, pitch: 0, roll: 0 } });
       p.tagEntity = p.viewer.entities.add({
         position: new C.CallbackProperty(() => other.viewer.camera.positionWC, false),
-        orientation: new C.CallbackProperty(() => C.Transforms.headingPitchRollQuaternion(other.viewer.camera.positionWC,
-          new C.HeadingPitchRoll(other.viewer.camera.heading - Math.PI / 2, other.viewer.camera.pitch, -other.input.rx * 0.45)), false),
-        model: { uri: birdModel(), minimumPixelSize: 0 },
+        orientation: new C.CallbackProperty(() => {
+          const camera = other.viewer.camera, matrix = new C.Matrix3();
+          // Cesium's glTF axis correction maps the authored +X nose to local +Y.
+          C.Matrix3.setColumn(matrix, 0, camera.rightWC, matrix);
+          C.Matrix3.setColumn(matrix, 1, camera.directionWC, matrix);
+          C.Matrix3.setColumn(matrix, 2, camera.upWC, matrix);
+          return C.Quaternion.fromRotationMatrix(matrix);
+        }, false),
+        model: { uri: birdModel(other.aircraft), minimumPixelSize: 0 },
         point: { pixelSize: 5, color: C.Color.fromCssColorString(other.color),
           distanceDisplayCondition: new C.DistanceDisplayCondition(250, 10000) },
         label: { text: "P" + other.id, font: "14px sans-serif", fillColor: C.Color.fromCssColorString(other.color),

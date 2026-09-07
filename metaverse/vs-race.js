@@ -110,6 +110,21 @@
       "vsRematchBtn", "vsCourseBtn", "vsResultCloseBtn"
     ];
     ids.forEach(id => { ui[id] = get(id); });
+    window.addEventListener("resize", resizeRaceViewers);
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(resizeRaceViewers).observe(document.querySelector(".vsPanel"));
+    players.forEach((p, i) => {
+      const select = document.createElement("select");
+      select.id = "vsAircraftP" + p.id;
+      select.title = "機体";
+      select.style.cssText = "grid-column:1/-1;width:100%;min-width:0;background:#14231f;color:white;padding:5px;border:1px solid #608375;border-radius:4px";
+      select.innerHTML = '<option value="kite">鳶</option><option value="swan">本埜の白鳥</option>';
+      select.addEventListener("change", () => {
+        p.aircraft = select.value;
+        const opponent = players[1 - i];
+        if (opponent.tagEntity) opponent.tagEntity.model.uri = window.SkyTag.birdModel(p.aircraft);
+      });
+      document.querySelector(i === 0 ? ".vsP1" : ".vsP2").appendChild(select);
+    });
     if (!ui.vsRaceStatus || !ui.vsCourseSelect) return false;
 
     const startButton = get("vsRaceBtn");
@@ -836,7 +851,8 @@
       rx,
       ry,
       up: clamp(rt - lt, -1, 1),
-      boost: isPressed(pad, 5) || rt > 0.86
+      roll: Number(isPressed(pad, 5)) - Number(isPressed(pad, 4)),
+      boost: isPressed(pad, 2)
     };
 
     const readyPressed = justPressed(player, pad, 9) || justPressed(player, pad, 0);
@@ -852,7 +868,6 @@
 
   function gamepadFor(index) {
     try {
-      if (typeof readGamepad === "function") return readGamepad(index);
       const pads = navigator.getGamepads ? navigator.getGamepads() : [];
       return pads[index] || null;
     } catch (e) {
@@ -878,9 +893,6 @@
   }
 
   function rawChannel(pad, ch) {
-    try {
-      if (typeof padRaw === "function") return padRaw(pad, ch);
-    } catch (e) {}
     if (ch < 4) return Number(pad.axes[ch] || 0);
     const buttonIndex = ch === 4 ? 6 : 7;
     const button = pad.buttons[buttonIndex];
@@ -915,6 +927,17 @@
     const boost = typeof SPEED_BOOST !== "undefined" ? SPEED_BOOST : 4;
     const speed = flySpeed * (player.input.boost ? boost : 1) * dt;
     const liftSpeed = flySpeed * 0.75 * (player.input.boost ? boost : 1) * dt;
+    if (race.mode === "tag") {
+      // Rotate about the camera's local axes so loops remain continuous past vertical.
+      cam.lookUp(-player.input.ry * 1.25 * dt);
+      cam.lookRight(player.input.rx * 1.65 * dt);
+      cam.twistRight((player.input.roll || 0) * 1.5 * dt);
+      cam.moveForward(-player.input.ly * speed);
+      cam.moveRight(player.input.lx * speed);
+      cam.moveUp(player.input.up * liftSpeed);
+      keepAboveGround(player);
+      return;
+    }
     cam.moveForward(-player.input.ly * speed);
     cam.moveRight(player.input.lx * speed);
     cam.moveUp(player.input.up * liftSpeed);
@@ -949,7 +972,7 @@
       const pitch = v.camera.pitch;
       v.camera.setView({
         destination: Cesium.Cartesian3.fromRadians(c.longitude, c.latitude, player.minHeight),
-        orientation: { heading, pitch, roll: 0 }
+        orientation: { direction: Cesium.Cartesian3.clone(v.camera.directionWC), up: Cesium.Cartesian3.clone(v.camera.upWC) }
       });
     }
   }
@@ -1225,12 +1248,19 @@
   }
 
   function resizeRaceViewers() {
+    if (race.enabled) {
+      const height = document.querySelector(".vsPanel").getBoundingClientRect().height;
+      get("cesiumContainer").style.bottom = height + "px";
+      get("vsCesium2").style.bottom = height + "px";
+    }
     players.forEach(p => {
       try { if (p.viewer && typeof p.viewer.resize === "function") p.viewer.resize(); } catch (e) {}
     });
   }
 
   function disableVsRace() {
+    get("cesiumContainer").style.bottom = "";
+    get("vsCesium2").style.bottom = "";
     window.SkyTag.clear(players);
     clearMarkers();
     race.enabled = false;
