@@ -17,6 +17,12 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-08", "title": "2秒捕捉・被捕捉通知と2P白鳥初期値",
+          "category": "実装", "partnerApproved": false,
+          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/vs-race.js", "site/metaverse/verify-tag-guidance.cjs"],
+          "note": "捕捉2秒・自動タッチと被捕捉警告。白鳥初期値は2P共通機体選択。1Pの旧トンビ画像レイヤーは別実装で未変更。オンライン多人版と写実モデルは未実装。"
+        },
+        {
           "date": "2026-09-08", "title": "ゲーム内の羽ばたき再生条件・時計設定を修正",
           "category": "実装", "partnerApproved": false,
           "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/vs-race.js"],

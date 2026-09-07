@@ -1,6 +1,6 @@
 (function (root) {
   "use strict";
-  const DURATION = 120000, RANGE = 350, HOLD = 3, ANGLE = 7 * Math.PI / 180;
+  const DURATION = 120000, RANGE = 350, HOLD = 2, ANGLE = 7 * Math.PI / 180;
   const modelUris = {};
   function canLock(distance, forwardDot) {
     return distance >= 8 && distance <= RANGE && forwardDot >= Math.cos(ANGLE);
@@ -12,9 +12,9 @@
       return;
     }
     player.tagLock = eligible ? player.tagLock + dt : 0;
-    if (player.tagLock >= HOLD) {
+    if (player.tagLock + 1e-9 >= HOLD) {
       player.tagScore++;
-      player.tagFeedback = "照準成功 +1";
+      player.tagFeedback = "タッチ！ +1";
       player.tagLock = 0;
       player.tagCooldown = 3;
     }
@@ -214,7 +214,7 @@
     });
   }
   function aircraftUri(kind) {
-    return "assets/tonbi/" + (kind === "swan" ? "swan" : "kite") + ".glb?v=20260907-4";
+    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260907-4";
   }
   function placeAtStart(player) {
     const halfSeparationDegrees = 300 / 111000;
@@ -225,7 +225,7 @@
   function reset(players, race) {
     clear(players);
     race.tagTouchLatched = false;
-    players.forEach(p => { p.tagScore = 0; p.tagLock = 0; p.tagCooldown = 0; p.tagFeedback = ""; });
+    players.forEach(p => { p.tagScore = 0; p.tagLock = 0; p.tagCooldown = 0; p.tagTaggedFor = 0; p.tagFeedback = ""; });
     if (race.mode !== "tag") return;
     const C = Cesium;
     players.forEach((p, i) => {
@@ -321,6 +321,7 @@
   }
   function tick(players, race, dt, elapsed) {
     if (elapsed >= DURATION) return true;
+    players.forEach(p => { p.tagTaggedFor = Math.max(0, (p.tagTaggedFor || 0) - dt); });
     const separation = relative(players[0], players[1]).distance;
     if (separation > 12) race.tagTouchLatched = false;
     if (separation <= 8 && !race.tagTouchLatched && players[0].connected && (players[1].connected || race.practice)) {
@@ -334,7 +335,9 @@
     }
     players.forEach((p, i) => {
       const other = players[1 - i], rel = relative(p, other);
+      const score = p.tagScore;
       advance(p, p.connected && (other.connected || race.practice) && !(race.practice && i === 1) && canLock(rel.distance, rel.dot), dt);
+      if (p.tagScore > score) other.tagTaggedFor = 3;
     });
     return false;
   }
@@ -349,14 +352,16 @@
       if (!ring) return;
       const targetAltitude = Cesium.Cartographic.fromCartesian(other.viewer.camera.positionWC).height;
       const ownAltitude = Cesium.Cartographic.fromCartesian(p.viewer.camera.positionWC).height;
-      ring.lastChild.textContent = targetGuidance(p.tagRelative, targetAltitude, targetAltitude - ownAltitude);
+      const warning = p.tagTaggedFor > 0 ? "タッチされました！" : other.tagLock > 0 ? "⚠ 捕捉されています " + other.tagLock.toFixed(1) + " / 2.0秒" : "";
+      ring.lastChild.textContent = targetGuidance(p.tagRelative, targetAltitude, targetAltitude - ownAltitude) + (warning ? "\n" + warning : "");
+      ring.lastChild.style.background = warning ? "#742718ed" : "#07140fe8";
       const height = p.viewer.container.clientHeight;
       const size = height * Math.tan(ANGLE) / Math.tan(p.viewer.camera.frustum.fovy / 2);
       ring.style.width = size + "px"; ring.style.height = size + "px";
       ring.style.borderColor = p.tagCooldown > 0 ? "#ffd45b" : p.tagLock > 0 ? "#70efb4" : "#ffffff88";
       ring.style.background = p.tagLock > 0 ? "rgba(80,220,140,0.08)" : "transparent";
       const progress = ring.firstChild;
-      progress.textContent = p.tagCooldown > 0 ? p.tagFeedback : p.tagLock > 0 ? "捕捉 " + p.tagLock.toFixed(1) + " / 3.0秒" : "照準 0 / 3.0秒";
+      progress.textContent = p.tagCooldown > 0 ? p.tagFeedback : p.tagLock > 0 ? "捕捉 " + p.tagLock.toFixed(1) + " / 2.0秒" : "照準 0 / 2.0秒";
       progress.style.color = p.tagCooldown > 0 ? "#ffd45b" : p.tagLock > 0 ? "#70efb4" : "#d2ddd8";
       progress.style.fontSize = p.tagCooldown > 0 ? "18px" : "14px";
     });
@@ -364,7 +369,7 @@
   function status(p, race) {
     if (race.practice && p.id === 2) return "練習ターゲット";
     if (p.tagCooldown > 0) return p.tagFeedback;
-    if (p.tagLock > 0) return "捕捉 " + p.tagLock.toFixed(1) + " / 3.0秒";
+    if (p.tagLock > 0) return "捕捉 " + p.tagLock.toFixed(1) + " / 2.0秒";
     const r = p.tagRelative;
     if (!r) return "相手を探索中";
     const direction = r.dot < 0 ? "後ろ" : Math.abs(r.side) > 0.12 ? r.side > 0 ? "右" : "左" : Math.abs(r.up) > 0.12 ? r.up > 0 ? "上" : "下" : "正面";

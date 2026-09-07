@@ -16,3 +16,18 @@ assert.match(SkyTag.targetGuidance({side: 0.4, up: 0.3, dot: 0.8, distance: 120}
 assert.match(SkyTag.targetGuidance({side: -0.4, up: -0.3, dot: -0.8, distance: 420}, 180, -60), /後方.*← 左.*↓ 下/);
 assert.match(SkyTag.targetGuidance({side: 0, up: 0, dot: 1, distance: 600}, 240, 0), /距離 600m/);
 console.log('PASS: symmetric starts outside capture range; direction, altitude and distance guidance');
+const player = {tagScore: 0, tagLock: 0, tagCooldown: 0};
+for (let i = 0; i < 19; i++) SkyTag.advance(player, true, 0.1);
+assert.equal(player.tagScore, 0);
+SkyTag.advance(player, true, 0.1);
+assert.equal(player.tagScore, 1);
+assert.equal(player.tagFeedback, 'タッチ！ +1');
+SkyTag.advance(player, true, 0.1);
+assert.equal(player.tagScore, 1);
+player.tagCooldown = 0;
+player.tagLock = 1.9;
+SkyTag.advance(player, false, 0.1);
+assert.equal(player.tagLock, 0);
+assert.match(SkyTag.aircraftUri(), /swan.glb/);
+assert.match(SkyTag.aircraftUri('kite'), /kite.glb/);
+console.log('PASS: 2-second auto touch, cooldown, interrupted capture, swan default');

@@ -71,6 +71,7 @@
       gamepadIndex,
       name,
       color,
+      aircraft: "swan",
       viewer: null,
       ready: false,
       connected: false,
@@ -117,7 +118,8 @@
       select.id = "vsAircraftP" + p.id;
       select.title = "機体";
       select.style.cssText = "grid-column:1/-1;width:100%;min-width:0;background:#14231f;color:white;padding:5px;border:1px solid #608375;border-radius:4px";
-      select.innerHTML = '<option value="kite">鳶</option><option value="swan">本埜の白鳥</option>';
+      select.innerHTML = '<option value="swan">本埜の白鳥</option><option value="kite">鳶</option>';
+      select.value = p.aircraft;
       select.addEventListener("change", () => {
         p.aircraft = select.value;
         const opponent = players[1 - i];
