@@ -1,0 +1,98 @@
+name: 災害MAPのスクショ撮影とSNS配信
+
+# CiDAO 側で警戒レベルの上昇を検知したときに呼ばれる受け口。
+# CiDAO が repository_dispatch（event_type: disaster-shot）を投げると、
+# 本番の防災MAPを実際に開いてスクリーンショットを撮り、
+# 公開されるのを待ってから CiDAO へ知らせる。CiDAO が Instagram へ投稿する。
+#
+# なぜこの形か:
+#   - Vercel ではヘッドレスブラウザを安定して動かせない（速報の経路に入れたくない）
+#   - GitHub Actions の「定期実行」は大幅に間引かれる（実測で1日7回・最長12.4時間の空白）ため
+#     災害速報には使えない。イベント起動なら即座に走る
+#   - 画像は合成ではなく、本番サイトの実画面をそのまま撮る
+#
+# 必要な設定:
+#   リポジトリの Secrets に DISASTER_SHOT_SECRET（CiDAO 側の同名の環境変数と同じ値）
+#
+# テキスト速報は CiDAO が Threads へ即時に出しているので、
+# このワークフローが遅れても・失敗しても、速報そのものは届いている。
+
+on:
+  repository_dispatch:
+    types: [disaster-shot]
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: "災害の種類（rain / landslide / flood / quake / default）"
+        required: false
+        default: rain
+
+permissions:
+  contents: write
+
+concurrency:
+  group: disaster-shot
+  cancel-in-progress: false
+
+jobs:
+  shoot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 種類を決める
+        id: vars
+        run: |
+          KIND="${{ github.event.client_payload.kind || inputs.kind || 'rain' }}"
+          case "$KIND" in
+            rain|landslide|flood|quake|default) ;;
+            *) KIND=rain ;;
+          esac
+          echo "kind=$KIND" >> "$GITHUB_OUTPUT"
+          echo "stamp=$(TZ=Asia/Tokyo date +%Y%m%d%H%M)" >> "$GITHUB_OUTPUT"
+
+      - name: puppeteer を用意
+        run: npm install puppeteer@23 --no-audit --no-fund
+
+      - name: 防災MAPを撮影
+        run: node tools/shoot_disaster_map.mjs --kind "${{ steps.vars.outputs.kind }}" --out assets/disaster
+
+      - name: 画像をコミットして公開する
+        id: publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/disaster
+          if git diff --cached --quiet; then
+            echo "変更なし（撮影に失敗した可能性）"; exit 1
+          fi
+          git commit -m "災害MAPの自動撮影 ${{ steps.vars.outputs.kind }} ${{ steps.vars.outputs.stamp }}"
+          git push
+          FILE=$(ls -t assets/disaster/disaster_${{ steps.vars.outputs.kind }}_*.png | head -1)
+          echo "url=https://communitybankinzai.github.io/cbi-site/$FILE" >> "$GITHUB_OUTPUT"
+
+      - name: 画像が公開されるまで待つ
+        id: wait
+        run: |
+          URL="${{ steps.publish.outputs.url }}"
+          for i in $(seq 1 40); do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            echo "  $i回目: $CODE"
+            if [ "$CODE" = "200" ]; then echo "ok=1" >> "$GITHUB_OUTPUT"; exit 0; fi
+            sleep 15
+          done
+          echo "公開を確認できませんでした（GitHub Pages の反映待ち）"
+          exit 1
+
+      - name: CiDAO へ知らせる（Instagram へ画像付きで投稿される）
+        if: steps.wait.outputs.ok == '1'
+        run: |
+          curl -sS -X POST "https://cidao.vercel.app/api/disaster/post-image" \
+            -H "Content-Type: application/json" \
+            -d "{\"secret\":\"${{ secrets.DISASTER_SHOT_SECRET }}\",\"kind\":\"${{ steps.vars.outputs.kind }}\",\"imageUrl\":\"${{ steps.publish.outputs.url }}\",\"requestId\":\"${{ github.event.client_payload.requestId }}\"}" \
+            -w "\nHTTP %{http_code}\n"
