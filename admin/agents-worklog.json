@@ -18,6 +18,13 @@
       "actuals": [
         {
           "date": "2026-09-09",
+          "title": "鳶・白鳥の実写参照と眼部修正",
+          "category": "実装",
+          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/assets/tonbi/kite.glb", "site/metaverse/assets/tonbi/swan.glb"],
+          "note": "Codex: 日本の鳶とコハクチョウの顔写真を実際に表示し、眼部の色・比率・まぶたを調整。参照写真は非同梱。購入・有料生成なし。"
+        },
+        {
+          "date": "2026-09-09",
           "title": "鳶・白鳥の翼形状と羽弁法線を修正",
           "category": "実装",
           "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/assets/tonbi/kite.glb", "site/metaverse/assets/tonbi/swan.glb"],

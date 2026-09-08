@@ -59,7 +59,7 @@
           vertices.push(...v.p.map((coordinate, i) => coordinate - parts[activePart].pivot[i]));
           normals.push(...v.n);
           uvs.push(...v.uv);
-          colors.push(...color.map((channel, i) => material === 1 || swan ? channel : Math.min(1, channel / [0.5, 0.36, 0.24][i])), 1);
+          colors.push(...(v.color || color).map((channel, i) => material === 1 || swan ? channel : Math.min(1, channel / [0.5, 0.36, 0.24][i])), 1);
           (bare ? bareIndices : plumageIndices).push(vertices.length / 3 - 1);
           parts[activePart].indices[material].push(vertices.length / 3 - 1);
         }
@@ -76,6 +76,33 @@
         const normal = n.map((value, i) => value / radius[i]), length = Math.hypot(...normal);
         return { p: center.map((c, i) => c + radius[i] * n[i]), n: normal.map(v => v / length), uv: [v, u] };
       }, rows, columns, color, radius[0] < 0.35 ? true : 2);
+    }
+    function eye(side) {
+      const center = swan ? [3.77, 0.29, 0.195] : [1.71, 0.29, 0.237];
+      const rx = swan ? 0.047 : 0.064, ry = swan ? 0.038 : 0.053;
+      const depth = 0.023;
+      // A shallow convex eye sits inside an almond-shaped lid, not on a stalk.
+      surface((u, v) => {
+        const a = v * Math.PI * 2, x = Math.cos(a), y = Math.sin(a);
+        const z = depth * Math.sqrt(Math.max(0, 1 - u * u));
+        const n = [u * x / rx, u * y / ry, side * z / (depth * depth)];
+        const length = Math.hypot(...n) || 1;
+        const fleck = 0.82 + 0.12 * Math.sin(a * 37 + u * 9) + 0.06 * Math.sin(a * 71 - u * 13);
+        const shade = fleck * (1 - 0.6 * Math.pow(u, 8));
+        return {p: [center[0] + rx * u * x, center[1] + ry * u * y,
+          side * (center[2] + z)], n: n.map(value => value / length),
+          color: (u < (swan ? 0.66 : 0.38) ? [0.003, 0.003, 0.004] : swan ? [0.012, 0.008, 0.006] : [0.19, 0.065, 0.022]).map(c => c * shade)};
+      }, 16, 96, [1, 1, 1], true);
+      // Upper and lower lids follow the eye aperture; the upper lid is heavier.
+      surface((u, v) => {
+        const a = u * Math.PI * 2, b = v * Math.PI * 2;
+        const upper = Math.sin(a) > 0, thickness = upper ? 0.003 : 0.002;
+        const nx = Math.cos(a), ny = Math.sin(a);
+        return {p: [center[0] + (rx + thickness * Math.cos(b)) * nx,
+          center[1] + (ry + thickness * Math.cos(b)) * ny * (0.85 + 0.15 * Math.abs(ny)),
+          side * (center[2] + 0.003 + thickness * Math.sin(b))],
+          n: [nx * Math.cos(b), ny * Math.cos(b), side * Math.sin(b)]};
+      }, 40, 8, swan ? [0.014, 0.012, 0.009] : [0.016, 0.012, 0.009], true);
     }
     function feather(base, tip, width, color) {
       const dx = tip[0] - base[0], dz = tip[2] - base[2], length = Math.hypot(dx, dz);
@@ -116,12 +143,7 @@
     }
     for (const side of [-1, 1]) {
       activePart = "neck";
-      if (swan) {
-        oval([3.77, 0.29, side * 0.22], [0.05, 0.05, 0.025], [0.03, 0.03, 0.035], 8, 12);
-      } else {
-      oval([1.71, 0.29, side * 0.264], [0.09, 0.085, 0.045], [0.95, 0.63, 0.16], 8, 12);
-      oval([1.735, 0.3, side * 0.3], [0.046, 0.052, 0.019], [0.045, 0.038, 0.03], 8, 12);
-      }
+      eye(side);
       activePart = side === 1 ? "leftWing" : "rightWing";
       // Span stations describe shoulder, elbow and wrist rather than a straight paddle.
       const stations = swan
@@ -287,7 +309,7 @@
     });
   }
   function aircraftUri(kind) {
-    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260909-1";
+    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260909-2";
   }
   function placeAtStart(player) {
     const halfSeparationDegrees = 300 / 111000;
