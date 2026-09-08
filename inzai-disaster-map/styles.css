@@ -528,6 +528,33 @@ input[type="checkbox"] {
   font-size: 13px;
 }
 
+.gap-section h3 {
+  font-size: 13px;
+  margin: 14px 0 4px;
+  font-weight: 700;
+}
+
+.gap-section .gap-lead {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  background: rgba(63, 142, 163, 0.09);
+  border-left: 3px solid #3f8ea3;
+  border-radius: 0 4px 4px 0;
+  padding: 9px 10px;
+}
+
+.gap-section .gap-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.gap-section .gap-note a {
+  word-break: break-word;
+}
+
 .map-pane {
   position: relative;
   min-width: 0;

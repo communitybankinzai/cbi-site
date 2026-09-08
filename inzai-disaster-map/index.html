@@ -282,6 +282,56 @@
             </div>
           </section>
 
+          <section class="panel-section gap-section">
+            <h2>この地図に出せていないもの</h2>
+            <p class="gap-lead">
+              重ねたくても重ねられない情報があります。理由は<strong>市が数値データ（GIS）を公開していない</strong>ことと、<strong>提供元から重ね表示の許諾が得られなかった</strong>ことの2つで、いずれも私たちの工夫では超えられません。
+              そこで、出せていないものを項目ごとに挙げ、それぞれの公式サイトへのリンクで補います。<strong>実際の避難や通行の判断は、必ずリンク先の公式情報で行ってください。</strong>
+            </p>
+
+            <h3>① 市が想定している浸水の範囲と深さ（内水）</h3>
+            <p class="gap-note">
+              <strong>出せていない理由：</strong>印西市の内水浸水想定は<strong>PDFでのみ公開</strong>されており、地図に重ねられる数値データ（GIS）が非公開のためです。<br>
+              なお、レイヤーの「内水浸水想定」は国のハザードマップポータルのタイルで、<strong>印西市域ではほとんどの範囲にデータがありません</strong>（2026-09-09にタイルの有無を実測。市域42区画のうち存在は10区画で、いずれも市の西端に偏っていました）。<strong>色が付いていない場所が安全という意味ではありません。</strong><br>
+              <a href="https://www.city.inzai.lg.jp/bousaiportal/0000008837.html" target="_blank" rel="noreferrer">印西市 公式ハザードマップ（内水浸水想定・PDF 約3.9MB）↗</a><br>
+              参考条件は 2008-08-30 我孫子観測所 最大1時間105 mm。
+            </p>
+
+            <h3>② いま降っている雨による内水リスク</h3>
+            <p class="gap-note">
+              <strong>出せていない理由：</strong>国立研究開発法人 防災科学技術研究所（防災科研）へ重ね表示を申し入れましたが、<strong>2026-08-28に正式に見送りとの回答</strong>をいただきました。リンクのみとし、配信URLへのアクセスは行いません。<br>
+              <a href="https://sip4dkit-web.bosai.go.jp/riskmap/index.html?appid=e327b28aea5447e983d87295e162aab9&amp;center=140,38&amp;level=7&amp;entry=2" target="_blank" rel="noreferrer">防災科研 リアルタイム内水リスク（東日本）↗</a><br>
+              <strong>開いても白紙のことがありますが、故障ではありません。</strong>XRAINの実況雨量から計算しているため<strong>雨が降っていないと何も表示されません</strong>。また、提供元から<strong>メンテナンス中</strong>との告知が出ています。
+            </p>
+
+            <h3>③ 洪水・土砂災害・高潮などの想定区域をまとめて見る</h3>
+            <p class="gap-note">
+              <strong>出せていない理由：</strong>この地図が重ねているのは洪水・内水・土砂災害の一部です。高潮・津波・ため池などは載せていません。<br>
+              <a href="https://disaportal.gsi.go.jp/maps/" target="_blank" rel="noreferrer">重ねるハザードマップ（ハザードマップポータル）↗</a>
+            </p>
+
+            <h3>④ 堤防が切れたとき、浸水がどう広がるか（時間変化）</h3>
+            <p class="gap-note">
+              <strong>出せていない理由：</strong>この地図の浸水想定は最終的な浸水範囲で、水が広がっていく時間の計算はしていません。<br>
+              <a href="https://suiboumap.gsi.go.jp/" target="_blank" rel="noreferrer">浸水ナビ（国土交通省）↗</a>
+            </p>
+
+            <h3>⑤ 川の水位と雨量の実況</h3>
+            <p class="gap-note">
+              <strong>出せていない理由：</strong>河川水位のリアルタイム配信は有償のみで、無償の公開APIが存在しません（2026-08-23調査）。<br>
+              <a href="https://www.river.go.jp/" target="_blank" rel="noreferrer">川の防災情報（国土交通省）↗</a>
+            </p>
+
+            <h3>⑥⑦ 雨雲の動き・キキクル（これは重ねています）</h3>
+            <p class="gap-note">
+              この2つは気象庁から直接取得して<strong>レイヤーとして重ねています</strong>（雨雲レーダー・雨雲の予想・土砂／浸水／洪水キキクル）。ただし当サイトは表示が遅れたり止まったりすることがあるため、<strong>判断の際は必ず気象庁の元画面も確認してください。</strong><br>
+              <a href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noreferrer">気象庁 雨雲の動き ↗</a><br>
+              <a href="https://www.jma.go.jp/bosai/risk/" target="_blank" rel="noreferrer">気象庁 キキクル（危険度分布）↗</a>
+            </p>
+
+            <p class="gap-note"><a href="./naisui.html" target="_blank" rel="noopener">▶ 内水リスク推定（研究用MAP）にも同じ一覧があります</a></p>
+          </section>
+
           <section class="panel-section source-section">
             <h2>参照元・関連情報</h2>
             <a href="https://disaportaldata.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank" rel="noreferrer">ハザードマップポータル</a>
