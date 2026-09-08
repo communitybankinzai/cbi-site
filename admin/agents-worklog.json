@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-09-08",
+          "title": "災害時の画像付き自動配信・防災メール取込・自動投稿をレベル3へ（不具合2件の修正含む） 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "site/.github/workflows/disaster-shot.yml（新規・イベント起動の撮影）",
+            "site/tools/shoot_disaster_map.mjs（新規・災害種別でレイヤーを切替）",
+            "site/docs/disaster-shot-setup.md（新規・設定手順）",
+            "scripts/promo/shoot_disaster_map.mjs（手元実行用）",
+            "cidao: src/app/api/disaster/post-image/route.ts（新規）",
+            "cidao: src/lib/disaster-auto-post.ts（列名の修正・kind照合・見出し生成・撮影依頼）",
+            "cidao: src/lib/disaster-timeline.ts（city-mail パーサ追加）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "⚠ 前日「稼働開始」と報告した自動投稿が、実際には毎回エラーで動いていなかった。'column disaster_timeline_items.source_label does not exist' で、存在しない列を読んでいた（ラベルは disaster_info_sources 側にあり source_id で引く必要があった）。誤発信は起きていないが、機能していなかったことを訂正して報告した。あわせて安全装置の照合をラベル文字列から kind（パーサの種類）へ変更。ラベルは管理画面から変更できるため名前を変えただけで安全装置が外れる作りで、実際に初版の『印西市 災害情報』は本番の『印西市 防災情報（市公式）』と一致していなかった。自動投稿の基準をレベル4→3へ変更（9/6の実データで再現し4本・連投にならないことを確認）。防災行政無線はタイトルが固定のため、本文の最初の意味のある行から見出しを作るよう改善。印西市の防災メール（中司さんが9/8に配信申込）を kind: city-mail として取り込めるようにし、自動投稿の判定対象にも加えた。既存の GAS メールAPI を流用。画像付き配信は、Vercelでヘッドレスブラウザを安定して動かせないこと、GitHub Actions の定期実行が大幅に間引かれること（他セッションの実測で1日7回・最長12.4時間の空白）の2点から、イベント起動（repository_dispatch）で Actions に撮影させる構成にした。Threadsへの文字速報は待たずに先に出るので、画像が遅れても速報は届く。撮影の構図は中司さんが『ベストショット』と評価したもの（地図＋警報＋雨量＋公式発表、左パネルは除外）で確定。大雨のときは道路の冠水リスク傾向を重ねる。前回記録(1,370,698)以降の差分で算出。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 1,430,722"
+        },
+        {
+          "date": "2026-09-08",
           "title": "2秒捕捉・被捕捉通知と2P白鳥初期値",
           "category": "実装",
           "partnerApproved": false,
@@ -5292,6 +5310,28 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-13",
+          "title": "🔑 画像付き自動配信のためGitHub PATを発行し、Vercelとリポジトリに登録する",
+          "category": "事務",
+          "priority": "高",
+          "note": "手順は site/docs/disaster-shot-setup.md。中司さんの作業。Vercel に GITHUB_DISPATCH_TOKEN と DISASTER_SHOT_SECRET を登録して Redeploy、GitHub の Actions Secrets に同じ DISASTER_SHOT_SECRET を登録する。未登録でも Threads への文字速報は動く（画像付き配信だけが止まる）。"
+        },
+        {
+          "due": "未定",
+          "title": "📧 防災メールの検索式を差出人で絞る（最初のメールが届いたら）",
+          "category": "保守",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "印西市の防災メールがCBI公式Gmailに初めて届くこと。差出人アドレスが分かるまでは件名で広めに拾う設定にしてあり、このままだと防災と無関係なメールを取り込む恐れがある。届いたら管理画面 /admin/disaster-sources の情報源 config の query を from:<差出人> に直す。情報源そのものの登録もまだ（届いてから登録する）。"
+        },
+        {
+          "due": "2026-09-13",
+          "title": "🧪 撮影ワークフローを手動実行して、撮影と公開までを一度通しておく",
+          "category": "保守",
+          "priority": "中",
+          "note": "Actions の『災害MAPのスクショ撮影とSNS配信』を Run workflow（kind=rain）。Instagram投稿までは進まない（本文が用意されていないため404で止まる＝正しい動作）。確認できるのは撮影・コミット・公開まで。災害が来る前に一度通しておく。"
+        },
         {
           "due": "2026-09-13",
           "title": "🔔 自動SNS投稿の承認リンクをスマホへ届ける手段を決めて実装する",
