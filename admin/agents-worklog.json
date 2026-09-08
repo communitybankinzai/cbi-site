@@ -6564,6 +6564,13 @@
       ],
       "plans": [
         {
+          "due": "2026-09-20",
+          "title": "Anthropic 使用量の逐次モニタを CiDAO に実装する（1時間ごと・急増時のみ通知）",
+          "category": "実装",
+          "priority": "高",
+          "note": "依頼プロンプトは docs/2026-09-08_依頼_Anthropic使用量モニタ実装.md（別セッションで実施）。2026-09-08 に方針決定：CiDAO に相乗り（Vercel cron・Resend・管理画面が既存のため）、1時間ごとにチェックし急増時のみ通知。実測制約：cost_report は bucket_width=1d のみで当日分は 400 のため逐次監視に使えず、usage_report/messages（1h 粒度・直近1時間前まで取得可）＋自前の単価換算が必須。単価表は cost_report との突合で検証済みで依頼書に記載。最初に確認すべきは Vercel プランで1時間ごとの cron が通るか（Hobby だと不可。その場合は外部 cron か管理画面からの手動起動へ切替を判断）。既存 plan『AI関連費の月次モニタリング体制構築』はこの実装で解消できる見込み。"
+        },
+        {
           "due": "未定",
           "title": "N's factory 用と CBI 用で Anthropic ワークスペースを分けるか決める",
           "category": "その他",
