@@ -3,6 +3,22 @@
 Original procedural polygon models and textures for the kite and swan.
 These are stylized models, not photographic scans or photorealistic assets.
 
+## Swan Revision 20260908-4
+
+The swan adds three smooth morph targets: spanwise bending, return-stroke
+folding, and trailing-edge twist. A 2.2-second clip offsets these against
+shoulder rotation. Setup and countdown also animate in the game.
+
+`swan-plumage.png` is an original built-in image-generation output approved
+by the user. It is not recreated by the procedural texture script.
+Prompt: "Seamless square PBR base color texture of real white swan body
+plumage, macro photographic detail, densely overlapping contour feathers,
+fine barbs, neutral diffuse lighting, white and pearl grey; no whole bird,
+background, text or borders." Generated using the built-in tool, not an API
+script. The long flight-feather texture remains procedural.
+
+Rebuild only the swan with `node metaverse/assets/tonbi/build-models.cjs swan`.
+
 ## Files
 
 - `kite.glb`, `swan.glb`: self-contained geometry, PBR textures and animation.

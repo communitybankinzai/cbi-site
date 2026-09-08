@@ -17,6 +17,12 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-08", "title": "白鳥の羽毛画像と柔軟翼モーフを組み込み",
+          "category": "実装", "partnerApproved": false,
+          "outputs": ["site/metaverse/assets/tonbi/swan.glb", "site/metaverse/assets/tonbi/swan-plumage.png", "site/metaverse/sky-tag.js"],
+          "note": "組み込み画像生成を1回利用、素材はユーザー了承。Meshy契約・素材購入なし。4方向/モバイル/ゲーム内両翼アニメーション検証、有料地図要求0。実写水準を保証しない。"
+        },
+        {
           "date": "2026-09-08",
           "title": "自動SNS投稿の通し確認（撮影→Instagram投稿まで）と記録の整理 0.3時間",
           "category": "実装",

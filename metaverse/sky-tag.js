@@ -90,14 +90,14 @@
       }, 18, 12, color);
     }
     if (swan) {
-      oval([-0.25, 0, 0], [1.7, 0.66, 0.65], [0.96, 0.97, 1]);
+      oval([-0.25, 0, 0], [1.85, 0.5, 0.58], [0.96, 0.97, 1]);
       activePart = "neck";
       surface((u, v) => {
-        const angle = v * Math.PI * 2, radius = 0.29 - u * 0.13;
+        const angle = v * Math.PI * 2, radius = 0.27 - u * 0.14;
         return {p: [0.78 + u * 2.78, 0.14 + Math.sin(u * Math.PI) * 0.16 + Math.sin(angle) * radius, Math.cos(angle) * radius],
           n: [0, Math.sin(angle), Math.cos(angle)], uv: [v, u]};
       }, 32, 24, [0.98, 0.98, 1], 2);
-      oval([3.65, 0.2, 0], [0.42, 0.3, 0.25], [1, 1, 1]);
+      oval([3.65, 0.2, 0], [0.46, 0.24, 0.215], [1, 1, 1]);
       oval([4.05, 0.1, 0], [0.32, 0.12, 0.14], [0.95, 0.66, 0.13]);
       oval([4.27, 0.085, 0], [0.14, 0.08, 0.12], [0.07, 0.07, 0.08]);
     } else {
@@ -117,7 +117,7 @@
       oval([1.735, 0.3, side * 0.3], [0.046, 0.052, 0.019], [0.045, 0.038, 0.03], 8, 12);
       }
       activePart = side === 1 ? "leftWing" : "rightWing";
-      oval([0.15, 0.07, side * 1.7], [0.66, 0.17, 1.75], swan ? [0.94, 0.96, 1] : [0.4, 0.29, 0.18]);
+      oval([0.15, 0.07, side * 1.7], [0.66, swan ? 0.085 : 0.17, 1.75], swan ? [0.94, 0.96, 1] : [0.4, 0.29, 0.18]);
       // Overlapping secondaries, separated finger-like primaries, and shorter coverts.
       for (let i = 0; i < 13; i++) {
         const z = 0.45 + i * 0.235;
@@ -164,7 +164,7 @@
       materials: [{ doubleSided: true, pbrMetallicRoughness: { baseColorTexture: { index: 0 }, metallicFactor: 0, roughnessFactor: 0.88 }, normalTexture: { index: 1, scale: 0.5 } },
         { doubleSided: true, pbrMetallicRoughness: { metallicFactor: 0, roughnessFactor: 0.36 } }],
       meshes: [{ primitives: [0, 1].map(material => ({ attributes: { POSITION: 0, COLOR_0: 1, NORMAL: 2, TEXCOORD_0: 3 }, indices: 4 + material, material })) }] };
-    gltf.images.push({uri: new URL("assets/tonbi/" + kind + "-body.png", typeof location === "undefined" ? "https://communitybankinzai.github.io/cbi-site/metaverse/" : location.href).href});
+    gltf.images.push({uri: new URL("assets/tonbi/" + kind + (swan ? "-plumage.png" : "-body.png"), typeof location === "undefined" ? "https://communitybankinzai.github.io/cbi-site/metaverse/" : location.href).href});
     gltf.textures.push({source: 2, sampler: 0});
     gltf.materials.push({doubleSided: true, pbrMetallicRoughness: {baseColorTexture: {index: 2}, metallicFactor: 0, roughnessFactor: 0.95}});
     const chunks = [bytes];
@@ -198,6 +198,51 @@
       samplers.push({input: times, output: append(new Float32Array(rotations), 5126, "VEC4", 4), interpolation: "LINEAR"});
     });
     gltf.animations = [{name: "Wingbeat", samplers, channels}];
+    if (swan) {
+      // Smooth spanwise deformation avoids hinges and detached rigid feather strips.
+      const targets = [0, 1, 2].map(mode => {
+        const dp = new Float32Array(vertices.length), dn = new Float32Array(normals.length);
+        for (let j = 0; j < vertices.length; j += 3) {
+          const x = vertices[j], z = vertices[j + 2], span = Math.abs(z), side = Math.sign(z);
+          const r = Math.min(1, span / 5.2), bend = r * r;
+          if (mode === 0) {
+            dp[j + 1] = 1.15 * bend;
+            const slope = 2.3 * r / 5.2 * side;
+            const n = [normals[j], normals[j + 1], normals[j + 2] - slope * normals[j + 1]];
+            const len = Math.hypot(...n) || 1;
+            n.forEach((v, axis) => { dn[j + axis] = v / len - normals[j + axis]; });
+          } else if (mode === 1) {
+            dp[j] = -0.65 * bend; dp[j + 2] = -side * 0.48 * bend;
+          } else {
+            dp[j + 1] = -0.22 * x * bend;
+            const n = [normals[j] + 0.22 * bend * normals[j + 1], normals[j + 1], normals[j + 2]];
+            const len = Math.hypot(...n) || 1;
+            n.forEach((v, axis) => { dn[j + axis] = v / len - normals[j + axis]; });
+          }
+        }
+        return {POSITION: append(dp, 5126, "VEC3", 3), NORMAL: append(dn, 5126, "VEC3", 3)};
+      });
+      const frames = 33, duration = 2.2;
+      const time = append(Float32Array.from({length: frames}, (_, i) => duration * i / (frames - 1)), 5126, "SCALAR", 1);
+      gltf.animations[0] = {name: "Wingbeat", samplers: [], channels: []};
+      const clip = gltf.animations[0];
+      for (const [node, sign] of [[3, -1], [4, 1]]) {
+        const mesh = gltf.meshes[gltf.nodes[node].mesh];
+        mesh.weights = [0, 0, 0];
+        mesh.primitives.forEach(p => { p.targets = targets; });
+        const rotations = [], weights = [];
+        for (let i = 0; i < frames; i++) {
+          const phase = Math.PI * 2 * i / (frames - 1);
+          const angle = sign * 0.48 * Math.sin(phase);
+          rotations.push(Math.sin(angle / 2), 0, 0, Math.cos(angle / 2));
+          weights.push(0.8 * Math.sin(phase - 0.7), Math.max(0, Math.cos(phase)) * 0.75, Math.sin(phase - 1.05));
+        }
+        for (const [path, values, type, width] of [["rotation", rotations, "VEC4", 4], ["weights", weights, "SCALAR", 1]]) {
+          clip.channels.push({sampler: clip.samplers.length, target: {node, path}});
+          clip.samplers.push({input: time, output: append(new Float32Array(values), 5126, type, width), interpolation: "LINEAR"});
+        }
+      }
+    }
     binary = "";
     for (const chunk of chunks) for (const value of chunk) binary += String.fromCharCode(value);
     gltf.buffers[0] = {byteLength: offset, uri: "data:application/octet-stream;base64," + btoa(binary)};
@@ -214,7 +259,7 @@
     });
   }
   function aircraftUri(kind) {
-    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260907-4";
+    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260908-4";
   }
   function placeAtStart(player) {
     const halfSeparationDegrees = 300 / 111000;
@@ -346,7 +391,7 @@
     players.forEach((p, i) => {
       p.tagRelative = relative(p, players[1 - i]);
       const other = players[1 - i];
-      if (p.tagEntity) p.tagEntity.model.runAnimations = race.state === "running" && !race.paused;
+      if (p.tagEntity) p.tagEntity.model.runAnimations = ["setup", "countdown", "running"].includes(race.state) && !race.paused;
       drawScope(p, players[1 - i]);
       const ring = p.tagReticle;
       if (!ring) return;

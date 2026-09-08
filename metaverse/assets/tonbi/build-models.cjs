@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 require('../../sky-tag.js');
-for (const kind of ['kite', 'swan']) {
+for (const kind of process.argv[2] ? [process.argv[2]] : ['kite', 'swan']) {
   const gltf = JSON.parse(Buffer.from(SkyTag.birdModel(kind).split(',')[1], 'base64').toString());
   const chunks = [Buffer.from(gltf.buffers[0].uri.split(',')[1], 'base64')];
   let offset = chunks[0].length;
