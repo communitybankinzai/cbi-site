@@ -56,6 +56,18 @@ jobs:
           echo "kind=$KIND" >> "$GITHUB_OUTPUT"
           echo "stamp=$(TZ=Asia/Tokyo date +%Y%m%d%H%M)" >> "$GITHUB_OUTPUT"
 
+      # ⚠ ubuntu ランナーには日本語フォントが入っていない。
+      # 入れずに撮ると、画面の文字がすべて □（豆腐）になる。
+      # 2026-09-08 に実際にこれで文字化けした画像を投稿してしまった。
+      # 確認するときは必ず等倍で見ること（縮小すると □ が潰れて文字らしく見える）。
+      - name: 日本語フォントを入れる
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji
+          fc-cache -f
+          echo "--- 入った日本語フォント ---"
+          fc-list :lang=ja family | sort -u | head -5
+
       - name: puppeteer を用意
         run: npm install puppeteer@23 --no-audit --no-fund
 
