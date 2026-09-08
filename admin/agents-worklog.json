@@ -17,15 +17,40 @@
     "A1": {
       "actuals": [
         {
-          "date": "2026-09-08", "title": "鳶柔軟翼と公開名称３Dワールドへの変更",
-          "category": "実装", "partnerApproved": false,
-          "outputs": ["site/metaverse/assets/tonbi/kite.glb", "site/metaverse/assets/tonbi/kite-plumage.png", "site/metaverse/sky-tag.js", "site/index.html"],
+          "date": "2026-09-09",
+          "title": "「日本初」を名乗れるかの検証（既存の雨量追従型内水マップを実測確認） 0.5時間",
+          "category": "調査",
+          "outputs": [
+            "（調査のみ・サイト変更なし）",
+            "次セッション用プロンプト: scratchpad/next_session_prompt.txt"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "「排水能力を反映した内水マップ」「雨量追従の内水マップ」が日本初になるかの照会を受け、実測で確認した。結論：どちらも日本初ではない。①印西市には既に公式の内水ハザードマップがある（naisui.pdf 3.9MB・HTTP 200で確認）。これは下水道の排水能力を織り込んだ氾濫解析の結果そのもの。②防災科研の『リアルタイム洪水・土砂災害リスク情報マップβ版』に内水リスクのタブが実在し、XRAINレーダ雨量から10分間隔で算出している（実画面で確認）。ただし現在メンテナンス中で地図が描画されず、また雨量を利用者が設定する機能は無い（実況追従のみ）。凡例の説明から、同マップは『実効雨量×人口集中地区(DID)』の重ね合わせで地形を使っていないことも判明。→ CBIの地形モデルとは補完関係にある（向こうは実況雨量、こちらは地形）。⚠ 自己訂正2件：『東京都下水道局が内水氾濫の把握を公開している』は裏付けが取れず（東京アメッシュの公開部分は雨量レーダーのみ・本文327字に内水/浸水/氾濫の語なし）、『建設コンサル各社がXRAIN連携の内水予測を提供』も製品ページを確認しておらず撤回した。業界知識から述べたものを検証せずに列挙していた。また、当方の実装はそもそも『雨量追従』を名乗れない（E/(E+50)が全体共通のスカラーで雨量を変えても地点の順位が変わらず、排水も全域一律ゼロ）ことを改めて指摘した。対外発信では『日本初』ではなく『精度を実際の冠水記録で検証して公表している』『計算式とプログラムを全部公開している』という検証可能な事実で立てる方針を確認。前回記録(1,462,522)以降の差分で算出。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 1,516,288"
+        },
+        {
+          "date": "2026-09-08",
+          "title": "鳶柔軟翼と公開名称３Dワールドへの変更",
+          "category": "実装",
+          "partnerApproved": false,
+          "outputs": [
+            "site/metaverse/assets/tonbi/kite.glb",
+            "site/metaverse/assets/tonbi/kite-plumage.png",
+            "site/metaverse/sky-tag.js",
+            "site/index.html"
+          ],
           "note": "生成羽毛素材はユーザー承認。鳶の羽ばたき/滑空を分ける。過去作業履歴・内部URLは維持。"
         },
         {
-          "date": "2026-09-08", "title": "白鳥の羽毛画像と柔軟翼モーフを組み込み",
-          "category": "実装", "partnerApproved": false,
-          "outputs": ["site/metaverse/assets/tonbi/swan.glb", "site/metaverse/assets/tonbi/swan-plumage.png", "site/metaverse/sky-tag.js"],
+          "date": "2026-09-08",
+          "title": "白鳥の羽毛画像と柔軟翼モーフを組み込み",
+          "category": "実装",
+          "partnerApproved": false,
+          "outputs": [
+            "site/metaverse/assets/tonbi/swan.glb",
+            "site/metaverse/assets/tonbi/swan-plumage.png",
+            "site/metaverse/sky-tag.js"
+          ],
           "note": "組み込み画像生成を1回利用、素材はユーザー了承。Meshy契約・素材購入なし。4方向/モバイル/ゲーム内両翼アニメーション検証、有料地図要求0。実写水準を保証しない。"
         },
         {
@@ -5341,6 +5366,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-12",
+          "title": "🔗 内水リスクで『出せていないもの』を公式サイトのリンクで補う（別セッションで実施）",
+          "category": "実装",
+          "priority": "中",
+          "note": "naisui.html と index.html に、私たちがまだ重ねられない情報を公式サイトへのリンクで補う節を作る。掲載候補7件は 2026-09-09 に到達性を実測済み（千葉県 bousai-chiba.jp のみ到達不可で除外）。防災科研は『メンテナンス中』かつ『雨が降っていないと何も出ない』旨を必ず注記する。重ねられない理由は、市がGISを非公開・防災科研に2026-08-28に断られた、の2点。プロンプトは scratchpad/next_session_prompt.txt。"
+        },
+        {
+          "due": "未定",
+          "title": "📣 対外発信で『日本初』を名乗らない（2026-09-09 検証済み）",
+          "category": "その他",
+          "priority": "高",
+          "note": "『排水能力を反映した内水マップ』も『雨量追従の内水マップ』も日本初ではないことを実測で確認した。印西市の公式内水ハザードマップ（naisui.pdf）と、防災科研のリアルタイム内水リスクマップが実在する。加えて当方の実装は雨量追従を名乗れる中身ではない（E/(E+50)が全体共通のスカラー・排水は全域一律ゼロ）。代わりに使える検証可能な表現：『精度を実際の冠水記録で検証して公表している』『計算式・パラメータ・プログラム・既知の誤りまで全部公開している』『他のまちでもそのまま使える（MIT／ODbL）』。"
+        },
         {
           "due": "未定",
           "title": "🚨 自動SNS投稿の最初の本番発報を見届ける（2026-09-08 レベル3以上で稼働・画像つき）",
