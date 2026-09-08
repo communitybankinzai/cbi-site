@@ -18,6 +18,25 @@
       "actuals": [
         {
           "date": "2026-09-08",
+          "title": "自動SNS投稿の通し確認（撮影→Instagram投稿まで）と記録の整理 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/disaster-auto-post.ts（列名の誤り修正・kind判定へ変更・見出し生成・撮影依頼）",
+            "cidao: src/app/api/disaster/post-image/route.ts（新規・画像つき投稿の受け口）",
+            "cidao: src/lib/disaster-timeline.ts（kind: city-mail 追加）",
+            "site/.github/workflows/disaster-shot.yml（新規・イベント起動の撮影ワークフロー）",
+            "site/tools/shoot_disaster_map.mjs（新規・災害種別ごとのレイヤー切替）",
+            "site/docs/disaster-shot-setup.md（新規・設定手順）",
+            "scripts/promo/shoot_disaster_map.mjs（手元用）",
+            "cidao/2026-09-07_警戒レベルによる自動SNS投稿の設計と安全装置.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "前のセッションで実装した画像つき自動配信を、本番と同じ経路で通しで確認した。repository_dispatch で起動（HTTP 204）→ GitHub Actions で puppeteer 撮影成功（Ubuntuランナーでも日本語が化けないことを確認）→ 画像1084×950（比率1.14）をGitHub Pages で公開（HTTP 200）→ CiDAO が Instagram へ画像つき投稿（18073372304454021）。⚠ 前セッションでは撮影と公開までしか確認できておらず、Instagram への投稿は未検証だった。確認用の投稿は「動作確認の投稿です／いま危険が迫っているという意味ではありません」と明記し、仕組みの告知として残す判断（中司さん）。あわせて保管庫ノートに画像つき配信の設計と実測を追記し、PATの更新期限（2026-12-31）・防災メールの検索式の絞り込み・市長のX追加の可否を plans へ登録した。前回記録(1,430,722)以降の差分で算出。session: 5bdcc53d-43c1-46ff-96e0-7b8c71bfd341 / output: 1,462,522"
+        },
+        {
+          "date": "2026-09-08",
           "title": "災害時の画像付き自動配信・防災メール取込・自動投稿をレベル3へ（不具合2件の修正含む） 0.6時間",
           "category": "実装",
           "outputs": [
@@ -5311,6 +5330,35 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "🚨 自動SNS投稿の最初の本番発報を見届ける（2026-09-08 レベル3以上で稼働・画像つき）",
+          "category": "保守",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "印西市に警戒レベル3相当以上（高齢者等避難・避難所開設・土砂災害警戒情報など）が実際に発表されること。通しの動作は 2026-09-08 に確認済みだが、本物の災害で発報する場面はまだ経験していない。発報したら本文・時刻・画像を目視で確認し、おかしければ管理画面のチェックを外して即停止する。"
+        },
+        {
+          "due": "2026-12-24",
+          "title": "🔑 GitHub の PAT（GITHUB_DISPATCH_TOKEN）を更新する（2026-12-31 失効）",
+          "category": "保守",
+          "priority": "中",
+          "note": "失効すると画像つき配信だけが止まる（Threadsの文字速報は動く）。fine-grained・communitybankinzai/cbi-site のみ・Contents=Read and write で作り直し、Vercel(cidao) Production の GITHUB_DISPATCH_TOKEN を差し替えて Redeploy。手順は site/docs/disaster-shot-setup.md、値は credentials.md §1.4。"
+        },
+        {
+          "due": "2026-09-15",
+          "title": "📧 印西市の防災メールが届いたら、差出人で絞る検索式に直す",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-09-08 に kind: city-mail を実装したが、差出人が未確定のため既定の検索式は件名で広めに拾う（subject:(印西 OR 防災 OR 避難 OR 気象)）。このままだと防災と無関係なメールを取り込む恐れがある。最初の1通が届いたら from: で絞ること。あわせて Vercel に GAS_MAIL_WEBAPP_URL / GAS_MAIL_PASSWORD の登録が必要（未登録なら何も取り込まない）。情報源の登録は /admin/disaster-sources から。"
+        },
+        {
+          "due": "未定",
+          "title": "🐦 市長のX（@Fujishiro_1102）をタイムラインの情報源に追加するか決める",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-06 に syndication 経由で認証なしに126件取れることを実測済みだが、情報源としては未登録（いまは Instagram 側の sns-priority だけ）。kind: x-timeline に screenName: Fujishiro_1102 を足すだけで登録できる。⚠ ただし自動投稿の警戒レベル判定には使わないこと（準公式で表現がまちまちなため誤判定の恐れ）。タイムラインへの表示のみに留める。"
+        },
+        {
           "due": "2026-09-13",
           "title": "🔑 画像付き自動配信のためGitHub PATを発行し、Vercelとリポジトリに登録する",
           "category": "事務",
@@ -5337,16 +5385,7 @@
           "title": "🔔 自動SNS投稿の承認リンクをスマホへ届ける手段を決めて実装する",
           "category": "実装",
           "priority": "高",
-          "note": "レベル3で承認待ちを作っても、リンクが中司さんの手元に届かない。候補：Web Push（src/lib/push.ts にあり・端末の購読が必要）／Resend（2026-09-06 に 403 code 1010 で失敗）／GAS Gmail（動作実績あり・Vercel に環境変数の追加が必要）。9/6は手作業でメール送信して凌いだ。次の大雨までに決める。 2026-09-08 時点では approvalLevel を 4 に上げて承認待ちを作らない運用にしている。通知手段ができたら approvalLevel を 3 に戻すこと。"
-        },
-        {
-          "due": "未定",
-          "title": "🚨 自動SNS投稿の最初の発報を見届ける（2026-09-08 レベル4以上で稼働開始）",
-          "category": "保守",
-          "priority": "高",
-          "note": "2026-09-08 に enabled:true / autoLevel:4 / approvalLevel:4 / media:[threads] で有効化。approvalLevel を 4 にしてあるのでレベル3では何も起きない（承認リンクの通知手段が未実装のため）。",
-          "status": "待ち",
-          "blockedBy": "印西市に警戒レベル4以上の情報が実際に発表されること。それまで発報の機会が無い。発報したら本文・時刻・宛先を目視で確認し、おかしければ管理画面 /admin/disaster-sources のチェックを外して即停止する。"
+          "note": "レベル3で承認待ちを作っても、リンクが中司さんの手元に届かない。候補：Web Push（src/lib/push.ts にあり・端末の購読が必要）／Resend（2026-09-06 に 403 code 1010 で失敗）／GAS Gmail（動作実績あり・Vercel に環境変数の追加が必要）。9/6は手作業でメール送信して凌いだ。次の大雨までに決める。 2026-09-08 時点では approvalLevel を 4 に上げて承認待ちを作らない運用にしている。通知手段ができたら approvalLevel を 3 に戻すこと。 2026-09-08 に autoLevel/approvalLevel とも 3 にしたため、いまは承認待ちを作らずレベル3から自動投稿している。承認の運用に戻すなら通知手段が要る。"
         },
         {
           "due": "未定",
