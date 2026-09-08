@@ -44,15 +44,46 @@
   const SIGNUP_URL = CIDAO_ORIGIN + "/login?utm_source=metaverse&utm_medium=reception&utm_campaign=entry"; // 未登録者の登録導線（LINE ログイン＝登録）
   const NIGHT_FLOOR_HEIGHT = 70;            // 地中ロックの下限（楕円体高・標高約34m。コース一帯の地表は約60〜70m）
 
-  // ---- 図柄（線画SVG） ----
+  // ---- 図柄（線画SVG＋多色のマーク） ----
   const DESIGNS = {
     xmas: "assets/night/inzaikun_xmas.svg",       // クリスマス（黒い円盤に線が「抜き」＝透明）
     kihon: "assets/night/inzaikun_kihon.svg",     // 基本形（黒い線＋赤い切り取り線＋下にロゴ文字）
     ongaku: "assets/night/inzaikun_ongaku.svg",   // 音楽（A4の隅に小さく描かれている）
     placard: "assets/night/inzaikun_placard.svg", // プラカード（顔のアップ）
+    cbi: "assets/night/cbi_logo.png",             // CBIロゴ（多色・白背景。色をそのまま光にする）
   };
+  // 多色でサンプリングする図柄（白い背景を除いた画素の色をそのまま光の色にする）
+  const COLORED_DESIGNS = { cbi: true };
+
+  // ---- 図柄セット（2026-09-09）----
+  // 既定は inzai（市のデザインガイドマニュアルに合わせた表示）。2026-09-08 に代表の承認を得て使用申請へ進む方針。
+  // ?art=cbi で CBIロゴ版に切り替えられる（申請が通るまでの代替表示・広報素材づくり用）。
+  // inzai：市のデザインガイドマニュアルに合わせ、**色を変えず・反転しない**（p13 の禁止事項）。
+  //         図柄の種類（基本形／音楽／プラカード／クリスマス）はコース定義のものを使う。
+  const ART_SETS = {
+    cbi: { design: "cbi", color: "logo" },        // 全ゲートを CBIロゴに置き換える
+    inzai: { color: "inzai", noFlip: true },      // 図柄はそのまま・色は指定色に統一・反転しない
+  };
+  const ART_DEFAULT = "inzai";
+  const artKey = (function () {
+    const a = q.get("art");
+    return (a === "inzai" || a === "cbi") ? a : ART_DEFAULT;
+  })();
+  // ゲート定義から、実際に使う図柄キーと色キーを決める（図柄セットが指定されていればそれを優先）
+  function artOf(def) {
+    const set = ART_SETS[artKey] || {};
+    return {
+      design: set.design || def.design,
+      color: set.color || def.color,
+      flip: set.noFlip ? false : !!def.flip,
+    };
+  }
   // 光の色（[主, 副]）
   const PALETTE = {
+    // いんザイ君の指定色に合わせた光（デザインガイドマニュアル p3：体 M60／角・爪 Y40〜Y80）。
+    // 光の粒で描くため塗り色そのものではないが、色替えはせずこの1種だけを使う（マニュアル p13「色を変える」の禁止に合わせた）
+    inzai: ["#ffd3e6", "#ff92c2"],
+    inzaiY: ["#fff6cc", "#ffe066"],
     gold: ["#fff1c4", "#ffd166"], sky: ["#dff3ff", "#7cc4ff"], green: ["#e8ffe8", "#6ee7a8"],
     pink: ["#ffe6f0", "#ff9ecb"], white: ["#ffffff", "#e8f0ff"], orange: ["#fff0d6", "#ffa447"],
     violet: ["#f0e6ff", "#b48cff"], cyan: ["#e0ffff", "#5ff0ff"], magenta: ["#ffe0ff", "#ff6ad5"],
@@ -260,7 +291,15 @@
     }
     return { opaque: opaque, dark: dark, red: red, nOpaque: nOpaque, minX: minX, maxX: maxX, minY: minY, maxY: maxY };
   }
-  function sampleImage(img, flip) {
+  // 夜空で見えるように色を持ち上げる（元の色みは保ったまま明るくする）
+  function litColor(r, g, b) {
+    return [
+      Math.min(255, Math.round(r * 1.45 + 62)),
+      Math.min(255, Math.round(g * 1.45 + 62)),
+      Math.min(255, Math.round(b * 1.45 + 62)),
+    ];
+  }
+  function sampleImage(img, flip, colored) {
     const cv = document.createElement("canvas");
     const ctx = cv.getContext("2d", { willReadFrequently: true });
     // ① 全体
@@ -283,6 +322,7 @@
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     const s = scanPixels(ctx, W, H);
+    const rgba = colored ? ctx.getImageData(0, 0, W, H).data : null;
     const lit = new Uint8Array(W * H);
     const rowCount = new Int32Array(H);
     if (holes) {
@@ -294,6 +334,15 @@
         for (let x = L + margin; x <= R - margin; x++) {
           if (!s.opaque[y * W + x]) { lit[y * W + x] = 1; rowCount[y]++; }
         }
+      }
+    } else if (colored) {
+      // 多色のマーク（CBIロゴ）：白い背景を除いた画素を拾う。色は下の点生成で1粒ずつ持たせる
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const k = y * W + x;
+        if (!s.opaque[k]) continue;
+        const i = k * 4;
+        if (rgba[i] > 232 && rgba[i + 1] > 232 && rgba[i + 2] > 232) continue;  // 白背景
+        lit[k] = 1; rowCount[y]++;
       }
     } else {
       for (let k = 0; k < W * H; k++) if (s.dark[k] && !s.red[k]) { lit[k] = 1; rowCount[Math.floor(k / W)]++; }
@@ -312,7 +361,14 @@
     let minX = W, maxX = 0;
     for (let y = top; y <= bottom; y++) for (let x = 0; x < W; x++) {
       if (!lit[y * W + x]) continue;
-      pts.push([x + Math.random() * 0.8 - 0.4, y + Math.random() * 0.8 - 0.4]);
+      const jx = x + Math.random() * 0.8 - 0.4, jy = y + Math.random() * 0.8 - 0.4;
+      if (colored) {
+        const i = (y * W + x) * 4;
+        const lc = litColor(rgba[i], rgba[i + 1], rgba[i + 2]);
+        pts.push([jx, jy, lc[0], lc[1], lc[2]]);
+      } else {
+        pts.push([jx, jy]);
+      }
       if (x < minX) minX = x; if (x > maxX) maxX = x;
     }
     if (pts.length === 0) return null;
@@ -338,15 +394,22 @@
   // ゲートを空に組み立てる
   // ------------------------------------------------------------
   function gateColor(g, p, top, charH) {
+    if (p.length >= 5) return "rgb(" + p[2] + "," + p[3] + "," + p[4] + ")";  // 多色のマーク（CBIロゴ）
     const r = Math.random();
-    if (g.def.color === "xmas") {
+    const colorKey = artOf(g.def).color;
+    if (colorKey === "inzai") {
+      // 指定色に合わせた1種のみ。角・爪にあたる上部だけ黄を混ぜる（Y40〜Y80）
+      const pal = (p[1] < top + charH * 0.18 && r < 0.35) ? PALETTE.inzaiY : PALETTE.inzai;
+      return r < 0.62 ? pal[0] : pal[1];
+    }
+    if (colorKey === "xmas") {
       if (p[1] < top + charH * 0.22) return r < 0.6 ? "#ff5a5a" : "#fff6f0";  // 帽子＝赤と白
       if (r < 0.62) return "#fff1c4";
       if (r < 0.86) return "#ffd166";
       if (r < 0.95) return "#9fd8ff";
       return "#ff9ecb";
     }
-    const pal = PALETTE[g.def.color] || PALETTE.gold;
+    const pal = PALETTE[colorKey] || PALETTE.gold;
     return r < 0.6 ? pal[0] : pal[1];
   }
   function buildGate(g, sample) {
@@ -418,8 +481,9 @@
     if (gatesLoading) return;
     gatesLoading = true;
     gates.forEach(function (g) {
-      loadImage(g.def.design).then(function (img) {
-        const s = sampleImage(img, !!g.def.flip);
+      const art = artOf(g.def);
+      loadImage(art.design).then(function (img) {
+        const s = sampleImage(img, art.flip, !!COLORED_DESIGNS[art.design]);
         if (!s) { console.warn("夜景: ゲート" + (g.index + 1) + " の図柄から光の粒を作れませんでした"); return; }
         buildGate(g, s);
       }).catch(function (e) { console.warn("夜景: " + e.message); });
@@ -584,12 +648,22 @@
   // ------------------------------------------------------------
   function ensureHud() {
     if (hudEl) return;
+    if (!document.getElementById("nightCredit")) {
+      const cr = document.createElement("div");
+      cr.id = "nightCredit";
+      cr.textContent = "いんザイ君©2011 印西市";
+      document.body.appendChild(cr);
+    }
     const style = document.createElement("style");
     style.textContent =
       "#shipHud{position:absolute;inset:0;z-index:58;pointer-events:none;display:none;}" +
       "#shipHud.on{display:block;}" +
 
       "body.nightOn #helpBox{z-index:66;bottom:56px;}" +
+      // いんザイ君の表記（デザインガイドマニュアル p3。Q4 より、複数の図柄を使う媒体では代表の1つに付せばよい）
+      "#nightCredit{position:fixed;right:12px;bottom:12px;z-index:67;display:none;font:600 13px/1.4 system-ui,'Segoe UI',sans-serif;color:#fff;letter-spacing:.02em;text-shadow:0 1px 3px rgba(0,0,0,.9);background:rgba(10,16,32,.55);padding:5px 10px;border-radius:6px;pointer-events:none;}" +
+      "body.nightOn.artInzai #nightCredit{display:block;}" +
+      "@media (max-width:640px){#nightCredit{font-size:11px;right:8px;bottom:8px;padding:4px 8px;}}" +
       "@media (max-width:640px){#shipReadout{bottom:20%;font-size:12px;} #shipTt{font-size:22px;top:9%;} #nightCaption{font-size:22px;top:20%;} #nightCaption small{font-size:14px;}}" +
       "#shipHud svg{position:absolute;inset:0;width:100%;height:100%;}" +
       "#shipHud .ret{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border:2px solid rgba(120,230,255,0.7);border-radius:50%;box-shadow:0 0 12px rgba(120,230,255,0.5);}" +
@@ -770,6 +844,7 @@
     if (stringPoints) stringPoints.show = !!on;
     hudEl.classList.toggle("on", !!on);
     document.body.classList.toggle("nightOn", !!on);
+    document.body.classList.toggle("artInzai", artKey === "inzai");  // いんザイ君を使うときだけ表記を出す
     // 右のスポット一覧は夜景中は既定で隠す（画面が狭くなり、レース中は邪魔になるため）。📍ボタンで開ける
     const cp = document.getElementById("controlPanel"), pt = document.getElementById("panelToggle");
     if (cp && pt) {
