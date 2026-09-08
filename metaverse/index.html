@@ -8,8 +8,8 @@ if (location.protocol === "file:") {
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CBIメタバース印西 | 印西市3Dワールド</title>
-<meta name="description" content="印西市をGoogle Photorealistic 3D Tilesでリアルに再現したCBIのメタバースワールド。千葉ニュータウンの街を自由に歩けます。">
+<title>CBI３Dワールド印西 | 印西市3Dワールド</title>
+<meta name="description" content="印西市をGoogle Photorealistic 3D Tilesでリアルに再現したCBIの３Dワールド。千葉ニュータウンの街を自由に歩けます。">
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
 <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 <!-- 他の利用者の位置共有・定型スタンプ（Supabase Realtime）。読めなくても3D表示は動く -->
@@ -996,7 +996,7 @@ if (location.protocol === "file:") {
 <div id="cesiumContainer"></div>
 
 <div id="mvHeader">
-  <div class="title">🌏 CBIメタバース印西<small>印西市3Dワールド</small></div>
+  <div class="title">🌏 CBI３Dワールド印西<small>印西市3Dワールド</small></div>
   <div id="presenceChip"></div>
   <div class="hdrRight">
     <button id="panelToggle" title="右の「スポットへ移動」一覧（駅・商業施設・公共施設への移動、歩行／飛行モード、浸水シミュレーション）を開閉します">📍 スポット</button>
@@ -1093,7 +1093,7 @@ if (location.protocol === "file:") {
 </div>
 <div id="modeSelect">
   <div class="inner">
-    <h2>🌏 CBIメタバース印西へようこそ！<br>めぐりモードをえらんでください</h2>
+    <h2>🌏 CBI３Dワールド印西へようこそ！<br>めぐりモードをえらんでください</h2>
     <button class="modeCard" onclick="applyMode('event')">🎪 文化財めぐり<small>文化財ピン・ずかん・クイズ・タイムトライアル</small></button>
     <button class="modeCard" onclick="applyMode('shop')">🛍 お店めぐり<small>FreeFree掲示板に載ったお店のピン。クリックでお店のサイトへ</small></button>
     <button class="modeCard" onclick="applyMode('bousai')">🛟 防災・地形の理解<small>浸水シミュレーション・避難所の場所確認</small></button>
@@ -1263,7 +1263,7 @@ if (location.protocol === "file:") {
 
 <div id="howtoModal">
   <div class="inner">
-    <h2>🌏 CBIメタバース印西 — 使い方</h2>
+    <h2>🌏 CBI３Dワールド印西 — 使い方</h2>
     <p>ここは、印西市の街並みをGoogleの3D都市データでリアルに再現したバーチャル空間です。空を飛んだり、地上を歩いたりしながら、本物そっくりの印西の街を自由に探検できます。</p>
 
     <h3>🎮 操作方法</h3>
@@ -2565,7 +2565,7 @@ function liteSuggest() {
 document.getElementById("liteBtn").addEventListener("click", function () { applyLite(!liteOn); });
 
 // ============================================================
-// 🎵 BGM（2026-09-04・ユーザー要望「メタバースプレイ時にも BGM を流したい」）
+// 🎵 BGM（2026-09-04・ユーザー要望「３Dワールドプレイ時にも BGM を流したい」）
 // 曲は自前で打ち込んだもの（assets/audio/）。昼＝オリジナル「トビの滑空」テーマ、夜景モード＝クリスマスメドレー
 // （旋律は保護期間満了の4曲）。ブラウザは操作なしの自動再生を許さないので、開始は必ずボタン操作。
 // ON/OFF は端末に残し、次回はボタンが「🎵 BGM（前回ON）」と知らせるだけで自動では鳴らさない。撮影モードでは鳴らさない
@@ -3789,7 +3789,7 @@ document.getElementById("kominkanToggleBtn").addEventListener("click", function 
 });
 
 // ---- 🛍 お店ピン（2026-09-02）----
-// FreeFree掲示板で「メタバースに載せる」を選び住所を入れた掲載を、CiDAO の公開API から読む。
+// FreeFree掲示板で「３Dワールドに載せる」を選び住所を入れた掲載を、CiDAO の公開API から読む。
 // 掲載期間中のものだけ返るので、ここでは期限を見ない。クリックでホームページ・ショップ・SNSへ。
 // お店が自分で掲示板に貼ることでピンの権利を得る運用（CBIが手で転記しない）
 const SHOP_ENDPOINT = "https://cidao.vercel.app/api/metaverse-shops";
@@ -4091,7 +4091,7 @@ function drawCert(name, dateStr) {
   ctx.fillText(name + " 殿", W / 2, 300);
   ctx.font = "26px serif";
   const lines = [
-    "あなたは CBIメタバース印西（3Dワールド）において",
+    "あなたは CBI３Dワールド印西（3Dワールド）において",
     "印西市の指定文化財 50か所すべてを巡り",
     "文化財ずかんを完成させました",
     "ここに「印西文化財マイスター」として認定します",
@@ -4560,7 +4560,7 @@ async function ttFinish(clientElapsedMs) {
   ttDrawCert(ttEntry, elapsedMs, dateStr, ratePct, code, official);
   // 記録はゴール時点でサーバーへ自動登録済み（事務局は管理画面で確認する）。
   // メールアプリ未設定の端末（Outlook起動エラー等）で詰まらないよう mailto は使わない。
-  ttReportText = "CBIメタバース印西 タイムトライアル記録" +
+  ttReportText = "CBI３Dワールド印西 タイムトライアル記録" +
     "\nニックネーム: " + ttEntry.name +
     "\n年齢区分: " + ttEntry.ageLabel +
     "\nコース: " + TT_CONFIG.courses[courseKey].label +
@@ -4627,7 +4627,7 @@ function ttShowHistoryCert(i) {
   if (!r) return;
   const entry = { name: r.name, ageLabel: r.ageLabel, courseKey: r.courseKey, answers: r.answers, reqRatePct: r.reqRatePct };
   ttDrawCert(entry, r.ms, r.dateStr, r.ratePct, r.code, r.official);
-  ttReportText = "CBIメタバース印西 タイムトライアル記録" +
+  ttReportText = "CBI３Dワールド印西 タイムトライアル記録" +
     "\nニックネーム: " + r.name + "\n年齢区分: " + r.ageLabel +
     "\nコース: " + (TT_CONFIG.courses[r.courseKey] ? TT_CONFIG.courses[r.courseKey].label : r.courseKey) +
     "\nタイム: " + ttFormat(r.ms) + (r.official ? "（サーバー公式計測）" : "（端末計測・参考記録）") +
@@ -4719,7 +4719,7 @@ function ttDrawCert(entry, ms, dateStr, ratePct, code, official) {
   ctx.font = "bold 40px serif";
   ctx.fillText(entry.name + " 殿", W / 2, 205);
   ctx.font = "26px serif";
-  ctx.fillText("CBIメタバース印西「文化財タイムトライアル」において", W / 2, 270);
+  ctx.fillText("CBI３Dワールド印西「文化財タイムトライアル」において", W / 2, 270);
   ctx.fillText("下記の記録を達成したことを証明します", W / 2, 312);
   ctx.font = "bold 54px serif"; ctx.fillStyle = "#2365a8";
   ctx.fillText("タイム　" + ttFormat(ms), W / 2, 405);
@@ -4907,7 +4907,7 @@ document.getElementById("pinToggleBtn").addEventListener("click", function () {
 });
 
 // ---- 避難所ピンの表示／非表示切替（印西市公式55施設・CIDAO API経由）----
-// データは災害MAPと同じ避難所APIから取得。メタバースは平時の場所確認用で、
+// データは災害MAPと同じ避難所APIから取得。３Dワールドは平時の場所確認用で、
 // 開設状況の照合は inzai-disaster-map/ 側が担当（ここでは表示しない）
 const SHELTER_ENDPOINT = "https://cidao.vercel.app/api/disaster/inzai-shelters";
 const SHELTER_KIND_COLOR = { "specified": "#27ae60", "special": "#16a085", "wide-area": "#8e44ad" };
@@ -5327,7 +5327,7 @@ async function captureScreenshot() {
     const d = new Date();
     const p = (n) => String(n).padStart(2, "0");
     const a = document.createElement("a");
-    a.download = "メタバース印西_" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate())
+    a.download = "３Dワールド印西_" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate())
       + "_" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + ".png";
     a.href = url;
     document.body.appendChild(a);
@@ -5408,7 +5408,7 @@ function recStart() {
     const d = new Date();
     const p = function (n) { return String(n).padStart(2, "0"); };
     const a = document.createElement("a");
-    a.download = "メタバース印西_" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate())
+    a.download = "３Dワールド印西_" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate())
       + "_" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + ".webm";
     a.href = URL.createObjectURL(blob);
     document.body.appendChild(a);
@@ -5493,7 +5493,7 @@ async function startCinema() {
   end.id = "cinemaEnd";
   end.innerHTML =
     '<img src="../assets/cbi-logo.png" alt="CBI">' +
-    "<h2>CBIメタバース印西</h2>" +
+    "<h2>CBI３Dワールド印西</h2>" +
     "<p>印西市文化財パズルラリー開催中<br>CBIサイトから今すぐ遊べます<br><b>communitybankinzai.github.io/cbi-site</b></p>";
   document.body.appendChild(end);
 
@@ -5507,7 +5507,7 @@ async function startCinema() {
     destination: Cesium.Cartesian3.fromDegrees(140.1161, 35.770, 2600),
     orientation: { heading: 0, pitch: Cesium.Math.toRadians(-55), roll: 0 },
   });
-  cinemaCaption("印西市が まるごと<br>メタバースになった", 4500);
+  cinemaCaption("印西市が まるごと<br>３Dワールドになった", 4500);
   await cinemaFlyTo(140.1161, 35.7935, 420, -32, 0, 5);
 
   // 2. 駅前を低空で旋回ぎみに移動
@@ -5573,7 +5573,7 @@ async function startTeaser() {
     destination: Cesium.Cartesian3.fromDegrees(b.lon, b.lat - 0.004, 700),
     orientation: { heading: 0, pitch: Cesium.Math.toRadians(-40), roll: 0 },
   });
-  cinemaCaption("メタバースの空を <b>飛ぶ</b>", 3200);
+  cinemaCaption("３Dワールドの空を <b>飛ぶ</b>", 3200);
   await cinemaFlyTo(b.lon, b.lat - 0.0022, 140, -16, 0, 4.5);
 
   // 2. 地上に降りて歩く視点
@@ -5650,7 +5650,7 @@ async function startPlayDemo() {
   end.id = "cinemaEnd";
   end.innerHTML =
     '<img src="../assets/cbi-logo.png" alt="CBI">' +
-    "<h2>CBIメタバース印西</h2>" +
+    "<h2>CBI３Dワールド印西</h2>" +
     "<p>鳥になって印西の空を飛び<br>文化財50か所の精霊を集めよう<br>スマホで今すぐ遊べます<br><b>communitybankinzai.github.io/cbi-site</b></p>";
   document.body.appendChild(end);
 
@@ -6296,7 +6296,7 @@ try {
   console.error("モード初期化に失敗:", e);
 }
 </script>
-<script src="sky-tag.js?v=20260908-4"></script>
+<script src="sky-tag.js?v=20260908-5"></script>
 <script src="vs-race.js?v=20260908-3"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260907-1"></script>

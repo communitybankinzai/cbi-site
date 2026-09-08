@@ -101,10 +101,10 @@
       oval([4.05, 0.1, 0], [0.32, 0.12, 0.14], [0.95, 0.66, 0.13]);
       oval([4.27, 0.085, 0], [0.14, 0.08, 0.12], [0.07, 0.07, 0.08]);
     } else {
-    oval([-0.15, 0, 0], [1.5, 0.52, 0.48], [0.46, 0.32, 0.19]);
+    oval([-0.15, 0, 0], [1.6, 0.42, 0.43], [0.46, 0.32, 0.19]);
     activePart = "neck";
     oval([1.05, 0.12, 0], [0.65, 0.4, 0.32], [0.52, 0.39, 0.25]);
-    oval([1.62, 0.21, 0], [0.43, 0.36, 0.3], [0.62, 0.5, 0.34]);
+    oval([1.62, 0.21, 0], [0.43, 0.29, 0.26], [0.62, 0.5, 0.34]);
     oval([1.97, 0.14, 0], [0.31, 0.15, 0.15], [0.49, 0.44, 0.29]);
     oval([2.13, 0.035, 0], [0.11, 0.16, 0.09], [0.18, 0.16, 0.12]);
     }
@@ -117,7 +117,7 @@
       oval([1.735, 0.3, side * 0.3], [0.046, 0.052, 0.019], [0.045, 0.038, 0.03], 8, 12);
       }
       activePart = side === 1 ? "leftWing" : "rightWing";
-      oval([0.15, 0.07, side * 1.7], [0.66, swan ? 0.085 : 0.17, 1.75], swan ? [0.94, 0.96, 1] : [0.4, 0.29, 0.18]);
+      oval([0.15, 0.07, side * 1.7], [0.66, 0.085, 1.75], swan ? [0.94, 0.96, 1] : [0.4, 0.29, 0.18]);
       // Overlapping secondaries, separated finger-like primaries, and shorter coverts.
       for (let i = 0; i < 13; i++) {
         const z = 0.45 + i * 0.235;
@@ -164,7 +164,7 @@
       materials: [{ doubleSided: true, pbrMetallicRoughness: { baseColorTexture: { index: 0 }, metallicFactor: 0, roughnessFactor: 0.88 }, normalTexture: { index: 1, scale: 0.5 } },
         { doubleSided: true, pbrMetallicRoughness: { metallicFactor: 0, roughnessFactor: 0.36 } }],
       meshes: [{ primitives: [0, 1].map(material => ({ attributes: { POSITION: 0, COLOR_0: 1, NORMAL: 2, TEXCOORD_0: 3 }, indices: 4 + material, material })) }] };
-    gltf.images.push({uri: new URL("assets/tonbi/" + kind + (swan ? "-plumage.png" : "-body.png"), typeof location === "undefined" ? "https://communitybankinzai.github.io/cbi-site/metaverse/" : location.href).href});
+    gltf.images.push({uri: new URL("assets/tonbi/" + kind + "-plumage.png", typeof location === "undefined" ? "https://communitybankinzai.github.io/cbi-site/metaverse/" : location.href).href});
     gltf.textures.push({source: 2, sampler: 0});
     gltf.materials.push({doubleSided: true, pbrMetallicRoughness: {baseColorTexture: {index: 2}, metallicFactor: 0, roughnessFactor: 0.95}});
     const chunks = [bytes];
@@ -198,7 +198,7 @@
       samplers.push({input: times, output: append(new Float32Array(rotations), 5126, "VEC4", 4), interpolation: "LINEAR"});
     });
     gltf.animations = [{name: "Wingbeat", samplers, channels}];
-    if (swan) {
+    {
       // Smooth spanwise deformation avoids hinges and detached rigid feather strips.
       const targets = [0, 1, 2].map(mode => {
         const dp = new Float32Array(vertices.length), dn = new Float32Array(normals.length);
@@ -222,7 +222,7 @@
         }
         return {POSITION: append(dp, 5126, "VEC3", 3), NORMAL: append(dn, 5126, "VEC3", 3)};
       });
-      const frames = 33, duration = 2.2;
+      const frames = swan ? 33 : 97, duration = swan ? 2.2 : 6;
       const time = append(Float32Array.from({length: frames}, (_, i) => duration * i / (frames - 1)), 5126, "SCALAR", 1);
       gltf.animations[0] = {name: "Wingbeat", samplers: [], channels: []};
       const clip = gltf.animations[0];
@@ -232,10 +232,12 @@
         mesh.primitives.forEach(p => { p.targets = targets; });
         const rotations = [], weights = [];
         for (let i = 0; i < frames; i++) {
-          const phase = Math.PI * 2 * i / (frames - 1);
-          const angle = sign * 0.48 * Math.sin(phase);
+          const timeInCycle = duration * i / (frames - 1);
+          const phase = swan ? Math.PI * 2 * i / (frames - 1) : Math.PI * 2 * timeInCycle / 1.1;
+          const envelope = swan ? 1 : Math.sin(Math.PI * Math.min(1, timeInCycle / 2.2)) ** 2;
+          const angle = sign * 0.48 * Math.sin(phase) * envelope;
           rotations.push(Math.sin(angle / 2), 0, 0, Math.cos(angle / 2));
-          weights.push(0.8 * Math.sin(phase - 0.7), Math.max(0, Math.cos(phase)) * 0.75, Math.sin(phase - 1.05));
+          weights.push(0.8 * Math.sin(phase - 0.7) * envelope, Math.max(0, Math.cos(phase)) * 0.75 * envelope, Math.sin(phase - 1.05) * envelope);
         }
         for (const [path, values, type, width] of [["rotation", rotations, "VEC4", 4], ["weights", weights, "SCALAR", 1]]) {
           clip.channels.push({sampler: clip.samplers.length, target: {node, path}});
@@ -259,7 +261,7 @@
     });
   }
   function aircraftUri(kind) {
-    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260908-4";
+    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260908-5";
   }
   function placeAtStart(player) {
     const halfSeparationDegrees = 300 / 111000;

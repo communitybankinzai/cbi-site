@@ -17,6 +17,12 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-08", "title": "鳶柔軟翼と公開名称３Dワールドへの変更",
+          "category": "実装", "partnerApproved": false,
+          "outputs": ["site/metaverse/assets/tonbi/kite.glb", "site/metaverse/assets/tonbi/kite-plumage.png", "site/metaverse/sky-tag.js", "site/index.html"],
+          "note": "生成羽毛素材はユーザー承認。鳶の羽ばたき/滑空を分ける。過去作業履歴・内部URLは維持。"
+        },
+        {
           "date": "2026-09-08", "title": "白鳥の羽毛画像と柔軟翼モーフを組み込み",
           "category": "実装", "partnerApproved": false,
           "outputs": ["site/metaverse/assets/tonbi/swan.glb", "site/metaverse/assets/tonbi/swan-plumage.png", "site/metaverse/sky-tag.js"],

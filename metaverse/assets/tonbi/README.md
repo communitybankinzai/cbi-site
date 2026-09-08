@@ -1,5 +1,15 @@
 # Animated Bird Models
 
+## Kite Revision 20260908-5
+
+The kite uses `kite-plumage.png`, an original built-in generated image approved
+by the user. Prompt: "Seamless PBR macro texture of Japanese black kite brown
+contour feathers, fine barbs, warm dark brown and tawny margins, neutral light;
+no wood grain, scales, whole bird or text." This is not an external paid asset.
+Its six-second cycle blends two wingbeats into a glide, using the same three
+smooth deformation targets as the swan. The generated PNG must be retained
+when rebuilding; the procedural texture script does not reproduce it.
+
 Original procedural polygon models and textures for the kite and swan.
 These are stylized models, not photographic scans or photorealistic assets.
 

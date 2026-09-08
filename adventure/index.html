@@ -202,7 +202,7 @@
     <li><b>私有地・お寺や神社の立入禁止場所に入らない</b>。精霊は100m以内なら道路からでもゲットできるよ</li>
     <li>暑い日は水分補給。無理をしない</li>
   </ul>
-  <p style="margin-top:12px;">🌏 家の中から遊びたいときは <a href="../metaverse/" style="color:#2e8b57;">メタバース版</a> もあるよ！</p>
+  <p style="margin-top:12px;">🌏 家の中から遊びたいときは <a href="../metaverse/" style="color:#2e8b57;">３Dワールド版</a> もあるよ！</p>
   <p style="font-size:11px;color:#888;">データ出典：印西市内の文化財一覧（印西市ホームページ）／地図：© OpenStreetMap contributors</p>
 </div>
 
@@ -280,7 +280,7 @@ function migrateLegacyKeys() {
 migrateLegacyKeys();
 const DEBUG = new URLSearchParams(location.search).get("debug") === "1"; // 地図タップ＝仮想移動
 
-// 精霊6系統（メタバース版 metaverse/index.html と同一定義）
+// 精霊6系統（３Dワールド版 metaverse/index.html と同一定義）
 const SPIRIT_TRIBES = {
   "やしろ": { match: ["建造物"], color: "#a5703f", label: "やしろ精霊",
     svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18,42 L50,18 L82,42 Z" fill="#7a5230"/><circle cx="50" cy="62" r="26" fill="#c89058"/><circle cx="41" cy="58" r="4.5" fill="#2d1f12"/><circle cx="59" cy="58" r="4.5" fill="#2d1f12"/><path d="M42,70 q8,7 16,0" stroke="#2d1f12" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="34" cy="66" r="4" fill="#e8a87c" opacity="0.7"/><circle cx="66" cy="66" r="4" fill="#e8a87c" opacity="0.7"/></svg>' },

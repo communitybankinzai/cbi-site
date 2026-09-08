@@ -29,7 +29,7 @@ for (const kind of ['kite', 'swan']) {
   }
   const clip = gltf.animations.find(animation => animation.name === 'Wingbeat');
   assert(clip);
-  if (kind === 'swan') {
+  {
     for (const name of ['leftWing', 'rightWing']) {
       const node = gltf.nodes.findIndex(item => item.name === name);
       assert(clip.channels.some(channel => channel.target.node === node && channel.target.path === 'weights'));
