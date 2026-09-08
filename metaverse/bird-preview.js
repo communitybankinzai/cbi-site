@@ -20,7 +20,7 @@ document.querySelector('#view').onchange=setView;
 document.querySelector('#flap').onchange=()=>{if(action){action.paused=!document.querySelector('#flap').checked;if(action.paused){action.time=0;mixer.update(0);}}};
 document.querySelector('#spin').onchange=e=>{controls.autoRotate=e.target.checked;};
 async function load(){const id=++request,kind=document.querySelector('#species').value;status.textContent='読み込み中…';
-try{const gltf=await new GLTFLoader().loadAsync('assets/tonbi/'+kind+'.glb?v=20260908-5');if(id!==request)return;
+try{const gltf=await new GLTFLoader().loadAsync('assets/tonbi/'+kind+'.glb?v=20260909-1');if(id!==request)return;
 if(model){scene.remove(model);model.traverse(o=>{if(o.isMesh){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{m.map?.dispose();m.normalMap?.dispose();m.dispose();});}});}
 model=gltf.scene;scene.add(model);mixer=new THREE.AnimationMixer(model);action=mixer.clipAction(gltf.animations[0]);action.play();action.paused=!document.querySelector('#flap').checked;
 document.querySelector('#download').href='assets/tonbi/'+kind+'.glb';status.textContent=kind==='kite'?'鳶':'本埜の白鳥';setView();

@@ -18,6 +18,13 @@
       "actuals": [
         {
           "date": "2026-09-09",
+          "title": "鳶・白鳥の翼形状と羽弁法線を修正",
+          "category": "実装",
+          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/assets/tonbi/kite.glb", "site/metaverse/assets/tonbi/swan.glb"],
+          "note": "Codex: 種別の翼断面、薄い羽、浅い鳶尾を実装。GLB・ブラウザー4方向・羽ばたき・モバイル・捕捉テスト通過。新規有料素材の購入なし。写実性は未完成。"
+        },
+        {
+          "date": "2026-09-09",
           "title": "内水リスクの「出せていないもの」を公式リンクで補う節を2ページへ実装 0.2時間",
           "category": "実装",
           "outputs": [
