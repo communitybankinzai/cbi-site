@@ -27,12 +27,12 @@
         },
         {
           "date": "2026-09-09",
-          "title": "/admin/analytics に CBIサイト側コンテンツ（3D・防災MAP）セクション追加＋グラフ外れ値対策 0.2時間",
+          "title": "/admin/analytics に CBIサイト側コンテンツ（3D・防災MAP）セクション追加＋グラフ化・グラフ外れ値対策 0.4時間",
           "category": "実装",
-          "outputs": "cidao: src/app/admin/analytics/_components/SiteContentSection.tsx（新規）／src/app/admin/analytics/page.tsx（セクション挿入・DailyChart 外れ値クリップ）／site/admin/changelog.json",
-          "hours": 0.2,
+          "outputs": "cidao: src/app/admin/analytics/_components/SiteContentSection.tsx（新規）／src/app/admin/analytics/_components/DailyLineChart.tsx（新規・PV/VVグラフを2系列汎用に一般化）／src/app/admin/analytics/page.tsx（セクション挿入・DailyChart を共通部品へ置換）／site/admin/changelog.json",
+          "hours": 0.4,
           "partnerApproved": false,
-          "note": "A2 の原因究明（同日実績）を受けた実装。metaverse_presence_daily を service role で読み（先例: metaverse-usage の countVisitorsByDay）、3Dワールド（mode!='disaster-map'）と防災MAP（mode='disaster-map'）の直近7日セッション数・前週比・日別14日表を表示。単位がPVでなく閲覧セッション数であることを画面に明記。DailyChart は中央値×4を上限にクリップし、切った日は▲と実数注記を出す（外れ値が全体の2割超なら無効）。検証：npx tsc --noEmit exit 0／npx eslint exit 0／npx next build 成功。画面自体は非対話セッションで管理者ログインできないため、集計ロジックを Python で同一手順に再現して表示値を実測確認（3D 84件・防災MAP 400件・日別14日）。cidao commit 5dcda12 を origin(communitybankinzai) へ push 済み。session: fdfd26ed-e753-4c6b-8941-78b1f8c553fc / output: 83,893 / cost: $13.80"
+          "note": "A2 の原因究明（同日実績）を受けた実装。metaverse_presence_daily を service role で読み（先例: metaverse-usage の countVisitorsByDay）、3Dワールド（mode!='disaster-map'）と防災MAP（mode='disaster-map'）の直近7日セッション数・前週比・日別14日表を表示。単位がPVでなく閲覧セッション数であることを画面に明記。DailyChart は中央値×4を上限にクリップし、切った日は▲と実数注記を出す（外れ値が全体の2割超なら無効）。検証：npx tsc --noEmit exit 0／npx eslint exit 0／npx next build 成功。画面自体は非対話セッションで管理者ログインできないため、集計ロジックを Python で同一手順に再現して表示値を実測確認（3D 84件・防災MAP 400件・日別14日）。追加で日別推移グラフを実装（代表指示）。既存の DailyChart を DailyLineChart（2系列汎用・凡例つき）に一般化して PV/VV と 3D/防災MAP の双方で使い回し、記録なしの日は0埋めした30日連続配列を渡す。外れ値クリップは中央値基準では PV/VV 側で発火せず（8/23〜8/26 の4日が該当し許容3日を超過）、3D/防災側では逆に縦軸が10で切られてしまうと分かったため、p90×1.2 を上限とし「超過が2日以内かつ最大値が上限の3倍以上」に限る方式へ改めた。実データ検証：PV/VV は p90=185・上限222・超過2日（8/25・8/26）でクリップ有効、3D/防災は p90=15・超過4日でクリップ無効（縦軸197のまま山が見える）。検証：tsc exit 0／eslint exit 0／next build 成功（/admin/analytics は動的レンダリング）／クリップ判定を Python で同一ロジック再現して実データで挙動確認。cidao commit 5dcda12・0732755 を origin(communitybankinzai) へ push 済み。session: fdfd26ed-e753-4c6b-8941-78b1f8c553fc / output: 110,629 / cost: $18.28"
         },
         {
           "date": "2026-09-09",
