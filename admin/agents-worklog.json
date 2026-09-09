@@ -34,7 +34,12 @@
           "date": "2026-09-10",
           "title": "白鳥の前進時画面追従と白鳥の湖BGM",
           "category": "実装",
-          "outputs": ["site/metaverse/index.html", "site/metaverse/assets/audio/swan_lake_musicbox.mp3", "site/metaverse/assets/audio/README.md", "site/metaverse/CLAUDE_HANDOFF.md"],
+          "outputs": [
+            "site/metaverse/index.html",
+            "site/metaverse/assets/audio/swan_lake_musicbox.mp3",
+            "site/metaverse/assets/audio/README.md",
+            "site/metaverse/CLAUDE_HANDOFF.md"
+          ],
           "note": "カメラ移動後に白鳥の実モデル行列を同期し低い表示位置を是正。音源はST303のCC0オルゴール録音、追加課金0円。会話表示の復元は未実施。"
         },
         {
@@ -6809,6 +6814,19 @@
     "A8": {
       "actuals": [
         {
+          "date": "2026-09-10",
+          "title": "Anthropic クレジット $11 の収支台帳登録＋証憑添付 0.2時間",
+          "category": "事務",
+          "outputs": [
+            "収支台帳エントリ L20260910075516-322 を登録（GAS ledgerAdd）",
+            "証憑 Receipt-2166-2751-8488.jpeg を Drive「CBI_収支証憑」へ添付（ledgerAddEvidence / driveFileId 1fvxDF4DtBDE5IQj9cjHr-ENsj3HcWUWX）",
+            "site/ のコード変更なし（台帳データは Google Sheets 側）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "Anthropic, PBC の One-time credit purchase（Receipt #2166-2751-8488 / Invoice SOMHZAHF-0004 / 2026-09-09 / カード末尾0728）。本体 $10.00 ＋ JCT(Japan 10%) $1.00 ＝ 支払総額 $11.00。ユーザー申告は「10ドル」だが証憑の支払額は税込 $11.00 のため後者で計上。取引日レート 153.27 JPY/USD（frankfurter.dev ECB・2026-09-09）で ¥1,686。科目=AI関連費、事業区分=CiDAO運営（ユーザー選択）、立替者=中司 祐樹。支払方法は証憑にカード記載があるため『クレジットカード』で登録（2026-07-26 の $22 分は『その他』で登録済み・要否判断は plans へ）。実装メモ: GAS WebApp への POST は User-Agent ヘッダが無いと 302 追従後に 404 になる（python urllib で実測）。また ledgerAdd はクライアント採番 id を無視してサーバ採番 id を返すため、証憑添付は返り値の entry.id を使う必要がある（初回 entry_not_found で判明）。検証: ledgerList で entries 2件・evidences 2件を再取得して確認済み。session: 1e4f8cf3-47ca-4150-b9db-890c1c9f117a / output: 19,336 / cost: $3.11"
+        },
+        {
           "date": "2026-09-08",
           "title": "Anthropic 残高急減の原因調査（Admin API 全件突合・キー別帰属の特定） 0.3時間",
           "category": "分析",
@@ -6980,6 +6998,24 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "Anthropic クレジットの CBI／N's factory 按分方針を決める",
+          "category": "事務",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "cost_report の api_key_id 別集計で CBI 分の消費比率を出せば、全額計上を続けるか按分するかを決められる（2026-09-08 の調査で N's factory 側キーの消費が大きいことは判明済み）",
+          "note": "現状 Anthropic への課金は CBI 帳簿に全額計上している（2026-07-26 $22・2026-09-10 $11）。クレジット残高は N's factory と共有のため、実消費に対して CBI 計上が過大になっていないかの整理が必要。"
+        },
+        {
+          "due": "未定",
+          "title": "収支台帳 L20260812114303-807（2026-07-26 Anthropic $22）の支払方法『その他』を訂正するか判断",
+          "category": "事務",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "支払方法別の集計を実際に使うかどうかを決めれば動ける（使わないなら訂正履歴を増やさず据え置く）",
+          "note": "OCR 推定で『その他』が入ったとみられる。実際はクレジットカード払い。訂正すると ledger_history に記録が残るため、集計上の実害の有無で判断する。"
+        },
         {
           "due": "2026-09-20",
           "title": "Anthropic 使用量の逐次モニタを CiDAO に実装する（1時間ごと・急増時のみ通知）",
