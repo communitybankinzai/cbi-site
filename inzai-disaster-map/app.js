@@ -832,7 +832,9 @@ const boundaryLayer = L.geoJSON(null, {
 
 baseLayers.pale.addTo(map);
 hazardLayers.floodMax.addTo(map);
-hazardLayers.inland.addTo(map);
+// 内水浸水想定は 2026-09-09 の照合で、市の公式内水ハザードマップの代わりにならないと
+// 分かったため既定OFFにした（市の想定区域6,537件のうち82.1%はこのタイルが存在しない
+// 場所にあり、浸水深1m以上では87%が欠けている）。チェック欄の ⓘ に理由を書いてある。
 recordLayer.addTo(map);
 roadDrawingLayer.addTo(map);
 boundaryLayer.addTo(map);
@@ -1042,6 +1044,7 @@ function initIntegration() {
     applyPublicViewControls();
   }
   initLayerTips();
+  initPresets();
 
   const endpoint = String(APP_CONFIG.snsSearchEndpoint || "").trim();
   const monitorEndpoint = String(APP_CONFIG.snsMonitorEndpoint || "").trim();
@@ -1865,6 +1868,99 @@ function showShelterFloodLayers() {
   renderShelters();
   map.fitBounds(INZAI_BOUNDS);
   document.getElementById("map-status").textContent = "公式の洪水・内水浸水想定と風水害対応避難所を重ねています。";
+}
+
+// 用途別ワンタップ切替（2026-09-10追加）。
+// レイヤーが34種あり、目的の組み合わせを自分で作るのが大変なため、
+// 「冠水した道路が見たい」「公式リンクが見たい」といった用途から入れるようにする。
+// 押すとその用途の構成へ入れ替える（他はいったんOFF）。
+// on に挙げたものだけを ON にし、keep は現在の状態を保つ。
+const PRESETS = {
+  // 需要が多い2つを先頭に置いている
+  kansui: {
+    label: "冠水した道路",
+    on: ["boundary", "records", "kansui", "roadRisk"],
+    openGroups: ["🚗"],
+    focus: "layer-panel"
+  },
+  links: {
+    label: "公式リンク集",
+    on: ["boundary", "records"],
+    // レイヤーではなく左パネルの2つのアコーディオンを開いて見せる
+    openAcc: ["🚫", "📄"],
+    focus: "acc"
+  },
+  flood: {
+    label: "浸水の想定",
+    on: ["boundary", "records", "floodMax", "floodKeizoku", "kaokuHanran"],
+    openGroups: ["🌊"],
+    focus: "layer-panel"
+  },
+  shelter: {
+    label: "避難所",
+    on: ["boundary", "records", "shelters", "wells", "floodMax"],
+    openGroups: ["🏫"],
+    focus: "layer-panel"
+  },
+  rain: {
+    label: "いまの雨",
+    on: ["boundary", "records", "rainNowcast", "kikikuruInund", "kikikuruFlood"],
+    openGroups: ["🌧"],
+    focus: "layer-panel"
+  },
+  landslide: {
+    label: "土砂災害",
+    on: ["boundary", "records", "landslide", "landslideWarning", "landslideSpecial"],
+    openGroups: ["🌊"],
+    focus: "layer-panel"
+  },
+  // 読み込み直後と同じ状態へ戻す
+  reset: {
+    label: "最初の表示",
+    on: ["boundary", "records", "floodMax", "shelters"],
+    openGroups: ["🌊"],
+    focus: null
+  }
+};
+
+function applyPreset(name) {
+  const preset = PRESETS[name];
+  if (!preset) return;
+  const wanted = new Set(preset.on || []);
+  // チェックを入れ替える。change イベントを起こすため click() を使う
+  document.querySelectorAll("[data-overlay]").forEach(box => {
+    const want = wanted.has(box.dataset.overlay);
+    if (box.checked !== want) box.click();
+  });
+  // 関係するグループを開き、それ以外は畳んでおく
+  document.querySelectorAll("details.layer-group").forEach(group => {
+    const head = group.querySelector("summary")?.textContent || "";
+    group.open = (preset.openGroups || []).some(mark => head.includes(mark));
+  });
+  document.querySelectorAll(".left-panel > details.acc").forEach(acc => {
+    const head = acc.querySelector("summary")?.textContent || "";
+    acc.open = (preset.openAcc || []).some(mark => head.includes(mark));
+  });
+  // 押したボタンを目立たせる
+  document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("is-current", b.dataset.preset === name));
+
+  const panel = document.querySelector(".left-panel");
+  if (!panel) return;
+  if (preset.focus === "acc") {
+    const target = document.querySelector(".left-panel > details.acc[open]");
+    if (target) panel.scrollTop = target.offsetTop - panel.offsetTop - 8;
+  } else if (preset.focus === "layer-panel") {
+    panel.scrollTop = 0;
+  }
+}
+
+function initPresets() {
+  const bar = document.getElementById("preset-bar");
+  if (!bar) return;
+  bar.addEventListener("click", event => {
+    const button = event.target.closest("[data-preset]");
+    if (button) applyPreset(button.dataset.preset);
+  });
 }
 
 // レイヤー説明の ⓘ 吹き出し。

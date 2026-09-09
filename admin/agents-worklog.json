@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-10",
+          "title": "用途別ワンタップ切替の実装と内水レイヤーの既定OFF・改名 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/index.html（preset-bar 7ボタンを新設、inland を既定OFF＋改名＋照合結果の ⓘ）",
+            "site/inzai-disaster-map/app.js（PRESETS 定義・applyPreset・initPresets を追加、起動時の hazardLayers.inland.addTo を削除）",
+            "site/inzai-disaster-map/styles.css（.preset-bar / .preset-btn を追加）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "2026-09-09の照合結果（市PDFと国ポータルは同一でない）を受けて、plans に登録していた判断を実施：内水浸水想定を既定OFF、名称を『内水浸水想定（国ポータル・市域は西端のみ）』へ改め、ⓘ に照合の数字（6,537件中82.1%が国ポータルにタイル無し、1m以上は87%欠落）と市公式PDFへのリンクを載せた。あわせて『見やすい表示切替ボタン』の要望に対し、用途別ワンタップ切替（入れ替え方式）をユーザー選択で実装。需要が多い🚗冠水した道路と🔗公式リンク集を先頭に、🌊浸水の想定／🏫避難所／🌧いまの雨／⛰土砂災害／↺最初の表示 の計7つ。押すと該当レイヤーだけON・関係するグループだけ開き、公式リンク集は左パネルの2アコーディオンを開いてスクロールする。⚠ 起動時に hazardLayers.inland.addTo(map) が残っているとチェックOFFなのに地図には出てしまうので削除した（チェック状態と地図の状態が食い違う典型的な落とし穴）。検証：ローカルで4プリセットを実際にクリックし、ONになるレイヤーの集合が定義どおりに入れ替わること（初期=boundary/records/floodMax/shelters → 冠水=boundary/records/roadRisk/kansui → 避難所=+wells → リンク集=boundary/recordsのみ＋アコーディオン2つ open → 最初の表示で復帰）、冠水プリセットで25,154の描画物が出ること、375px幅で横スクロールが出ないことを実測。session: 658daf6d-86cc-4171-90ba-a1d34e08df8b / output: 219,773 / cost: $76.78"
+        },
+        {
+          "date": "2026-09-10",
           "title": "白鳥の前進時画面追従と白鳥の湖BGM",
           "category": "実装",
           "outputs": ["site/metaverse/index.html", "site/metaverse/assets/audio/swan_lake_musicbox.mp3", "site/metaverse/assets/audio/README.md", "site/metaverse/CLAUDE_HANDOFF.md"],

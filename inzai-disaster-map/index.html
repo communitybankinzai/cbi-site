@@ -49,6 +49,19 @@
         <span id="operation-banner-text">「こんな仕組みがあったら便利か」を検討する試作品です。入力内容はこの端末内だけに保存され、印西市や運営者には送信されません。</span>
       </div>
 
+      <nav class="preset-bar" id="preset-bar" aria-label="用途で表示を切り替える">
+        <span class="preset-label">見たいもの</span>
+        <div class="preset-items">
+          <button type="button" class="preset-btn" data-preset="kansui">🚗 冠水した道路</button>
+          <button type="button" class="preset-btn" data-preset="links">🔗 公式リンク集</button>
+          <button type="button" class="preset-btn" data-preset="flood">🌊 浸水の想定</button>
+          <button type="button" class="preset-btn" data-preset="shelter">🏫 避難所</button>
+          <button type="button" class="preset-btn" data-preset="rain">🌧 いまの雨</button>
+          <button type="button" class="preset-btn" data-preset="landslide">⛰ 土砂災害</button>
+          <button type="button" class="preset-btn preset-reset" data-preset="reset">↺ 最初の表示</button>
+        </div>
+      </nav>
+
       <nav class="quick-nav" id="quick-nav" aria-label="画面内の移動">
         <span class="quick-nav-label">見たい情報へ</span>
         <div class="quick-nav-items">
@@ -91,7 +104,7 @@
                 <div class="layer-group-body">
                   <label><input type="checkbox" data-overlay="floodMax" checked> 洪水浸水想定 最大規模</label>
                   <label><input type="checkbox" data-overlay="floodPlan"> 洪水浸水想定 計画規模</label>
-                  <label><input type="checkbox" data-overlay="inland" checked> 内水浸水想定</label>
+                  <label class="has-tip"><input type="checkbox" data-overlay="inland"> <span class="layer-name">内水浸水想定（国ポータル・市域は西端のみ）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>国のハザードマップポータルのタイルです。<strong>印西市の公式内水ハザードマップとは別物で、代わりにはなりません。</strong></p><p>2026-09-09に市の公式PDFと突き合わせたところ、<strong>市が想定している区域6,537件のうち82.1%は、このタイルが存在しない場所にありました</strong>（浸水深1m以上の149件では87%）。市域では西端にしかデータがないため、既定でOFFにしています。</p><p><strong>色が付いていない場所が安全という意味ではありません。</strong>市の想定は下のリンクのPDFで確認してください。</p><p><a class="golink" href="https://www.city.inzai.lg.jp/bousaiportal/0000008837.html" target="_blank" rel="noreferrer">印西市 公式ハザードマップ ↗</a></p></span></span></label>
                   <label class="has-tip"><input type="checkbox" data-overlay="floodKeizoku"> <span class="layer-name">⏳ 浸水が引くまでの時間（浸水継続時間）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>水が引くまでの目安です。長い場所ほど在宅避難の備えが要ります。</p><p>印西市でデータがあるのは市域42区画中41区画（2026-09-09実測）。<strong>色が付いていない場所が安全という意味ではありません。</strong></p></span></span></label>
                   <label class="has-tip"><input type="checkbox" data-overlay="kaokuHanran"> <span class="layer-name">🏚 家屋倒壊等氾濫想定区域（氾濫流）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>洪水のとき<strong>木造家屋が流されたり倒れたりするおそれがある範囲</strong>です。この範囲では上の階へ逃げる（垂直避難）では足りず、<strong>区域の外へ移動する必要があります。</strong></p><p>印西市でデータがあるのは市域42区画中18区画（2026-09-09実測）。<strong>色が付いていない場所が安全という意味ではありません。</strong></p></span></span></label>
                   <label class="has-tip"><input type="checkbox" data-overlay="kaokuKagan"> <span class="layer-name">🏚 家屋倒壊等氾濫想定区域（河岸侵食）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>川岸が削られて家屋が倒れるおそれがある範囲です。氾濫流と同じく、<strong>この範囲では区域の外へ移動する必要があります。</strong></p><p>印西市でデータがあるのは市域42区画中11区画（2026-09-09実測）。<strong>色が付いていない場所が安全という意味ではありません。</strong></p></span></span></label>
