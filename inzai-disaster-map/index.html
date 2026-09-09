@@ -82,77 +82,127 @@
 
             <div class="check-list" id="overlay-controls">
               <label><input type="checkbox" data-overlay="boundary" checked> 印西市境界</label>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="relief"> 🗻 土地の高さ（色別標高図）<span>低い土地ほど青々しい。想定区域の外の窪地を探す目安</span></label>
-              <label><input type="checkbox" data-overlay="floodMax" checked> 洪水浸水想定 最大規模</label>
-              <label><input type="checkbox" data-overlay="floodPlan"> 洪水浸水想定 計画規模</label>
-              <label><input type="checkbox" data-overlay="inland" checked> 内水浸水想定</label>
-              <label><input type="checkbox" data-overlay="shelters" checked> 避難所（印西市公式）</label>
-              <label><input type="checkbox" data-overlay="wells"> 災害用井戸（印西市公式）</label>
-              <label><input type="checkbox" data-overlay="quakes"> 🌍 地震の震源（気象庁・直近20件）</label>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="quakeIntensity"> 🎯 震度分布（直近の地震・市町村ごと）<span id="quake-intensity-status">ONにすると読み込みます</span></label>
-              <label><input type="checkbox" data-overlay="landslide"> 土砂災害警戒区域</label>
-              <label><input type="checkbox" data-overlay="landslideWarning"> 土砂災害警戒区域（印西市公表・拡大時）</label>
-              <label><input type="checkbox" data-overlay="landslideSpecial"> 土砂災害特別警戒区域（印西市公表・拡大時）</label>
-              <div class="jshis-layer-note landslide-legend">地図上のマーカー: <span class="legend-marker" style="background:#c05621">土</span>＝警戒区域（がけ崩れ等のおそれ）、<span class="legend-marker" style="background:#9b2c2c">特</span>＝特別警戒区域（建物損壊など生命に危険が及ぶおそれ・より危険度が高い）。地図を拡大すると表示されます。</div>
-              <div class="layer-group-label">防災拠点（印西市公式）</div>
-              <label><input type="checkbox" data-overlay="fire"> 消防署</label>
-              <label><input type="checkbox" data-overlay="police"> 警察機関</label>
-              <label><input type="checkbox" data-overlay="cityOffice"> 市役所・支所</label>
-              <label><input type="checkbox" data-overlay="emergencyRoute"> 緊急輸送路</label>
-              <label><input type="checkbox" data-overlay="railway"> 鉄道</label>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="rainNowcast"> 雨雲レーダー（気象庁・実況）<span id="rain-layer-status">最新時刻を確認中</span></label>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="rainForecast"> 雨雲の予想（気象庁・降水短時間予報）<span id="rain-forecast-status">最新時刻を確認中</span></label>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="kikikuruLand"> ⛰ 土砂キキクル（気象庁・危険度分布）<span id="kikikuru-layer-status">最新時刻を確認中</span></label>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="kikikuruInund"> 🏘 浸水キキクル（気象庁・危険度分布）</label>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="kikikuruFlood"> 🌊 洪水キキクル（気象庁・危険度分布）</label>
-              <div class="jshis-layer-note">キキクルは大雨による災害発生の危険度を色分けした気象庁のリアルタイム情報です。平常時はほぼ何も表示されません。</div>
-              <div class="jshis-layer-note kikikuru-legend">
-                <span class="kk-item"><span class="kk-chip kk-y"></span>黄（斜線）＝注意（レベル2相当）</span>
-                <span class="kk-item"><span class="kk-chip kk-r"></span>赤＝警戒（レベル3相当・高齢者等避難）</span>
-                <span class="kk-item"><span class="kk-chip kk-p"></span>紫＝危険（レベル4相当・避難指示）</span>
-                <span class="kk-item"><span class="kk-chip kk-k"></span>黒＝災害切迫（レベル5相当）</span>
-              </div>
-              <div class="layer-group-label">地震ハザード（J-SHIS）</div>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="jshisPshm"> 30年以内に震度6弱以上となる確率<span id="jshis-pshm-status">2024年版・将来予測</span></label>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="jshisGround"> 表層地盤の揺れの増幅率<span id="jshis-ground-status">V4・250mメッシュ</span></label>
-              <div class="jshis-layer-note">
-                <span>実際の被害や現在の震度ではありません。地震発生時は気象庁の震度情報と被害ピンを優先してください。</span>
-                <span>印西市公式の「揺れやすさマップ」「液状化マップ」は未反映です。J-SHISは別の予測データです。</span>
-                <figure class="jshis-legend" data-jshis-legend="jshisPshm" hidden>
-                  <figcaption>震度6弱以上となる確率</figcaption>
-                  <img src="https://www.j-shis.bosai.go.jp/map/wms/pshm/Y2024?version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=P-Y2024-MAP-AVR-TTL_MTTL-T30_I55_PS&amp;format=image/png&amp;STYLE=default" alt="J-SHIS 震度6弱以上となる確率の凡例" loading="lazy">
-                </figure>
-                <figure class="jshis-legend" data-jshis-legend="jshisGround" hidden>
-                  <figcaption>表層地盤の増幅率</figcaption>
-                  <img src="https://www.j-shis.bosai.go.jp/map/wms/sstrct/V4?version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=Z-V4-JAPAN-AMP-VS400_M250-IDARV2&amp;format=image/png&amp;STYLE=default" alt="J-SHIS 表層地盤の増幅率の凡例" loading="lazy">
-                </figure>
-              </div>
-              <label><input type="checkbox" data-overlay="landformFc"> 🗾 土地の成り立ち（治水地形分類図・国土地理院）</label>
-              <div class="jshis-layer-note">国土地理院が作った、土地がどうやってできたかを示す地図です。氾濫平野・後背湿地・旧河道・自然堤防などが色分けされていて、<strong>標高だけでは分からない「昔から水が集まってきた土地か」</strong>が読み取れます。<a href="https://maps.gsi.go.jp/legend/lcmfc2_legend.jpg" target="_blank" rel="noreferrer">凡例を見る</a></div>
-              <div class="jshis-layer-note">市民が投稿した冠水実績（977地点）と突き合わせたところ、<strong>現河道・水面で4.35倍、後背湿地で1.62倍</strong>冠水が起きており、逆に<strong>自然堤防では0.12倍、山地では0.09倍</strong>と、土地の成り立ちどおりの結果になりました。<strong>ただし利根川など一級河川沿いが対象のため、市域の一部しか描かれていません</strong>（印西市の冠水報告地点の74.7%は範囲外）。色が付いていない場所が安全という意味ではありません。</div>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="terrainRisk"> 🟠 地形の冠水リスク（面・仮設定）<span id="terrain-risk-status">ONにすると読み込みます</span></label>
-              <div class="jshis-layer-note">窪地・周りとの高さの差・集水・平坦さを合成した地形の指標です。<strong>雨量は入っていません。</strong>下の道路リスクと同じ元データで、面で塗ったものです。</div>
-              <div class="jshis-layer-note road-risk-legend">
-                <span><span class="legend-line" style="background:#3f8ea3;height:10px"></span>低い</span>
-                <span><span class="legend-line" style="background:#f2c94c;height:10px"></span>中くらい</span>
-                <span><span class="legend-line" style="background:#e07b39;height:10px"></span>高い</span>
-              </div>
-              <div class="jshis-layer-note">浸水の深さでも冠水する確率でもない、<strong>未校正の相対指標</strong>です。白い部分は未解析・欠測を含みます。雨量を入れて比べたいときは右側の「CBI独自シミュレーション」を使ってください。</div>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="roadRisk"> 🚗 道路の冠水リスク傾向（地形のみ・未校正）<span id="road-risk-status">ONにすると読み込みます</span></label>
-              <div class="jshis-layer-note">国土地理院の標高から作った地形の指標を、OpenStreetMapの車道に割り当てて色分けしたものです。<strong>排水能力・路面高・アンダーパスは未考慮で、通行できるかどうかではありません。</strong>公式の通行止め情報が最優先です。</div>
-              <div class="jshis-layer-note road-risk-legend">
-                <span><span class="legend-line" style="background:#2f8ba3"></span>冠水リスク低</span>
-                <span><span class="legend-line" style="background:#e8b23a"></span>注意</span>
-                <span><span class="legend-line" style="background:#df7038"></span>冠水リスク高</span>
-                <span><span class="legend-line" style="background:#8e44ad;height:4px"></span>使用困難となる可能性あり</span>
-                <span><span class="legend-line" style="background:#8a9099"></span>判定保留・情報不足</span>
-              </div>
-              <div class="jshis-layer-note">しきい値は実際の冠水実績と照合していません（未検証）。<a href="./simulation-spec.html" target="_blank" rel="noopener">技術仕様（式・パラメータ・既知の誤り）</a> · <a href="./LICENSE.md" target="_blank" rel="noopener">利用条件</a> · <a href="./naisui.html" target="_blank" rel="noopener">研究用MAPで詳しく見る</a></div>
-              <label class="live-layer-label"><input type="checkbox" data-overlay="kansui"> 🚗 冠水した道路（市民の投稿・みんつく千葉冠水マップ）<span id="kansui-status">ONにすると読み込みます</span></label>
-              <div class="jshis-layer-note">有志プロジェクト「みんなでつくる千葉豪雨冠水道路マップ」に投稿された、実際に冠水した道路です（印西市周辺のみ表示）。<strong>公式に確認された通行止めではありません。</strong>8月に冠水した道は同じ雨で再び冠水するおそれがあるため、車で通らない判断の参考にしてください。<br><strong>新しい冠水地点の投稿は本家サイトからお願いします</strong>：<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつく千葉冠水マップを開く</a></div>
-              <label><input type="checkbox" data-overlay="bunkazai"> 参考: 文化財50件（３Dワールドと共通）</label>
-              <label><input type="checkbox" data-overlay="kominkan"> 参考: 公民館・交流館・文化ホール</label>
               <label><input type="checkbox" data-overlay="records" checked> 被害・確認候補</label>
+
+              <details class="layer-group" open>
+                <summary>🌊 浸水・土砂の想定区域</summary>
+                <div class="layer-group-body">
+                  <label><input type="checkbox" data-overlay="floodMax" checked> 洪水浸水想定 最大規模</label>
+                  <label><input type="checkbox" data-overlay="floodPlan"> 洪水浸水想定 計画規模</label>
+                  <label><input type="checkbox" data-overlay="inland" checked> 内水浸水想定</label>
+                  <label><input type="checkbox" data-overlay="landslide"> 土砂災害警戒区域</label>
+                  <label><input type="checkbox" data-overlay="landslideWarning"> 土砂災害警戒区域（印西市公表・拡大時）</label>
+                  <label><input type="checkbox" data-overlay="landslideSpecial"> 土砂災害特別警戒区域（印西市公表・拡大時）</label>
+                  <details class="mini">
+                    <summary>土砂災害マーカーの凡例</summary>
+                    <div class="mini-body landslide-legend"><span>地図上のマーカー: <span class="legend-marker" style="background:#c05621">土</span>＝警戒区域（がけ崩れ等のおそれ）、<span class="legend-marker" style="background:#9b2c2c">特</span>＝特別警戒区域（建物損壊など生命に危険が及ぶおそれ・より危険度が高い）。地図を拡大すると表示されます。</span></div>
+                  </details>
+                </div>
+              </details>
+
+              <details class="layer-group" open>
+                <summary>🌧 雨と危険度（気象庁・実況）</summary>
+                <div class="layer-group-body">
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="rainNowcast"> 雨雲レーダー（気象庁・実況）<span id="rain-layer-status">最新時刻を確認中</span></label>
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="rainForecast"> 雨雲の予想（気象庁・降水短時間予報）<span id="rain-forecast-status">最新時刻を確認中</span></label>
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="kikikuruLand"> ⛰ 土砂キキクル（気象庁・危険度分布）<span id="kikikuru-layer-status">最新時刻を確認中</span></label>
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="kikikuruInund"> 🏘 浸水キキクル（気象庁・危険度分布）</label>
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="kikikuruFlood"> 🌊 洪水キキクル（気象庁・危険度分布）</label>
+                  <div class="jshis-layer-note">キキクルは大雨による災害発生の危険度を色分けした気象庁のリアルタイム情報です。平常時はほぼ何も表示されません。
+                    <details class="mini">
+                      <summary>キキクルの色の凡例</summary>
+                      <div class="mini-body kikikuru-legend">
+                        <span class="kk-item"><span class="kk-chip kk-y"></span>黄（斜線）＝注意（レベル2相当）</span>
+                        <span class="kk-item"><span class="kk-chip kk-r"></span>赤＝警戒（レベル3相当・高齢者等避難）</span>
+                        <span class="kk-item"><span class="kk-chip kk-p"></span>紫＝危険（レベル4相当・避難指示）</span>
+                        <span class="kk-item"><span class="kk-chip kk-k"></span>黒＝災害切迫（レベル5相当）</span>
+                      </div>
+                    </details>
+                  </div>
+                </div>
+              </details>
+
+              <details class="layer-group">
+                <summary>🏫 避難所・防災拠点</summary>
+                <div class="layer-group-body">
+                  <label><input type="checkbox" data-overlay="shelters" checked> 避難所（印西市公式）</label>
+                  <label><input type="checkbox" data-overlay="wells"> 災害用井戸（印西市公式）</label>
+                  <label><input type="checkbox" data-overlay="fire"> 消防署</label>
+                  <label><input type="checkbox" data-overlay="police"> 警察機関</label>
+                  <label><input type="checkbox" data-overlay="cityOffice"> 市役所・支所</label>
+                  <label><input type="checkbox" data-overlay="emergencyRoute"> 緊急輸送路</label>
+                  <label><input type="checkbox" data-overlay="railway"> 鉄道</label>
+                </div>
+              </details>
+
+              <details class="layer-group">
+                <summary>🚗 地形・道路の冠水リスク（CBI独自・未校正）</summary>
+                <div class="layer-group-body">
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="relief"> 🗻 土地の高さ（色別標高図）<span>低い土地ほど青々しい。想定区域の外の窪地を探す目安</span></label>
+
+                  <label><input type="checkbox" data-overlay="landformFc"> 🗾 土地の成り立ち（治水地形分類図・国土地理院）</label>
+                  <div class="jshis-layer-note">国土地理院が作った、土地がどうやってできたかを示す地図です。<strong>標高だけでは分からない「昔から水が集まってきた土地か」</strong>が読み取れます。<a href="https://maps.gsi.go.jp/legend/lcmfc2_legend.jpg" target="_blank" rel="noreferrer">凡例を見る</a>
+                    <details class="mini">
+                      <summary>冠水実績と突き合わせた結果</summary>
+                      <div class="mini-body">
+                        <span>氾濫平野・後背湿地・旧河道・自然堤防などが色分けされています。市民が投稿した冠水実績（977地点）と突き合わせたところ、<strong>現河道・水面で4.35倍、後背湿地で1.62倍</strong>冠水が起きており、逆に<strong>自然堤防では0.12倍、山地では0.09倍</strong>と、土地の成り立ちどおりの結果になりました。</span>
+                        <span><strong>ただし利根川など一級河川沿いが対象のため、市域の一部しか描かれていません</strong>（印西市の冠水報告地点の74.7%は範囲外）。色が付いていない場所が安全という意味ではありません。</span>
+                      </div>
+                    </details>
+                  </div>
+
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="terrainRisk"> 🟠 地形の冠水リスク（面・仮設定）<span id="terrain-risk-status">ONにすると読み込みます</span></label>
+                  <div class="jshis-layer-note">窪地・周りとの高さの差・集水・平坦さを合成した地形の指標です。<strong>雨量は入っていません。</strong>浸水の深さでも冠水する確率でもない、<strong>未校正の相対指標</strong>です。白い部分は未解析・欠測を含みます。雨量を入れて比べたいときは「CBI独自シミュレーション」を使ってください。</div>
+                  <div class="jshis-layer-note road-risk-legend">
+                    <span><span class="legend-line" style="background:#3f8ea3;height:10px"></span>低い</span>
+                    <span><span class="legend-line" style="background:#f2c94c;height:10px"></span>中くらい</span>
+                    <span><span class="legend-line" style="background:#e07b39;height:10px"></span>高い</span>
+                  </div>
+
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="roadRisk"> 🚗 道路の冠水リスク傾向（地形のみ・未校正）<span id="road-risk-status">ONにすると読み込みます</span></label>
+                  <div class="jshis-layer-note">国土地理院の標高から作った地形の指標を、OpenStreetMapの車道に割り当てて色分けしたものです。<strong>排水能力・路面高・アンダーパスは未考慮で、通行できるかどうかではありません。</strong>公式の通行止め情報が最優先です。</div>
+                  <div class="jshis-layer-note road-risk-legend">
+                    <span><span class="legend-line" style="background:#2f8ba3"></span>冠水リスク低</span>
+                    <span><span class="legend-line" style="background:#e8b23a"></span>注意</span>
+                    <span><span class="legend-line" style="background:#df7038"></span>冠水リスク高</span>
+                    <span><span class="legend-line" style="background:#8e44ad;height:4px"></span>使用困難となる可能性あり</span>
+                    <span><span class="legend-line" style="background:#8a9099"></span>判定保留・情報不足</span>
+                  </div>
+                  <div class="jshis-layer-note">しきい値は実際の冠水実績と照合していません（未検証）。<a href="./simulation-spec.html" target="_blank" rel="noopener">技術仕様</a> · <a href="./LICENSE.md" target="_blank" rel="noopener">利用条件</a> · <a href="./naisui.html" target="_blank" rel="noopener">研究用MAPで詳しく見る</a></div>
+
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="kansui"> 🚗 冠水した道路（市民の投稿・みんつく千葉冠水マップ）<span id="kansui-status">ONにすると読み込みます</span></label>
+                  <div class="jshis-layer-note">有志プロジェクト「みんなでつくる千葉豪雨冠水道路マップ」に投稿された、実際に冠水した道路です（印西市周辺のみ表示）。<strong>公式に確認された通行止めではありません。</strong>8月に冠水した道は同じ雨で再び冠水するおそれがあるため、車で通らない判断の参考にしてください。<br><strong>新しい冠水地点の投稿は本家サイトからお願いします</strong>：<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつく千葉冠水マップを開く</a></div>
+                </div>
+              </details>
+
+              <details class="layer-group">
+                <summary>🌍 地震</summary>
+                <div class="layer-group-body">
+                  <label><input type="checkbox" data-overlay="quakes"> 🌍 地震の震源（気象庁・直近20件）</label>
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="quakeIntensity"> 🎯 震度分布（直近の地震・市町村ごと）<span id="quake-intensity-status">ONにすると読み込みます</span></label>
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="jshisPshm"> 30年以内に震度6弱以上となる確率<span id="jshis-pshm-status">2024年版・将来予測</span></label>
+                  <label class="live-layer-label"><input type="checkbox" data-overlay="jshisGround"> 表層地盤の揺れの増幅率<span id="jshis-ground-status">V4・250mメッシュ</span></label>
+                  <div class="jshis-layer-note">
+                    <span>J-SHISの2つは<strong>実際の被害や現在の震度ではありません</strong>。地震発生時は気象庁の震度情報と被害ピンを優先してください。印西市公式の「揺れやすさマップ」「液状化マップ」は未反映です。</span>
+                    <figure class="jshis-legend" data-jshis-legend="jshisPshm" hidden>
+                      <figcaption>震度6弱以上となる確率</figcaption>
+                      <img src="https://www.j-shis.bosai.go.jp/map/wms/pshm/Y2024?version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=P-Y2024-MAP-AVR-TTL_MTTL-T30_I55_PS&amp;format=image/png&amp;STYLE=default" alt="J-SHIS 震度6弱以上となる確率の凡例" loading="lazy">
+                    </figure>
+                    <figure class="jshis-legend" data-jshis-legend="jshisGround" hidden>
+                      <figcaption>表層地盤の増幅率</figcaption>
+                      <img src="https://www.j-shis.bosai.go.jp/map/wms/sstrct/V4?version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=Z-V4-JAPAN-AMP-VS400_M250-IDARV2&amp;format=image/png&amp;STYLE=default" alt="J-SHIS 表層地盤の増幅率の凡例" loading="lazy">
+                    </figure>
+                  </div>
+                </div>
+              </details>
+
+              <details class="layer-group">
+                <summary>📌 参考レイヤー（平時）</summary>
+                <div class="layer-group-body">
+                  <label><input type="checkbox" data-overlay="bunkazai"> 参考: 文化財50件（３Dワールドと共通）</label>
+                  <label><input type="checkbox" data-overlay="kominkan"> 参考: 公民館・交流館・文化ホール</label>
+                </div>
+              </details>
             </div>
 
             <label class="range-label">
@@ -165,7 +215,10 @@
 
           <section class="panel-section cbi-simulation" id="cbi-simulation-panel">
             <h2>CBI独自シミュレーション</h2>
-            <p><strong>予想雨量による冠水リスク・参考推定</strong><br>未校正の相対指標です。公式の予報・浸水深・冠水確率ではありません。</p>
+            <div class="callout warn">
+              <span class="ico">⚠</span>
+              <div class="body"><strong>予想雨量による冠水リスク・参考推定</strong><br>未校正の相対指標です。公式の予報・浸水深・冠水確率ではありません。</div>
+            </div>
             <form id="cbi-simulation-form">
               <label class="select-label">予想雨量（一定の強さ・mm/h）<input id="cbi-rain" type="number" min="0" max="300" step="any" placeholder="例：50" required></label>
               <label class="select-label">継続時間（時間）<input id="cbi-hours" type="number" min="0.01" max="72" step="any" placeholder="例：2" required></label>
@@ -182,9 +235,14 @@
             <label class="range-label">CBIレイヤーの濃さ <input id="cbi-simulation-opacity" type="range" min="10" max="90" value="55" aria-label="CBIレイヤーの濃さ"></label>
             <div class="cbi-simulation-scale" aria-label="参考指標：0から100"></div>
             <div class="cbi-simulation-scale-label"><span>0：小さい</span><span>参考指標</span><span>100：大きい</span></div>
-            <p>色がない場所は範囲外・欠測です。0や小さい値も安全を意味しません。約100mの地形計算を用い、市境外を含みます。河川氾濫・管路・ポンプ・先行降雨・水の移動は未計算。対象日とは連動しません。</p>
-            <p class="shelter-control-note"><a href="./naisui.html" target="_blank" rel="noopener"><strong>▶ 道路ごとの冠水リスク傾向を見る（内水リスク推定・研究用）</strong></a><br>大雨のとき地形的に水がたまりやすい道を色分けした別画面です。排水能力は未考慮で、通行可否ではありません。</p>
-            <p>地形：国土地理院標高タイル／CBI加工・未校正。<a href="./simulation-method.html" target="_blank" rel="noopener">計算方法・精度向上に必要なデータ</a> · <a href="./simulation-data/status.json" target="_blank" rel="noopener">版・作成日時</a> · <a href="./simulation-data/sources.json" target="_blank" rel="noopener">出典詳細</a></p>
+            <p class="shelter-control-note"><a class="golink" href="./naisui.html" target="_blank" rel="noopener">▶ 道路ごとの冠水リスク傾向を見る（研究用MAP）</a><br>大雨のとき地形的に水がたまりやすい道を色分けした別画面です。排水能力は未考慮で、通行可否ではありません。</p>
+            <details class="mini">
+              <summary>読み取るときの注意と出典</summary>
+              <div class="mini-body">
+                <span>色がない場所は範囲外・欠測です。0や小さい値も安全を意味しません。約100mの地形計算を用い、市境外を含みます。河川氾濫・管路・ポンプ・先行降雨・水の移動は未計算。対象日とは連動しません。</span>
+                <span>地形：国土地理院標高タイル／CBI加工・未校正。<a href="./simulation-method.html" target="_blank" rel="noopener">計算方法・精度向上に必要なデータ</a> · <a href="./simulation-data/status.json" target="_blank" rel="noopener">版・作成日時</a> · <a href="./simulation-data/sources.json" target="_blank" rel="noopener">出典詳細</a></span>
+              </div>
+            </details>
           </section>
 
           <section class="panel-section shelter-control-panel">
@@ -282,72 +340,90 @@
             </div>
           </section>
 
-          <section class="panel-section gap-section">
-            <h2>この地図に出せていないもの</h2>
-            <p class="gap-lead">
-              重ねたくても重ねられない情報があります。理由は<strong>市が数値データ（GIS）を公開していない</strong>ことと、<strong>提供元から重ね表示の許諾が得られなかった</strong>ことの2つで、いずれも私たちの工夫では超えられません。
-              そこで、出せていないものを項目ごとに挙げ、それぞれの公式サイトへのリンクで補います。<strong>実際の避難や通行の判断は、必ずリンク先の公式情報で行ってください。</strong>
-            </p>
+          <details class="acc">
+            <summary>🚫 この地図に出せていないもの<span class="cnt">6</span></summary>
+            <div class="acc-body">
+              <div class="callout gap">
+                <span class="ico">💡</span>
+                <div class="body">重ねたくても重ねられない情報があります。<strong>市が数値データ（GIS）を公開していない</strong>ことと、<strong>提供元から重ね表示の許諾が得られなかった</strong>ことが理由で、いずれも私たちの工夫では超えられません。公式サイトへのリンクで補います。</div>
+              </div>
 
-            <h3>① 市が想定している浸水の範囲と深さ（内水）</h3>
-            <p class="gap-note">
-              <strong>出せていない理由：</strong>印西市の内水浸水想定は<strong>PDFでのみ公開</strong>されており、地図に重ねられる数値データ（GIS）が非公開のためです。<br>
-              なお、レイヤーの「内水浸水想定」は国のハザードマップポータルのタイルで、<strong>印西市域ではほとんどの範囲にデータがありません</strong>（2026-09-09にタイルの有無を実測。市域42区画のうち存在は10区画で、いずれも市の西端に偏っていました）。<strong>色が付いていない場所が安全という意味ではありません。</strong><br>
-              <a href="https://www.city.inzai.lg.jp/bousaiportal/0000008837.html" target="_blank" rel="noreferrer">印西市 公式ハザードマップ（内水浸水想定・PDF 約3.9MB）↗</a><br>
-              参考条件は 2008-08-30 我孫子観測所 最大1時間105 mm。
-            </p>
+              <details class="item">
+                <summary>① 市が想定している浸水の範囲と深さ（内水）</summary>
+                <div class="item-body">
+                  <p><span class="why">出せていない理由</span>：印西市の内水浸水想定は<strong>PDFでのみ公開</strong>されており、地図に重ねられる数値データ（GIS）が非公開のためです。</p>
+                  <p><a class="golink" href="https://www.city.inzai.lg.jp/bousaiportal/0000008837.html" target="_blank" rel="noreferrer">印西市 公式ハザードマップ ↗</a></p>
+                  <p>内水浸水想定のPDF・約3.9MB。参考条件は 2008-08-30 我孫子観測所 最大1時間105 mm。</p>
+                  <p><strong>⚠ レイヤーの「内水浸水想定」は国のハザードマップポータルのタイルで、印西市域ではほとんどの範囲にデータがありません。</strong>2026-09-09にタイルの有無を実測したところ、市域42区画のうち存在は10区画で、いずれも市の西端に偏っていました。<strong>色が付いていない場所が安全という意味ではありません。</strong></p>
+                </div>
+              </details>
 
-            <h3>② いま降っている雨による内水リスク</h3>
-            <p class="gap-note">
-              <strong>出せていない理由：</strong>国立研究開発法人 防災科学技術研究所（防災科研）へ重ね表示を申し入れましたが、<strong>2026-08-28に正式に見送りとの回答</strong>をいただきました。リンクのみとし、配信URLへのアクセスは行いません。<br>
-              <a href="https://sip4dkit-web.bosai.go.jp/riskmap/index.html?appid=e327b28aea5447e983d87295e162aab9&amp;center=140,38&amp;level=7&amp;entry=2" target="_blank" rel="noreferrer">防災科研 リアルタイム内水リスク（東日本）↗</a><br>
-              <strong>開いても白紙のことがありますが、故障ではありません。</strong>XRAINの実況雨量から計算しているため<strong>雨が降っていないと何も表示されません</strong>。また、提供元から<strong>メンテナンス中</strong>との告知が出ています。
-            </p>
+              <details class="item">
+                <summary>② いま降っている雨による内水リスク</summary>
+                <div class="item-body">
+                  <p><span class="why">出せていない理由</span>：国立研究開発法人 防災科学技術研究所（防災科研）へ重ね表示を申し入れましたが、<strong>2026-08-28に正式に見送りとの回答</strong>をいただきました。リンクのみとし、配信URLへのアクセスは行いません。</p>
+                  <p><a class="golink" href="https://sip4dkit-web.bosai.go.jp/riskmap/index.html?appid=e327b28aea5447e983d87295e162aab9&amp;center=140,38&amp;level=7&amp;entry=2" target="_blank" rel="noreferrer">防災科研 リアルタイム内水リスク（東日本）↗</a></p>
+                  <p><strong>開いても白紙のことがありますが、故障ではありません。</strong>XRAINの実況雨量から計算しているため<strong>雨が降っていないと何も表示されません</strong>。また、提供元から<strong>メンテナンス中</strong>との告知が出ています。</p>
+                </div>
+              </details>
 
-            <h3>③ 洪水・土砂災害・高潮などの想定区域をまとめて見る</h3>
-            <p class="gap-note">
-              <strong>出せていない理由：</strong>この地図が重ねているのは洪水・内水・土砂災害の一部です。高潮・津波・ため池などは載せていません。<br>
-              <a href="https://disaportal.gsi.go.jp/maps/" target="_blank" rel="noreferrer">重ねるハザードマップ（ハザードマップポータル）↗</a>
-            </p>
+              <details class="item">
+                <summary>③ 洪水・土砂災害・高潮などの想定区域をまとめて見る</summary>
+                <div class="item-body">
+                  <p><span class="why">出せていない理由</span>：この地図が重ねているのは洪水・内水・土砂災害の一部です。高潮・津波・ため池などは載せていません。</p>
+                  <p><a class="golink" href="https://disaportal.gsi.go.jp/maps/" target="_blank" rel="noreferrer">重ねるハザードマップ ↗</a></p>
+                </div>
+              </details>
 
-            <h3>④ 堤防が切れたとき、浸水がどう広がるか（時間変化）</h3>
-            <p class="gap-note">
-              <strong>出せていない理由：</strong>この地図の浸水想定は最終的な浸水範囲で、水が広がっていく時間の計算はしていません。<br>
-              <a href="https://suiboumap.gsi.go.jp/" target="_blank" rel="noreferrer">浸水ナビ（国土交通省）↗</a>
-            </p>
+              <details class="item">
+                <summary>④ 堤防が切れたとき、浸水がどう広がるか（時間変化）</summary>
+                <div class="item-body">
+                  <p><span class="why">出せていない理由</span>：この地図の浸水想定は最終的な浸水範囲で、水が広がっていく時間の計算はしていません。</p>
+                  <p><a class="golink" href="https://suiboumap.gsi.go.jp/" target="_blank" rel="noreferrer">浸水ナビ（国土交通省）↗</a></p>
+                </div>
+              </details>
 
-            <h3>⑤ 川の水位と雨量の実況</h3>
-            <p class="gap-note">
-              <strong>出せていない理由：</strong>河川水位のリアルタイム配信は有償のみで、無償の公開APIが存在しません（2026-08-23調査）。<br>
-              <a href="https://www.river.go.jp/" target="_blank" rel="noreferrer">川の防災情報（国土交通省）↗</a>
-            </p>
+              <details class="item">
+                <summary>⑤ 川の水位と雨量の実況</summary>
+                <div class="item-body">
+                  <p><span class="why">出せていない理由</span>：河川水位のリアルタイム配信は有償のみで、無償の公開APIが存在しません（2026-08-23調査）。</p>
+                  <p><a class="golink" href="https://www.river.go.jp/" target="_blank" rel="noreferrer">川の防災情報（国土交通省）↗</a></p>
+                </div>
+              </details>
 
-            <h3>⑥⑦ 雨雲の動き・キキクル（これは重ねています）</h3>
-            <p class="gap-note">
-              この2つは気象庁から直接取得して<strong>レイヤーとして重ねています</strong>（雨雲レーダー・雨雲の予想・土砂／浸水／洪水キキクル）。ただし当サイトは表示が遅れたり止まったりすることがあるため、<strong>判断の際は必ず気象庁の元画面も確認してください。</strong><br>
-              <a href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noreferrer">気象庁 雨雲の動き ↗</a><br>
-              <a href="https://www.jma.go.jp/bosai/risk/" target="_blank" rel="noreferrer">気象庁 キキクル（危険度分布）↗</a>
-            </p>
+              <details class="item">
+                <summary>⑥⑦ 雨雲の動き・キキクル（これは重ねています）</summary>
+                <div class="item-body">
+                  <p>この2つは気象庁から直接取得して<strong>レイヤーとして重ねています</strong>（雨雲レーダー・雨雲の予想・土砂／浸水／洪水キキクル）。ただし当サイトは表示が遅れたり止まったりすることがあるため、<strong>判断の際は必ず気象庁の元画面も確認してください。</strong></p>
+                  <p>
+                    <a class="golink" href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noreferrer">気象庁 雨雲の動き ↗</a>
+                    <a class="golink" href="https://www.jma.go.jp/bosai/risk/" target="_blank" rel="noreferrer">気象庁 キキクル ↗</a>
+                  </p>
+                </div>
+              </details>
 
-            <p class="gap-note"><a href="./naisui.html" target="_blank" rel="noopener">▶ 内水リスク推定（研究用MAP）にも同じ一覧があります</a></p>
-          </section>
+              <p style="margin:10px 0 0"><a href="./naisui.html" target="_blank" rel="noopener">▶ 内水リスク推定（研究用MAP）にも同じ一覧があります</a></p>
+            </div>
+          </details>
 
-          <section class="panel-section source-section">
-            <h2>参照元・関連情報</h2>
-            <a href="https://disaportaldata.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank" rel="noreferrer">ハザードマップポータル</a>
-            <a href="https://www.ktr.mlit.go.jp/chiba/chiba_index030.html" target="_blank" rel="noreferrer">千葉県内 道路冠水注意箇所</a>
-            <a href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">印西市防災ポータル</a>
-            <a href="https://www2.wagmap.jp/inzai/Portal" target="_blank" rel="noreferrer">印西市わが街ガイド（公式MAP）</a>
-            <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">印西市わが街ガイド オープンデータ</a>
-            <a href="https://www.jma.go.jp/jma/kishou/know/bosai/riskmap.html" target="_blank" rel="noreferrer">気象庁キキクル</a>
-            <a href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noreferrer">気象庁 雨雲の動き</a>
-            <a href="https://www.j-shis.bosai.go.jp/" target="_blank" rel="noreferrer">J-SHIS 地震ハザードステーション</a>
-            <a href="https://sip4dkit-web.bosai.go.jp/riskmap/index.html?appid=e327b28aea5447e983d87295e162aab9&amp;center=140.15,35.8&amp;level=11" target="_blank" rel="noreferrer">防災科研 リアルタイム洪水・土砂災害リスクマップ（別窓）</a>
-            <a href="https://www.jartic.or.jp/" target="_blank" rel="noreferrer">JARTIC 道路交通情報（未接続）</a>
-            <a href="https://www.jartic.or.jp/service/opendata/" target="_blank" rel="noreferrer">JARTIC 交通規制オープンデータ（月次）</a>
-            <a href="https://www.pref.chiba.lg.jp/cate/baa/lifeline/kendou/index.html" target="_blank" rel="noreferrer">千葉県 県管理道路通行規制</a>
-            <a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">参考: TOYOTA 通れた道マップ</a>
-          </section>
+          <details class="acc">
+            <summary>📄 参照元・関連情報<span class="cnt">13</span></summary>
+            <div class="acc-body source-section">
+              <a href="https://disaportaldata.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank" rel="noreferrer">ハザードマップポータル</a>
+              <a href="https://www.ktr.mlit.go.jp/chiba/chiba_index030.html" target="_blank" rel="noreferrer">千葉県内 道路冠水注意箇所</a>
+              <a href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">印西市防災ポータル</a>
+              <a href="https://www2.wagmap.jp/inzai/Portal" target="_blank" rel="noreferrer">印西市わが街ガイド（公式MAP）</a>
+              <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">印西市わが街ガイド オープンデータ</a>
+              <a href="https://www.jma.go.jp/jma/kishou/know/bosai/riskmap.html" target="_blank" rel="noreferrer">気象庁キキクル</a>
+              <a href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noreferrer">気象庁 雨雲の動き</a>
+              <a href="https://www.j-shis.bosai.go.jp/" target="_blank" rel="noreferrer">J-SHIS 地震ハザードステーション</a>
+              <a href="https://sip4dkit-web.bosai.go.jp/riskmap/index.html?appid=e327b28aea5447e983d87295e162aab9&amp;center=140.15,35.8&amp;level=11" target="_blank" rel="noreferrer">防災科研 リアルタイム洪水・土砂災害リスクマップ（別窓）</a>
+              <a href="https://www.jartic.or.jp/" target="_blank" rel="noreferrer">JARTIC 道路交通情報（未接続）</a>
+              <a href="https://www.jartic.or.jp/service/opendata/" target="_blank" rel="noreferrer">JARTIC 交通規制オープンデータ（月次）</a>
+              <a href="https://www.pref.chiba.lg.jp/cate/baa/lifeline/kendou/index.html" target="_blank" rel="noreferrer">千葉県 県管理道路通行規制</a>
+              <a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">参考: TOYOTA 通れた道マップ</a>
+            </div>
+          </details>
         </aside>
 
         <section class="map-pane" id="map-pane" aria-label="印西市地図">
@@ -414,10 +490,16 @@
             </div>
             <div class="timeline-status" id="timeline-status" role="status" aria-live="polite">公式発表を確認中です。</div>
             <div class="timeline-list" id="timeline-list"></div>
-            <p class="timeline-note">
-              印西市の公式ページ・防災速報、気象庁、市長のSNS発信を自動で集めています。避難の判断は必ず<a href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">印西市の公式情報</a>で確認してください。
-              情報源の追加は<a href="https://cidao.vercel.app/admin/disaster-sources" target="_blank" rel="noreferrer">CiDAO管理画面</a>から行えます。
-            </p>
+            <div class="callout info">
+              <span class="ico">ℹ</span>
+              <div class="body">
+                印西市の公式ページ・防災速報、気象庁、市長のSNS発信を自動で集めています。<strong>避難の判断は必ず<a href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">印西市の公式情報</a>で確認してください。</strong>
+                <details class="mini">
+                  <summary>情報源を追加する</summary>
+                  <div class="mini-body"><span>情報源の追加は<a href="https://cidao.vercel.app/admin/disaster-sources" target="_blank" rel="noreferrer">CiDAO管理画面</a>から行えます。</span></div>
+                </details>
+              </div>
+            </div>
           </section>
 
           <section class="panel-section shelter-status-panel" id="shelter-status-panel">
@@ -435,16 +517,20 @@
             </div>
             <div class="shelter-list" id="shelter-list"></div>
             <p class="shelter-source-note">
-              「災害対応可」は施設区分、「開設中」は防災速報による現在情報です。指定されていても常時開設ではありません。
+              「災害対応可」は施設区分、「開設中」は防災速報による現在情報です。<strong>指定されていても常時開設ではありません。</strong>
               <a href="https://www.city.inzai.lg.jp/bousaiportal/0000008839.html" target="_blank" rel="noreferrer">印西市の避難所情報</a>
             </p>
-            <p class="shelter-source-note">
-              情報源リンク:
-              <a href="https://lin.ee/1ShNepr" target="_blank" rel="noreferrer">印西市公式LINE（スマホで開く）</a> ・
-              <a href="https://x.com/Fujishiro_1102" target="_blank" rel="noreferrer">市長X</a> ・
-              <a href="https://www.instagram.com/fujishiro.kengo/" target="_blank" rel="noreferrer">市長Instagram</a>
-              <br>PCの場合、LINEの配信文はWindows版LINEアプリからコピーしてください（リンクからは開けません）。
-            </p>
+            <details class="mini">
+              <summary>開設情報の情報源リンク</summary>
+              <div class="mini-body">
+                <span>
+                  <a href="https://lin.ee/1ShNepr" target="_blank" rel="noreferrer">印西市公式LINE（スマホで開く）</a> ・
+                  <a href="https://x.com/Fujishiro_1102" target="_blank" rel="noreferrer">市長X</a> ・
+                  <a href="https://www.instagram.com/fujishiro.kengo/" target="_blank" rel="noreferrer">市長Instagram</a>
+                </span>
+                <span>PCの場合、LINEの配信文はWindows版LINEアプリからコピーしてください（リンクからは開けません）。</span>
+              </div>
+            </details>
           </section>
 
           <section class="panel-section sns-monitor-panel" id="sns-monitor-panel">

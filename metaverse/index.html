@@ -2448,11 +2448,13 @@ const TONBI_KEY = "cbi-meta-tonbi-v1";
 let tonbiOn = false;
 let swanEntity = null;
 let swanClockBefore = false;
+let swanBank = 0;
 function setSwanVisible(on) {
   const button = document.getElementById("swanToggleBtn");
   if (on && !swanEntity) {
     if (walkMode) setMode(false);
     setTonbiVisible(false);
+    swanBank = 0;
     swanClockBefore = viewer.clock.shouldAnimate;
     viewer.clock.shouldAnimate = true;
     swanEntity = viewer.entities.add({
@@ -2468,9 +2470,10 @@ function setSwanVisible(on) {
         Cesium.Matrix3.setColumn(matrix, 0, cam.rightWC, matrix);
         Cesium.Matrix3.setColumn(matrix, 1, cam.directionWC, matrix);
         Cesium.Matrix3.setColumn(matrix, 2, cam.upWC, matrix);
+        Cesium.Matrix3.multiply(matrix, Cesium.Matrix3.fromRotationY(swanBank), matrix);
         return Cesium.Quaternion.fromRotationMatrix(matrix);
       }, false),
-      model: {uri:"assets/tonbi/swan.glb?v=20260909-4",scale:0.65,minimumPixelSize:0,runAnimations:true},
+      model: {uri:"assets/tonbi/swan.glb?v=20260909-4",scale:0.42,minimumPixelSize:0,runAnimations:true},
       show: new Cesium.CallbackProperty(()=>!window.vsRaceModeEnabled,false)
     });
   } else if (!on && swanEntity) {
@@ -2517,6 +2520,10 @@ function applyTonbiMode(mode) {
 
 // forward/right/up は毎フレームの移動入力（キーボード・スティック共通）
 function updateTonbi(dt, forward, right, up) {
+  if (swanEntity) {
+    const target = Cesium.Math.toRadians(Math.max(-22, Math.min(22, right * 22)));
+    swanBank += (target - swanBank) * (1 - Math.exp(-Math.max(0, Math.min(dt, 0.1)) / 0.2));
+  }
   if (!tonbiOn) return;
 
   // トビは滑空が多い鳥なので、普段は羽ばたかせない

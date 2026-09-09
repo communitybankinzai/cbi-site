@@ -18,6 +18,27 @@
       "actuals": [
         {
           "date": "2026-09-09",
+          "title": "防災MAP2ページを折りたたみ＋アイコン吹き出しへ全面整理 0.9時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/index.html（レイヤー31個を6カテゴリの details へ再編、出せていないもの・参照元をアコーディオン化、注記4か所を折りたたみ／吹き出しへ）",
+            "site/inzai-disaster-map/naisui.html（サイドバー5節→吹き出し2＋アコーディオン3、7項目を入れ子 details へ）",
+            "site/inzai-disaster-map/styles.css（.callout / details.acc / details.item / details.mini / details.layer-group / .golink を共通部品として追加）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.9,
+          "partnerApproved": false,
+          "note": "「全体的に文字がごちゃごちゃしている」との指摘を受け、範囲＝両ページ全体・方式＝折りたたみ＋アイコン吹き出し をユーザーが選択して実施。文言は1文字も削らず、畳むだけにした（未校正・通行可否ではない等の注記は削除禁止のため）。実測：左パネル scrollHeight 7,331px → 3,377px（54%減）、#overlay-controls 直下のフラットなラベル31個 → 2個＋6グループ。既定で開くのは災害時に見る「🌊浸水・土砂の想定区域」「🌧雨と危険度」のみ。⚠ 実装前に app.js の依存を確認：レイヤー操作は [data-overlay=\"x\"] の全体セレクタ参照で DOM の入れ子に依存せず、quick-nav のジャンプ先パネル（layer-panel 等）は section のまま残したので影響なし。検証：31レイヤーすべての data-overlay とステータス id 9件が各1個ずつ存在すること、div/details のタグ数一致、キキクル ON でレイヤーが1枚増え OFF で戻ること、J-SHIS 凡例の hidden が ON/OFF で切り替わることをブラウザで実操作して確認。landformFc がレイヤー数を増やさない件は変更前の本番でも同じ挙動（対照実験で確認）で退行ではない。session: 658daf6d-86cc-4171-90ba-a1d34e08df8b / output: 86,359 / cost: $18.67"
+        },
+        {
+          "date": "2026-09-09",
+          "title": "白鳥の旋回バンクと通常画面サイズを修正",
+          "category": "実装",
+          "outputs": ["site/metaverse/index.html"],
+          "note": "Codex: 最大22度の平滑バンクを追加、scale 0.65から0.42へ。2Pへの影響なし。"
+        },
+        {
+          "date": "2026-09-09",
           "title": "白鳥メニュー・なめらかな入力・飛行宙返りを実装",
           "category": "実装",
           "outputs": ["site/metaverse/index.html", "site/metaverse/flight-input.js", "site/metaverse/vs-race.js", "site/metaverse/verify-flight-input.cjs"],

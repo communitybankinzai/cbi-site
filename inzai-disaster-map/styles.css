@@ -528,31 +528,257 @@ input[type="checkbox"] {
   font-size: 13px;
 }
 
-.gap-section h3 {
+/* ================= アイコン吹き出し（共通部品） ================= */
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 9px 10px;
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.callout .ico {
+  flex: 0 0 auto;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.callout .body {
+  min-width: 0;
+}
+
+.callout p {
+  margin: 6px 0 0;
+}
+
+.callout p:first-child {
+  margin-top: 0;
+}
+
+.callout.info {
+  background: rgba(35, 101, 168, 0.08);
+  border-left: 4px solid var(--blue);
+}
+
+.callout.warn {
+  background: rgba(201, 99, 33, 0.09);
+  border-left: 4px solid var(--orange);
+}
+
+.callout.gap {
+  background: rgba(112, 80, 168, 0.09);
+  border-left: 4px solid var(--purple);
+}
+
+.callout.ok {
+  background: rgba(36, 116, 90, 0.09);
+  border-left: 4px solid var(--green);
+}
+
+/* ================= 折りたたみ（共通部品） ================= */
+details.acc {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  margin: 0 0 8px;
+}
+
+details.acc > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 8px;
   font-size: 13px;
-  margin: 14px 0 4px;
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+
+details.acc > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.acc > summary::after {
+  content: "＋";
+  margin-left: auto;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+details.acc[open] > summary::after {
+  content: "−";
+}
+
+details.acc > summary:hover {
+  background: var(--surface-2);
+}
+
+details.acc[open] > summary {
+  border-bottom: 1px solid var(--border);
+  border-radius: 8px 8px 0 0;
+}
+
+details.acc .acc-body {
+  padding: 10px;
+}
+
+details.acc .acc-body > *:first-child {
+  margin-top: 0;
+}
+
+summary .cnt {
+  border-radius: 10px;
+  background: var(--surface-2);
+  padding: 1px 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* 入れ子の1項目 */
+details.item {
+  border-top: 1px solid var(--border);
+}
+
+details.item:first-of-type {
+  border-top: 0;
+}
+
+details.item > summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  list-style: none;
+  cursor: pointer;
+}
+
+details.item > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.item > summary::before {
+  content: "▸";
+  flex: 0 0 auto;
+  color: var(--purple);
+}
+
+details.item[open] > summary::before {
+  content: "▾";
+}
+
+details.item > summary:hover {
+  color: var(--focus);
+}
+
+details.item .item-body {
+  padding: 0 0 10px 14px;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.65;
+}
+
+details.item .item-body p {
+  margin: 0 0 6px;
+}
+
+details.item .item-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* 本文に埋める小さな折りたたみ */
+details.mini {
+  margin: 7px 0 0;
+}
+
+details.mini > summary {
+  color: var(--focus);
+  font-size: 11.5px;
+  text-decoration: underline;
+  list-style: none;
+  cursor: pointer;
+}
+
+details.mini > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.mini .mini-body {
+  display: grid;
+  gap: 6px;
+  padding: 6px 0 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.why {
+  color: var(--orange);
   font-weight: 700;
 }
 
-.gap-section .gap-lead {
-  margin: 0;
-  font-size: 12.5px;
-  line-height: 1.6;
-  background: rgba(63, 142, 163, 0.09);
-  border-left: 3px solid #3f8ea3;
-  border-radius: 0 4px 4px 0;
-  padding: 9px 10px;
-}
-
-.gap-section .gap-note {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.gap-section .gap-note a {
+.golink {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  padding: 5px 9px;
+  color: var(--focus);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-decoration: none;
   word-break: break-word;
+}
+
+.golink:hover {
+  background: var(--bg);
+}
+
+/* レイヤーのグループ折りたたみ */
+details.layer-group {
+  border-top: 1px solid var(--border);
+}
+
+details.layer-group > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 7px;
+  font-size: 12.5px;
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+
+details.layer-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.layer-group > summary::after {
+  content: "＋";
+  margin-left: auto;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+details.layer-group[open] > summary::after {
+  content: "−";
+}
+
+details.layer-group > summary:hover {
+  color: var(--focus);
+}
+
+details.layer-group .layer-group-body {
+  display: grid;
+  gap: 7px;
+  padding: 2px 0 10px;
 }
 
 .map-pane {

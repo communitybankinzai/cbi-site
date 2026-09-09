@@ -21,7 +21,49 @@ header h1{font-size:20px;margin:2px 0 0}
 .notice{background:#eaf3f6;border-left:4px solid #3f8ea3;padding:12px;font-size:13px;border-radius:0 4px 4px 0;margin:0 0 18px}
 h2{font-size:15px;margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 h2:first-of-type{margin-top:0}
-.side h3{font-size:12.5px;margin:15px 0 5px;color:var(--ink);font-weight:700}
+
+/* ---- アイコン吹き出し ---- */
+.callout{display:flex;gap:8px;align-items:flex-start;border-radius:8px;padding:10px 11px;font-size:12px;line-height:1.65;margin:0 0 14px}
+.callout .ico{flex:0 0 auto;font-size:14px;line-height:1.4}
+.callout .body{min-width:0}
+.callout.info{background:#eaf3f6;border-left:4px solid #3f8ea3}
+.callout.warn{background:#fdf2e9;border-left:4px solid #d9822b}
+.callout.gap{background:#f3eff8;border-left:4px solid #713b8f}
+.callout p{margin:6px 0 0}
+.callout p:first-child{margin-top:0}
+
+/* ---- 折りたたみ ---- */
+details.acc{border:1px solid var(--line);border-radius:8px;background:#fff;margin:0 0 8px}
+details.acc>summary{list-style:none;cursor:pointer;padding:10px 11px;font-size:13px;font-weight:700;display:flex;gap:8px;align-items:center;border-radius:8px}
+details.acc>summary::-webkit-details-marker{display:none}
+details.acc>summary::after{content:"＋";margin-left:auto;color:var(--sub);font-weight:400;font-size:13px}
+details.acc[open]>summary::after{content:"−"}
+details.acc>summary:hover{background:#f4f7f9}
+details.acc[open]>summary{border-bottom:1px solid var(--line);border-radius:8px 8px 0 0}
+details.acc .accBody{padding:11px}
+details.acc .accBody>*:first-child{margin-top:0}
+summary .cnt{background:#e6ecf1;color:var(--sub);border-radius:10px;font-size:11px;font-weight:400;padding:1px 7px}
+
+/* ---- 折りたたみ（入れ子・1項目） ---- */
+details.item{border-top:1px solid #e6ecf0}
+details.item:first-of-type{border-top:0}
+details.item>summary{list-style:none;cursor:pointer;padding:8px 0;font-size:12.5px;font-weight:700;display:flex;gap:6px;align-items:flex-start;line-height:1.5}
+details.item>summary::-webkit-details-marker{display:none}
+details.item>summary::before{content:"▸";flex:0 0 auto;color:var(--accent);transition:transform .12s}
+details.item[open]>summary::before{content:"▾"}
+details.item>summary:hover{color:var(--accent)}
+details.item .itemBody{padding:0 0 10px 14px;font-size:11.5px;color:var(--sub);line-height:1.65}
+details.item .itemBody p{margin:0 0 6px}
+details.item .itemBody p:last-child{margin-bottom:0}
+.why{color:#8a5a1f;font-weight:700}
+.golink{display:inline-block;background:#f2f6f8;border:1px solid var(--line);border-radius:6px;padding:5px 9px;color:#245b91;text-decoration:none;font-weight:700;font-size:11.5px;margin:2px 0}
+.golink:hover{background:#e8eff3}
+
+details.mini{margin:7px 0 0}
+details.mini>summary{list-style:none;cursor:pointer;font-size:11.5px;color:#245b91;text-decoration:underline}
+details.mini>summary::-webkit-details-marker{display:none}
+details.mini .miniBody{padding:6px 0 0;font-size:11.5px;line-height:1.65}
+details.mini .miniBody p{margin:0 0 6px}
 label.layer{display:block;margin:9px 0;font-size:14px;cursor:pointer}
 label.layer input{margin-right:8px;transform:translateY(1px)}
 label.layer small{display:block;margin-left:24px;color:var(--sub);font-size:11.5px;line-height:1.5}
@@ -54,7 +96,10 @@ a{color:#245b91}
 
 <div class="wrap">
   <div class="side">
-    <p class="notice">現在の雨量を反映した情報ではありません。地形による傾向を確認するための研究用MAPです。</p>
+    <div class="callout info">
+      <span class="ico">ℹ</span>
+      <div class="body">現在の雨量を反映した情報ではありません。地形による傾向を確認するための研究用MAPです。</div>
+    </div>
 
     <h2>表示レイヤー</h2>
     <div id="layers">
@@ -80,91 +125,126 @@ a{color:#245b91}
     </div>
     <p id="status">地形データを読み込んでいます…</p>
 
-    <h2>この地図の限界</h2>
-    <p class="srcnote">
-      下水道・側溝・ポンプの排水能力、河川の氾濫、実際の降雨は<strong>反映していません</strong>。
-      重み付けは仮設定で、実際の冠水実績との照合（校正）は行っていません。
-      <strong>通行できるかどうかを示すものではありません。</strong>
-      通行判断には現地の状況と行政の情報を確認してください。
-    </p>
-    <p class="srcnote">
-      道路の色は、その道が通っている地形の指標を当てはめた<strong>概略・仮表示</strong>です。
-      通行不能とみなす基準は未検証で、実際に通れるかどうかを示すものではありません。
-    </p>
-    <p class="srcnote"><a href="./simulation-method.html">▶ 計算方法・仮定した数値・精度向上に必要なデータ</a></p>
-    <p class="srcnote"><a href="./simulation-spec.html">▶ 技術仕様（式・パラメータ・座標系・既知の誤り）</a><br>専門家向けに、計算の中身と検証結果をすべて開示しています。</p>
+    <div class="callout warn">
+      <span class="ico">⚠</span>
+      <div class="body">
+        <strong>通行できるかどうかを示すものではありません。</strong>
+        排水能力・河川の氾濫・実際の降雨は反映しておらず、冠水実績との照合（校正）もしていません。
+        <details class="mini">
+          <summary>この地図の限界をくわしく</summary>
+          <div class="miniBody">
+            <p>下水道・側溝・ポンプの排水能力、河川の氾濫、実際の降雨は<strong>反映していません</strong>。重み付けは仮設定で、実際の冠水実績との照合（校正）は行っていません。通行判断には現地の状況と行政の情報を確認してください。</p>
+            <p>道路の色は、その道が通っている地形の指標を当てはめた<strong>概略・仮表示</strong>です。通行不能とみなす基準は未検証で、実際に通れるかどうかを示すものではありません。</p>
+            <p><a href="./simulation-method.html">▶ 計算方法・仮定した数値・精度向上に必要なデータ</a></p>
+            <p><a href="./simulation-spec.html">▶ 技術仕様（式・パラメータ・座標系・既知の誤り）</a><br>専門家向けに、計算の中身と検証結果をすべて開示しています。</p>
+          </div>
+        </details>
+      </div>
+    </div>
 
-    <h2>この地図に出せていないもの</h2>
-    <p class="srcnote">
-      重ねたくても重ねられない情報があります。理由は<strong>市が数値データ（GIS）を公開していない</strong>ことと、<strong>提供元から重ね表示の許諾が得られなかった</strong>ことの2つで、いずれも私たちの工夫では超えられません。
-      そこで、出せていないものを項目ごとに挙げ、それぞれの公式サイトへのリンクで補います。<strong>実際の避難や通行の判断は、必ずリンク先の公式情報で行ってください。</strong>
-    </p>
+    <details class="acc">
+      <summary>🚫 この地図に出せていないもの<span class="cnt">7</span></summary>
+      <div class="accBody">
+        <div class="callout gap">
+          <span class="ico">💡</span>
+          <div class="body">重ねたくても重ねられない情報があります。<strong>市が数値データ（GIS）を公開していない</strong>ことと、<strong>提供元から重ね表示の許諾が得られなかった</strong>ことが理由で、いずれも私たちの工夫では超えられません。公式サイトへのリンクで補います。</div>
+        </div>
 
-    <h3>① 市が想定している浸水の範囲と深さ（内水）</h3>
-    <p class="srcnote">
-      <strong>出せていない理由：</strong>印西市の内水浸水想定は<strong>PDFでのみ公開</strong>されており、地図に重ねられる数値データ（GIS）が非公開のためです。<br>
-      <a href="https://www.city.inzai.lg.jp/bousaiportal/0000008837.html" target="_blank" rel="noopener">印西市 公式ハザードマップ ↗</a>（内水浸水想定のPDF・約3.9MB）<br>
-      参考条件は 2008-08-30 我孫子観測所 最大1時間105 mm。元の時系列降雨は未取得で、この推定とは別の情報です。
-    </p>
+        <details class="item">
+          <summary>① 市が想定している浸水の範囲と深さ（内水）</summary>
+          <div class="itemBody">
+            <p><span class="why">出せていない理由</span>：印西市の内水浸水想定は<strong>PDFでのみ公開</strong>されており、地図に重ねられる数値データ（GIS）が非公開のためです。</p>
+            <p><a class="golink" href="https://www.city.inzai.lg.jp/bousaiportal/0000008837.html" target="_blank" rel="noopener">印西市 公式ハザードマップ ↗</a></p>
+            <p>内水浸水想定のPDF・約3.9MB。参考条件は 2008-08-30 我孫子観測所 最大1時間105 mm。元の時系列降雨は未取得で、この推定とは別の情報です。</p>
+          </div>
+        </details>
 
-    <h3>② いま降っている雨による内水リスク</h3>
-    <p class="srcnote">
-      <strong>出せていない理由：</strong>国立研究開発法人 防災科学技術研究所（防災科研）へ重ね表示を申し入れましたが、<strong>2026-08-28に正式に見送りとの回答</strong>をいただきました。リンクのみとし、配信URLへのアクセスは行いません。<br>
-      <a href="https://sip4dkit-web.bosai.go.jp/riskmap/index.html?appid=e327b28aea5447e983d87295e162aab9&amp;center=140,38&amp;level=7&amp;entry=2" target="_blank" rel="noopener">防災科研 リアルタイム内水リスク（東日本）↗</a><br>
-      <strong>開いても白紙のことがありますが、故障ではありません。</strong>XRAINの実況雨量から計算しているため<strong>雨が降っていないと何も表示されません</strong>。また、提供元から<strong>メンテナンス中</strong>との告知が出ています。
-    </p>
+        <details class="item">
+          <summary>② いま降っている雨による内水リスク</summary>
+          <div class="itemBody">
+            <p><span class="why">出せていない理由</span>：国立研究開発法人 防災科学技術研究所（防災科研）へ重ね表示を申し入れましたが、<strong>2026-08-28に正式に見送りとの回答</strong>をいただきました。リンクのみとし、配信URLへのアクセスは行いません。</p>
+            <p><a class="golink" href="https://sip4dkit-web.bosai.go.jp/riskmap/index.html?appid=e327b28aea5447e983d87295e162aab9&amp;center=140,38&amp;level=7&amp;entry=2" target="_blank" rel="noopener">防災科研 リアルタイム内水リスク（東日本）↗</a></p>
+            <p><strong>開いても白紙のことがありますが、故障ではありません。</strong>XRAINの実況雨量から計算しているため<strong>雨が降っていないと何も表示されません</strong>。また、提供元から<strong>メンテナンス中</strong>との告知が出ています。</p>
+          </div>
+        </details>
 
-    <h3>③ 洪水・土砂災害・高潮など、内水以外の想定区域</h3>
-    <p class="srcnote">
-      <strong>出せていない理由：</strong>この地図は内水（雨水がたまる現象）だけを扱う研究用のため、他の災害の想定区域は載せていません。<br>
-      <a href="https://disaportal.gsi.go.jp/maps/" target="_blank" rel="noopener">重ねるハザードマップ（ハザードマップポータル）↗</a>
-    </p>
+        <details class="item">
+          <summary>③ 洪水・土砂災害・高潮など、内水以外の想定区域</summary>
+          <div class="itemBody">
+            <p><span class="why">出せていない理由</span>：この地図は内水（雨水がたまる現象）だけを扱う研究用のため、他の災害の想定区域は載せていません。</p>
+            <p><a class="golink" href="https://disaportal.gsi.go.jp/maps/" target="_blank" rel="noopener">重ねるハザードマップ ↗</a></p>
+          </div>
+        </details>
 
-    <h3>④ 堤防が切れたとき、浸水がどう広がるか（時間変化）</h3>
-    <p class="srcnote">
-      <strong>出せていない理由：</strong>この地図は静的な地形モデルで、水の流れる時間の計算をしていません。<br>
-      <a href="https://suiboumap.gsi.go.jp/" target="_blank" rel="noopener">浸水ナビ（国土交通省）↗</a>
-    </p>
+        <details class="item">
+          <summary>④ 堤防が切れたとき、浸水がどう広がるか（時間変化）</summary>
+          <div class="itemBody">
+            <p><span class="why">出せていない理由</span>：この地図は静的な地形モデルで、水の流れる時間の計算をしていません。</p>
+            <p><a class="golink" href="https://suiboumap.gsi.go.jp/" target="_blank" rel="noopener">浸水ナビ（国土交通省）↗</a></p>
+          </div>
+        </details>
 
-    <h3>⑤ 川の水位と雨量の実況</h3>
-    <p class="srcnote">
-      <strong>出せていない理由：</strong>河川水位のリアルタイム配信は有償のみで、無償の公開APIが存在しません。<br>
-      <a href="https://www.river.go.jp/" target="_blank" rel="noopener">川の防災情報（国土交通省）↗</a>
-    </p>
+        <details class="item">
+          <summary>⑤ 川の水位と雨量の実況</summary>
+          <div class="itemBody">
+            <p><span class="why">出せていない理由</span>：河川水位のリアルタイム配信は有償のみで、無償の公開APIが存在しません。</p>
+            <p><a class="golink" href="https://www.river.go.jp/" target="_blank" rel="noopener">川の防災情報（国土交通省）↗</a></p>
+          </div>
+        </details>
 
-    <h3>⑥ これから数時間の雨</h3>
-    <p class="srcnote">
-      <strong>出せていない理由：</strong>この地図は降雨を一切扱っていません（地形だけの推定です）。<br>
-      <a href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noopener">気象庁 雨雲の動き ↗</a>
-    </p>
+        <details class="item">
+          <summary>⑥ これから数時間の雨</summary>
+          <div class="itemBody">
+            <p><span class="why">出せていない理由</span>：この地図は降雨を一切扱っていません（地形だけの推定です）。</p>
+            <p><a class="golink" href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noopener">気象庁 雨雲の動き ↗</a></p>
+          </div>
+        </details>
 
-    <h3>⑦ いまの災害発生の危険度</h3>
-    <p class="srcnote">
-      <strong>出せていない理由：</strong>同じく降雨を扱っていないため、危険度の判定ができません。<br>
-      <a href="https://www.jma.go.jp/bosai/risk/" target="_blank" rel="noopener">気象庁 キキクル（危険度分布）↗</a><br>
-      ⑥⑦は<a href="./">災害状況整合MAP</a>のほうに重ねて表示しています。
-    </p>
+        <details class="item">
+          <summary>⑦ いまの災害発生の危険度</summary>
+          <div class="itemBody">
+            <p><span class="why">出せていない理由</span>：同じく降雨を扱っていないため、危険度の判定ができません。</p>
+            <p><a class="golink" href="https://www.jma.go.jp/bosai/risk/" target="_blank" rel="noopener">気象庁 キキクル ↗</a></p>
+            <p>⑥⑦は<a href="./">災害状況整合MAP</a>のほうに重ねて表示しています。</p>
+          </div>
+        </details>
+      </div>
+    </details>
 
-    <h2>関連</h2>
-    <p class="srcnote">
-      <a href="./">▶ 印西市 災害状況整合MAP（警報・雨量・避難所・冠水した道路）</a><br>
-      雨量を入力して重ねる「CBI独自シミュレーション」は、こちらの地図にあります。
-    </p>
-    <p class="srcnote">
-      <a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noopener">▶ みんなでつくる千葉豪雨冠水道路マップ ↗</a><br>
-      市民が実際に冠水した道路を投稿している有志のプロジェクトです。冠水情報の投稿はこちらへ。
-    </p>
+    <details class="acc">
+      <summary>🔗 関連する地図<span class="cnt">2</span></summary>
+      <div class="accBody">
+        <details class="item">
+          <summary>印西市 災害状況整合MAP</summary>
+          <div class="itemBody">
+            <p>警報・雨量・避難所・冠水した道路をまとめた地図です。雨量を入力して重ねる「CBI独自シミュレーション」もこちらにあります。</p>
+            <p><a class="golink" href="./">災害状況整合MAPを開く</a></p>
+          </div>
+        </details>
+        <details class="item">
+          <summary>みんなでつくる千葉豪雨冠水道路マップ</summary>
+          <div class="itemBody">
+            <p>市民が実際に冠水した道路を投稿している有志のプロジェクトです。冠水情報の投稿はこちらへ。</p>
+            <p><a class="golink" href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noopener">冠水マップを開く ↗</a></p>
+          </div>
+        </details>
+      </div>
+    </details>
 
-    <h2>出典と版</h2>
-    <p class="srcnote">
-      標高：国土地理院 標高タイル（1m／5m／10m）<br>
-      道路：© OpenStreetMap contributors（ODbL 1.0）<br>
-      背景地図：地理院タイル<br>
-      モデル版：<span id="ver">topo-0.1.0</span>／生成：<span id="gen">—</span><br>
-      作成：Community Bank INZAI（印西市市民活動団体登録 ０８－００１）
-    </p>
-    <p class="srcnote"><a href="./LICENSE.md">▶ 利用条件（コードはMIT・道路データはODbL 1.0）</a><br>他のまちでも同じ手順で作れます。</p>
-    <p class="srcnote"><a href="./simulation-data/status.json">パラメータ・仮定の一覧（JSON）</a> ／ <a href="./simulation-data/sources.json">標高データの取得元（JSON）</a></p>
+    <details class="acc">
+      <summary>📄 出典・版・利用条件</summary>
+      <div class="accBody">
+        <p class="srcnote">
+          標高：国土地理院 標高タイル（1m／5m／10m）<br>
+          道路：© OpenStreetMap contributors（ODbL 1.0）<br>
+          背景地図：地理院タイル<br>
+          モデル版：<span id="ver">topo-0.1.0</span>／生成：<span id="gen">—</span><br>
+          作成：Community Bank INZAI（印西市市民活動団体登録 ０８－００１）
+        </p>
+        <p class="srcnote"><a href="./LICENSE.md">▶ 利用条件（コードはMIT・道路データはODbL 1.0）</a><br>他のまちでも同じ手順で作れます。</p>
+        <p class="srcnote"><a href="./simulation-data/status.json">パラメータ・仮定の一覧（JSON）</a> ／ <a href="./simulation-data/sources.json">標高データの取得元（JSON）</a></p>
+      </div>
+    </details>
   </div>
 
   <div class="mapbox">
