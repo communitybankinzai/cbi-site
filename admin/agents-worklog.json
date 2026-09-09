@@ -34,14 +34,21 @@
           "date": "2026-09-09",
           "title": "白鳥の旋回バンクと通常画面サイズを修正",
           "category": "実装",
-          "outputs": ["site/metaverse/index.html"],
+          "outputs": [
+            "site/metaverse/index.html"
+          ],
           "note": "Codex: 最大22度の平滑バンクを追加、scale 0.65から0.42へ。2Pへの影響なし。"
         },
         {
           "date": "2026-09-09",
           "title": "白鳥メニュー・なめらかな入力・飛行宙返りを実装",
           "category": "実装",
-          "outputs": ["site/metaverse/index.html", "site/metaverse/flight-input.js", "site/metaverse/vs-race.js", "site/metaverse/verify-flight-input.cjs"],
+          "outputs": [
+            "site/metaverse/index.html",
+            "site/metaverse/flight-input.js",
+            "site/metaverse/vs-race.js",
+            "site/metaverse/verify-flight-input.cjs"
+          ],
           "note": "Codex: 白鳥モデルを通常画面から選択。入力追従と停止を平滑化し、ローカル軸回転で飛行の角度制限を撤去。歩行は制限維持。単体と通常画面モデル・360度回転検証通過。有料地図要求0。"
         },
         {
@@ -6585,13 +6592,11 @@
       ],
       "plans": [
         {
-          "due": "2026-09-16",
+          "due": "2026-09-12",
           "title": "📣 団体登録促進のSNS投稿（Instagramカルーセル2枚）を出す",
           "category": "広報",
           "priority": "中",
-          "status": "待ち",
-          "blockedBy": "代表 新井氏の承認。A4 1枚の承認用資料（site/assets/sns/2026-09-09_orgs-claim/SNS投稿案_承認用.pdf）を提示済みで、「この内容で投稿／お詫び部分を削って投稿／投稿しない／修正のうえ投稿」から選んでもらう",
-          "note": "素材は site/assets/sns/2026-09-09_orgs-claim/（slide1.jpg 呼びかけ・slide2.jpg 団体一覧の実画面・caption.txt）。Instagramの自動投稿は画像1枚のみ対応でカルーセル未実装のため手動投稿。Threads・Facebookにも同内容。ねらいは「246団体のうち本人が編集できるのは4団体だけ」という状態の解消"
+          "note": "2026-09-09 代表 新井氏より「お詫びの部分は除いて発信してよい」と承認を得た。確定版のキャプションは site/assets/sns/2026-09-09_orgs-claim/caption.txt（お詫び段落を削除し、編集の始め方＝所属申告の手順を1文追加）。画像2枚（slide1.jpg・slide2.jpg）は謝罪文言を含まないため修正不要。Instagramの自動投稿は画像1枚のみ対応でカルーセル未実装のため手動投稿。Threads・Facebookにも同内容"
         },
         {
           "due": "未定",
