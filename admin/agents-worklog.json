@@ -5501,6 +5501,13 @@
       "plans": [
         {
           "due": "2026-09-12",
+          "title": "🔐 Facebook投稿に使ったユーザートークンを無効化するか判断する",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-09-09 の長期化作業でユーザートークンの実物が画面共有に写った。Facebook の設定→ビジネス統合→「Nsfactory SNS投稿」を削除すれば失効するが、同時にページトークンも失効し再取得が必要になる。投稿頻度が低いなら削除、今後も自動投稿するなら据え置きの判断"
+        },
+        {
+          "due": "2026-09-12",
           "title": "🚨 CiDAOの団体申請7件（2026-07-25〜29 申請・42〜46日放置）の承認可否を判断する",
           "category": "保守",
           "priority": "高",
@@ -6421,12 +6428,12 @@
       "actuals": [
         {
           "date": "2026-09-09",
-          "title": "団体登録促進のSNS投稿（Instagram・Threads カルーセル2枚）の作成と発信 0.3時間",
+          "title": "団体登録促進のSNS投稿（Instagram・Threads・Facebook）の作成と発信 0.4時間",
           "category": "広報",
-          "outputs": "site/assets/sns/2026-09-09_orgs-claim/（slide1.jpg・slide2.jpg・caption.txt・SNS投稿案_承認用.pdf）。投稿 Instagram media_id 18128456935683274 ／ Threads id 17947141845054702",
-          "hours": 0.3,
+          "outputs": "site/assets/sns/2026-09-09_orgs-claim/（slide1.jpg・slide2.jpg・caption.txt・SNS投稿案_承認用.pdf）。投稿 Instagram media_id 18128456935683274 ／ Threads id 17947141845054702 ／ Facebook post_id 1289705534223304_122108799933453390",
+          "hours": 0.4,
           "partnerApproved": true,
-          "note": "代表 新井氏の承認を得て発信。承認時の指示により、申請放置のお詫び段落は本文から除いた。Instagramの既存自動配信（sns-dispatch）はカルーセル未対応・提案とイベント専用のため、Graph API を直接叩いて投稿した（スクリプトは scratchpad）。Facebookはページのアクセストークンが未設定で投稿できず。Threadsは本文500字・ハッシュタグ1つの制限があるためタグ行を落として351字で投稿"
+          "note": "代表 新井氏の承認を得て発信。承認時の指示により、申請放置のお詫び段落は本文から除いた。Instagramの既存自動配信（sns-dispatch）はカルーセル未対応・提案とイベント専用のため、Graph API を直接叩いて投稿した（スクリプトは scratchpad）。Facebookは当日に長期ページトークンを取得して管理画面へ登録し投稿した（Graph API Explorer→fb_exchange_token で長期化→me/accounts でページトークン。ページトークンは無期限）。既存の配信処理はテキストのみのため写真は /photos に published=false でアップロードし /feed へ attached_media で添付。Threadsは本文500字・ハッシュタグ1つの制限があるためタグ行を落として351字で投稿"
         },
         {
           "date": "2026-09-05",
