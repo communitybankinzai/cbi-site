@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-09",
+          "title": "レイヤー説明を ⓘ ホバー吹き出しへ移設（左パネルの省スペース化） 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/index.html（説明文8か所を .tip 吹き出しへ、キキクル説明を凡例の折りたたみへ統合）",
+            "site/inzai-disaster-map/styles.css（.tip / .tip-btn / .tip-body / .has-tip を追加）",
+            "site/inzai-disaster-map/app.js（initLayerTips() を新設し起動時に呼び出し）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "『左側の説明文はカーソル当てたら吹き出しが出るイメージです、スペースとりすぎ』との指摘への対応。⚠ 左パネルは .side-panel { overflow:auto } なので、吹き出しを absolute にすると切れる。position:fixed にして initLayerTips() がボタンの位置から座標を計算し、右にはみ出す場合は左側へ回り込ませ、下にはみ出す場合は上へ寄せる。吹き出しの上にカーソルがある間は閉じない（180ms の遅延クローズ）ので中のリンクを押せる。スマホはホバーが無いので ⓘ のタップで開閉。⚠ タップ直後にパネルがわずかにスクロールして即座に閉じる問題が実機幅375pxの検証で出たため、開いてから400msはスクロールでの自動クローズを無視する処理を入れた。実測（いずれも本番の現行版との比較）：レイヤー節 1,544px→1,042px、浸水・土砂グループ 720px→367px、左パネル全体 3,941px→3,439px。検証：31→34レイヤーの data-overlay とステータス id 8件が各1個ずつ維持されていること、div/span のタグ数一致、PC でホバーして吹き出しがパネル外へ正しく出ること、375px 幅でタップして開き画面内（left 8px・right 328px < 375px）に収まることを実測。凡例（キキクル・道路リスク・J-SHIS図）は JS が hidden を制御しているため吹き出しへ入れず、その場に残した。session: 658daf6d-86cc-4171-90ba-a1d34e08df8b / output: 146,770 / cost: $41.40"
+        },
+        {
+          "date": "2026-09-09",
           "title": "ハザードタイル全17種の棚卸し・土砂レイヤーのURL不具合修正・3レイヤー追加 0.2時間",
           "category": "実装",
           "outputs": [

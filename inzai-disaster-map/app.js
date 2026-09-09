@@ -992,6 +992,7 @@ function initIntegration() {
     document.getElementById("operation-banner-text").textContent = "公開承認済みの参考情報だけを表示します。救助・事件・事故は119・110へ通報し、公式情報を優先してください。";
     applyPublicViewControls();
   }
+  initLayerTips();
 
   const endpoint = String(APP_CONFIG.snsSearchEndpoint || "").trim();
   const monitorEndpoint = String(APP_CONFIG.snsMonitorEndpoint || "").trim();
@@ -1815,6 +1816,88 @@ function showShelterFloodLayers() {
   renderShelters();
   map.fitBounds(INZAI_BOUNDS);
   document.getElementById("map-status").textContent = "公式の洪水・内水浸水想定と風水害対応避難所を重ねています。";
+}
+
+// レイヤー説明の ⓘ 吹き出し。
+// 左パネルは overflow:auto なので絶対配置だと切れる。吹き出しは position:fixed とし、
+// ここでボタンの位置から座標を決める。吹き出しの上にカーソルがある間は閉じない
+// （中のリンクを押せるようにするため）。
+function initLayerTips() {
+  const tips = Array.from(document.querySelectorAll(".tip"));
+  if (!tips.length) return;
+  let openTip = null;
+  let closeTimer = null;
+  let openedAt = 0;
+
+  function place(tip) {
+    const body = tip.querySelector(".tip-body");
+    const btn = tip.querySelector(".tip-btn");
+    if (!body || !btn) return;
+    // 先に表示してから実寸を測る（display:none だと幅・高さが取れない）
+    tip.classList.add("is-open");
+    const r = btn.getBoundingClientRect();
+    const b = body.getBoundingClientRect();
+    const margin = 8;
+    let left = r.right + margin;
+    if (left + b.width > window.innerWidth - margin) left = Math.max(margin, r.left - b.width - margin);
+    let top = r.top - 4;
+    if (top + b.height > window.innerHeight - margin) top = Math.max(margin, window.innerHeight - margin - b.height);
+    body.style.left = `${Math.round(left)}px`;
+    body.style.top = `${Math.round(top)}px`;
+  }
+
+  function open(tip) {
+    window.clearTimeout(closeTimer);
+    if (openTip && openTip !== tip) openTip.classList.remove("is-open");
+    openTip = tip;
+    openedAt = Date.now();
+    place(tip);
+  }
+
+  function scheduleClose() {
+    window.clearTimeout(closeTimer);
+    closeTimer = window.setTimeout(() => {
+      if (openTip) openTip.classList.remove("is-open");
+      openTip = null;
+    }, 180);
+  }
+
+  tips.forEach(tip => {
+    const btn = tip.querySelector(".tip-btn");
+    if (!btn) return;
+    tip.addEventListener("mouseenter", () => open(tip));
+    tip.addEventListener("mouseleave", scheduleClose);
+    btn.addEventListener("focus", () => open(tip));
+    btn.addEventListener("blur", scheduleClose);
+    // タッチ端末はホバーが無いので、タップで開閉する
+    btn.addEventListener("click", event => {
+      event.preventDefault();
+      if (tip.classList.contains("is-open")) {
+        tip.classList.remove("is-open");
+        openTip = null;
+      } else {
+        open(tip);
+      }
+    });
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && openTip) {
+      openTip.classList.remove("is-open");
+      openTip = null;
+    }
+  });
+  // スクロールすると位置がずれるので閉じる。
+  // ただしスマホで ⓘ をタップした直後は、その操作自体がわずかなスクロールを起こして
+  // 開いた瞬間に閉じてしまうため、開いてから400msは無視する。
+  document.querySelectorAll(".side-panel").forEach(panel => {
+    panel.addEventListener("scroll", () => {
+      if (openTip && Date.now() - openedAt > 400) {
+        openTip.classList.remove("is-open");
+        openTip = null;
+      }
+    }, { passive: true });
+  });
 }
 
 function applyPublicViewControls() {

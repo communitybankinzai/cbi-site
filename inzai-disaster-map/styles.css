@@ -528,6 +528,86 @@ input[type="checkbox"] {
   font-size: 13px;
 }
 
+/* ================= ⓘ ホバー吹き出し（レイヤー説明用） =================
+   左パネルは overflow:auto なので、吹き出しを絶対配置すると切れる。
+   position:fixed にして app.js の initLayerTips() が座標を当てる。 */
+.tip {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.tip-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+}
+
+.tip-btn:hover,
+.tip-btn:focus-visible,
+.tip.is-open .tip-btn {
+  border-color: var(--focus);
+  background: var(--focus);
+  color: #fff;
+  outline: none;
+}
+
+.tip-body {
+  position: fixed;
+  z-index: 2000;
+  visibility: hidden;
+  width: min(320px, calc(100vw - 24px));
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.65;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.tip.is-open .tip-body {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tip-body > * + * {
+  margin-top: 6px;
+}
+
+.tip-body p {
+  margin: 0;
+}
+
+/* ラベルと ⓘ を1行に収める */
+.check-list label.has-tip {
+  align-items: flex-start;
+}
+
+.check-list label.has-tip > span.layer-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 /* ================= アイコン吹き出し（共通部品） ================= */
 .callout {
   display: flex;
