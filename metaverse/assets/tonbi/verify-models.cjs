@@ -27,6 +27,21 @@ for (const kind of ['kite', 'swan']) {
       assert(Number.isInteger(primitive.attributes[name]));
     }
   }
+  const checked = new Set();
+  for (const mesh of gltf.meshes) for (const primitive of mesh.primitives) {
+    for (const semantic of ['POSITION', 'NORMAL']) {
+      const index = primitive.attributes[semantic];
+      if (checked.has(index)) continue;
+      checked.add(index);
+      const accessor = gltf.accessors[index], view = gltf.bufferViews[accessor.bufferView];
+      const offset = (view.byteOffset || 0) + (accessor.byteOffset || 0);
+      for (let i = 0; i < accessor.count; i++) {
+        const v = [0,1,2].map(axis => binary.readFloatLE(offset+i*(view.byteStride || 12)+axis*4));
+        assert(v.every(Number.isFinite), kind+' '+semantic+' finite');
+        if (semantic === 'NORMAL') assert(Math.abs(Math.hypot(...v)-1)<0.01, kind+' normalized surface');
+      }
+    }
+  }
   const clip = gltf.animations.find(animation => animation.name === 'Wingbeat');
   assert(clip);
   {

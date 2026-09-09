@@ -18,6 +18,13 @@
       "actuals": [
         {
           "date": "2026-09-09",
+          "title": "鳶・白鳥のくちばしを実写参照で再構成",
+          "category": "実装",
+          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/assets/tonbi/verify-models.cjs"],
+          "note": "Codex: 球状部品を連続断面曲面へ置換。目の突出低減。両種GLB座標・法線・アニメーション構造検証通過。購入・有料生成なし。"
+        },
+        {
+          "date": "2026-09-09",
           "title": "団体情報への外部リンク実装（列追加＋22件投入）とカテゴリ区分の出典調査 0.6時間",
           "category": "実装",
           "outputs": "cidao: supabase/migrations/20260909080000_org_inzaici_url.sql（新規）／src/app/orgs/[id]/page.tsx／本番DB organizations 22件更新（commit 35f9ce1）。CBI: agents/a5-bridge/knowledge/2026-09-09_市民活動支援センターへの照会メール文案.md（新規）",

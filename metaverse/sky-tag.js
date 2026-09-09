@@ -80,7 +80,11 @@
     function eye(side) {
       const center = swan ? [3.77, 0.29, 0.195] : [1.71, 0.29, 0.237];
       const rx = swan ? 0.047 : 0.064, ry = swan ? 0.038 : 0.053;
-      const depth = 0.023;
+      const depth = 0.009;
+      function faceDepth(x, y) {
+        const head = swan ? [3.65,0.2,0.46,0.24,0.215] : [1.62,0.21,0.43,0.29,0.26];
+        return head[4]*Math.sqrt(Math.max(0,1-((x-head[0])/head[2])**2-((y-head[1])/head[3])**2));
+      }
       // A shallow convex eye sits inside an almond-shaped lid, not on a stalk.
       surface((u, v) => {
         const a = v * Math.PI * 2, x = Math.cos(a), y = Math.sin(a);
@@ -90,7 +94,7 @@
         const fleck = 0.82 + 0.12 * Math.sin(a * 37 + u * 9) + 0.06 * Math.sin(a * 71 - u * 13);
         const shade = fleck * (1 - 0.6 * Math.pow(u, 8));
         return {p: [center[0] + rx * u * x, center[1] + ry * u * y,
-          side * (center[2] + z)], n: n.map(value => value / length),
+          side * (faceDepth(center[0]+rx*u*x,center[1]+ry*u*y) + 0.001 + z)], n: n.map(value => value / length),
           color: (u < (swan ? 0.66 : 0.38) ? [0.003, 0.003, 0.004] : swan ? [0.012, 0.008, 0.006] : [0.19, 0.065, 0.022]).map(c => c * shade)};
       }, 16, 96, [1, 1, 1], true);
       // Upper and lower lids follow the eye aperture; the upper lid is heavier.
@@ -100,9 +104,66 @@
         const nx = Math.cos(a), ny = Math.sin(a);
         return {p: [center[0] + (rx + thickness * Math.cos(b)) * nx,
           center[1] + (ry + thickness * Math.cos(b)) * ny * (0.85 + 0.15 * Math.abs(ny)),
-          side * (center[2] + 0.003 + thickness * Math.sin(b))],
+          side * (faceDepth(center[0]+rx*nx,center[1]+ry*ny) + 0.002 + thickness * Math.sin(b))],
           n: [nx * Math.cos(b), ny * Math.cos(b), side * Math.sin(b)]};
       }, 40, 8, swan ? [0.014, 0.012, 0.009] : [0.016, 0.012, 0.009], true);
+    }
+    function bill() {
+      // x, upper edge, lower edge, half width. The hook is continuous with the culmen.
+      const sections = swan ? [
+        [3.78, 0.36, 0.055, 0.155], [3.97, 0.29, 0.035, 0.16],
+        [4.17, 0.195, 0.017, 0.14], [4.4, 0.11, 0.008, 0.116],
+        [4.58, 0.065, 0.005, 0.08], [4.65, 0.032, 0.012, 0.001]
+      ] : [
+        [1.82, 0.32, 0.055, 0.15], [1.99, 0.31, 0.038, 0.128],
+        [2.13, 0.25, 0.018, 0.1], [2.23, 0.15, -0.035, 0.061],
+        [2.25, 0.065, -0.038, 0.028], [2.225, -0.057, -0.058, 0.001]
+      ];
+      function section(u) {
+        const f = Math.max(0, Math.min(1, u)) * (sections.length - 1);
+        const i = Math.min(sections.length - 2, Math.floor(f)), t = f - i;
+        return sections[i].map((p1, axis) => {
+          const p0 = sections[Math.max(0, i - 1)][axis], p2 = sections[i + 1][axis];
+          const p3 = sections[Math.min(sections.length - 1, i + 2)][axis];
+          return 0.5 * ((2*p1) + (-p0+p2)*t + (2*p0-5*p1+4*p2-p3)*t*t + (-p0+3*p1-3*p2+p3)*t*t*t);
+        });
+      }
+      function point(u, v) {
+        const [x, top, bottom, width] = section(u), a = v * 2 * Math.PI;
+        return [x, (top+bottom)/2 + (top-bottom)/2 * Math.sin(a), Math.max(0.001,width)*Math.cos(a)];
+      }
+      function sample(u, v) {
+        const p = point(u,v), a = point(Math.min(1,u+0.0001),v), b = point(Math.max(0,u-0.0001),v);
+        const c = point(u,v+0.0001), d = point(u,v-0.0001);
+        const du = a.map((x,i)=>x-b[i]), dv = c.map((x,i)=>x-d[i]);
+        const n = [du[1]*dv[2]-du[2]*dv[1],du[2]*dv[0]-du[0]*dv[2],du[0]*dv[1]-du[1]*dv[0]];
+        const length = Math.hypot(...n) || 1;
+        // Yellow is a basal side patch, not a yellow tip or a separate round mass.
+        const basal = swan ? u < 0.34 + 0.045*Math.cos(v*2*Math.PI) && Math.sin(v*2*Math.PI)<0.72 : u<0.43;
+        const color = basal ? (swan ? [0.68,0.39,0.018] : [0.42,0.4,0.22]) : [0.023,0.028,0.035];
+        return {p,n:n.map(x=>x/length),color};
+      }
+      surface(sample, 60, 40, [1,1,1], true);
+      surface((u,v)=> {
+        const [x,,bottom,width] = section(u*(swan ? 0.94 : 0.63)), a = v*2*Math.PI;
+        const thickness = 0.018*Math.sin(Math.PI*u)+0.002;
+        return {p:[x,bottom-thickness-0.002+thickness*Math.sin(a),width*0.86*Math.cos(a)],
+          n:[0,Math.sin(a),Math.cos(a)]};
+      }, 32, 20, [0.025,0.027,0.029], true);
+      for (const side of [-1,1]) {
+        // Small recessed-looking nostrils follow the bill surface on both sides.
+        surface((r,t)=> {
+          const a = t*2*Math.PI, u = (swan ? 0.49 : 0.38)+0.034*r*Math.cos(a);
+          const v = (side===1 ? 0.055 : 0.445)+0.012*r*Math.sin(a);
+          const s = sample(u,v);
+          return {p:s.p.map((x,i)=>x+s.n[i]*0.0012),n:s.n};
+        }, 5, 28, [0.002,0.002,0.002], true);
+        // A narrow commissure separates the upper bill from the lower mandible.
+        surface((u,v)=> {
+          const t = u*(swan ? 0.93 : 0.62), [x,top,bottom,width] = section(t);
+          return {p:[x,bottom+0.007+(v-0.5)*0.006,side*width*0.5],n:[0,0,side]};
+        }, 32, 2, [0.003,0.003,0.003], true);
+      }
     }
     function feather(base, tip, width, color) {
       const dx = tip[0] - base[0], dz = tip[2] - base[2], length = Math.hypot(dx, dz);
@@ -131,15 +192,13 @@
           n: [0, Math.sin(angle), Math.cos(angle)], uv: [v, u]};
       }, 32, 24, [0.98, 0.98, 1], 2);
       oval([3.65, 0.2, 0], [0.46, 0.24, 0.215], [1, 1, 1]);
-      oval([4.05, 0.1, 0], [0.32, 0.12, 0.14], [0.95, 0.66, 0.13]);
-      oval([4.27, 0.085, 0], [0.14, 0.08, 0.12], [0.07, 0.07, 0.08]);
+      bill();
     } else {
     oval([-0.15, 0, 0], [1.6, 0.42, 0.43], [0.46, 0.32, 0.19]);
     activePart = "neck";
     oval([1.05, 0.12, 0], [0.65, 0.4, 0.32], [0.52, 0.39, 0.25]);
     oval([1.62, 0.21, 0], [0.43, 0.29, 0.26], [0.62, 0.5, 0.34]);
-    oval([1.97, 0.14, 0], [0.31, 0.15, 0.15], [0.49, 0.44, 0.29]);
-    oval([2.13, 0.035, 0], [0.11, 0.16, 0.09], [0.18, 0.16, 0.12]);
+    bill();
     }
     for (const side of [-1, 1]) {
       activePart = "neck";
@@ -309,7 +368,7 @@
     });
   }
   function aircraftUri(kind) {
-    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260909-2";
+    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260909-3";
   }
   function placeAtStart(player) {
     const halfSeparationDegrees = 300 / 111000;
