@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-09",
+          "title": "CiDAOプロモーション動画の自動生成基盤を新設し、ナレーション入り通し版を完成 1.2時間",
+          "category": "実装",
+          "outputs": "scripts/promo/record_cidao.mjs（新規・コマ送り撮影）／scripts/promo/build_cidao_voice.py（新規・Edge TTS）／scripts/promo/mix_cidao_audio.mjs（新規・音声合成）／scripts/promo/cidao_tts/scenes.json（新規・テロップとナレーション原稿）／scripts/promo/out/完成/CiDAO紹介_2分45秒_ナレーション入り_1080p.mp4／同_無音_1080p.mp4／scripts/promo/out/README.md／cidao: src/app/match/_components/MatchChat.tsx（5b5104e）／site/admin/changelog.json（af9b4c0）",
+          "hours": 1.2,
+          "partnerApproved": false,
+          "note": "イベント放映用に、CiDAO本体の画面操作を自動で行って各機能を紹介する動画を作った。9場面・2分45秒。ナレーションは academy/06_発表/build_audio.py と同じ edge-tts（ja-JP-KeitaNeural）で、原稿を直せば音声と映像の尺が自動で追従する（scenes.json → durations.json → record → _timeline.json → mix）。方式の選定で1度失敗している：CDP screencast による実時間録画は画面が変化したときしかフレームを出さず、mpdecimate 実測でスクロール中4.7fps・全編1.5fpsの紙芝居になった。1コマずつ位置を進めて screenshot する方式に変えて28fpsを確認。個人情報は撮影直前にDOM上で氏名をダミーに差し替え、アイコンをぼかす（本番DBは触らない）。1度目はアイコンが img ではなく span の background-image だったため素通りし、実在の顔写真が写り込んだのを検証で発見・修正した。撮影中に CiDAO 本体の不具合も見つけて修正（A7の回答の ** が生表示。本番で修正前後を実測）。未ログインのまま撮っており、投票ボタンを押す場面は入っていない（LINEログイン必須のため）。session: d99818ca-e791-45f3-912e-8da84990d4f5 / output: 116,502 / cost: $18.10"
+        },
+        {
+          "date": "2026-09-09",
           "title": "/admin/analytics に CBIサイト側コンテンツ（3D・防災MAP）セクション追加＋グラフ外れ値対策 0.2時間",
           "category": "実装",
           "outputs": "cidao: src/app/admin/analytics/_components/SiteContentSection.tsx（新規）／src/app/admin/analytics/page.tsx（セクション挿入・DailyChart 外れ値クリップ）／site/admin/changelog.json",
@@ -5430,6 +5439,29 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-16",
+          "title": "🎬 CiDAO紹介動画のナレーション原稿を確定する（読み間違い・言い回しの手直し）",
+          "category": "広報",
+          "priority": "中",
+          "note": "中司さんに通し音声（ナレーション通し_確認用.mp3）を送って確認待ち。特に終了画面の「cidao.vercel.app」の読ませ方（現在は「シダオ・バーセル・アップ」と読ませている）が不自然でないか。直す場合は scripts/promo/cidao_tts/scenes.json を編集 → build_cidao_voice.py --only <id> → record_cidao.mjs --only <id> の順。原稿を直せば映像の尺も自動で追従する"
+        },
+        {
+          "due": "未定",
+          "title": "🎬 CiDAO紹介動画のSNS用9:16版を切り出す",
+          "category": "広報",
+          "priority": "低",
+          "note": "16:9の完成版から縦型を作る。record_cidao.mjs に --portrait があるが未検証（1280x720ではPCレイアウト、540x960ではモバイルレイアウトになるため、縦型は別途シーンの配分を見直す必要がある）"
+        },
+        {
+          "due": "未定",
+          "title": "🎬 CiDAO紹介動画をどこで流すか決める（イベント上映・サイト掲載・SNS）",
+          "category": "広報",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "ナレーション原稿の確定（上記 plan）と、どのイベントで放映するかの方針判断。11/3 武蔵屋の展示はメタバース動画（21分）のループ再生が決まっており、そこへ差し込むのか別枠にするのかが未定",
+          "note": "動画自体は完成済み（完成/CiDAO紹介_2分45秒_ナレーション入り_1080p.mp4）"
+        },
         {
           "due": "未定",
           "title": "📚 カテゴリ区分の根拠ページをCiDAOに新設する（/about/categories）",
