@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-09",
+  "updatedAt": "2026-09-10",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。 2026-08-22 以降: plans に status（進行中/待ち/保留）と blockedBy（待ちの理由）を追加。status 未設定は「進行中」扱いで、期限超過すると管理画面エージェントタブ先頭の「要対応」パネルに赤で出る。着手できない事情があるものだけ status:\"待ち\" にして blockedBy に解除条件を書く（忘れによる放置と区別するため）。",
   "categories": [
@@ -16,6 +16,13 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-09-10",
+          "title": "白鳥の前進時画面追従と白鳥の湖BGM",
+          "category": "実装",
+          "outputs": ["site/metaverse/index.html", "site/metaverse/assets/audio/swan_lake_musicbox.mp3", "site/metaverse/assets/audio/README.md", "site/metaverse/CLAUDE_HANDOFF.md"],
+          "note": "カメラ移動後に白鳥の実モデル行列を同期し低い表示位置を是正。音源はST303のCC0オルゴール録音、追加課金0円。会話表示の復元は未実施。"
+        },
         {
           "date": "2026-09-09",
           "title": "全34レイヤーの描画実測・治水地形分類図の不具合修正・範囲外を伏せる表示モード追加 0.4時間",

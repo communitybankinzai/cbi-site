@@ -2449,6 +2449,7 @@ let tonbiOn = false;
 let swanEntity = null;
 let swanClockBefore = false;
 let swanBank = 0;
+let swanFollowOff = null;
 function setSwanVisible(on) {
   const button = document.getElementById("swanToggleBtn");
   if (on && !swanEntity) {
@@ -2461,9 +2462,11 @@ function setSwanVisible(on) {
       id: "solo-swan",
       position: new Cesium.CallbackProperty(function() {
         const cam = viewer.camera;
-        const p = Cesium.Cartesian3.multiplyByScalar(cam.directionWC, 18, new Cesium.Cartesian3());
+        const aspect = viewer.canvas.clientWidth / Math.max(1, viewer.canvas.clientHeight);
+        const depth = 18 * Math.max(1, 1 / aspect);
+        const p = Cesium.Cartesian3.multiplyByScalar(cam.directionWC, depth, new Cesium.Cartesian3());
         Cesium.Cartesian3.add(cam.positionWC, p, p);
-        return Cesium.Cartesian3.add(p, Cesium.Cartesian3.multiplyByScalar(cam.upWC, -4, new Cesium.Cartesian3()), p);
+        return Cesium.Cartesian3.add(p, Cesium.Cartesian3.multiplyByScalar(cam.upWC, -depth * 0.07, new Cesium.Cartesian3()), p);
       }, false),
       orientation: new Cesium.CallbackProperty(function() {
         const cam = viewer.camera, matrix = new Cesium.Matrix3();
@@ -2476,7 +2479,23 @@ function setSwanVisible(on) {
       model: {uri:"assets/tonbi/swan.glb?v=20260909-4",scale:0.42,minimumPixelSize:0,runAnimations:true},
       show: new Cesium.CallbackProperty(()=>!window.vsRaceModeEnabled,false)
     });
+    // Entity updates precede our flight tick. Refresh the model after camera movement,
+    // before primitive culling, so even boosted flight cannot overtake the bird.
+    let model = null;
+    const followMatrix = new Cesium.Matrix4();
+    swanFollowOff = viewer.scene.preUpdate.addEventListener(function(scene, time) {
+      if (!model || model.isDestroyed()) {
+        model = null;
+        for (let i = 0; i < scene.primitives.length; i++) {
+          const candidate = scene.primitives.get(i);
+          if (candidate.id === swanEntity && candidate instanceof Cesium.Model) { model = candidate; break; }
+        }
+      }
+      if (model) model.modelMatrix = swanEntity.computeModelMatrix(time, followMatrix);
+    });
   } else if (!on && swanEntity) {
+    if (swanFollowOff) swanFollowOff();
+    swanFollowOff = null;
     viewer.entities.remove(swanEntity);
     swanEntity = null;
     viewer.clock.shouldAnimate = swanClockBefore;
@@ -2632,6 +2651,7 @@ const BGM_PRESETS = [
   { key: "omoide",  name: "思い出のクリスマス（甘茶の音楽工房）", tracks: ["assets/audio/amacha_xmas_omoide.m4a"] },
   { key: "tobi",    name: "トビの滑空テーマ（自前打ち込み）", tracks: ["assets/audio/bgm_tobi.m4a"] },
   { key: "synthx",  name: "クリスマスメドレー（自前打ち込み）", tracks: ["assets/audio/bgm_xmas.m4a"] },
+  { key: "swanlake", name: "白鳥の湖（オルゴール）", tracks: ["assets/audio/swan_lake_musicbox.mp3"] },
 ];
 let bgmPreset = "auto";
 try { bgmPreset = localStorage.getItem(BGM_PRESET_KEY) || "auto"; } catch (e) {}
@@ -2745,6 +2765,7 @@ function bgmStop() {
     BGM_PRESETS.forEach(function (p) { html += row(p.key, p.name, !bgmCustom && bgmPreset === p.key); });
     html += row("__file", "端末の音楽ファイルを選ぶ…" + (bgmCustom ? "（いま：" + bgmCustom.name.slice(0, 16) + "）" : ""), !!bgmCustom);
     html += '<div style="margin-top:8px;font-size:11px;color:#bcd">曲：甘茶の音楽工房（フリー音楽素材）／自前打ち込み。えらぶとすぐ流れ、次回もこの端末では同じ曲になります</div>';
+    html += '<div style="font-size:11px;color:#bcd">白鳥の湖：Tchaikovsky／録音 <a href="https://freesound.org/people/ST303/sounds/171046/" target="_blank" rel="noopener" style="color:#bcd">ST303（CC0）</a>・オルゴール版</div>';
     html += '<div style="text-align:right;margin-top:8px"><button type="button" id="bgmPresetClose">閉じる</button></div>';
     panel.innerHTML = html;
     document.body.appendChild(panel);
