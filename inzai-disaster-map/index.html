@@ -90,7 +90,17 @@
                   <label><input type="checkbox" data-overlay="floodMax" checked> 洪水浸水想定 最大規模</label>
                   <label><input type="checkbox" data-overlay="floodPlan"> 洪水浸水想定 計画規模</label>
                   <label><input type="checkbox" data-overlay="inland" checked> 内水浸水想定</label>
-                  <label><input type="checkbox" data-overlay="landslide"> 土砂災害警戒区域</label>
+                  <label><input type="checkbox" data-overlay="floodKeizoku"> ⏳ 浸水が引くまでの時間（浸水継続時間）</label>
+                  <label><input type="checkbox" data-overlay="kaokuHanran"> 🏚 家屋倒壊等氾濫想定区域（氾濫流）</label>
+                  <label><input type="checkbox" data-overlay="kaokuKagan"> 🏚 家屋倒壊等氾濫想定区域（河岸侵食）</label>
+                  <div class="jshis-layer-note">「家屋倒壊等氾濫想定区域」は、洪水のとき<strong>木造家屋が流されたり倒れたりするおそれがある範囲</strong>です。この範囲では上の階へ逃げる（垂直避難）では足りず、<strong>区域の外へ移動する必要があります</strong>。「浸水継続時間」は水が引くまでの目安で、長い場所ほど在宅避難の備えが要ります。
+                    <details class="mini">
+                      <summary>印西市でデータがある範囲</summary>
+                      <div class="mini-body"><span>2026-09-09にタイルの有無を実測しました（z13・市域42区画中）。浸水継続時間 41、家屋倒壊（氾濫流）18、家屋倒壊（河岸侵食）11。<strong>色が付いていない場所が安全という意味ではありません。</strong></span></div>
+                    </details>
+                  </div>
+                  <label><input type="checkbox" data-overlay="landslide"> 土砂災害警戒区域（国・急傾斜地／土石流／地すべり）</label>
+                  <div class="jshis-layer-note">印西市に指定があるのは<strong>急傾斜地の崩壊（がけ崩れ）</strong>だけです。<strong>土石流と地すべりは印西市に該当なし</strong>（2026-09-09実測）のため、ONにしてもその2種類は描かれません。</div>
                   <label><input type="checkbox" data-overlay="landslideWarning"> 土砂災害警戒区域（印西市公表・拡大時）</label>
                   <label><input type="checkbox" data-overlay="landslideSpecial"> 土砂災害特別警戒区域（印西市公表・拡大時）</label>
                   <details class="mini">

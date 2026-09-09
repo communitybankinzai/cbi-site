@@ -602,6 +602,25 @@ const hazardLayers = {
     opacity: 0.56,
     maxZoom: 17
   }),
+  // 以下3つは 2026-09-09 追加。ハザードマップポータルの全国タイルのうち、
+  // 印西市域にデータがあることを実測で確認したもの（z13・市域42区画あたりの存在数）。
+  // 浸水継続時間 41/42、家屋倒壊（氾濫流）18/42、家屋倒壊（河岸侵食）11/42。
+  // 高潮・津波は 0/42（内陸のため）なので追加していない。
+  floodKeizoku: L.tileLayer("https://disaportaldata.gsi.go.jp/raster/01_flood_l2_keizoku_data/{z}/{x}/{y}.png", {
+    attribution: "ハザードマップポータルサイト",
+    opacity: 0.56,
+    maxZoom: 17
+  }),
+  kaokuHanran: L.tileLayer("https://disaportaldata.gsi.go.jp/raster/01_flood_l2_kaokutoukai_hanran_data/{z}/{x}/{y}.png", {
+    attribution: "ハザードマップポータルサイト",
+    opacity: 0.56,
+    maxZoom: 17
+  }),
+  kaokuKagan: L.tileLayer("https://disaportaldata.gsi.go.jp/raster/01_flood_l2_kaokutoukai_kagan_data/{z}/{x}/{y}.png", {
+    attribution: "ハザードマップポータルサイト",
+    opacity: 0.56,
+    maxZoom: 17
+  }),
   // 国土地理院の治水地形分類図。土地の成り立ち（氾濫平野・後背湿地・旧河道・
   // 自然堤防など）を示した図で、標高だけでは分からない「昔から水が集まってきた土地か」
   // が読み取れる。2026-09-07にみんつくの冠水実績と突き合わせたところ、
@@ -711,18 +730,24 @@ async function refreshKikikuru(showLayer) {
   }
 }
 
+// ⚠ 2026-09-09 修正：3本とも `_data` 付きのURLで、全タイルが404だった（印西市域42区画すべて）。
+// つまりこのレイヤーをONにしても何も表示されていなかった。
+// `_data` 付きは都道府県別（.../12/{z}/{x}/{y}.png）の階層で、全国版には `_data` が付かない。
+// 修正後の実測（z13・市域42区画）：急傾斜地 42/42、土石流 0/42、地すべり 0/42。
+// 土石流・地すべりは印西市に指定区域が存在しないため何も描かれないが、
+// 他市へ展開したときにそのまま使えるようレイヤーは残してある（画面側に「印西市には該当なし」と明記）。
 const landslideGroup = L.layerGroup([
-  L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_dosekiryukeikaikuiki_data/{z}/{x}/{y}.png", {
+  L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_dosekiryukeikaikuiki/{z}/{x}/{y}.png", {
     attribution: "ハザードマップポータルサイト",
     opacity: 0.56,
     maxZoom: 17
   }),
-  L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_kyukeishakeikaikuiki_data/{z}/{x}/{y}.png", {
+  L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_kyukeishakeikaikuiki/{z}/{x}/{y}.png", {
     attribution: "ハザードマップポータルサイト",
     opacity: 0.56,
     maxZoom: 17
   }),
-  L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_jisuberikeikaikuiki_data/{z}/{x}/{y}.png", {
+  L.tileLayer("https://disaportaldata.gsi.go.jp/raster/05_jisuberikeikaikuiki/{z}/{x}/{y}.png", {
     attribution: "ハザードマップポータルサイト",
     opacity: 0.56,
     maxZoom: 17
@@ -3053,6 +3078,9 @@ function toggleOverlay(name, checked) {
     floodMax: hazardLayers.floodMax,
     floodPlan: hazardLayers.floodPlan,
     inland: hazardLayers.inland,
+    floodKeizoku: hazardLayers.floodKeizoku,
+    kaokuHanran: hazardLayers.kaokuHanran,
+    kaokuKagan: hazardLayers.kaokuKagan,
     jshisPshm: jshisLayers.jshisPshm,
     jshisGround: jshisLayers.jshisGround,
     landslide: landslideGroup,
