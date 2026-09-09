@@ -18,16 +18,33 @@
       "actuals": [
         {
           "date": "2026-09-09",
+          "title": "団体情報への外部リンク実装（列追加＋22件投入）とカテゴリ区分の出典調査 0.6時間",
+          "category": "実装",
+          "outputs": "cidao: supabase/migrations/20260909080000_org_inzaici_url.sql（新規）／src/app/orgs/[id]/page.tsx／本番DB organizations 22件更新（commit 35f9ce1）。CBI: agents/a5-bridge/knowledge/2026-09-09_市民活動支援センターへの照会メール文案.md（新規）",
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "いんざい市民情報サイト30団体とCiDAO246団体を名寄せし23件一致（誤突合1件を除外して22件投入）。本番 /orgs/5965242e… でリンク表示を実測確認。あわせてCiDAOのカテゴリ10分類の出典を調査し、開発仕様書v2.2 §3.2.1には「カテゴリ（印西市民活動分野）」の1行のみで分野名の定義がなく、2026-06-25 の実装コミット f954de3 が初出であることを確認（＝出典なし）。印西市総合計画の5政策30施策と照合すると tabunka 以外は対応づけ可能。session: fed039ee-38e7-494e-914e-41529e9c99b9 / output: 62,280 / cost: $9.75"
+        },
+        {
+          "date": "2026-09-09",
           "title": "鳶・白鳥の実写参照と眼部修正",
           "category": "実装",
-          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/assets/tonbi/kite.glb", "site/metaverse/assets/tonbi/swan.glb"],
+          "outputs": [
+            "site/metaverse/sky-tag.js",
+            "site/metaverse/assets/tonbi/kite.glb",
+            "site/metaverse/assets/tonbi/swan.glb"
+          ],
           "note": "Codex: 日本の鳶とコハクチョウの顔写真を実際に表示し、眼部の色・比率・まぶたを調整。参照写真は非同梱。購入・有料生成なし。"
         },
         {
           "date": "2026-09-09",
           "title": "鳶・白鳥の翼形状と羽弁法線を修正",
           "category": "実装",
-          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/assets/tonbi/kite.glb", "site/metaverse/assets/tonbi/swan.glb"],
+          "outputs": [
+            "site/metaverse/sky-tag.js",
+            "site/metaverse/assets/tonbi/kite.glb",
+            "site/metaverse/assets/tonbi/swan.glb"
+          ],
           "note": "Codex: 種別の翼断面、薄い羽、浅い鳶尾を実装。GLB・ブラウザー4方向・羽ばたき・モバイル・捕捉テスト通過。新規有料素材の購入なし。写実性は未完成。"
         },
         {
@@ -5395,6 +5412,30 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "📚 カテゴリ区分の根拠ページをCiDAOに新設する（/about/categories）",
+          "category": "実装",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "市民活動支援センターからの回答（団体紹介冊子の10分野といんざい市民情報サイトの9分野のどちらが公式か、その出典）。回答が来るまで掲載できる根拠が確定しない。照会メールの文案は agents/a5-bridge/knowledge/2026-09-09_市民活動支援センターへの照会メール文案.md に用意済み",
+          "note": "現行10分類は出典がなく実装時に定義したもの。総合計画5政策への対応表は作成済み（tabunka のみ対応先なし）"
+        },
+        {
+          "due": "2026-09-16",
+          "title": "🔍 「HAPPY印西」の名寄せを目視確認する（誤突合の疑い）",
+          "category": "保守",
+          "priority": "低",
+          "note": "いんざい市民情報サイトの「HAPPY印西」がCiDAOの「わーるどきゃんぱすINZAI（Happy印西内）」に部分一致した。別団体の可能性が高いため投入を見送っている。正しければ inzaici_url に id=8927 を入れる"
+        },
+        {
+          "due": "未定",
+          "title": "➕ いんざい市民情報サイト掲載でCiDAO未登録の7団体をどう扱うか決める",
+          "category": "その他",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "代理登録の方針判断（印西市ファミリー・サポート・センター／防災女性の会／ひばり合唱団／Serend Project／マイコア（MyCore）／ころころがくえん／TO-produce の7件を、団体の同意なくCiDAOに代理登録してよいかどうか）"
+        },
+        {
           "due": "2026-09-16",
           "title": "🗺 災害MAPの内水浸水想定レイヤーの扱いを決める（印西市域にほぼタイルが無い）",
           "category": "調査",
@@ -6458,6 +6499,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-16",
+          "title": "✉ 市民活動支援センターへ照会メールを送る（リンク掲載の連絡＋活動分野の区分）",
+          "category": "事務",
+          "priority": "中",
+          "note": "宛先 inzai.activity@machikatsu.co.jp（市公式サイト掲載の公開アドレス）。文案は agents/a5-bridge/knowledge/2026-09-09_市民活動支援センターへの照会メール文案.md。A1の「カテゴリ区分の根拠ページ」がこの回答待ちで止まっている"
+        },
         {
           "due": "2026-10-15",
           "title": "🐘 いんザイ君デザイン使用申請（メタバース夜景モードでの図柄使用）を印西市へ提出する",
