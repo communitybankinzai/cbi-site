@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-09",
+          "title": "全34レイヤーの描画実測・治水地形分類図の不具合修正・範囲外を伏せる表示モード追加 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（maskPane 新設、maskRectGroup / maskCityGroup / buildCityMask を追加、layerMap に landformFc・maskRect・maskCity を登録、initBoundary で市域マスクを生成）",
+            "site/inzai-disaster-map/index.html（伏せるチェック2件、雨と危険度グループを既定閉へ改名、震度分布に ⓘ）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "『重ね表示しても変化がないボタンは全て非表示に』との指示を受け、まず全34レイヤーを1つずつONにして描画数を本番で実測した（map.eachLayer でレイヤー・図形・読み込み済タイルを数える方式。DOM要素を数える方法は preferCanvas:true でキャンバス描画されるレイヤーを取りこぼすので使えない）。結果、変化が無いのは1つだけで、それは不具合だった。⚠ landformFc（治水地形分類図）はレイヤー定義があるのに setOverlay の layerMap に無く、チェックしても map.hasLayer() が false のまま＝導入以来ずっと未表示。登録して修理し、ONでタイル6枚が描画されることを確認。⚠ 自己訂正2件：作業中に『土砂災害警戒区域（市公表）が634件あるのに0件描画』と報告したが誤り。画面内だけ描画する仕様で、試した木下・本埜に区域が無かっただけだった（吉高 35.78683,140.22487 で69件、特別警戒区域は648件中64件を確認）。もう1件は quakeIntensity で、直近地震に関東の震度記録が無いだけの正常動作だった。ユーザー判断で非表示化は行わず、平常時に色が出ない雨雲・キキクルを『🌧 雨と危険度（大雨のときだけ色が出ます）』へ改名して既定閉にし理由を添える方針を採用。あわせて『印西市の外を伏せる』『計算範囲（四角）の外を伏せる』の2モードを実装（世界全体のポリゴンに見せたい範囲の穴を空ける方式・zIndex 640 の maskPane でピンより上に置き範囲外のピンも伏せる）。計算範囲は simulation-data/status.json の bounding_box と同値を app.js に定数化した（変更時は両方直すこと）。検証：ローカルで landformFc の map.hasLayer=true とタイル6枚、市域マスク3図形、計算範囲マスクの表示をスクリーンショットで確認。session: 658daf6d-86cc-4171-90ba-a1d34e08df8b / output: 187,241 / cost: $59.00"
+        },
+        {
+          "date": "2026-09-09",
           "title": "レイヤー説明を ⓘ ホバー吹き出しへ移設（左パネルの省スペース化） 0.4時間",
           "category": "実装",
           "outputs": [

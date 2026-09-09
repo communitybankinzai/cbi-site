@@ -83,6 +83,8 @@
             <div class="check-list" id="overlay-controls">
               <label><input type="checkbox" data-overlay="boundary" checked> 印西市境界</label>
               <label><input type="checkbox" data-overlay="records" checked> 被害・確認候補</label>
+              <label class="has-tip"><input type="checkbox" data-overlay="maskCity"> <span class="layer-name">⬜ 印西市の外を伏せる</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>印西市の外側に薄い幕をかけて、市域だけが見えるようにします。</p><p><strong>市外にデータが無いという意味ではありません。</strong>となりの市の浸水想定や避難所も実際には表示できます。見やすさのために伏せているだけです。</p></span></span></label>
+              <label class="has-tip"><input type="checkbox" data-overlay="maskRect"> <span class="layer-name">⬜ 計算範囲（四角）の外を伏せる</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>「CBI独自シミュレーション」と「地形の冠水リスク」は、市境ではなく<strong>四角い範囲</strong>で計算しています（北緯35.718〜35.912／東経140.068〜140.322）。</p><p>この四角の外側を伏せて、どこまでが計算した範囲かをはっきりさせます。<strong>四角の辺は地形の境目ではなく、計算を打ち切った線です。</strong></p></span></span></label>
 
               <details class="layer-group" open>
                 <summary>🌊 浸水・土砂の想定区域</summary>
@@ -103,9 +105,10 @@
                 </div>
               </details>
 
-              <details class="layer-group" open>
-                <summary>🌧 雨と危険度（気象庁・実況）</summary>
+              <details class="layer-group">
+                <summary>🌧 雨と危険度（大雨のときだけ色が出ます）</summary>
                 <div class="layer-group-body">
+                  <div class="jshis-layer-note">雨雲レーダー・キキクルは<strong>いま降っている雨から作る情報</strong>です。平常時にONにしても地図の色は変わりませんが、故障ではありません。大雨のときに開いてください。</div>
                   <label class="live-layer-label"><input type="checkbox" data-overlay="rainNowcast"> 雨雲レーダー（気象庁・実況）<span id="rain-layer-status">最新時刻を確認中</span></label>
                   <label class="live-layer-label"><input type="checkbox" data-overlay="rainForecast"> 雨雲の予想（気象庁・降水短時間予報）<span id="rain-forecast-status">最新時刻を確認中</span></label>
                   <label class="live-layer-label"><input type="checkbox" data-overlay="kikikuruLand"> ⛰ 土砂キキクル（気象庁・危険度分布）<span id="kikikuru-layer-status">最新時刻を確認中</span></label>
@@ -168,7 +171,7 @@
                 <summary>🌍 地震</summary>
                 <div class="layer-group-body">
                   <label><input type="checkbox" data-overlay="quakes"> 🌍 地震の震源（気象庁・直近20件）</label>
-                  <label class="live-layer-label"><input type="checkbox" data-overlay="quakeIntensity"> 🎯 震度分布（直近の地震・市町村ごと）<span id="quake-intensity-status">ONにすると読み込みます</span></label>
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="quakeIntensity"> <span class="layer-name">🎯 震度分布（直近の地震・市町村ごと）<span id="quake-intensity-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>直近の地震で<strong>関東の市町村に震度の記録があるときだけ</strong>色が出ます。遠くの地震や小さい地震では何も表示されませんが、故障ではありません（そのときは上の行に理由が出ます）。</p></span></span></label>
                   <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="jshisPshm"> <span class="layer-name">30年以内に震度6弱以上となる確率<span id="jshis-pshm-status">2024年版・将来予測</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>J-SHIS（防災科研）の全国予測です。<strong>実際の被害や現在の震度ではありません。</strong>地震発生時は気象庁の震度情報と被害ピンを優先してください。</p><p>印西市公式の「揺れやすさマップ」「液状化マップ」はPDFのみでGISが公開されておらず未反映です。</p></span></span></label>
                   <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="jshisGround"> <span class="layer-name">表層地盤の揺れの増幅率<span id="jshis-ground-status">V4・250mメッシュ</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>地盤の柔らかさによって揺れがどれだけ大きくなるかの予測値です。<strong>実際の被害や現在の震度ではありません。</strong></p></span></span></label>
                   <div class="jshis-layer-note">

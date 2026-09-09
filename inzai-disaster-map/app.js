@@ -562,6 +562,12 @@ const map = L.map("map", {
   preferCanvas: true
 }).fitBounds(INZAI_BOUNDS);
 
+// 「範囲外を伏せる」表示モード用の面。ピン（markerPane 600）より上に置いて
+// 範囲外のピンもまとめて伏せる。ポップアップ（700）より下なので操作は妨げない。
+map.createPane("maskPane");
+map.getPane("maskPane").style.zIndex = 640;
+map.getPane("maskPane").style.pointerEvents = "none";
+
 const baseLayers = {
   pale: L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
     attribution: "地理院タイル",
@@ -753,6 +759,49 @@ const landslideGroup = L.layerGroup([
     maxZoom: 17
   })
 ]);
+
+// 「範囲外を伏せる」表示モード（2026-09-09追加）。
+// CBI独自シミュレーションは市境ではなく矩形で計算しているため、オレンジの四角が
+// 白井市・船橋市まではみ出して「そこまでが対象」と誤読される。
+// 世界全体を覆うポリゴンに、見せたい範囲だけ穴を空けて薄い幕をかける。
+// 穴あきポリゴンは L.polygon([外周, 穴]) で作れる（SVG の evenodd 塗り）。
+const WORLD_RING = [[-89.9, -359.9], [-89.9, 359.9], [89.9, 359.9], [89.9, -359.9]];
+// simulation-data/status.json の area.bounding_box と同じ値。変えるときは両方直すこと。
+const SIM_BOUNDS = { north: 35.911678605516755, south: 35.71790967909823, east: 140.322004928388, west: 140.06778170298216 };
+const MASK_STYLE = { stroke: false, fillColor: "#f2f6f8", fillOpacity: 0.86, interactive: false, pane: "maskPane" };
+const maskRectLayer = L.polygon([
+  WORLD_RING,
+  [[SIM_BOUNDS.south, SIM_BOUNDS.west], [SIM_BOUNDS.south, SIM_BOUNDS.east], [SIM_BOUNDS.north, SIM_BOUNDS.east], [SIM_BOUNDS.north, SIM_BOUNDS.west]]
+], MASK_STYLE);
+// 見せる範囲の輪郭。幕だけだと境目が分かりにくいため細い線を添える
+const maskRectOutline = L.rectangle(
+  [[SIM_BOUNDS.south, SIM_BOUNDS.west], [SIM_BOUNDS.north, SIM_BOUNDS.east]],
+  { color: "#c96321", weight: 1.5, dashArray: "6 4", fill: false, interactive: false, pane: "maskPane" }
+);
+const maskRectGroup = L.layerGroup([maskRectLayer, maskRectOutline]);
+// 市域の幕は境界データの取得後に作る（initBoundary から呼ぶ）
+const maskCityGroup = L.layerGroup();
+let maskCityReady = false;
+
+function buildCityMask(geojson) {
+  const rings = [];
+  const walk = value => {
+    if (!Array.isArray(value)) return;
+    if (value.length && Array.isArray(value[0]) && typeof value[0][0] === "number") {
+      rings.push(value.map(p => [p[1], p[0]]));   // [lon,lat] → [lat,lng]
+      return;
+    }
+    value.forEach(walk);
+  };
+  (geojson.features || [geojson]).forEach(f => walk(f.geometry?.coordinates));
+  if (!rings.length) return;
+  maskCityGroup.clearLayers();
+  maskCityGroup.addLayer(L.polygon([WORLD_RING, ...rings], MASK_STYLE));
+  rings.forEach(ring => {
+    maskCityGroup.addLayer(L.polyline(ring, { color: "#2365a8", weight: 1.5, fill: false, interactive: false, pane: "maskPane" }));
+  });
+  maskCityReady = true;
+}
 
 const recordLayer = L.layerGroup();
 const roadFloodLayer = L.layerGroup();
@@ -3161,6 +3210,11 @@ function toggleOverlay(name, checked) {
     floodMax: hazardLayers.floodMax,
     floodPlan: hazardLayers.floodPlan,
     inland: hazardLayers.inland,
+    // ⚠ 2026-09-09 修正：landformFc は定義だけあってこの表に無く、チェックしても
+    // map.hasLayer() が false のまま＝導入以来ずっと何も表示されていなかった。
+    landformFc: hazardLayers.landformFc,
+    maskRect: maskRectGroup,
+    maskCity: maskCityGroup,
     floodKeizoku: hazardLayers.floodKeizoku,
     kaokuHanran: hazardLayers.kaokuHanran,
     kaokuKagan: hazardLayers.kaokuKagan,
@@ -3935,6 +3989,10 @@ function initBoundary() {
     })
     .then(data => {
       boundaryLayer.addData(data);
+      buildCityMask(data);
+      // 境界が届く前に「印西市の外を伏せる」を押されていた場合はここで描き直す
+      const cityMaskBox = document.querySelector('[data-overlay="maskCity"]');
+      if (cityMaskBox?.checked) maskCityGroup.addTo(map);
       document.getElementById("map-status").textContent = `公開レイヤー接続済み・確認日 ${SOURCE_CHECKED_AT}`;
     })
     .catch(() => {
