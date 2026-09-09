@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-01",
+  "updatedAt": "2026-09-09",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。 2026-08-22 以降: plans に status（進行中/待ち/保留）と blockedBy（待ちの理由）を追加。status 未設定は「進行中」扱いで、期限超過すると管理画面エージェントタブ先頭の「要対応」パネルに赤で出る。着手できない事情があるものだけ status:\"待ち\" にして blockedBy に解除条件を書く（忘れによる放置と区別するため）。",
   "categories": [
@@ -16,6 +16,15 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-09-09",
+          "title": "/admin/analytics に CBIサイト側コンテンツ（3D・防災MAP）セクション追加＋グラフ外れ値対策 0.2時間",
+          "category": "実装",
+          "outputs": "cidao: src/app/admin/analytics/_components/SiteContentSection.tsx（新規）／src/app/admin/analytics/page.tsx（セクション挿入・DailyChart 外れ値クリップ）／site/admin/changelog.json",
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "A2 の原因究明（同日実績）を受けた実装。metaverse_presence_daily を service role で読み（先例: metaverse-usage の countVisitorsByDay）、3Dワールド（mode!='disaster-map'）と防災MAP（mode='disaster-map'）の直近7日セッション数・前週比・日別14日表を表示。単位がPVでなく閲覧セッション数であることを画面に明記。DailyChart は中央値×4を上限にクリップし、切った日は▲と実数注記を出す（外れ値が全体の2割超なら無効）。検証：npx tsc --noEmit exit 0／npx eslint exit 0／npx next build 成功。画面自体は非対話セッションで管理者ログインできないため、集計ロジックを Python で同一手順に再現して表示値を実測確認（3D 84件・防災MAP 400件・日別14日）。cidao commit 5dcda12 を origin(communitybankinzai) へ push 済み。session: fdfd26ed-e753-4c6b-8941-78b1f8c553fc / output: 83,893 / cost: $13.80"
+        },
         {
           "date": "2026-09-09",
           "title": "鳶・白鳥のくちばしを実写参照で再構成",
@@ -6190,11 +6199,34 @@
           "status": "保留",
           "blockedBy": "「文化財ゆかりの地」と「現在の保管場所」のどちらをメタバースのピンにするかの方針判断",
           "note": "バッチB作成中に判明。bunkazai.json は小金牧鹿狩資料「村小旗」を木下1489-1（木下交流の杜歴史資料センター）、吉岡家河岸関係文書を木下として登録しているが、印西市公式ページの所在地はいずれも大森4144（印西市教育委員会）である。レポートJSONは市公式の記載を採用済み。bunkazai.json 側を大森4144の座標へ直すと、ゆかりの地（木下河岸）からピンが離れ文化財めぐりの体験が変わるため、機械的に直さず方針を決めてから対応する。直す場合は position-fixes.json への追記も必要（CLAUDE_HANDOFF.md の定型作業）。"
+        },
+        {
+          "due": "2026-09-16",
+          "title": "🤖 8/26型のボットアクセスを計測から除外するか決める（Vercelログで発信元を特定）",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-09 実測。8/25 23時〜8/26 11時に /events だけが12時間ほぼ一定レート（毎時465〜582）で計6,043PV記録され、6,034端末が1PVのみだった。page_views は設計上 UA・IP を保存しないため、発信元の特定は Vercel のアクセスログ側でしか行えない。特定できたら (a) 記録側で弾く（track/view にレート制限や既知botの除外を入れる）か (b) 記録は残して集計から外すか を決める。グラフの目盛り対策は 2026-09-09 に実装済みなので、これは数値そのものの扱いの判断。8/23〜8/25 にも同種のアクセスが混在（8/25は404PV中362VV）。"
+        },
+        {
+          "due": "2026-09-16",
+          "title": "🗺 管理画面「メタバース」タブの利用者数に防災MAPを含めるか決める",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-09-09 実測。/api/metaverse-usage の countVisitorsByDay と countVisitorsToday が .neq('mode','disaster-map') で防災MAPを除外している（理由はコメント上「タイル課金と無関係」）。タイル費用の目安としては正しい除外だが、利用状況としては最大トラフィックが抜けた数字になる。2026-09-09 に /admin/analytics 側で別セクションとして出したので当面は困らないが、メタバースタブの数字が何を指すのかが分かりにくいままなので、(a) タブ名・ラベルを「3Dワールドの利用者数（タイル課金対象）」と明示する か (b) 防災MAPも別系列で足す かを決める。"
         }
       ]
     },
     "A2": {
       "actuals": [
+        {
+          "date": "2026-09-09",
+          "title": "3D MAP・防災MAPがアクセス分析に出ない原因の究明と8/26アクセス急増の実態分析 0.2時間",
+          "category": "分析",
+          "outputs": "調査のみ（実装は A1 の同日実績）／agents/a2-voice/knowledge/access-reports/2026-08-22_週次アクセス分析_第1回.md に追記",
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "①原因：3Dワールドと防災MAPはCBIサイト（communitybankinzai.github.io）の静的ページで、page_views を記録する PageViewTracker が載っていない。/api/track/view にCORSヘッダーもなく外部ドメインからは呼べない。両ページは metaverse-presence 経由で metaverse_presence_daily に記録されており（直近30日で防災MAP 417件・3Dワールド 106件）、防災MAPは metaverse-usage が .neq('mode','disaster-map') で明示的に除外しているためどの画面にも出ていなかった。②防災MAPは9/6=157・9/7=197セッションでCiDAO本体の週次PV(294)を上回る最大トラフィックだった。③8/26の6,103PVはボットと断定：6,043が /events 単独、6,045端末中6,034が1PVのみ、8/25 23時〜8/26 11時まで毎時465〜582のほぼ一定レート（深夜も同量）、1分あたり平均8.3件で729分に分散、8/26 12時に停止。visitorId は localStorage 永続・使用不可なら記録しない実装なので、localStorage を保持しないヘッドレスブラウザと判断（確信度高）。UA・IPは設計上保存しないためこれ以上の特定はVercelログ側でしか不可。④提案詳細のA/B検証は実訪問20端末・会員6割の母数では統計的に検出不能と判断し、plans では保留扱いにした。session: fdfd26ed-e753-4c6b-8941-78b1f8c553fc / output: 83,893 / cost: $13.80"
+        },
         {
           "date": "2026-08-22",
           "title": "週次アクセス増減分析レポート 第1回（08/16-08/22）作成 0.5時間",
@@ -6241,6 +6273,22 @@
           "category": "分析",
           "priority": "中",
           "note": "第1回（2026-08-22）と同じ手順。page_views 生ログを直接集計し、1PV離脱を除いた実訪問ベースで前週比を出す。SNS投稿ログ・イベント開催日と突合。第1回の推奨アクション（実訪問指標の管理画面追加／イベント・FreeFree告知へのutm付与／日月の投稿空白）の進捗もあわせて確認する。手順とレポート雛形は agents/a2-voice/knowledge/access-reports/2026-08-22_週次アクセス分析_第1回.md"
+        },
+        {
+          "due": "2026-09-19",
+          "title": "🔀 防災MAP→CiDAO の送客導線を検討する（防災MAPが最大トラフィック）",
+          "category": "分析",
+          "priority": "中",
+          "note": "2026-09-09 実測。防災MAPは9/6=157・9/7=197セッションで、CiDAO本体の直近7日PV(294)を上回る。一方 CiDAO 本体の実訪問は20端末規模で6割が会員（≒運営）。最大の接点である防災MAPから CiDAO の提案・投票へ人を送る導線がほぼない状態。防災MAP上のどこに何を置くか（提案への誘導文・災害関連提案へのリンク等）の案を作り、実装は A1 へ渡す。あわせて代表指示の『提案ページへの導線強化』（トップ・イベント一覧からの提案系リンク配置の見直し）もここで扱う。"
+        },
+        {
+          "due": "未定",
+          "title": "🧪 提案詳細ページのCTA（投票・コメント・ログイン導線）の効果検証",
+          "category": "分析",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "CiDAO 本体の実訪問が週100端末規模に達すること。2026-09-09 時点は実訪問20端末・提案詳細の実訪問PVが週5件で、CTAの優劣を統計的に検出できない（A/B検証をしても結論が出ない）。まず送客導線（同 A2 plan『防災MAP→CiDAO の送客導線』）で母数を作る。",
+          "note": "2026-09-09 代表から提示されたアクション。閲覧者がほぼ1回のみで離脱している可能性があるとの指摘は妥当だが、現在の母数では検証が成立しないため保留。配置の見直し自体は送客導線の plan に含めて先行する。"
         }
       ]
     },
