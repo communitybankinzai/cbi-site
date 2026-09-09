@@ -18,6 +18,13 @@
       "actuals": [
         {
           "date": "2026-09-09",
+          "title": "白鳥メニュー・なめらかな入力・飛行宙返りを実装",
+          "category": "実装",
+          "outputs": ["site/metaverse/index.html", "site/metaverse/flight-input.js", "site/metaverse/vs-race.js", "site/metaverse/verify-flight-input.cjs"],
+          "note": "Codex: 白鳥モデルを通常画面から選択。入力追従と停止を平滑化し、ローカル軸回転で飛行の角度制限を撤去。歩行は制限維持。単体と通常画面モデル・360度回転検証通過。有料地図要求0。"
+        },
+        {
+          "date": "2026-09-09",
           "title": "鳶・白鳥の翼尾の厚みと飛行姿勢の足を実装",
           "category": "実装",
           "outputs": [

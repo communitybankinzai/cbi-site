@@ -1038,6 +1038,7 @@ if (location.protocol === "file:") {
       <button id="skyTagBtn" onclick="location.href='?mode=event&amp;race=tag&amp;v=20260907-3'">おにごっこ／ドッグファイト</button>
       <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
       <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
+      <button id="swanToggleBtn" class="off" aria-pressed="false" title="本埜の白鳥で飛ぶ">本埜の白鳥</button>
     </div>
   </div>
   <div class="tbGroup" id="tbGroupSound">
@@ -1395,6 +1396,7 @@ if (location.protocol === "file:") {
   <div id="spotInfoLinks"></div>
 </div>
 
+<script src="flight-input.js?v=20260909-1"></script>
 <div id="tonbiLayer"><div id="tonbiInner"><div id="tonbiViewport"><img id="tonbiSheet" src="assets/tonbi/tonbi_flap_sheet.webp" alt=""></div></div></div>
 
 <div id="padHud">
@@ -2444,6 +2446,43 @@ function updatePadDebug(pad, forward, right, up) {
 // コマとコマの間を埋める体の上下動に使う（打ち下ろすと体が浮き、振り上げると沈む）
 const TONBI_KEY = "cbi-meta-tonbi-v1";
 let tonbiOn = false;
+let swanEntity = null;
+let swanClockBefore = false;
+function setSwanVisible(on) {
+  const button = document.getElementById("swanToggleBtn");
+  if (on && !swanEntity) {
+    if (walkMode) setMode(false);
+    setTonbiVisible(false);
+    swanClockBefore = viewer.clock.shouldAnimate;
+    viewer.clock.shouldAnimate = true;
+    swanEntity = viewer.entities.add({
+      id: "solo-swan",
+      position: new Cesium.CallbackProperty(function() {
+        const cam = viewer.camera;
+        const p = Cesium.Cartesian3.multiplyByScalar(cam.directionWC, 18, new Cesium.Cartesian3());
+        Cesium.Cartesian3.add(cam.positionWC, p, p);
+        return Cesium.Cartesian3.add(p, Cesium.Cartesian3.multiplyByScalar(cam.upWC, -4, new Cesium.Cartesian3()), p);
+      }, false),
+      orientation: new Cesium.CallbackProperty(function() {
+        const cam = viewer.camera, matrix = new Cesium.Matrix3();
+        Cesium.Matrix3.setColumn(matrix, 0, cam.rightWC, matrix);
+        Cesium.Matrix3.setColumn(matrix, 1, cam.directionWC, matrix);
+        Cesium.Matrix3.setColumn(matrix, 2, cam.upWC, matrix);
+        return Cesium.Quaternion.fromRotationMatrix(matrix);
+      }, false),
+      model: {uri:"assets/tonbi/swan.glb?v=20260909-4",scale:0.65,minimumPixelSize:0,runAnimations:true},
+      show: new Cesium.CallbackProperty(()=>!window.vsRaceModeEnabled,false)
+    });
+  } else if (!on && swanEntity) {
+    viewer.entities.remove(swanEntity);
+    swanEntity = null;
+    viewer.clock.shouldAnimate = swanClockBefore;
+  }
+  button.classList.toggle("off", !swanEntity);
+  button.setAttribute("aria-pressed", String(!!swanEntity));
+}
+document.getElementById("swanToggleBtn").addEventListener("click",()=>setSwanVisible(!swanEntity));
+document.getElementById("vsRaceBtn").addEventListener("click",()=>setSwanVisible(false));
 let tonbiRoll = "";      // 前回の傾き
 let tonbiMode = "";      // いまの飛び方（climb/cruise/dive/glide）。変わったときだけ設定し直す
 
@@ -2498,6 +2537,7 @@ function updateTonbi(dt, forward, right, up) {
 }
 
 function setTonbiVisible(on) {
+  if (on && swanEntity) setSwanVisible(false);
   tonbiOn = on;
   if (on) { tonbiMode = ""; applyTonbiMode("glide"); } // 出した直後は滑空の姿から
   const layer = document.getElementById("tonbiLayer");
@@ -2548,6 +2588,7 @@ function applyLite(on) {
   viewer.targetFrameRate = liteOn ? 30 : undefined;
   liteApplyTileset();
   if (liteOn && tonbiOn) setTonbiVisible(false);
+  if (liteOn && swanEntity) setSwanVisible(false);
   const btn = document.getElementById("liteBtn");
   if (btn) btn.classList.toggle("off", !liteOn);
   try { localStorage.setItem(LITE_KEY, liteOn ? "1" : "0"); } catch (e) { /* 保存できなくても動く */ }
@@ -2889,6 +2930,7 @@ joystickEl.addEventListener("pointercancel", joyEnd);
 
 // --- 毎フレームの移動処理 ---
 let lastTime = undefined;
+const soloFlightInput = {}, soloLookInput = {};
 let tonbiPrevHeading = undefined; // トンビの傾き用（前フレームの機首の向き）
 let flyBank = 0;                  // 画面の傾き（度）。曲がるときに地平線が傾く
 let yawTiltSmooth = 0;            // 機首の回る速さ（−1〜1・平滑化済み）。トンビと画面の傾きに使う
@@ -2906,10 +2948,8 @@ viewer.scene.postRender.addEventListener(function () {
 viewer.clock.onTick.addEventListener(function () {
   tickT0 = performance.now();
   const now = tickT0;
-  // 経過時間の頭打ちを 0.1秒→0.5秒に。0.1秒だと 2fps の端末で実時間の1/5しか進まず「動かない」と
-  // 見えた（トンビの羽ばたきで fps が落ちる N95 ノートで実測・2026-09-02）。裏に回っていた
-  // タブへ戻ったときの飛びは 0.5秒ぶん（30m/s なら 15m）に収まる
-  const dt = lastTime === undefined ? 0.016 : Math.min((now - lastTime) / 1000, 0.5);
+  // 描画停止後の大きな移動・旋回を避け、1フレームの操作時間を制限する。
+  const dt = lastTime === undefined ? 0.016 : Math.min((now - lastTime) / 1000, 0.1);
   lastTime = now;
 
   // 1秒あたり何回描けているか。重さの原因を推測で探すと外すので、数字で見るための計測。
@@ -2931,6 +2971,8 @@ viewer.clock.onTick.addEventListener(function () {
   }
 
   if (window.vsRaceModeEnabled) {
+    soloFlightInput.forward = soloFlightInput.right = soloFlightInput.up = 0;
+    soloLookInput.x = soloLookInput.y = 0;
     updatePadDebug(readGamepad(0), 0, 0, 0);
     updateSpeedChip(false, false);
     updateHelpBox(false);
@@ -2971,9 +3013,13 @@ viewer.clock.onTick.addEventListener(function () {
     forward += -padValue[1]; // 上に倒す＝前進
 
     // 右スティックで視点。移動処理より先に向きを決める
-    const lookX = padValue[2];
-    const lookY = padValue[3];
+    const look = CbiFlightInput.smooth(soloLookInput, {x:padValue[2],y:padValue[3]}, dt);
+    const lookX = look.x;
+    const lookY = look.y;
     if (lookX !== 0 || lookY !== 0) {
+      if (!walkMode) {
+        CbiFlightInput.rotate(cam,{rx:lookX,ry:lookY},dt);
+      } else {
       cam.setView({
         orientation: {
           heading: cam.heading + lookX * PAD_LOOK_SPEED * dt,
@@ -2982,6 +3028,7 @@ viewer.clock.onTick.addEventListener(function () {
           roll: 0,
         },
       });
+      }
     }
 
     // L2＝下降／R2＝上昇（アナログ。踏み込み量で速さが変わる）
@@ -3023,9 +3070,12 @@ viewer.clock.onTick.addEventListener(function () {
     }
     padPrevButtons = pad.buttons.map((b) => b.pressed);
   } else {
+    soloLookInput.x = soloLookInput.y = 0;
     padPrevButtons = [];
     padSeen = false; // 挿し直し・別のコントローラーに替えたら測り直す
   }
+  const eased = CbiFlightInput.smooth(soloFlightInput, {forward,right,up}, dt);
+  forward = eased.forward; right = eased.right; up = eased.up;
   updatePadHud(!!pad && padCalibrated);      // 照準とロックオン枠の表示（中心の測定中は出さない）
   updatePadDebug(pad, forward, right, up);   // 🩺診断のときだけ右下に状態を出す
   updateSpeedChip(padDash > 1, !!(keys["ShiftLeft"] || keys["ShiftRight"]));
@@ -3050,7 +3100,7 @@ viewer.clock.onTick.addEventListener(function () {
   // 画面の傾き（バンク）。飛行モードで曲がるとき、地平線が曲がる側へ最大 20° 傾き、
   // まっすぐ飛ぶと滑らかに水平へ戻る（2026-09-02 ユーザー要望「地平線も傾けて欲しい」）。
   // 歩行モードでは傾けない。プレイ動画モードは自前で傾きを管理するので止めておく
-  if (cameraBankEnabled) {
+  if (cameraBankEnabled && walkMode) {
     const bankTarget = walkMode ? 0 : Math.max(-20, Math.min(20, (right + yawTilt) * 20));
     const bankStep = 40 * dt;
     flyBank += Math.max(-bankStep, Math.min(bankStep, bankTarget - flyBank));
@@ -3121,7 +3171,7 @@ function keepAboveGround() {
   viewer.camera.setView({
     destination: Cesium.Cartesian3.fromDegrees(
       Cesium.Math.toDegrees(carto.longitude), Cesium.Math.toDegrees(carto.latitude), minHeight),
-    orientation: { heading: viewer.camera.heading, pitch: viewer.camera.pitch, roll: 0 },
+    orientation: { direction: Cesium.Cartesian3.clone(viewer.camera.directionWC), up: Cesium.Cartesian3.clone(viewer.camera.upWC) },
   });
   const now = performance.now();
   if (now - undergroundNoticeAt > 8000) {            // 案内は8秒に1回まで
@@ -4770,7 +4820,7 @@ function applyMode(mode) {
     document.getElementById(id).style.display = game ? "" : "none";
   });
   document.getElementById("tonbiToggleBtn").style.display = bousai ? "none" : "";
-  if (bousai) setTonbiVisible(false); // 防災用途では演出を出さない
+  if (bousai) { setTonbiVisible(false); setSwanVisible(false); } // 防災用途では演出を出さない
   document.getElementById("shopToggleBtn").style.display = bousai ? "none" : "";
   // 防災系UI（避難所トグル・浸水シミュレーション）
   document.getElementById("shelterToggleBtn").style.display = bousai ? "" : "none";
@@ -6297,7 +6347,7 @@ try {
 }
 </script>
 <script src="sky-tag.js?v=20260909-4"></script>
-<script src="vs-race.js?v=20260908-3"></script>
+<script src="vs-race.js?v=20260909-1"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260907-1"></script>
 </body>

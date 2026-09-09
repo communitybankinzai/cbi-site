@@ -851,11 +851,13 @@
   }
 
   function pollPad(player) {
+    if (race.state !== "running" || race.paused) player.smoothInput = {};
     const pad = gamepadFor(player.gamepadIndex);
     player.lastConnected = player.connected;
     player.connected = !!pad;
     player.padName = pad ? padLabel(pad) : "Gamepad index " + player.gamepadIndex;
     if (!pad) {
+      player.smoothInput = {};
       player.input = { lx: 0, ly: 0, rx: 0, ry: 0, up: 0, boost: false };
       player.prevButtons = [];
       return;
@@ -910,6 +912,7 @@
     }
     for (let ch = 0; ch < 6; ch++) player.center[ch] = rawChannel(pad, ch);
     player.centerReady = true;
+    player.smoothInput = {};
     if (notify) setStatus(player.name + " の中心を合わせました", 1500);
     return true;
   }
@@ -945,37 +948,20 @@
     const v = player.viewer;
     if (!v) return;
     const cam = v.camera;
+    dt = Math.min(dt, 0.1);
+    const input = CbiFlightInput.smooth(player.smoothInput || (player.smoothInput = {}), {
+      lx:player.input.lx,ly:player.input.ly,rx:player.input.rx,ry:player.input.ry,
+      up:player.input.up,roll:player.input.roll || 0
+    }, dt);
     const flySpeed = typeof FLY_SPEED !== "undefined" ? FLY_SPEED : 30;
     const boost = typeof SPEED_BOOST !== "undefined" ? SPEED_BOOST : 4;
     const speed = flySpeed * (player.input.boost ? boost : 1) * dt;
     const liftSpeed = flySpeed * 0.75 * (player.input.boost ? boost : 1) * dt;
-    if (race.mode === "tag") {
-      // Rotate about the camera's local axes so loops remain continuous past vertical.
-      cam.lookUp(-player.input.ry * 1.25 * dt);
-      cam.lookRight(player.input.rx * 1.65 * dt);
-      cam.twistRight((player.input.roll || 0) * 1.5 * dt);
-      cam.moveForward(-player.input.ly * speed);
-      cam.moveRight(player.input.lx * speed);
-      cam.moveUp(player.input.up * liftSpeed);
-      keepAboveGround(player);
-      return;
-    }
-    cam.moveForward(-player.input.ly * speed);
-    cam.moveRight(player.input.lx * speed);
-    cam.moveUp(player.input.up * liftSpeed);
-    if (player.input.rx || player.input.ry) {
-      cam.setView({
-        orientation: {
-          heading: cam.heading + player.input.rx * 1.65 * dt,
-          pitch: Cesium.Math.clamp(
-            cam.pitch - player.input.ry * 1.25 * dt,
-            Cesium.Math.toRadians(-72),
-            Cesium.Math.toRadians(34)
-          ),
-          roll: 0
-        }
-      });
-    }
+    // Rotate about local axes so every flight event can pass through vertical.
+    CbiFlightInput.rotate(cam,input,dt);
+    cam.moveForward(-input.ly * speed);
+    cam.moveRight(input.lx * speed);
+    cam.moveUp(input.up * liftSpeed);
     keepAboveGround(player);
   }
 
