@@ -165,6 +165,48 @@
         }, 32, 2, [0.003,0.003,0.003], true);
       }
     }
+    function limb(a, b, c, radius, color, taper = 0.5) {
+      surface((u,v)=> {
+        const p = a.map((x,i)=>(1-u)**2*x+2*u*(1-u)*b[i]+u*u*c[i]);
+        const tangent = a.map((x,i)=>2*(1-u)*(b[i]-x)+2*u*(c[i]-b[i]));
+        const length = Math.hypot(...tangent), t = tangent.map(x=>x/length);
+        const axis = Math.abs(t[2])<0.9 ? [0,0,1] : [0,1,0];
+        const cross = [t[1]*axis[2]-t[2]*axis[1],t[2]*axis[0]-t[0]*axis[2],t[0]*axis[1]-t[1]*axis[0]];
+        const crossLength = Math.hypot(...cross), n = cross.map(x=>x/crossLength);
+        const binormal = [t[1]*n[2]-t[2]*n[1],t[2]*n[0]-t[0]*n[2],t[0]*n[1]-t[1]*n[0]];
+        const angle = v*Math.PI*2, normal = n.map((x,i)=>x*Math.cos(angle)+binormal[i]*Math.sin(angle));
+        const r = radius*(1-u*(1-taper));
+        return {p:p.map((x,i)=>x+r*normal[i]),n:normal};
+      }, 12, 10, color, true);
+    }
+    function feet(side) {
+      activePart = "body";
+      const z = side*(swan ? 0.32 : 0.26);
+      if (swan) {
+        const color = [0.014,0.017,0.021];
+        limb([-0.8,-0.35,z],[-1.28,-0.55,z],[-1.9,-0.41,z],0.07,color,0.65);
+        for(let toe=-1;toe<=1;toe++) {
+          limb([-1.84,-0.42,z],[-2.1,-0.45,z+toe*0.13],[-2.43+Math.abs(toe)*0.08,-0.4,z+toe*0.2],0.027,color,0.3);
+        }
+        // Closed, slightly convex web between the three backward-pointing toes.
+        surface((u,v)=> {
+          const angle=v*2*Math.PI, width=0.19*Math.sin(Math.PI*u*0.75);
+          const n=[0,Math.sin(angle)/0.016,Math.cos(angle)/Math.max(0.01,width)];
+          const length=Math.hypot(...n);
+          return {p:[-1.84-u*0.5,-0.42+0.016*Math.sin(angle)*Math.sin(Math.PI*u),z+width*Math.cos(angle)],n:n.map(x=>x/length)};
+        },14,12,color,true);
+      } else {
+        const skin=[0.36,0.23,0.065], claw=[0.022,0.019,0.014];
+        limb([-0.35,-0.3,z],[-0.3,-0.57,z],[-0.73,-0.57,z],0.068,skin,0.68);
+        for(let toe=-1;toe<=1;toe++) {
+          const spread=toe*0.085;
+          limb([-0.7,-0.56,z],[-1.04,-0.67,z+spread],[-0.94,-0.48,z+spread],0.032,skin,0.55);
+          limb([-0.94,-0.48,z+spread],[-0.83,-0.44,z+spread],[-0.82,-0.55,z+spread],0.02,claw,0.05);
+        }
+        limb([-0.68,-0.56,z],[-0.45,-0.68,z],[-0.48,-0.51,z],0.03,skin,0.5);
+        limb([-0.48,-0.51,z],[-0.6,-0.43,z],[-0.65,-0.52,z],0.019,claw,0.05);
+      }
+    }
     function feather(base, tip, width, color) {
       const dx = tip[0] - base[0], dz = tip[2] - base[2], length = Math.hypot(dx, dz);
       surface((u, v) => {
@@ -172,12 +214,13 @@
         const spread = Math.pow(Math.sin(Math.PI * u), 0.38);
         const asymmetry = Math.cos(angle) >= 0 ? 0.72 : 1;
         const across = Math.cos(angle) * width * spread * asymmetry;
-        // Elliptical, paper-thin vanes need inverse-radius normals, not tube normals.
+        const thickness = 0.012;
+        // Flattened vanes retain correct elliptical shading as their volume increases.
         const normal = [-dz / length * Math.cos(angle) / (width * asymmetry),
-          Math.sin(angle) / 0.003, dx / length * Math.cos(angle) / (width * asymmetry)];
+          Math.sin(angle) / thickness, dx / length * Math.cos(angle) / (width * asymmetry)];
         const normalLength = Math.hypot(...normal);
         return { p: [base[0] + dx * u - dz / length * across,
-          base[1] + (tip[1] - base[1]) * u + Math.sin(angle) * 0.003 * spread + 0.008 * Math.sin(Math.PI * u),
+          base[1] + (tip[1] - base[1]) * u + Math.sin(angle) * thickness * spread + 0.025 * Math.sin(Math.PI * u),
           base[2] + dz * u + dx / length * across],
           n: normal.map(value => value / normalLength),
           uv: [0.5 + Math.cos(angle) * 0.48, u] };
@@ -200,7 +243,10 @@
     oval([1.62, 0.21, 0], [0.43, 0.29, 0.26], [0.62, 0.5, 0.34]);
     bill();
     }
+    activePart = "tail";
+    oval([-1.5,0.015,0],[0.7,0.13,0.4],swan ? [0.96,0.97,1] : [0.46,0.34,0.22],16,24);
     for (const side of [-1, 1]) {
+      feet(side);
       activePart = "neck";
       eye(side);
       activePart = side === 1 ? "leftWing" : "rightWing";
@@ -214,7 +260,7 @@
       }
       surface((u, v) => {
         const [span, leading, trailing] = wingSection(u), angle = v * Math.PI * 2;
-        const chord = (leading - trailing) / 2, thickness = 0.055 * (1 - u * 0.65);
+        const chord = (leading - trailing) / 2, thickness = 0.145 * (1 - u * 0.76);
         const normal = [Math.cos(angle) / chord, Math.sin(angle) / thickness, 0];
         const length = Math.hypot(...normal);
         return {p: [(leading + trailing) / 2 + chord * Math.cos(angle),
@@ -237,7 +283,7 @@
       });
       for (let i = 0; i < 5; i++) {
         activePart = "tail";
-        feather([-1.05, -0.03, side * (0.035 + i * 0.065)], [swan ? -2.65 + i * 0.12 : -2.9 - i * 0.08, -0.02, side * (0.08 + i * 0.18)], 0.23, swan ? [0.97, 0.98, 1] : [0.5, 0.35, 0.21]);
+        feather([-1.05, 0.03-i*0.014, side * (0.035 + i * 0.065)], [swan ? -2.65 + i * 0.12 : -2.9 - i * 0.08, -0.01-i*0.01, side * (0.08 + i * 0.18)], 0.23, swan ? [0.97, 0.98, 1] : [0.5, 0.35, 0.21]);
       }
     }
     const data = new Float32Array([...vertices, ...colors, ...normals, ...uvs, ...plumageIndices, ...bareIndices]);
@@ -368,7 +414,7 @@
     });
   }
   function aircraftUri(kind) {
-    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260909-3";
+    return "assets/tonbi/" + (kind === "kite" ? "kite" : "swan") + ".glb?v=20260909-4";
   }
   function placeAtStart(player) {
     const halfSeparationDegrees = 300 / 111000;

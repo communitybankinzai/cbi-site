@@ -18,6 +18,13 @@
       "actuals": [
         {
           "date": "2026-09-09",
+          "title": "鳶・白鳥の翼尾の厚みと飛行姿勢の足を実装",
+          "category": "実装",
+          "outputs": ["site/metaverse/sky-tag.js", "site/metaverse/assets/tonbi/verify-models.cjs", "site/metaverse/bird-preview.html"],
+          "note": "Codex: 扁平断面の厚みと尾の重なり、鳶の指爪・白鳥の水かきを追加。腹側拡大確認・回帰テスト通過。足の独立アニメーションは対象外。購入なし。"
+        },
+        {
+          "date": "2026-09-09",
           "title": "CiDAOプロモーション動画の自動生成基盤を新設し、ナレーション入り通し版を完成 1.2時間",
           "category": "実装",
           "outputs": "scripts/promo/record_cidao.mjs（新規・コマ送り撮影）／scripts/promo/build_cidao_voice.py（新規・Edge TTS）／scripts/promo/mix_cidao_audio.mjs（新規・音声合成）／scripts/promo/cidao_tts/scenes.json（新規・テロップとナレーション原稿）／scripts/promo/out/完成/CiDAO紹介_2分45秒_ナレーション入り_1080p.mp4／同_無音_1080p.mp4／scripts/promo/out/README.md／cidao: src/app/match/_components/MatchChat.tsx（5b5104e）／site/admin/changelog.json（af9b4c0）",

@@ -43,6 +43,26 @@ for (const kind of ['kite', 'swan']) {
     }
   }
   const clip = gltf.animations.find(animation => animation.name === 'Wingbeat');
+  function points(name, material) {
+    const mesh = gltf.meshes[gltf.nodes.find(node=>node.name===name).mesh];
+    const result=[];
+    for(const primitive of mesh.primitives.filter(p=>material===undefined || p.material===material)) {
+      const positions=gltf.accessors[primitive.attributes.POSITION], pv=gltf.bufferViews[positions.bufferView];
+      const indices=gltf.accessors[primitive.indices], iv=gltf.bufferViews[indices.bufferView];
+      for(let i=0;i<indices.count;i++) {
+        const index=binary.readUInt32LE((iv.byteOffset||0)+(indices.byteOffset||0)+i*4);
+        result.push([0,1,2].map(axis=>binary.readFloatLE((pv.byteOffset||0)+(positions.byteOffset||0)+index*12+axis*4)));
+      }
+    }
+    return result;
+  }
+  const feet=points('body',1);
+  assert(feet.some(p=>p[1]<-0.5),kind+' feet below body');
+  assert(feet.some(p=>p[2]>0)&&feet.some(p=>p[2]<0),kind+' two feet');
+  for(const name of ['leftWing','rightWing','tail']) {
+    const heights=points(name,2).map(p=>p[1]);
+    assert(Math.max(...heights)-Math.min(...heights)>0.2,kind+' '+name+' volume');
+  }
   assert(clip);
   {
     for (const name of ['leftWing', 'rightWing']) {
