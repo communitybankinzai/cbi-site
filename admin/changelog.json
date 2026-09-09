@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-09",
+      "type": "content",
+      "target": "SNS（Instagram / Threads）",
+      "title": "団体登録・団体ページ編集を呼びかける投稿を出した（カルーセル2枚）",
+      "detail": "CiDAOに掲載している246団体のうち、代表者ご本人が編集できる状態なのは4団体だけという実態を踏まえ、「あなたの団体は、CiDAOに載っていますか？」を切り口に、掲載中の団体には自分で編集できること、未掲載の団体には新しく登録できることを呼びかけた。画像は既存の機能紹介イラストに文言を重ねた1枚目と、実際の団体一覧画面を撮った2枚目。編集を始めるには所属の申告が必要なため、その手順も本文に入れた。代表 新井氏の承認を得て発信（申請放置のお詫びは代表判断で本文から除いた）。Instagram https://www.instagram.com/p/DdDUkVWDyrp/ ／ Threads https://www.threads.com/@communitybankinzai/post/DdDUrLejxKm 。Facebookはページのアクセストークン未設定のため未投稿。",
+      "author": "A4 Voice-Out"
+    },
+    {
+      "date": "2026-09-09",
       "type": "feature",
       "target": "災害MAP / 内水リスク推定",
       "title": "見たいものをパネルで選べるようになり、文字がぎっしり並ぶ画面が半分の高さになった",

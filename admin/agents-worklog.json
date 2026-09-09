@@ -6406,6 +6406,15 @@
     "A4": {
       "actuals": [
         {
+          "date": "2026-09-09",
+          "title": "団体登録促進のSNS投稿（Instagram・Threads カルーセル2枚）の作成と発信 0.3時間",
+          "category": "広報",
+          "outputs": "site/assets/sns/2026-09-09_orgs-claim/（slide1.jpg・slide2.jpg・caption.txt・SNS投稿案_承認用.pdf）。投稿 Instagram media_id 18128456935683274 ／ Threads id 17947141845054702",
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "代表 新井氏の承認を得て発信。承認時の指示により、申請放置のお詫び段落は本文から除いた。Instagramの既存自動配信（sns-dispatch）はカルーセル未対応・提案とイベント専用のため、Graph API を直接叩いて投稿した（スクリプトは scratchpad）。Facebookはページのアクセストークンが未設定で投稿できず。Threadsは本文500字・ハッシュタグ1つの制限があるためタグ行を落として351字で投稿"
+        },
+        {
           "date": "2026-09-05",
           "title": "全50か所プレイ動画のSNS短縮版（69秒・BGM入り）の作成と、CiDAO登録者限定の検討を伝える投稿原稿4媒体分 0.2時間",
           "category": "広報",
@@ -6591,13 +6600,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-09-12",
-          "title": "📣 団体登録促進のSNS投稿（Instagramカルーセル2枚）を出す",
-          "category": "広報",
-          "priority": "中",
-          "note": "2026-09-09 代表 新井氏より「お詫びの部分は除いて発信してよい」と承認を得た。確定版のキャプションは site/assets/sns/2026-09-09_orgs-claim/caption.txt（お詫び段落を削除し、編集の始め方＝所属申告の手順を1文追加）。画像2枚（slide1.jpg・slide2.jpg）は謝罪文言を含まないため修正不要。Instagramの自動投稿は画像1枚のみ対応でカルーセル未実装のため手動投稿。Threads・Facebookにも同内容"
-        },
         {
           "due": "未定",
           "title": "イルミライ2026 出店者募集のSNS告知（Threads・X・Facebook）",
