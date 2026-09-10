@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-10",
+          "title": "CiDAO団体ページの募集動線を出し分け対応（募集状況セレクト新設）＋CBIを募集停止に設定 0.2時間",
+          "category": "実装",
+          "outputs": "cidao: src/app/orgs/actions.ts, src/app/orgs/[id]/edit/page.tsx, src/app/orgs/[id]/_components/InterestForm.tsx, src/app/orgs/[id]/page.tsx（commit 4f940ba）／ Supabase organizations.recruitment_status を CBI のみ closed に更新",
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "スマホ画面で「この団体で活動したい人を募集しています」が出ていると指摘を受けて調査。DBの recruitment_status を画面が参照していないのが原因だった。tsc --noEmit 通過、本番 cidao.vercel.app で募集ブロックの消滅を確認。session: 620b425a-6151-4e9e-86cb-c6ccea014a20 / output: 16,847 / cost: $3.97"
+        },
+        {
+          "date": "2026-09-10",
           "title": "３Dワールドの地平線復帰・飛行中の後退禁止・白鳥アイコン・BGM選曲表示 0.8時間",
           "category": "実装",
           "outputs": [
@@ -5577,6 +5586,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "CiDAO：募集状況「紹介・招待のみ」の団体に案内文を出すか決める",
+          "category": "実装",
+          "priority": "低",
+          "note": "2026-09-10 の募集動線の出し分け実装では、closed と invitation_only をどちらも完全非表示にした。invitation_only は「紹介・招待制です（直接お問い合わせください）」と出したほうが親切かもしれない。団体側の運用実態を見てから判断する。"
+        },
+        {
+          "due": "未定",
+          "title": "CiDAO：募集状況のラベル定義が2か所に散っているのを org-labels.ts に集約",
+          "category": "保守",
+          "priority": "低",
+          "note": "src/app/me/page.tsx の RECRUITMENT_BADGE と src/app/orgs/[id]/edit/page.tsx の RECRUITMENT_OPTIONS が別々にラベルを持っている。LEGAL_FORM_LABEL と同じく src/lib/org-labels.ts に寄せる。今回はついで改善を避けて手を付けていない。"
+        },
         {
           "due": "未定",
           "title": "🎮 2Pレース・おにごっこの後退禁止を実機パッド2台で確かめる",
