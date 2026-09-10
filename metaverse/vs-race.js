@@ -961,7 +961,9 @@
     const liftSpeed = flySpeed * 0.75 * (player.input.boost ? boost : 1) * dt;
     // Rotate about local axes so every flight event can pass through vertical.
     CbiFlightInput.rotate(cam,input,dt);
-    cam.moveForward(-input.ly * speed);
+    // 鳥は後ろへは飛べないので、後退（左スティックを手前へ）は受け付けない。
+    // 2026-09-10 中司さん指示。通常の3Dワールドと同じ扱いにし、2Pレース・おにごっこにも適用する
+    cam.moveForward(Math.max(0, -input.ly) * speed);
     cam.moveRight(input.lx * speed);
     cam.moveUp(input.up * liftSpeed);
     keepAboveGround(player);

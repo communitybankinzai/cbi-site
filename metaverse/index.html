@@ -1038,14 +1038,14 @@ if (location.protocol === "file:") {
       <button id="skyTagBtn" onclick="location.href='?mode=event&amp;race=tag&amp;v=20260907-3'">おにごっこ／ドッグファイト</button>
       <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
       <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
-      <button id="swanToggleBtn" class="off" aria-pressed="false" title="本埜の白鳥で飛ぶ">本埜の白鳥</button>
+      <button id="swanToggleBtn" class="off" aria-pressed="false" title="本埜の白鳥で飛ぶ">🦢 本埜の白鳥</button>
     </div>
   </div>
   <div class="tbGroup" id="tbGroupSound">
     <button class="tbGroupBtn" type="button" aria-haspopup="true" aria-expanded="false" title="BGMの再生と曲の選択">🎵 音 <span class="caret">▾</span></button>
     <div class="tbMenu">
       <button id="bgmBtn" class="off" title="BGMを流します（おまかせ：昼は「セビーリャの砦」、夜景モードではクリスマス3曲）。もう一度押すと止まります。曲は隣の「曲」ボタンで選べます">🎵 BGM</button>
-      <button id="bgmPickBtn" title="BGMの曲を一覧から選びます（甘茶の音楽工房の4曲・自前打ち込み2曲・端末の音楽ファイル）。次回もこの端末では同じ曲が使われます">🎵 曲: おまかせ</button>
+      <button id="bgmPickBtn" title="BGMの曲を一覧から選びます（おまかせ・甘茶の音楽工房の5曲・自前打ち込み2曲・白鳥の湖・端末の音楽ファイル）。次回もこの端末では同じ曲が使われます">🎵 曲をえらぶ｜いま: おまかせ</button>
       <input type="file" id="bgmFile" accept="audio/*" style="display:none">
     </div>
   </div>
@@ -2317,6 +2317,7 @@ const HELP_KEYBOARD =
   "<b>操作方法</b><br>" +
   "移動：<b>W A S D</b> ／ 矢印キー（<b>Shift</b>で加速）<br>" +
   "上昇・下降：<b>E</b> ／ <b>Q</b>（飛行モード）<br>" +
+  "飛行中は<b>後退できません</b>（旋回して向きを変える）<br>" +
   "見回す：画面を<b>ドラッグ</b><br>" +
   "スポット看板を<b>クリック</b>で説明表示<br>" +
   "🧩 文化財に<b>80m以内</b>まで近づくとパズルピース獲得";
@@ -2324,6 +2325,7 @@ const HELP_GAMEPAD =
   "<b>🎮 コントローラー操作</b><br>" +
   "移動：<b>左スティック</b> ／ 見回す：<b>右スティック</b><br>" +
   "上昇・下降：<b>R2</b> ／ <b>L2</b>（十字キー上下でも）<br>" +
+  "飛行中は<b>後退できません</b>（旋回して向きを変える）<br>" +
   "速く飛ぶ：<b>R1</b>を押している間（<b>□</b>で速度切替）<br>" +
   "精霊をゲット：<b>○</b> ／ 閉じる：<b>×</b><br>" +
   "主要施設へ飛ぶ：<b>十字キー左右</b><br>" +
@@ -2747,7 +2749,9 @@ function bgmStop() {
     if (!pick) return;
     const p = BGM_PRESETS.find(function (x) { return x.key === bgmPreset; });
     const nm = bgmCustom ? bgmCustom.name.slice(0, 14) : (bgmPreset === "auto" || !p ? "おまかせ" : p.name.replace(/（.*$/, "").slice(0, 14));
-    pick.textContent = "🎵 曲: " + nm;
+    // 「🎵 曲: ◯◯」だと、いま鳴っている曲しか用意がないように読める（2026-09-10 中司さん
+    // 「BGMが白鳥の湖以外全部消えた」）。押せば全曲から選べることが分かる文言にする
+    pick.textContent = "🎵 曲をえらぶ（全" + BGM_PRESETS.length + "曲）｜いま: " + nm;
     pick.classList.remove("off");
   }
   // プリセット一覧（2026-09-05）。ラジオを選ぶとすぐ流れる（ボタン操作なので自動再生の制限に掛からない）
@@ -2757,7 +2761,7 @@ function bgmStop() {
     panel = document.createElement("div");
     panel.id = "bgmPresetPanel";
     panel.style.cssText = "position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:120;background:rgba(10,16,24,0.96);color:#fff;padding:14px 16px;border-radius:12px;min-width:280px;max-width:92vw;max-height:80vh;overflow:auto;font-size:14px;line-height:1.5;box-shadow:0 8px 30px rgba(0,0,0,0.5)";
-    let html = '<div style="font-weight:bold;margin-bottom:8px">🎵 BGM の曲をえらぶ</div>';
+    let html = '<div style="font-weight:bold;margin-bottom:8px">🎵 BGM の曲をえらぶ（全' + BGM_PRESETS.length + '曲＋端末の music ファイル）</div>';
     const row = function (value, label, sel) {
       return '<label style="display:block;padding:6px 6px;cursor:pointer;border-radius:6px;' + (sel ? 'background:rgba(255,209,102,0.18)' : '') + '">' +
         '<input type="radio" name="bgmPreset" value="' + value + '"' + (sel ? ' checked' : '') + '> ' + label + '</label>';
@@ -3102,6 +3106,10 @@ viewer.clock.onTick.addEventListener(function () {
     padPrevButtons = [];
     padSeen = false; // 挿し直し・別のコントローラーに替えたら測り直す
   }
+  // 鳥は後ろへは飛べないので、飛行中は後退の入力（S・↓・左スティック下）を受け付けない
+  // （2026-09-10 中司さん指摘「後ろに戻れないようにして。実際にありえない」）。
+  // 引き返すときは旋回して向きを変える。歩行モードは人の動きなので後ろへ下がれるままにする
+  if (!walkMode && forward < 0) forward = 0;
   const eased = CbiFlightInput.smooth(soloFlightInput, {forward,right,up}, dt);
   forward = eased.forward; right = eased.right; up = eased.up;
   updatePadHud(!!pad && padCalibrated);      // 照準とロックオン枠の表示（中心の測定中は出さない）
@@ -3128,13 +3136,29 @@ viewer.clock.onTick.addEventListener(function () {
   // 画面の傾き（バンク）。飛行モードで曲がるとき、地平線が曲がる側へ最大 20° 傾き、
   // まっすぐ飛ぶと滑らかに水平へ戻る（2026-09-02 ユーザー要望「地平線も傾けて欲しい」）。
   // 歩行モードでは傾けない。プレイ動画モードは自前で傾きを管理するので止めておく
-  if (cameraBankEnabled && walkMode) {
-    const bankTarget = walkMode ? 0 : Math.max(-20, Math.min(20, (right + yawTilt) * 20));
-    const bankStep = 40 * dt;
-    flyBank += Math.max(-bankStep, Math.min(bankStep, bankTarget - flyBank));
-    if (Math.abs(flyBank) < 0.05) flyBank = 0;
-    if (flyBank !== 0 || Math.abs(cam.roll) > 1e-4) {
-      cam.setView({ orientation: { heading: cam.heading, pitch: cam.pitch, roll: Cesium.Math.toRadians(flyBank) } });
+  // 2026-09-09 に宙返り（右スティック上下の保持）を打ち消さないよう飛行中の補正を止めたが、
+  // その結果、宙返りや旋回のあとに残った傾きが二度と戻らず「まっすぐ飛んでいるのに地平線が斜め」
+  // になっていた（2026-09-10 中司さん指摘）。そこで次の2つに当てはまる間だけ補正を休み、
+  // ふつうに飛んでいるときは水平（旋回中はバンク）へ戻すようにした。
+  //   ・機首が真上／真下に近い（|ピッチ| > 75°）＝宙返りの最中
+  //   ・背面飛行（|ロール| > 100°）＝起こすと宙返りが途中で止まってしまう
+  // 積算値ではなく毎フレーム実際のロールから作り直すので、補正を休んだ後も飛び跳ねない
+  if (cameraBankEnabled) {
+    let rollDeg = Cesium.Math.toDegrees(cam.roll);
+    if (rollDeg > 180) rollDeg -= 360;
+    const pitchDeg = Cesium.Math.toDegrees(cam.pitch);
+    const canLevel = walkMode || (Math.abs(pitchDeg) <= 75 && Math.abs(rollDeg) <= 100);
+    if (canLevel) {
+      const bankTarget = walkMode ? 0 : Math.max(-20, Math.min(20, (right + yawTilt) * 20));
+      const bankStep = 40 * dt;
+      let next = rollDeg + Math.max(-bankStep, Math.min(bankStep, bankTarget - rollDeg));
+      if (Math.abs(next) < 0.05) next = 0;
+      if (Math.abs(next - rollDeg) > 1e-3) {
+        cam.setView({ orientation: { heading: cam.heading, pitch: cam.pitch, roll: Cesium.Math.toRadians(next) } });
+      }
+      flyBank = next;
+    } else {
+      flyBank = rollDeg;   // 宙返り中は今の傾きを覚えておくだけ
     }
   }
 
@@ -6375,7 +6399,7 @@ try {
 }
 </script>
 <script src="sky-tag.js?v=20260909-4"></script>
-<script src="vs-race.js?v=20260910-2"></script>
+<script src="vs-race.js?v=20260910-3"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260910-2"></script>
 </body>

@@ -18,9 +18,27 @@
       "actuals": [
         {
           "date": "2026-09-10",
+          "title": "３Dワールドの地平線復帰・飛行中の後退禁止・白鳥アイコン・BGM選曲表示 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html",
+            "site/metaverse/vs-race.js",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "中司さんの指摘4件。(1)09-09に宙返り優先で止めていた水平復帰を、ピッチ75度超・背面時だけ休む条件付きで復活（積算値ではなく実ロールから毎フレーム作り直す）。(2)飛行中の後退入力を無効化（通常画面＋vs-race.jsで2Pレース・おにごっこも。歩行は据え置き）。(3)本埜の白鳥に🦢。(4)BGMは9曲すべて配信200・選曲パネルにも9曲表示・切替再生成功を実測し欠落なしと確認、曲ボタンを『🎵 曲をえらぶ（全9曲）｜いま: ◯◯』へ変更。検証はローカル?notiles=1のPlaywright（水平復帰・宙返り温存・背面温存・後退0.00m・前進7.2m・歩行後退可）＋node --checkと既存verifyスクリプト2本。実機パッド2台での2P確認は未実施。session: be147595-440b-4cf2-9178-c8d16d4b93b0 / output: 80,977 / cost: $13.71"
+        },
+        {
+          "date": "2026-09-10",
           "title": "2P受付の段階表示と白鳥の湖の管弦楽版差し替え",
           "category": "実装",
-          "outputs": ["site/metaverse/night.js", "site/metaverse/vs-race.js", "site/metaverse/index.html", "site/metaverse/assets/audio/swan_lake_scene.mp3"],
+          "outputs": [
+            "site/metaverse/night.js",
+            "site/metaverse/vs-race.js",
+            "site/metaverse/index.html",
+            "site/metaverse/assets/audio/swan_lake_scene.mp3"
+          ],
           "note": "通常受付は本人のみ。2P選択で同一登録・別人QR/表示名の受付を提示。開始関数にも受付チェック追加。Playwrightで通常/2P/同一/別人/未受付開始阻止/退出/スマホとBGM実再生を確認、有料タイル要求0。CMSL・ANDO TOWAのCC BY 2.1 JP音源、202.632秒、費用0円。オルゴール音源削除。"
         },
         {
@@ -5559,6 +5577,24 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🎮 2Pレース・おにごっこの後退禁止を実機パッド2台で確かめる",
+          "category": "実装",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "ゲームパッド2台を挿した会場PCで動かす機会（ヘッドレスではGamepad APIを再現できず、受付ゲートも通せない）",
+          "note": "2026-09-10 に vs-race.js の movePlayer で cam.moveForward(Math.max(0,-input.ly)*speed) に変更。前進・旋回・上昇に影響がないか、左スティックを手前に倒したとき止まるだけで違和感がないかを実機で見る"
+        },
+        {
+          "due": "未定",
+          "title": "🎵 BGMが『白鳥の湖しか出ない』と見えた原因の確定",
+          "category": "調査",
+          "priority": "低",
+          "status": "待ち",
+          "blockedBy": "中司さんが実機で選曲パネル（🎵 音 ▾ → 曲）を開いた画面を確認できること",
+          "note": "2026-09-10 実測では公開HTMLに9曲、音声7ファイルすべて200、パネルにも9曲＋端末ファイルが並び切替再生も成功しており再現できなかった。音メニューの『🎵 曲: 白鳥の湖…』表示を一覧と受け取られた可能性が高いため文言を変更済み。まだ1曲しか出ないようなら端末のキャッシュ・localStorage（cbi-meta-bgm-preset-v1）を確認する"
+        },
         {
           "due": "2026-09-12",
           "title": "🔐 Facebook投稿に使ったユーザートークンを無効化するか判断する",
