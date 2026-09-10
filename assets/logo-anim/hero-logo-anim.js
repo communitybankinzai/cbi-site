@@ -56,6 +56,9 @@
     // 「完成しているロゴが今さらバラけて集まる」不自然な絵になるので、
     // 間に合わなかったときは静止ロゴのままにする。
     if (performance.now() > 6000) { st.phase = 'too-late'; return; }
+    // 裏で開かれたタブでは requestAnimationFrame が止まる。
+    // 途中でバラバラのまま固まって見えるくらいなら、最初から静止ロゴのままにする。
+    if (document.hidden) { st.phase = 'hidden'; return; }
     st.phase = 'run';
     // 部品を載せる台座。静止ロゴと同じ円形・同じ影にして、切り替わりが見えないようにする
     var stage = document.createElement('div');
@@ -72,6 +75,29 @@
     var flare = wrap.querySelector('.hero-logo-flare');
     if (flare) flare.style.animationPlayState = 'paused';
     wrap.appendChild(stage);
+
+    // ⛔ 後始末は必ずこの1本を通す。
+    // タブが裏に回ると rAF が止まり、部品が散らばったまま画面に残ってしまうため、
+    // 時間切れでも必ず静止ロゴへ戻す保険を張る。
+    var finished = false;
+    var last = 0;
+    for (var j = 0; j < PARTS.length; j++) if (PARTS[j].d > last) last = PARTS[j].d;
+    var hardStop = setTimeout(finish, (last + DUR) * 1000 + 2000);
+
+    function finish() {
+      if (finished) return;
+      finished = true;
+      clearTimeout(hardStop);
+      document.removeEventListener('visibilitychange', onHide);
+      still.style.transition = '';
+      still.style.opacity = '';
+      wrap.style.animationPlayState = '';
+      if (flare) flare.style.animationPlayState = '';
+      stage.remove();
+      st.phase = 'done';
+    }
+    function onHide() { if (document.hidden) finish(); }
+    document.addEventListener('visibilitychange', onHide);
 
     var t0 = null;
     function ease(t) { return 1 - Math.pow(1 - t, 5); }
@@ -92,17 +118,8 @@
           (p.r * inv) + 'deg) scale(' + (p.s + (1 - p.s) * e) + ')';
         imgs[i].style.opacity = Math.min(1, raw * 3.2);
       }
-      if (done) {
-        // 静止ロゴへ戻し、時刻連動の演出を再開する
-        still.style.transition = '';
-        still.style.opacity = '';
-        wrap.style.animationPlayState = '';
-        if (flare) flare.style.animationPlayState = '';
-        stage.remove();
-        st.phase = 'done';
-        return;
-      }
-      requestAnimationFrame(frame);
+      if (done) { finish(); return; }        // 静止ロゴへ戻し、時刻連動の演出を再開する
+      if (!finished) requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
     }
