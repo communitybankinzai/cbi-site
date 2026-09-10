@@ -55,7 +55,7 @@
     // ページのJSが数秒止まる（計測環境では9秒）。そこから組み上げ始めると
     // 「完成しているロゴが今さらバラけて集まる」不自然な絵になるので、
     // 間に合わなかったときは静止ロゴのままにする。
-    if (performance.now() > 3000) { st.phase = 'too-late'; return; }
+    if (performance.now() > 6000) { st.phase = 'too-late'; return; }
     st.phase = 'run';
     // 部品を載せる台座。静止ロゴと同じ円形・同じ影にして、切り替わりが見えないようにする
     var stage = document.createElement('div');
@@ -65,6 +65,8 @@
       'background:' + cs.backgroundColor + ';box-shadow:' + cs.boxShadow + ';';
     for (var k = 0; k < imgs.length; k++) stage.appendChild(imgs[k]);
 
+    // 完成しているロゴが突然消えて見えないよう、静止ロゴは短くフェードさせる
+    still.style.transition = 'opacity .28s ease';
     still.style.opacity = '0';
     wrap.style.animationPlayState = 'paused';      // 時刻連動の拡大を一時停止
     var flare = wrap.querySelector('.hero-logo-flare');
@@ -92,6 +94,7 @@
       }
       if (done) {
         // 静止ロゴへ戻し、時刻連動の演出を再開する
+        still.style.transition = '';
         still.style.opacity = '';
         wrap.style.animationPlayState = '';
         if (flare) flare.style.animationPlayState = '';
