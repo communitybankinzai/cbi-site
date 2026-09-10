@@ -2651,7 +2651,7 @@ const BGM_PRESETS = [
   { key: "omoide",  name: "思い出のクリスマス（甘茶の音楽工房）", tracks: ["assets/audio/amacha_xmas_omoide.m4a"] },
   { key: "tobi",    name: "トビの滑空テーマ（自前打ち込み）", tracks: ["assets/audio/bgm_tobi.m4a"] },
   { key: "synthx",  name: "クリスマスメドレー（自前打ち込み）", tracks: ["assets/audio/bgm_xmas.m4a"] },
-  { key: "swanlake", name: "白鳥の湖（オルゴール）", tracks: ["assets/audio/swan_lake_musicbox.mp3"] },
+  { key: "swanlake", name: "白鳥の湖・第2幕「情景」（管弦楽）", tracks: ["assets/audio/swan_lake_scene.mp3"] },
 ];
 let bgmPreset = "auto";
 try { bgmPreset = localStorage.getItem(BGM_PRESET_KEY) || "auto"; } catch (e) {}
@@ -2765,7 +2765,7 @@ function bgmStop() {
     BGM_PRESETS.forEach(function (p) { html += row(p.key, p.name, !bgmCustom && bgmPreset === p.key); });
     html += row("__file", "端末の音楽ファイルを選ぶ…" + (bgmCustom ? "（いま：" + bgmCustom.name.slice(0, 16) + "）" : ""), !!bgmCustom);
     html += '<div style="margin-top:8px;font-size:11px;color:#bcd">曲：甘茶の音楽工房（フリー音楽素材）／自前打ち込み。えらぶとすぐ流れ、次回もこの端末では同じ曲になります</div>';
-    html += '<div style="font-size:11px;color:#bcd">白鳥の湖：Tchaikovsky／録音 <a href="https://freesound.org/people/ST303/sounds/171046/" target="_blank" rel="noopener" style="color:#bcd">ST303（CC0）</a>・オルゴール版</div>';
+    html += '<div style="font-size:11px;color:#bcd">白鳥の湖：Tchaikovsky／<a href="https://classical-sound.seesaa.net/article/499493058.html" target="_blank" rel="noopener" style="color:#bcd">ANDO TOWA・CMSL（2023）</a>・管弦楽デジタル音源・無加工／<a href="https://creativecommons.org/licenses/by/2.1/jp/" target="_blank" rel="noopener" style="color:#bcd">CC BY 2.1 JP</a></div>';
     html += '<div style="text-align:right;margin-top:8px"><button type="button" id="bgmPresetClose">閉じる</button></div>';
     panel.innerHTML = html;
     document.body.appendChild(panel);
@@ -6375,8 +6375,8 @@ try {
 }
 </script>
 <script src="sky-tag.js?v=20260909-4"></script>
-<script src="vs-race.js?v=20260909-1"></script>
+<script src="vs-race.js?v=20260910-2"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
-<script src="night.js?v=20260907-1"></script>
+<script src="night.js?v=20260910-2"></script>
 </body>
 </html>

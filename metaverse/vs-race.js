@@ -342,6 +342,7 @@
     setCourse(ui.vsCourseSelect.value, false);
     startFrameLoop();
     setTimeout(resizeRaceViewers, 80);
+    window.dispatchEvent(new CustomEvent("cbi:vs-mode-change", {detail:{enabled:true, practice:race.practice}}));
   }
 
   let uiWired = false;
@@ -706,6 +707,7 @@
 
   function beginCountdown() {
     if (!race.enabled || !race.course || race.state === "countdown" || race.state === "running") return;
+    if (!window.ensureVsReception || !window.ensureVsReception(race.practice)) return;
     players.forEach(pollPad);
     const required = requiredPlayers();
     const missing = required.filter(p => !p.connected);
@@ -1274,6 +1276,7 @@
     race.enabled = false;
     race.state = "idle";
     window.vsRaceModeEnabled = false;
+    window.dispatchEvent(new CustomEvent("cbi:vs-mode-change", {detail:{enabled:false}}));
     document.body.classList.remove("vsRaceMode");
     document.body.classList.remove("vsPracticeMode");
     hideCountdown();

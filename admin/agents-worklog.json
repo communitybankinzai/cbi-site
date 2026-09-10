@@ -18,6 +18,13 @@
       "actuals": [
         {
           "date": "2026-09-10",
+          "title": "2P受付の段階表示と白鳥の湖の管弦楽版差し替え",
+          "category": "実装",
+          "outputs": ["site/metaverse/night.js", "site/metaverse/vs-race.js", "site/metaverse/index.html", "site/metaverse/assets/audio/swan_lake_scene.mp3"],
+          "note": "通常受付は本人のみ。2P選択で同一登録・別人QR/表示名の受付を提示。開始関数にも受付チェック追加。Playwrightで通常/2P/同一/別人/未受付開始阻止/退出/スマホとBGM実再生を確認、有料タイル要求0。CMSL・ANDO TOWAのCC BY 2.1 JP音源、202.632秒、費用0円。オルゴール音源削除。"
+        },
+        {
+          "date": "2026-09-10",
           "title": "用途別ワンタップ切替の実装と内水レイヤーの既定OFF・改名 0.3時間",
           "category": "実装",
           "outputs": [
