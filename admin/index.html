@@ -9,9 +9,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=20260910analytics">
+<link rel="stylesheet" href="admin.css?v=20260910analytics2">
 </head>
 <body>
+<script>
+if (location.protocol === 'file:') {
+  location.replace('https://communitybankinzai.github.io/cbi-site/admin/');
+}
+</script>
 
 <!-- ============== Login Screen ============== -->
 <section id="screen-login" class="screen screen-login active">
@@ -1024,8 +1029,10 @@
         </div>
         <p class="panel-desc">PV＝ページの閲覧回数、VV＝日別の訪問端末数（同じブラウザを重複除外）。日本時間。2026年9月10日の計測開始以降が対象で、それ以前は未計測です。保存を許可しないブラウザは含みません。</p>
         <p id="cbi-analytics-status" class="meta-note" role="status">読み込み待ち</p>
-        <div id="cbi-analytics-tables"></div>
-        <details><summary>従来の閲覧セッション数（参考）</summary><p class="panel-desc">CiDAO管理画面から移した従来集計です。PV・VVではありません。</p><div id="cbi-analytics-legacy"></div></details>
+        <div class="cbi-trend-legend"><span style="--series:#2164ce">PV</span><span style="--series:#00836b">VV</span><span class="legacy" style="--series:#946021">従来のセッション数</span></div>
+        <p class="meta-note">従来のセッション数は別の計測方式です。PV・VVと合算せず、比較用に重ねています。未計測期間の線は表示しません。</p>
+        <div id="cbi-analytics-charts"></div>
+        <details><summary>数値で見る（PV・VV・従来のセッション数）</summary><div id="cbi-analytics-tables"></div><div id="cbi-analytics-legacy"></div></details>
       </section>
       <section class="panel">
         <div class="panel-head-row">
@@ -1268,6 +1275,6 @@
 </section>
 
 <script src="admin.js?v=20260823budget"></script>
-<script src="cbi-content-analytics.js?v=20260910-1"></script>
+<script src="cbi-content-analytics.js?v=20260910-2"></script>
 </body>
 </html>

@@ -1027,6 +1027,13 @@ button { font-family: inherit; cursor: pointer; }
 .admin-main:has(#tab-metaverse:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
 #tab-metaverse { min-width: 0; }
 #cbi-content-analytics { overflow-wrap: anywhere; }
+.cbi-trend { margin-top: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--c-line); }
+.cbi-trend h3 { font-size: 15px; margin: 0 0 12px; }
+.cbi-trend-legend, .cbi-trend-values { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; }
+.cbi-trend-legend span::before { content: ''; display: inline-block; width: 22px; margin-right: 6px; vertical-align: middle; border-top: 3px solid var(--series); }
+.cbi-trend-legend .legacy::before { border-top-style: dashed; }
+.cbi-trend-values { min-height: 64px; align-content: start; }
+.cbi-trend-values strong { flex-basis: 100%; }
 
 .panel-head-row {
   display: flex;
