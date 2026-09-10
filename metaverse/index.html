@@ -1397,6 +1397,8 @@ if (location.protocol === "file:") {
 </div>
 
 <script src="flight-input.js?v=20260909-1"></script>
+<script src="flight-ground.js?v=20260910-1"></script>
+<script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
 <div id="tonbiLayer"><div id="tonbiInner"><div id="tonbiViewport"><img id="tonbiSheet" src="assets/tonbi/tonbi_flap_sheet.webp" alt=""></div></div></div>
 
 <div id="padHud">
@@ -3208,29 +3210,21 @@ viewer.clock.onTick.addEventListener(function () {
 });
 
 // 飛行モードで地表より下へ潜らないようにする（地下＝真っ黒対策）
-let groundCheckFrame = 0;
+const flightGroundState = {};
 let undergroundNoticeAt = 0;
 function keepAboveGround() {
-  groundCheckFrame++;
-  if (groundCheckFrame % 12 !== 0) return;          // 毎フレームだと重いので間引く
-  if (!viewer.scene.sampleHeightSupported) return;   // 3Dタイル未対応環境では何もしない
-  const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
-  let ground;
-  try { ground = viewer.scene.sampleHeight(carto.clone()); } catch (e) { return; }
-  if (ground === undefined || ground === null) return; // タイル未読込のときは判定しない
-  const minHeight = ground + 2;                      // 地表から2m上を下限にする
-  if (carto.height >= minHeight) return;
-  viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(
-      Cesium.Math.toDegrees(carto.longitude), Cesium.Math.toDegrees(carto.latitude), minHeight),
-    orientation: { direction: Cesium.Cartesian3.clone(viewer.camera.directionWC), up: Cesium.Cartesian3.clone(viewer.camera.upWC) },
-  });
+  if (!window.CbiFlightGround) return;
+  if (!CbiFlightGround.enforce(viewer, flightGroundState, {disabled:NO_TILES, clearance:walkMode ? WALK_EYE_HEIGHT : 12,
+    exclude:viewer.entities.values.filter(e=>e.model)})) return;
   const now = performance.now();
   if (now - undergroundNoticeAt > 8000) {            // 案内は8秒に1回まで
     undergroundNoticeAt = now;
     showPickResult("地面の下には入れません。⬆（またはEキー）で上昇できます。", 4000);
   }
 }
+viewer.scene.preUpdate.addEventListener(function() {
+  if (!window.vsRaceModeEnabled) keepAboveGround();
+});
 
 // ============================================================
 // モード切替
@@ -6399,7 +6393,7 @@ try {
 }
 </script>
 <script src="sky-tag.js?v=20260909-4"></script>
-<script src="vs-race.js?v=20260910-3"></script>
+<script src="vs-race.js?v=20260910-4"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260910-2"></script>
 </body>

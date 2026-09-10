@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=20260823budget">
+<link rel="stylesheet" href="admin.css?v=20260910analytics">
 </head>
 <body>
 
@@ -75,7 +75,7 @@
       <button type="button" class="tab-btn" data-tab="sns" role="tab" aria-selected="false">📣 自動投稿</button>
       <button type="button" class="tab-btn" data-tab="bug-reports" role="tab" aria-selected="false">🐛 不具合レポート</button>
       <button type="button" class="tab-btn" data-tab="ledger" role="tab" aria-selected="false">💰 収支管理</button>
-      <button type="button" class="tab-btn" data-tab="metaverse" role="tab" aria-selected="false">🌐 ３Dワールド</button>
+      <button type="button" class="tab-btn" data-tab="metaverse" role="tab" aria-selected="false">🌐 ３D・防災MAP</button>
       <button type="button" class="tab-btn" data-tab="budget" role="tab" aria-selected="false">💰 予算</button>
     </nav>
 
@@ -1016,6 +1016,17 @@
       </section>
     </div>
     <div class="tab-panel" id="tab-metaverse" role="tabpanel" hidden>
+      <section class="panel" id="cbi-content-analytics">
+        <div class="panel-head-row">
+          <h2 class="panel-title">CBIコンテンツ PV・VV</h2>
+          <label>期間 <select id="cbi-analytics-days"><option value="7">7日</option><option value="30" selected>30日</option><option value="90">90日</option></select></label>
+          <button type="button" class="btn btn-ghost btn-sm" id="cbi-analytics-refresh" aria-label="アクセス集計を更新" title="更新">↻</button>
+        </div>
+        <p class="panel-desc">PV＝ページの閲覧回数、VV＝日別の訪問端末数（同じブラウザを重複除外）。日本時間。2026年9月10日の計測開始以降が対象で、それ以前は未計測です。保存を許可しないブラウザは含みません。</p>
+        <p id="cbi-analytics-status" class="meta-note" role="status">読み込み待ち</p>
+        <div id="cbi-analytics-tables"></div>
+        <details><summary>従来の閲覧セッション数（参考）</summary><p class="panel-desc">CiDAO管理画面から移した従来集計です。PV・VVではありません。</p><div id="cbi-analytics-legacy"></div></details>
+      </section>
       <section class="panel">
         <div class="panel-head-row">
           <h2 class="panel-title">🌐 ３Dワールド印西 利用状況モニタ</h2>
@@ -1257,5 +1268,6 @@
 </section>
 
 <script src="admin.js?v=20260823budget"></script>
+<script src="cbi-content-analytics.js?v=20260910-1"></script>
 </body>
 </html>

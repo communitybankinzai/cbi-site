@@ -18,6 +18,13 @@
       "actuals": [
         {
           "date": "2026-09-10",
+          "title": "地面侵入防止・CBIコンテンツPV/VV分離移設",
+          "category": "実装",
+          "outputs": ["site/metaverse/flight-ground.js", "site/admin/cbi-content-analytics.js", "site/assets/cbi-content-tracking.js", "cidao/src/app/api/cbi-site-analytics/route.ts", "cidao/supabase/migrations/20260910120000_cbi_content_views.sql"],
+          "note": "地形未読込時の進入/下降阻止と遅延読込補正をテスト。集計DB migration適用、PVと日別重複除外VVを個別記録。従来セッションは別欄、新規計測前は未計測表示。DBテストはrollback、Playwright PC/スマホ通過。有料地図要求0、追加サービス契約なし。"
+        },
+        {
+          "date": "2026-09-10",
           "title": "CiDAO団体ページの募集動線を出し分け対応（募集状況セレクト新設）＋CBIを募集停止に設定 0.2時間",
           "category": "実装",
           "outputs": "cidao: src/app/orgs/actions.ts, src/app/orgs/[id]/edit/page.tsx, src/app/orgs/[id]/_components/InterestForm.tsx, src/app/orgs/[id]/page.tsx（commit 4f940ba）／ Supabase organizations.recruitment_status を CBI のみ closed に更新",

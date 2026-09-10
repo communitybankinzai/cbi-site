@@ -1024,6 +1024,9 @@ button { font-family: inherit; cursor: pointer; }
   border-bottom-color: var(--c-gold);
 }
 .tab-panel[hidden] { display: none; }
+.admin-main:has(#tab-metaverse:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
+#tab-metaverse { min-width: 0; }
+#cbi-content-analytics { overflow-wrap: anywhere; }
 
 .panel-head-row {
   display: flex;

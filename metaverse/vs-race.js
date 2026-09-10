@@ -336,6 +336,11 @@
     players[0].viewer = mainViewer();
     createSecondViewer();
     players.forEach(p => applyViewerRaceProfile(p));
+    players.forEach(p => {
+      if (p.groundGuardOff) p.groundGuardOff();
+      p.groundState = {};
+      p.groundGuardOff = p.viewer.scene.preUpdate.addEventListener(()=>keepAboveGround(p));
+    });
 
     const defaultCourse = race.mode === "vs" || race.mode === "tag" ? RACE_CONFIG.defaultCityCourse : RACE_CONFIG.defaultCourse;
     refreshCourseOptions(requestedCourseId || query.get("course") || defaultCourse);
@@ -596,6 +601,7 @@
       p.forced = false;
       p.finishMs = null;
       p.groundTick = 0;
+      p.groundState = {};
       p.minHeight = MIN_FLIGHT_HEIGHT;
       placePlayerAtStart(p);
       centerPad(p, false);
@@ -972,21 +978,10 @@
   function keepAboveGround(player) {
     const v = player.viewer;
     if (!v || !v.camera) return;
-    const c = Cesium.Cartographic.fromCartesian(v.camera.position);
-    if ((player.groundTick++ % 8) === 0 && v.scene.sampleHeightSupported && !noTilesMode()) {
-      try {
-        const ground = v.scene.sampleHeight(c.clone());
-        if (Number.isFinite(ground)) player.minHeight = Math.max(MIN_FLIGHT_HEIGHT, ground + 12);
-      } catch (e) {}
-    }
-    if (c.height < player.minHeight) {
-      const heading = v.camera.heading;
-      const pitch = v.camera.pitch;
-      v.camera.setView({
-        destination: Cesium.Cartesian3.fromRadians(c.longitude, c.latitude, player.minHeight),
-        orientation: { direction: Cesium.Cartesian3.clone(v.camera.directionWC), up: Cesium.Cartesian3.clone(v.camera.upWC) }
-      });
-    }
+    if (window.CbiFlightGround) CbiFlightGround.enforce(v, player.groundState || (player.groundState = {}), {
+      disabled:noTilesMode(), clearance:12, fallback:MIN_FLIGHT_HEIGHT,
+      exclude:v.entities.values.filter(e=>e.model)
+    });
   }
 
   function checkCheckpoint(player, now) {
@@ -1277,6 +1272,7 @@
     clearMarkers();
     race.enabled = false;
     race.state = "idle";
+    players.forEach(p=>{if(p.groundGuardOff)p.groundGuardOff();p.groundGuardOff=null;p.groundState={};});
     window.vsRaceModeEnabled = false;
     window.dispatchEvent(new CustomEvent("cbi:vs-mode-change", {detail:{enabled:false}}));
     document.body.classList.remove("vsRaceMode");
