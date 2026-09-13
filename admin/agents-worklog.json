@@ -7224,6 +7224,20 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "武蔵屋めぐり 読み上げの自動フォールバック＋こども精霊／おとな写真 0.07時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/musashiya.js（版 2026-09-13m）",
+            "site/metaverse/index.html（読み込み版 20260913-13）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.07,
+          "partnerApproved": false,
+          "note": "中司さん報告「圭太（Keita）が話さない」「駅に着いても喋らない」→ Online (Natural) の声が無音のまま終わる症状への保険（2.5秒で端末内の声へ）。原因の特定は Edge 実機でしかできず未了。指示「通過時はこども＝精霊、おとな＝写真」を実装し、検証モードで両モードの画像の出どころ（spirits／photos）を確認。hours は前回記録 250,613 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 257,612 / cost: $96.90"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋めぐり 読み込み待ち・高度誤表示対策・ゴール読み上げ・コントローラー別ボタン名＋2Pレースの相手表示とレーダー 0.25時間",
           "category": "実装",
           "outputs": [

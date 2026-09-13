@@ -11,7 +11,7 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13k";
+  const MSY_VERSION = "2026-09-13m";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -84,10 +84,13 @@
   }
 
   // ---- 表示の部品 ----
+  // こども＝精霊カード、おとな＝文化財の写真（2026-09-13 中司さん）。無い側は他方で代用する
   function imgFor(b) {
-    if (b.photo) return { src: b.photo, alt: b.photoAlt || b.name, credit: "写真出典：印西市ホームページ" };
-    if (b.cardImage) return { src: b.cardImage, alt: b.name + "の精霊カード", credit: "画像：文化財の精霊カード（市公式ページに写真はありません）" };
-    return null;
+    const photo = b.photo ? { src: b.photo, alt: b.photoAlt || b.name, credit: "写真出典：印西市ホームページ" } : null;
+    const spirit = b.cardImage ? { src: b.cardImage, alt: b.name + "の精霊カード", credit: "画像：文化財の精霊カード" } : null;
+    if (state.age === "kids") return spirit || photo;
+    if (photo) return photo;
+    return spirit ? Object.assign({}, spirit, { credit: "画像：文化財の精霊カード（市公式ページに写真はありません）" }) : null;
   }
   function textFor(b) {
     const t = state.texts[b.reportId] || {};
@@ -522,12 +525,38 @@
     const v = pickVoice();
     if (v) u.voice = v;
     u.rate = SPEECH_RATE;
-    u.onend = u.onerror = function () { if (state.utter === u) { bgmDuck(false); state.utter = null; } };
-    state.lastSpeech = { text: u.text, voice: v ? v.name : null };
+    u.onend = u.onerror = function () { if (state.utter === u) { bgmDuck(false); state.utter = null; } clearTimeout(state.startWatch); };
+    u.onstart = function () { clearTimeout(state.startWatch); if (state.lastSpeech) state.lastSpeech.started = true; };
+    state.lastSpeech = { text: u.text, voice: v ? v.name : null, started: false, fallback: false };
     state.utter = u;
     bgmDuck(true);
     clearTimeout(state.speakTimer);
-    state.speakTimer = setTimeout(function () { if (state.utter === u) speechSynthesis.speak(u); }, 150);
+    state.speakTimer = setTimeout(function () {
+      if (state.utter !== u) return;
+      speechSynthesis.speak(u);
+      // Edge の Online (Natural) の声（Keita／Nanami）は、ネットの状態などで声が出ないまま終わることがある
+      // （2026-09-13 中司さん「圭太はアナウンスしてくれない」「駅に到着しても喋らない」）。2.5秒たっても始まらなければ端末内の声で読み直す
+      clearTimeout(state.startWatch);
+      state.startWatch = setTimeout(function () {
+        if (state.utter !== u || (state.lastSpeech && state.lastSpeech.started)) return;
+        const local = jaVoices().filter((x) => x.localService && !(v && x.name === v.name));
+        const pref = VOICE_NAMES[state.voice] || VOICE_NAMES.male;
+        let alt = null;
+        for (const key of pref) { alt = local.find((x) => x.name.indexOf(key) >= 0); if (alt) break; }
+        alt = alt || local[0];
+        if (!alt) return;
+        try { speechSynthesis.cancel(); } catch (e) {}
+        const u2 = new SpeechSynthesisUtterance(text);
+        u2.lang = "ja-JP"; u2.voice = alt; u2.rate = SPEECH_RATE;
+        u2.onend = u2.onerror = function () { if (state.utter === u2) { bgmDuck(false); state.utter = null; } };
+        state.lastSpeech = { text: text, voice: alt.name, started: false, fallback: true, failed: v ? v.name : null };
+        u2.onstart = function () { state.lastSpeech.started = true; };
+        state.utter = u2;
+        setTimeout(function () { if (state.utter === u2) speechSynthesis.speak(u2); }, 150);
+        const el = document.getElementById("msyVoiceName");
+        if (el) el.textContent = "⚠ " + (v ? v.name : "選んだ声") + " が話し始めなかったので、端末内の " + alt.name + " に切り替えました";
+      }, 2500);
+    }, 150);
     return v;
   }
   function speakSample() {
@@ -541,7 +570,7 @@
     return (b.kana || b.name) + "。" + t;
   }
   function speakKids(b) { speak(speechText(b)); }
-  function speakStop() { clearTimeout(state.speakTimer); state.utter = null; try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} bgmDuck(false); }
+  function speakStop() { clearTimeout(state.speakTimer); clearTimeout(state.startWatch); state.utter = null; try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} bgmDuck(false); }
   // 画面を閉じる・別のページへ移るときは音楽と読み上げを止める（2026-09-13 中司さん「ブラウザ閉じても白鳥の湖が止まらない」。
   // 同じサイトを別のタブでも開いていた可能性が高いが、念のためこの画面の分は確実に止める）
   window.addEventListener("pagehide", function () {
