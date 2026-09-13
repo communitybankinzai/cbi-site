@@ -11,7 +11,7 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13m";
+  const MSY_VERSION = "2026-09-13n";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -90,7 +90,13 @@
     const spirit = b.cardImage ? { src: b.cardImage, alt: b.name + "の精霊カード", credit: "画像：文化財の精霊カード" } : null;
     if (state.age === "kids") return spirit || photo;
     if (photo) return photo;
-    return spirit ? Object.assign({}, spirit, { credit: "画像：文化財の精霊カード（市公式ページに写真はありません）" }) : null;
+    // おとなで市公式の写真が無いときは精霊で代用せず、写真提供のお願いを出す（2026-09-13 中司さん）
+    return { placeholder: true, lines: ["利用できる写真がありません。", "写真提供をお待ちしています。"] };
+  }
+  function imgHtml(img) {
+    if (!img) return "";
+    if (img.placeholder) return '<div class="msyNoPhoto">' + img.lines.map(esc).join("<br>") + "</div>";
+    return '<img src="' + esc(img.src) + '" alt="' + esc(img.alt) + '">';
   }
   function textFor(b) {
     const t = state.texts[b.reportId] || {};
@@ -118,6 +124,8 @@
     "#msyPop .msyHead{font-size:20px;font-weight:bold;color:#ffd166;margin-bottom:10px}" +
     "#msyPop .msyBody{display:flex;gap:16px;align-items:flex-start}" +
     "#msyPop .msyBody img{width:42%;max-height:46vh;object-fit:contain;border-radius:10px;background:#000;flex:none}" +
+    "#msyPop .msyNoPhoto{width:42%;min-height:160px;flex:none;display:flex;align-items:center;justify-content:center;text-align:center;border:2px dashed #7fc8ff;border-radius:10px;color:#cfe6ff;font-size:15px;line-height:1.8;padding:12px}" +
+    "@media (max-width:640px){#msyPop .msyNoPhoto{width:100%;min-height:90px}}" +
     "#msyPop .msyName{font-size:22px;font-weight:bold;line-height:1.3}" +
     "#msyPop .msyKana{font-size:13px;color:#cfe6ff}" +
     "#msyPop .msyDesig{display:inline-block;font-size:12px;border:1px solid #7fc8ff;border-radius:8px;padding:1px 8px;margin:6px 0 2px}" +
@@ -451,13 +459,13 @@
     const img = imgFor(b);
     return '<div class="msyHead">' + head + "</div>" + (extra || "") +
       '<div class="msyBody">' +
-        (img ? '<img src="' + esc(img.src) + '" alt="' + esc(img.alt) + '">' : "") +
+        imgHtml(img) +
         "<div>" +
           (isKids() && b.kana ? '<div class="msyKana">' + esc(b.kana) + "</div>" : "") +
           '<div class="msyName">' + esc(b.name) + "</div>" +
           (b.designation ? '<span class="msyDesig">' + esc(b.designation) + "</span>" : "") +
           '<div class="msyText">' + esc(textFor(b)) + "</div>" +
-          (img ? '<div class="msyCredit">' + esc(img.credit) + "</div>" : "") +
+          (img && img.credit ? '<div class="msyCredit">' + esc(img.credit) + "</div>" : "") +
         "</div>" +
       "</div>";
   }

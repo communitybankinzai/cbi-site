@@ -7224,6 +7224,20 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "武蔵屋めぐり おとなモードの写真なし表示（写真提供のお願い） 0.08時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/musashiya.js（版 2026-09-13n）",
+            "site/metaverse/index.html（読み込み版 20260913-14）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.08,
+          "partnerApproved": false,
+          "note": "中司さん指示。検証モードで、おとな＝写真なし2件が案内枠・写真あり1件が市公式写真（出典表示あり）、こども＝精霊カードになることを確認。hours は前回記録 257,612 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 265,601 / cost: $105.89"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋めぐり 読み上げの自動フォールバック＋こども精霊／おとな写真 0.07時間",
           "category": "実装",
           "outputs": [
