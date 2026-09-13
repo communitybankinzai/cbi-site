@@ -7240,6 +7240,20 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "ずかん・クイズ成績などを受付した人ごとに保存（交代で自動切替） 0.16時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（userScopedKey・reloadUserData・保存11か所）",
+            "site/metaverse/night.js（版 2026-09-13b・cbi-login-changed の通知・夜景TTベストの人ごと化）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.16,
+          "partnerApproved": true,
+          "note": "中司さん報告「らいさんに替えたのに50か所制覇＝ゆうさんのデータでは」→案1（人ごとに保存）。検証モードで ゲスト1→ゆうさん0→2→らいさん0→ゆうさん2→ゲスト1、クイズ成績も人ごと、画面の読み直しなしを確認。既存の端末の記録はゲストの分として残る（誰の記録か端末からは判別できないため自動では移さない）。hours は前回記録 478,885 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 494,566 / cost: $261.28"
+        },
+        {
+          "date": "2026-09-13",
           "title": "1人用コントローラー操作を2Pと統一（LB/RB旋回・X加速・Y速度切替）＋手順書更新 0.16時間",
           "category": "実装",
           "outputs": [

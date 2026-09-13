@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-13a";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-13b";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1";
@@ -1015,7 +1015,7 @@
   // ------------------------------------------------------------
   const tt = { active: false, waiting: false, pos: 0, startMs: 0, countdownEnd: 0, name: "", trialId: null, queue: Promise.resolve(), official: false, token: "" };
   window.nightTtState = tt;                 // 検証スクリプトから状態を見るため
-  function bestKey() { return NIGHT_BEST_KEY + "-" + courseKey; }
+  function bestKey() { return (typeof window.userScopedKey === "function" ? window.userScopedKey(NIGHT_BEST_KEY) : NIGHT_BEST_KEY) + "-" + courseKey; } // 人ごとの自己ベスト
   function localKey() { return NIGHT_LOCAL_RANK_KEY + "-" + courseKey; }
   function loadBest() { try { return JSON.parse(localStorage.getItem(bestKey()) || "null"); } catch (e) { return null; } }
   function saveBest(rec) { try { localStorage.setItem(bestKey(), JSON.stringify(rec)); } catch (e) { /* 保存できなくても続ける */ } }
@@ -1053,7 +1053,10 @@
     if (!m) return;
     try { localStorage.setItem(LOGIN_TOKEN_KEY, decodeURIComponent(m[1])); } catch (e) { /* 保存できなくても続ける */ }
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
+    loginChanged();
   }
+  // 1人目の受付が替わったことを知らせる。index.html がずかん・クイズの成績などをその人の分に読み替える（2026-09-13）
+  function loginChanged() { try { window.dispatchEvent(new CustomEvent("cbi-login-changed")); } catch (e) { /* 古いブラウザでも受付は続ける */ } }
   function tokenKey(slot) { return slot === 2 ? LOGIN_TOKEN_KEY_P2 : LOGIN_TOKEN_KEY; }
   function getLogin(slot) {
     let tok = null;
@@ -1066,7 +1069,7 @@
       return { token: tok, nick: String(p.nick), uid: String(p.uid || "") };
     } catch (e) { return null; }
   }
-  function clearLogin(slot) { try { localStorage.removeItem(tokenKey(slot)); } catch (e) { /* 同上 */ } }
+  function clearLogin(slot) { try { localStorage.removeItem(tokenKey(slot)); } catch (e) { /* 同上 */ } if (slot !== 2) loginChanged(); }
   function loginUrl() {
     return AUTH_URL + "?return=" + encodeURIComponent(location.origin + location.pathname + location.search);
   }
@@ -1316,6 +1319,7 @@
       const d = await res.json();
       if (revision !== claimRevision || claimSlot !== targetSlot || claimFrom !== targetFrom) return false;
       try { localStorage.setItem(tokenKey(claimSlot), d.token); } catch (e) { /* 保存できなくても続ける */ }
+      if (claimSlot === 1) loginChanged();
       stopQrScan();
       caption("👤 <b>" + ttEsc(d.nick) + "</b> さんで参加します" + (claimSlot === 2 ? "<small>（2人目）</small>" : ""), 2500);
       applyVsNames();

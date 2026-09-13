@@ -3429,18 +3429,46 @@ const PIECE_RADIUS_M = 80;           // 獲得判定の水平距離(m)。住所�
 const PIECE_MAX_ELLIP_HEIGHT = 150;  // 上空通過での獲得を防ぐ楕円体高の上限(m)。印西の地表は楕円体高約60〜70m
 
 let BUNKAZAI = [];                   // bunkazai.json から読み込む50件
+// ---- 個人の進み具合を受付した人ごとに分ける（2026-09-13 中司さん：らいさんに替えたのにゆうさんの50/50が見えた） ----
+// 対象はずかん（ピース）・クイズの成績・認定証・タイムトライアルの自己ベスト・記録証の履歴。BGM や表示などの端末の設定は分けない。
+// 受付（night.js が保存する CiDAO の参加トークン）の会員IDを鍵の後ろに付ける。受付していないときは元の鍵＝「ゲスト」の分
+function currentMetaLogin() {
+  try {
+    const tok = localStorage.getItem("cbi-meta-cidao-token-v1");
+    if (!tok) return null;
+    const body = tok.split(".")[0].replace(/-/g, "+").replace(/_/g, "/");
+    const p = JSON.parse(decodeURIComponent(escape(atob(body + "===".slice((body.length + 3) % 4)))));
+    if (!p || !p.uid || (p.exp && p.exp < Date.now())) return null;
+    return { uid: String(p.uid), nick: String(p.nick || "") };
+  } catch (e) { return null; }
+}
+function userScopedKey(base) {
+  const l = currentMetaLogin();
+  return l ? base + "@" + l.uid : base;
+}
 let pieces = loadPieces();           // { 文化財index: 獲得日時ISO文字列 }
+// 受付が替わったら（night.js が "cbi-login-changed" を送る）、その人の分を読み込み直す。ページは読み直さない（3Dを途切れさせない）
+function reloadUserData() {
+  pieces = loadPieces();
+  try { renderPuzzle(); } catch (e) {}
+  try { refreshAllPieceMarks(); } catch (e) {}
+  try { updateCertButton(); } catch (e) {}
+  try { if (typeof miniMapApi !== "undefined" && miniMapApi) miniMapApi.refreshPieces(); } catch (e) {}
+  const l = currentMetaLogin();
+  try { showPickResult("🏛 ずかん：" + (l ? l.nick + " さん" : "ゲスト") + "の記録（" + pieceTotal() + "/" + (BUNKAZAI.length || 50) + "）に切り替えました", 3000); } catch (e) {}
+}
+window.addEventListener("cbi-login-changed", reloadUserData);
 let desigFilterVal = "all";
 
 function loadPieces() {
   try {
-    const raw = localStorage.getItem(PUZZLE_STORAGE_KEY);
+    const raw = localStorage.getItem(userScopedKey(PUZZLE_STORAGE_KEY));
     const data = raw ? JSON.parse(raw) : {};
     return (data && typeof data === "object" && !Array.isArray(data)) ? data : {};
   } catch (e) { return {}; }
 }
 function savePieces() {
-  try { localStorage.setItem(PUZZLE_STORAGE_KEY, JSON.stringify(pieces)); } catch (e) {}
+  try { localStorage.setItem(userScopedKey(PUZZLE_STORAGE_KEY), JSON.stringify(pieces)); } catch (e) {}
 }
 function pieceTotal() { return Object.keys(pieces).length; }
 
@@ -3712,13 +3740,13 @@ function renderTimeline() {
 // ---- クイズ成績の記録（端末内LocalStorageのみ・共有されない）----
 const QUIZ_LOG_KEY = "cbi-meta-quiz-log-v1";
 function loadQuizLog() {
-  try { return JSON.parse(localStorage.getItem(QUIZ_LOG_KEY)) || []; } catch (e) { return []; }
+  try { return JSON.parse(localStorage.getItem(userScopedKey(QUIZ_LOG_KEY))) || []; } catch (e) { return []; }
 }
 function recordQuizAnswer(mode, level, siteName, q, sel, ok) {
   try {
     const log = loadQuizLog();
     log.push({ t: Date.now(), mode: mode, level: level, name: siteName, q: q.q, sel: sel, a: q.a, ok: ok });
-    localStorage.setItem(QUIZ_LOG_KEY, JSON.stringify(log.slice(-500))); // 直近500問まで保持
+    localStorage.setItem(userScopedKey(QUIZ_LOG_KEY), JSON.stringify(log.slice(-500))); // 直近500問まで保持
   } catch (e) {}
 }
 const LEVEL_LABELS = { beginner: "🔰初級", intermediate: "🥈中級", advanced: "🥇上級", classic: "🎲おまかせ" };
@@ -3760,7 +3788,7 @@ function renderQuizRecord() {
     html += '<p class="quizNote" style="margin-top:10px;">まちがえた問題はありません。全問正解です！🎉</p>';
   }
   html += '<button class="quizBtn" style="margin-top:10px;" onclick="renderQuizStart()">← もどる</button>' +
-    '<button class="quizBtn" onclick="if(confirm(\'クイズの成績記録をすべて消します。よろしいですか？\')){localStorage.removeItem(QUIZ_LOG_KEY);renderQuizRecord();}">🗑 記録を消す</button>';
+    '<button class="quizBtn" onclick="if(confirm(\'クイズの成績記録をすべて消します。よろしいですか？\')){localStorage.removeItem(userScopedKey(QUIZ_LOG_KEY));renderQuizRecord();}">🗑 記録を消す</button>';
   body.innerHTML = html;
 }
 
@@ -4167,7 +4195,7 @@ function openQuizRecordFromModal() {
 
 // ---- 印西文化財マイスター認定証（ピース50枚達成で発行）----
 const CERT_KEY = "cbi-meta-cert-v1";
-function loadCert() { try { return JSON.parse(localStorage.getItem(CERT_KEY)); } catch (e) { return null; } }
+function loadCert() { try { return JSON.parse(localStorage.getItem(userScopedKey(CERT_KEY))); } catch (e) { return null; } }
 function updateCertButton() {
   const has = !!loadCert() || (BUNKAZAI.length > 0 && pieceTotal() === BUNKAZAI.length);
   document.getElementById("zukanCertBtn").style.display = has ? "block" : "none";
@@ -4178,7 +4206,7 @@ function issueCert() {
   if (pieceTotal() !== BUNKAZAI.length) return; // 50枚達成者のみ発行できる
   const now = new Date(); // 達成日はローカル（日本）時間で記録する（toISOStringはUTCで日付がずれる）
   const cert = { name: name, date: now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0") };
-  localStorage.setItem(CERT_KEY, JSON.stringify(cert));
+  localStorage.setItem(userScopedKey(CERT_KEY), JSON.stringify(cert));
   document.getElementById("completeModal").classList.remove("show");
   showCert();
 }
@@ -4612,7 +4640,7 @@ function ttAbort() {
   showPickResult("タイムトライアルを中止しました。", 4000);
 }
 function ttLoadBest() {
-  try { return JSON.parse(localStorage.getItem("cbi-meta-tt-best-v1")) || {}; } catch (e) { return {}; }
+  try { return JSON.parse(localStorage.getItem(userScopedKey("cbi-meta-tt-best-v1"))) || {}; } catch (e) { return {}; }
 }
 function ttDistToNext() {
   const b = BUNKAZAI[ttCourse[ttPos]];
@@ -4667,7 +4695,7 @@ async function ttFinish(clientElapsedMs) {
   const isBest = !best[courseKey] || elapsedMs < best[courseKey];
   if (isBest) {
     best[courseKey] = Math.round(elapsedMs);
-    try { localStorage.setItem("cbi-meta-tt-best-v1", JSON.stringify(best)); } catch (e) {}
+    try { localStorage.setItem(userScopedKey("cbi-meta-tt-best-v1"), JSON.stringify(best)); } catch (e) {}
   }
   const now = new Date();
   const dateStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
@@ -4716,13 +4744,13 @@ async function ttFinish(clientElapsedMs) {
 // ゴール直後にしか証明書を出せないと、保存し忘れた人が記録IDを失うため
 const TT_HISTORY_KEY = "cbi-meta-tt-history-v1";
 function ttLoadHistory() {
-  try { return JSON.parse(localStorage.getItem(TT_HISTORY_KEY)) || []; } catch (e) { return []; }
+  try { return JSON.parse(localStorage.getItem(userScopedKey(TT_HISTORY_KEY))) || []; } catch (e) { return []; }
 }
 function ttPushHistory(rec) {
   try {
     const h = ttLoadHistory();
     h.unshift(rec);
-    localStorage.setItem(TT_HISTORY_KEY, JSON.stringify(h.slice(0, 20)));
+    localStorage.setItem(userScopedKey(TT_HISTORY_KEY), JSON.stringify(h.slice(0, 20)));
   } catch (e) {}
 }
 function ttShowHistory() {
@@ -6448,7 +6476,7 @@ try {
 <script src="vs-race.js?v=20260913-5"></script>
 <script src="race-radar.js?v=20260913-2"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
-<script src="night.js?v=20260913-1"></script>
+<script src="night.js?v=20260913-2"></script>
 <script src="musashiya.js?v=20260913-25"></script>
 </body>
 </html>
