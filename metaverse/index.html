@@ -2337,7 +2337,8 @@ function padKindForHelp() {
   for (const p of pads) {
     if (!p) continue;
     const id = String(p.id).toLowerCase();
-    if (/dualshock|dualsense|playstation|wireless controller|054c/.test(id)) return "ps";
+    // 純正 Xbox を Bluetooth でつなぐと「Xbox Wireless Controller」になり「wireless controller」を含むので、xbox／045e は PS から除く（2026-09-14）
+    if (/dualshock|dualsense|playstation|054c/.test(id) || (/wireless controller/.test(id) && !/xbox|045e/.test(id))) return "ps";
     if (/xbox|gamesir|xinput|045e|standard gamepad/.test(id)) return "xbox";
   }
   return "ps";
@@ -2345,7 +2346,7 @@ function padKindForHelp() {
 // 決定ボタンの番号（閉じるはもう一方）。PS 系は ○（1）、Xbox 配列は A（0）。判定は padKindForHelp と同じで、どちらでもなければ従来どおり 1
 function padOkIndex(pad) {
   const id = String(pad && pad.id).toLowerCase();
-  if (/dualshock|dualsense|playstation|wireless controller|054c/.test(id)) return 1;
+  if (/dualshock|dualsense|playstation|054c/.test(id) || (/wireless controller/.test(id) && !/xbox|045e/.test(id))) return 1;
   if (/xbox|gamesir|xinput|045e|standard gamepad/.test(id)) return 0;
   return 1;
 }
@@ -6501,7 +6502,7 @@ try {
 <script src="race-radar.js?v=20260913-2"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260913-2"></script>
-<script src="controls-guide.js?v=20260914-2"></script>
-<script src="musashiya.js?v=20260914-2"></script>
+<script src="controls-guide.js?v=20260914-3"></script>
+<script src="musashiya.js?v=20260914-3"></script>
 </body>
 </html>

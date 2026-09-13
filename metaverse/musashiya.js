@@ -877,7 +877,8 @@
     for (const p of pads) {
       if (!p) continue;
       const id = String(p.id).toLowerCase();
-      if (/dualshock|dualsense|playstation|wireless controller|054c/.test(id)) return "ps";
+      // 純正 Xbox を Bluetooth でつなぐと「Xbox Wireless Controller」になるので、xbox／045e は PS から除く（2026-09-14）
+      if (/dualshock|dualsense|playstation|054c/.test(id) || (/wireless controller/.test(id) && !/xbox|045e/.test(id))) return "ps";
       if (/xbox|gamesir|xinput|045e|standard gamepad/.test(id)) return "xbox";
       return "other";
     }

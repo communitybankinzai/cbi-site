@@ -7261,6 +7261,21 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "操作説明の図をコントローラーの形（左右対称／Xbox型）に自動対応＋純正Xbox(Bluetooth)のPS誤判定修正 0.25時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/controls-guide.js（detectLayout・layoutInfo・図の形の切替と記憶・isPsId）",
+            "site/metaverse/index.html（padKindForHelp・padOkIndex の PS 判定）",
+            "site/metaverse/musashiya.js（padKind の PS 判定）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.25,
+          "partnerApproved": true,
+          "note": "中司さん「スティック配置が違う」→会場の GameSir T3 Lite は左右対称と確認（3択）→「Xbox型で配置が異なるものは認識して適切な画面を」→ XInput モードは識別名で見分けられないことを説明し『自動＋手で切替・記憶』に決定。検証（ローカル・仮の識別名）：DualSense＝PS・左右対称・決定1、Xbox Wireless Controller(045e)＝Xbox・Xbox型・決定0（以前は PS 誤判定）、XInput一般名＝左右対称＋切替表示→Xbox型を選ぶと再読み込み後も保持、スクショで図の切替を確認。会場PCの実際の識別名は未確認（plans）。hours は前回記録 167,036 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 192,127 / cost: $24.31"
+        },
+        {
+          "date": "2026-09-14",
           "title": "操作のしかたを全モードへ展開（ほかのモード用の声4本）＋Xbox配列の A/B 修正 0.46時間",
           "category": "実装",
           "outputs": [
@@ -7776,7 +7791,7 @@
           "title": "🎮 「操作のしかた」ポップアップを会場PC（本番3D込み・GameSir T3 Lite）で目視確認する",
           "category": "保守",
           "priority": "中",
-          "note": "2026-09-13 実装。ローカル検証はブラウザペイン非表示でスクショ1枚のみ。確認点：(1) 武蔵屋めぐりの開始後、街並みの読み込み中に自動で出るか（2人目以降も） (2) 白鳥の傾きの向き（RB＝右の翼が下がる）と上昇・下降の見え方 (3) ずんだもんの声の音量と白鳥の湖（読み上げ中は小さくなる） (4) 読み込めたら A でそのままスタートするか (5) PSコントローラーをつないだとき表記と声が ○／□／R2 に変わるか (6) 2026-09-14 追加：武蔵屋以外のモード（文化財めぐり等）で ≡ 1秒長押しで開くか・手順7／8がほかのモード用の声になるか (7) GameSir で A＝精霊ゲット、B＝閉じるになっているか（Xbox 配列の A/B を入れ替えた）。直すときは controls-guide.js（動きは DEMO、見る向きは VIEW）、文は assets/narration/controls-guide.json＋build_controls_voicevox.py で音声を作り直す。"
+          "note": "2026-09-13 実装。ローカル検証はブラウザペイン非表示でスクショ1枚のみ。確認点：(1) 武蔵屋めぐりの開始後、街並みの読み込み中に自動で出るか（2人目以降も） (2) 白鳥の傾きの向き（RB＝右の翼が下がる）と上昇・下降の見え方 (3) ずんだもんの声の音量と白鳥の湖（読み上げ中は小さくなる） (4) 読み込めたら A でそのままスタートするか (5) PSコントローラーをつないだとき表記と声が ○／□／R2 に変わるか (6) 2026-09-14 追加：武蔵屋以外のモード（文化財めぐり等）で ≡ 1秒長押しで開くか・手順7／8がほかのモード用の声になるか (7) GameSir で A＝精霊ゲット、B＝閉じるになっているか（Xbox 配列の A/B を入れ替えた） (8) 2026-09-14 追加：操作説明の図の下（または🩺診断の「機種：」）に出る GameSir の識別名を記録し、図の形が左右対称で出るか確認する（XInput モードなら「図の形」で左右対称を選んでおく）。直すときは controls-guide.js（動きは DEMO、見る向きは VIEW）、文は assets/narration/controls-guide.json＋build_controls_voicevox.py で音声を作り直す。"
         },
         {
           "due": "2026-09-19",

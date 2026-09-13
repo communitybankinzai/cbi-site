@@ -5,7 +5,7 @@
 // 文面と声：assets/narration/controls-guide.json、音声は assets/narration/build_controls_voicevox.py（VOICEVOX:ずんだもん・クレジット必須）
 (function () {
   "use strict";
-  const VER = "20260914-2";
+  const VER = "20260914-3";
   // 声と手順データの版。文を変えて音声を作り直したときだけ上げる（上げると端末に保存済みの声も取り直しになる。JS を直しただけでは上げない）
   const VOICE_VER = "20260913-1";
   // 手順データ（controls-guide.json）の版。JSON を変えたら必ず上げる（上げないと端末に保存済みの古い JSON が使われ続ける。2026-09-14 実際に起きた）
@@ -61,6 +61,8 @@
     "#cgModal .cgLive{position:absolute;left:8px;top:8px;background:rgba(14,34,56,.75);border-radius:6px;padding:3px 8px;font-size:13px}" +
     "#cgModal .cgSide{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}" +
     "#cgModal .cgPad svg{width:100%;height:auto;display:block}" +
+    "#cgModal .cgLayout{font-size:12px;color:#9fb6cc;display:flex;align-items:center;gap:6px;flex-wrap:wrap}" +
+    "#cgModal .cgLayout button{font-size:12px;padding:2px 8px}" +
     "#cgModal .cgStepTitle{font-size:20px;font-weight:bold;color:#7fc8ff}" +
     "#cgModal .cgSub{font-size:19px;line-height:1.6;min-height:4.8em}" +
     "#cgModal .cgNav{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}" +
@@ -93,7 +95,7 @@
         '<button type="button" data-act="close" title="とじる（Esc）">✕</button></div>' +
       '<div class="cgMain">' +
         '<div class="cgStage"><div class="cgStageMsg">鳥を よみこみ中…</div><div class="cgLive" hidden>🎮 コントローラーで操作中</div></div>' +
-        '<div class="cgSide"><div class="cgPad"></div><div class="cgStepTitle"></div><div class="cgSub"></div></div>' +
+        '<div class="cgSide"><div class="cgPad"></div><div class="cgLayout"></div><div class="cgStepTitle"></div><div class="cgSub"></div></div>' +
       "</div>" +
       '<div class="cgNav"><button type="button" data-act="prev">◀ まえ</button><span class="cgDots"></span><button type="button" data-act="next">つぎ ▶</button>' +
         '<button type="button" data-act="replay">🔊 もう一度</button><span style="font-size:12px;color:#9fb6cc">十字キーの ←→ でも えらべます</span></div>' +
@@ -109,9 +111,29 @@
     for (const p of pads) {
       if (!p) continue;
       const id = String(p.id).toLowerCase();
-      return /dualshock|dualsense|playstation|wireless controller|054c/.test(id) ? "ps" : "xbox";
+      return isPsId(id) ? "ps" : "xbox";
     }
     return "xbox";
+  }
+  // PS 系か。純正 Xbox を Bluetooth でつなぐと「Xbox Wireless Controller」になり「wireless controller」を含むので、xbox／045e は除く
+  function isPsId(id) { return /dualshock|dualsense|playstation|054c/.test(id) || (/wireless controller/.test(id) && !/xbox|045e/.test(id)); }
+  // ---- 図の形（2026-09-14 中司さん「Xbox型で配置が異なるものがあるなら、それを認識して適切なコントローラーの画面を」）----
+  // sym＝左右対称（十字キー左上・スティック下に2本：PS・GameSir T3 Lite）、asym＝Xbox型（左スティック左上・十字キー左下）。
+  // Windows の XInput（PC）モードでは純正 Xbox も GameSir も「Xbox 360 Controller (XInput STANDARD GAMEPAD)」になり見分けられない。
+  // そのときは端末に記憶した形（無ければ左右対称＝会場の GameSir）を使い、操作説明の中で切り替えられるようにする
+  const LAYOUT_KEY = "cbi-meta-pad-layout-v1";
+  function detectLayout(id) {
+    if (isPsId(id)) return "sym";
+    if (/gamesir/.test(id)) return "sym";                                   // GameSir（Bluetooth 等では名前が見える）
+    if (/045e|xbox wireless|xbox one|xbox series|xbox elite/.test(id)) return "asym"; // Microsoft 純正（製造元番号 045e）
+    return null;                                                            // XInput の一般名など：見分けられない
+  }
+  function layoutInfo() {
+    const p = firstPad(), id = p ? String(p.id).toLowerCase() : "";
+    const auto = p ? detectLayout(id) : null;
+    let saved = null;
+    try { saved = localStorage.getItem(LAYOUT_KEY); } catch (e) {}
+    return { layout: auto || (saved === "asym" ? "asym" : "sym"), auto: !!auto, id: p ? String(p.id) : "" };
   }
   function firstPad() {
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -120,13 +142,14 @@
   }
 
   // ---- コントローラーの図（SVG）。data-k＝ボタン名、data-knob＝スティック、data-fill＝トリガーの押し込み量 ----
-  function padSvg(kind) {
+  function padSvg(kind, layout) {
     const ps = kind === "ps";
     const face = ps ? { Y: ["△", "#3fbf8f"], X: ["□", "#e27bb7"], B: ["○", "#e5534b"], A: ["×", "#5b8def"] }
       : { Y: ["Y", "#e6c229"], X: ["X", "#3b82f6"], B: ["B", "#e5534b"], A: ["A", "#3fae49"] };
     const L = ps ? { LT: "L2", RT: "R2", LB: "L1", RB: "R1", MENU: "OPT", VIEW: "SH" } : { LT: "LT", RT: "RT", LB: "LB", RB: "RB", MENU: "≡", VIEW: "⧉" };
-    // 配置は Xbox 配列でも左右対称（十字キーが左上・スティックが下に2本）。会場の GameSir T3 Lite がこの形（2026-09-14 中司さん「スティック配置が違う」）
-    const ls = [150, 172], dp = [108, 112], rs = [250, 172], fc = [292, 112];
+    // 形は layout で決める（sym＝左右対称：会場の GameSir T3 Lite・PS、asym＝Xbox型）。2026-09-14 中司さん「スティック配置が違う」
+    const asym = layout === "asym";
+    const ls = asym ? [108, 112] : [150, 172], dp = asym ? [150, 172] : [108, 112], rs = [250, 172], fc = [292, 112];
     const trig = (k, x) => '<g class="k" data-k="' + k + '"><rect class="sh" x="' + x + '" y="6" width="74" height="30" rx="12"/>' +
       '<rect class="fill" data-fill="' + k + '" x="' + (x + 3) + '" y="33" width="68" height="0" rx="4"/><text x="' + (x + 37) + '" y="21">' + L[k] + "</text></g>";
     const bump = (k, x) => '<g class="k" data-k="' + k + '"><rect class="sh" x="' + x + '" y="42" width="92" height="18" rx="9"/><text x="' + (x + 46) + '" y="51" style="font-size:13px">' + L[k] + "</text></g>";
@@ -144,7 +167,17 @@
       stick("LS", ls) + stick("RS", rs) + dpad + fb("Y", 0, -26) + fb("X", -26, 0) + fb("B", 26, 0) + fb("A", 0, 26) + small("VIEW", 172) + small("MENU", 228) +
       "</svg>";
   }
-  function renderPad() { $(".cgPad").innerHTML = padSvg(st.kind); markTargets(); }
+  function renderPad() {
+    const L = layoutInfo();
+    st.layout = L.layout;
+    $(".cgPad").innerHTML = padSvg(st.kind, L.layout);
+    // 見分けられないときだけ、形を手で選べるようにする（選んだ形はこの端末に記憶）
+    $(".cgLayout").innerHTML = (L.auto ? "" :
+      '図の形：<button type="button" data-layout="sym" class="' + (L.layout === "sym" ? "sel" : "") + '">左右対称</button>' +
+      '<button type="button" data-layout="asym" class="' + (L.layout === "asym" ? "sel" : "") + '">Xbox型</button> ') +
+      '<span class="cgPadId">' + (L.id ? "機種：" + esc(L.id.slice(0, 48)) + (L.auto ? "（自動で判定）" : "（自動では見分けられない種類）") : "コントローラー未接続") + "</span>";
+    markTargets();
+  }
   function markTargets() {
     const s = st.steps && st.steps[st.idx];
     const want = s ? variant(s).pads : [];
@@ -365,6 +398,7 @@
     if (p) {
       const k = padKind();
       if (k !== st.kind) { st.kind = k; renderPad(); playStep(st.idx); }
+      else if (layoutInfo().layout !== st.layout) renderPad(); // 別の形のコントローラーに差し替えたとき
     }
     const live = liveInput(p);
     if (live) st.liveUntil = now + 1500;
@@ -435,6 +469,7 @@
     const b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.bird) { showBird(b.dataset.bird); return; }
+    if (b.dataset.layout) { try { localStorage.setItem(LAYOUT_KEY, b.dataset.layout); } catch (e) {} renderPad(); return; }
     const act = b.dataset.act;
     if (act === "close") close();
     else if (act === "prev") playStep(st.idx - 1);
