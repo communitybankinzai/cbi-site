@@ -11,7 +11,7 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13t";
+  const MSY_VERSION = "2026-09-13u";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -115,6 +115,7 @@
 
   const css = document.createElement("style");
   css.textContent =
+    "body.msyOn #topLeftBar{z-index:40}" + // めぐり中はタイムHUD（z 36）の下にメニューが隠れて⚙設定が見えない（2026-09-13 中司さん）
     "#msyModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:130}" +
     "#msyModal.show{display:flex}" +
     "#msyModal .msyBox{background:#10233a;color:#fff;border:2px solid #ffd166;border-radius:16px;padding:18px 20px;width:min(560px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.5)}" +
