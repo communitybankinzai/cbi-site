@@ -11,7 +11,7 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13n";
+  const MSY_VERSION = "2026-09-13o";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -205,13 +205,15 @@
   // 通りに南面する建物なので、南へ約50mの地点から北（武蔵屋）を向く。高さは地面＋14m
   // （白鳥で飛ぶ飛行モードは地表＋12mより下へ下がれないため、その少し上）。地面の高さは3D街並みから取り、
   // 取れないとき（検証モード・読み込み待ちが長いとき）は楕円体高60m（木下の低地の目安）を使う
-  const HOME_BACK_DEG = 0.00045, HOME_CLEARANCE_M = 3, HOME_FALLBACK_H = 45, FLIGHT_CLEARANCE_M = 3;
+  // 開始は白鳥の郷の上空・地上500m（2026-09-13 中司さん「高度500m位に」。地上3mは低すぎて景色が見えなかった）。
+  // 地面が取れないときは楕円体高 540m（白鳥の郷の地表≒40m）
+  const HOME_BACK_DEG = 0.00045, HOME_CLEARANCE_M = 500, HOME_FALLBACK_H = 540, FLIGHT_CLEARANCE_M = 3, START_PITCH_DEG = -14;
   function homeSpot() { return { lon: SWAN_HOME.lon, lat: SWAN_HOME.lat }; } // スタート地点＝白鳥の郷
   function flyHome(height) {
     const s = homeSpot();
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(s.lon, s.lat, height),
-      orientation: { heading: bearingRad(s, station()), pitch: Cesium.Math.toRadians(-6), roll: 0 }, // 駅の方を向く
+      orientation: { heading: bearingRad(s, station()), pitch: Cesium.Math.toRadians(START_PITCH_DEG), roll: 0 }, // 駅の方を向く
       duration: 1.5,
     });
     state.homeHeight = height;
@@ -298,10 +300,10 @@
     if (state.settled || !state.waiting) return;
     state.settled = true;
     const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
-    if (carto.height - g <= HOME_CLEARANCE_M + 3) return;
+    if (Math.abs(carto.height - g - HOME_CLEARANCE_M) <= 30) return; // 仮の高さとの差が小さければそのまま
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(Cesium.Math.toDegrees(carto.longitude), Cesium.Math.toDegrees(carto.latitude), g + HOME_CLEARANCE_M),
-      orientation: { heading: viewer.camera.heading, pitch: Cesium.Math.toRadians(-6), roll: 0 },
+      orientation: { heading: viewer.camera.heading, pitch: Cesium.Math.toRadians(START_PITCH_DEG), roll: 0 },
       duration: 1.2,
     });
   }

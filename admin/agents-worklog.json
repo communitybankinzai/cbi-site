@@ -7224,6 +7224,20 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "操作説明のコントローラー別読み替え＋武蔵屋めぐり開始高度500m 0.09時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（PAD_LABELS・helpGamepadHtml・読み込み版 20260913-15）",
+            "site/metaverse/musashiya.js（版 2026-09-13o）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.09,
+          "partnerApproved": false,
+          "note": "中司さん回答：試し聞きは少し遅れて話した（Keita は動く・遅延あり）／操作説明を T3 Lite 向けに読み替える／白鳥の郷の位置は合っている／高度500mに。検証モードで、偽のゲームパッドID（GameSir・Wireless Controller）で説明文が RB/RT/A/B/X/≡ と R1/R2/○/×/□/OPTIONS に切り替わること、開始高度の仮値 540m を確認。hours は前回記録 265,601 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 274,418 / cost: $113.90"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋めぐり おとなモードの写真なし表示（写真提供のお願い） 0.08時間",
           "category": "実装",
           "outputs": [
@@ -7506,13 +7520,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-09-19",
-          "title": "🦢 白鳥の郷（スタート地点）の座標を3Dで確認し、必要なら SWAN_HOME を直す",
-          "category": "実装",
-          "priority": "中",
-          "note": "musashiya.js の SWAN_HOME は国土地理院の住所検索「印西市笠神2373」の代表点（140.20665, 35.813423）。本番の3Dで観察小屋・田んぼの位置と合うか確認。ずれていれば位置修正モードで座標を取って差し替える。"
-        },
         {
           "due": "2026-09-19",
           "title": "✅ CiDAO案内スライド・スタッフ用A4手順書の文言を確認する（未登録者の登録手順・受付の流れが実機と合うか）",

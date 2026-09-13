@@ -2325,21 +2325,41 @@ const HELP_KEYBOARD =
   "見回す：画面を<b>ドラッグ</b><br>" +
   "スポット看板を<b>クリック</b>で説明表示<br>" +
   "🧩 文化財に<b>80m以内</b>まで近づくとパズルピース獲得";
-const HELP_GAMEPAD =
-  "<b>🎮 コントローラー操作</b><br>" +
-  "移動：<b>左スティック</b> ／ 見回す：<b>右スティック</b><br>" +
-  "上昇・下降：<b>R2</b> ／ <b>L2</b>（十字キー上下でも）<br>" +
-  "飛行中は<b>後退できません</b>（旋回して向きを変える）<br>" +
-  "速く飛ぶ：<b>R1</b>を押している間（<b>□</b>で速度切替）<br>" +
-  "精霊をゲット：<b>○</b> ／ 閉じる：<b>×</b><br>" +
-  "主要施設へ飛ぶ：<b>十字キー左右</b><br>" +
-  "勝手に動くとき：手を離して<b>OPTIONS</b>";
+// ボタン名はつないでいるコントローラーの種類で変える（2026-09-13 中司さん「GameSir T3 Lite には○ボタンがない」）。
+// PlayStation 系＝R1/R2/○/×/□/OPTIONS、Xbox 配列（GameSir T3 Lite・Xbox 360/One 等）＝RB/RT/A/B/X/≡。ボタン番号は標準配列で同じ
+const PAD_LABELS = {
+  ps:   { R2: "R2", L2: "L2", R1: "R1", SQ: "□", O: "○", X: "×", OPT: "OPTIONS" },
+  xbox: { R2: "RT", L2: "LT", R1: "RB", SQ: "X", O: "A", X: "B", OPT: "≡（メニュー）" },
+};
+function padKindForHelp() {
+  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+  for (const p of pads) {
+    if (!p) continue;
+    const id = String(p.id).toLowerCase();
+    if (/dualshock|dualsense|playstation|wireless controller|054c/.test(id)) return "ps";
+    if (/xbox|gamesir|xinput|045e|standard gamepad/.test(id)) return "xbox";
+  }
+  return "ps";
+}
+function helpGamepadHtml(kind) {
+  const L = PAD_LABELS[kind] || PAD_LABELS.ps;
+  return "<b>🎮 コントローラー操作</b><br>" +
+    "移動：<b>左スティック</b> ／ 見回す：<b>右スティック</b><br>" +
+    "上昇・下降：<b>" + L.R2 + "</b> ／ <b>" + L.L2 + "</b>（十字キー上下でも）<br>" +
+    "飛行中は<b>後退できません</b>（旋回して向きを変える）<br>" +
+    "速く飛ぶ：<b>" + L.R1 + "</b>を押している間（<b>" + L.SQ + "</b>で速度切替）<br>" +
+    "精霊をゲット：<b>" + L.O + "</b> ／ 閉じる：<b>" + L.X + "</b><br>" +
+    "主要施設へ飛ぶ：<b>十字キー左右</b><br>" +
+    "勝手に動くとき：手を離して<b>" + L.OPT + "</b>";
+}
+const HELP_GAMEPAD = helpGamepadHtml("ps"); // 互換のため残す（他所から参照されている場合）
 let helpBoxMode = "";
 function updateHelpBox(hasPad) {
-  const want = hasPad ? "pad" : "key";
+  const kind = hasPad ? padKindForHelp() : "";
+  const want = hasPad ? "pad:" + kind : "key";
   if (helpBoxMode === want) return;
   helpBoxMode = want;
-  document.getElementById("helpBody").innerHTML = hasPad ? HELP_GAMEPAD : HELP_KEYBOARD;
+  document.getElementById("helpBody").innerHTML = hasPad ? helpGamepadHtml(kind) : HELP_KEYBOARD;
 }
 updateHelpBox(false);
 
@@ -6411,6 +6431,6 @@ try {
 <script src="race-radar.js?v=20260913-1"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260910-2"></script>
-<script src="musashiya.js?v=20260913-14"></script>
+<script src="musashiya.js?v=20260913-15"></script>
 </body>
 </html>
