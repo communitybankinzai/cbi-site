@@ -11,7 +11,7 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13w";
+  const MSY_VERSION = "2026-09-13x";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -485,12 +485,13 @@
       hudNext.textContent = "スタート準備中… まず " + st.name + " へ";
       return;
     }
-    if (!L.startMs) L.startMs = now;
+    if (!L.startMs) { L.startMs = now; srvStart(); } // サーバー計測もここから（タイムはサーバー時計で確定）
     hudTime.textContent = "⏱ " + ttFormat(now - L.startMs);
     hudNext.innerHTML = "つぎ（1/" + (ttCourse.length + 1) + "）: " + esc(st.name) + '<br><span class="ttDir">' + dir.word + "（" + dir.compass + "）</span> 約" +
       (dir.dist >= 1000 ? (dir.dist / 1000).toFixed(1) + "km" : Math.round(dir.dist) + "m");
     if (dir.dist <= STATION_RADIUS_M) {
       clearInterval(state.leg0Timer); state.leg0Timer = null;
+      srvCheckpoint(1);
       const startMs = L.startMs; state.leg0 = null;
       showStationPop();
       ttStartMs = startMs;      // 時間は続き
@@ -566,7 +567,9 @@
       '<p style="font-size:13px;color:#cfe6ff;margin:0 0 10px">' + esc(SWAN_HOME.name) + " → " + esc(station().name) + " → " + names + " → 武蔵屋</p>";
     pop.className = "show " + state.age;
     pop.innerHTML = popHtml(state.home, head, extra) +
-      '<div class="msyRow"><button type="button" data-act="close">とじる</button><button type="button" class="go" data-act="again">🔁 もういちど（ちがう3か所）</button></div>';
+      '<div id="msyRank" class="msyRank"><p class="msyRankNote">記録を送っています…</p></div>' +
+      '<div class="msyRow"><button type="button" data-act="close">とじる</button><button type="button" data-act="nextperson">👥 次の人に交代</button><button type="button" class="go" data-act="again">🔁 もういちど</button></div>' +
+      '<p style="font-size:12px;color:#ffd166;margin:8px 0 0">次の人が遊ぶときは「👥 次の人に交代」で受付を替えてください。記録は受付の名前で残ります</p>';
     state.popFinal = true;
     clearTimeout(state.popTimer); // ゴールの画面は消さずに残す
     padArm();
@@ -702,7 +705,95 @@
     if (!b) return;
     if (b.dataset.act === "next" || b.dataset.act === "close") hidePop();
     if (b.dataset.act === "again") openModal();
+    if (b.dataset.act === "nextperson") { // 受付（右上のチップ）を開いて、次の人の会員証QR・表示名で照合してもらう
+      hidePop(); speakStop();
+      const chip = document.getElementById("nightEntryChip");
+      if (chip) chip.click();
+    }
   });
+
+  // ---- 記録とランキング（2026-09-13 中司さん：ゴールで記録をランキングに反映・公開。順位は平均の速さ・名前は受付の表示名） ----
+  // CiDAO の /api/metaverse-tt（course_key "musashiya"）。受付した会員の署名トークンで start し、名前はサーバーが表示名で固定する。
+  // 経路（駅・文化財3か所・武蔵屋）を送り、コースの長さはサーバーが計算する。受付していないときは記録しない
+  const RANK_PAGE = "musashiya-ranking.html";
+  const srv = { trialId: null, queue: Promise.resolve(), ok: false, name: "", routeM: 0, failed: "" };
+  window.msySrv = srv; // 検証用
+  const apiUrl = () => (typeof TT_API !== "undefined" ? TT_API : "https://cidao.vercel.app/api/metaverse-tt");
+  function post(payload) {
+    return fetch(apiUrl(), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+      .then((r) => r.json().catch(() => ({})).then((j) => (r.ok ? j : Promise.reject(new Error(j.error || "HTTP " + r.status)))));
+  }
+  function routePoints() {
+    const st = station();
+    return [{ lat: st.lat, lon: st.lon, name: st.name }].concat(ttCourse.map((i) => ({ lat: BUNKAZAI[i].lat, lon: BUNKAZAI[i].lon, name: BUNKAZAI[i].name })));
+  }
+  function localRouteM() {
+    const pts = [{ lat: SWAN_HOME.lat, lon: SWAN_HOME.lon }].concat(routePoints());
+    let m = 0;
+    for (let i = 1; i < pts.length; i++) m += distM(pts[i - 1], pts[i]);
+    return Math.round(m);
+  }
+  function srvStart() {
+    srv.trialId = null; srv.ok = false; srv.failed = ""; srv.queue = Promise.resolve();
+    srv.routeM = localRouteM();
+    const login = typeof window.nightLogin === "function" ? window.nightLogin(1) : null;
+    if (!login || !login.token) { srv.failed = "受付がされていないため、今回の記録はランキングに残りません"; return; }
+    srv.name = login.nick;
+    srv.queue = post({ action: "start", courseKey: "musashiya", name: login.nick, ageKey: isKids() ? "kids" : "adult", token: login.token, route: routePoints() })
+      .then((d) => { srv.trialId = d.trialId; srv.ok = !!d.trialId; if (d.routeM) srv.routeM = d.routeM; })
+      .catch((e) => { srv.failed = "記録サーバーにつながりませんでした（" + e.message + "）"; });
+  }
+  function srvCheckpoint(pos) { // 到着順が入れ替わらないよう、直列に送る
+    srv.queue = srv.queue.then(() => {
+      if (!srv.ok || !srv.trialId) return null;
+      return post({ action: "checkpoint", trialId: srv.trialId, pos }).catch((e) => { srv.ok = false; srv.failed = "通過の記録に失敗しました（" + e.message + "）"; });
+    });
+  }
+  function srvFinish() {
+    srv.queue = srv.queue.then(() => {
+      if (!srv.ok || !srv.trialId) { renderRank(null); return null; }
+      return post({ action: "finish", trialId: srv.trialId })
+        .then((d) => renderRank(d))
+        .catch((e) => { srv.failed = "ゴールの記録に失敗しました（" + e.message + "）"; renderRank(null); });
+    });
+  }
+  const toKmh = (m, ms) => (m > 0 && ms > 0 ? Math.round((m / (ms / 1000)) * 3.6 * 10) / 10 : 0);
+  function rankListHtml(list) {
+    return "<b>今日のランキング（平均の速さ）</b>" +
+      (list.length
+        ? "<ol>" + list.map((r) => "<li" + (r.name === srv.name ? ' class="me"' : "") + ">" + esc(r.name) + "　時速 " + esc(r.speedKmh) + " km</li>").join("") + "</ol>"
+        : "<p>まだ記録がありません</p>") +
+      '<a href="' + RANK_PAGE + '" target="_blank" rel="noopener">🏆 ランキングのページを開く</a>';
+  }
+  function renderRank(d) {
+    const el = document.getElementById("msyRank");
+    if (!el) return;
+    if (!d) {
+      el.innerHTML = '<p class="msyRankNote">' + esc(srv.failed || "今回の記録はランキングに残りませんでした") + '</p><a href="' + RANK_PAGE + '" target="_blank" rel="noopener">🏆 ランキングのページを開く</a>';
+      return;
+    }
+    const speed = d.speedKmh || toKmh(srv.routeM, d.elapsedMs);
+    const km = ((d.routeM || srv.routeM) / 1000).toFixed(1);
+    let html = '<p class="msyRankMine">🏆 ' + esc(srv.name) + " さん：時速 <b>" + speed + " km</b>（" + km + " km を " + ttFormat(d.elapsedMs) + "）";
+    if (d.rank && d.rank.today) html += "<br>今日 <b>" + d.rank.today.rank + " 位</b>／" + d.rank.today.total + " 人中";
+    if (d.rank && d.rank.all) html += "　全期間 " + d.rank.all.rank + " 位／" + d.rank.all.total + " 人中";
+    if (d.flagged) html += '<br><span style="color:#ff9b8a">⚠ 記録に確認事項があるため、ランキングには載りません（事務局が確認します）</span>';
+    html += '</p><div class="msyRankList">今日のランキングを読み込み中…</div>';
+    el.innerHTML = html;
+    fetch(apiUrl() + "?period=today")
+      .then((r) => r.json())
+      .then((j) => { const box = el.querySelector(".msyRankList"); if (box) box.innerHTML = rankListHtml((j.ranking && j.ranking.musashiya) || []); })
+      .catch(() => { const box = el.querySelector(".msyRankList"); if (box) box.innerHTML = '<a href="' + RANK_PAGE + '" target="_blank" rel="noopener">🏆 ランキングのページを開く</a>'; });
+  }
+  const css2 = document.createElement("style");
+  css2.textContent =
+    "#msyPop .msyRank{margin-top:10px;border-top:1px solid #33506e;padding-top:8px;font-size:13px;line-height:1.6}" +
+    "#msyPop .msyRankMine b{color:#ffd166;font-size:17px}" +
+    "#msyPop .msyRankNote{color:#cfe6ff;margin:0 0 4px}" +
+    "#msyPop .msyRankList ol{margin:4px 0 6px;padding-left:1.6em}" +
+    "#msyPop .msyRankList li.me{color:#ffd166;font-weight:bold}" +
+    "#msyPop .msyRank a{color:#7fc8ff}";
+  document.head.appendChild(css2);
 
   // ---- タイムトライアルの差し替え（武蔵屋めぐり中だけ） ----
   function wrap(name, fn) {
@@ -714,6 +805,7 @@
   wrap("ttServerCheckpoint", function () {});
   wrap("ttSpiritPass", function (idx) {
     if (pieces[idx] === undefined) awardPiece(idx); // 通常の文化財めぐりと同じくピースも獲得
+    srvCheckpoint(ttPos + 2); // 駅＝1、文化財＝2〜4、武蔵屋＝5（ttPos は通過した地点の番号・この後で1増える）
     if (ttPos >= ttCourse.length - 1) return;     // 最後（武蔵屋）はゴールのポップアップで出す
     showPassPop(idx, ttPos + 1, ttCourse.length - 1);
   });
@@ -736,6 +828,7 @@
     ttHideCard();
     if (pieces[state.home] === undefined) awardPiece(state.home);
     showFinalPop(ms);
+    srvFinish();
   });
   (function () { // 中止（HUDの中止ボタン・モード切替など）
     const orig = window.ttAbort;

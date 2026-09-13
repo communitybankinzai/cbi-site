@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>武蔵屋めぐり ランキング | CBI３Dワールド印西</title>
+<meta name="description" content="CBI３Dワールド印西「武蔵屋めぐり」のランキング。白鳥の郷から千葉ニュータウン中央駅を通り、武蔵屋の近くの文化財3か所をめぐって武蔵屋へ。毎回コースが変わるため、平均の速さで順位を付けています。">
+<style>
+  :root { --bg:#0e1c2e; --panel:#15273d; --line:#2c4664; --text:#f2f6fb; --muted:#9fb6cc; --accent:#ffd166; --link:#7fc8ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Yu Gothic UI','Meiryo','Hiragino Sans','Noto Sans JP',sans-serif; line-height:1.6; }
+  main { max-width:760px; margin:0 auto; padding:20px 16px 40px; }
+  h1 { margin:0 0 4px; font-size:clamp(22px,4.5vw,32px); color:var(--accent); }
+  .lead { color:var(--muted); font-size:14px; margin:0 0 16px; }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px; }
+  .tabs button { font:inherit; font-size:15px; padding:8px 16px; border-radius:999px; border:2px solid var(--line); background:var(--panel); color:var(--text); cursor:pointer; }
+  .tabs button[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:#10233a; font-weight:bold; }
+  .tbl-wrap { overflow-x:auto; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+  table { width:100%; border-collapse:collapse; font-size:15px; }
+  th, td { padding:10px 12px; text-align:left; white-space:nowrap; }
+  th { color:var(--muted); font-weight:normal; font-size:13px; border-bottom:1px solid var(--line); }
+  tr + tr td { border-top:1px solid var(--line); }
+  td.rank { font-weight:bold; font-size:18px; color:var(--accent); width:3.5em; }
+  td.speed b { font-size:18px; }
+  .empty, .status { color:var(--muted); padding:16px; }
+  .note { color:var(--muted); font-size:12.5px; margin:14px 0 0; }
+  a { color:var(--link); }
+  .foot { margin-top:22px; font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>🏆 武蔵屋めぐり ランキング</h1>
+  <p class="lead">白鳥の郷 → 千葉ニュータウン中央駅 → 武蔵屋の近くの文化財3か所 → 武蔵屋。<br>
+    めぐる文化財は毎回かわり、コースの長さがちがうため、<b>平均の速さ（コースの長さ ÷ タイム）</b>で順位を付けています。</p>
+  <div class="tabs" role="group" aria-label="期間">
+    <button type="button" data-period="today" aria-pressed="true">今日</button>
+    <button type="button" data-period="event" aria-pressed="false" hidden>イベント</button>
+    <button type="button" data-period="month" aria-pressed="false">今月</button>
+    <button type="button" data-period="all" aria-pressed="false">全期間</button>
+  </div>
+  <div class="tbl-wrap" id="board"><p class="status">読み込み中…</p></div>
+  <p class="note">名前は、会場の受付で照合した CiDAO の表示名です（お子さんが保護者の登録で遊んだ場合は保護者の表示名）。同じ人は一番よい記録だけを載せています。<br>
+    上位10人まで。記録に確認事項がある場合は、事務局の確認が済むまで載りません。1分ごとに自動で更新します。</p>
+  <p class="foot"><a href="./?mode=musashiya">← 3Dワールドの武蔵屋めぐりへ</a>　／　Community Bank INZAI（CBI）　／　記録：CiDAO</p>
+</main>
+<script>
+(function () {
+  var API = "https://cidao.vercel.app/api/metaverse-tt";
+  var period = "today";
+  var board = document.getElementById("board");
+  var tabs = document.querySelectorAll(".tabs button");
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function fmt(ms) { var m = Math.floor(ms / 60000), s = Math.floor(ms % 60000 / 1000), d = Math.floor(ms % 1000 / 100); return m + ":" + String(s).padStart(2, "0") + "." + d; }
+  function render(list) {
+    if (!list.length) { board.innerHTML = '<p class="empty">この期間の記録はまだありません</p>'; return; }
+    board.innerHTML = "<table><thead><tr><th>順位</th><th>名前</th><th>平均の速さ</th><th>コース</th><th>タイム</th><th>日付</th></tr></thead><tbody>" +
+      list.map(function (r, i) {
+        return "<tr><td class=\"rank\">" + (i + 1) + "</td><td>" + esc(r.name) + "</td><td class=\"speed\">時速 <b>" + esc(r.speedKmh) + "</b> km</td><td>" +
+          (r.routeM ? (r.routeM / 1000).toFixed(1) + " km" : "—") + "</td><td>" + fmt(r.elapsedMs) + "</td><td>" + esc(r.date) + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  }
+  function load() {
+    fetch(API + "?period=" + encodeURIComponent(period), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (j) {
+        var evBtn = document.querySelector('[data-period="event"]');
+        if (j.event) { evBtn.hidden = false; evBtn.textContent = "🎪 " + j.event.name; }
+        render((j.ranking && j.ranking.musashiya) || []);
+      })
+      .catch(function (e) { board.innerHTML = '<p class="status">ランキングを読み込めませんでした（' + esc(e.message) + "）</p>"; });
+  }
+  tabs.forEach(function (b) {
+    b.addEventListener("click", function () {
+      period = b.getAttribute("data-period");
+      tabs.forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      board.innerHTML = '<p class="status">読み込み中…</p>';
+      load();
+    });
+  });
+  load();
+  setInterval(load, 60000);
+})();
+</script>
+</body>
+</html>

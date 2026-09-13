@@ -7224,6 +7224,24 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "武蔵屋めぐりのサーバー記録・速さランキング・公開ページ・次の人に交代 0.42時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/metaverse-tt/route.ts（course musashiya・経路検証・speedRank・period=today） commit 160e05c",
+            "C:/Repos/cidao src/app/admin/timetrial/page.tsx（コース名）",
+            "C:/Repos/cidao supabase/migrations/20260913120000_metaverse_tt_route.sql（適用済み）",
+            "site/metaverse/musashiya.js（版 2026-09-13x）",
+            "site/metaverse/musashiya-ranking.html（新規）",
+            "site/metaverse/index.html",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.42,
+          "partnerApproved": true,
+          "note": "中司さん指示「ゴールしたら記録をランキングに反映して公開」→ Q1 平均の速さ／Q2 ゴール画面＋公開ページ／Q3 受付の表示名、すべて推奨案で決定。本番APIで、不正な経路・受付なしの拒否、start→通過5→finish、速すぎる記録の flag、GET today のランキングと myRank を確認し、テスト行は削除。交代時の3D描画についての質問には、QR／表示名の照合はページを読み直さないので途切れないと回答。CiDAO の push は別セッションの layout.tsx 未コミットを --autostash で退避して実施。hours は前回記録 384,121 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 425,969 / cost: $238.08"
+        },
+        {
+          "date": "2026-09-13",
           "title": "2P武蔵屋レースの3か所ランダム化＋同じ寺の重複除外（1人用も）＋ナレーションの声を年齢別に（こども＝ずんだもん／おとな＝Keita） 0.24時間",
           "category": "実装",
           "outputs": [
