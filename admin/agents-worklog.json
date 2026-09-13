@@ -7224,6 +7224,20 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "2Pレースの武蔵屋コース追加（白鳥の郷→NT中央駅→3か所→武蔵屋）と武蔵屋イベントとの往復 0.20時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/vs-race.js（musashiya_vs・開始ボタンの判定・終了時の復帰）",
+            "site/metaverse/index.html（読み込み版 vs-race 20260913-2）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "中司さん指示「2Pモード時のスタートは白鳥の郷、ゴールは武蔵屋」。最初の実装は enableVsRace 内の applyMode(\"event\") でモードの印が消えて効かず、開始ボタンで先に判定する形に直した。検証モードで、武蔵屋イベント→2Pレースで musashiya_vs（白鳥の郷スタート・5CP）になること、終了で武蔵屋イベントに戻ることを確認。加速の質問には、既存の X（Xbox）／□（PS）押しっぱなし×4 と回答（ロールの LB/RB は変更なし）。hours は前回記録 339,980 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 360,412 / cost: $213.85"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋めぐり 到着画面の右寄せ＋「つぎへ」後もナレーション継続＋メニューがHUDに隠れる修正 0.07時間",
           "category": "実装",
           "outputs": [

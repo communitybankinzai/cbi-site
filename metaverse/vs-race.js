@@ -132,11 +132,16 @@
     const startButton = get("vsRaceBtn");
     if (startButton) {
       startButton.addEventListener("click", () => {
+        // 武蔵屋イベント（?mode=musashiya）から開いたときは、白鳥の郷スタート・武蔵屋ゴールのコースにする。
+        // enableVsRace が applyMode("event") を呼んでモードの印が消えるので、ここで先に判定する（2026-09-13）
+        const fromMusashiya = document.body.classList.contains("modeMusashiya");
+        race.returnMode = fromMusashiya ? "musashiya" : "";
         const url = new URL(location.href);
         url.searchParams.set("mode", "event");
         url.searchParams.set("race", "cultural-vs");
+        if (fromMusashiya) url.searchParams.set("course", "musashiya_vs");
         history.replaceState(null, "", url);
-        enableVsRace("cultural-vs");
+        enableVsRace("cultural-vs", fromMusashiya ? "musashiya_vs" : undefined);
       });
     }
 
@@ -214,7 +219,29 @@
         : fallback.slice()
     );
 
+    // 武蔵屋イベント用（2026-09-13 中司さん「2Pモード時のスタートは白鳥の郷、ゴールは武蔵屋にして」）。
+    // 1人用の武蔵屋めぐりと同じ順路（白鳥の郷 → 千葉NT中央駅 → 武蔵屋の近くの文化財3か所 → 武蔵屋）。文化財は固定
+    const bz = (typeof BUNKAZAI !== "undefined" && Array.isArray(BUNKAZAI)) ? BUNKAZAI : [];
+    const bzCp = (i, h) => (bz[i] ? { name: bz[i].name, lon: Number(bz[i].lon), lat: Number(bz[i].lat), height: h || 120 } : null);
+    const musashiyaCps = [
+      { name: "千葉ニュータウン中央駅", lon: 140.116119, lat: 35.799983, height: 150 },
+      bzCp(5, 120),   // 木下貝層
+      bzCp(42, 120),  // 上宿古墳
+      bzCp(17, 120),  // 馬込遺跡出土瓦塔（木下交流の杜）
+      bzCp(49, 110),  // 岩井家住宅主屋（旧武蔵屋店舗）＝ゴール
+    ].filter(Boolean);
+    const musashiyaCourse = musashiyaCps.length === 5 ? {
+      musashiya_vs: {
+        id: "musashiya_vs",
+        type: "fixed",
+        title: "🏠 武蔵屋レース（白鳥の郷 → NT中央駅 → 文化財3か所 → 武蔵屋）",
+        radius: 130,
+        start: { lon: 140.20665, lat: 35.813423, height: 300 }, // 本埜の白鳥の郷（1人用と同じ座標）
+        checkpoints: musashiyaCps
+      }
+    } : {};
     return {
+      ...musashiyaCourse,
       city_01: {
         id: "city_01",
         type: "fixed",
@@ -342,7 +369,7 @@
       p.groundGuardOff = p.viewer.scene.preUpdate.addEventListener(()=>keepAboveGround(p));
     });
 
-    const defaultCourse = race.mode === "vs" || race.mode === "tag" ? RACE_CONFIG.defaultCityCourse : RACE_CONFIG.defaultCourse;
+    let defaultCourse = race.mode === "vs" || race.mode === "tag" ? RACE_CONFIG.defaultCityCourse : RACE_CONFIG.defaultCourse;
     refreshCourseOptions(requestedCourseId || query.get("course") || defaultCourse);
     setCourse(ui.vsCourseSelect.value, false);
     startFrameLoop();
@@ -1289,7 +1316,12 @@
     const url = new URL(location.href);
     url.searchParams.delete("race");
     url.searchParams.delete("course");
+    if (race.returnMode === "musashiya") url.searchParams.set("mode", "musashiya");
     history.replaceState(null, "", url);
+    if (race.returnMode === "musashiya") {
+      race.returnMode = "";
+      setTimeout(() => { try { if (typeof applyMode === "function") applyMode("musashiya"); } catch (e) {} }, 0);
+    }
   }
 
   function clamp(value, min, max) {
