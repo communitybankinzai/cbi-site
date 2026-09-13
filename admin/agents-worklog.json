@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-10",
+  "updatedAt": "2026-09-13",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。 2026-08-22 以降: plans に status（進行中/待ち/保留）と blockedBy（待ちの理由）を追加。status 未設定は「進行中」扱いで、期限超過すると管理画面エージェントタブ先頭の「要対応」パネルに赤で出る。着手できない事情があるものだけ status:\"待ち\" にして blockedBy に解除条件を書く（忘れによる放置と区別するため）。",
   "categories": [
@@ -16,6 +16,15 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-09-13",
+          "title": "Map Tiles 管理画面の1日上限表示を 30,000 → 500,000 に修正 0.2時間",
+          "category": "保守",
+          "outputs": "cidao: src/app/admin/analytics/_components/MapTilesUsageSection.tsx（DAILY_QUOTA_BASELINE と注記文）／site/admin/changelog.json",
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "代表から「30000ではなく300000では」と指摘。scripts/gcp-maptiles-audit.ps1 で creators-map の割り当てを照会し、3D Tiles renderer requests（1日）の実効値が 500,000（利用者上書き・2026-08-23 引き上げ）、root requests（1日）が 30 であることを実測。正しい値は 30万ではなく 50万。管理画面の MapTilesUsageSection だけが引き上げ前の 30,000 のまま残っており、9/13 の 94,655件を「316%・上限到達」と誤表示していた（正しくは19%）。/api/metaverse-usage の RENDERER_LIMIT_PER_DAY は 500000 で正しかった＝同じ上限値が2か所に別々に定義されていたのが原因。比較対象の request_count は root＋renderer 合計だが root 上限は30回/日なので判定に影響しないことを確認しコメントに明記。検証：tsc exit 0／eslint exit 0／next build 成功。cidao commit 32bd3a5 を origin(communitybankinzai) へ push。session: fdfd26ed-e753-4c6b-8941-78b1f8c553fc / output: 147,709 / cost: $27.70"
+        },
         {
           "date": "2026-09-11",
           "title": "卒論の口述原稿・スライドのノートにクリック位置の★を追加（★数とクリック数の自動照合つき）0.3時間",
@@ -6499,6 +6508,13 @@
           "category": "保守",
           "priority": "低",
           "note": "2026-09-09 実測。/api/metaverse-usage の countVisitorsByDay と countVisitorsToday が .neq('mode','disaster-map') で防災MAPを除外している（理由はコメント上「タイル課金と無関係」）。タイル費用の目安としては正しい除外だが、利用状況としては最大トラフィックが抜けた数字になる。2026-09-09 に /admin/analytics 側で別セクションとして出したので当面は困らないが、メタバースタブの数字が何を指すのかが分かりにくいままなので、(a) タブ名・ラベルを「3Dワールドの利用者数（タイル課金対象）」と明示する か (b) 防災MAPも別系列で足す かを決める。"
+        },
+        {
+          "due": "2026-09-30",
+          "title": "🔢 Map Tiles の1日上限値を1か所にまとめる（管理画面と metaverse-usage で二重定義）",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-09-13 に判明。上限値が src/app/admin/analytics/_components/MapTilesUsageSection.tsx の DAILY_QUOTA_BASELINE と src/app/api/metaverse-usage/route.ts の RENDERER_LIMIT_PER_DAY に別々に書かれており、8/23 の引き上げ時に前者だけ 30,000 のまま残って「316%・上限到達」の誤表示を起こした（同日 500,000 に修正済み）。src/lib/map-tiles-usage.ts に定数を1つ置いて両方から読む形にすれば、次に Console で上限を変えたときの直し漏れを防げる。あわせて、実際の費用の歯止めである root requests（1日30回）の消費状況が管理画面に出ていない点も検討する。"
         }
       ]
     },
