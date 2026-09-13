@@ -355,6 +355,9 @@
     const hud = document.getElementById("ttHud");
     let el = document.getElementById("msyAlt");
     if (!el) { el = document.createElement("div"); el.id = "msyAlt"; el.style.cssText = "font-size:12px;color:#cfe6ff;margin-top:2px"; hud.appendChild(el); }
+    let hint = document.getElementById("msyBackHint"); // コントローラーだけで操作説明に戻れることを知らせる（backToStart）
+    if (!hint) { hint = document.createElement("div"); hint.id = "msyBackHint"; hint.style.cssText = "font-size:12px;color:#ffd166;margin-top:2px"; hud.appendChild(hint); }
+    hint.textContent = "🎮 " + menuLabel() + " を長押し：操作のしかた（スタート前に戻る）";
     state.altTimer = setInterval(function () {
       if (!state.on) { stopAltTimer(); return; }
       if (state.waiting) updateWaitHud();
@@ -370,7 +373,7 @@
       } catch (e) {}
     }, 500);
   }
-  function stopAltTimer() { clearInterval(state.altTimer); state.altTimer = null; const el = document.getElementById("msyAlt"); if (el) el.remove(); }
+  function stopAltTimer() { clearInterval(state.altTimer); state.altTimer = null; ["msyAlt", "msyBackHint"].forEach((id) => { const el = document.getElementById(id); if (el) el.remove(); }); }
   // スタート待ちの間に地面の高さが取れたら、仮の高さから地面＋3m へ降りる（通信が遅く3D街並みが遅れて届いたとき）
   function settleToGround(g) {
     if (state.settled || !state.waiting) return;
@@ -411,11 +414,11 @@
   }
 
   // ---- 開始 ----
-  function start(age) {
+  function start(age, keepCourse) { // keepCourse：同じコースでやり直すとき（backToStart）
     if (age) { state.age = age === "adult" ? "adult" : "kids"; saveAge(state.age); }
     const home = homeIdx();
     if (home < 0 || !BUNKAZAI.length) return;
-    const course = pickCourse(home, station());
+    const course = keepCourse && keepCourse.length >= PICK ? keepCourse : pickCourse(home, station());
     if (course.length < PICK) return;
     state.home = home;
     state.lastCourse = course.slice();
@@ -881,6 +884,7 @@
     return "none";
   }
   function okLabel() { const k = padKind(); return k === "ps" ? "○ボタン" : k === "xbox" ? "Aボタン" : "Aボタン／○ボタン"; }
+  function menuLabel() { return padKind() === "ps" ? "OPTIONS" : "≡（メニュー）"; }
   window.addEventListener("gamepadconnected", function () { if (modal.classList.contains("show")) renderModal(); if (state.waiting) updateWaitHud(); });
   function padArm() {
     padPrev = {};
@@ -957,15 +961,43 @@
   window.msyWaiting = () => !!(state.on && state.waiting);
   window.msyCanStart = canStart;
   window.msyReadyGo = readyGo;
-  // 「🎮 操作のしかた」ボタン。モード中だけ「武蔵屋めぐり」の横に出す
+  // 走り出してから操作説明に戻る（2026-09-14 中司さん「操作説明時に間違えてスタートさせてしまった」→ スタート前に戻る）。
+  // その回は記録なしで取り消し（サーバーには開始だけが残り、ゴールしないので順位に入らない＝「中止」と同じ）、
+  // 同じコースで白鳥の郷のスタート待ちに戻して操作説明を出す。走っていないときは操作説明を開くだけ
+  function backToStart() {
+    const G = window.CbiControlsGuide;
+    if (state.on && !state.waiting) {
+      const course = state.lastCourse ? state.lastCourse.slice() : null;
+      ttAbort();                // 計測・HUD・ポップアップ・声を止める
+      start(state.age, course); // 白鳥の郷へ戻り、スタート待ち
+      if (typeof showPickResult === "function") showPickResult("スタート前に戻りました。操作のしかたを見てから、もう一度スタートしてね。", 4000);
+    }
+    if (G && !G.isOpen()) G.open();
+  }
+  window.msyBackToStart = backToStart;
+  // ≡（メニュー／PS は OPTIONS）を1秒長押し＝スタート前に戻る。押した瞬間は index.html の「スティックの中心を取り直す」も働くが害はない
+  let menuFrom = 0;
+  setInterval(function () {
+    if (!state.on || (window.CbiControlsGuide && window.CbiControlsGuide.isOpen())) { menuFrom = 0; return; }
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    let down = false;
+    for (const p of pads) if (p && p.buttons[9] && p.buttons[9].pressed) down = true;
+    if (!down) { menuFrom = 0; return; }
+    if (!menuFrom) { menuFrom = performance.now(); if (typeof showPickResult === "function") showPickResult(menuLabel() + " を押したままにすると、スタート前に戻ります…", 1500); return; }
+    if (performance.now() - menuFrom >= 1000) { menuFrom = 0; backToStart(); }
+  }, 100);
+  // 「🎮 操作のしかた」ボタン。モード中だけ「武蔵屋めぐり」の横に出す。走っている間に押すと、確かめてからスタート前に戻る
   function placeGuideBtn(inMode) {
     let b = document.getElementById("ctlGuideBtn");
     const anchor = document.getElementById("musashiyaBtn");
     if (inMode && !b && anchor && window.CbiControlsGuide) {
       b = document.createElement("button");
       b.id = "ctlGuideBtn"; b.textContent = "🎮 操作のしかた";
-      b.title = "コントローラーの使いかたを、ずんだもんの声と鳥の動きで説明します";
-      b.addEventListener("click", function () { window.CbiControlsGuide.open(); });
+      b.title = "コントローラーの使いかたを、ずんだもんの声と鳥の動きで説明します（走っている間は、その回を取り消してスタート前に戻ります）";
+      b.addEventListener("click", function () {
+        if (state.on && !state.waiting && !confirm("いまの回を取り消して、スタート前に戻り、操作のしかたを見ますか？")) return;
+        backToStart();
+      });
       anchor.parentNode.insertBefore(b, anchor.nextSibling);
     } else if (!inMode && b) b.remove();
   }
@@ -985,6 +1017,7 @@
     placeSwanBtn(true);
     placeVoiceBtn(true);
     placeGuideBtn(true);
+    if (window.CbiControlsGuide) window.CbiControlsGuide.prepareOffline(); // 白鳥・鳶・描画部品・声をこの端末に保存（2回目からテザリングを使わない）
     rtDetach(true); // 会場では他の利用者の光点・同行者リストを出さない
     window.flightClearanceM = FLIGHT_CLEARANCE_M; // 飛行中に地面へ近づける（index.html の keepAboveGround が見る）
     if (state.entered) return;

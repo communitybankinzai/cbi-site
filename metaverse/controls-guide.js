@@ -5,7 +5,10 @@
 // 文面と声：assets/narration/controls-guide.json、音声は assets/narration/build_controls_voicevox.py（VOICEVOX:ずんだもん・クレジット必須）
 (function () {
   "use strict";
-  const VER = "20260913-1";
+  const VER = "20260914-1";
+  // 声と手順データの版。文を変えて音声を作り直したときだけ上げる（上げると端末に保存済みの声も取り直しになる。JS を直しただけでは上げない）
+  const VOICE_VER = "20260913-1";
+  const HOLD_MS = 1000; // 操作説明の中では A（○）を1秒長押しでスタート（2026-09-14 中司さん：説明中の誤スタート防止）
   const THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.180.0/+esm";
   const GLTF_URL = "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js/+esm";
   // ゲーム本体（index.html の白鳥）と同じ URL にして、ブラウザのキャッシュを使い回す（通信を増やさない）
@@ -58,7 +61,8 @@
     "#cgModal .cgDots i.on{background:#ffd166}" +
     "#cgModal .cgFoot{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid #2c4d72;flex-wrap:wrap}" +
     "#cgModal .cgStatus{font-size:16px;margin-right:auto}" +
-    "#cgModal .cgGo{font-size:18px;font-weight:bold;background:#e8a317;border-color:#ffd166;color:#1a1a1a;padding:8px 18px}" +
+    // 長押しの進み具合（--p）を明るい色で左から塗る
+    "#cgModal .cgGo{font-size:18px;font-weight:bold;background:linear-gradient(90deg,#fff3c4 var(--p,0%),#e8a317 var(--p,0%));border-color:#ffd166;color:#1a1a1a;padding:8px 18px}" +
     "#cgModal .cgGo.ready{animation:cgPulse 1s infinite}" +
     "#cgModal .cgCredit{font-size:11px;color:#9fb6cc;margin-top:6px;text-align:right}" +
     "@keyframes cgPulse{50%{box-shadow:0 0 0 6px rgba(255,209,102,.45)}}" +
@@ -86,7 +90,7 @@
       '<div class="cgNav"><button type="button" data-act="prev">◀ まえ</button><span class="cgDots"></span><button type="button" data-act="next">つぎ ▶</button>' +
         '<button type="button" data-act="replay">🔊 もう一度</button><span style="font-size:12px;color:#9fb6cc">十字キーの ←→ でも えらべます</span></div>' +
       '<div class="cgFoot"><span class="cgStatus"></span><button type="button" class="cgGo" data-act="go" hidden></button></div>' +
-      '<div class="cgCredit">音声：VOICEVOX:ずんだもん（VOICEVOX ENGINE で生成）　版 ' + VER + "</div>" +
+      '<div class="cgCredit"><span class="cgOffline" style="float:left"></span>音声：VOICEVOX:ずんだもん（VOICEVOX ENGINE で生成）　版 ' + VER + "</div>" +
     "</div>";
   document.body.appendChild(modal);
   const $ = (s) => modal.querySelector(s);
@@ -293,7 +297,7 @@
       else if (st.bgmVol != null) { bgmAudio.volume = st.bgmVol; st.bgmVol = null; }
     } catch (e) {}
   }
-  function voiceUrl(s) { return VOICE_BASE + s.id + "_" + (s.voice.common ? "common" : st.kind) + ".mp3?v=" + VER; }
+  function voiceUrl(s) { return VOICE_BASE + s.id + "_" + (s.voice.common ? "common" : st.kind) + ".mp3?v=" + VOICE_VER; }
   function stopVoice() { clearTimeout(st.stepTimer); if (st.audio) { try { st.audio.pause(); } catch (e) {} st.audio = null; } bgmDuck(false); }
   function playStep(i) {
     stopVoice();
@@ -327,8 +331,8 @@
     const okName = st.kind === "ps" ? "○" : "A";
     const act = action(), go = $(".cgGo"), status = $(".cgStatus");
     if (waitingForStart()) {
-      if (act === "start") { status.innerHTML = "✅ <b>じゅんびOK！</b>"; go.textContent = "🚀 " + okName + " ボタン（Enter）でスタート"; }
-      else { status.innerHTML = "🌏 街並みを読み込み中…　読み込めたら " + okName + " ボタンでスタートできます"; }
+      if (act === "start") { status.innerHTML = "✅ <b>じゅんびOK！</b>"; go.textContent = "🚀 " + okName + " ボタンを長押しでスタート（Enter）"; }
+      else { status.innerHTML = "🌏 街並みを読み込み中…　読み込めたら " + okName + " ボタンの長押しでスタートできます"; }
     } else {
       status.textContent = act === "close" ? "" : "コントローラーを動かして、ためしてみよう";
       go.textContent = okName + " ボタン（Enter）でとじる";
@@ -357,11 +361,22 @@
     const inp = live || (now < st.liveUntil ? Object.assign({}, ZERO) : demoInput(now));
     $(".cgLive").hidden = !(now < st.liveUntil);
     drawInput(inp);
-    // 押した瞬間：A／○（0・1）＝スタート・とじる（出ているときだけ）、十字キー←→＝手順を選ぶ
+    // A／○（0・1）：スタートは1秒長押し（説明の中で A をためして押しても始まらないように）、とじるは押した瞬間。十字キー←→＝手順を選ぶ
     if (p) {
       const down = (i) => !!(p.buttons[i] && p.buttons[i].pressed);
       const edge = (i) => down(i) && !st.prev[i];
-      if (edge(0) || edge(1)) doAction();
+      const go = $(".cgGo");
+      if (action() === "start") {
+        if (edge(0) || edge(1)) st.holdFrom = now; // 開く前から押しっぱなしのボタンでは数えない
+        if (!(down(0) || down(1))) st.holdFrom = 0;
+        const held = st.holdFrom ? Math.min(1, (now - st.holdFrom) / HOLD_MS) : 0;
+        go.style.setProperty("--p", Math.round(held * 100) + "%");
+        if (held >= 1) { st.holdFrom = 0; go.style.setProperty("--p", "0%"); doAction(); }
+      } else {
+        st.holdFrom = 0;
+        go.style.setProperty("--p", "0%");
+        if (edge(0) || edge(1)) doAction();
+      }
       if (edge(14)) playStep(st.idx - 1);
       if (edge(15)) playStep(st.idx + 1);
       st.prev = p.buttons.map((b) => b.pressed);
@@ -374,7 +389,7 @@
   // ---- 開く・とじる ----
   async function loadSteps() {
     if (st.steps) return st.steps;
-    const r = await fetch("assets/narration/controls-guide.json?v=" + VER);
+    const r = await fetch("assets/narration/controls-guide.json?v=" + VOICE_VER);
     st.steps = (await r.json()).steps;
     return st.steps;
   }
@@ -388,6 +403,7 @@
     const p = firstPad();
     st.prev = p ? p.buttons.map((b) => b.pressed) : []; // 開いたときに押していたボタンでは反応しない
     renderPad();
+    renderOffline();
     modal.classList.add("show");
     playStep(0);
     const inGame = typeof tonbiOn !== "undefined" && tonbiOn ? "kite" : "swan"; // いまゲームで使っている鳥
@@ -428,7 +444,46 @@
   }, true);
   window.addEventListener("pagehide", stopVoice);
 
+  // ---- この端末に保存（2026-09-14 中司さん「2回目以降はテザリング通信を食わないように。鳶も同様」）----
+  // sw.js（Service Worker）が保存領域から返す。保存は武蔵屋モードに入ったときだけ（musashiya.js の enterMode が呼ぶ）。
+  // 一般の閲覧者（ほかのモード）には何もしない。会場PCは事前に自宅の Wi-Fi で1回武蔵屋モードを開けば準備完了
+  const OFFLINE_CACHE = "cbi-meta-offline-v1"; // sw.js の CACHE と同じ名前にする
+  const off = { started: false, total: 0, done: 0, failed: 0, persisted: null, error: false };
+  function offlineUrls(steps) {
+    const rel = [GLB.swan, GLB.kite, "assets/narration/controls-guide.json?v=" + VOICE_VER];
+    steps.forEach((s) => Object.keys(s.voice).forEach((k) => rel.push(VOICE_BASE + s.id + "_" + k + ".mp3?v=" + VOICE_VER)));
+    return [THREE_URL, GLTF_URL].concat(rel.map((u) => new URL(u, location.href).href));
+  }
+  function offlineText() {
+    if (!off.started) return "";
+    if (off.error) return "⚠ この端末に保存できませんでした";
+    if (off.done + off.failed < off.total) return "💾 この端末に保存中… " + off.done + "／" + off.total + "（白鳥・鳶・描画部品・声）";
+    if (off.failed) return "⚠ " + off.failed + "件を保存できませんでした。通信のよい所で開き直してください";
+    return "💾 この端末に保存済み（次回からは通信なしで表示）" + (off.persisted === false ? "・容量が足りないとブラウザが消すことがあります" : "");
+  }
+  function renderOffline() { const el = $(".cgOffline"); if (el) el.textContent = offlineText(); }
+  async function prepareOffline() {
+    if (off.started || !("caches" in window) || !("serviceWorker" in navigator)) return;
+    off.started = true;
+    try {
+      await navigator.serviceWorker.register("sw.js", { scope: "./" });
+      if (navigator.storage && navigator.storage.persist) off.persisted = await navigator.storage.persist().catch(() => false);
+      const urls = offlineUrls(await loadSteps());
+      off.total = urls.length;
+      const c = await caches.open(OFFLINE_CACHE);
+      for (const req of await c.keys()) if (urls.indexOf(req.url) < 0) await c.delete(req); // 版が変わって使わなくなった分を消す
+      for (const u of urls) { // 1本ずつ（街並みの読み込みと通信を取り合わないように）
+        try {
+          if (!(await c.match(u))) { const res = await fetch(u); if (res.status !== 200) throw new Error("HTTP " + res.status); await c.put(u, res); }
+          off.done++;
+        } catch (e) { off.failed++; console.warn("[操作のしかた] 保存できませんでした", u, e); }
+        renderOffline();
+      }
+    } catch (e) { off.error = true; console.warn("[操作のしかた] 端末への保存を始められませんでした", e); }
+    renderOffline();
+  }
+
   // 3D の飛行入力を止めるか（index.html の毎フレームの処理が見る）
   window.cbiInputHold = () => st.open;
-  window.CbiControlsGuide = { open, close, isOpen: () => st.open, state: st };
+  window.CbiControlsGuide = { open, close, isOpen: () => st.open, prepareOffline, offline: off, state: st };
 })();

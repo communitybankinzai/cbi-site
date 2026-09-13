@@ -7239,6 +7239,22 @@
     "A9": {
       "actuals": [
         {
+          "date": "2026-09-14",
+          "title": "3Dモデル・声の端末保存（Service Worker）＋操作説明の長押しスタート＋スタート前に戻る 0.44時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/sw.js（新規・Service Worker）",
+            "site/metaverse/controls-guide.js（prepareOffline・VOICE_VER 分離・長押しスタート・保存状況の表示）",
+            "site/metaverse/musashiya.js（backToStart・≡長押し・同じコースで再開・武蔵屋モードで保存開始）",
+            "site/metaverse/index.html（版の更新）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.44,
+          "partnerApproved": true,
+          "note": "中司さん「描画部品を初回に保存して2回目以降はテザリングを食わないように。鳶も同様」→3択で『武蔵屋モードで一括保存』。「操作説明中に間違えてスタートした。戻る導線は？」→3択で『A長押しでスタート』『スタート前に戻る』。検証（ローカル・?mode=musashiya&notiles=1）：保存17/17（約53MB）・SW制御中、サーバー停止後も白鳥・鳶・声・手順を保存分から読めること（保存対象外の index.html は失敗）、仮想コントローラーで A 0.5秒では始まらず1秒で開始、走行中の「スタート前に戻る」と ≡1秒長押しで同じコースのスタート待ち＋操作説明を確認。persist() はブラウザが不許可（false）。hours は前回記録 77,095 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 121,141 / cost: $14.65"
+        },
+        {
           "date": "2026-09-13",
           "title": "「🎮 操作のしかた」ポップアップ実装（ずんだもん音声12本・白鳥3Dの姿勢・コントローラー図）＋検証 0.8時間",
           "category": "実装",
@@ -7708,6 +7724,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-02",
+          "title": "💾 会場PCで事前に（自宅Wi-Fiで）武蔵屋モードを開き、「💾 この端末に保存済み」を確認する",
+          "category": "事務",
+          "priority": "高",
+          "note": "2026-09-14 実装の端末保存（sw.js）。https://communitybankinzai.github.io/cbi-site/metaverse/?mode=musashiya を会場で使うブラウザで開き、「🎮 操作のしかた」の下の表示が「💾 この端末に保存済み」になるまで待つ（白鳥・鳶・描画部品・声 計約53MB）。これで当日は3Dモデルと声にテザリングを使わない（3Dの街並みは保存できないので当日も通信する）。ブラウザのデータ消去・シークレットウィンドウでは保存が消える／使えない。前日設営（11/2）にもう一度表示を確認する。"
+        },
         {
           "due": "2026-10-27",
           "title": "🎮 「操作のしかた」ポップアップを会場PC（本番3D込み・GameSir T3 Lite）で目視確認する",
