@@ -9,7 +9,7 @@
 // 入口：☰「あそぶ」→「🏠 武蔵屋めぐり」、または URL に ?event=musashiya（会場用。読み込み後に自動で開く）
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13b";
+  const MSY_VERSION = "2026-09-13c";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -221,8 +221,26 @@
     ttCountdownEnd = performance.now() + 7000; // 地面の高さの取得＋移動 約3〜4秒＋カウントダウン3秒
     ttStartMs = 0;
     document.getElementById("ttHud").style.display = "block";
+    document.body.classList.add("msyOn");
+    placeHud();
     ttApplyPinFocus();
     ttShowCard();
+  }
+  // タイムのHUD（#ttHud）は上部メニューの2段目と重なって押せなくなる（2026-09-13 中司さん）。めぐり中はメニューの下に置く
+  function placeHud() {
+    if (!state.on) return;
+    const bar = document.getElementById("topLeftBar");
+    const hud = document.getElementById("ttHud");
+    if (!bar || !hud) return;
+    const r = bar.getBoundingClientRect();
+    const mobile = window.matchMedia("(pointer: coarse), (max-width: 640px)").matches;
+    hud.style.top = (mobile ? 92 : Math.max(52, Math.round(r.bottom + 6))) + "px";
+  }
+  window.addEventListener("resize", placeHud);
+  function leaveHudPlace() {
+    document.body.classList.remove("msyOn");
+    const hud = document.getElementById("ttHud");
+    if (hud) hud.style.top = "";
   }
 
   // ---- 通過・ゴールのポップアップ ----
@@ -250,6 +268,7 @@
     clearTimeout(state.popTimer);
     state.popTimer = setTimeout(hidePop, isKids() ? 30000 : 25000); // 読み終わる前に消えないよう長め。○で先へ進める
     padArm();
+    if (isKids()) speakKids(BUNKAZAI[idx]);
   }
   function showFinalPop(ms) {
     const head = isKids() ? "🎉 ゴール！ 武蔵屋に もどってきたよ" : "🎉 ゴール！ 武蔵屋に戻りました";
@@ -263,7 +282,36 @@
     clearTimeout(state.popTimer); // ゴールの画面は消さずに残す
     padArm();
   }
-  function hidePop() { pop.classList.remove("show"); clearTimeout(state.popTimer); }
+  function hidePop() { pop.classList.remove("show"); clearTimeout(state.popTimer); speakStop(); }
+
+  // ---- 読み上げ（こども用の説明文を、Edge に入っている男性の声で。2026-09-13 中司さん指示） ----
+  // Edge の日本語男性は「Microsoft Keita Online (Natural)」（自然な声・ネット必要）と「Microsoft Ichiro」（端末内）。
+  // 無ければ日本語の声のどれか。声は読み上げのたびに探す（一覧の準備が遅れて最初は空のことがあるため）
+  const MALE_VOICE_NAMES = ["Keita", "Ichiro"];
+  function pickVoice() {
+    if (!window.speechSynthesis) return null;
+    const vs = speechSynthesis.getVoices().filter((v) => /^ja/i.test(v.lang));
+    for (const key of MALE_VOICE_NAMES) { const v = vs.find((x) => x.name.indexOf(key) >= 0); if (v) return v; }
+    return vs[0] || null;
+  }
+  // 「利根川（とねがわ）」のように漢字の直後に（ひらがな）が付く所は読みだけを読む（二度読み防止）
+  function speechText(b) {
+    const t = textFor(b).replace(/[一-鿿々〆ヵヶ]+（([ぁ-ゖー]+)）/g, "$1");
+    return (b.kana || b.name) + "。" + t;
+  }
+  function speakKids(b) {
+    if (!window.speechSynthesis) return;
+    speakStop();
+    const u = new SpeechSynthesisUtterance(speechText(b));
+    u.lang = "ja-JP";
+    const v = pickVoice();
+    if (v) u.voice = v;
+    u.rate = 0.95;
+    state.lastSpeech = { text: u.text, voice: v ? v.name : null };
+    speechSynthesis.speak(u);
+  }
+  function speakStop() { try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} }
+  if (window.speechSynthesis) { speechSynthesis.getVoices(); speechSynthesis.addEventListener("voiceschanged", () => speechSynthesis.getVoices()); }
   pop.addEventListener("click", function (e) {
     const b = e.target.closest("button");
     if (!b) return;
@@ -284,34 +332,17 @@
     if (ttPos >= ttCourse.length - 1) return;     // 最後（武蔵屋）はゴールのポップアップで出す
     showPassPop(idx, ttPos + 1, ttCourse.length - 1);
   });
+  // 次の目的地カード（左下の写真つきカード）は出さない。開始した瞬間に精霊の絵が大きく出て
+  // 「いきなり精霊が出てきた」と見えたため（2026-09-13 中司さん）。次の場所の名前と方向は上のHUDが示す
   wrap("ttShowCard", function () {
     const card = document.getElementById("ttCard");
-    const idx = ttCourse[ttPos];
-    const b = BUNKAZAI[idx];
-    if (!b) { card.innerHTML = ""; return; }
-    const goal = ttPos === ttCourse.length - 1;
-    const img = imgFor(b);
-    const hint = goal
-      ? (isKids() ? "さいごは 武蔵屋に もどろう！" : "最後は武蔵屋へ戻ります。")
-      : (isKids() ? "とうちゃくすると、写真と説明が出るよ。" : "到着すると写真と解説が表示されます。");
-    card.innerHTML =
-      '<div class="ttCardHead">▾ ' + (goal ? "ゴール：" : (isKids() ? "つぎの場所：" : "次の目的地：")) + esc(b.name) + "</div>" +
-      '<div class="ttCardBody">' +
-        (img ? '<img src="' + esc(img.src) + '" alt="' + esc(img.alt) + '" loading="lazy">' : "") +
-        '<div class="ttCardText"><span class="ttCardName">' + esc(b.name) + "</span>" +
-          '<div class="ttCardDesc">' + hint + "</div>" +
-          (img ? '<div class="ttCardCredit">' + esc(img.credit) + "</div>" : "") +
-        "</div>" +
-      "</div>";
-    card.classList.add("shown");
-    if (window.matchMedia("(pointer: coarse), (max-width: 640px)").matches) { card.classList.remove("open"); return; }
-    card.classList.add("open");
-    clearTimeout(ttCardTimer);
-    ttCardTimer = setTimeout(function () { card.classList.remove("open"); }, 20000);
+    card.innerHTML = "";
+    card.classList.remove("shown", "open");
   });
   wrap("ttFinish", function (ms) {
     ttActive = false;
     state.on = false;
+    leaveHudPlace();
     document.getElementById("ttHud").style.display = "none";
     ttRestorePins();
     ttHideCard();
@@ -321,7 +352,7 @@
   (function () { // 中止（HUDの中止ボタン・モード切替など）
     const orig = window.ttAbort;
     if (typeof orig !== "function") return;
-    window.ttAbort = function () { state.on = false; hidePop(); return orig.apply(this, arguments); };
+    window.ttAbort = function () { state.on = false; leaveHudPlace(); hidePop(); return orig.apply(this, arguments); };
   })();
 
   // ---- コントローラー・キーボード（開始画面とポップアップを開いているときだけ） ----
@@ -369,6 +400,13 @@
     else if (e.key === "Escape") { if (modal.classList.contains("show")) closeModal(); else if (!state.popFinal) hidePop(); }
     else if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && modal.classList.contains("show")) { e.preventDefault(); onLR(); }
   }, true);
+
+  // 会場URL（?event=musashiya）では通常の精霊出現を止める。開始前に武蔵屋の前へ移動するので、
+  // ピース未取得の端末では武蔵屋の精霊がすぐ出てしまうため。ピースは武蔵屋めぐりの通過で獲得できる
+  if (params.get("event") === "musashiya") {
+    const origEnc = window.showEncounter;
+    if (typeof origEnc === "function") window.showEncounter = function () {};
+  }
 
   // ---- 入口 ----
   const btn = document.getElementById("musashiyaBtn");

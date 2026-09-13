@@ -7224,6 +7224,20 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "武蔵屋めぐり 読み上げ・HUD位置・開始直後の精霊カード抑止 0.16時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/musashiya.js（版 2026-09-13c）",
+            "site/metaverse/index.html（読み込み版 20260913-3）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.16,
+          "partnerApproved": false,
+          "note": "中司さんの本番確認で3点指摘（開始直後に精霊が出た／タイムのポップアップがメニューと重なり操作不能／こども用説明文を Edge の男性の声で読み上げ）。検証モードで、カード非表示・HUD top 92px（ペイン非表示のためモバイル判定）・読み上げ文とIchiro選択・次へで停止・中止で復元を確認。実音は未確認。hours は前回記録 102,194 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 118,209 / cost: $26.10"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋めぐり 地上スタート＋白鳥・白鳥の湖を既定化 0.19時間",
           "category": "実装",
           "outputs": [
