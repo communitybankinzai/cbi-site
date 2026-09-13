@@ -1,5 +1,9 @@
 # CBIメタバース印西 引継ぎ
 
+## 2026-09-13 🏠 武蔵屋めぐり（11/3 武蔵屋マルシェ用）
+
+実装は `musashiya.js`（別ファイル）＋文面 `musashiya-texts.json`（キー＝bunkazai.json の reportId、kids／adult の2種）。index.html 側は ☰「あそぶ」の `#musashiyaBtn`・`CLOSE_AFTER`・`applyMode` の表示リスト・`<script src="musashiya.js">` の4点だけ。武蔵屋（岩井家住宅主屋）→ 4km以内の19件から座標の重複を除いてランダムに3か所（武蔵屋から最近傍順）→ 武蔵屋ゴール。**タイムトライアルの仕組み（ttActive／ttCourse／ttPos／onTick の通過判定）をそのまま使い**、`ttServerStart`／`ttServerCheckpoint`（何もしない＝サーバーに記録しない）・`ttSpiritPass`（通過ポップアップ）・`ttShowCard`（次の目的地カード）・`ttFinish`（ゴールのポップアップを残す）・`ttAbort` を `msyState.on` の間だけ差し替える。**これらの関数名や onTick の順序（ttSpiritPass → ttPos++ → ttFinish）を変えるときは musashiya.js も直すこと**。会場では `?mode=event&event=musashiya` で、受付（CiDAO照合）後に開始画面が自動で出る。開始画面・ポップアップはコントローラー（○＝決定、←→＝こども／おとな）と Enter／Esc でも操作できる。検証は `?notiles=1` で `msyStart('kids')` → `ttCountdownEnd=0` → 目標へ `camera.setView` → `viewer.clock.onTick.raiseEvent(viewer.clock)` を4回（ペインが非表示でも通る）。説明文は2026-09-13時点で**下書き（中司さん確認前）**。武蔵屋自身の写真は無く精霊カードで代用中（9/19の現地確認で岩井さんの許可を得て撮影予定）。
+
 ## 2026-09-10 地面侵入ガード
 
 flight-ground.js共通化。通常/2Pとも描画前に高さを確認し、移動距離8mごと（最大8点）に地表を確認。飛行では地表+12m、歩行は目線高。地形不明は直前位置へ戻し下降を止める（見回し・上昇可）。静止中も150msごと再取得して到着タイルを反映。モデルEntityを高さ取得から除外。500m超の位置ジャンプは移動経路ではなく終点を確認。notiles検証モードは除外。位置補正でdirection/upを保持し宙返りを維持。

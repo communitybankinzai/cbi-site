@@ -1038,6 +1038,7 @@ if (location.protocol === "file:") {
       <button id="skyTagBtn" onclick="location.href='?mode=event&amp;race=tag&amp;v=20260907-3'">おにごっこ／ドッグファイト</button>
       <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
       <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
+      <button id="musashiyaBtn" title="武蔵屋（岩井家住宅主屋）をスタートし、近くの文化財3か所をめぐって武蔵屋へ戻るイベント用モード。通過するたびに写真と説明（こども用／おとな用）が出ます">🏠 武蔵屋めぐり</button>
       <button id="swanToggleBtn" class="off" aria-pressed="false" title="本埜の白鳥で飛ぶ">🦢 本埜の白鳥</button>
     </div>
   </div>
@@ -1968,7 +1969,7 @@ try {
   const bar = document.getElementById("topLeftBar");
   const groups = Array.from(bar.querySelectorAll(".tbGroup"));
   // 押すと別の画面や別タブが開く項目は、押した時点でメニューを畳む（切替系は状態が見えるよう開いたまま）
-  const CLOSE_AFTER = ["reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
+  const CLOSE_AFTER = ["musashiyaBtn", "reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
   function closeAll(except) {
     groups.forEach((g) => {
       if (g === except) return;
@@ -4862,7 +4863,7 @@ function applyMode(mode) {
   const game = m === "event" || m === "all";
   try { localStorage.setItem(MODE_KEY, m); } catch (e) {}
   // 文化財ゲーム系UI（ずかん・学習レポート・文化財マップ・文化財ピン切替・位置修正・タイムトライアル）
-  ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "pickModeBtn", "ttBtn", "vsRaceBtn"].forEach(id => {
+  ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "pickModeBtn", "ttBtn", "vsRaceBtn", "musashiyaBtn"].forEach(id => {
     document.getElementById(id).style.display = game ? "" : "none";
   });
   document.getElementById("tonbiToggleBtn").style.display = bousai ? "none" : "";
@@ -6396,5 +6397,6 @@ try {
 <script src="vs-race.js?v=20260910-4"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260910-2"></script>
+<script src="musashiya.js?v=20260913-1"></script>
 </body>
 </html>
