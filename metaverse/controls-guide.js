@@ -5,9 +5,11 @@
 // 文面と声：assets/narration/controls-guide.json、音声は assets/narration/build_controls_voicevox.py（VOICEVOX:ずんだもん・クレジット必須）
 (function () {
   "use strict";
-  const VER = "20260914-1";
+  const VER = "20260914-2";
   // 声と手順データの版。文を変えて音声を作り直したときだけ上げる（上げると端末に保存済みの声も取り直しになる。JS を直しただけでは上げない）
   const VOICE_VER = "20260913-1";
+  // 手順データ（controls-guide.json）の版。JSON を変えたら必ず上げる（上げないと端末に保存済みの古い JSON が使われ続ける。2026-09-14 実際に起きた）
+  const STEPS_VER = "20260914-1";
   const HOLD_MS = 1000; // 操作説明の中では A（○）を1秒長押しでスタート（2026-09-14 中司さん：説明中の誤スタート防止）
   const THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.180.0/+esm";
   const GLTF_URL = "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js/+esm";
@@ -28,10 +30,16 @@
     boost: { T: 6, f: (t) => t < 1.2 ? { ly: -1 } : t < 3.8 ? { ly: -1, x: 1 } : t < 4.6 ? { ly: -1 } : t < 5 ? { ly: -1, y: 1 } : { ly: -1 } },
     ok: { T: 6, f: (t) => (t > 0.6 && t < 1) || (t > 2.2 && t < 2.6) ? { a: 1 } : t > 3.8 && t < 4.6 ? { menu: 1 } : {} },
     end: { T: 4, f: (t) => ({ ly: -1, x: t > 1.5 && t < 3.3 ? 1 : 0 }) },
+    // ほかのモード用（controls-guide.json の general.voiceId）
+    "ok-gen": { T: 7, f: (t) => t > 0.5 && t < 0.9 ? { a: 1 } : t > 2 && t < 2.4 ? { b: 1 } : t > 3.4 && t < 3.8 ? { dl: 1 } : t > 4.2 && t < 4.6 ? { dr: 1 } : t > 5.4 && t < 6.2 ? { menu: 1 } : {} },
+    "end-gen": { T: 4, f: (t) => ({ ly: -1, menu: t > 2.2 && t < 3.4 ? 1 : 0 }) },
   };
   // 手順ごとの見る向き（鳥の +X＝前・+Y＝上・+Z＝右）。上下は横から、傾きは後ろから見ると分かりやすい
   const VIEW = { def: [-9.5, 3.8, 6.5], rstick: [-8.5, 6.5, 6.5], trig: [-1.5, 2, 12.5], bump: [-12.5, 3, 1.5] };
 
+  // 手順の文面はモードで切り替える：武蔵屋モードは手順そのもの、ほかのモードは general（決定・おしまいの2手順だけ持つ）で上書き
+  const inMsy = () => document.body.classList.contains("modeMusashiya");
+  const variant = (s) => (!inMsy() && s.general ? Object.assign({}, s, s.general) : s);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const st = { open: false, steps: null, idx: 0, kind: "xbox", bird: "swan", audio: null, stepTimer: 0, stepStart: 0, ended: false,
     raf: 0, last: 0, liveUntil: 0, prev: [], bgmVol: null, opts: {}, three: null };
@@ -117,7 +125,8 @@
     const face = ps ? { Y: ["△", "#3fbf8f"], X: ["□", "#e27bb7"], B: ["○", "#e5534b"], A: ["×", "#5b8def"] }
       : { Y: ["Y", "#e6c229"], X: ["X", "#3b82f6"], B: ["B", "#e5534b"], A: ["A", "#3fae49"] };
     const L = ps ? { LT: "L2", RT: "R2", LB: "L1", RB: "R1", MENU: "OPT", VIEW: "SH" } : { LT: "LT", RT: "RT", LB: "LB", RB: "RB", MENU: "≡", VIEW: "⧉" };
-    const ls = ps ? [150, 172] : [108, 112], dp = ps ? [108, 112] : [150, 172], rs = [250, 172], fc = [292, 112];
+    // 配置は Xbox 配列でも左右対称（十字キーが左上・スティックが下に2本）。会場の GameSir T3 Lite がこの形（2026-09-14 中司さん「スティック配置が違う」）
+    const ls = [150, 172], dp = [108, 112], rs = [250, 172], fc = [292, 112];
     const trig = (k, x) => '<g class="k" data-k="' + k + '"><rect class="sh" x="' + x + '" y="6" width="74" height="30" rx="12"/>' +
       '<rect class="fill" data-fill="' + k + '" x="' + (x + 3) + '" y="33" width="68" height="0" rx="4"/><text x="' + (x + 37) + '" y="21">' + L[k] + "</text></g>";
     const bump = (k, x) => '<g class="k" data-k="' + k + '"><rect class="sh" x="' + x + '" y="42" width="92" height="18" rx="9"/><text x="' + (x + 46) + '" y="51" style="font-size:13px">' + L[k] + "</text></g>";
@@ -138,32 +147,33 @@
   function renderPad() { $(".cgPad").innerHTML = padSvg(st.kind); markTargets(); }
   function markTargets() {
     const s = st.steps && st.steps[st.idx];
-    const want = s ? s.pads : [];
+    const want = s ? variant(s).pads : [];
     modal.querySelectorAll(".cgPad .k").forEach((g) => g.classList.toggle("tgt", want.indexOf(g.dataset.k) >= 0));
   }
 
   // ---- 入力（お手本 or 実際のコントローラー）----
-  const ZERO = { lx: 0, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, lb: 0, rb: 0, a: 0, b: 0, x: 0, y: 0, menu: 0, view: 0 };
+  const ZERO = { lx: 0, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, lb: 0, rb: 0, a: 0, b: 0, x: 0, y: 0, menu: 0, view: 0, dl: 0, dr: 0 };
   function liveInput(p) {
     if (!p) return null;
     const ax = (i) => { const v = p.axes[i] || 0; return Math.abs(v) < 0.25 ? 0 : v; };
     const b = (i) => (p.buttons[i] && p.buttons[i].pressed ? 1 : 0);
     const tv = (i) => (p.buttons[i] ? Math.max(p.buttons[i].value || 0, p.buttons[i].pressed ? 1 : 0) : 0);
     const inp = { lx: ax(0), ly: ax(1), rx: ax(2), ry: ax(3), lt: tv(BTN.LT), rt: tv(BTN.RT), lb: b(BTN.LB), rb: b(BTN.RB),
-      a: b(BTN.A), b: b(BTN.B), x: b(BTN.X), y: b(BTN.Y), menu: b(BTN.MENU), view: b(BTN.VIEW) };
+      a: b(BTN.A), b: b(BTN.B), x: b(BTN.X), y: b(BTN.Y), menu: b(BTN.MENU), view: b(BTN.VIEW), dl: b(14), dr: b(15) };
     const any = Object.keys(inp).some((k) => Math.abs(inp[k]) > 0.05);
     return any ? inp : null;
   }
   function demoInput(now) {
     const s = st.steps && st.steps[st.idx];
-    const d = s && DEMO[s.id];
+    const v = s && variant(s);
+    const d = v && DEMO[v.voiceId || v.id];
     if (!d) return Object.assign({}, ZERO);
     const t = ((now - st.stepStart) / 1000) % d.T;
     return Object.assign({}, ZERO, d.f(t));
   }
   function drawInput(inp) {
     const on = { A: inp.a, B: inp.b, X: inp.x, Y: inp.y, LB: inp.lb, RB: inp.rb, LT: inp.lt > 0.1, RT: inp.rt > 0.1, MENU: inp.menu, VIEW: inp.view,
-      LS: inp.lx || inp.ly, RS: inp.rx || inp.ry };
+      LS: inp.lx || inp.ly, RS: inp.rx || inp.ry, DPAD: inp.dl || inp.dr };
     modal.querySelectorAll(".cgPad .k").forEach((g) => g.classList.toggle("on", !!on[g.dataset.k]));
     const knob = (k, x, y) => { const el = modal.querySelector('[data-knob="' + k + '"]'); if (el) el.setAttribute("transform", "translate(" + (x * 11).toFixed(1) + " " + (y * 11).toFixed(1) + ")"); };
     knob("LS", inp.lx, inp.ly); knob("RS", inp.rx, inp.ry);
@@ -297,13 +307,13 @@
       else if (st.bgmVol != null) { bgmAudio.volume = st.bgmVol; st.bgmVol = null; }
     } catch (e) {}
   }
-  function voiceUrl(s) { return VOICE_BASE + s.id + "_" + (s.voice.common ? "common" : st.kind) + ".mp3?v=" + VOICE_VER; }
+  function voiceUrl(s) { return VOICE_BASE + (s.voiceId || s.id) + "_" + (s.voice.common ? "common" : st.kind) + ".mp3?v=" + VOICE_VER; }
   function stopVoice() { clearTimeout(st.stepTimer); if (st.audio) { try { st.audio.pause(); } catch (e) {} st.audio = null; } bgmDuck(false); }
   function playStep(i) {
     stopVoice();
     st.idx = Math.max(0, Math.min(st.steps.length - 1, i));
     st.stepStart = performance.now();
-    const s = st.steps[st.idx];
+    const s = variant(st.steps[st.idx]);
     $(".cgStepTitle").textContent = (st.idx + 1) + "／" + st.steps.length + "　" + s.title;
     $(".cgSub").textContent = s.sub.common || s.sub[st.kind] || "";
     $(".cgDots").innerHTML = st.steps.map((_, j) => '<i class="' + (j === st.idx ? "on" : "") + '"></i>').join("");
@@ -389,7 +399,7 @@
   // ---- 開く・とじる ----
   async function loadSteps() {
     if (st.steps) return st.steps;
-    const r = await fetch("assets/narration/controls-guide.json?v=" + VOICE_VER);
+    const r = await fetch("assets/narration/controls-guide.json?v=" + STEPS_VER);
     st.steps = (await r.json()).steps;
     return st.steps;
   }
@@ -408,6 +418,7 @@
     playStep(0);
     const inGame = typeof tonbiOn !== "undefined" && tonbiOn ? "kite" : "swan"; // いまゲームで使っている鳥
     showBird(st.opts.bird || inGame);
+    prepareOffline(); // 開いた端末は、どのモードでも白鳥・鳶・描画部品・声を保存する（2026-09-14 中司さん。2回目から通信なし）
     st.last = 0;
     if (!st.raf) st.raf = requestAnimationFrame(loop);
   }
@@ -445,13 +456,15 @@
   window.addEventListener("pagehide", stopVoice);
 
   // ---- この端末に保存（2026-09-14 中司さん「2回目以降はテザリング通信を食わないように。鳶も同様」）----
-  // sw.js（Service Worker）が保存領域から返す。保存は武蔵屋モードに入ったときだけ（musashiya.js の enterMode が呼ぶ）。
-  // 一般の閲覧者（ほかのモード）には何もしない。会場PCは事前に自宅の Wi-Fi で1回武蔵屋モードを開けば準備完了
+  // sw.js（Service Worker）が保存領域から返す。保存するのは、武蔵屋モードに入ったとき（musashiya.js の enterMode）と、
+  // どのモードでも操作説明を開いたとき（open）だけ（2026-09-14 中司さん）。開かない一般の閲覧者には何もしない。
+  // 会場PCは事前に自宅の Wi-Fi で1回武蔵屋モードを開けば準備完了
   const OFFLINE_CACHE = "cbi-meta-offline-v1"; // sw.js の CACHE と同じ名前にする
   const off = { started: false, total: 0, done: 0, failed: 0, persisted: null, error: false };
   function offlineUrls(steps) {
-    const rel = [GLB.swan, GLB.kite, "assets/narration/controls-guide.json?v=" + VOICE_VER];
-    steps.forEach((s) => Object.keys(s.voice).forEach((k) => rel.push(VOICE_BASE + s.id + "_" + k + ".mp3?v=" + VOICE_VER)));
+    const rel = [GLB.swan, GLB.kite, "assets/narration/controls-guide.json?v=" + STEPS_VER];
+    steps.forEach((s) => [s].concat(s.general ? [s.general] : []).forEach((v) => // 武蔵屋用とほかのモード用の両方
+      Object.keys(v.voice).forEach((k) => rel.push(VOICE_BASE + (v.voiceId || s.id) + "_" + k + ".mp3?v=" + VOICE_VER))));
     return [THREE_URL, GLTF_URL].concat(rel.map((u) => new URL(u, location.href).href));
   }
   function offlineText() {
@@ -466,8 +479,10 @@
     if (off.started || !("caches" in window) || !("serviceWorker" in navigator)) return;
     off.started = true;
     try {
-      await navigator.serviceWorker.register("sw.js", { scope: "./" });
-      if (navigator.storage && navigator.storage.persist) off.persisted = await navigator.storage.persist().catch(() => false);
+      // 登録と「消さないで」の申請は返事を待たない（どちらも返事に数秒かかることがあり、その間保存が始まらなかった。2026-09-14 実測）。
+      // 保存領域への書き込みは Service Worker が無くてもできる（次に開いたときから Service Worker が保存分を返す）
+      navigator.serviceWorker.register("sw.js", { scope: "./" }).catch((e) => console.warn("[操作のしかた] Service Worker を登録できませんでした", e));
+      if (navigator.storage && navigator.storage.persist) navigator.storage.persist().then((v) => { off.persisted = v; renderOffline(); }, () => { off.persisted = false; });
       const urls = offlineUrls(await loadSteps());
       off.total = urls.length;
       const c = await caches.open(OFFLINE_CACHE);
@@ -482,6 +497,21 @@
     } catch (e) { off.error = true; console.warn("[操作のしかた] 端末への保存を始められませんでした", e); }
     renderOffline();
   }
+
+  // ≡（メニュー／PS は OPTIONS）を1秒長押しで開く（どのモードでも。2026-09-14 中司さん「他モードでも使いまわす」）。
+  // 武蔵屋めぐりの最中は musashiya.js が同じ長押しで「スタート前に戻る」を行うので、ここでは見ない。2Pレース中も見ない
+  let menuFrom = 0;
+  setInterval(function () {
+    const busy = st.open || window.vsRaceModeEnabled || (typeof window.msyOn === "function" && window.msyOn());
+    const p = busy ? null : firstPad();
+    if (!(p && p.buttons[BTN.MENU] && p.buttons[BTN.MENU].pressed)) { menuFrom = 0; return; }
+    if (!menuFrom) {
+      menuFrom = performance.now();
+      if (typeof showPickResult === "function") showPickResult((padKind() === "ps" ? "OPTIONS" : "≡（メニュー）") + " を押したままにすると、操作のしかたが開きます…", 1500);
+      return;
+    }
+    if (performance.now() - menuFrom >= 1000) { menuFrom = 0; open(); }
+  }, 100);
 
   // 3D の飛行入力を止めるか（index.html の毎フレームの処理が見る）
   window.cbiInputHold = () => st.open;

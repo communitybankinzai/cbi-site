@@ -22,9 +22,15 @@ def main(force):
     files = manifest['files']
     c = CHARS['zundamon']
     made = skipped = 0
+    # 武蔵屋モード用（手順そのもの）と、ほかのモード用（general・voiceId で別ファイル）の両方を作る
+    variants = []
     for s in steps:
-        for kind, text in s['voice'].items():
-            rel = f"zundamon/guide_{s['id']}_{kind}.mp3"
+        variants.append((s['id'], s['voice']))
+        if s.get('general'):
+            variants.append((s['general']['voiceId'], s['general']['voice']))
+    for vid, voice in variants:
+        for kind, text in voice.items():
+            rel = f"zundamon/guide_{vid}_{kind}.mp3"
             path = os.path.join(HERE, rel)
             h = hashlib.sha1(('voicevox:%d:%s:' % (c['speaker'], c['speed']) + text).encode('utf-8')).hexdigest()[:12]
             if not force and files.get(rel, {}).get('hash') == h and os.path.exists(path):

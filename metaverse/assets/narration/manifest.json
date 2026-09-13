@@ -863,6 +863,30 @@
    "chars": 35,
    "voice": "VOICEVOX:ずんだもん",
    "bytes": 41325
+  },
+  "zundamon/guide_ok-gen_xbox.mp3": {
+   "hash": "40681c57555d",
+   "chars": 108,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 138093
+  },
+  "zundamon/guide_ok-gen_ps.mp3": {
+   "hash": "7781e95070cb",
+   "chars": 109,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 138861
+  },
+  "zundamon/guide_end-gen_xbox.mp3": {
+   "hash": "d4cf6c735dfc",
+   "chars": 66,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 86061
+  },
+  "zundamon/guide_end-gen_ps.mp3": {
+   "hash": "f3957430d7f0",
+   "chars": 67,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 87213
   }
  },
  "voices": {

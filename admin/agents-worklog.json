@@ -7261,6 +7261,25 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "操作のしかたを全モードへ展開（ほかのモード用の声4本）＋Xbox配列の A/B 修正 0.46時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/controls-guide.js（モード別の文面・≡長押し・どのモードでも保存・STEPS_VER）",
+            "site/metaverse/assets/narration/controls-guide.json（手順7・8の general）",
+            "site/metaverse/assets/narration/build_controls_voicevox.py（general も生成）",
+            "site/metaverse/assets/narration/zundamon/guide_{ok-gen,end-gen}_{xbox,ps}.mp3（4本）",
+            "site/metaverse/assets/narration/manifest.json",
+            "site/metaverse/index.html（padOkIndex・左下の「くわしく見る」）",
+            "site/metaverse/musashiya.js（msyOn）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.46,
+          "partnerApproved": true,
+          "note": "中司さん「他モードでも利用できないのか？操作は統一したので使いまわせるはず」→4択（全モード・接続時／共通版を録音／Xboxの慣習に合わせる／開いたらどのモードでも保存）。検証（ローカル・?mode=event&notiles=1・仮想Xboxパッド）：左下に「くわしく見る」、onTick を手で進めて A＝ゲット・B＝閉じる、手順7・8が general の文面・点灯・声に切替、保存21/21（古い JSON は削除）。途中で JSON の版を上げ忘れて古い手順が保存分から返る不具合を見つけ STEPS_VER で修正。≡ 長押しは前回確認済み、今回はペイン非表示のタイマー間引きで再確認できず。hours は前回記録 121,141 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 167,036 / cost: $20.79"
+        },
+        {
+          "date": "2026-09-14",
           "title": "3Dモデル・声の端末保存（Service Worker）＋操作説明の長押しスタート＋スタート前に戻る 0.44時間",
           "category": "実装",
           "outputs": [
@@ -7757,7 +7776,7 @@
           "title": "🎮 「操作のしかた」ポップアップを会場PC（本番3D込み・GameSir T3 Lite）で目視確認する",
           "category": "保守",
           "priority": "中",
-          "note": "2026-09-13 実装。ローカル検証はブラウザペイン非表示でスクショ1枚のみ。確認点：(1) 武蔵屋めぐりの開始後、街並みの読み込み中に自動で出るか（2人目以降も） (2) 白鳥の傾きの向き（RB＝右の翼が下がる）と上昇・下降の見え方 (3) ずんだもんの声の音量と白鳥の湖（読み上げ中は小さくなる） (4) 読み込めたら A でそのままスタートするか (5) PSコントローラーをつないだとき表記と声が ○／□／R2 に変わるか。直すときは controls-guide.js（動きは DEMO、見る向きは VIEW）、文は assets/narration/controls-guide.json＋build_controls_voicevox.py で音声を作り直す。"
+          "note": "2026-09-13 実装。ローカル検証はブラウザペイン非表示でスクショ1枚のみ。確認点：(1) 武蔵屋めぐりの開始後、街並みの読み込み中に自動で出るか（2人目以降も） (2) 白鳥の傾きの向き（RB＝右の翼が下がる）と上昇・下降の見え方 (3) ずんだもんの声の音量と白鳥の湖（読み上げ中は小さくなる） (4) 読み込めたら A でそのままスタートするか (5) PSコントローラーをつないだとき表記と声が ○／□／R2 に変わるか (6) 2026-09-14 追加：武蔵屋以外のモード（文化財めぐり等）で ≡ 1秒長押しで開くか・手順7／8がほかのモード用の声になるか (7) GameSir で A＝精霊ゲット、B＝閉じるになっているか（Xbox 配列の A/B を入れ替えた）。直すときは controls-guide.js（動きは DEMO、見る向きは VIEW）、文は assets/narration/controls-guide.json＋build_controls_voicevox.py で音声を作り直す。"
         },
         {
           "due": "2026-09-19",

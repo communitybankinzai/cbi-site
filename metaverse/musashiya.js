@@ -959,6 +959,7 @@
   window.msyStart = start;
   // 「🎮 操作のしかた」（controls-guide.js）が見る：スタート待ちか・スタートできるか・スタートする
   window.msyWaiting = () => !!(state.on && state.waiting);
+  window.msyOn = () => !!state.on; // めぐりの最中（待ち・計測中）。この間の ≡ 長押しはここの backToStart が受ける（controls-guide.js は見ない）
   window.msyCanStart = canStart;
   window.msyReadyGo = readyGo;
   // 走り出してから操作説明に戻る（2026-09-14 中司さん「操作説明時に間違えてスタートさせてしまった」→ スタート前に戻る）。

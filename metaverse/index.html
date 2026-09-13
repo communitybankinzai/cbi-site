@@ -2342,6 +2342,13 @@ function padKindForHelp() {
   }
   return "ps";
 }
+// 決定ボタンの番号（閉じるはもう一方）。PS 系は ○（1）、Xbox 配列は A（0）。判定は padKindForHelp と同じで、どちらでもなければ従来どおり 1
+function padOkIndex(pad) {
+  const id = String(pad && pad.id).toLowerCase();
+  if (/dualshock|dualsense|playstation|wireless controller|054c/.test(id)) return 1;
+  if (/xbox|gamesir|xinput|045e|standard gamepad/.test(id)) return 0;
+  return 1;
+}
 function helpGamepadHtml(kind) {
   const L = PAD_LABELS[kind] || PAD_LABELS.ps;
   return "<b>🎮 コントローラー操作</b><br>" +
@@ -2352,7 +2359,10 @@ function helpGamepadHtml(kind) {
     "速く飛ぶ：<b>" + L.BOOST + "</b>を押している間（<b>" + L.SPD + "</b>で速度切替）<br>" +
     "精霊をゲット：<b>" + L.O + "</b> ／ 閉じる：<b>" + L.X + "</b><br>" +
     "主要施設へ飛ぶ：<b>十字キー左右</b><br>" +
-    "勝手に動くとき：手を離して<b>" + L.OPT + "</b>";
+    "勝手に動くとき：手を離して<b>" + L.OPT + "</b><br>" +
+    // 「🎮 操作のしかた」（controls-guide.js）。どのモードでも開ける（2026-09-14 中司さん）
+    "くわしい説明：<b>" + L.OPT + "</b>を長押し " +
+    '<button type="button" onclick="window.CbiControlsGuide&&CbiControlsGuide.open()" style="font-size:11px;padding:1px 6px;margin-top:2px;border-radius:6px;border:1px solid #6a9fd8;background:#1c3a5c;color:#fff;cursor:pointer">🎮 くわしく見る</button>';
 }
 const HELP_GAMEPAD = helpGamepadHtml("ps"); // 互換のため残す（他所から参照されている場合）
 let helpBoxMode = "";
@@ -3118,14 +3128,17 @@ viewer.clock.onTick.addEventListener(function () {
     if (isDownNow(pad, 15) && !padPrevButtons[15]) padGoSpot(1);
     up += padUp;
 
-    // ○＝画面中央のピンを選ぶ／×＝開いているパネルを閉じる（押した瞬間のみ）
+    // 決定（精霊ゲット・画面中央のピン）と閉じる（押した瞬間のみ）。PS＝○（1）で決定・×（0）で閉じる、
+    // Xbox 配列（GameSir T3 Lite 等）＝A（0）で決定・B（1）で閉じる（2026-09-14 中司さん：Xbox の慣習に合わせる。
+    // 以前は Xbox でも B で決定になっていて、左下の説明「ゲット：A／閉じる：B」と逆だった）
     const isDown = (i) => !!(pad.buttons[i] && pad.buttons[i].pressed);
-    if (isDown(1) && !padPrevButtons[1]) {
+    const okBtn = padOkIndex(pad), closeBtn = 1 - okBtn;
+    if (isDown(okBtn) && !padPrevButtons[okBtn]) {
       // 精霊が出ているあいだは○でゲット。出ていなければ画面中央のピンを開く
       if (document.getElementById("encounter").classList.contains("show")) confirmCatch();
       else pickAtScreenCenter();
     }
-    if (isDown(0) && !padPrevButtons[0]) closeOverlays();
+    if (isDown(closeBtn) && !padPrevButtons[closeBtn]) closeOverlays();
     // OPTIONS＝スティックの中心を取り直す。勝手に動くコントローラーの応急処置
     if (isDown(9) && !padPrevButtons[9]) {
       snapPadCenterNow(pad);
@@ -6488,7 +6501,7 @@ try {
 <script src="race-radar.js?v=20260913-2"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260913-2"></script>
-<script src="controls-guide.js?v=20260914-1"></script>
-<script src="musashiya.js?v=20260914-1"></script>
+<script src="controls-guide.js?v=20260914-2"></script>
+<script src="musashiya.js?v=20260914-2"></script>
 </body>
 </html>
