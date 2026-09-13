@@ -7224,6 +7224,20 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "武蔵屋めぐり 地上スタート・○で開始・高度表示・白鳥ボタン・声の男女切替・BGMダッキング 0.22時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/musashiya.js（版 2026-09-13f）",
+            "site/metaverse/index.html（飛行の地面クリアランスを外から変更可に・読み込み版 20260913-6）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.22,
+          "partnerApproved": false,
+          "note": "中司さんの本番確認からの5点（地上スタート／高度表示／準備前に開始してしまう／白鳥が出ない・ON/OFFの場所／男性の声のなまり）＋BGMを読み上げ中に小さく。検証モードで、待ち状態→Enterで開始、高度表示の生成・除去、声の切替と保存、試し聞き、BGM 0.35→0.08→0.35、白鳥ボタンの移動と復帰、クリアランス3、エラー0を確認。白鳥が描画されない原因は未特定（検証モードでは白鳥ONになる。本番でGLB約20MBの読み込み待ちの可能性）。hours は前回記録 162,073 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 183,601 / cost: $49.52"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋マルシェ用 CiDAO案内スライド（来場者向け6枚・HTML）＋受付手順（スタッフ用A4・PDF）作成 0.26時間",
           "category": "広報",
           "outputs": [

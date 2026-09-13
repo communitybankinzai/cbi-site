@@ -10,12 +10,16 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13e";
+  const MSY_VERSION = "2026-09-13f";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
   const params = new URLSearchParams(location.search);
-  const state = { on: false, age: loadAge(), home: -1, texts: {}, popTimer: null, popFinal: false, lastCourse: [], entered: false };
+  const state = { on: false, age: loadAge(), home: -1, texts: {}, popTimer: null, popFinal: false, lastCourse: [], entered: false,
+    waiting: false, settled: false, voice: loadVoice(), altTimer: null };
+  const VOICE_KEY = "cbi-meta-msy-voice-v1";
+  function loadVoice() { try { return localStorage.getItem(VOICE_KEY) === "female" ? "female" : "male"; } catch (e) { return "male"; } }
+  function saveVoice(v) { try { localStorage.setItem(VOICE_KEY, v); } catch (e) {} }
   // 武蔵屋イベントモードか（index.html の applyMode が body.modeMusashiya を付ける）。旧URL ?event=musashiya も可
   const inEventMode = () => document.body.classList.contains("modeMusashiya") || params.get("event") === "musashiya";
   window.msyState = state; // 検証用
@@ -136,6 +140,13 @@
           '<button type="button" data-age="kids" class="' + (isKids() ? "sel" : "") + '">👦 こども</button>' +
           '<button type="button" data-age="adult" class="' + (isKids() ? "" : "sel") + '">🧑 おとな</button>' +
         "</div>" +
+        '<p style="font-size:13px;color:#cfe6ff;margin-top:10px">こども用の読み上げの声（十字キー ↑↓ でも切替）</p>' +
+        '<div class="msyAge msyVoice">' +
+          '<button type="button" data-voice="male" class="' + (state.voice === "male" ? "sel" : "") + '">👨 男性</button>' +
+          '<button type="button" data-voice="female" class="' + (state.voice === "female" ? "sel" : "") + '">👩 女性</button>' +
+          '<button type="button" data-act="voicetest" style="flex:.7">🔊 ためしに聞く</button>' +
+        "</div>" +
+        '<div id="msyVoiceName" style="font-size:11px;color:#9fb6cc;min-height:1.2em"></div>' +
         '<div class="msyRow"><button type="button" data-act="close">とじる</button><button type="button" class="go" data-act="start">🚀 スタート</button></div>' +
         '<div class="msyVer">版 ' + MSY_VERSION + "</div>" +
       "</div>";
@@ -145,6 +156,8 @@
     const b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.age) { state.age = b.dataset.age; saveAge(state.age); renderModal(); return; }
+    if (b.dataset.voice) { state.voice = b.dataset.voice; saveVoice(state.voice); renderModal(); return; }
+    if (b.dataset.act === "voicetest") { speakSample(); return; }
     if (b.dataset.act === "close") closeModal();
     if (b.dataset.act === "start") start(state.age);
   });
@@ -155,7 +168,7 @@
   // 通りに南面する建物なので、南へ約50mの地点から北（武蔵屋）を向く。高さは地面＋14m
   // （白鳥で飛ぶ飛行モードは地表＋12mより下へ下がれないため、その少し上）。地面の高さは3D街並みから取り、
   // 取れないとき（検証モード・読み込み待ちが長いとき）は楕円体高60m（木下の低地の目安）を使う
-  const HOME_BACK_DEG = 0.00045, HOME_CLEARANCE_M = 14, HOME_FALLBACK_H = 60;
+  const HOME_BACK_DEG = 0.00045, HOME_CLEARANCE_M = 3, HOME_FALLBACK_H = 45, FLIGHT_CLEARANCE_M = 3;
   function homeSpot() {
     const h = BUNKAZAI[state.home >= 0 ? state.home : homeIdx()];
     return { lon: h.lon, lat: h.lat - HOME_BACK_DEG };
@@ -175,8 +188,11 @@
     const finish = (ground) => {
       if (done) return;
       done = true;
-      flyHome(ground != null && isFinite(ground) ? ground + HOME_CLEARANCE_M : HOME_FALLBACK_H);
+      const ok = ground != null && isFinite(ground);
+      flyHome(ok ? ground + HOME_CLEARANCE_M : HOME_FALLBACK_H);
+      if (ok) state.settled = true;
     };
+    state.settled = false; // 地面が取れないまま仮の高さに置いたときは、取れ次第 settleToGround() が降ろす
     const timer = setTimeout(() => finish(null), 3000);
     try {
       if (!params.has("notiles") && viewer.scene.sampleHeightSupported && viewer.scene.sampleHeightMostDetailed) {
@@ -186,6 +202,55 @@
           .catch(() => { clearTimeout(timer); finish(null); });
       } else { clearTimeout(timer); finish(null); }
     } catch (e) { clearTimeout(timer); finish(null); }
+  }
+
+  // ---- HUD の高度表示（地上からの高さ。地面が測れないときは海抜）と、地面が取れ次第の降下 ----
+  function groundAt(carto) {
+    try {
+      if (params.has("notiles") || !viewer.scene.sampleHeightSupported) return null;
+      const g = viewer.scene.sampleHeight(carto, viewer.entities.values.filter((e) => e.model));
+      return (g !== undefined && g !== null && isFinite(g)) ? g : null;
+    } catch (e) { return null; }
+  }
+  function startAltTimer() {
+    stopAltTimer();
+    const hud = document.getElementById("ttHud");
+    let el = document.getElementById("msyAlt");
+    if (!el) { el = document.createElement("div"); el.id = "msyAlt"; el.style.cssText = "font-size:12px;color:#cfe6ff;margin-top:2px"; hud.appendChild(el); }
+    state.altTimer = setInterval(function () {
+      if (!state.on) { stopAltTimer(); return; }
+      try {
+        const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+        const g = groundAt(carto);
+        if (g !== null) {
+          el.textContent = "⛰ 地上から " + Math.round(Math.max(0, carto.height - g)) + "m";
+          settleToGround(g);
+        } else {
+          el.textContent = "⛰ 海抜 " + Math.round(Math.max(0, carto.height - INZAI_GEOID_HEIGHT_M)) + "m";
+        }
+      } catch (e) {}
+    }, 500);
+  }
+  function stopAltTimer() { clearInterval(state.altTimer); state.altTimer = null; const el = document.getElementById("msyAlt"); if (el) el.remove(); }
+  // スタート待ちの間に地面の高さが取れたら、仮の高さから地面＋3m へ降りる（通信が遅く3D街並みが遅れて届いたとき）
+  function settleToGround(g) {
+    if (state.settled || !state.waiting) return;
+    state.settled = true;
+    const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+    if (carto.height - g <= HOME_CLEARANCE_M + 3) return;
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(Cesium.Math.toDegrees(carto.longitude), Cesium.Math.toDegrees(carto.latitude), g + HOME_CLEARANCE_M),
+      orientation: { heading: viewer.camera.heading, pitch: Cesium.Math.toRadians(-6), roll: 0 },
+      duration: 1.2,
+    });
+  }
+  // 白鳥のON/OFFボタンは「あそぶ」メニューの中にあり、武蔵屋モードでは隠れる。モード中は常時表示の列へ移す
+  function placeSwanBtn(inMode) {
+    const btn = document.getElementById("swanToggleBtn"), anchor = document.getElementById("musashiyaBtn");
+    const menu = document.querySelector("#tbGroupPlay .tbMenu");
+    if (!btn || !anchor) return;
+    if (inMode) { if (btn.parentNode !== anchor.parentNode) anchor.parentNode.insertBefore(btn, anchor.nextSibling); }
+    else if (menu && btn.parentNode !== menu) menu.appendChild(btn);
   }
 
   // ---- 白鳥と「白鳥の湖」（2026-09-13 中司さん「武蔵屋イベントでは白鳥をデフォルトに、白鳥の湖を流して」） ----
@@ -215,19 +280,33 @@
     ttEntry = { name: "武蔵屋めぐり", ageLabel: isKids() ? "こども" : "おとな", level: "musashiya", courseKey: "musashiya", rate: 0, answers: 0, reqRatePct: 0 };
     ttCourse = course.concat([home]);
     ttPos = 0;
-    ttActive = true;
+    // コントローラーの準備が整う前に計測が始まらないよう、○（Enter）を押すまで待つ（2026-09-13 中司さん）
+    ttActive = false;
     state.on = true;
+    state.waiting = true;
     const pp = document.getElementById("puzzlePanel");
     if (pp) pp.style.display = "none";
     eventLook(true);
     goHome();
-    ttCountdownEnd = performance.now() + 7000; // 地面の高さの取得＋移動 約3〜4秒＋カウントダウン3秒
     ttStartMs = 0;
-    document.getElementById("ttHud").style.display = "block";
+    const hud = document.getElementById("ttHud");
+    hud.style.display = "block";
+    document.getElementById("ttHudTime").textContent = "🚦 じゅんび";
+    document.getElementById("ttHudNext").innerHTML = "<b>○ボタン（Enter）でスタート！</b><br>1か所目: " + esc(BUNKAZAI[ttCourse[0]].name);
     document.body.classList.add("msyOn");
     placeHud();
-    ttApplyPinFocus();
+    startAltTimer();
     ttShowCard();
+    padArm();
+  }
+  // 準備OK → 3秒のカウントダウン → 計測（index.html の onTick に任せる）
+  function readyGo() {
+    if (!state.waiting) return;
+    state.waiting = false;
+    ttActive = true;
+    ttStartMs = 0;
+    ttCountdownEnd = performance.now() + 3500;
+    ttApplyPinFocus();
   }
   // タイムのHUD（#ttHud）は上部メニューの2段目と重なって押せなくなる（2026-09-13 中司さん）。めぐり中はメニューの下に置く
   function placeHud() {
@@ -290,30 +369,50 @@
   // ---- 読み上げ（こども用の説明文を、Edge に入っている男性の声で。2026-09-13 中司さん指示） ----
   // Edge の日本語男性は「Microsoft Keita Online (Natural)」（自然な声・ネット必要）と「Microsoft Ichiro」（端末内）。
   // 無ければ日本語の声のどれか。声は読み上げのたびに探す（一覧の準備が遅れて最初は空のことがあるため）
-  const MALE_VOICE_NAMES = ["Keita", "Ichiro"];
+  // 女性は「Microsoft Nanami Online (Natural)」（自然な声）、無ければ Ayumi／Haruka／Sayaka（端末内）。2026-09-13 中司さん「男性のなまりが強いので女性にも変更したい」
+  const VOICE_NAMES = { male: ["Keita", "Ichiro"], female: ["Nanami", "Ayumi", "Haruka", "Sayaka"] };
   function pickVoice() {
     if (!window.speechSynthesis) return null;
     const vs = speechSynthesis.getVoices().filter((v) => /^ja/i.test(v.lang));
-    for (const key of MALE_VOICE_NAMES) { const v = vs.find((x) => x.name.indexOf(key) >= 0); if (v) return v; }
+    const order = VOICE_NAMES[state.voice] || VOICE_NAMES.male;
+    for (const key of order) { const v = vs.find((x) => x.name.indexOf(key) >= 0); if (v) return v; }
     return vs[0] || null;
+  }
+  // 読み上げ中は BGM を小さくする（2026-09-13 中司さん）。終わったら元の大きさへ
+  const BGM_DUCK = 0.08;
+  function bgmDuck(on) {
+    try {
+      if (typeof bgmAudio === "undefined" || !bgmAudio) return;
+      if (on) { if (state.bgmVol == null) state.bgmVol = bgmAudio.volume; bgmAudio.volume = Math.min(bgmAudio.volume, BGM_DUCK); }
+      else if (state.bgmVol != null) { bgmAudio.volume = state.bgmVol; state.bgmVol = null; }
+    } catch (e) {}
+  }
+  function speak(text) {
+    if (!window.speechSynthesis) return null;
+    speakStop();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "ja-JP";
+    const v = pickVoice();
+    if (v) u.voice = v;
+    u.rate = 0.95;
+    u.onend = u.onerror = function () { bgmDuck(false); };
+    state.lastSpeech = { text: u.text, voice: v ? v.name : null };
+    bgmDuck(true);
+    speechSynthesis.speak(u);
+    return v;
+  }
+  function speakSample() {
+    const v = speak("こんにちは。武蔵屋めぐりへ ようこそ。白鳥になって、印西の空を飛びましょう。");
+    const el = document.getElementById("msyVoiceName");
+    if (el) el.textContent = v ? "使う声：" + v.name : "日本語の声が見つかりません（Edge で開くと男性 Keita・女性 Nanami が使えます）";
   }
   // 「利根川（とねがわ）」のように漢字の直後に（ひらがな）が付く所は読みだけを読む（二度読み防止）
   function speechText(b) {
     const t = textFor(b).replace(/[一-鿿々〆ヵヶ]+（([ぁ-ゖー]+)）/g, "$1");
     return (b.kana || b.name) + "。" + t;
   }
-  function speakKids(b) {
-    if (!window.speechSynthesis) return;
-    speakStop();
-    const u = new SpeechSynthesisUtterance(speechText(b));
-    u.lang = "ja-JP";
-    const v = pickVoice();
-    if (v) u.voice = v;
-    u.rate = 0.95;
-    state.lastSpeech = { text: u.text, voice: v ? v.name : null };
-    speechSynthesis.speak(u);
-  }
-  function speakStop() { try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} }
+  function speakKids(b) { speak(speechText(b)); }
+  function speakStop() { try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} bgmDuck(false); }
   // 画面を閉じる・別のページへ移るときは音楽と読み上げを止める（2026-09-13 中司さん「ブラウザ閉じても白鳥の湖が止まらない」。
   // 同じサイトを別のタブでも開いていた可能性が高いが、念のためこの画面の分は確実に止める）
   window.addEventListener("pagehide", function () {
@@ -351,6 +450,8 @@
   wrap("ttFinish", function (ms) {
     ttActive = false;
     state.on = false;
+    state.waiting = false;
+    stopAltTimer();
     leaveHudPlace();
     document.getElementById("ttHud").style.display = "none";
     ttRestorePins();
@@ -361,19 +462,19 @@
   (function () { // 中止（HUDの中止ボタン・モード切替など）
     const orig = window.ttAbort;
     if (typeof orig !== "function") return;
-    window.ttAbort = function () { state.on = false; leaveHudPlace(); hidePop(); return orig.apply(this, arguments); };
+    window.ttAbort = function () { state.on = false; state.waiting = false; stopAltTimer(); leaveHudPlace(); hidePop(); return orig.apply(this, arguments); };
   })();
 
   // ---- コントローラー・キーボード（開始画面とポップアップを開いているときだけ） ----
   let padRaf = 0, padPrev = {};
-  function uiOpen() { return modal.classList.contains("show") || pop.classList.contains("show"); }
+  function uiOpen() { return modal.classList.contains("show") || pop.classList.contains("show") || state.waiting; }
   function readPads() {
     const out = [];
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
     for (const p of pads) {
       if (!p) continue;
       const btn = (i) => !!(p.buttons[i] && p.buttons[i].pressed);
-      out.push({ i: p.index, ok: btn(0), l: btn(14) || p.axes[0] < -0.6, r: btn(15) || p.axes[0] > 0.6 });
+      out.push({ i: p.index, ok: btn(0), l: btn(14) || p.axes[0] < -0.6, r: btn(15) || p.axes[0] > 0.6, ud: btn(12) || btn(13) });
     }
     return out;
   }
@@ -389,12 +490,14 @@
       if (s.ok && !p.ok) onOk();
       if (s.l && !p.l) onLR();
       if (s.r && !p.r) onLR();
+      if (s.ud && !p.ud) onUD();
       padPrev[s.i] = s;
     });
     padRaf = requestAnimationFrame(padLoop);
   }
   function onOk() {
     if (modal.classList.contains("show")) { start(state.age); return; }
+    if (state.waiting) { readyGo(); return; }
     if (pop.classList.contains("show")) { if (state.popFinal) openModal(); else hidePop(); }
   }
   function onLR() {
@@ -403,9 +506,16 @@
     saveAge(state.age);
     renderModal();
   }
+  function onUD() {
+    if (!modal.classList.contains("show")) return;
+    state.voice = state.voice === "male" ? "female" : "male";
+    saveVoice(state.voice);
+    renderModal();
+  }
   document.addEventListener("keydown", function (e) {
     if (!uiOpen()) return;
     if (e.key === "Enter") { e.preventDefault(); onOk(); }
+    else if ((e.key === "ArrowUp" || e.key === "ArrowDown") && modal.classList.contains("show")) { e.preventDefault(); onUD(); }
     else if (e.key === "Escape") { if (modal.classList.contains("show")) closeModal(); else if (!state.popFinal) hidePop(); }
     else if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && modal.classList.contains("show")) { e.preventDefault(); onLR(); }
   }, true);
@@ -437,6 +547,8 @@
   window.msyStart = start;
   // モードに入ったとき（URL・モード切替のどちらでも）：白鳥・武蔵屋の前へ移動・開始画面。1回だけ
   function enterMode() {
+    placeSwanBtn(true);
+    window.flightClearanceM = FLIGHT_CLEARANCE_M; // 飛行中に地面へ近づける（index.html の keepAboveGround が見る）
     if (state.entered) return;
     const loaded = typeof BUNKAZAI !== "undefined" && BUNKAZAI.length > 0;
     const received = params.has("notiles") || params.has("cinema") || typeof window.nightLogin !== "function" || !!window.nightLogin(1);
@@ -449,6 +561,8 @@
   window.msyEnterMode = enterMode;
   window.msyLeaveMode = function () { // 別のモードへ切り替えたとき
     state.entered = false;
+    placeSwanBtn(false);
+    delete window.flightClearanceM;
     if (state.on && typeof ttAbort === "function") ttAbort();
     hidePop(); closeModal();
   };

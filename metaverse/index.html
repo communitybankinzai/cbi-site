@@ -3216,7 +3216,7 @@ const flightGroundState = {};
 let undergroundNoticeAt = 0;
 function keepAboveGround() {
   if (!window.CbiFlightGround) return;
-  if (!CbiFlightGround.enforce(viewer, flightGroundState, {disabled:NO_TILES, clearance:walkMode ? WALK_EYE_HEIGHT : 12,
+  if (!CbiFlightGround.enforce(viewer, flightGroundState, {disabled:NO_TILES, clearance:walkMode ? WALK_EYE_HEIGHT : (window.flightClearanceM || 12), // 武蔵屋めぐりは地面近くから始めるため 3m に下げる（musashiya.js）
     exclude:viewer.entities.values.filter(e=>e.model)})) return;
   const now = performance.now();
   if (now - undergroundNoticeAt > 8000) {            // 案内は8秒に1回まで
@@ -6410,6 +6410,6 @@ try {
 <script src="vs-race.js?v=20260910-4"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260910-2"></script>
-<script src="musashiya.js?v=20260913-5"></script>
+<script src="musashiya.js?v=20260913-6"></script>
 </body>
 </html>
