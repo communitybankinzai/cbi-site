@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-14",
+          "title": ".claspignore 分類漏れ検査を2か所に導入（product-register は pre-commit、cbi-admin-gas は clasp push 直前のフック）0.5時間",
+          "category": "保守",
+          "outputs": [
+            "レザークラフト/デジタル部/サイト管理/Apps Script/.claspignore（許可リスト化・分類コメント。ローカルgit 8e8a349・6b7ee21）",
+            "同 tools/check_claspignore.py・.githooks/pre-commit・README_GIT.md（core.hooksPath=.githooks）",
+            "cbi-admin-gas/.claspignore（分類コメント・送らない3件）・cbi-admin-gas/README.md",
+            "~/.claude/hooks/clasp_push_guard.py・~/.claude/settings.json（PreToolUse Bash|PowerShell）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "許可リスト方式の .claspignore は !ファイル名 を書き忘れた新ファイルを clasp push が黙って送らない。直下の GAS 対象ファイルを「!名前」か「# 送らない: 名前」に必ず分類させ、未分類・両方記載・送る指定なのに実在しない（push で本番から消える）を止める。product-register はサブフォルダの別GAS 7個が skipSubdirectories だけで守られていた（外すと15ファイル混入を検証用コピーで確認）。cbi-admin-gas は git 管理外のため Claude Code の PreToolUse フックで clasp push 直前に検査。検証：pre-commit で未分類は exit 1・分類後 exit 0、フックは8ケースのパイプ試験と Bash／PowerShell の実行時に割り込むことを確認、clasp status は両フォルダとも本番と同じファイル一覧。調査中に管理画面の画像アップロード（uploadSnsMedia）が本番GASに無いことを発見し plans に登録。session: 5e4eec75-7f29-4ad6-9808-4823698c6ba9 / output: 54,983 / cost: $8.28"
+        },
+        {
           "date": "2026-09-13",
           "title": "Map Tiles 管理画面の1日上限表示を 30,000 → 500,000 に修正 0.2時間",
           "category": "保守",
@@ -5635,6 +5649,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "CBI管理画面の画像アップロード（uploadSnsMedia）を本番GASで動かす",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-14 の .claspignore 点検で発見。site/admin/admin.js が action 'uploadSnsMedia' を呼ぶが、処理を持つ cbi-admin-gas/SnsMediaUpload.gs は本番GASに無く（本番は6ファイル）、Code.gs の doPost にも振り分けが無い。直すには Code.gs に振り分けを足し clasp push -f → GASエディタから新バージョンでデプロイ（clasp deploy は403になるので禁止）。同日中に別セッションが .claspignore の SnsMediaUpload.gs を「!」へ移しており着手済みの可能性あり。完了していればこの予定は削除して actuals へ。"
+        },
         {
           "due": "2026-09-22",
           "title": "🎓 卒論 9/15中間発表で受けた指摘を論文（01_草稿）とスライド（slides.md）へ反映する",
