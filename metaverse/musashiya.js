@@ -11,7 +11,7 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13o";
+  const MSY_VERSION = "2026-09-13p";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -29,8 +29,9 @@
     return STATION_FALLBACK;
   }
   const VOICE_NAME_KEY = "cbi-meta-msy-voicename-v1";
-  function loadVoiceName() { try { return localStorage.getItem(VOICE_NAME_KEY) || ""; } catch (e) { return ""; } }
-  function saveVoiceName(n) { try { if (n) localStorage.setItem(VOICE_NAME_KEY, n); else localStorage.removeItem(VOICE_NAME_KEY); } catch (e) {} }
+  function loadVoiceName() { try { const v = localStorage.getItem(VOICE_NAME_KEY); return v === null ? "__rec" : v; } catch (e) { return "__rec"; } }
+  function saveVoiceName(n) { try { localStorage.setItem(VOICE_NAME_KEY, n || ""); } catch (e) {} }
+  const useRec = () => state.voiceName === "__rec";
   const VOICE_KEY = "cbi-meta-msy-voice-v1";
   function loadVoice() { try { return localStorage.getItem(VOICE_KEY) === "female" ? "female" : "male"; } catch (e) { return "male"; } }
   function saveVoice(v) { try { localStorage.setItem(VOICE_KEY, v); } catch (e) {} }
@@ -180,7 +181,8 @@
   // 端末にある日本語の声の一覧（Edge なら Keita／Nanami の Online (Natural) が入る）。空なら準備待ち
   function voiceOptionsHtml() {
     const vs = jaVoices();
-    let html = '<option value="">おまかせ（' + (state.voice === "male" ? "男性" : "女性") + "の声を自動で選ぶ）</option>";
+    let html = '<option value="__rec"' + (state.voiceName === "__rec" ? " selected" : "") + '>録音ずみの声（' + (state.voice === "male" ? "Keita" : "Nanami") + "・推奨）</option>" +
+      '<option value=""' + (state.voiceName === "" ? " selected" : "") + '>端末の声・おまかせ（' + (state.voice === "male" ? "男性" : "女性") + "）</option>";
     vs.forEach((v) => { html += '<option value="' + esc(v.name) + '"' + (v.name === state.voiceName ? " selected" : "") + ">" + esc(v.name.replace(/^Microsoft /, "").replace(/ - Japanese \(Japan\)$/, "")) + "</option>"; });
     if (!vs.length) html += '<option value="" disabled>（日本語の声が見つかりません）</option>';
     return html;
@@ -193,7 +195,7 @@
     const b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.age) { state.age = b.dataset.age; saveAge(state.age); renderModal(); return; }
-    if (b.dataset.voice) { state.voice = b.dataset.voice; saveVoice(state.voice); state.voiceName = ""; saveVoiceName(""); renderModal(); return; }
+    if (b.dataset.voice) { state.voice = b.dataset.voice; saveVoice(state.voice); if (!useRec()) { state.voiceName = ""; saveVoiceName(""); } renderModal(); return; }
     if (b.dataset.act === "voicetest") { speakSample(); return; }
     if (b.dataset.act === "close") closeModal();
     if (b.dataset.act === "start") start(state.age);
@@ -343,6 +345,7 @@
     if (course.length < PICK) return;
     state.home = home;
     state.lastCourse = course.slice();
+    if (useRec()) preloadNarration(course.concat([home]));
     closeModal();
     hidePop();
     ttEntry = { name: "武蔵屋めぐり", ageLabel: isKids() ? "こども" : "おとな", level: "musashiya", courseKey: "musashiya", rate: 0, answers: 0, reqRatePct: 0 };
@@ -436,7 +439,7 @@
     clearTimeout(state.popTimer);
     state.popTimer = setTimeout(hidePop, 20000);
     padArm();
-    if (isKids()) speak(text.replace("千葉ニュータウン中央駅（ちばニュータウンちゅうおうえき）", "ちばニュータウンちゅうおうえき").replace("武蔵屋（むさしや）", "むさしや"));
+    if (isKids()) narrate("station", text.replace("千葉ニュータウン中央駅（ちばニュータウンちゅうおうえき）", "ちばニュータウンちゅうおうえき").replace("武蔵屋（むさしや）", "むさしや"));
   }
   // タイムのHUD（#ttHud）は上部メニューの2段目と重なって押せなくなる（2026-09-13 中司さん）。めぐり中はメニューの下に置く
   function placeHud() {
@@ -494,7 +497,7 @@
     clearTimeout(state.popTimer); // ゴールの画面は消さずに残す
     padArm();
     // ゴール（武蔵屋）の説明は一番大事なので、こども・おとなのどちらでも読み上げる（2026-09-13 中司さん）
-    speak((isKids() ? "ゴール！ 武蔵屋に とうちゃく。" : "ゴール。武蔵屋に到着しました。") + speechText(BUNKAZAI[state.home]));
+    narrate("goal", (isKids() ? "ゴール！ 武蔵屋に とうちゃく。" : "ゴール。武蔵屋に到着しました。") + speechText(BUNKAZAI[state.home]));
   }
   function hidePop() { pop.classList.remove("show"); clearTimeout(state.popTimer); speakStop(); }
 
@@ -570,8 +573,13 @@
     return v;
   }
   function speakSample() {
-    const v = speak("こんにちは。武蔵屋めぐりへ ようこそ。白鳥になって、印西の空を飛びましょう。");
     const el = document.getElementById("msyVoiceName");
+    if (useRec()) {
+      narrate("station", "こんにちは。武蔵屋めぐりへ ようこそ。");
+      if (el) el.textContent = "録音ずみの声（" + (state.voice === "female" ? "Nanami" : "Keita") + "）で、駅の案内を再生します";
+      return;
+    }
+    const v = speak("こんにちは。武蔵屋めぐりへ ようこそ。白鳥になって、印西の空を飛びましょう。");
     if (el) el.textContent = v ? "使う声：" + v.name : "日本語の声が見つかりません（Edge で開くと男性 Keita・女性 Nanami が使えます）";
   }
   // 「利根川（とねがわ）」のように漢字の直後に（ひらがな）が付く所は読みだけを読む（二度読み防止）
@@ -579,8 +587,34 @@
     const t = textFor(b).replace(/[一-鿿々〆ヵヶ]+（([ぁ-ゖー]+)）/g, "$1");
     return (b.kana || b.name) + "。" + t;
   }
-  function speakKids(b) { speak(speechText(b)); }
-  function speakStop() { clearTimeout(state.speakTimer); clearTimeout(state.startWatch); state.utter = null; try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} bgmDuck(false); }
+  function speakKids(b) { narrate(b.reportId, speechText(b)); }
+  // ---- 録音ずみナレーション（assets/narration/<male|female>/<key>_<kids|adult>.mp3・edge-tts で生成）----
+  // ネット経由の合成をやめ、同じ声で確実に鳴らす（2026-09-13 中司さん「Keita は録音してネット経由にしない方がよい」案B）。
+  // ファイルが無い／再生に失敗したときだけ端末の声（speak）に戻る
+  function narrationUrl(key) { return "assets/narration/" + (state.voice === "female" ? "female" : "male") + "/" + key + "_" + (isKids() ? "kids" : "adult") + ".mp3?v=" + MSY_VERSION; }
+  function narrate(key, fallbackText) {
+    if (!useRec()) { speak(fallbackText); return; }
+    speakStop();
+    const url = narrationUrl(key);
+    const a = state.preloaded && state.preloaded[url] ? state.preloaded[url] : new Audio(url);
+    a.currentTime = 0;
+    state.audio = a;
+    state.lastNarration = { key, url, mode: "rec", started: false };
+    bgmDuck(true);
+    const done = () => { if (state.audio === a) { bgmDuck(false); state.audio = null; } };
+    a.onended = done;
+    a.onplaying = () => { if (state.lastNarration && state.lastNarration.url === url) state.lastNarration.started = true; };
+    a.onerror = () => { if (state.audio !== a) return; state.audio = null; state.lastNarration.mode = "tts-fallback"; speak(fallbackText); };
+    const pr = a.play();
+    if (pr && pr.catch) pr.catch(() => { if (state.audio !== a) return; state.audio = null; state.lastNarration.mode = "tts-fallback"; speak(fallbackText); });
+  }
+  // 開始時にコースぶんを先読みしておく（通信が細くても到着時に待たない）
+  function preloadNarration(course) {
+    state.preloaded = {};
+    const keys = ["station", "goal"].concat(course.map((i) => BUNKAZAI[i].reportId));
+    keys.forEach((k) => { const url = narrationUrl(k); const a = new Audio(); a.preload = "auto"; a.src = url; state.preloaded[url] = a; });
+  }
+  function speakStop() { if (state.audio) { try { state.audio.pause(); } catch (e) {} state.audio = null; } clearTimeout(state.speakTimer); clearTimeout(state.startWatch); state.utter = null; try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} bgmDuck(false); }
   // 画面を閉じる・別のページへ移るときは音楽と読み上げを止める（2026-09-13 中司さん「ブラウザ閉じても白鳥の湖が止まらない」。
   // 同じサイトを別のタブでも開いていた可能性が高いが、念のためこの画面の分は確実に止める）
   window.addEventListener("pagehide", function () {

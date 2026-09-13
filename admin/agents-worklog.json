@@ -7224,6 +7224,21 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "武蔵屋めぐり ナレーション録音化（edge-tts・88ファイル）と再生の組み込み 0.18時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/assets/narration/（male/female 各44 MP3・manifest.json・build_narration.py・README.md）",
+            "site/metaverse/musashiya.js（版 2026-09-13p）",
+            "site/metaverse/index.html（読み込み版 20260913-16）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.18,
+          "partnerApproved": true,
+          "note": "中司さん提案「Keita は録音してネット経由にしない方がよい」→案B（edge-tts）を中司さんが選択。検証モードで駅（9.9秒）・通過（16.2秒）の再生、BGM 0.35→0.08→0.35、先読み6件、選択欄の既定が録音を確認。edge-tts は非公式ツールで公開利用の許諾があいまい（README に明記・了承済み）。VOICEVOX も試したいとの意向あり（1.8GB のダウンロード確認中）。hours は前回記録 274,418 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 292,249 / cost: $124.63"
+        },
+        {
+          "date": "2026-09-13",
           "title": "操作説明のコントローラー別読み替え＋武蔵屋めぐり開始高度500m 0.09時間",
           "category": "実装",
           "outputs": [
@@ -7520,6 +7535,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-19",
+          "title": "🗣 VOICEVOX を導入して武蔵屋めぐりのナレーションを試作する（キャラ選定・クレジット表記）",
+          "category": "実装",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "中司さんの承認（1.8GB のエンジンをダウンロードしてよいか、キャラクターをどれにするか）",
+          "note": "VOICEVOX ENGINE 0.25.2 Windows CPU版（github.com/VOICEVOX/voicevox_engine/releases・1,802MB）を C:\\\\Tools\\\\voicevox_engine に置く想定。音声を使うときは「VOICEVOX:キャラ名」のクレジットが必要。開始画面の声の選択に VOICEVOX を追加する。"
+        },
         {
           "due": "2026-09-19",
           "title": "✅ CiDAO案内スライド・スタッフ用A4手順書の文言を確認する（未登録者の登録手順・受付の流れが実機と合うか）",
