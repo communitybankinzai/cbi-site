@@ -7224,6 +7224,23 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "VOICEVOX ENGINE 導入・ずんだもん版ナレーション44ファイル生成・声の3択化 0.33時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Tools/voicevox_engine/windows-cpu/（展開・起動確認）",
+            "site/metaverse/assets/narration/zundamon/（44 MP3）・build_narration_voicevox.py・README.md・manifest.json",
+            "site/metaverse/musashiya.js（版 2026-09-13s）",
+            "site/metaverse/index.html（読み込み版 20260913-19）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json",
+            "events/2026-11-03_武蔵屋/ナレーション試作/（聞き比べ5本）"
+          ],
+          "hours": 0.33,
+          "partnerApproved": true,
+          "note": "中司さん承認でダウンロード（1.8GB）→py7zrで展開→エンジン起動→4キャラ試作を送付→「ずんだもんでばっちり」で決定。CPU版は長文1ファイル約1分。検証モードで設定メニューのボタン・パネルの3択と↑↓循環・保存・既定ずんだもん・クレジット表示・録音再生先フォルダを確認。中司さん指摘「既定になっていない」は未公開＋旧保存値が原因で、鍵を v2 に変更。共有ボードに N's factory 側への申し送り（エンジンの場所・起動法）を掲示。hours は前回記録からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 333,432 / cost: $161.90"
+        },
+        {
+          "date": "2026-09-13",
           "title": "2Pレースの通過合図（札＋チャイム）＋VOICEVOX ENGINE の取得 0.08時間",
           "category": "実装",
           "outputs": [
@@ -7549,15 +7566,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-09-19",
-          "title": "🗣 VOICEVOX を導入して武蔵屋めぐりのナレーションを試作する（キャラ選定・クレジット表記）",
-          "category": "実装",
-          "priority": "中",
-          "status": "待ち",
-          "blockedBy": "中司さんの承認（1.8GB のエンジンをダウンロードしてよいか、キャラクターをどれにするか）",
-          "note": "VOICEVOX ENGINE 0.25.2 Windows CPU版（github.com/VOICEVOX/voicevox_engine/releases・1,802MB）を C:\\\\Tools\\\\voicevox_engine に置く想定。音声を使うときは「VOICEVOX:キャラ名」のクレジットが必要。開始画面の声の選択に VOICEVOX を追加する。"
-        },
         {
           "due": "2026-09-19",
           "title": "✅ CiDAO案内スライド・スタッフ用A4手順書の文言を確認する（未登録者の登録手順・受付の流れが実機と合うか）",

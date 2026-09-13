@@ -11,7 +11,7 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13p";
+  const MSY_VERSION = "2026-09-13s";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -32,8 +32,16 @@
   function loadVoiceName() { try { const v = localStorage.getItem(VOICE_NAME_KEY); return v === null ? "__rec" : v; } catch (e) { return "__rec"; } }
   function saveVoiceName(n) { try { localStorage.setItem(VOICE_NAME_KEY, n || ""); } catch (e) {} }
   const useRec = () => state.voiceName === "__rec";
-  const VOICE_KEY = "cbi-meta-msy-voice-v1";
-  function loadVoice() { try { return localStorage.getItem(VOICE_KEY) === "female" ? "female" : "male"; } catch (e) { return "male"; } }
+  const VOICE_KEY = "cbi-meta-msy-voice-v2"; // v1 は Keita/Nanami 時代の保存値。ずんだもんを既定にするため鍵を変えた（2026-09-13）
+  // 声：zundamon（VOICEVOX:ずんだもん・既定。2026-09-13 中司さん「ずんだもんでばっちり」）／male（Keita）／female（Nanami）
+  const VOICE_INFO = {
+    zundamon: { label: "ずんだもん", folder: "zundamon", gender: "female", credit: "VOICEVOX:ずんだもん" },
+    male: { label: "Keita", folder: "male", gender: "male", credit: "" },
+    female: { label: "Nanami", folder: "female", gender: "female", credit: "" },
+  };
+  function loadVoice() { try { const v = localStorage.getItem(VOICE_KEY); return VOICE_INFO[v] ? v : "zundamon"; } catch (e) { return "zundamon"; } }
+  const voiceInfo = () => VOICE_INFO[state.voice] || VOICE_INFO.zundamon;
+  const voiceGender = () => voiceInfo().gender;
   function saveVoice(v) { try { localStorage.setItem(VOICE_KEY, v); } catch (e) {} }
   // 武蔵屋イベントモードか（index.html の applyMode が body.modeMusashiya を付ける）。旧URL ?event=musashiya も可
   const inEventMode = () => document.body.classList.contains("modeMusashiya") || params.get("event") === "musashiya";
@@ -166,30 +174,67 @@
           '<button type="button" data-age="kids" class="' + (isKids() ? "sel" : "") + '">👦 こども</button>' +
           '<button type="button" data-age="adult" class="' + (isKids() ? "" : "sel") + '">🧑 おとな</button>' +
         "</div>" +
-        '<p style="font-size:13px;color:#cfe6ff;margin-top:10px">こども用の読み上げの声（十字キー ↑↓ でも切替）</p>' +
-        '<div class="msyAge msyVoice">' +
-          '<button type="button" data-voice="male" class="' + (state.voice === "male" ? "sel" : "") + '">👨 男性</button>' +
-          '<button type="button" data-voice="female" class="' + (state.voice === "female" ? "sel" : "") + '">👩 女性</button>' +
-          '<button type="button" data-act="voicetest" style="flex:.7">🔊 ためしに聞く</button>' +
-        "</div>" +
-        '<div style="font-size:12px;color:#cfe6ff;margin-top:4px">声をえらぶ：<select id="msyVoiceSel" style="font-size:13px;max-width:100%">' + voiceOptionsHtml() + "</select></div>" +
-        '<div id="msyVoiceName" style="font-size:11px;color:#9fb6cc;min-height:1.2em"></div>' +
+        '<p style="font-size:12px;color:#9fb6cc;margin-top:8px">🗣 読み上げの声：<b>' + esc(useRec() ? voiceInfo().label : "端末の声") + "</b>（⚙設定 → 🗣 ナレーションの声 で変更）</p>" +
         '<div class="msyRow"><button type="button" data-act="close">とじる</button><button type="button" class="go" data-act="start">🚀 スタート</button></div>' +
-        '<div class="msyVer">版 ' + MSY_VERSION + "</div>" +
+        '<div class="msyVer">音声：VOICEVOX:ずんだもん（VOICEVOX ENGINE で生成）　版 ' + MSY_VERSION + "</div>" +
       "</div>";
   }
   // 端末にある日本語の声の一覧（Edge なら Keita／Nanami の Online (Natural) が入る）。空なら準備待ち
   function voiceOptionsHtml() {
     const vs = jaVoices();
-    let html = '<option value="__rec"' + (state.voiceName === "__rec" ? " selected" : "") + '>録音ずみの声（' + (state.voice === "male" ? "Keita" : "Nanami") + "・推奨）</option>" +
-      '<option value=""' + (state.voiceName === "" ? " selected" : "") + '>端末の声・おまかせ（' + (state.voice === "male" ? "男性" : "女性") + "）</option>";
+    let html = '<option value="__rec"' + (state.voiceName === "__rec" ? " selected" : "") + '>録音ずみの声（' + voiceInfo().label + "・推奨）</option>" +
+      '<option value=""' + (state.voiceName === "" ? " selected" : "") + '>端末の声・おまかせ（' + (voiceGender() === "male" ? "男性" : "女性") + "）</option>";
     vs.forEach((v) => { html += '<option value="' + esc(v.name) + '"' + (v.name === state.voiceName ? " selected" : "") + ">" + esc(v.name.replace(/^Microsoft /, "").replace(/ - Japanese \(Japan\)$/, "")) + "</option>"; });
     if (!vs.length) html += '<option value="" disabled>（日本語の声が見つかりません）</option>';
     return html;
   }
-  modal.addEventListener("change", function (e) {
+  // ---- ⚙設定 → 🗣 ナレーションの声（2026-09-13 中司さん「音声は設定で選択できるようにして」）----
+  const vpanel = document.createElement("div");
+  vpanel.id = "msyVoicePanel";
+  vpanel.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:131";
+  document.body.appendChild(vpanel);
+  function renderVoicePanel() {
+    vpanel.innerHTML =
+      '<div class="msyBox">' +
+        "<h2>🗣 ナレーションの声</h2>" +
+        '<p style="font-size:13px;color:#cfe6ff">到着したときの説明を読む声をえらびます（十字キー ↑↓ でも切替）</p>' +
+        '<div class="msyAge msyVoice">' +
+          '<button type="button" data-voice="zundamon" class="' + (state.voice === "zundamon" ? "sel" : "") + '">🟢 ずんだもん</button>' +
+          '<button type="button" data-voice="male" class="' + (state.voice === "male" ? "sel" : "") + '">👨 Keita</button>' +
+          '<button type="button" data-voice="female" class="' + (state.voice === "female" ? "sel" : "") + '">👩 Nanami</button>' +
+        "</div>" +
+        '<div style="font-size:12px;color:#cfe6ff;margin-top:8px">録音か端末の声か：<select id="msyVoiceSel" style="font-size:13px;max-width:100%">' + voiceOptionsHtml() + "</select></div>" +
+        '<div id="msyVoiceName" style="font-size:11px;color:#9fb6cc;min-height:1.2em;margin-top:4px"></div>' +
+        '<div class="msyRow"><button type="button" data-act="voicetest">🔊 ためしに聞く</button><button type="button" class="go" data-act="vclose">OK</button></div>' +
+        '<div class="msyVer">音声：VOICEVOX:ずんだもん（VOICEVOX ENGINE で生成）／Keita・Nanami（Microsoft）</div>' +
+      "</div>";
+  }
+  function openVoicePanel() { renderVoicePanel(); vpanel.style.display = "flex"; }
+  function closeVoicePanel() { vpanel.style.display = "none"; speakStop(); if (modal.classList.contains("show")) renderModal(); }
+  vpanel.addEventListener("click", function (e) {
+    if (e.target === vpanel) { closeVoicePanel(); return; }
+    const b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.voice) { state.voice = b.dataset.voice; saveVoice(state.voice); if (!useRec()) { state.voiceName = ""; saveVoiceName(""); } renderVoicePanel(); return; }
+    if (b.dataset.act === "voicetest") { speakSample(); return; }
+    if (b.dataset.act === "vclose") closeVoicePanel();
+  });
+  vpanel.addEventListener("change", function (e) {
     if (e.target && e.target.id === "msyVoiceSel") { state.voiceName = e.target.value; saveVoiceName(state.voiceName); }
   });
+  function placeVoiceBtn(inMode) {
+    let btn = document.getElementById("msyVoiceBtn");
+    const menu = document.querySelector("#tbGroupSettings .tbMenu");
+    if (inMode) {
+      if (!btn && menu) {
+        btn = document.createElement("button");
+        btn.id = "msyVoiceBtn"; btn.textContent = "🗣 ナレーションの声";
+        btn.title = "武蔵屋めぐりの説明を読む声（ずんだもん／Keita／Nanami／端末の声）をえらびます";
+        btn.addEventListener("click", openVoicePanel);
+        menu.insertBefore(btn, menu.firstChild);
+      }
+    } else if (btn) btn.remove();
+  }
   modal.addEventListener("click", function (e) {
     if (e.target === modal) { closeModal(); return; }
     const b = e.target.closest("button");
@@ -514,7 +559,7 @@
     if (!window.speechSynthesis) return null;
     const vs = jaVoices();
     if (state.voiceName) { const v = vs.find((x) => x.name === state.voiceName); if (v) return v; }
-    const order = VOICE_NAMES[state.voice] || VOICE_NAMES.male;
+    const order = VOICE_NAMES[voiceGender()] || VOICE_NAMES.male;
     for (const key of order) { const v = vs.find((x) => x.name.indexOf(key) >= 0); if (v) return v; }
     return vs[0] || null;
   }
@@ -553,7 +598,7 @@
       state.startWatch = setTimeout(function () {
         if (state.utter !== u || (state.lastSpeech && state.lastSpeech.started)) return;
         const local = jaVoices().filter((x) => x.localService && !(v && x.name === v.name));
-        const pref = VOICE_NAMES[state.voice] || VOICE_NAMES.male;
+        const pref = VOICE_NAMES[voiceGender()] || VOICE_NAMES.male;
         let alt = null;
         for (const key of pref) { alt = local.find((x) => x.name.indexOf(key) >= 0); if (alt) break; }
         alt = alt || local[0];
@@ -576,7 +621,7 @@
     const el = document.getElementById("msyVoiceName");
     if (useRec()) {
       narrate("station", "こんにちは。武蔵屋めぐりへ ようこそ。");
-      if (el) el.textContent = "録音ずみの声（" + (state.voice === "female" ? "Nanami" : "Keita") + "）で、駅の案内を再生します";
+      if (el) el.textContent = "録音ずみの声（" + voiceInfo().label + "）で、駅の案内を再生します" + (voiceInfo().credit ? "　" + voiceInfo().credit : "");
       return;
     }
     const v = speak("こんにちは。武蔵屋めぐりへ ようこそ。白鳥になって、印西の空を飛びましょう。");
@@ -591,7 +636,7 @@
   // ---- 録音ずみナレーション（assets/narration/<male|female>/<key>_<kids|adult>.mp3・edge-tts で生成）----
   // ネット経由の合成をやめ、同じ声で確実に鳴らす（2026-09-13 中司さん「Keita は録音してネット経由にしない方がよい」案B）。
   // ファイルが無い／再生に失敗したときだけ端末の声（speak）に戻る
-  function narrationUrl(key) { return "assets/narration/" + (state.voice === "female" ? "female" : "male") + "/" + key + "_" + (isKids() ? "kids" : "adult") + ".mp3?v=" + MSY_VERSION; }
+  function narrationUrl(key) { return "assets/narration/" + voiceInfo().folder + "/" + key + "_" + (isKids() ? "kids" : "adult") + ".mp3?v=" + MSY_VERSION; }
   function narrate(key, fallbackText) {
     if (!useRec()) { speak(fallbackText); return; }
     speakStop();
@@ -670,7 +715,7 @@
 
   // ---- コントローラー・キーボード（開始画面とポップアップを開いているときだけ） ----
   let padRaf = 0, padPrev = {};
-  function uiOpen() { return modal.classList.contains("show") || pop.classList.contains("show") || state.waiting; }
+  function uiOpen() { return modal.classList.contains("show") || pop.classList.contains("show") || state.waiting || vpanel.style.display === "flex"; }
   window.msyAbort = function () { if (state.on) ttAbort(); };
   function readPads() {
     const out = [];
@@ -715,6 +760,7 @@
     padRaf = requestAnimationFrame(padLoop);
   }
   function onOk() {
+    if (vpanel.style.display === "flex") { closeVoicePanel(); return; }
     if (modal.classList.contains("show")) { start(state.age); return; }
     if (state.waiting) { readyGo(); return; }
     if (pop.classList.contains("show")) { if (state.popFinal) openModal(); else hidePop(); }
@@ -726,16 +772,18 @@
     renderModal();
   }
   function onUD() {
-    if (!modal.classList.contains("show")) return;
-    state.voice = state.voice === "male" ? "female" : "male";
+    const inPanel = vpanel.style.display === "flex";
+    if (!inPanel && !modal.classList.contains("show")) return;
+    const keys = Object.keys(VOICE_INFO);
+    state.voice = keys[(keys.indexOf(state.voice) + 1) % keys.length];
     saveVoice(state.voice);
-    renderModal();
+    if (inPanel) renderVoicePanel(); else renderModal();
   }
   document.addEventListener("keydown", function (e) {
     if (!uiOpen()) return;
     if (e.key === "Enter") { e.preventDefault(); onOk(); }
     else if ((e.key === "ArrowUp" || e.key === "ArrowDown") && modal.classList.contains("show")) { e.preventDefault(); onUD(); }
-    else if (e.key === "Escape") { if (modal.classList.contains("show")) closeModal(); else if (!state.popFinal) hidePop(); }
+    else if (e.key === "Escape") { if (vpanel.style.display === "flex") closeVoicePanel(); else if (modal.classList.contains("show")) closeModal(); else if (!state.popFinal) hidePop(); }
     else if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && modal.classList.contains("show")) { e.preventDefault(); onLR(); }
   }, true);
 
@@ -778,6 +826,7 @@
   }
   function enterMode() {
     placeSwanBtn(true);
+    placeVoiceBtn(true);
     rtDetach(true); // 会場では他の利用者の光点・同行者リストを出さない
     window.flightClearanceM = FLIGHT_CLEARANCE_M; // 飛行中に地面へ近づける（index.html の keepAboveGround が見る）
     if (state.entered) return;
@@ -793,6 +842,7 @@
   window.msyLeaveMode = function () { // 別のモードへ切り替えたとき
     state.entered = false;
     placeSwanBtn(false);
+    placeVoiceBtn(false);
     rtDetach(false);
     delete window.flightClearanceM;
     if (state.on && typeof ttAbort === "function") ttAbort();

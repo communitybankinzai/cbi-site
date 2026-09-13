@@ -1,5 +1,7 @@
 # 武蔵屋めぐり ナレーション音声
 
+`zundamon/`（**VOICEVOX:ずんだもん**・ノーマル・話速1.1・既定の声。2026-09-13 中司さん決定）は VOICEVOX ENGINE 0.25.2 で生成（`build_narration_voicevox.py`。エンジンは `C:\Tools\voicevox_engine\windows-cpu\run.exe` を起動しておく）。**この音声を使う場所には「VOICEVOX:ずんだもん」のクレジットを表示する**（VOICEVOX 利用規約・ずんだもん利用規約。3Dワールドの開始画面に記載済み）。
+
 `male/`（ja-JP-KeitaNeural）・`female/`（ja-JP-NanamiNeural）に、文化財20件 ×（kids／adult）＋ 駅（station）＋ ゴール（goal＝前置き＋岩井家住宅主屋）の MP3。計88ファイル・約11MB（2026-09-13 生成）。
 
 - 生成：`python build_narration.py`（文が変わった分だけ作り直す。`--force` で全部）。`manifest.json` に文のハッシュを記録

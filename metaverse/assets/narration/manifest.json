@@ -527,6 +527,270 @@
    "chars": 85,
    "voice": "ja-JP-NanamiNeural",
    "bytes": 82368
+  },
+  "zundamon/goal_kids.mp3": {
+   "hash": "c77a382b82a3",
+   "chars": 141,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 198765
+  },
+  "zundamon/iwaike-jutaku-omoya_kids.mp3": {
+   "hash": "eb77ee01cf56",
+   "chars": 125,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 176877
+  },
+  "zundamon/goal_adult.mp3": {
+   "hash": "390446e1f5ef",
+   "chars": 170,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 266349
+  },
+  "zundamon/iwaike-jutaku-omoya_adult.mp3": {
+   "hash": "6dc9779fac5d",
+   "chars": 155,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 244269
+  },
+  "zundamon/houjuin-kannondo_kids.mp3": {
+   "hash": "b51ea8263382",
+   "chars": 104,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 143085
+  },
+  "zundamon/houjuin-kannondo_adult.mp3": {
+   "hash": "2dfd9ee83bbf",
+   "chars": 119,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 195693
+  },
+  "zundamon/kioroshi-kaiso_kids.mp3": {
+   "hash": "67295db5e1ba",
+   "chars": 99,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 119085
+  },
+  "zundamon/kioroshi-kaiso_adult.mp3": {
+   "hash": "d520d48c92a2",
+   "chars": 148,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 232557
+  },
+  "zundamon/enmei-jizo-senzoji_kids.mp3": {
+   "hash": "78f8c2fa3094",
+   "chars": 99,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 130605
+  },
+  "zundamon/enmei-jizo-senzoji_adult.mp3": {
+   "hash": "f843f5223e0a",
+   "chars": 139,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 237165
+  },
+  "zundamon/dozo-juichimen-kannon_kids.mp3": {
+   "hash": "320a407e564b",
+   "chars": 110,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 135981
+  },
+  "zundamon/dozo-juichimen-kannon_adult.mp3": {
+   "hash": "a1df4cac3987",
+   "chars": 136,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 243501
+  },
+  "zundamon/jizo-bosatsu-ryuzo-bessho_kids.mp3": {
+   "hash": "afc12bcdd347",
+   "chars": 107,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 137133
+  },
+  "zundamon/jizo-bosatsu-ryuzo-bessho_adult.mp3": {
+   "hash": "a00a958a320e",
+   "chars": 129,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 209517
+  },
+  "zundamon/kongo-rikishi-ryusuiji_kids.mp3": {
+   "hash": "e2c25069cc88",
+   "chars": 93,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 120621
+  },
+  "zundamon/kongo-rikishi-ryusuiji_adult.mp3": {
+   "hash": "8ed94fde8df5",
+   "chars": 135,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 235437
+  },
+  "zundamon/bonsho-oan_kids.mp3": {
+   "hash": "3dc0bed3da1f",
+   "chars": 117,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 153261
+  },
+  "zundamon/bonsho-oan_adult.mp3": {
+   "hash": "c9b35827fcc0",
+   "chars": 141,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 236397
+  },
+  "zundamon/bonsho-kenmu_kids.mp3": {
+   "hash": "1119b027d255",
+   "chars": 110,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 140205
+  },
+  "zundamon/bonsho-kenmu_adult.mp3": {
+   "hash": "108ec4029932",
+   "chars": 140,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 226605
+  },
+  "zundamon/magome-gato_kids.mp3": {
+   "hash": "34fb2dfd486a",
+   "chars": 115,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 141549
+  },
+  "zundamon/magome-gato_adult.mp3": {
+   "hash": "e204ad6ea710",
+   "chars": 148,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 220269
+  },
+  "zundamon/tomi-jinja-shishimai_kids.mp3": {
+   "hash": "5cf7ee701a9b",
+   "chars": 102,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 125229
+  },
+  "zundamon/tomi-jinja-shishimai_adult.mp3": {
+   "hash": "634ce29b2e4f",
+   "chars": 143,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 232749
+  },
+  "zundamon/yakushi-nyorai-takisuiji_kids.mp3": {
+   "hash": "a9f74bfd8f66",
+   "chars": 104,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 130029
+  },
+  "zundamon/yakushi-nyorai-takisuiji_adult.mp3": {
+   "hash": "7d401ffec63e",
+   "chars": 137,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 219501
+  },
+  "zundamon/chudo-waniguchi-takefukuro_kids.mp3": {
+   "hash": "e38123650bcd",
+   "chars": 113,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 161325
+  },
+  "zundamon/chudo-waniguchi-takefukuro_adult.mp3": {
+   "hash": "1c691a380c64",
+   "chars": 124,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 222765
+  },
+  "zundamon/yoshiokake-kashi-monjo_kids.mp3": {
+   "hash": "950f763d1cb9",
+   "chars": 108,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 140397
+  },
+  "zundamon/yoshiokake-kashi-monjo_adult.mp3": {
+   "hash": "20613ceca799",
+   "chars": 149,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 235245
+  },
+  "zundamon/koganemaki-murakobata_kids.mp3": {
+   "hash": "59b3c7fdbb76",
+   "chars": 117,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 138285
+  },
+  "zundamon/koganemaki-murakobata_adult.mp3": {
+   "hash": "e0e4241e1c90",
+   "chars": 149,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 232173
+  },
+  "zundamon/bessho-shishimai_kids.mp3": {
+   "hash": "952d7cf40d40",
+   "chars": 113,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 144429
+  },
+  "zundamon/bessho-shishimai_adult.mp3": {
+   "hash": "eeda2788c077",
+   "chars": 140,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 214893
+  },
+  "zundamon/inazaki-shishimai_kids.mp3": {
+   "hash": "29b766ffd244",
+   "chars": 111,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 144813
+  },
+  "zundamon/inazaki-shishimai_adult.mp3": {
+   "hash": "8f8d976cf4a8",
+   "chars": 129,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 186861
+  },
+  "zundamon/kamijuku-kofun_kids.mp3": {
+   "hash": "815c389c8ed0",
+   "chars": 87,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 108141
+  },
+  "zundamon/kamijuku-kofun_adult.mp3": {
+   "hash": "d50ab407a444",
+   "chars": 130,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 190317
+  },
+  "zundamon/izumishinden-nomabori-iseki_kids.mp3": {
+   "hash": "fd5fa7170d9c",
+   "chars": 99,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 124077
+  },
+  "zundamon/izumishinden-nomabori-iseki_adult.mp3": {
+   "hash": "009afb4d0a30",
+   "chars": 146,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 247533
+  },
+  "zundamon/dosaku-kofungun_kids.mp3": {
+   "hash": "46377fb7b2d0",
+   "chars": 99,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 134253
+  },
+  "zundamon/dosaku-kofungun_adult.mp3": {
+   "hash": "ae3d087a7fa9",
+   "chars": 136,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 235245
+  },
+  "zundamon/station_kids.mp3": {
+   "hash": "729de3dc905d",
+   "chars": 67,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 83565
+  },
+  "zundamon/station_adult.mp3": {
+   "hash": "ea03b27bcf54",
+   "chars": 85,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 112749
   }
  },
  "voices": {
@@ -534,5 +798,13 @@
   "female": "ja-JP-NanamiNeural"
  },
  "rate": "+15%",
- "generated": "2026-09-13"
+ "generated": "2026-09-13",
+ "voicevox": {
+  "zundamon": {
+   "speaker": 3,
+   "credit": "VOICEVOX:ずんだもん",
+   "speed": 1.1,
+   "engine": "\"0.25.2\""
+  }
+ }
 }
