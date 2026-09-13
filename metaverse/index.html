@@ -1016,6 +1016,7 @@ if (location.protocol === "file:") {
   <!-- 常時表示（2026-09-05 整理：残りは4つの開閉メニューへ。ボタンの id と処理は変えていない） -->
   <button id="puzzleBtn">🏛 印西市文化財<span class="badge" id="puzzleCount">0/50</span></button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
+  <button id="musashiyaBtn" style="display:none" title="武蔵屋（岩井家住宅主屋）をスタートし、近くの文化財3か所をめぐって武蔵屋へ戻ります。到着するたびに写真と説明（こども用／おとな用）が出ます（武蔵屋イベントモード）">🏠 武蔵屋めぐり</button>
   <button id="nightBtn" class="off" title="街を夜景にします。星空・光の列・空にうかぶ いんザイ君のイルミネーションが出ます（イルミライINZAI向け。もう一度押すと昼に戻ります）">🌃 夜景</button>
   <button id="nightTourBtn" title="東の空から、いんザイ君の光のゲート10か所を順にくぐって千葉ニュータウン中央駅に降りる自動遊覧（約70秒）。操作すると途中でやめられます">🛸 夜間遊覧</button>
   <button id="nightHudBtn" title="宇宙船の操縦席の枠（支柱・足元の計器）を出す／消す。縦長の画面では既定で消えます">🛸 操縦席の枠</button>
@@ -1038,7 +1039,6 @@ if (location.protocol === "file:") {
       <button id="skyTagBtn" onclick="location.href='?mode=event&amp;race=tag&amp;v=20260907-3'">おにごっこ／ドッグファイト</button>
       <button id="pickModeBtn" title="ずれている文化財の正しい位置をクリックして座標を取得します（修正報告用）">🎯 位置修正</button>
       <button id="tonbiToggleBtn" class="off" title="画面の手前にトンビを飛ばします。移動や上昇に合わせて羽ばたきます">🦅 トンビ</button>
-      <button id="musashiyaBtn" title="武蔵屋（岩井家住宅主屋）をスタートし、近くの文化財3か所をめぐって武蔵屋へ戻るイベント用モード。通過するたびに写真と説明（こども用／おとな用）が出ます">🏠 武蔵屋めぐり</button>
       <button id="swanToggleBtn" class="off" aria-pressed="false" title="本埜の白鳥で飛ぶ">🦢 本埜の白鳥</button>
     </div>
   </div>
@@ -1100,6 +1100,7 @@ if (location.protocol === "file:") {
     <button class="modeCard" onclick="applyMode('shop')">🛍 お店めぐり<small>FreeFree掲示板に載ったお店のピン。クリックでお店のサイトへ</small></button>
     <button class="modeCard" onclick="applyMode('bousai')">🛟 防災・地形の理解<small>浸水シミュレーション・避難所の場所確認</small></button>
     <button class="modeCard" onclick="applyMode('all')">🌏 すべて表示<small>文化財・お店・公民館のピンをまとめて（ピンは多くなります）</small></button>
+    <button class="modeCard" onclick="applyMode('musashiya')">🏠 武蔵屋イベント<small>武蔵屋から近くの文化財3か所をめぐって戻る（11/3 武蔵屋マルシェの会場用）</small></button>
     <p class="note">あとから「🔀 モード切替」（左上メニュー）でいつでも変更できます</p>
   </div>
 </div>
@@ -1969,7 +1970,7 @@ try {
   const bar = document.getElementById("topLeftBar");
   const groups = Array.from(bar.querySelectorAll(".tbGroup"));
   // 押すと別の画面や別タブが開く項目は、押した時点でメニューを畳む（切替系は状態が見えるよう開いたまま）
-  const CLOSE_AFTER = ["musashiyaBtn", "reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
+  const CLOSE_AFTER = ["reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
   function closeAll(except) {
     groups.forEach((g) => {
       if (g === except) return;
@@ -4854,21 +4855,31 @@ const MODE_KEY = "cbi-meta-mode-v1";
 //  bousai: 防災（避難所ピン＋浸水シミュレーション。演出なし）
 //  all   : すべて（文化財＋お店＋公民館のピン。ゲーム系UIあり）
 // 個別のピン表示トグルはどのモードでも使える（モードは初期状態を決めるだけ）
-const MODE_LIST = ["event", "shop", "bousai", "all"];
+const MODE_LIST = ["event", "shop", "bousai", "all", "musashiya"];
 let currentMode = "event";
 function applyMode(mode) {
   currentMode = MODE_LIST.indexOf(mode) >= 0 ? mode : "event";
   const m = currentMode;
   const bousai = m === "bousai";
+  const musashiya = m === "musashiya"; // 武蔵屋イベント（2026-09-13）：武蔵屋めぐり・音・設定だけを出す（文化財めぐりとは別のモード）
   const game = m === "event" || m === "all";
   try { localStorage.setItem(MODE_KEY, m); } catch (e) {}
+  document.body.classList.toggle("modeMusashiya", musashiya); // musashiya.js が見る
   // 文化財ゲーム系UI（ずかん・学習レポート・文化財マップ・文化財ピン切替・位置修正・タイムトライアル）
-  ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "pickModeBtn", "ttBtn", "vsRaceBtn", "musashiyaBtn"].forEach(id => {
+  ["puzzleBtn", "reportsBtn", "mapBtn", "pinToggleBtn", "pickModeBtn", "ttBtn", "vsRaceBtn"].forEach(id => {
     document.getElementById(id).style.display = game ? "" : "none";
   });
-  document.getElementById("tonbiToggleBtn").style.display = bousai ? "none" : "";
+  document.getElementById("musashiyaBtn").style.display = musashiya ? "" : "none";
+  // 武蔵屋イベントでは、夜景・ピン表示・あそぶのメニューとスポット一覧を隠す（会場で迷わないように）
+  ["nightBtn", "nightTourBtn", "nightTtBtn", "tbGroupPins", "tbGroupPlay", "panelToggle"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = musashiya ? "none" : "";
+  });
+  if (musashiya && typeof setSpotPanel === "function") setSpotPanel(false);
+  document.getElementById("tonbiToggleBtn").style.display = (bousai || musashiya) ? "none" : "";
   if (bousai) { setTonbiVisible(false); setSwanVisible(false); } // 防災用途では演出を出さない
-  document.getElementById("shopToggleBtn").style.display = bousai ? "none" : "";
+  if (musashiya) setTonbiVisible(false);
+  document.getElementById("shopToggleBtn").style.display = (bousai || musashiya) ? "none" : "";
   // 防災系UI（避難所トグル・浸水シミュレーション）
   document.getElementById("shelterToggleBtn").style.display = bousai ? "" : "none";
   document.getElementById("floodControls").style.display = bousai ? "" : "none";
@@ -4886,8 +4897,10 @@ function applyMode(mode) {
     if (!shelterPinsVisible) document.getElementById("shelterToggleBtn").click(); // 初回は避難所データも取得
     if (typeof setSpotPanel === "function") setSpotPanel(true); // 浸水シミュレーションは右パネル内なので開いて見せる
   }
-  // ピンの初期状態
-  if (bunkazaiPinsVisible !== game) { bunkazaiPinsVisible = game; applyBunkazaiPinVisibility(); }
+  // ピンの初期状態（武蔵屋イベントでも文化財ピンは出す。めぐり中は次の地点だけに絞られる）
+  if (bunkazaiPinsVisible !== (game || musashiya)) { bunkazaiPinsVisible = (game || musashiya); applyBunkazaiPinVisibility(); }
+  if (musashiya) { if (typeof window.msyEnterMode === "function") window.msyEnterMode(); }
+  else if (typeof window.msyLeaveMode === "function") window.msyLeaveMode();
   setShopPins(m === "shop" || m === "all", m === "all"); // 「すべて」では0件でも案内を出さない
   if (m === "all" && !kominkanPinsVisible) document.getElementById("kominkanToggleBtn").click();
   if (m !== "all" && kominkanPinsVisible) document.getElementById("kominkanToggleBtn").click();
@@ -6397,6 +6410,6 @@ try {
 <script src="vs-race.js?v=20260910-4"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260910-2"></script>
-<script src="musashiya.js?v=20260913-3"></script>
+<script src="musashiya.js?v=20260913-4"></script>
 </body>
 </html>

@@ -6,15 +6,18 @@
 // カウントダウン・方向案内・通過判定は index.html のタイムトライアル（ttActive／ttCourse／onTick）をそのまま使い、
 // サーバー記録・通過演出・目的地カード・ゴール処理だけをこのファイルで差し替える。
 // 記録はサーバーに残さない（毎回コースが変わり順位の比較が公平にならないため。2026-09-13 中司さん決定）。
-// 入口：☰「あそぶ」→「🏠 武蔵屋めぐり」、または URL に ?event=musashiya（会場用。読み込み後に自動で開く）
+// 入口：モード「🏠 武蔵屋イベント」（?mode=musashiya。文化財めぐりとは別のモード・2026-09-13）。会場ではこのURLで開くと
+// 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13c";
+  const MSY_VERSION = "2026-09-13d";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
   const params = new URLSearchParams(location.search);
-  const state = { on: false, age: loadAge(), home: -1, texts: {}, popTimer: null, popFinal: false, lastCourse: [] };
+  const state = { on: false, age: loadAge(), home: -1, texts: {}, popTimer: null, popFinal: false, lastCourse: [], entered: false };
+  // 武蔵屋イベントモードか（index.html の applyMode が body.modeMusashiya を付ける）。旧URL ?event=musashiya も可
+  const inEventMode = () => document.body.classList.contains("modeMusashiya") || params.get("event") === "musashiya";
   window.msyState = state; // 検証用
 
   function loadAge() { try { return localStorage.getItem(AGE_KEY) === "adult" ? "adult" : "kids"; } catch (e) { return "kids"; } }
@@ -403,41 +406,53 @@
 
   // 会場URL（?event=musashiya）では通常の精霊出現を止める。開始前に武蔵屋の前へ移動するので、
   // ピース未取得の端末では武蔵屋の精霊がすぐ出てしまうため。ピースは武蔵屋めぐりの通過で獲得できる
-  if (params.get("event") === "musashiya") {
+  (function () {
     const origEnc = window.showEncounter;
-    if (typeof origEnc === "function") window.showEncounter = function () {};
-  }
+    if (typeof origEnc !== "function") return;
+    window.showEncounter = function () { if (inEventMode()) return; return origEnc.apply(this, arguments); };
+  })();
 
   // ---- 入口 ----
   const btn = document.getElementById("musashiyaBtn");
   if (btn) btn.addEventListener("click", openModal);
   window.msyOpen = openModal;
   window.msyHomeHeight = () => state.homeHeight; // 検証用
-  if (params.get("event") === "musashiya") {
-    // ブラウザは画面に一度触れるまで音を出せないため、最初のクリック・キー操作（受付の操作を含む）で白鳥の湖を流す
+  // ブラウザは画面に一度触れるまで音を出せないため、武蔵屋イベントモードでは最初のクリック・キー操作（受付の操作を含む）で白鳥の湖を流す
+  (function () {
     const first = function () {
+      if (!inEventMode()) return; // 別のモードのときは何もせず、次の操作でまた見る
       document.removeEventListener("pointerdown", first, true);
       document.removeEventListener("keydown", first, true);
       eventLook(true);
     };
     document.addEventListener("pointerdown", first, true);
     document.addEventListener("keydown", first, true);
-  }
+  })();
   window.msyStart = start;
-  // 会場用：?event=musashiya なら、文化財データの読み込みと受付（CiDAO照合）が済んだところで開始画面を出す
-  if (params.get("event") === "musashiya") {
+  // モードに入ったとき（URL・モード切替のどちらでも）：白鳥・武蔵屋の前へ移動・開始画面。1回だけ
+  function enterMode() {
+    if (state.entered) return;
+    const loaded = typeof BUNKAZAI !== "undefined" && BUNKAZAI.length > 0;
+    const received = params.has("notiles") || params.has("cinema") || typeof window.nightLogin !== "function" || !!window.nightLogin(1);
+    if (!loaded || !received) return; // 読み込み・受付（CiDAO照合）待ち。下の巡回が呼び直す
+    state.entered = true;
+    eventLook(false);
+    goHome();
+    setTimeout(openModal, 800);
+  }
+  window.msyEnterMode = enterMode;
+  window.msyLeaveMode = function () { // 別のモードへ切り替えたとき
+    state.entered = false;
+    if (state.on && typeof ttAbort === "function") ttAbort();
+    hidePop(); closeModal();
+  };
+  // 会場用：?mode=musashiya で開いたときは、文化財データの読み込みと受付が済んだところで開始画面を出す
+  (function () {
     let tries = 0;
     const t = setInterval(function () {
       tries++;
-      const loaded = typeof BUNKAZAI !== "undefined" && BUNKAZAI.length > 0;
-      const received = params.has("notiles") || params.has("cinema") || typeof window.nightLogin !== "function" || !!window.nightLogin(1);
-      if (loaded && received) {
-        clearInterval(t);
-        eventLook(false);
-        goHome();
-        setTimeout(openModal, 800);
-      }
-      if (tries > 1200) clearInterval(t); // 10分で諦める
+      if (inEventMode()) enterMode();
+      if (state.entered || tries > 1200) clearInterval(t); // 10分で諦める
     }, 500);
-  }
+  })();
 })();

@@ -7224,6 +7224,20 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "武蔵屋イベントを独立モード化（?mode=musashiya・UI絞り込み） 0.18時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（MODE_LIST・モード選択カード・applyMode の表示切替・入口ボタンの移動）",
+            "site/metaverse/musashiya.js（版 2026-09-13d）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.18,
+          "partnerApproved": false,
+          "note": "中司さん指示「文化財めぐりモードと武蔵屋イベントモードはわけて」→案1（独立モード・UI絞り込み）で実装。検証モードで、モードで隠す12要素と残す6要素の表示、武蔵屋ボタンが文化財めぐりでは消えること、モード切替の往復（走行中止・再入場）、1周、通常の精霊出現の抑止、コンソールエラー0を確認。hours は前回記録 118,209 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 135,961 / cost: $31.20"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋めぐり 読み上げ・HUD位置・開始直後の精霊カード抑止 0.16時間",
           "category": "実装",
           "outputs": [
