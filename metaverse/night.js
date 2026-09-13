@@ -990,7 +990,7 @@
     tourSay("arrive");
     await cinemaFlyTo(STATION_CNT.lon, STATION_CNT.lat - 0.0028, 170, -25, 0, 6);
     if (!alive()) return stop();
-    caption("🎮 ここからは <b>あなたが操縦</b><br><small>左スティックで前後左右・右スティックで見回す・R1でダッシュ<br>⏱ タイムトライアルは T キー</small>", 9000);
+    caption("🎮 ここからは <b>あなたが操縦</b><br><small>左スティックで前後左右・右スティックで見回す・LB/RBで旋回・Xで加速<br>⏱ タイムトライアルは T キー</small>", 9000);
     tourSay("handover");
     setTimeout(function () { if (!tourRunning) tourCredit(false); }, 12000);
     cameraBankEnabled = prevBank;

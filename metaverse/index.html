@@ -2329,8 +2329,8 @@ const HELP_KEYBOARD =
 // ボタン名はつないでいるコントローラーの種類で変える（2026-09-13 中司さん「GameSir T3 Lite には○ボタンがない」）。
 // PlayStation 系＝R1/R2/○/×/□/OPTIONS、Xbox 配列（GameSir T3 Lite・Xbox 360/One 等）＝RB/RT/A/B/X/≡。ボタン番号は標準配列で同じ
 const PAD_LABELS = {
-  ps:   { R2: "R2", L2: "L2", R1: "R1", SQ: "□", O: "○", X: "×", OPT: "OPTIONS" },
-  xbox: { R2: "RT", L2: "LT", R1: "RB", SQ: "X", O: "A", X: "B", OPT: "≡（メニュー）" },
+  ps:   { R2: "R2", L2: "L2", ROLL: "L1 ／ R1", BOOST: "□", SPD: "△", O: "○", X: "×", OPT: "OPTIONS" },
+  xbox: { R2: "RT", L2: "LT", ROLL: "LB ／ RB", BOOST: "X", SPD: "Y", O: "A", X: "B", OPT: "≡（メニュー）" },
 };
 function padKindForHelp() {
   const pads = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -2348,7 +2348,8 @@ function helpGamepadHtml(kind) {
     "移動：<b>左スティック</b> ／ 見回す：<b>右スティック</b><br>" +
     "上昇・下降：<b>" + L.R2 + "</b> ／ <b>" + L.L2 + "</b>（十字キー上下でも）<br>" +
     "飛行中は<b>後退できません</b>（旋回して向きを変える）<br>" +
-    "速く飛ぶ：<b>" + L.R1 + "</b>を押している間（<b>" + L.SQ + "</b>で速度切替）<br>" +
+    "旋回（左／右に傾く）：<b>" + L.ROLL + "</b><br>" +
+    "速く飛ぶ：<b>" + L.BOOST + "</b>を押している間（<b>" + L.SPD + "</b>で速度切替）<br>" +
     "精霊をゲット：<b>" + L.O + "</b> ／ 閉じる：<b>" + L.X + "</b><br>" +
     "主要施設へ飛ぶ：<b>十字キー左右</b><br>" +
     "勝手に動くとき：手を離して<b>" + L.OPT + "</b>";
@@ -2991,6 +2992,7 @@ const soloFlightInput = {}, soloLookInput = {};
 let tonbiPrevHeading = undefined; // トンビの傾き用（前フレームの機首の向き）
 let flyBank = 0;                  // 画面の傾き（度）。曲がるときに地平線が傾く
 let yawTiltSmooth = 0;            // 機首の回る速さ（−1〜1・平滑化済み）。トンビと画面の傾きに使う
+let padRollInput = 0;              // LB/RB の旋回入力（-1〜1）。押している間は下の自動水平を止める
 let cameraBankEnabled = true;     // プレイ動画モード（?cinema=3）は自前で傾けるため false にする
 // 1フレームの内訳を測る。重さの原因が自前の処理か Cesium の描画かを切り分けるため
 let tickT0 = 0, tickLogicMs = 0, renderT0 = 0, renderMs = 0, frameMs = 0, lastPostRender = 0, drawCmds = 0;
@@ -3040,8 +3042,8 @@ viewer.clock.onTick.addEventListener(function () {
   const cam = viewer.camera;
   // パッドは速度の計算にも使うので先に読む
   const pad = readGamepad();
-  // R1＝押しているあいだダッシュ。人差し指なので、右スティックで視点を回しながらでも押せる
-  const padDash = pad && pad.buttons[5] && pad.buttons[5].pressed ? SPEED_BOOST : 1;
+  // X（□）＝押しているあいだ加速。LB/RB（L1/R1）は旋回（ロール）に使う（2026-09-13 中司さん：全モードで旋回・2Pと同じ配置に統一）
+  const padDash = pad && pad.buttons[2] && pad.buttons[2].pressed ? SPEED_BOOST : 1;
   const baseSpeed = walkMode ? WALK_SPEED : FLY_SPEED;
   const speed = baseSpeed * ((keys["ShiftLeft"] || keys["ShiftRight"]) ? SPEED_BOOST : 1)
     * padDash * speedMultiplier * dt;
@@ -3073,9 +3075,11 @@ viewer.clock.onTick.addEventListener(function () {
     const look = CbiFlightInput.smooth(soloLookInput, {x:padValue[2],y:padValue[3]}, dt);
     const lookX = look.x;
     const lookY = look.y;
-    if (lookX !== 0 || lookY !== 0) {
+    // LB＝左へ旋回（ロール）／RB＝右へ旋回。飛行モードのときだけ（歩行では傾けない）
+    padRollInput = walkMode ? 0 : (Number(!!(pad.buttons[5] && pad.buttons[5].pressed)) - Number(!!(pad.buttons[4] && pad.buttons[4].pressed)));
+    if (lookX !== 0 || lookY !== 0 || padRollInput !== 0) {
       if (!walkMode) {
-        CbiFlightInput.rotate(cam,{rx:lookX,ry:lookY},dt);
+        CbiFlightInput.rotate(cam,{rx:lookX,ry:lookY,roll:padRollInput},dt);
       } else {
       cam.setView({
         orientation: {
@@ -3090,9 +3094,7 @@ viewer.clock.onTick.addEventListener(function () {
 
     // L2＝下降／R2＝上昇（アナログ。踏み込み量で速さが変わる）
     let padUp = padValue[5] - padValue[4];
-    // 古い個体は L2 が反応しないことがあるため、L1 でも下降できるようにしておく
-    // （R1 はダッシュに使うので、上昇の代わりは十字キーの上が受け持つ）
-    if (padUp === 0 && pad.buttons[4] && pad.buttons[4].pressed) padUp = -1;
+    // （以前は L1 でも下降できたが、L1/R1 を旋回に使うようにしたので外した。L2 が効かない個体は十字キーの下で下降する）
     // 左側のボタンがまとめて壊れている個体もあるので、十字キーの上下でも昇降できるようにする
     if (padUp === 0) {
       const dpadUp = pad.buttons[12] && pad.buttons[12].pressed ? 1 : 0;
@@ -3118,16 +3120,17 @@ viewer.clock.onTick.addEventListener(function () {
       snapPadCenterNow(pad);
       showPickResult("いまの位置をスティックの中心にしました。", 2500);
     }
-    // □＝移動の速さを切り替える（押しているあいだだけ効く R1 と違い、押すたびに段が変わる）
-    if (isDown(2) && !padPrevButtons[2]) {
+    // Y（△）＝移動の速さを切り替える（押しているあいだだけ効く X（□）の加速と違い、押すたびに段が変わる）
+    if (isDown(3) && !padPrevButtons[3]) {
       const m = cycleSpeedMultiplier();
       showPickResult(m > 1
-        ? "移動の速さを ×" + m + " にしました（R1を押しているあいだはさらに4倍）。"
+        ? "移動の速さを ×" + m + " にしました（X（□）を押しているあいだはさらに4倍）。"
         : "移動の速さを ×1（もとの速さ）に戻しました。", 2500);
     }
     padPrevButtons = pad.buttons.map((b) => b.pressed);
   } else {
     soloLookInput.x = soloLookInput.y = 0;
+    padRollInput = 0;
     padPrevButtons = [];
     padSeen = false; // 挿し直し・別のコントローラーに替えたら測り直す
   }
@@ -3168,7 +3171,7 @@ viewer.clock.onTick.addEventListener(function () {
   //   ・機首が真上／真下に近い（|ピッチ| > 75°）＝宙返りの最中
   //   ・背面飛行（|ロール| > 100°）＝起こすと宙返りが途中で止まってしまう
   // 積算値ではなく毎フレーム実際のロールから作り直すので、補正を休んだ後も飛び跳ねない
-  if (cameraBankEnabled) {
+  if (cameraBankEnabled && padRollInput === 0) { // LB/RB で旋回している間は、水平へ戻す処理を止める
     let rollDeg = Cesium.Math.toDegrees(cam.roll);
     if (rollDeg > 180) rollDeg -= 360;
     const pitchDeg = Cesium.Math.toDegrees(cam.pitch);

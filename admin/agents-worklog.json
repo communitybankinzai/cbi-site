@@ -7240,6 +7240,21 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "1人用コントローラー操作を2Pと統一（LB/RB旋回・X加速・Y速度切替）＋手順書更新 0.16時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（padDash・padRollInput・自動水平の停止条件・PAD_LABELS）",
+            "site/metaverse/night.js（遊覧の案内文）",
+            "events/2026-11-03_武蔵屋/CiDAO案内/（スライド・A4手順書のボタン名を A/B/X/Y・LB/RB・RT/LT に）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.16,
+          "partnerApproved": true,
+          "note": "中司さん指示「全てのモードで旋回できるように」→案1（2Pと同じ配置）。検証モードで模擬パッド（GameSir T3 Lite）により RB右・LB左に傾き離すと水平へ戻る、Yで速度×1→×2、操作説明の表示を確認。手順書スクリプトの自己コピーのエラーも修正。hours は前回記録 462,572 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 478,885 / cost: $255.42"
+        },
+        {
+          "date": "2026-09-13",
           "title": "イルミライを独立モード化・夜間遊覧のずんだもんナレーション・武蔵屋めぐり記録のやり直し対策と速さ上限の修正 0.37時間",
           "category": "実装",
           "outputs": [
