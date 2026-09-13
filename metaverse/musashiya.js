@@ -11,7 +11,7 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13s";
+  const MSY_VERSION = "2026-09-13t";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -127,23 +127,23 @@
     ".msyRow button{font-size:16px;padding:10px 16px;border-radius:10px;border:2px solid #7fc8ff;background:#1b3553;color:#fff;cursor:pointer}" +
     ".msyRow button.go{background:#ffd166;color:#10233a;border-color:#ffd166;font-weight:bold}" +
     ".msyVer{font-size:10px;color:#7f93a8;text-align:right;margin-top:6px}" +
-    "#msyPop{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:125;width:min(780px,94vw);max-height:86vh;overflow:auto;" +
+    "#msyPop{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:125;width:min(420px,38vw);max-height:82vh;overflow:auto;" + // 画面中央だと操作の邪魔になるので右端に（2026-09-13 中司さん）
       "background:rgba(12,24,40,.95);color:#fff;border:3px solid #ffd166;border-radius:18px;padding:16px 18px;display:none;box-shadow:0 10px 40px rgba(0,0,0,.55)}" +
     "#msyPop.show{display:block}" +
     "#msyPop .msyHead{font-size:20px;font-weight:bold;color:#ffd166;margin-bottom:10px}" +
-    "#msyPop .msyBody{display:flex;gap:16px;align-items:flex-start}" +
-    "#msyPop .msyBody img{width:42%;max-height:46vh;object-fit:contain;border-radius:10px;background:#000;flex:none}" +
-    "#msyPop .msyNoPhoto{width:42%;min-height:160px;flex:none;display:flex;align-items:center;justify-content:center;text-align:center;border:2px dashed #7fc8ff;border-radius:10px;color:#cfe6ff;font-size:15px;line-height:1.8;padding:12px}" +
+    "#msyPop .msyBody{display:flex;flex-direction:column;gap:10px;align-items:stretch}" +
+    "#msyPop .msyBody img{width:100%;max-height:30vh;object-fit:contain;border-radius:10px;background:#000;flex:none}" +
+    "#msyPop .msyNoPhoto{width:100%;min-height:100px;flex:none;display:flex;align-items:center;justify-content:center;text-align:center;border:2px dashed #7fc8ff;border-radius:10px;color:#cfe6ff;font-size:15px;line-height:1.8;padding:12px}" +
     "@media (max-width:640px){#msyPop .msyNoPhoto{width:100%;min-height:90px}}" +
     "#msyPop .msyName{font-size:22px;font-weight:bold;line-height:1.3}" +
     "#msyPop .msyKana{font-size:13px;color:#cfe6ff}" +
     "#msyPop .msyDesig{display:inline-block;font-size:12px;border:1px solid #7fc8ff;border-radius:8px;padding:1px 8px;margin:6px 0 2px}" +
-    "#msyPop .msyText{line-height:1.85;margin-top:6px;font-size:16px}" +
-    "#msyPop.kids .msyText{font-size:20px}" +
+    "#msyPop .msyText{line-height:1.75;margin-top:6px;font-size:14.5px}" +
+    "#msyPop.kids .msyText{font-size:17px}" +
     "#msyPop .msyCredit{font-size:11px;color:#9fb6cc;margin-top:8px}" +
     "#msyPop .msyTime{font-size:18px;margin:0 0 10px}" +
     "#msyPop .msyTime b{color:#7fc8ff;font-size:24px}" +
-    "@media (max-width:640px){#msyPop .msyBody{flex-direction:column}#msyPop .msyBody img{width:100%;max-height:34vh}#msyPop.kids .msyText{font-size:17px}}";
+    "@media (max-width:640px){#msyPop{right:3vw;left:3vw;top:auto;bottom:8px;transform:none;width:auto;max-height:55vh}#msyPop .msyBody img{max-height:22vh}#msyPop.kids .msyText{font-size:16px}}";
   document.head.appendChild(css);
 
   const modal = document.createElement("div");
@@ -544,7 +544,8 @@
     // ゴール（武蔵屋）の説明は一番大事なので、こども・おとなのどちらでも読み上げる（2026-09-13 中司さん）
     narrate("goal", (isKids() ? "ゴール！ 武蔵屋に とうちゃく。" : "ゴール。武蔵屋に到着しました。") + speechText(BUNKAZAI[state.home]));
   }
-  function hidePop() { pop.classList.remove("show"); clearTimeout(state.popTimer); speakStop(); }
+  // 閉じてもナレーションは止めない（次の到着で自動的に切り替わる。2026-09-13 中司さん「次へ押してもナレーションが終わるまで流して」）
+  function hidePop() { pop.classList.remove("show"); clearTimeout(state.popTimer); }
 
   // ---- 読み上げ（こども用の説明文を、Edge に入っている男性の声で。2026-09-13 中司さん指示） ----
   // Edge の日本語男性は「Microsoft Keita Online (Natural)」（自然な声・ネット必要）と「Microsoft Ichiro」（端末内）。
@@ -710,7 +711,7 @@
   (function () { // 中止（HUDの中止ボタン・モード切替など）
     const orig = window.ttAbort;
     if (typeof orig !== "function") return;
-    window.ttAbort = function () { state.on = false; state.waiting = false; state.leg0 = null; clearInterval(state.leg0Timer); state.leg0Timer = null; stopAltTimer(); leaveHudPlace(); hidePop(); return orig.apply(this, arguments); };
+    window.ttAbort = function () { state.on = false; state.waiting = false; state.leg0 = null; clearInterval(state.leg0Timer); state.leg0Timer = null; stopAltTimer(); leaveHudPlace(); hidePop(); speakStop(); return orig.apply(this, arguments); };
   })();
 
   // ---- コントローラー・キーボード（開始画面とポップアップを開いているときだけ） ----
@@ -846,7 +847,7 @@
     rtDetach(false);
     delete window.flightClearanceM;
     if (state.on && typeof ttAbort === "function") ttAbort();
-    hidePop(); closeModal();
+    hidePop(); speakStop(); closeModal();
   };
   // 会場用：?mode=musashiya で開いたときは、文化財データの読み込みと受付が済んだところで開始画面を出す
   (function () {
