@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "cbi-admin-gas を非公開リポでgit管理化＋clasp push成功時の自動保存フック 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "cbi-admin-gas/.git（git init・非公開リポ you0810jmsdf/cbi-admin-gas・commit 9e558ab／6585393）",
+            "cbi-admin-gas/.gitignore（新規）・cbi-admin-gas/README.md（「変更履歴の保存」節）",
+            "~/.claude/hooks/clasp_push_autosave.py（新規）・~/.claude/settings.json（PostToolUse Bash|PowerShell）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "cbi-admin-gas が git 管理外で本番に出した内容の履歴が無かった。Code.gs に管理画面パスワードとスプレッドシートID の直書きがあるため公開の cbi-site には入れず、中司さんの選択で個人の非公開リポへ（PRIVATE を gh で確認）。保存の契機も選択どおり clasp push 時の自動：PostToolUse フックが clasp の成功表示（Pushed N files）を見て、追跡済みの変更＋.claspignore の !ファイル名 を commit→push。対象は git config claspautosave.enabled true のリポだけ（N's factory の product-register には効かない）。送り先フォルダの判定は clasp_push_guard.py を再利用。検証：使い捨てリポ＋ローカルのリモートで9ケース（保存・!指定の新規ファイルは含み送らないファイルは除外・変更なし・非clasp・opt-in外・成功表示なし・grepの文字だけ）すべて想定どおり、本番フォルダでも実際のフック起動で「保存していません」を確認。手で PowerShell から clasp push した分は保存されない（README に手順を記載）。session: b4745943-34c1-488c-a605-2ee88504adc1 / output: 19,318 / cost: $2.58"
+        },
+        {
+          "date": "2026-09-14",
           "title": ".claspignore 分類漏れ検査を2か所に導入（product-register は pre-commit、cbi-admin-gas は clasp push 直前のフック）0.5時間",
           "category": "保守",
           "outputs": [
@@ -5649,6 +5662,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "git管理外のGAS（gas-mail-share 等）にも cbi-admin-gas と同じ保存の仕組みを入れるか判断",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-09-14 に cbi-admin-gas を非公開リポ（you0810jmsdf/cbi-admin-gas）＋clasp push 成功時の自動保存（~/.claude/hooks/clasp_push_autosave.py、git config claspautosave.enabled true で有効）にした。同じく git 管理外の gas-mail-share（MailTriage.gs・パスワード直書きあり＝公開リポ不可）は未対応。入れる場合は git init → gh repo create --private → git config claspautosave.enabled true の3手順。あわせて、手で PowerShell から clasp push した分は自動保存されない点を運用で足りるか判断する。"
+        },
         {
           "due": "未定",
           "title": "CBI管理画面の画像アップロード（uploadSnsMedia）を本番GASで動かす",
