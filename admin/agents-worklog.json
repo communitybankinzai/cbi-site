@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "gas-mail-share を非公開リポでgit管理化＋Claude編集時の自動保存フック 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "gas-mail-share/.git（git init・非公開リポ you0810jmsdf/gas-mail-share・commit 5be5248／e583c34）",
+            "gas-mail-share/.gitignore（新規）・gas-mail-share/README.md（「変更履歴の保存」節）",
+            "~/.claude/hooks/edit_autosave.py（新規）・~/.claude/settings.json（PostToolUse Edit|Write|MultiEdit|NotebookEdit）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "同日の cbi-admin-gas 対応の続き（plans「git管理外のGASにも同じ仕組みを入れるか判断」を完了として削除）。gas-mail-share は clasp を使わず GAS エディタへの貼り付けで反映しているため clasp push 契機の自動保存は動かない。中司さんの選択で「Claude 編集時に自動」を採用：Edit/Write 等の直後にそのファイルだけを commit→push（git commit -- <path> で他の変更を巻き込まない）。対象は git config editautosave.enabled true のリポのみ。コード.gs に SHARED_PASSWORD 直書きのため非公開（PRIVATE を gh で確認）。検証：使い捨てリポ＋ローカルのリモートで6ケース（opt-in前・対象ファイルのみ保存・変更なし・.gitignore対象・新規ファイル・git管理外）すべて想定どおり。本番では README の Edit で実際にフックが動き e583c34 が GitHub に届いたことを gh api で確認。PowerShell 等での書き換えは保存されない（README に手順）。session: b4745943-34c1-488c-a605-2ee88504adc1 / output: 33,724 / cost: $4.37（本セッション累計。前件 19,318 を差し引いた 14,406 を本件の工数とした）"
+        },
+        {
+          "date": "2026-09-14",
           "title": "cbi-admin-gas を非公開リポでgit管理化＋clasp push成功時の自動保存フック 0.2時間",
           "category": "保守",
           "outputs": [
@@ -5662,13 +5675,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "未定",
-          "title": "git管理外のGAS（gas-mail-share 等）にも cbi-admin-gas と同じ保存の仕組みを入れるか判断",
-          "category": "保守",
-          "priority": "低",
-          "note": "2026-09-14 に cbi-admin-gas を非公開リポ（you0810jmsdf/cbi-admin-gas）＋clasp push 成功時の自動保存（~/.claude/hooks/clasp_push_autosave.py、git config claspautosave.enabled true で有効）にした。同じく git 管理外の gas-mail-share（MailTriage.gs・パスワード直書きあり＝公開リポ不可）は未対応。入れる場合は git init → gh repo create --private → git config claspautosave.enabled true の3手順。あわせて、手で PowerShell から clasp push した分は自動保存されない点を運用で足りるか判断する。"
-        },
         {
           "due": "未定",
           "title": "CBI管理画面の画像アップロード（uploadSnsMedia）を本番GASで動かす",
