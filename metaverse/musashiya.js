@@ -9,7 +9,7 @@
 // 入口：☰「あそぶ」→「🏠 武蔵屋めぐり」、または URL に ?event=musashiya（会場用。読み込み後に自動で開く）
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13a";
+  const MSY_VERSION = "2026-09-13b";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -147,6 +147,57 @@
   });
   function closeModal() { modal.classList.remove("show"); }
 
+  // ---- 武蔵屋の前（地上）へ移動する ----
+  // 2026-09-13 中司さん「開始位置の高度が高すぎる、地上で武蔵屋からスタートにして」。
+  // 通りに南面する建物なので、南へ約50mの地点から北（武蔵屋）を向く。高さは地面＋14m
+  // （白鳥で飛ぶ飛行モードは地表＋12mより下へ下がれないため、その少し上）。地面の高さは3D街並みから取り、
+  // 取れないとき（検証モード・読み込み待ちが長いとき）は楕円体高60m（木下の低地の目安）を使う
+  const HOME_BACK_DEG = 0.00045, HOME_CLEARANCE_M = 14, HOME_FALLBACK_H = 60;
+  function homeSpot() {
+    const h = BUNKAZAI[state.home >= 0 ? state.home : homeIdx()];
+    return { lon: h.lon, lat: h.lat - HOME_BACK_DEG };
+  }
+  function flyHome(height) {
+    const s = homeSpot();
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(s.lon, s.lat, height),
+      orientation: { heading: 0, pitch: Cesium.Math.toRadians(-6), roll: 0 },
+      duration: 1.5,
+    });
+    state.homeHeight = height;
+  }
+  function goHome() {
+    const s = homeSpot();
+    let done = false;
+    const finish = (ground) => {
+      if (done) return;
+      done = true;
+      flyHome(ground != null && isFinite(ground) ? ground + HOME_CLEARANCE_M : HOME_FALLBACK_H);
+    };
+    const timer = setTimeout(() => finish(null), 3000);
+    try {
+      if (!params.has("notiles") && viewer.scene.sampleHeightSupported && viewer.scene.sampleHeightMostDetailed) {
+        const c = [Cesium.Cartographic.fromDegrees(s.lon, s.lat)];
+        viewer.scene.sampleHeightMostDetailed(c, viewer.entities.values.filter((e) => e.model))
+          .then((r) => { clearTimeout(timer); finish(r && r[0] ? r[0].height : null); })
+          .catch(() => { clearTimeout(timer); finish(null); });
+      } else { clearTimeout(timer); finish(null); }
+    } catch (e) { clearTimeout(timer); finish(null); }
+  }
+
+  // ---- 白鳥と「白鳥の湖」（2026-09-13 中司さん「武蔵屋イベントでは白鳥をデフォルトに、白鳥の湖を流して」） ----
+  // 端末に保存されている曲の設定は書き換えない（この画面の間だけ白鳥の湖にする）。BGMを手で止めた人には流さない
+  function eventLook(withMusic) {
+    if (!window.vsRaceModeEnabled && typeof setSwanVisible === "function" && typeof swanEntity !== "undefined" && !swanEntity) setSwanVisible(true);
+    if (!withMusic || window.bgmUserOff || typeof bgmStart !== "function") return;
+    bgmCustom = null;
+    bgmPreset = "swanlake";
+    const pick = document.getElementById("bgmPickBtn");
+    const pr = BGM_PRESETS.find((x) => x.key === "swanlake");
+    if (pick && pr) pick.textContent = "🎵 曲をえらぶ（全" + BGM_PRESETS.length + "曲）｜いま: " + pr.name.replace(/（.*$/, "").slice(0, 14);
+    bgmStart();
+  }
+
   // ---- 開始 ----
   function start(age) {
     if (age) { state.age = age === "adult" ? "adult" : "kids"; saveAge(state.age); }
@@ -165,8 +216,9 @@
     state.on = true;
     const pp = document.getElementById("puzzlePanel");
     if (pp) pp.style.display = "none";
-    teleportNear(BUNKAZAI[home]);
-    ttCountdownEnd = performance.now() + 6000; // テレポート約3秒＋カウントダウン3秒（通常のタイムトライアルと同じ）
+    eventLook(true);
+    goHome();
+    ttCountdownEnd = performance.now() + 7000; // 地面の高さの取得＋移動 約3〜4秒＋カウントダウン3秒
     ttStartMs = 0;
     document.getElementById("ttHud").style.display = "block";
     ttApplyPinFocus();
@@ -322,6 +374,17 @@
   const btn = document.getElementById("musashiyaBtn");
   if (btn) btn.addEventListener("click", openModal);
   window.msyOpen = openModal;
+  window.msyHomeHeight = () => state.homeHeight; // 検証用
+  if (params.get("event") === "musashiya") {
+    // ブラウザは画面に一度触れるまで音を出せないため、最初のクリック・キー操作（受付の操作を含む）で白鳥の湖を流す
+    const first = function () {
+      document.removeEventListener("pointerdown", first, true);
+      document.removeEventListener("keydown", first, true);
+      eventLook(true);
+    };
+    document.addEventListener("pointerdown", first, true);
+    document.addEventListener("keydown", first, true);
+  }
   window.msyStart = start;
   // 会場用：?event=musashiya なら、文化財データの読み込みと受付（CiDAO照合）が済んだところで開始画面を出す
   if (params.get("event") === "musashiya") {
@@ -330,7 +393,12 @@
       tries++;
       const loaded = typeof BUNKAZAI !== "undefined" && BUNKAZAI.length > 0;
       const received = params.has("notiles") || params.has("cinema") || typeof window.nightLogin !== "function" || !!window.nightLogin(1);
-      if (loaded && received) { clearInterval(t); setTimeout(openModal, 800); }
+      if (loaded && received) {
+        clearInterval(t);
+        eventLook(false);
+        goHome();
+        setTimeout(openModal, 800);
+      }
       if (tries > 1200) clearInterval(t); // 10分で諦める
     }, 500);
   }

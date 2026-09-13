@@ -7224,6 +7224,20 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "武蔵屋めぐり 地上スタート＋白鳥・白鳥の湖を既定化 0.19時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/musashiya.js（版 2026-09-13b）",
+            "site/metaverse/index.html（読み込み版 20260913-2）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.19,
+          "partnerApproved": false,
+          "note": "中司さん指示「白鳥をデフォルトに、白鳥の湖を流して」「開始位置の高度が高すぎる、地上で武蔵屋からスタートに」。検証モードで、開くと白鳥ON・クリック後に swan_lake_scene.mp3・保存済みの曲設定は不変・開始高さ60m（検証モードは地面が取れないため目安値）・1周してゴール表示が残ることを確認。本番の地面の高さ・音の実再生は未確認（ペイン非表示）。hours は前回記録 83,101 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 102,194 / cost: $15.81"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋めぐりモード実装（musashiya.js＋説明文40本の下書き）＋チラシ文案 0.65時間",
           "category": "実装",
           "outputs": [
