@@ -1100,6 +1100,7 @@ if (location.protocol === "file:") {
     <button class="modeCard" onclick="applyMode('shop')">🛍 お店めぐり<small>FreeFree掲示板に載ったお店のピン。クリックでお店のサイトへ</small></button>
     <button class="modeCard" onclick="applyMode('bousai')">🛟 防災・地形の理解<small>浸水シミュレーション・避難所の場所確認</small></button>
     <button class="modeCard" onclick="applyMode('all')">🌏 すべて表示<small>文化財・お店・公民館のピンをまとめて（ピンは多くなります）</small></button>
+    <button class="modeCard" onclick="applyMode('night')">🌃 イルミライINZAI（夜景）<small>夜景・いんザイ君の光のゲート・夜間遊覧・夜景タイムレース（イルミライ会場用）</small></button>
     <button class="modeCard" onclick="applyMode('musashiya')">🏠 武蔵屋イベント<small>武蔵屋から近くの文化財3か所をめぐって戻る（11/3 武蔵屋マルシェの会場用）</small></button>
     <p class="note">あとから「🔀 モード切替」（左上メニュー）でいつでも変更できます</p>
   </div>
@@ -4875,13 +4876,15 @@ const MODE_KEY = "cbi-meta-mode-v1";
 //  bousai: 防災（避難所ピン＋浸水シミュレーション。演出なし）
 //  all   : すべて（文化財＋お店＋公民館のピン。ゲーム系UIあり）
 // 個別のピン表示トグルはどのモードでも使える（モードは初期状態を決めるだけ）
-const MODE_LIST = ["event", "shop", "bousai", "all", "musashiya"];
+const MODE_LIST = ["event", "shop", "bousai", "all", "musashiya", "night"];
 let currentMode = "event";
 function applyMode(mode) {
   currentMode = MODE_LIST.indexOf(mode) >= 0 ? mode : "event";
   const m = currentMode;
   const bousai = m === "bousai";
   const musashiya = m === "musashiya"; // 武蔵屋イベント（2026-09-13）：武蔵屋めぐり・音・設定だけを出す（文化財めぐりとは別のモード）
+  const night = m === "night"; // イルミライINZAI（夜景）（2026-09-13 独立）：夜景の機能はこのモードでだけ使える
+  document.body.classList.toggle("modeNight", night); // night.js が見る
   const game = m === "event" || m === "all";
   try { localStorage.setItem(MODE_KEY, m); } catch (e) {}
   document.body.classList.toggle("modeMusashiya", musashiya); // musashiya.js が見る
@@ -4891,10 +4894,20 @@ function applyMode(mode) {
   });
   document.getElementById("musashiyaBtn").style.display = musashiya ? "" : "none";
   // 武蔵屋イベントでは、夜景・ピン表示・あそぶのメニューとスポット一覧を隠す（会場で迷わないように）
-  ["nightBtn", "nightTourBtn", "nightTtBtn", "tbGroupPins", "tbGroupPlay", "panelToggle"].forEach(id => {
+  ["tbGroupPins", "tbGroupPlay", "panelToggle"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = musashiya ? "none" : "";
   });
+  // 夜景（🌃 夜景・🛸 夜間遊覧・⏱ 夜景TT）はイルミライモードのときだけ出す。他のモードへ移ったら夜景を消す
+  // （2026-09-13 中司さん：武蔵屋イベントで受付を交代したら夜景になった。「イルミライはモードとして独立させて」）
+  ["nightBtn", "nightTourBtn", "nightTtBtn"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = night ? "" : "none";
+  });
+  if (typeof window.setNight === "function") {
+    if (night && !window.nightOn) window.setNight(true);
+    else if (!night && window.nightOn && !window.vsRaceModeEnabled) window.setNight(false); // 2Pレース中はレース側に任せる
+  }
   if (musashiya && typeof setSpotPanel === "function") setSpotPanel(false);
   document.getElementById("tonbiToggleBtn").style.display = (bousai || musashiya) ? "none" : "";
   if (bousai) { setTonbiVisible(false); setSwanVisible(false); } // 防災用途では演出を出さない
@@ -6413,7 +6426,9 @@ loadTileset();
 try {
   const modeParams = new URLSearchParams(location.search);
   const modeParam = modeParams.get("mode");
-  if (MODE_LIST.indexOf(modeParam) >= 0) {
+  if (modeParams.get("night") === "1" && !modeParams.get("race")) {
+    applyMode("night"); // イルミライINZAI の会場URL（?night=1…）。mode=event が付いていても夜景モードにする
+  } else if (MODE_LIST.indexOf(modeParam) >= 0) {
     applyMode(modeParam); // リンク分け用（QR・サイト導線）
   } else if (!modeParams.get("cinema")) { // 撮影・告知モードでは選択画面を出さない
     let savedMode = null;
@@ -6427,10 +6442,10 @@ try {
 }
 </script>
 <script src="sky-tag.js?v=20260909-4"></script>
-<script src="vs-race.js?v=20260913-4"></script>
+<script src="vs-race.js?v=20260913-5"></script>
 <script src="race-radar.js?v=20260913-2"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
-<script src="night.js?v=20260910-2"></script>
-<script src="musashiya.js?v=20260913-24"></script>
+<script src="night.js?v=20260913-1"></script>
+<script src="musashiya.js?v=20260913-25"></script>
 </body>
 </html>

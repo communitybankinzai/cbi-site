@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-10a";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-09-13a";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1";
@@ -908,6 +908,36 @@
     uiHidden.forEach(function (p) { p[0].style.display = p[1]; });
     uiHidden = [];
   }
+  // ---- 夜間遊覧のナレーション（VOICEVOX:ずんだもん・2026-09-13 中司さん指示） ----
+  // assets/narration/zundamon/tour_<key>.mp3（build_tour_voicevox.py で生成）。字幕に合わせて鳴らし、読み上げ中は BGM を小さくする。
+  // 遊覧を止めたとき・次の読み上げに移るときは止める
+  let tourAudio = null, tourBgmVol = null;
+  function tourDuck(on) {
+    try {
+      if (typeof bgmAudio === "undefined" || !bgmAudio) return;
+      if (on) { if (tourBgmVol == null) tourBgmVol = bgmAudio.volume; bgmAudio.volume = Math.min(bgmAudio.volume, 0.1); }
+      else if (tourBgmVol != null) { bgmAudio.volume = tourBgmVol; tourBgmVol = null; }
+    } catch (e) { /* 音が出なくても遊覧は続ける */ }
+  }
+  function tourSay(key) {
+    tourHush();
+    try {
+      const a = new Audio("assets/narration/zundamon/tour_" + key + ".mp3?v=" + NIGHT_VERSION);
+      tourAudio = a;
+      tourDuck(true);
+      a.onended = a.onerror = function () { if (tourAudio === a) { tourAudio = null; tourDuck(false); } };
+      const pr = a.play();
+      if (pr && pr.catch) pr.catch(function () { if (tourAudio === a) { tourAudio = null; tourDuck(false); } });
+    } catch (e) { tourDuck(false); }
+  }
+  function tourHush() { if (tourAudio) { try { tourAudio.pause(); } catch (e) { /* 止まっていれば何もしない */ } tourAudio = null; } tourDuck(false); }
+  function tourCredit(on) { // VOICEVOX の利用規約により、ずんだもんの声を使う間はクレジットを出す
+    const cr = document.querySelector(".nightCredit, #nightCredit");
+    if (!cr) return;
+    const base = "いんザイ君©2011 印西市";
+    cr.textContent = on ? base + "　／　音声：VOICEVOX:ずんだもん" : base;
+  }
+
   async function startTour() {
     if (tourRunning || tt.active) return;
     tourRunning = true;
@@ -934,9 +964,12 @@
       orientation: { heading: Cesium.Math.toRadians(hdg0), pitch: Cesium.Math.toRadians(-26), roll: 0 },
     });
     caption("🛸 印西の夜空へ<br><b>ようこそ</b>", 5000);
+    tourCredit(true);
+    tourSay("intro");
     await cinemaFlyTo(START_POINT.lon + 0.005, START_POINT.lat - 0.001, 900, -20, hdg0, 7);
     if (!alive()) return stop();
     caption("市内の駅や施設の上に うかぶ 光の <b>いんザイ君</b> を " + COURSE.length + "か所<br>順番に くぐって 千葉ニュータウン中央駅へ", 5000);
+    if (COURSE.length === 10) tourSay("course"); // 読み上げの文は10か所コースの内容（短縮コースでは読まない）
     await cinemaFlyTo(START_POINT.lon, START_POINT.lat, START_POINT.height, 0, bearingDeg(START_POINT, COURSE[0]), 5);
     if (!alive()) return stop();
     for (let i = 0; i < COURSE.length; i++) {
@@ -948,15 +981,18 @@
       const f = Cesium.Math.toRadians(hdgIn);
       const beyond = { lon: g.lon + Math.sin(f) * 120 / mLon(g.lat), lat: g.lat + Math.cos(f) * 120 / M_LAT };
       const dist = distM(cameraLonLat(), g);
-      if (g.goal) caption("🏁 ゴールの <b>クリスマスいんザイ君</b>！", 4000);
-      else if (i === Math.floor(COURSE.length / 2)) caption("半分まで来た！<small>この先は千葉ニュータウン中央駅まで</small>", 3500);
+      if (g.goal) { caption("🏁 ゴールの <b>クリスマスいんザイ君</b>！", 4000); tourSay("goal"); }
+      else if (i === Math.floor(COURSE.length / 2)) { caption("半分まで来た！<small>この先は千葉ニュータウン中央駅まで</small>", 3500); tourSay("half"); }
       await cinemaFlyTo(beyond.lon, beyond.lat, g.height, 0, hdgOut, Math.max(3.5, dist / 110));
       if (!alive()) return stop();
     }
     caption("🏁 <b>千葉ニュータウン中央駅</b> に到着", 4500);
+    tourSay("arrive");
     await cinemaFlyTo(STATION_CNT.lon, STATION_CNT.lat - 0.0028, 170, -25, 0, 6);
     if (!alive()) return stop();
     caption("🎮 ここからは <b>あなたが操縦</b><br><small>左スティックで前後左右・右スティックで見回す・R1でダッシュ<br>⏱ タイムトライアルは T キー</small>", 9000);
+    tourSay("handover");
+    setTimeout(function () { if (!tourRunning) tourCredit(false); }, 12000);
     cameraBankEnabled = prevBank;
     tourRunning = false;
     lastInputAt = performance.now();
@@ -966,6 +1002,7 @@
     if (!tourRunning) return;
     tourToken++;
     tourRunning = false;
+    tourHush(); tourCredit(false);
     try { viewer.camera.cancelFlight(); } catch (e) { /* 飛行中でなければ何もしない */ }
     cameraBankEnabled = true;
     if (capEl) capEl.classList.remove("show");
@@ -1116,7 +1153,7 @@
         ? '<div class="box" id="nightSignupBox"><b>🆕 まだ CiDAO に登録していない方</b><br>スマホで下の QR を読んで CiDAO に登録（無料・LINE でログイン）し、表示名を決めたら、この画面で「表示名」か「会員証QR」で入場してください。<br>' +
           '<div id="nightSignupQr" style="display:inline-block;background:#fff;padding:8px;border-radius:8px;margin:8px 0"></div><br><a href="' + SIGNUP_URL + '" target="_blank" rel="noopener" style="color:#8fe9ff">' + CIDAO_ORIGIN + '/login</a></div>' +
           '<p class="note">⛔ CiDAO登録の確認が済むまで、3Dの街並みは読み込みません。</p>'
-        : '<p><button class="go" id="nightEntryDone">✔ 受付を閉じる</button>' + (claimSlot === 1 && l1 ? '<button class="sub" id="nightEntryToTt">⏱ このままタイムレースへ</button>' : "") + "</p>" +
+        : '<p><button class="go" id="nightEntryDone">✔ 受付を閉じる</button>' + (claimSlot === 1 && l1 && document.body.classList.contains("modeNight") ? '<button class="sub" id="nightEntryToTt">⏱ このままタイムレースへ</button>' : "") + "</p>" +
           (twoPlayer ? '<p class="note">2人目は同じ登録でも、別の人の登録でも参加できます。</p>' : "")) +
       '<p class="note" style="text-align:right">版 ' + NIGHT_VERSION + "</p>";
     document.getElementById("nightTtModal").classList.add("show");
@@ -1288,6 +1325,10 @@
           resolveReception();
           closeTtModal(); updateEntryChip();
           if (TOUR_PARAM && !tt.active && !tourRunning) startTour();
+        } else if (claimSlot === 1 && !window.vsRaceModeEnabled && document.body.classList.contains("modeMusashiya")) {
+          // 武蔵屋イベントでの交代：受付を閉じて武蔵屋めぐりの開始画面へ戻す（夜景のタイムレースへ進ませない。2026-09-13）
+          closeTtModal(); updateEntryChip();
+          if (typeof window.msyOpen === "function") window.msyOpen();
         } else openEntryModal(claimSlot === 1 && window.vsRaceModeEnabled && !getLogin(2) ? 2 : claimSlot);
       } else openTtModal();
       return true;
@@ -1566,6 +1607,8 @@
     } catch (e) { /* 変数が無い版でも続ける */ }
     if (TOUR_PARAM && !cameBackFromLogin && !ENTRY_PARAM) startTour();
   }
+  // 前回イルミライモードで閉じた端末（モードは端末に保存される）は、?night=1 が無くても夜景で始める
+  if (!NIGHT_PARAM && document.body.classList.contains("modeNight") && !window.nightOn) applyNight(true);
   if (cameBackFromLogin && !RECEPTION_REQUIRED) { if (!window.nightOn) applyNight(true); setTimeout(openTtModal, 1200); }
   if (!q.get("cinema")) {
     ensureEntryChip();

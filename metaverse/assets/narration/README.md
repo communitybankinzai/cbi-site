@@ -9,3 +9,7 @@
 - 速さ：`+15%`（musashiya.js の SPEECH_RATE 1.2 相当）
 - 再生：`musashiya.js` の `narrate(key, fallbackText)`。開始画面の声の選択が「録音ずみの声」のとき使い、ファイルが無い／再生できないときは端末の音声合成（`speak`）に戻る
 - ツール：[edge-tts](https://github.com/rany2/edge-tts)（Microsoft Edge の読み上げサービスを使う非公式ツール）。作った音声の公開利用は Microsoft の規約上あいまいで、イベント用途として中司さんが了承（2026-09-13・案B）。問題が指摘されたら差し替える
+
+## 夜間遊覧のナレーション（2026-09-13）
+
+`zundamon/tour_{intro,course,half,goal,arrive,handover}.mp3`（VOICEVOX:ずんだもん）。生成は `python build_tour_voicevox.py`（文言はスクリプト内 `LINES`）。night.js の `startTour()` が字幕に合わせて `tourSay(key)` で鳴らす。course は10か所コースの内容なので、短縮コースでは鳴らさない。

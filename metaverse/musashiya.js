@@ -11,7 +11,7 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13x";
+  const MSY_VERSION = "2026-09-13y";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -723,6 +723,17 @@
     return fetch(apiUrl(), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
       .then((r) => r.json().catch(() => ({})).then((j) => (r.ok ? j : Promise.reject(new Error(j.error || "HTTP " + r.status)))));
   }
+  // 一時的な通信・サーバーの失敗は少し待ってやり直す（2026-09-13：本番の入れ替え中に1回失敗して以後の記録が止まった）。
+  // 順番違い・終了済みなど、やり直しても直らない返事のときはあきらめる
+  function postRetry(payload, tries) {
+    let n = 0;
+    const attempt = () => post(payload).catch((e) => {
+      n++;
+      if (n >= tries || /out of order|not running|not all|invalid|login required/.test(e.message)) throw e;
+      return new Promise((r) => setTimeout(r, 800 * n)).then(attempt);
+    });
+    return attempt();
+  }
   function routePoints() {
     const st = station();
     return [{ lat: st.lat, lon: st.lon, name: st.name }].concat(ttCourse.map((i) => ({ lat: BUNKAZAI[i].lat, lon: BUNKAZAI[i].lon, name: BUNKAZAI[i].name })));
@@ -739,20 +750,20 @@
     const login = typeof window.nightLogin === "function" ? window.nightLogin(1) : null;
     if (!login || !login.token) { srv.failed = "受付がされていないため、今回の記録はランキングに残りません"; return; }
     srv.name = login.nick;
-    srv.queue = post({ action: "start", courseKey: "musashiya", name: login.nick, ageKey: isKids() ? "kids" : "adult", token: login.token, route: routePoints() })
+    srv.queue = postRetry({ action: "start", courseKey: "musashiya", name: login.nick, ageKey: isKids() ? "kids" : "adult", token: login.token, route: routePoints() }, 3)
       .then((d) => { srv.trialId = d.trialId; srv.ok = !!d.trialId; if (d.routeM) srv.routeM = d.routeM; })
       .catch((e) => { srv.failed = "記録サーバーにつながりませんでした（" + e.message + "）"; });
   }
   function srvCheckpoint(pos) { // 到着順が入れ替わらないよう、直列に送る
     srv.queue = srv.queue.then(() => {
       if (!srv.ok || !srv.trialId) return null;
-      return post({ action: "checkpoint", trialId: srv.trialId, pos }).catch((e) => { srv.ok = false; srv.failed = "通過の記録に失敗しました（" + e.message + "）"; });
+      return postRetry({ action: "checkpoint", trialId: srv.trialId, pos }, 4).catch((e) => { srv.ok = false; srv.failed = "通過の記録に失敗しました（" + e.message + "）"; });
     });
   }
   function srvFinish() {
     srv.queue = srv.queue.then(() => {
       if (!srv.ok || !srv.trialId) { renderRank(null); return null; }
-      return post({ action: "finish", trialId: srv.trialId })
+      return postRetry({ action: "finish", trialId: srv.trialId }, 4)
         .then((d) => renderRank(d))
         .catch((e) => { srv.failed = "ゴールの記録に失敗しました（" + e.message + "）"; renderRank(null); });
     });

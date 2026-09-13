@@ -7240,6 +7240,24 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "イルミライを独立モード化・夜間遊覧のずんだもんナレーション・武蔵屋めぐり記録のやり直し対策と速さ上限の修正 0.37時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（MODE_LIST night・applyMode・起動時の night=1）",
+            "site/metaverse/night.js（版 2026-09-13a・受付後の動き・tourSay）",
+            "site/metaverse/musashiya.js（版 2026-09-13y・postRetry）",
+            "site/metaverse/vs-race.js（returnMode の一般化）",
+            "site/metaverse/assets/narration/zundamon/tour_*.mp3（6本）・build_tour_voicevox.py・README.md",
+            "C:/Repos/cidao route.ts（速さ上限 520・再送の受け流し） commit 2b8fa63 ほか",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.37,
+          "partnerApproved": true,
+          "note": "中司さん報告・指示：①記録が確認対象になった理由→速さ上限130m/sが⚡×4を考慮しておらず誤判定（上限520に修正・当該記録を確認済みに戻した）②交代したら夜景になった→受付の「このままタイムレースへ」が原因、イルミライを独立モードに③記録に失敗（trial not found）→本番入れ替え中の一時エラーで以後の送信が止まっていた、やり直しと再送の受け流しを実装④夜間遊覧にずんだもんの声。検証モードでモード切替4通り・?night=1・武蔵屋での受付画面を確認。CiDAO の push は別セッション（fdfd26ed）の未コミットを --autostash で退避し、route.ts のみ commit（共有ボードで申し送り）。hours は前回記録 425,969 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 462,572 / cost: $250.18"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋めぐりのサーバー記録・速さランキング・公開ページ・次の人に交代 0.42時間",
           "category": "実装",
           "outputs": [

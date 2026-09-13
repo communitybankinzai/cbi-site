@@ -135,7 +135,7 @@
         // 武蔵屋イベント（?mode=musashiya）から開いたときは、白鳥の郷スタート・武蔵屋ゴールのコースにする。
         // enableVsRace が applyMode("event") を呼んでモードの印が消えるので、ここで先に判定する（2026-09-13）
         const fromMusashiya = document.body.classList.contains("modeMusashiya");
-        race.returnMode = fromMusashiya ? "musashiya" : "";
+        race.returnMode = fromMusashiya ? "musashiya" : (document.body.classList.contains("modeNight") ? "night" : "");
         const url = new URL(location.href);
         url.searchParams.set("mode", "event");
         url.searchParams.set("race", "cultural-vs");
@@ -1356,11 +1356,12 @@
     const url = new URL(location.href);
     url.searchParams.delete("race");
     url.searchParams.delete("course");
-    if (race.returnMode === "musashiya") url.searchParams.set("mode", "musashiya");
+    const back = race.returnMode;
+    if (back) url.searchParams.set("mode", back);
     history.replaceState(null, "", url);
-    if (race.returnMode === "musashiya") {
+    if (back) {
       race.returnMode = "";
-      setTimeout(() => { try { if (typeof applyMode === "function") applyMode("musashiya"); } catch (e) {} }, 0);
+      setTimeout(() => { try { if (typeof applyMode === "function") applyMode(back); } catch (e) {} }, 0);
     }
   }
 
