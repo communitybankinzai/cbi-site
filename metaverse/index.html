@@ -1399,7 +1399,7 @@ if (location.protocol === "file:") {
 </div>
 
 <script src="flight-input.js?v=20260909-1"></script>
-<script src="flight-ground.js?v=20260910-1"></script>
+<script src="flight-ground.js?v=20260913-1"></script>
 <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
 <div id="tonbiLayer"><div id="tonbiInner"><div id="tonbiViewport"><img id="tonbiSheet" src="assets/tonbi/tonbi_flap_sheet.webp" alt=""></div></div></div>
 
@@ -2353,7 +2353,7 @@ setInterval(function () {
     let agl = null;
     if (viewer.scene.sampleHeightSupported) {
       const g = viewer.scene.sampleHeight(carto);
-      if (g !== undefined && g !== null) agl = carto.height - g;
+      if (g !== undefined && g !== null && g > -200 && g < 1000) agl = carto.height - g; // 読み込み前の外れ値（数千m）は出さない
     }
     const t = "⛰ 高さ " + Math.round(Math.max(0, msl)) + "m（海抜）"
       + (agl !== null ? " ／ 地上から " + Math.round(Math.max(0, agl)) + "m" : "");
@@ -6408,8 +6408,9 @@ try {
 </script>
 <script src="sky-tag.js?v=20260909-4"></script>
 <script src="vs-race.js?v=20260910-4"></script>
+<script src="race-radar.js?v=20260913-1"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260910-2"></script>
-<script src="musashiya.js?v=20260913-8"></script>
+<script src="musashiya.js?v=20260913-11"></script>
 </body>
 </html>

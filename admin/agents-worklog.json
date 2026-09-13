@@ -7224,6 +7224,22 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "武蔵屋めぐり 読み込み待ち・高度誤表示対策・ゴール読み上げ・コントローラー別ボタン名＋2Pレースの相手表示とレーダー 0.25時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/musashiya.js（版 2026-09-13k）",
+            "site/metaverse/race-radar.js（新規）",
+            "site/metaverse/flight-ground.js（地面の外れ値を無視）",
+            "site/metaverse/index.html（高度表示の外れ値・読み込み版）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.25,
+          "partnerApproved": false,
+          "note": "中司さん報告5点（描画前にスタートしてしまう／地上11287m・7777mから始まる／2Pで相手が見えない→レーダー希望／岩井家ゴールで読み上げなし／GameSir T3 Lite に○が無い）。原因：街並み読み込み前の sampleHeight が数千mを返し、それを信じて高度表示・地面判定・降下先が狂っていた。検証モードで、レーダーの生成・文言（つぎ／P2距離／表示範囲）・clear での除去、ゴール読み上げ、okLabel を確認。実機（T3 Lite・本番の読み込み待ち）は未確認。hours は前回記録 225,229 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 250,613 / cost: $91.66"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋めぐり コース変更（白鳥の郷→NT中央駅→3か所→武蔵屋）・声の一覧・読み上げ対策・2Pボタン・光点非表示 0.42時間",
           "category": "実装",
           "outputs": [

@@ -11,7 +11,7 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13h";
+  const MSY_VERSION = "2026-09-13k";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
@@ -149,7 +149,7 @@
         "<h2>🏠 武蔵屋めぐり</h2>" +
         "<p>本埜（もとの）の<b>白鳥の郷</b>から飛び立ち、<b>千葉ニュータウン中央駅</b>の上を通って、武蔵屋の近くの文化財を<b>3か所</b>めぐり、<b>武蔵屋</b>にとうちゃくしたらゴール！<br>" +
         "めぐる文化財は毎回かわります。とうちゃくすると、写真と説明が出ます。</p>" +
-        '<p style="font-size:13px;color:#cfe6ff">説明文をえらんでください（コントローラーは ← → でえらんで ○ でスタート）</p>' +
+        '<p style="font-size:13px;color:#cfe6ff">説明文をえらんでください（コントローラーは ← → でえらんで " + okLabel() + " でスタート）</p>' +
         '<div class="msyAge">' +
           '<button type="button" data-age="kids" class="' + (isKids() ? "sel" : "") + '">👦 こども</button>' +
           '<button type="button" data-age="adult" class="' + (isKids() ? "" : "sel") + '">🧑 おとな</button>' +
@@ -228,7 +228,7 @@
     const finish = (ground) => {
       if (done) return;
       done = true;
-      const ok = ground != null && isFinite(ground);
+      const ok = groundOk(ground) && tilesReady();
       flyHome(ok ? ground + HOME_CLEARANCE_M : HOME_FALLBACK_H);
       if (ok) state.settled = true;
     };
@@ -245,11 +245,20 @@
   }
 
   // ---- HUD の高度表示（地上からの高さ。地面が測れないときは海抜）と、地面が取れ次第の降下 ----
+  // 街並み（3D Tiles）が今の視点ぶん読み込めたか。検証モードは常に true
+  function tilesReady() {
+    if (params.has("notiles")) return true;
+    try { return !!(typeof tileset !== "undefined" && tileset && tileset.tilesLoaded); } catch (e) { return false; }
+  }
+  // 地面の高さとして信じてよい範囲（楕円体高）。印西の地表は35〜80m。読み込み前の sampleHeight は
+  // 数千〜1万mの値を返すことがあり、それを信じると「地上から11287m」「高さ7777m」になる（2026-09-13 中司さん報告）
+  const GROUND_MIN = -50, GROUND_MAX = 400;
+  const groundOk = (g) => g !== undefined && g !== null && isFinite(g) && g > GROUND_MIN && g < GROUND_MAX;
   function groundAt(carto) {
     try {
-      if (params.has("notiles") || !viewer.scene.sampleHeightSupported) return null;
+      if (params.has("notiles") || !viewer.scene.sampleHeightSupported || !tilesReady()) return null;
       const g = viewer.scene.sampleHeight(carto, viewer.entities.values.filter((e) => e.model));
-      return (g !== undefined && g !== null && isFinite(g)) ? g : null;
+      return groundOk(g) ? g : null;
     } catch (e) { return null; }
   }
   function startAltTimer() {
@@ -259,6 +268,7 @@
     if (!el) { el = document.createElement("div"); el.id = "msyAlt"; el.style.cssText = "font-size:12px;color:#cfe6ff;margin-top:2px"; hud.appendChild(el); }
     state.altTimer = setInterval(function () {
       if (!state.on) { stopAltTimer(); return; }
+      if (state.waiting) updateWaitHud();
       try {
         const carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
         const g = groundAt(carto);
@@ -336,17 +346,33 @@
     ttStartMs = 0;
     const hud = document.getElementById("ttHud");
     hud.style.display = "block";
-    document.getElementById("ttHudTime").textContent = "🚦 じゅんび";
-    document.getElementById("ttHudNext").innerHTML = "<b>○ボタン（Enter）でスタート！</b><br>まず " + esc(station().name) + " へ";
+    state.waitSince = performance.now();
+    updateWaitHud();
     document.body.classList.add("msyOn");
     placeHud();
     startAltTimer();
     ttShowCard();
     padArm();
   }
+  // 街並みが読み込めるまでは○を受け付けない（読み込み前に始まると地面が取れず高度も狂う。2026-09-13 中司さん）。
+  // 45秒たっても読み込めないとき（通信が細いとき）は、待たせすぎないようスタートを許す
+  const TILES_WAIT_MAX_MS = 45000;
+  function canStart() { return tilesReady() || (performance.now() - (state.waitSince || 0)) > TILES_WAIT_MAX_MS; }
+  function updateWaitHud() {
+    if (!state.waiting) return;
+    const t = document.getElementById("ttHudTime"), n = document.getElementById("ttHudNext");
+    if (canStart()) {
+      t.textContent = "🚦 じゅんび";
+      n.innerHTML = "<b>" + okLabel() + "（Enter）でスタート！</b><br>まず " + esc(station().name) + " へ";
+    } else {
+      t.textContent = "🌏 街並みを読み込み中…";
+      n.innerHTML = "読み込めたら " + okLabel() + "（Enter）でスタートできます<br>まず " + esc(station().name) + " へ";
+    }
+  }
   // 準備OK → 3秒のカウントダウン → 計測（index.html の onTick に任せる）
   function readyGo() {
     if (!state.waiting) return;
+    if (!canStart()) { updateWaitHud(); return; }
     state.waiting = false;
     // 第1区間（白鳥の郷→駅）は駅が文化財でないため index.html の計測を使えない。ここで自前に数え、駅を通過したら
     // 文化財の区間を index.html の onTick に引き継ぐ（ttStartMs を渡すので時間は続きになる）
@@ -392,7 +418,7 @@
     pop.className = "show " + state.age;
     pop.innerHTML = '<div class="msyHead">' + head + "</div>" +
       '<div class="msyBody"><div><div class="msyName">' + esc(st.name) + '</div><div class="msyText">' + esc(text) + "</div></div></div>" +
-      '<div class="msyRow"><button type="button" class="go" data-act="next">' + (isKids() ? "つぎへ ▶（○ボタン）" : "次へ ▶（○ボタン）") + "</button></div>";
+      '<div class="msyRow"><button type="button" class="go" data-act="next">' + (isKids() ? "つぎへ ▶（" + okLabel() + "）" : "次へ ▶（" + okLabel() + "）") + "</button></div>";
     state.popFinal = false;
     clearTimeout(state.popTimer);
     state.popTimer = setTimeout(hidePop, 20000);
@@ -436,7 +462,7 @@
     const head = isKids() ? "✅ " + n + "か所目に とうちゃく！（のこり " + (total - n) + "）" : "✅ " + n + "か所目 通過（残り " + (total - n) + "）";
     pop.className = "show " + state.age;
     pop.innerHTML = popHtml(idx, head) +
-      '<div class="msyRow"><button type="button" class="go" data-act="next">' + (isKids() ? "つぎへ ▶（○ボタン）" : "次へ ▶（○ボタン）") + "</button></div>";
+      '<div class="msyRow"><button type="button" class="go" data-act="next">' + (isKids() ? "つぎへ ▶（" + okLabel() + "）" : "次へ ▶（" + okLabel() + "）") + "</button></div>";
     state.popFinal = false;
     clearTimeout(state.popTimer);
     state.popTimer = setTimeout(hidePop, isKids() ? 30000 : 25000); // 読み終わる前に消えないよう長め。○で先へ進める
@@ -454,6 +480,8 @@
     state.popFinal = true;
     clearTimeout(state.popTimer); // ゴールの画面は消さずに残す
     padArm();
+    // ゴール（武蔵屋）の説明は一番大事なので、こども・おとなのどちらでも読み上げる（2026-09-13 中司さん）
+    speak((isKids() ? "ゴール！ 武蔵屋に とうちゃく。" : "ゴール。武蔵屋に到着しました。") + speechText(BUNKAZAI[state.home]));
   }
   function hidePop() { pop.classList.remove("show"); clearTimeout(state.popTimer); speakStop(); }
 
@@ -577,10 +605,25 @@
     for (const p of pads) {
       if (!p) continue;
       const btn = (i) => !!(p.buttons[i] && p.buttons[i].pressed);
-      out.push({ i: p.index, ok: btn(0), l: btn(14) || p.axes[0] < -0.6, r: btn(15) || p.axes[0] > 0.6, ud: btn(12) || btn(13) });
+      out.push({ i: p.index, ok: btn(0) || btn(1), l: btn(14) || p.axes[0] < -0.6, r: btn(15) || p.axes[0] > 0.6, ud: btn(12) || btn(13) }); // 決定は 0（A／×）と 1（B／○）のどちらでも
     }
     return out;
   }
+  // つながっているコントローラーの種類でボタン名を変える（2026-09-13 中司さん「GameSir T3 Lite には○ボタンがない」）。
+  // PlayStation 系＝○／×、Xbox 配列（GameSir T3 Lite・Xbox 360/One 等）＝A／B。分からなければ両方を書く
+  function padKind() {
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (const p of pads) {
+      if (!p) continue;
+      const id = String(p.id).toLowerCase();
+      if (/dualshock|dualsense|playstation|wireless controller|054c/.test(id)) return "ps";
+      if (/xbox|gamesir|xinput|045e|standard gamepad/.test(id)) return "xbox";
+      return "other";
+    }
+    return "none";
+  }
+  function okLabel() { const k = padKind(); return k === "ps" ? "○ボタン" : k === "xbox" ? "Aボタン" : "Aボタン／○ボタン"; }
+  window.addEventListener("gamepadconnected", function () { if (modal.classList.contains("show")) renderModal(); if (state.waiting) updateWaitHud(); });
   function padArm() {
     padPrev = {};
     readPads().forEach((s) => { padPrev[s.i] = s; }); // 押しっぱなしのボタンで即反応しないよう、今の状態を覚えてから見る

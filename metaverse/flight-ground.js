@@ -22,7 +22,9 @@
         current.height) : current.clone();
       let ground;
       try { if (viewer.scene.sampleHeightSupported) ground = viewer.scene.sampleHeight(point, options.exclude || []); } catch (_) {}
-      if (Number.isFinite(ground)) height = Math.max(height, ground + options.clearance);
+      // 街並みの読み込み前は sampleHeight が数千mの値を返すことがあり、そのまま信じるとカメラが上空へ押し上げられる
+      // （2026-09-13「高さ7777m」）。印西の地表は楕円体高35〜80mなので、明らかに外れた値は「不明」として扱う
+      if (Number.isFinite(ground) && ground > -200 && ground < 1000) height = Math.max(height, ground + options.clearance);
       else unknown = true;
     }
     // Missing terrain is not permission to descend or advance into an unseen slope.
