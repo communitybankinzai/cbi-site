@@ -7224,6 +7224,20 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "2Pレースの通過合図（札＋チャイム）＋VOICEVOX ENGINE の取得 0.08時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/race-radar.js（版 20260913-2）",
+            "site/metaverse/index.html（読み込み版）",
+            "site/admin/changelog.json",
+            "C:/Tools/voicevox_engine/voicevox_engine-windows-cpu-0.25.2.7z.001（1.8GB・OneDrive外・展開中）"
+          ],
+          "hours": 0.08,
+          "partnerApproved": true,
+          "note": "中司さん指示「2Pレースでポイント通過したら通過したことがわかるように」→ nextIndex の増加を検知して札とチャイム。検証モードで CP1 通過・ゴール・RESET・clear の挙動を確認（音は未確認）。VOICEVOX は中司さん承認でダウンロード（GitHub 公式リリース 0.25.2 CPU版）。hours は前回記録 292,249 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 300,741 / cost: $133.24"
+        },
+        {
+          "date": "2026-09-13",
           "title": "武蔵屋めぐり ナレーション録音化（edge-tts・88ファイル）と再生の組み込み 0.18時間",
           "category": "実装",
           "outputs": [

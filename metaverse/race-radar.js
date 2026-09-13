@@ -34,6 +34,15 @@
         p.rrEntity.model.uri = T.aircraftUri(other.aircraft);
         p.rrAircraft = other.aircraft;
       }
+      if (!p.rrBanner) { // 通過の合図（2026-09-13 中司さん「ポイント通過したら通過したことがわかるように」）
+        const b = document.createElement("div");
+        b.className = "raceBanner";
+        b.style.cssText = "position:absolute;left:50%;top:22%;transform:translate(-50%,-50%) scale(.9);z-index:6;pointer-events:none;color:#fff;font:bold clamp(18px,3.2vw,34px) sans-serif;text-align:center;background:#07140fd9;border:3px solid #ffd166;border-radius:14px;padding:10px 22px;opacity:0;transition:opacity .25s,transform .25s;white-space:pre-line;text-shadow:0 2px 6px #000";
+        p.viewer.container.appendChild(b);
+        p.rrBanner = b;
+        p.rrSeenIndex = p.nextIndex; // 作った時点の通過数を基準にする（読み込み直後に鳴らさない）
+        p.rrSeenFinished = !!p.finished;
+      }
       if (!p.rrScope) {
         const scope = document.createElement("div");
         scope.className = "raceRadar";
@@ -55,14 +64,58 @@
       p.rrEntity = null;
       if (p.rrScope) p.rrScope.remove();
       p.rrScope = null;
+      if (p.rrBanner) p.rrBanner.remove();
+      p.rrBanner = null; p.rrSeenIndex = undefined; p.rrSeenFinished = false;
     });
   }
   function localOf(inverse, cart) {
     return Cesium.Matrix4.multiplyByPoint(inverse, cart, new Cesium.Cartesian3());
   }
+  // 通過音（ファイル不要の短いチャイム）。ブラウザの制限で、画面を一度操作した後でないと鳴らない
+  let actx = null;
+  function chime(goal) {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const t0 = actx.currentTime;
+      (goal ? [523, 659, 784, 1047] : [880, 1175]).forEach((f, i) => {
+        const o = actx.createOscillator(), g = actx.createGain();
+        o.type = "sine"; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t0 + i * 0.12);
+        g.gain.exponentialRampToValueAtTime(0.25, t0 + i * 0.12 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.12 + 0.35);
+        o.connect(g); g.connect(actx.destination);
+        o.start(t0 + i * 0.12); o.stop(t0 + i * 0.12 + 0.4);
+      });
+    } catch (e) {}
+  }
+  function showBanner(p, text, ms) {
+    const b = p.rrBanner;
+    if (!b) return;
+    b.textContent = text;
+    b.style.opacity = "1"; b.style.transform = "translate(-50%,-50%) scale(1)";
+    clearTimeout(p.rrBannerTimer);
+    p.rrBannerTimer = setTimeout(() => { b.style.opacity = "0"; b.style.transform = "translate(-50%,-50%) scale(.9)"; }, ms || 2200);
+  }
+  // 通過・ゴールの検知：nextIndex（次に向かう番号）が増えたら直前の地点を通過した
+  function detectPass(players, race) {
+    const cps = (race.course && race.course.checkpoints) || [];
+    players.forEach((p) => {
+      if (!p.rrBanner) return;
+      if (p.rrSeenIndex === undefined || p.nextIndex < p.rrSeenIndex) { p.rrSeenIndex = p.nextIndex; p.rrSeenFinished = !!p.finished; return; } // RESET 後
+      if (p.nextIndex > p.rrSeenIndex) {
+        const cp = cps[p.nextIndex - 1];
+        const last = p.nextIndex >= cps.length;
+        showBanner(p, (last ? "🏁 ゴール！ " : "✅ CP" + p.nextIndex + " 通過！ ") + (cp ? cp.name : "") + (last ? "" : "\nつぎ → " + (cps[p.nextIndex] ? cps[p.nextIndex].name : "")), last ? 4000 : 2200);
+        chime(last);
+        p.rrSeenIndex = p.nextIndex;
+      }
+      if (p.finished && !p.rrSeenFinished) { p.rrSeenFinished = true; if (p.nextIndex >= cps.length) { /* 上でゴール表示済み */ } else showBanner(p, "🏁 フィニッシュ", 3000); }
+    });
+  }
   function draw(players, race) {
     const C = Cesium;
     const cps = (race.course && race.course.checkpoints) || [];
+    detectPass(players, race);
     players.forEach((p, i) => {
       if (!p.rrScope || !p.viewer) return;
       const other = players[1 - i];
