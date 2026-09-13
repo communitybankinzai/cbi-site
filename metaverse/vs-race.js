@@ -230,14 +230,46 @@
       bzCp(17, 120),  // 馬込遺跡出土瓦塔（木下交流の杜）
       bzCp(49, 110),  // 岩井家住宅主屋（旧武蔵屋店舗）＝ゴール
     ].filter(Boolean);
+    // 3か所はレースのたびにランダム（2026-09-13 中司さん「実施するたびにランダムに変化させて」）。
+    // 選び方は1人用の武蔵屋めぐり（musashiya.js の pickCourse）と同じ：武蔵屋から4km以内・同じ座標は1回だけ・駅から近い順
+    const pickMusashiya = () => {
+      const homeI = bz.findIndex(b => b && String(b.name).indexOf("岩井家住宅主屋") >= 0);
+      if (homeI < 0) return musashiyaCps;
+      const home = bz[homeI];
+      const d = (a, b) => {
+        const R = 6371000, p1 = a.lat * Math.PI / 180, p2 = b.lat * Math.PI / 180;
+        const dp = p2 - p1, dl = (b.lon - a.lon) * Math.PI / 180;
+        const h = Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(h));
+      };
+      const pool = [];
+      bz.forEach((b, i) => { if (b && i !== homeI && d(home, b) <= 4000) pool.push(i); });
+      for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+      const picked = [];
+      for (const i of pool) {
+        // 同じ寺の別の文化財（番地が少し違う）が同じレースに入らないよう、150m以内は同じ場所とみなす
+        if (picked.some(j => d(bz[i], bz[j]) < 150)) continue;
+        picked.push(i);
+        if (picked.length === 3) break;
+      }
+      if (picked.length < 3) return musashiyaCps;
+      const station = musashiyaCps[0];
+      const out = []; let cur = station; const rest = picked.slice();
+      while (rest.length) {
+        rest.sort((a, b) => d(cur, bz[a]) - d(cur, bz[b]));
+        const n = rest.shift(); out.push(n); cur = bz[n];
+      }
+      return [station].concat(out.map(i => bzCp(i, 120)), [bzCp(homeI, 110)]);
+    };
     const musashiyaCourse = musashiyaCps.length === 5 ? {
       musashiya_vs: {
         id: "musashiya_vs",
         type: "fixed",
-        title: "🏠 武蔵屋レース（白鳥の郷 → NT中央駅 → 文化財3か所 → 武蔵屋）",
+        title: "🏠 武蔵屋レース（白鳥の郷 → NT中央駅 → 文化財3か所〈毎回かわる〉 → 武蔵屋）",
         radius: 130,
         start: { lon: 140.20665, lat: 35.813423, height: 300 }, // 本埜の白鳥の郷（1人用と同じ座標）
-        checkpoints: musashiyaCps
+        checkpoints: musashiyaCps,
+        pick: pickMusashiya
       }
     } : {};
     return {
@@ -302,13 +334,14 @@
     const raw = RACE_CONFIG.courses[courseId] || RACE_CONFIG.courses[RACE_CONFIG.defaultCourse];
     if (!raw) return null;
     if (raw.type === "fixed") {
+      const cps = typeof raw.pick === "function" ? raw.pick() : raw.checkpoints; // pick があるコースは呼ぶたびに組み直す
       return {
         id: raw.id,
         type: raw.type,
         title: raw.title,
         radius: raw.radius || DEFAULT_RADIUS,
         start: raw.start,
-        checkpoints: raw.checkpoints.map((cp, i) => ({
+        checkpoints: cps.map((cp, i) => ({
           order: i + 1,
           name: cp.name,
           lon: Number(cp.lon),
@@ -609,6 +642,13 @@
 
   function resetRace(showMessage) {
     if (!race.course) return;
+    const rawCourse = RACE_CONFIG.courses && RACE_CONFIG.courses[race.courseId];
+    if (showMessage && rawCourse && typeof rawCourse.pick === "function") {
+      setCourse(race.courseId, false); // 文化財を選び直す（中で resetRace(false) が呼ばれる）
+      const names = race.course.checkpoints.slice(1, -1).map(c => c.name).join("・");
+      setStatus("新しいコース：" + names, 2600);
+      return;
+    }
     race.state = "setup";
     race.startMs = 0;
     race.countdownStart = 0;

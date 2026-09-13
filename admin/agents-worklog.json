@@ -7224,6 +7224,21 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "2P武蔵屋レースの3か所ランダム化＋同じ寺の重複除外（1人用も）＋ナレーションの声を年齢別に（こども＝ずんだもん／おとな＝Keita） 0.24時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/vs-race.js（pickMusashiya・resolveCourse・resetRace）",
+            "site/metaverse/musashiya.js（版 2026-09-13w・重複判定150m・年齢別の声・おとなも読み上げ・okLabel 表示と保存値読み込みの不具合修正）",
+            "site/metaverse/index.html（読み込み版）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.24,
+          "partnerApproved": true,
+          "note": "中司さん指示「レースの3か所は実施するたびにランダムに」。検証モードで開始＋RESET4回が毎回別の組み合わせになることを確認。その過程で瀧水寺の2件（番地違い）が同じコースに入る例を見つけ、座標一致→150m以内の判定に変更（1人用も）。追記：中司さん指示「子供はずんだもん標準＋他の声、大人は Keita 標準＋女性の声」を実装（設定パネル2段・年齢別保存・おとなも読み上げ）。検証中に、開始画面へ「\" + okLabel() + \"」がそのまま出る不具合（引用符の誤り）と、state 初期化時の const 宣言前参照で保存値が読めていなかった不具合を発見・修正。検証モードで既定値・パネル2段・保存・おとなの通過で female/…_adult.mp3 を確認。hours は前回記録 360,412 からの差分。session: 2415970a-243b-4f36-b3fd-8b2f34672811 / output: 384,121 / cost: $229.11"
+        },
+        {
+          "date": "2026-09-13",
           "title": "2Pレースの武蔵屋コース追加（白鳥の郷→NT中央駅→3か所→武蔵屋）と武蔵屋イベントとの往復 0.20時間",
           "category": "実装",
           "outputs": [

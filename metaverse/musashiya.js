@@ -11,13 +11,13 @@
 // 白鳥・白鳥の湖・武蔵屋の前への移動のあと、開始画面が自動で出る。旧 ?event=musashiya も同じ扱い
 (function () {
   "use strict";
-  const MSY_VERSION = "2026-09-13u";
+  const MSY_VERSION = "2026-09-13w";
   const POOL_RADIUS_M = 4000; // 武蔵屋からこの距離以内の文化財から選ぶ（19件）
   const PICK = 3;             // めぐる数
   const AGE_KEY = "cbi-meta-msy-age-v1";
   const params = new URLSearchParams(location.search);
   const state = { on: false, age: loadAge(), home: -1, texts: {}, popTimer: null, popFinal: false, lastCourse: [], entered: false,
-    waiting: false, settled: false, voice: loadVoice(), voiceName: loadVoiceName(), altTimer: null,
+    waiting: false, settled: false, voices: null, voiceName: "__rec", altTimer: null, // voices と voiceName は定数の宣言後に読み込む（下の Object.defineProperty の直後）
     leg0: null, leg0Timer: null, utter: null };
   // スタートと経由地（2026-09-13 中司さん「白鳥の郷から千葉ニュータウン中央駅を経由して3文化財を回り武蔵屋をゴールに」）
   // 白鳥の郷の座標は国土地理院の住所検索「印西市笠神2373」の代表点（要現地確認）。駅は index.html の SPOTS[0] を使う
@@ -39,10 +39,25 @@
     male: { label: "Keita", folder: "male", gender: "male", credit: "" },
     female: { label: "Nanami", folder: "female", gender: "female", credit: "" },
   };
-  function loadVoice() { try { const v = localStorage.getItem(VOICE_KEY); return VOICE_INFO[v] ? v : "zundamon"; } catch (e) { return "zundamon"; } }
+  // 年齢ごとに選べる声と既定。こども＝ずんだもん／Keita／Nanami（既定ずんだもん）、おとな＝Keita／Nanami（既定Keita）
+  const AGE_VOICES = { kids: ["zundamon", "male", "female"], adult: ["male", "female"] };
+  const voiceKeyFor = (age) => VOICE_KEY + "-" + age;
+  function loadVoice(age) {
+    const list = AGE_VOICES[age];
+    try { const v = localStorage.getItem(voiceKeyFor(age)); return list.indexOf(v) >= 0 ? v : list[0]; } catch (e) { return list[0]; }
+  }
   const voiceInfo = () => VOICE_INFO[state.voice] || VOICE_INFO.zundamon;
   const voiceGender = () => voiceInfo().gender;
-  function saveVoice(v) { try { localStorage.setItem(VOICE_KEY, v); } catch (e) {} }
+  const ageKey = () => (state.age === "kids" ? "kids" : "adult");
+  function saveVoice(v, age) { try { localStorage.setItem(voiceKeyFor(age || ageKey()), v); } catch (e) {} }
+  // state.voice は「いま選んでいる年齢の声」。読み書きとも年齢別の値に振り分ける
+  Object.defineProperty(state, "voice", {
+    get() { return state.voices[ageKey()]; },
+    set(v) { if (AGE_VOICES[ageKey()].indexOf(v) >= 0) state.voices[ageKey()] = v; },
+  });
+  // 保存値の読み込み。state の宣言より後に置く（前に置くと const の宣言前参照で失敗し、保存値が読めなかった。2026-09-13）
+  state.voices = { kids: loadVoice("kids"), adult: loadVoice("adult") };
+  state.voiceName = loadVoiceName();
   // 武蔵屋イベントモードか（index.html の applyMode が body.modeMusashiya を付ける）。旧URL ?event=musashiya も可
   const inEventMode = () => document.body.classList.contains("modeMusashiya") || params.get("event") === "musashiya";
   window.msyState = state; // 検証用
@@ -73,11 +88,11 @@
     for (let i = 0; i < BUNKAZAI.length; i++) if (i !== home && distM(h, BUNKAZAI[i]) <= POOL_RADIUS_M) pool.push(i);
     for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
     // 同じ住所（同じ座標）の文化財が複数あるため、1回のコースで同じ地点を2度選ばない
-    const seen = new Set(), picked = [];
+    const picked = [];
     for (const i of pool) {
-      const k = BUNKAZAI[i].lat.toFixed(5) + "," + BUNKAZAI[i].lon.toFixed(5);
-      if (seen.has(k)) continue;
-      seen.add(k); picked.push(i);
+      // 同じ寺の別の文化財（番地が少し違う）が同じコースに入らないよう、150m以内は同じ場所とみなす（2026-09-13）
+      if (picked.some((j) => distM(BUNKAZAI[i], BUNKAZAI[j]) < 150)) continue;
+      picked.push(i);
       if (picked.length === PICK) break;
     }
     // 手前の地点（駅）から近い順につなぐ（遠回りで1周が長くならないように）
@@ -170,7 +185,7 @@
         "<h2>🏠 武蔵屋めぐり</h2>" +
         "<p>本埜（もとの）の<b>白鳥の郷</b>から飛び立ち、<b>千葉ニュータウン中央駅</b>の上を通って、武蔵屋の近くの文化財を<b>3か所</b>めぐり、<b>武蔵屋</b>にとうちゃくしたらゴール！<br>" +
         "めぐる文化財は毎回かわります。とうちゃくすると、写真と説明が出ます。</p>" +
-        '<p style="font-size:13px;color:#cfe6ff">説明文をえらんでください（コントローラーは ← → でえらんで " + okLabel() + " でスタート）</p>' +
+        '<p style="font-size:13px;color:#cfe6ff">説明文をえらんでください（コントローラーは ← → でえらんで ' + okLabel() + ' でスタート）</p>' +
         '<div class="msyAge">' +
           '<button type="button" data-age="kids" class="' + (isKids() ? "sel" : "") + '">👦 こども</button>' +
           '<button type="button" data-age="adult" class="' + (isKids() ? "" : "sel") + '">🧑 おとな</button>' +
@@ -198,16 +213,19 @@
     vpanel.innerHTML =
       '<div class="msyBox">' +
         "<h2>🗣 ナレーションの声</h2>" +
-        '<p style="font-size:13px;color:#cfe6ff">到着したときの説明を読む声をえらびます（十字キー ↑↓ でも切替）</p>' +
-        '<div class="msyAge msyVoice">' +
-          '<button type="button" data-voice="zundamon" class="' + (state.voice === "zundamon" ? "sel" : "") + '">🟢 ずんだもん</button>' +
-          '<button type="button" data-voice="male" class="' + (state.voice === "male" ? "sel" : "") + '">👨 Keita</button>' +
-          '<button type="button" data-voice="female" class="' + (state.voice === "female" ? "sel" : "") + '">👩 Nanami</button>' +
-        "</div>" +
+        '<p style="font-size:13px;color:#cfe6ff">到着したときの説明を読む声をえらびます</p>' +
+        voiceRowHtml("kids", "👦 こども") + voiceRowHtml("adult", "🧑 おとな") +
         '<div style="font-size:12px;color:#cfe6ff;margin-top:8px">録音か端末の声か：<select id="msyVoiceSel" style="font-size:13px;max-width:100%">' + voiceOptionsHtml() + "</select></div>" +
         '<div id="msyVoiceName" style="font-size:11px;color:#9fb6cc;min-height:1.2em;margin-top:4px"></div>' +
         '<div class="msyRow"><button type="button" data-act="voicetest">🔊 ためしに聞く</button><button type="button" class="go" data-act="vclose">OK</button></div>' +
         '<div class="msyVer">音声：VOICEVOX:ずんだもん（VOICEVOX ENGINE で生成）／Keita・Nanami（Microsoft）</div>' +
+      "</div>";
+  }
+  const VOICE_BTN = { zundamon: "🟢 ずんだもん", male: "👨 Keita", female: "👩 Nanami" };
+  function voiceRowHtml(age, label) {
+    return '<div style="font-size:13px;color:#ffd166;margin-top:8px">' + label + "</div>" +
+      '<div class="msyAge msyVoice" style="margin-top:4px">' +
+      AGE_VOICES[age].map((v) => '<button type="button" data-voice="' + v + '" data-voice-age="' + age + '" class="' + (state.voices[age] === v ? "sel" : "") + '">' + VOICE_BTN[v] + (v === AGE_VOICES[age][0] ? "（標準）" : "") + "</button>").join("") +
       "</div>";
   }
   function openVoicePanel() { renderVoicePanel(); vpanel.style.display = "flex"; }
@@ -216,8 +234,18 @@
     if (e.target === vpanel) { closeVoicePanel(); return; }
     const b = e.target.closest("button");
     if (!b) return;
-    if (b.dataset.voice) { state.voice = b.dataset.voice; saveVoice(state.voice); if (!useRec()) { state.voiceName = ""; saveVoiceName(""); } renderVoicePanel(); return; }
-    if (b.dataset.act === "voicetest") { speakSample(); return; }
+    if (b.dataset.voice) {
+      const age = b.dataset.voiceAge || ageKey();
+      state.voices[age] = b.dataset.voice; saveVoice(b.dataset.voice, age); state.panelAge = age;
+      if (!useRec()) { state.voiceName = ""; saveVoiceName(""); }
+      renderVoicePanel(); return;
+    }
+    if (b.dataset.act === "voicetest") { // 最後に触った段（こども／おとな）の声で試す
+      const saved = state.age;
+      if (state.panelAge) state.age = state.panelAge;
+      try { speakSample(); } finally { state.age = saved; }
+      return;
+    }
     if (b.dataset.act === "vclose") closeVoicePanel();
   });
   vpanel.addEventListener("change", function (e) {
@@ -485,7 +513,7 @@
     clearTimeout(state.popTimer);
     state.popTimer = setTimeout(hidePop, 20000);
     padArm();
-    if (isKids()) narrate("station", text.replace("千葉ニュータウン中央駅（ちばニュータウンちゅうおうえき）", "ちばニュータウンちゅうおうえき").replace("武蔵屋（むさしや）", "むさしや"));
+    narrate("station", text.replace("千葉ニュータウン中央駅（ちばニュータウンちゅうおうえき）", "ちばニュータウンちゅうおうえき").replace("武蔵屋（むさしや）", "むさしや"));
   }
   // タイムのHUD（#ttHud）は上部メニューの2段目と重なって押せなくなる（2026-09-13 中司さん）。めぐり中はメニューの下に置く
   function placeHud() {
@@ -529,7 +557,7 @@
     clearTimeout(state.popTimer);
     state.popTimer = setTimeout(hidePop, isKids() ? 30000 : 25000); // 読み終わる前に消えないよう長め。○で先へ進める
     padArm();
-    if (isKids()) speakKids(BUNKAZAI[idx]);
+    speakKids(BUNKAZAI[idx]); // こども・おとなとも読み上げる（声は年齢別の設定）
   }
   function showFinalPop(ms) {
     const head = isKids() ? "🎉 ゴール！ 武蔵屋に とうちゃく！" : "🎉 ゴール！ 武蔵屋に到着";
@@ -776,7 +804,7 @@
   function onUD() {
     const inPanel = vpanel.style.display === "flex";
     if (!inPanel && !modal.classList.contains("show")) return;
-    const keys = Object.keys(VOICE_INFO);
+    const keys = AGE_VOICES[ageKey()];
     state.voice = keys[(keys.indexOf(state.voice) + 1) % keys.length];
     saveVoice(state.voice);
     if (inPanel) renderVoicePanel(); else renderModal();
