@@ -1,0 +1,434 @@
+// 3Dワールド「🎮 操作のしかた」ポップアップ（2026-09-13 中司さん：武蔵屋イベント）
+// 左に鳥（白鳥／鳶の GLB を Three.js で表示）、右にコントローラーの図。手順ごとに、ずんだもんの声・光るボタン・鳥の姿勢を同時に切り替える。
+// コントローラーを動かすと、図のボタンが光り、鳥も同じ姿勢になる（練習）。開いている間は index.html の飛行入力を止める（window.cbiInputHold）。
+// 武蔵屋めぐりのスタート待ち（街並みの読み込み中）に musashiya.js が自動で開く。読み込めたら A（○）でそのままスタートできる。
+// 文面と声：assets/narration/controls-guide.json、音声は assets/narration/build_controls_voicevox.py（VOICEVOX:ずんだもん・クレジット必須）
+(function () {
+  "use strict";
+  const VER = "20260913-1";
+  const THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.180.0/+esm";
+  const GLTF_URL = "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js/+esm";
+  // ゲーム本体（index.html の白鳥）と同じ URL にして、ブラウザのキャッシュを使い回す（通信を増やさない）
+  const GLB = { swan: "assets/tonbi/swan.glb?v=20260909-4", kite: "assets/tonbi/kite.glb?v=20260909-4" };
+  const VOICE_BASE = "assets/narration/zundamon/guide_";
+  const BGM_DUCK = 0.08;
+  // 標準配列のボタン番号（Xbox 配列・PlayStation とも同じ）
+  const BTN = { A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, VIEW: 8, MENU: 9 };
+
+  // ---- 手順ごとのお手本の動き（t＝秒。入力の形は live のコントローラーと同じ）----
+  const DEMO = {
+    intro: { T: 4, f: () => ({ ly: -0.5 }) },
+    lstick: { T: 7, f: (t) => t < 2.2 ? { ly: -1 } : t < 3.7 ? { ly: -0.5, lx: -1 } : t < 5.2 ? { ly: -0.5, lx: 1 } : { ly: -0.3 } },
+    rstick: { T: 7, f: (t) => t < 1.5 ? { rx: -1 } : t < 1.8 ? {} : t < 3.3 ? { rx: 1 } : t < 3.6 ? {} : t < 5 ? { ry: -1 } : t < 5.3 ? {} : t < 6.7 ? { ry: 1 } : {} },
+    trig: { T: 6.5, f: (t) => t < 2.6 ? { rt: 1, ly: -0.4 } : t < 3.2 ? { ly: -0.4 } : t < 5.8 ? { lt: 1, ly: -0.4 } : { ly: -0.4 } },
+    bump: { T: 6.5, f: (t) => t < 2.6 ? { lb: 1, ly: -0.5 } : t < 3.2 ? { ly: -0.5 } : t < 5.8 ? { rb: 1, ly: -0.5 } : { ly: -0.5 } },
+    boost: { T: 6, f: (t) => t < 1.2 ? { ly: -1 } : t < 3.8 ? { ly: -1, x: 1 } : t < 4.6 ? { ly: -1 } : t < 5 ? { ly: -1, y: 1 } : { ly: -1 } },
+    ok: { T: 6, f: (t) => (t > 0.6 && t < 1) || (t > 2.2 && t < 2.6) ? { a: 1 } : t > 3.8 && t < 4.6 ? { menu: 1 } : {} },
+    end: { T: 4, f: (t) => ({ ly: -1, x: t > 1.5 && t < 3.3 ? 1 : 0 }) },
+  };
+  // 手順ごとの見る向き（鳥の +X＝前・+Y＝上・+Z＝右）。上下は横から、傾きは後ろから見ると分かりやすい
+  const VIEW = { def: [-9.5, 3.8, 6.5], rstick: [-8.5, 6.5, 6.5], trig: [-1.5, 2, 12.5], bump: [-12.5, 3, 1.5] };
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const st = { open: false, steps: null, idx: 0, kind: "xbox", bird: "swan", audio: null, stepTimer: 0, stepStart: 0, ended: false,
+    raf: 0, last: 0, liveUntil: 0, prev: [], bgmVol: null, opts: {}, three: null };
+
+  // ---- 見た目 ----
+  const css = document.createElement("style");
+  css.textContent =
+    "#cgModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:129;font-family:system-ui,sans-serif}" +
+    "#cgModal.show{display:flex}" +
+    "#cgModal .cgBox{background:#0e2238;color:#fff;border:2px solid #4a90d9;border-radius:14px;width:min(980px,96vw);max-height:94vh;overflow:auto;padding:14px 16px;box-shadow:0 10px 40px rgba(0,0,0,.5)}" +
+    "#cgModal .cgHead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}" +
+    "#cgModal .cgHead b{font-size:22px;color:#ffd166;margin-right:auto}" +
+    "#cgModal button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid #6a9fd8;background:#1c3a5c;color:#fff;padding:6px 12px}" +
+    "#cgModal button.sel{background:#2f6db0;border-color:#ffd166}" +
+    "#cgModal .cgMain{display:flex;gap:14px;margin-top:10px}" +
+    "#cgModal .cgStage{position:relative;flex:1.25;min-height:340px;border-radius:10px;overflow:hidden;background:linear-gradient(#8fc3ee,#dcefff)}" +
+    "#cgModal .cgStage canvas{display:block;width:100%;height:100%;position:absolute;inset:0}" +
+    "#cgModal .cgStageMsg{position:absolute;inset:auto 0 44%;text-align:center;color:#24476a;font-size:15px}" +
+    "#cgModal .cgLive{position:absolute;left:8px;top:8px;background:rgba(14,34,56,.75);border-radius:6px;padding:3px 8px;font-size:13px}" +
+    "#cgModal .cgSide{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}" +
+    "#cgModal .cgPad svg{width:100%;height:auto;display:block}" +
+    "#cgModal .cgStepTitle{font-size:20px;font-weight:bold;color:#7fc8ff}" +
+    "#cgModal .cgSub{font-size:19px;line-height:1.6;min-height:4.8em}" +
+    "#cgModal .cgNav{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}" +
+    "#cgModal .cgDots{display:flex;gap:6px;margin:0 6px}" +
+    "#cgModal .cgDots i{width:11px;height:11px;border-radius:50%;background:#35557a;display:inline-block}" +
+    "#cgModal .cgDots i.on{background:#ffd166}" +
+    "#cgModal .cgFoot{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid #2c4d72;flex-wrap:wrap}" +
+    "#cgModal .cgStatus{font-size:16px;margin-right:auto}" +
+    "#cgModal .cgGo{font-size:18px;font-weight:bold;background:#e8a317;border-color:#ffd166;color:#1a1a1a;padding:8px 18px}" +
+    "#cgModal .cgGo.ready{animation:cgPulse 1s infinite}" +
+    "#cgModal .cgCredit{font-size:11px;color:#9fb6cc;margin-top:6px;text-align:right}" +
+    "@keyframes cgPulse{50%{box-shadow:0 0 0 6px rgba(255,209,102,.45)}}" +
+    // コントローラー図：光らせる対象＝黄色の点滅、押している＝緑
+    "#cgModal .k .sh{fill:#2a3b4f;stroke:#9fb6cc;stroke-width:2;transition:fill .08s}" +
+    "#cgModal .k.tgt .sh{stroke:#ffd166;stroke-width:5;animation:cgBlink .9s infinite}" +
+    "#cgModal .k.on .sh{fill:#3fbf6f}" +
+    "#cgModal .k text{fill:#fff;font:bold 15px system-ui;text-anchor:middle;dominant-baseline:central;pointer-events:none}" +
+    "#cgModal .k .fill{fill:#3fbf6f}" +
+    "@keyframes cgBlink{50%{stroke:#fff3c4}}" +
+    "@media (max-width:760px){#cgModal .cgMain{flex-direction:column}#cgModal .cgStage{min-height:240px}#cgModal .cgSub{font-size:16px;min-height:0}}";
+  document.head.appendChild(css);
+
+  const modal = document.createElement("div");
+  modal.id = "cgModal";
+  modal.innerHTML =
+    '<div class="cgBox" role="dialog" aria-label="コントローラーの操作のしかた">' +
+      '<div class="cgHead"><b>🎮 操作のしかた</b>' +
+        '<button type="button" data-bird="swan">🦢 白鳥</button><button type="button" data-bird="kite">🦅 鳶</button>' +
+        '<button type="button" data-act="close" title="とじる（Esc）">✕</button></div>' +
+      '<div class="cgMain">' +
+        '<div class="cgStage"><div class="cgStageMsg">鳥を よみこみ中…</div><div class="cgLive" hidden>🎮 コントローラーで操作中</div></div>' +
+        '<div class="cgSide"><div class="cgPad"></div><div class="cgStepTitle"></div><div class="cgSub"></div></div>' +
+      "</div>" +
+      '<div class="cgNav"><button type="button" data-act="prev">◀ まえ</button><span class="cgDots"></span><button type="button" data-act="next">つぎ ▶</button>' +
+        '<button type="button" data-act="replay">🔊 もう一度</button><span style="font-size:12px;color:#9fb6cc">十字キーの ←→ でも えらべます</span></div>' +
+      '<div class="cgFoot"><span class="cgStatus"></span><button type="button" class="cgGo" data-act="go" hidden></button></div>' +
+      '<div class="cgCredit">音声：VOICEVOX:ずんだもん（VOICEVOX ENGINE で生成）　版 ' + VER + "</div>" +
+    "</div>";
+  document.body.appendChild(modal);
+  const $ = (s) => modal.querySelector(s);
+
+  // ---- コントローラーの種類（つないでいなければ会場の GameSir T3 Lite＝Xbox 配列）----
+  function padKind() {
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (const p of pads) {
+      if (!p) continue;
+      const id = String(p.id).toLowerCase();
+      return /dualshock|dualsense|playstation|wireless controller|054c/.test(id) ? "ps" : "xbox";
+    }
+    return "xbox";
+  }
+  function firstPad() {
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (const p of pads) if (p) return p;
+    return null;
+  }
+
+  // ---- コントローラーの図（SVG）。data-k＝ボタン名、data-knob＝スティック、data-fill＝トリガーの押し込み量 ----
+  function padSvg(kind) {
+    const ps = kind === "ps";
+    const face = ps ? { Y: ["△", "#3fbf8f"], X: ["□", "#e27bb7"], B: ["○", "#e5534b"], A: ["×", "#5b8def"] }
+      : { Y: ["Y", "#e6c229"], X: ["X", "#3b82f6"], B: ["B", "#e5534b"], A: ["A", "#3fae49"] };
+    const L = ps ? { LT: "L2", RT: "R2", LB: "L1", RB: "R1", MENU: "OPT", VIEW: "SH" } : { LT: "LT", RT: "RT", LB: "LB", RB: "RB", MENU: "≡", VIEW: "⧉" };
+    const ls = ps ? [150, 172] : [108, 112], dp = ps ? [108, 112] : [150, 172], rs = [250, 172], fc = [292, 112];
+    const trig = (k, x) => '<g class="k" data-k="' + k + '"><rect class="sh" x="' + x + '" y="6" width="74" height="30" rx="12"/>' +
+      '<rect class="fill" data-fill="' + k + '" x="' + (x + 3) + '" y="33" width="68" height="0" rx="4"/><text x="' + (x + 37) + '" y="21">' + L[k] + "</text></g>";
+    const bump = (k, x) => '<g class="k" data-k="' + k + '"><rect class="sh" x="' + x + '" y="42" width="92" height="18" rx="9"/><text x="' + (x + 46) + '" y="51" style="font-size:13px">' + L[k] + "</text></g>";
+    const stick = (k, c) => '<g class="k" data-k="' + k + '"><circle class="sh" cx="' + c[0] + '" cy="' + c[1] + '" r="27"/>' +
+      '<g data-knob="' + k + '"><circle cx="' + c[0] + '" cy="' + c[1] + '" r="17" fill="#50657c" stroke="#cfe0f0" stroke-width="2"/></g>' +
+      '<text x="' + c[0] + '" y="' + (c[1] + 40) + '" style="font-size:12px;fill:#cfe0f0">' + (k === "LS" ? "左スティック" : "右スティック") + "</text></g>";
+    const fb = (k, dx, dy) => '<g class="k" data-k="' + k + '"><circle class="sh" cx="' + (fc[0] + dx) + '" cy="' + (fc[1] + dy) + '" r="14" style="stroke:' + face[k][1] + '"/>' +
+      '<text x="' + (fc[0] + dx) + '" y="' + (fc[1] + dy) + '" style="fill:' + face[k][1] + '">' + face[k][0] + "</text></g>";
+    const small = (k, x) => '<g class="k" data-k="' + k + '"><rect class="sh" x="' + (x - 17) + '" y="84" width="34" height="18" rx="9"/><text x="' + x + '" y="93" style="font-size:11px">' + L[k] + "</text></g>";
+    const d = dp;
+    const dpad = '<g class="k" data-k="DPAD"><path class="sh" d="M' + (d[0] - 8) + " " + (d[1] - 24) + "h16v16h16v16h-16v16h-16v-16h-16v-16h16z\"/></g>";
+    return '<svg viewBox="0 0 400 250" aria-hidden="true">' +
+      trig("LT", 68) + trig("RT", 258) + bump("LB", 58) + bump("RB", 250) +
+      '<path d="M110 62 H290 C340 62 370 92 380 142 L392 204 C398 240 360 254 335 229 L300 196 H100 L65 229 C40 254 2 240 8 204 L20 142 C30 92 60 62 110 62 Z" fill="#1b2a3a" stroke="#6a9fd8" stroke-width="2"/>' +
+      stick("LS", ls) + stick("RS", rs) + dpad + fb("Y", 0, -26) + fb("X", -26, 0) + fb("B", 26, 0) + fb("A", 0, 26) + small("VIEW", 172) + small("MENU", 228) +
+      "</svg>";
+  }
+  function renderPad() { $(".cgPad").innerHTML = padSvg(st.kind); markTargets(); }
+  function markTargets() {
+    const s = st.steps && st.steps[st.idx];
+    const want = s ? s.pads : [];
+    modal.querySelectorAll(".cgPad .k").forEach((g) => g.classList.toggle("tgt", want.indexOf(g.dataset.k) >= 0));
+  }
+
+  // ---- 入力（お手本 or 実際のコントローラー）----
+  const ZERO = { lx: 0, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, lb: 0, rb: 0, a: 0, b: 0, x: 0, y: 0, menu: 0, view: 0 };
+  function liveInput(p) {
+    if (!p) return null;
+    const ax = (i) => { const v = p.axes[i] || 0; return Math.abs(v) < 0.25 ? 0 : v; };
+    const b = (i) => (p.buttons[i] && p.buttons[i].pressed ? 1 : 0);
+    const tv = (i) => (p.buttons[i] ? Math.max(p.buttons[i].value || 0, p.buttons[i].pressed ? 1 : 0) : 0);
+    const inp = { lx: ax(0), ly: ax(1), rx: ax(2), ry: ax(3), lt: tv(BTN.LT), rt: tv(BTN.RT), lb: b(BTN.LB), rb: b(BTN.RB),
+      a: b(BTN.A), b: b(BTN.B), x: b(BTN.X), y: b(BTN.Y), menu: b(BTN.MENU), view: b(BTN.VIEW) };
+    const any = Object.keys(inp).some((k) => Math.abs(inp[k]) > 0.05);
+    return any ? inp : null;
+  }
+  function demoInput(now) {
+    const s = st.steps && st.steps[st.idx];
+    const d = s && DEMO[s.id];
+    if (!d) return Object.assign({}, ZERO);
+    const t = ((now - st.stepStart) / 1000) % d.T;
+    return Object.assign({}, ZERO, d.f(t));
+  }
+  function drawInput(inp) {
+    const on = { A: inp.a, B: inp.b, X: inp.x, Y: inp.y, LB: inp.lb, RB: inp.rb, LT: inp.lt > 0.1, RT: inp.rt > 0.1, MENU: inp.menu, VIEW: inp.view,
+      LS: inp.lx || inp.ly, RS: inp.rx || inp.ry };
+    modal.querySelectorAll(".cgPad .k").forEach((g) => g.classList.toggle("on", !!on[g.dataset.k]));
+    const knob = (k, x, y) => { const el = modal.querySelector('[data-knob="' + k + '"]'); if (el) el.setAttribute("transform", "translate(" + (x * 11).toFixed(1) + " " + (y * 11).toFixed(1) + ")"); };
+    knob("LS", inp.lx, inp.ly); knob("RS", inp.rx, inp.ry);
+    ["LT", "RT"].forEach((k) => { const el = modal.querySelector('[data-fill="' + k + '"]'); if (!el) return; const h = 26 * (k === "LT" ? inp.lt : inp.rt); el.setAttribute("height", h.toFixed(1)); el.setAttribute("y", (35 - h).toFixed(1)); });
+  }
+
+  // ---- 鳥の3D（Three.js）----
+  async function ensureThree() {
+    if (st.three) return st.three;
+    const stage = $(".cgStage");
+    try {
+      const THREE = await import(THREE_URL);
+      const { GLTFLoader } = await import(GLTF_URL);
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.3;
+      stage.insertBefore(renderer.domElement, stage.firstChild);
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.Fog(0xdcefff, 30, 90);
+      const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 300);
+      camera.position.set(...VIEW.def);
+      scene.add(new THREE.HemisphereLight(0xd9efff, 0x747066, 2));
+      for (const [pos, inten, col] of [[[4, 8, 5], 3.2, 0xfff5e1], [[-3, 4, -6], 2, 0xd5e8ff]]) { const l = new THREE.DirectionalLight(col, inten); l.position.set(...pos); scene.add(l); }
+      // 地面（格子を流して前へ進んでいるように見せる）と雲
+      const ground = new THREE.GridHelper(160, 40, 0x5d8a4e, 0x7fae6a);
+      ground.position.y = -7;
+      scene.add(ground);
+      const plane = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshLambertMaterial({ color: 0xa9cf8f }));
+      plane.rotation.x = -Math.PI / 2; plane.position.y = -7.05;
+      scene.add(plane);
+      const clouds = [];
+      const cmat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 });
+      for (let i = 0; i < 9; i++) {
+        const g = new THREE.Group();
+        for (let j = 0; j < 3; j++) { const m = new THREE.Mesh(new THREE.SphereGeometry(1.2 + Math.random(), 12, 10), cmat); m.position.set(j * 1.4 - 1.4, Math.random() * 0.5, Math.random() * 0.8); g.add(m); }
+        g.position.set(-40 + i * 10, 7 + Math.random() * 6, (i % 2 ? 1 : -1) * (14 + Math.random() * 16)); // カメラの前を横切って鳥を隠さないよう、上と左右の遠くに置く
+        scene.add(g); clouds.push(g);
+      }
+      // 速く飛ぶときの風の線
+      const lineGeo = new THREE.BufferGeometry();
+      const pts = [];
+      for (let i = 0; i < 40; i++) { const y = -4 + Math.random() * 9, z = -9 + Math.random() * 18, x = -30 + Math.random() * 60; pts.push(x, y, z, x + 3, y, z); }
+      lineGeo.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+      const lines = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 }));
+      scene.add(lines);
+      const rig = new THREE.Group();
+      rig.rotation.order = "YZX"; // 向き（Y）→ 機首の上下（Z）→ 左右の傾き（X）の順にかける
+      scene.add(rig);
+      const fit = () => { const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
+      new ResizeObserver(fit).observe(stage);
+      fit();
+      st.three = { THREE, GLTFLoader, renderer, scene, camera, ground, clouds, lines, rig, models: {}, mixer: null, action: null, cur: null,
+        pose: { yaw: 0, pitch: 0, roll: 0, y: 0, z: 0 }, dist: 0, lat: 0, camPos: new THREE.Vector3(...VIEW.def) };
+    } catch (e) {
+      console.warn("[操作のしかた] Three.js を読み込めませんでした", e);
+      $(".cgStageMsg").textContent = "（鳥の3Dを読み込めませんでした。図と声で説明します）";
+      st.three = null;
+      return null;
+    }
+    return st.three;
+  }
+  async function showBird(kind) {
+    st.bird = kind;
+    modal.querySelectorAll("[data-bird]").forEach((b) => b.classList.toggle("sel", b.dataset.bird === kind));
+    const T = await ensureThree();
+    if (!T) return;
+    if (T.cur === kind) return;
+    const msg = $(".cgStageMsg");
+    msg.textContent = (kind === "kite" ? "鳶" : "白鳥") + "を よみこみ中…";
+    msg.hidden = false;
+    try {
+      let m = T.models[kind];
+      if (!m) {
+        const gltf = await new T.GLTFLoader().loadAsync(GLB[kind]);
+        const obj = gltf.scene;
+        const box = new T.THREE.Box3().setFromObject(obj);
+        const size = box.getSize(new T.THREE.Vector3()), center = box.getCenter(new T.THREE.Vector3());
+        const s = 7 / Math.max(size.x, size.y, size.z);
+        const holder = new T.THREE.Group();
+        obj.position.sub(center);
+        holder.add(obj);
+        holder.scale.setScalar(s);
+        m = T.models[kind] = { holder, obj, clip: gltf.animations[0] };
+      }
+      if (st.bird !== kind) return; // 読み込み中に切り替えられた
+      T.rig.clear();
+      T.rig.add(m.holder);
+      T.mixer = new T.THREE.AnimationMixer(m.obj);
+      T.action = m.clip ? T.mixer.clipAction(m.clip) : null;
+      if (T.action) T.action.play();
+      T.cur = kind;
+      msg.hidden = true;
+    } catch (e) {
+      console.warn("[操作のしかた] 鳥のモデルを読み込めませんでした", e);
+      msg.textContent = "（鳥のモデルを読み込めませんでした）";
+    }
+  }
+  function animateBird(inp, dt, stepId) {
+    const T = st.three;
+    if (!T) return;
+    const up = inp.rt - inp.lt, fwd = Math.max(0, -inp.ly), boost = inp.x ? 1 : 0;
+    const tgt = { yaw: -inp.rx * 0.6, pitch: -inp.ry * 0.45 + up * 0.35, roll: (inp.rb - inp.lb) * 0.75 + inp.lx * 0.25 + inp.rx * 0.2, y: up * 1.6, z: inp.lx * 1.8 };
+    const a = 1 - Math.exp(-dt / 0.25);
+    for (const k in tgt) T.pose[k] += (tgt[k] - T.pose[k]) * a;
+    T.rig.rotation.set(T.pose.roll, T.pose.yaw, T.pose.pitch);
+    T.rig.position.set(0, T.pose.y, T.pose.z);
+    const speed = (3 + fwd * 10) * (1 + boost * 2);
+    T.dist += speed * dt;
+    T.lat += inp.lx * 4 * dt;
+    T.ground.position.x = -(T.dist % 4);
+    T.ground.position.z = -(T.lat % 4);
+    T.ground.position.y = -7 - up * 0.8;
+    T.clouds.forEach((c) => { c.position.x -= speed * 0.6 * dt; c.position.z -= inp.lx * 3 * dt; if (c.position.x < -50) c.position.x += 90; });
+    T.lines.material.opacity += ((boost ? 0.8 : 0) - T.lines.material.opacity) * a;
+    T.lines.position.x = -((T.dist * 2) % 30);
+    if (T.mixer) { T.mixer.timeScale = Math.max(0.25, 0.7 + fwd * 0.5 + boost * 1.2 - inp.lt * 0.4); T.mixer.update(dt); }
+    const v = VIEW[stepId] || VIEW.def;
+    T.camPos.lerp(new T.THREE.Vector3(...v), 1 - Math.exp(-dt / 0.6));
+    T.camera.position.copy(T.camPos);
+    T.camera.lookAt(1, 0, 0);
+    T.renderer.render(T.scene, T.camera);
+  }
+
+  // ---- 声（BGM は読み上げ中だけ小さく）----
+  function bgmDuck(on) {
+    try {
+      if (typeof bgmAudio === "undefined" || !bgmAudio) return;
+      if (on) { if (st.bgmVol == null) st.bgmVol = bgmAudio.volume; bgmAudio.volume = Math.min(bgmAudio.volume, BGM_DUCK); }
+      else if (st.bgmVol != null) { bgmAudio.volume = st.bgmVol; st.bgmVol = null; }
+    } catch (e) {}
+  }
+  function voiceUrl(s) { return VOICE_BASE + s.id + "_" + (s.voice.common ? "common" : st.kind) + ".mp3?v=" + VER; }
+  function stopVoice() { clearTimeout(st.stepTimer); if (st.audio) { try { st.audio.pause(); } catch (e) {} st.audio = null; } bgmDuck(false); }
+  function playStep(i) {
+    stopVoice();
+    st.idx = Math.max(0, Math.min(st.steps.length - 1, i));
+    st.stepStart = performance.now();
+    const s = st.steps[st.idx];
+    $(".cgStepTitle").textContent = (st.idx + 1) + "／" + st.steps.length + "　" + s.title;
+    $(".cgSub").textContent = s.sub.common || s.sub[st.kind] || "";
+    $(".cgDots").innerHTML = st.steps.map((_, j) => '<i class="' + (j === st.idx ? "on" : "") + '"></i>').join("");
+    markTargets();
+    if (st.idx === st.steps.length - 1) st.ended = true;
+    const next = () => { if (st.open && st.idx < st.steps.length - 1) st.stepTimer = setTimeout(() => playStep(st.idx + 1), 700); };
+    const a = new Audio(voiceUrl(s));
+    st.audio = a;
+    bgmDuck(true);
+    a.onended = () => { if (st.audio !== a) return; st.audio = null; bgmDuck(false); next(); };
+    const fail = () => { if (st.audio !== a) return; st.audio = null; bgmDuck(false); st.stepTimer = setTimeout(next, Math.max(5000, ($(".cgSub").textContent.length * 180))); };
+    a.onerror = fail;
+    const pr = a.play();
+    if (pr && pr.catch) pr.catch(fail);
+    updateFoot();
+  }
+
+  // ---- 下の帯：武蔵屋めぐりのスタート待ちなら「読み込み中／A でスタート」、それ以外は最後まで見たら「A でとじる」----
+  function waitingForStart() { return typeof window.msyWaiting === "function" && window.msyWaiting(); }
+  function action() {
+    if (waitingForStart()) return typeof window.msyCanStart === "function" && window.msyCanStart() ? "start" : "";
+    return st.ended ? "close" : "";
+  }
+  function updateFoot() {
+    const okName = st.kind === "ps" ? "○" : "A";
+    const act = action(), go = $(".cgGo"), status = $(".cgStatus");
+    if (waitingForStart()) {
+      if (act === "start") { status.innerHTML = "✅ <b>じゅんびOK！</b>"; go.textContent = "🚀 " + okName + " ボタン（Enter）でスタート"; }
+      else { status.innerHTML = "🌏 街並みを読み込み中…　読み込めたら " + okName + " ボタンでスタートできます"; }
+    } else {
+      status.textContent = act === "close" ? "" : "コントローラーを動かして、ためしてみよう";
+      go.textContent = okName + " ボタン（Enter）でとじる";
+    }
+    go.hidden = !act;
+    go.classList.toggle("ready", act === "start");
+  }
+  function doAction() {
+    const act = action();
+    if (act === "start") { close(); if (typeof window.msyReadyGo === "function") window.msyReadyGo(); }
+    else if (act === "close") close();
+  }
+
+  // ---- 毎フレーム ----
+  function loop(now) {
+    if (!st.open) { st.raf = 0; return; }
+    const dt = Math.min(0.1, (now - (st.last || now)) / 1000);
+    st.last = now;
+    const p = firstPad();
+    if (p) {
+      const k = padKind();
+      if (k !== st.kind) { st.kind = k; renderPad(); playStep(st.idx); }
+    }
+    const live = liveInput(p);
+    if (live) st.liveUntil = now + 1500;
+    const inp = live || (now < st.liveUntil ? Object.assign({}, ZERO) : demoInput(now));
+    $(".cgLive").hidden = !(now < st.liveUntil);
+    drawInput(inp);
+    // 押した瞬間：A／○（0・1）＝スタート・とじる（出ているときだけ）、十字キー←→＝手順を選ぶ
+    if (p) {
+      const down = (i) => !!(p.buttons[i] && p.buttons[i].pressed);
+      const edge = (i) => down(i) && !st.prev[i];
+      if (edge(0) || edge(1)) doAction();
+      if (edge(14)) playStep(st.idx - 1);
+      if (edge(15)) playStep(st.idx + 1);
+      st.prev = p.buttons.map((b) => b.pressed);
+    }
+    if (now - (st.footAt || 0) > 300) { st.footAt = now; updateFoot(); } // 街並みの読み込みが終わったかを見る
+    animateBird(inp, dt, st.steps[st.idx].id);
+    st.raf = requestAnimationFrame(loop);
+  }
+
+  // ---- 開く・とじる ----
+  async function loadSteps() {
+    if (st.steps) return st.steps;
+    const r = await fetch("assets/narration/controls-guide.json?v=" + VER);
+    st.steps = (await r.json()).steps;
+    return st.steps;
+  }
+  async function open(opts) {
+    st.opts = opts || {};
+    try { await loadSteps(); } catch (e) { console.warn("[操作のしかた] 手順を読み込めませんでした", e); return; }
+    if (st.open) return;
+    st.open = true;
+    st.ended = false;
+    st.kind = padKind();
+    const p = firstPad();
+    st.prev = p ? p.buttons.map((b) => b.pressed) : []; // 開いたときに押していたボタンでは反応しない
+    renderPad();
+    modal.classList.add("show");
+    playStep(0);
+    const inGame = typeof tonbiOn !== "undefined" && tonbiOn ? "kite" : "swan"; // いまゲームで使っている鳥
+    showBird(st.opts.bird || inGame);
+    st.last = 0;
+    if (!st.raf) st.raf = requestAnimationFrame(loop);
+  }
+  function close() {
+    if (!st.open) return;
+    st.open = false;
+    stopVoice();
+    modal.classList.remove("show");
+    const btn = document.getElementById("ctlGuideBtn");
+    if (btn) btn.focus && btn.blur();
+  }
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) { close(); return; }
+    const b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.bird) { showBird(b.dataset.bird); return; }
+    const act = b.dataset.act;
+    if (act === "close") close();
+    else if (act === "prev") playStep(st.idx - 1);
+    else if (act === "next") playStep(st.idx + 1);
+    else if (act === "replay") playStep(st.idx);
+    else if (act === "go") doAction();
+  });
+  // 開いている間のキーは、ここで受けて他（武蔵屋めぐりの Enter＝スタート、3D の移動キー）へ渡さない
+  document.addEventListener("keydown", function (e) {
+    if (!st.open) return;
+    if (e.key === "Escape") close();
+    else if (e.key === "Enter") doAction();
+    else if (e.key === "ArrowLeft") playStep(st.idx - 1);
+    else if (e.key === "ArrowRight") playStep(st.idx + 1);
+    else return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }, true);
+  window.addEventListener("pagehide", stopVoice);
+
+  // 3D の飛行入力を止めるか（index.html の毎フレームの処理が見る）
+  window.cbiInputHold = () => st.open;
+  window.CbiControlsGuide = { open, close, isOpen: () => st.open, state: st };
+})();

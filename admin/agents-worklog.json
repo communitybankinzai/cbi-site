@@ -7240,6 +7240,25 @@
       "actuals": [
         {
           "date": "2026-09-13",
+          "title": "「🎮 操作のしかた」ポップアップ実装（ずんだもん音声12本・白鳥3Dの姿勢・コントローラー図）＋検証 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/controls-guide.js（新規）",
+            "site/metaverse/assets/narration/controls-guide.json（新規・手順8つの字幕と読み上げ文）",
+            "site/metaverse/assets/narration/build_controls_voicevox.py（新規）",
+            "site/metaverse/assets/narration/zundamon/guide_*.mp3（12本・VOICEVOX:ずんだもん）",
+            "site/metaverse/assets/narration/manifest.json",
+            "site/metaverse/musashiya.js（読み込み待ちで自動表示・A の受け渡し・ボタン）",
+            "site/metaverse/index.html（読み込み追加・表示中は飛行入力を止める）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.8,
+          "partnerApproved": true,
+          "note": "中司さん依頼「ずんだもんの声に合わせて、白鳥や鳶の姿勢とコントローラーのボタンを対比させる説明ページ」＋「3DMAP生成時に見せると時間かせぎできる」。3択で 3Dモデルを動かす／読み込み中に自動＋ボタン／Xbox・PS両方の声 を選択。検証（?notiles=1・ローカル）：手順ごとの姿勢を仮の時刻で回して全手順の向きと点灯を確認、モデルの首=+X・右=+Z を実測、Enter でポップアップが閉じてカウントダウン開始、表示中は飛行入力停止を確認。ブラウザペインが非表示でスクショは1枚のみ（白鳥の傾きの見た目は会場PCで要確認＝plans）。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 77,095 / cost: $8.11"
+        },
+        {
+          "date": "2026-09-13",
           "title": "ずかん・クイズ成績などを受付した人ごとに保存（交代で自動切替） 0.16時間",
           "category": "実装",
           "outputs": [
@@ -7689,6 +7708,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-10-27",
+          "title": "🎮 「操作のしかた」ポップアップを会場PC（本番3D込み・GameSir T3 Lite）で目視確認する",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-13 実装。ローカル検証はブラウザペイン非表示でスクショ1枚のみ。確認点：(1) 武蔵屋めぐりの開始後、街並みの読み込み中に自動で出るか（2人目以降も） (2) 白鳥の傾きの向き（RB＝右の翼が下がる）と上昇・下降の見え方 (3) ずんだもんの声の音量と白鳥の湖（読み上げ中は小さくなる） (4) 読み込めたら A でそのままスタートするか (5) PSコントローラーをつないだとき表記と声が ○／□／R2 に変わるか。直すときは controls-guide.js（動きは DEMO、見る向きは VIEW）、文は assets/narration/controls-guide.json＋build_controls_voicevox.py で音声を作り直す。"
+        },
         {
           "due": "2026-09-19",
           "title": "✅ CiDAO案内スライド・スタッフ用A4手順書の文言を確認する（未登録者の登録手順・受付の流れが実機と合うか）",

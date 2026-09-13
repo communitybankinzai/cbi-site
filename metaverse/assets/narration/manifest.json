@@ -791,6 +791,78 @@
    "chars": 85,
    "voice": "VOICEVOX:ずんだもん",
    "bytes": 112749
+  },
+  "zundamon/guide_intro_common.mp3": {
+   "hash": "e66357df643d",
+   "chars": 70,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 86253
+  },
+  "zundamon/guide_lstick_common.mp3": {
+   "hash": "3312c0807f6c",
+   "chars": 54,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 72813
+  },
+  "zundamon/guide_rstick_common.mp3": {
+   "hash": "a140ea7f62bf",
+   "chars": 55,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 71277
+  },
+  "zundamon/guide_trig_xbox.mp3": {
+   "hash": "1f6d87ea3779",
+   "chars": 46,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 58029
+  },
+  "zundamon/guide_trig_ps.mp3": {
+   "hash": "59f8bbe59829",
+   "chars": 44,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 57837
+  },
+  "zundamon/guide_bump_xbox.mp3": {
+   "hash": "c6e5195dfb82",
+   "chars": 53,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 67245
+  },
+  "zundamon/guide_bump_ps.mp3": {
+   "hash": "d803071313a7",
+   "chars": 53,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 67629
+  },
+  "zundamon/guide_boost_xbox.mp3": {
+   "hash": "1194780868a4",
+   "chars": 58,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 66477
+  },
+  "zundamon/guide_boost_ps.mp3": {
+   "hash": "5db009c98c96",
+   "chars": 59,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 67053
+  },
+  "zundamon/guide_ok_xbox.mp3": {
+   "hash": "fd875a2d7a4f",
+   "chars": 63,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 75885
+  },
+  "zundamon/guide_ok_ps.mp3": {
+   "hash": "3c32354c63b6",
+   "chars": 64,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 76461
+  },
+  "zundamon/guide_end_common.mp3": {
+   "hash": "9914d6063561",
+   "chars": 35,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 41325
   }
  },
  "voices": {

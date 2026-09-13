@@ -443,6 +443,12 @@
     startAltTimer();
     ttShowCard();
     padArm();
+    // 街並みの読み込み待ちの間に「🎮 操作のしかた」（controls-guide.js）を見せる（2026-09-13 中司さん「3DMAP生成時に見せると時間かせぎできる」）。
+    // 読み込めたら、そのポップアップの中で A（○）を押すとスタートする。
+    // 判定は少し待ってから：goHome() の直後は、前の人の場所で読み込み済みの状態（tilesLoaded＝true）が残っているため
+    setTimeout(function () {
+      if (state.on && state.waiting && !canStart() && window.CbiControlsGuide && !window.CbiControlsGuide.isOpen()) window.CbiControlsGuide.open({ auto: true });
+    }, 1200);
   }
   // 街並みが読み込めるまでは○を受け付けない（読み込み前に始まると地面が取れず高度も狂う。2026-09-13 中司さん）。
   // 45秒たっても読み込めないとき（通信が細いとき）は、待たせすぎないようスタートを許す
@@ -894,6 +900,7 @@
     padRaf = requestAnimationFrame(padLoop);
   }
   function onOk() {
+    if (window.CbiControlsGuide && window.CbiControlsGuide.isOpen()) return; // 「🎮 操作のしかた」を開いている間は、そちらが A（○）を受ける
     if (vpanel.style.display === "flex") { closeVoicePanel(); return; }
     if (modal.classList.contains("show")) { start(state.age); return; }
     if (state.waiting) { readyGo(); return; }
@@ -946,6 +953,22 @@
     document.addEventListener("keydown", first, true);
   })();
   window.msyStart = start;
+  // 「🎮 操作のしかた」（controls-guide.js）が見る：スタート待ちか・スタートできるか・スタートする
+  window.msyWaiting = () => !!(state.on && state.waiting);
+  window.msyCanStart = canStart;
+  window.msyReadyGo = readyGo;
+  // 「🎮 操作のしかた」ボタン。モード中だけ「武蔵屋めぐり」の横に出す
+  function placeGuideBtn(inMode) {
+    let b = document.getElementById("ctlGuideBtn");
+    const anchor = document.getElementById("musashiyaBtn");
+    if (inMode && !b && anchor && window.CbiControlsGuide) {
+      b = document.createElement("button");
+      b.id = "ctlGuideBtn"; b.textContent = "🎮 操作のしかた";
+      b.title = "コントローラーの使いかたを、ずんだもんの声と鳥の動きで説明します";
+      b.addEventListener("click", function () { window.CbiControlsGuide.open(); });
+      anchor.parentNode.insertBefore(b, anchor.nextSibling);
+    } else if (!inMode && b) b.remove();
+  }
   // モードに入ったとき（URL・モード切替のどちらでも）：白鳥・武蔵屋の前へ移動・開始画面。1回だけ
   // 他の利用者の光点・同行者リストを出さない（2026-09-13 中司さん「利用者640がいつもいて邪魔」）
   function rtDetach(on) {
@@ -961,6 +984,7 @@
   function enterMode() {
     placeSwanBtn(true);
     placeVoiceBtn(true);
+    placeGuideBtn(true);
     rtDetach(true); // 会場では他の利用者の光点・同行者リストを出さない
     window.flightClearanceM = FLIGHT_CLEARANCE_M; // 飛行中に地面へ近づける（index.html の keepAboveGround が見る）
     if (state.entered) return;
@@ -977,6 +1001,8 @@
     state.entered = false;
     placeSwanBtn(false);
     placeVoiceBtn(false);
+    placeGuideBtn(false);
+    if (window.CbiControlsGuide) window.CbiControlsGuide.close();
     rtDetach(false);
     delete window.flightClearanceM;
     if (state.on && typeof ttAbort === "function") ttAbort();
