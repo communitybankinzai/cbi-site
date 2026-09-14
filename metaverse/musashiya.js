@@ -575,10 +575,15 @@
     const extra = '<p class="msyTime">' + (isKids() ? "かかった時間" : "所要時間") + "：<b>" + ttFormat(ms) + "</b></p>" +
       '<p style="font-size:13px;color:#cfe6ff;margin:0 0 10px">' + esc(SWAN_HOME.name) + " → " + esc(station().name) + " → " + names + " → 武蔵屋</p>";
     pop.className = "show " + state.age;
-    pop.innerHTML = popHtml(state.home, head, extra) +
+    // タイム・ランキング・ボタンを上に（2026-09-14 中司さん「ゴール後はスクロールしないと下が見られず、コントローラーで操作しにくい。
+    // ランキングなどすぐ見られるように」）。武蔵屋の写真と説明は PR のためその下に残す（右スティック・十字キーの上下で送れる）
+    const top = extra +
       '<div id="msyRank" class="msyRank"><p class="msyRankNote">記録を送っています…</p></div>' +
       '<div class="msyRow"><button type="button" data-act="close">とじる</button><button type="button" data-act="nextperson">👥 次の人に交代</button><button type="button" class="go" data-act="again">🔁 もういちど</button></div>' +
-      '<p style="font-size:12px;color:#ffd166;margin:8px 0 0">次の人が遊ぶときは「👥 次の人に交代」で受付を替えてください。記録は受付の名前で残ります</p>';
+      '<p style="font-size:12px;color:#ffd166;margin:8px 0 0">次の人が遊ぶときは「👥 次の人に交代」で受付を替えてください。記録は受付の名前で残ります</p>' +
+      '<p style="font-size:12px;color:#9fb6cc;margin:6px 0 10px;padding-bottom:8px;border-bottom:1px solid #33506e">▼ 武蔵屋の説明（右スティックか十字キーの上下で下へ送れます）</p>';
+    pop.innerHTML = popHtml(state.home, head, top);
+    pop.scrollTop = 0;
     state.popFinal = true;
     clearTimeout(state.popTimer); // ゴールの画面は消さずに残す
     padArm();
@@ -778,10 +783,11 @@
     });
   }
   const toKmh = (m, ms) => (m > 0 && ms > 0 ? Math.round((m / (ms / 1000)) * 3.6 * 10) / 10 : 0);
+  // 上位5位まで（ゴール画面をスクロールせずに見られるように。全員分はランキングのページ）
   function rankListHtml(list) {
     return "<b>今日のランキング（平均の速さ）</b>" +
       (list.length
-        ? "<ol>" + list.map((r) => "<li" + (r.name === srv.name ? ' class="me"' : "") + ">" + esc(r.name) + "　時速 " + esc(r.speedKmh) + " km</li>").join("") + "</ol>"
+        ? "<ol>" + list.slice(0, 5).map((r) => "<li" + (r.name === srv.name ? ' class="me"' : "") + ">" + esc(r.name) + "　時速 " + esc(r.speedKmh) + " km</li>").join("") + "</ol>"
         : "<p>まだ記録がありません</p>") +
       '<a href="' + RANK_PAGE + '" target="_blank" rel="noopener">🏆 ランキングのページを開く</a>';
   }
@@ -866,7 +872,9 @@
     for (const p of pads) {
       if (!p) continue;
       const btn = (i) => !!(p.buttons[i] && p.buttons[i].pressed);
-      out.push({ i: p.index, ok: btn(0) || btn(1), l: btn(14) || p.axes[0] < -0.6, r: btn(15) || p.axes[0] > 0.6, ud: btn(12) || btn(13) }); // 決定は 0（A／×）と 1（B／○）のどちらでも
+      const ry = p.axes[3] || 0;
+      out.push({ i: p.index, ok: btn(0) || btn(1), l: btn(14) || p.axes[0] < -0.6, r: btn(15) || p.axes[0] > 0.6, ud: btn(12) || btn(13),
+        sy: (Math.abs(ry) > 0.3 ? ry : 0) + (btn(13) ? 1 : 0) - (btn(12) ? 1 : 0) }); // ポップアップを送る量（右スティック上下・十字キー上下） // 決定は 0（A／×）と 1（B／○）のどちらでも
     }
     return out;
   }
@@ -900,6 +908,7 @@
       if (s.l && !p.l) onLR();
       if (s.r && !p.r) onLR();
       if (s.ud && !p.ud) onUD();
+      if (s.sy && pop.classList.contains("show")) pop.scrollTop += s.sy * 14; // 押している間、下の説明へ送る
       padPrev[s.i] = s;
     });
     padRaf = requestAnimationFrame(padLoop);
@@ -960,7 +969,10 @@
   window.msyStart = start;
   // 「🎮 操作のしかた」（controls-guide.js）が見る：スタート待ちか・スタートできるか・スタートする
   window.msyWaiting = () => !!(state.on && state.waiting);
-  window.msyOn = () => !!state.on; // めぐりの最中（待ち・計測中）。この間の ≡ 長押しはここの backToStart が受ける（controls-guide.js は見ない）
+  window.msyOn = () => !!state.on;
+  // 開始画面・到着／ゴールのポップアップ・声の設定が出ているか。この間の A／B（○／×）はここで受けるので、
+  // index.html の1P操作（中央のピンを開く・閉じる）は動かさない（2026-09-14 中司さん「別の説明がたまに出てくる」）
+  window.msyUiOpen = () => modal.classList.contains("show") || pop.classList.contains("show") || vpanel.style.display === "flex"; // めぐりの最中（待ち・計測中）。この間の ≡ 長押しはここの backToStart が受ける（controls-guide.js は見ない）
   window.msyCanStart = canStart;
   window.msyReadyGo = readyGo;
   // 走り出してから操作説明に戻る（2026-09-14 中司さん「操作説明時に間違えてスタートさせてしまった」→ スタート前に戻る）。
@@ -1033,11 +1045,13 @@
   }
   window.msyEnterMode = enterMode;
   window.msyLeaveMode = function () { // 別のモードへ切り替えたとき
+    const wasIn = state.entered;
     state.entered = false;
     placeSwanBtn(false);
     placeVoiceBtn(false);
     placeGuideBtn(false);
-    if (window.CbiControlsGuide) window.CbiControlsGuide.close();
+    // 操作説明を閉じるのは武蔵屋から出たときだけ（applyMode はほかのモードでも毎回ここを呼ぶので、夜景などで開いた説明を閉じてしまう）
+    if (wasIn && window.CbiControlsGuide) window.CbiControlsGuide.close();
     rtDetach(false);
     delete window.flightClearanceM;
     if (state.on && typeof ttAbort === "function") ttAbort();

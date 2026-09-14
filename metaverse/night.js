@@ -804,7 +804,7 @@
       const dh = Math.round(next.height - c.height);
       txt += " ／ 次 <b>" + (tt.pos + 1) + "</b>/" + COURSE.length + " " + arrow + " <b>" + dist + "</b> m" + (Math.abs(dh) > 20 ? (dh > 0 ? " ↑" : " ↓") + Math.abs(dh) + "m" : "");
       const el = tt.waiting
-        ? "<b>READY?</b><small>○ボタン／スペースで スタート</small>"
+        ? "<b>READY?</b><small>" + okBtnLabel() + "／スペースで スタート</small>"
         : tt.countdownEnd > performance.now()
         ? "<b>" + Math.ceil((tt.countdownEnd - performance.now()) / 1000) + "</b><small>スタートまで</small>"
         : "⏱ <b>" + ttFormat(performance.now() - tt.startMs) + "</b><small>" + tt.name + "　" + (tt.pos) + "/" + COURSE.length + " ゲート通過</small>";
@@ -820,6 +820,30 @@
   // ------------------------------------------------------------
   // 夜景モード ON/OFF
   // ------------------------------------------------------------
+  // 画面に出す決定ボタン名（Xbox 配列＝A、PS 系＝○）。2026-09-14 中司さん「コントローラーに○ボタンはない」。スタートは従来どおり A・○ どちらでも
+  function okBtnLabel() { try { return typeof padKindForHelp === "function" && padKindForHelp() === "xbox" ? "Aボタン" : "○ボタン"; } catch (e) { return "○ボタン"; } }
+  // ---- 🎮 操作のしかた（controls-guide.js）を夜景でも（2026-09-14 中司さん「描画までの時間つぶしがしたい」）----
+  // 夜景のボタンの横に置き、夜景にしたとき街並みを読み込み中なら自動で開く（読み込めたら操作説明の下に「準備OK」が出る）
+  function placeGuideBtn(on) {
+    let b = document.getElementById("nightGuideBtn");
+    const anchor = document.getElementById("nightTtBtn");
+    if (on && !b && anchor && window.CbiControlsGuide) {
+      b = document.createElement("button");
+      b.id = "nightGuideBtn"; b.textContent = "🎮 操作のしかた";
+      b.title = "コントローラーの使いかたを、ずんだもんの声と鳥の動きで説明します";
+      b.addEventListener("click", function () { window.CbiControlsGuide.open({ auto: "tiles" }); });
+      anchor.parentNode.insertBefore(b, anchor.nextSibling);
+    } else if (!on && b) b.remove();
+  }
+  function scheduleGuide() { // 夜景にした直後は読み込み済みの状態が残っていることがあるので、少し待ってから見る
+    setTimeout(function () {
+      const G = window.CbiControlsGuide;
+      // ページを開いた直後の夜景は、controls-guide.js（night.js の後に読む）がまだ無くボタンを置けないので、ここで置き直す
+      if (window.nightOn) placeGuideBtn(true);
+      if (!window.nightOn || !G || G.isOpen() || tt.active || typeof tileset === "undefined" || !tileset || tileset.tilesLoaded) return;
+      G.open({ auto: "tiles" });
+    }, 1500);
+  }
   function applyNight(on) {
     window.nightOn = !!on;
     const sc = viewer.scene;
@@ -854,6 +878,8 @@
     const btn = document.getElementById("nightBtn");
     if (btn) { btn.classList.toggle("off", !on); btn.textContent = on ? "🌃 夜景中" : "🌃 夜景"; }
     ["nightTourBtn", "nightTtBtn"].forEach(function (id) { const b = document.getElementById(id); if (b) b.classList.toggle("on", !!on); });
+    placeGuideBtn(!!on);
+    if (on) scheduleGuide();
     if (on) {
       loadGates();
       buildStrings();
@@ -1412,7 +1438,7 @@
       orientation: { heading: Cesium.Math.toRadians(bearingDeg(START_POINT, COURSE[0])), pitch: 0, roll: 0 },
     });
     // すぐにカウントダウンせず、準備の合図を待つ（コントローラーの中心合わせが済む前に始まって焦る、との指摘）
-    caption("🎮 準備ができたら <b>○ボタン</b>（スペース／Enter でも可）で スタート<br><small>スティックから手を離して押すと、その位置を中心に合わせ直します。1番のゲート（" + COURSE[0].name + "の上空）は正面</small>", 0);
+    caption("🎮 準備ができたら <b>" + okBtnLabel() + "</b>（スペース／Enter でも可）で スタート<br><small>スティックから手を離して押すと、その位置を中心に合わせ直します。1番のゲート（" + COURSE[0].name + "の上空）は正面</small>", 0);
   }
   // 準備OK → 中心合わせ → 3・2・1 → 計測開始（サーバーへの開始登録もこの瞬間）
   let readyBtnPrev = false;

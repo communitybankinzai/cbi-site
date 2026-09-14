@@ -5,7 +5,7 @@
 // 文面と声：assets/narration/controls-guide.json、音声は assets/narration/build_controls_voicevox.py（VOICEVOX:ずんだもん・クレジット必須）
 (function () {
   "use strict";
-  const VER = "20260914-3";
+  const VER = "20260914-5";
   // 声と手順データの版。文を変えて音声を作り直したときだけ上げる（上げると端末に保存済みの声も取り直しになる。JS を直しただけでは上げない）
   const VOICE_VER = "20260913-1";
   // 手順データ（controls-guide.json）の版。JSON を変えたら必ず上げる（上げないと端末に保存済みの古い JSON が使われ続ける。2026-09-14 実際に起きた）
@@ -42,7 +42,8 @@
   const variant = (s) => (!inMsy() && s.general ? Object.assign({}, s, s.general) : s);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const st = { open: false, steps: null, idx: 0, kind: "xbox", bird: "swan", audio: null, stepTimer: 0, stepStart: 0, ended: false,
-    raf: 0, last: 0, liveUntil: 0, prev: [], bgmVol: null, opts: {}, three: null };
+    raf: 0, last: 0, liveUntil: 0, prev: [], bgmVol: null, opts: {}, three: null,
+    birdWait: false, waitSeq: 0, birdWaitMs: 30000 }; // birdWaitMs：鳥を待つ最長時間（検証では短くできる）
 
   // ---- 見た目 ----
   const css = document.createElement("style");
@@ -197,6 +198,7 @@
     return any ? inp : null;
   }
   function demoInput(now) {
+    if (st.birdWait) return Object.assign({}, ZERO); // 鳥を待っている間はお手本も止める
     const s = st.steps && st.steps[st.idx];
     const v = s && variant(s);
     const d = v && DEMO[v.voiceId || v.id];
@@ -274,8 +276,8 @@
     st.bird = kind;
     modal.querySelectorAll("[data-bird]").forEach((b) => b.classList.toggle("sel", b.dataset.bird === kind));
     const T = await ensureThree();
-    if (!T) return;
-    if (T.cur === kind) return;
+    if (!T) return false;       // 戻り値：映ったら true（waitBird が見る）
+    if (T.cur === kind) return true;
     const msg = $(".cgStageMsg");
     msg.textContent = (kind === "kite" ? "鳶" : "白鳥") + "を よみこみ中…";
     msg.hidden = false;
@@ -293,7 +295,7 @@
         holder.scale.setScalar(s);
         m = T.models[kind] = { holder, obj, clip: gltf.animations[0] };
       }
-      if (st.bird !== kind) return; // 読み込み中に切り替えられた
+      if (st.bird !== kind) return false; // 読み込み中に切り替えられた
       T.rig.clear();
       T.rig.add(m.holder);
       T.mixer = new T.THREE.AnimationMixer(m.obj);
@@ -301,10 +303,30 @@
       if (T.action) T.action.play();
       T.cur = kind;
       msg.hidden = true;
+      return true;
     } catch (e) {
       console.warn("[操作のしかた] 鳥のモデルを読み込めませんでした", e);
       msg.textContent = "（鳥のモデルを読み込めませんでした）";
+      return false;
     }
+  }
+  // 鳥が映るまで声・手順・お手本の動きを止める（2026-09-14 中司さん「白鳥を読み込むまで案内を進めないように」）。
+  // 開いたときと、鳶／白鳥に切り替えたとき（その手順を頭から）。最長 st.birdWaitMs 待ち、失敗・時間切れなら鳥なしで進む
+  async function waitBird(kind) {
+    const seq = ++st.waitSeq;
+    st.birdWait = true;
+    playStep(st.idx); // 待っている間は表示だけ（声は出さない）
+    let timer = 0;
+    const ok = await Promise.race([showBird(kind), new Promise((r) => { timer = setTimeout(() => r("timeout"), st.birdWaitMs); })]);
+    clearTimeout(timer);
+    if (seq !== st.waitSeq || !st.open) return; // 待っている間に閉じた・別の鳥に切り替えた
+    st.birdWait = false;
+    if (ok === "timeout") { // 読み込みは裏で続け、映ったら出す（showBird が案内を消す）
+      const msg = $(".cgStageMsg");
+      msg.textContent = "（鳥の読み込みに時間がかかっているので、先に説明するのだ）";
+      msg.hidden = false;
+    }
+    playStep(st.idx);
   }
   function animateBird(inp, dt, stepId) {
     const T = st.three;
@@ -351,6 +373,10 @@
     $(".cgSub").textContent = s.sub.common || s.sub[st.kind] || "";
     $(".cgDots").innerHTML = st.steps.map((_, j) => '<i class="' + (j === st.idx ? "on" : "") + '"></i>').join("");
     markTargets();
+    if (st.birdWait) { // 鳥を待っている間は字幕で知らせるだけ
+      $(".cgSub").textContent = "🦢 " + (st.bird === "kite" ? "鳶" : "白鳥") + "を よみこみ中…　映ったら説明をはじめるのだ";
+      return;
+    }
     if (st.idx === st.steps.length - 1) st.ended = true;
     const next = () => { if (st.open && st.idx < st.steps.length - 1) st.stepTimer = setTimeout(() => playStep(st.idx + 1), 700); };
     const a = new Audio(voiceUrl(s));
@@ -366,19 +392,26 @@
 
   // ---- 下の帯：武蔵屋めぐりのスタート待ちなら「読み込み中／A でスタート」、それ以外は最後まで見たら「A でとじる」----
   function waitingForStart() { return typeof window.msyWaiting === "function" && window.msyWaiting(); }
+  // 夜景などで「街並みの読み込み待ち」に自動で開いたとき（open({auto:"tiles"})）は、読み込めたら閉じられる（2026-09-14 中司さん）
+  function tilesDone() { try { return typeof tileset === "undefined" || !tileset || !!tileset.tilesLoaded; } catch (e) { return true; } }
   function action() {
     if (waitingForStart()) return typeof window.msyCanStart === "function" && window.msyCanStart() ? "start" : "";
+    if (st.opts.auto === "tiles" && tilesDone()) return "close";
     return st.ended ? "close" : "";
   }
+  // 長押しが要るか：スタートと、最後の手順まで見る前に閉じるとき（説明で A をためして押しても始まったり閉じたりしないように）
+  function needHold() { const a = action(); return a === "start" || (a === "close" && !st.ended); }
   function updateFoot() {
     const okName = st.kind === "ps" ? "○" : "A";
     const act = action(), go = $(".cgGo"), status = $(".cgStatus");
     if (waitingForStart()) {
       if (act === "start") { status.innerHTML = "✅ <b>じゅんびOK！</b>"; go.textContent = "🚀 " + okName + " ボタンを長押しでスタート（Enter）"; }
       else { status.innerHTML = "🌏 街並みを読み込み中…　読み込めたら " + okName + " ボタンの長押しでスタートできます"; }
+    } else if (st.opts.auto === "tiles" && !tilesDone()) {
+      status.innerHTML = "🌏 街並みを読み込み中…　コントローラーを動かして、ためしてみよう";
     } else {
-      status.textContent = act === "close" ? "" : "コントローラーを動かして、ためしてみよう";
-      go.textContent = okName + " ボタン（Enter）でとじる";
+      status.innerHTML = act === "close" ? (st.opts.auto === "tiles" ? "✅ <b>街並みの準備OK！</b>" : "") : "コントローラーを動かして、ためしてみよう";
+      go.textContent = okName + (needHold() ? " ボタンを長押しでとじる（Enter）" : " ボタン（Enter）でとじる");
     }
     go.hidden = !act;
     go.classList.toggle("ready", act === "start");
@@ -410,7 +443,7 @@
       const down = (i) => !!(p.buttons[i] && p.buttons[i].pressed);
       const edge = (i) => down(i) && !st.prev[i];
       const go = $(".cgGo");
-      if (action() === "start") {
+      if (needHold()) {
         if (edge(0) || edge(1)) st.holdFrom = now; // 開く前から押しっぱなしのボタンでは数えない
         if (!(down(0) || down(1))) st.holdFrom = 0;
         const held = st.holdFrom ? Math.min(1, (now - st.holdFrom) / HOLD_MS) : 0;
@@ -449,9 +482,9 @@
     renderPad();
     renderOffline();
     modal.classList.add("show");
-    playStep(0);
+    st.idx = 0;
     const inGame = typeof tonbiOn !== "undefined" && tonbiOn ? "kite" : "swan"; // いまゲームで使っている鳥
-    showBird(st.opts.bird || inGame);
+    waitBird(st.opts.bird || inGame); // 鳥が映ってから手順1を始める
     prepareOffline(); // 開いた端末は、どのモードでも白鳥・鳶・描画部品・声を保存する（2026-09-14 中司さん。2回目から通信なし）
     st.last = 0;
     if (!st.raf) st.raf = requestAnimationFrame(loop);
@@ -468,7 +501,10 @@
     if (e.target === modal) { close(); return; }
     const b = e.target.closest("button");
     if (!b) return;
-    if (b.dataset.bird) { showBird(b.dataset.bird); return; }
+    if (b.dataset.bird) { // 切り替えたら、映るまで止めてその手順を頭から
+      if (!(b.dataset.bird === st.bird && st.three && st.three.cur === st.bird)) waitBird(b.dataset.bird);
+      return;
+    }
     if (b.dataset.layout) { try { localStorage.setItem(LAYOUT_KEY, b.dataset.layout); } catch (e) {} renderPad(); return; }
     const act = b.dataset.act;
     if (act === "close") close();
