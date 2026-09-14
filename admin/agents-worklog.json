@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "Threads告知のリンクがスマホで開けない問題の対処（link_attachment）＋検証・9/14告知の再投稿 0.5時間",
+          "category": "保守",
+          "outputs": "cidao: src/lib/sns-dispatch.ts（Threads投稿に link_attachment 付与・b5abf9e）, テスト投稿1件（削除済み）, 9/14提案告知の再投稿（posted_id 17979271815088076）, cidao/worklog.md",
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "リンク先は正常(HTTP200)でPCでは開ける→Threadsスマホアプリが本文内URLをリンク化しない仕様と特定。本文中の最初のURLを link_attachment でも添付しリンクカード化。API実データで付与確認後、中司さんがスマホ実機でタップ遷移を確認。セッション累計3.6hのうち既記録3.1hを除いた差分。session: 4c86305c-8dbf-4b0e-be8e-c362dfbb3ccd / output: 355,120 / cost: $274.26"
+        },
+        {
+          "date": "2026-09-14",
           "title": "AIインタビュー型人材バンク Phase0 既存環境調査＋設計報告 0.3時間",
           "category": "調査",
           "outputs": [
