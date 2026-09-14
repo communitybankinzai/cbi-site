@@ -7324,6 +7324,18 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "「使い方」のコントローラー説明を現行配置に修正 0.12時間",
+          "category": "保守",
+          "outputs": [
+            "site/metaverse/index.html（#howtoModal のコントローラーの節）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.12,
+          "partnerApproved": true,
+          "note": "中司さん指示（前回報告で未対応として挙げた項目）。R1＝4倍速・□＝速度切替 → X（PS □）＝加速・Y（PS △）＝速度切替。RT/LT（PS R2/L2）併記、LB/RB 旋回と ≡ 長押しの操作説明を追記、見出しを「Xbox配列・プレイステーション等」に。検証：該当範囲を grep し旧配置の単独表記が無いことを確認（静的な文言のみのためプレビューは省略）。hours は前回記録 251,231 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 262,744 / cost: $39.74"
+        },
+        {
+          "date": "2026-09-14",
           "title": "操作説明の鳥待ち・夜景での自動表示・武蔵屋ゴール画面の並べ替え・A/Bの重なりと「○ボタン」表記の修正 0.59時間",
           "category": "実装",
           "outputs": [
