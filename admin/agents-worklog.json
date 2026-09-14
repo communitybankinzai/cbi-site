@@ -5732,15 +5732,8 @@
           "category": "実装",
           "priority": "高",
           "status": "待ち",
-          "blockedBy": "確認事項はすべて回答済み（2026-09-14）。『Phase 1を開始』の指示と、Anthropic残高補充後に警告メールが止まること",
+          "blockedBy": "確認事項はすべて回答済み（2026-09-14）。『Phase 1を開始』の指示待ち（Anthropic残高は 2026-09-14 に $32.61 へ補充済み）",
           "note": "統合仕様 cidao/2026-09-14_AIインタビュー型人材バンク_統合仕様v1.md（TTS=VOICEVOX 決定済み）"
-        },
-        {
-          "due": "2026-09-16",
-          "title": "⚠️ Anthropic残高・キー期限の警告メール（9/7〜毎日・要対応7通）の中身確認と残高補充判断",
-          "category": "事務",
-          "priority": "高",
-          "note": "AI機能停止の前例あり（2026-07-27）。人材バンクMVPの前提。要対応ラベルの詳細取得はGAS detail が404で読めず未確認"
         },
         {
           "due": "未定",
@@ -7057,6 +7050,22 @@
     "A8": {
       "actuals": [
         {
+          "date": "2026-09-14",
+          "title": "Anthropic APIクレジット $20 補充の案内＋収支台帳登録（証憑PDF添付）＋警告メール7通の原因特定 0.3時間",
+          "category": "事務",
+          "outputs": [
+            "要対応メール「Anthropic の残高・キー期限の警告」7通（09-07〜09-13）の中身を確認し、原因を特定：09-09 の $10 補充後に CREDIT_BASELINE を更新していなかった（推定 $2.44／Console 実残高 $12.61）",
+            "補充手順の案内（Claude アプリの「使用クレジット」ではなく Claude Console の請求画面で購入）→ ユーザーが $20 購入、残高 $12.61 → $32.61",
+            "収支台帳 L20260914154342-71181：AI関連費／Anthropic, PBC／CiDAO運営／クレジットカード／立替 中司 祐樹／¥3,389（$22.00＝本体$20.00＋JCT$2.00、レート154.04＝ECB 2026-09-11 直近値）",
+            "証憑 EV20260914155028-69988：Receipt-2050-6578-3911.pdf（Gmail の領収書メール本文の Stripe リンクから取得・内容照合済み）",
+            "警告メール7通のスターを外した（再取得で starred=false を確認）",
+            "plans：A8「Anthropic のクレジット残高を補充する」と A1「警告メールの中身確認と残高補充判断」を完了として削除、A8 に「Vercel の CREDIT_BASELINE 更新」を追加"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "Receipt #2050-6578-3911 / Invoice SOMHZAHF-0005 / 2026-09-13（米国時間）＝2026-09-14 JST / カード末尾0728。領収書の JCT 換算レートは 153.41983333 だが、過去2件と同じく ECB レート（frankfurter.dev）で計上。当日 09-14 の ECB レートは未公表のため直近の 09-11 を使用。GAS Gmail共有 WebApp は User-Agent ヘッダを付けると 404、台帳 WebApp は付けないと 404（逆の挙動）。session: 9912b11e-2d3c-4a13-9eef-230e65e63c90 / output: 29,568 / cost: $5.10"
+        },
+        {
           "date": "2026-09-10",
           "title": "Anthropic クレジット $11 の収支台帳登録＋証憑添付 0.2時間",
           "category": "事務",
@@ -7242,6 +7251,13 @@
       ],
       "plans": [
         {
+          "due": "2026-09-15",
+          "title": "Vercel（cidao）の CREDIT_BASELINE_USD=32.61 / CREDIT_BASELINE_AT=2026-09-14T00:00:00Z へ更新して再デプロイ（警告メールを止める）",
+          "category": "事務",
+          "priority": "高",
+          "note": "2026-09-09 の $10 補充後に基準値を更新しなかったため、実残高 $12.61 のときに推定 $2.44 の誤警告が毎日届いていた。09-14 に $20 追加で残高 $32.61（Console 実測）。Vercel CLI 未リンク・トークン無しのため Claude からは更新できず、ダッシュボードでの更新が必要。.env.local も同値に揃える。"
+        },
+        {
           "due": "未定",
           "title": "Anthropic クレジットの CBI／N's factory 按分方針を決める",
           "category": "事務",
@@ -7288,13 +7304,6 @@
           "category": "事務",
           "priority": "中",
           "note": "名前は Map Tiles だがスコープはプロジェクト全体で、実際に鳴っているのは Gemini API の費用。2026-09-01にこの取り違えで誤った結論（メタバースが課金を生んでいる）を出した。対応案は2つ：(a) 予算のスコープをサービス=Map Tiles APIに絞る (b) 名前を『creators-map 全体』に変えてMap Tiles用の予算を別に作る。**推奨は(b)**（Gemini APIの費用も見張る必要があるため）。Billing Budgets API は未有効なので、有効化すれば scripts/gcp-maptiles-audit.ps1 でスコープを自動確認できる：gcloud services enable billingbudgets.googleapis.com --project=creators-map。根拠は cidao/2026-09-02_MapTiles課金の6か月履歴と切り分け.md"
-        },
-        {
-          "due": "2026-09-12",
-          "title": "Anthropic のクレジット残高を補充する（2026-09-08時点の推定残高 $4.16）",
-          "category": "事務",
-          "priority": "高",
-          "note": "2026-09-08 の調査で推定残高 $4.16、直近7日平均 $0.715/日 のため残り約6日と算出。閾値 $5 を割ったため cost-alert が発報。補充額は A1 の予定「団体情報の自動拡充 220件バッチ」が最低 $30 必要なため $30〜50 を推奨。補充したら .env.local と Vercel の CREDIT_BASELINE_USD / CREDIT_BASELINE_AT を更新すること（更新しないと残高計算がずれ続ける）。"
         },
         {
           "due": "未定",
@@ -7900,6 +7909,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-21",
+          "title": "📤 紹介動画「武蔵屋めぐり 体験の流れ」（5分29秒）を団体Driveに置き、関係者へ案内を送る",
+          "category": "広報",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "中司さんが動画の中身を見て OK を出す（直してほしい点があれば撮り直し・合成のやり直し）",
+          "note": "2026-09-14 作成。完成版 events/2026-11-03_武蔵屋/紹介動画/武蔵屋めぐり_体験の流れ_20260914_1334.mp4（690MB）と共有用（軽い版）。置き場所は団体Drive「イベント／2026-11-03_武蔵屋」（ID 1uxVR2kT9zsaSBWM_ZyxKHKAQfYECQq31）。大きいファイルは Claude の Drive 接続では上げにくいのでブラウザから置く。案内文の下書きは 紹介動画/関係者への案内_下書き.md（リンクを差し込む）。作り方は cidao/2026-09-14_武蔵屋めぐり紹介動画の自動録画.md。"
+        },
+        {
+          "due": "未定",
+          "title": "🔍 紹介動画の本番録画中にページ側で出た 404 の正体を確認する",
+          "category": "調査",
+          "priority": "低",
+          "note": "2026-09-14 本番録画のログに『Failed to load resource: 404』が数件（URL は記録されず）。映像に欠けは見当たらない。ローカルでは favicon.ico だけだった。次に録画するとき、record_musashiya.mjs で page.on('response') の 404 URL を記録して特定する。"
+        },
         {
           "due": "2026-11-02",
           "title": "💾 会場PCで事前に（自宅Wi-Fiで）武蔵屋モードを開き、「💾 この端末に保存済み」を確認する",
