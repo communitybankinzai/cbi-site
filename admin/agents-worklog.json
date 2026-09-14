@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "人材バンク Phase1（共通基盤）を Codex に委任し、仕上げ・検証・コミット 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao feature/talent-bank-phase1 d90cb09（src/lib/ai, src/lib/tts, src/lib/consents.ts, src/lib/talent-bank, supabase/migrations/20260915100000_talent_bank_phase1.sql, vitest.config.mts, .env.example, README.md, docs/talent-bank/phase1-report.md）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "Codex（gpt-6-astra）がコード・SQL・テスト33件・文書を作成。npm不可・.git読取専用のため vitest導入（5→4系）・ブランチ・コミット・tsc/lint/test検証はClaudeが実施。tsc 0・test 33/33・lint既存21エラーはmainと同数。未push・本番DB未適用（承認待ち）。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 75,575 / cost: $35.38"
+        },
+        {
+          "date": "2026-09-14",
           "title": "Threads告知のリンクがスマホで開けない問題の対処（link_attachment）＋検証・9/14告知の再投稿 0.5時間",
           "category": "保守",
           "outputs": "cidao: src/lib/sns-dispatch.ts（Threads投稿に link_attachment 付与・b5abf9e）, テスト投稿1件（削除済み）, 9/14提案告知の再投稿（posted_id 17979271815088076）, cidao/worklog.md",
@@ -5728,12 +5739,12 @@
       "plans": [
         {
           "due": "未定",
-          "title": "🧑‍🤝‍🧑 AIインタビュー型人材バンク Phase1（AIProvider抽象・api_usage・consents・vitest）着手",
+          "title": "🧑‍🤝‍🧑 AIインタビュー型人材バンク Phase1 の push とマイグレーション本番適用、Phase2 着手",
           "category": "実装",
           "priority": "高",
           "status": "待ち",
-          "blockedBy": "確認事項はすべて回答済み（2026-09-14）。『Phase 1を開始』の指示待ち（Anthropic残高は 2026-09-14 に $32.61 へ補充済み）",
-          "note": "統合仕様 cidao/2026-09-14_AIインタビュー型人材バンク_統合仕様v1.md（TTS=VOICEVOX 決定済み）"
+          "blockedBy": "中司さんの判断：feature/talent-bank-phase1 の push 可否、20260915100000_talent_bank_phase1.sql の本番適用可否、Phase2（AIインタビュー）の開始指示",
+          "note": "実装は d90cb09 に済み。報告 C:/Repos/cidao/docs/talent-bank/phase1-report.md"
         },
         {
           "due": "未定",
