@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "Gmail共有GASの共有パスワードをスクリプトプロパティへ移す改修（本番反映は中司さん作業待ち）0.2時間",
+          "category": "保守",
+          "outputs": [
+            "gas-mail-share/コード.gs（SHARED_PASSWORD の直書きを削除し sharedPassword_() でスクリプトプロパティから読む・未設定時は全拒否。commit 5edb742）",
+            "gas-mail-share/README.md（「共有パスワードの設定」節：プロパティ設定→コード置換→新バージョンの順。commit affa54f）",
+            "agents/a1-core/credentials.md（§2 に SHARED_PASSWORD の保存場所の行を追加。値は複製せず既存行を参照）",
+            "CLAUDE.md（ルール12：パスワードの読み取り先を credentials.md に変更）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "中司さんの選択：値は変えず置き場所だけ移す／対象は gas-mail-share のみ（cbi-admin-gas は別セッションが Code.gs 編集中のため触らない）。調査で、この共有パスワードが credentials.md の団体Googleアカウント（現行）・管理画面WebApp・GitHubアカウントの各パスワードと同じ値だと判明し報告（値の扱いは plans で判断待ち）。検証：node でプロパティをまねた部品を使い5ケース（未設定×2・一致・不一致・空）で一致時のみ ok:true を確認、構文OK。未検証：本番GAS（プロパティ設定と新バージョンのデプロイは中司さんがGASエディタで行う。反映後に ping で確認する）。副次的に、README の自動保存で edit_autosave.py が commit 後の push 前に止まった（OneDrive 遅延でフックの90秒打ち切りと推定・確信度中）ため手で push。session: b4745943-34c1-488c-a605-2ee88504adc1 / output: 51,657 / cost: $6.89（本セッション累計。前2件の 33,724 を差し引いた 17,933 を本件の工数とした）"
+        },
+        {
+          "date": "2026-09-14",
           "title": "SNS予約投稿の画像アップロード不具合の本番調査＋GAS受け口追加・clasp push 0.2時間",
           "category": "保守",
           "outputs": [
@@ -5689,6 +5703,31 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-21",
+          "title": "Gmail共有GAS：スクリプトプロパティ SHARED_PASSWORD の設定と新コードの反映を ping で確認",
+          "category": "保守",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "中司さんが communitybankinzai@gmail.com で GAS「CBI Gmail共有」にプロパティを設定し、コード.gs を置換して新バージョンでデプロイすること（手順は gas-mail-share/README.md「共有パスワードの設定」）",
+          "note": "2026-09-14 にコード側は改修済み（gas-mail-share 5edb742）。順番を逆にするとメールタブと Claude の Web API 呼び出しが auth_failed で止まる。反映後、GAS_MAIL_WEBAPP_URL へ {action:'ping'} を送り ok:true を確認したらこの予定を actuals へ移す。"
+        },
+        {
+          "due": "未定",
+          "title": "共有パスワードが団体Googleアカウント・GitHub等と同じ値である件の扱いを決める",
+          "category": "保守",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "値を変えるか（Googleアカウント自体のパスワード変更を含む）を中司さんが判断すること",
+          "note": "2026-09-14 の調査で判明。credentials.md の団体Googleアカウント（現行）・管理画面WebApp・GitHubアカウント・Gmail共有GASの SHARED_PASSWORD が同じ値。SHARED_PASSWORD は管理画面メールタブで人が入力して使うため、共有パスワードを知る人が団体Googleアカウントにもログインできうる。同日、非公開リポ you0810jmsdf/gas-mail-share の最初の記録（5be5248）にもこの値が入った。案：①共有パスワードだけ別の値に変える（プロパティ書き換えのみ・再デプロイ不要）②Googleアカウント側を変える（本人作業）③現状維持。"
+        },
+        {
+          "due": "未定",
+          "title": "自動保存フックが OneDrive の遅延で push 前に止まる件の対処",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-09-14、gas-mail-share/README.md の編集で ~/.claude/hooks/edit_autosave.py が commit（affa54f）までで止まり push されなかった。OneDrive 配下の git が遅くフックの timeout 90秒を超えたと推定（確信度中）。案：push を切り離して裏で実行／timeout を延ばす／次の保存時にまとめて push（ahead を検知したら push）。clasp_push_autosave.py も同じ作り。"
+        },
         {
           "due": "未定",
           "title": "CBI管理画面の画像アップロード（uploadSnsMedia）を本番GASで動かす",
