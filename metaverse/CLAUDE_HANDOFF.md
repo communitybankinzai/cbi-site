@@ -1,5 +1,9 @@
 # CBIメタバース印西 引継ぎ
 
+## 2026-09-14 武蔵屋めぐり 大人用の説明を深く（musashiya-texts.json）
+
+大人用20件を平均約130字→約250字に書き直した（`version` 2026-09-14-adult-deep・`status` は下書きのまま）。事実は `reports/<reportId>.json` の summary／highlights／timeline に書かれていることだけ（学習レポートは出典つき）。読み間違えやすい語は「漢字（ひらがな）」で読みを添えた（build_narration.py の `speech_text` が大人用でも読みだけにする。漢字だけの語の直後に（ひらがな）を置くこと）。声は `python assets/narration/build_narration.py`（edge-tts・Keita／Nanami・変わった文だけ作り直す）。**説明文や声を変えたら musashiya.js の `MSY_VERSION` を上げる**（説明文 JSON と声の mp3 のアドレスに付くため。上げないとブラウザが古い文・声を使う）。今回 2026-09-14a。ずんだもんの `*_adult.mp3` は大人用では使わない（大人用の声は male／female のみ）ので作り直していない。
+
 ## 2026-09-14 関係者向け紹介動画の自動録画（window.cbiRec）
 
 録画は `scripts/promo/record_musashiya.mjs`（puppeteer＋timeweb で1コマずつ・1280x720@1.5＝1920x1080）＋ページに差し込む `scripts/promo/rec_musashiya_page.js`（進行と自動操縦・**サイトには載せない**）。流れ：モード選択 → 🏠武蔵屋 → こども・スタート → 操作のしかた全8手順 → A長押しの帯 → 自動操縦（カメラを毎コマ進める。巡航 地上220m・目的地の手前110m、向きは毎秒40°／近くで90°、曲がる向きへロール）→ 到着ポップアップは読み上げの長さ＋1.5秒で「つぎへ」→ ゴール画面を読み上げに合わせて説明までスクロール → おわりのクレジット画面。**本番側は `window.cbiRec` があるときだけ**（録画スクリプトが evaluateOnNewDocument で入れる。URL では入れられない）：night.js 受付を求めない／controls-guide.js 声を鳴らさず `cbiRec.audio(url)` で記録し声の長さで次へ・端末保存しない／musashiya.js 受付なしで開始・`narrate` を記録・`srvStart/srvFinish` でサーバーへ送らず、ゴール画面は `renderRank({rec:true})`（速さと今日のランキングだけ・名前と順位は出さない）。声の長さは録画スクリプトが ffmpeg で測って渡し、終了後に `_timeline.json` の時刻どおり zundamon の mp3 を重ね、白鳥の湖を 0.24（声の間 0.07）で敷く（`--mix-only <無音mp4>` で合成だけやり直せる）。仮想の Xbox パッド（何も押さない）をつなぐので、操作説明と左下は Xbox 表記になる。録画中は `#howtoModal`（初回の使い方）と操作説明の「図の形」行を CSS で隠す（まっさらなブラウザでは使い方が毎回出て飛ぶ場面を隠した）。出力は `events/2026-11-03_武蔵屋/紹介動画/`（エンコードは %LOCALAPPDATA%\cbi-rec-musashiya で行いコピー）。流れ確認は `--url "http://localhost:8766/metaverse/?rec=1&notiles=1" --fps 5`（課金なし・約18分）。本番1回＝root request 1回。**`startPlayDemo`・`?cinema` は使わない**（cinema はモード選択を出さずボタン類も隠すため）。

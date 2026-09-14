@@ -13,16 +13,16 @@
    "bytes": 114048
   },
   "male/goal_adult.mp3": {
-   "hash": "db79fc84756c",
-   "chars": 170,
+   "hash": "3b95423a55af",
+   "chars": 272,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 177408
+   "bytes": 263088
   },
   "male/iwaike-jutaku-omoya_adult.mp3": {
-   "hash": "ab3dcce40b28",
-   "chars": 155,
+   "hash": "7a3adb906d7d",
+   "chars": 257,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 158688
+   "bytes": 244512
   },
   "male/houjuin-kannondo_kids.mp3": {
    "hash": "16520ea9f890",
@@ -31,10 +31,10 @@
    "bytes": 96336
   },
   "male/houjuin-kannondo_adult.mp3": {
-   "hash": "454a9489ea02",
-   "chars": 119,
+   "hash": "60a1ab92cd95",
+   "chars": 255,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 126288
+   "bytes": 252720
   },
   "male/kioroshi-kaiso_kids.mp3": {
    "hash": "e1c6d5b2ad35",
@@ -43,10 +43,10 @@
    "bytes": 90576
   },
   "male/kioroshi-kaiso_adult.mp3": {
-   "hash": "a5237f026153",
-   "chars": 148,
+   "hash": "1b2626d37fc2",
+   "chars": 252,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 154944
+   "bytes": 243072
   },
   "male/enmei-jizo-senzoji_kids.mp3": {
    "hash": "098659edfa64",
@@ -55,10 +55,10 @@
    "bytes": 93312
   },
   "male/enmei-jizo-senzoji_adult.mp3": {
-   "hash": "bc5bce782acc",
-   "chars": 139,
+   "hash": "54c7ab78e490",
+   "chars": 260,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 154368
+   "bytes": 253152
   },
   "male/dozo-juichimen-kannon_kids.mp3": {
    "hash": "4d2ae2d66571",
@@ -67,10 +67,10 @@
    "bytes": 93456
   },
   "male/dozo-juichimen-kannon_adult.mp3": {
-   "hash": "268946ff3f07",
-   "chars": 136,
+   "hash": "933f6a80080a",
+   "chars": 243,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 157968
+   "bytes": 247968
   },
   "male/jizo-bosatsu-ryuzo-bessho_kids.mp3": {
    "hash": "f406a9024377",
@@ -79,10 +79,10 @@
    "bytes": 99360
   },
   "male/jizo-bosatsu-ryuzo-bessho_adult.mp3": {
-   "hash": "6e6168fad65c",
-   "chars": 129,
+   "hash": "d2e3e58027ee",
+   "chars": 251,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 133632
+   "bytes": 235440
   },
   "male/kongo-rikishi-ryusuiji_kids.mp3": {
    "hash": "0ee994c8e99a",
@@ -91,10 +91,10 @@
    "bytes": 87552
   },
   "male/kongo-rikishi-ryusuiji_adult.mp3": {
-   "hash": "8cbc67561024",
-   "chars": 135,
+   "hash": "c104908f42ac",
+   "chars": 246,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 146304
+   "bytes": 236304
   },
   "male/bonsho-oan_kids.mp3": {
    "hash": "d63a6c8df2ef",
@@ -103,10 +103,10 @@
    "bytes": 98208
   },
   "male/bonsho-oan_adult.mp3": {
-   "hash": "d08667042904",
-   "chars": 141,
+   "hash": "d0a037576382",
+   "chars": 237,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 147024
+   "bytes": 225216
   },
   "male/bonsho-kenmu_kids.mp3": {
    "hash": "259f2693c19e",
@@ -115,10 +115,10 @@
    "bytes": 95760
   },
   "male/bonsho-kenmu_adult.mp3": {
-   "hash": "63db930e466f",
-   "chars": 140,
+   "hash": "ab8b067892f0",
+   "chars": 229,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 150480
+   "bytes": 228096
   },
   "male/magome-gato_kids.mp3": {
    "hash": "4d00cf0b9d13",
@@ -127,10 +127,10 @@
    "bytes": 96912
   },
   "male/magome-gato_adult.mp3": {
-   "hash": "67a30a1672ae",
-   "chars": 148,
+   "hash": "0f6b4b5d5131",
+   "chars": 275,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 145296
+   "bytes": 259056
   },
   "male/tomi-jinja-shishimai_kids.mp3": {
    "hash": "e711ecf96c33",
@@ -139,10 +139,10 @@
    "bytes": 82800
   },
   "male/tomi-jinja-shishimai_adult.mp3": {
-   "hash": "404e4d1d18ac",
-   "chars": 143,
+   "hash": "e19383bb0cc9",
+   "chars": 267,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 136368
+   "bytes": 260928
   },
   "male/yakushi-nyorai-takisuiji_kids.mp3": {
    "hash": "c278c8283285",
@@ -151,10 +151,10 @@
    "bytes": 92160
   },
   "male/yakushi-nyorai-takisuiji_adult.mp3": {
-   "hash": "06d5b71687dc",
-   "chars": 137,
+   "hash": "ecb4c6b2ba57",
+   "chars": 269,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 145008
+   "bytes": 236448
   },
   "male/chudo-waniguchi-takefukuro_kids.mp3": {
    "hash": "9a29b7040ecc",
@@ -163,10 +163,10 @@
    "bytes": 105120
   },
   "male/chudo-waniguchi-takefukuro_adult.mp3": {
-   "hash": "2a4ada7bcf18",
-   "chars": 124,
+   "hash": "ad7512716d82",
+   "chars": 234,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 139248
+   "bytes": 230976
   },
   "male/yoshiokake-kashi-monjo_kids.mp3": {
    "hash": "3e691a8afa8b",
@@ -175,10 +175,10 @@
    "bytes": 96912
   },
   "male/yoshiokake-kashi-monjo_adult.mp3": {
-   "hash": "50eb8e5524d6",
-   "chars": 149,
+   "hash": "7430987afaf1",
+   "chars": 264,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 151056
+   "bytes": 247536
   },
   "male/koganemaki-murakobata_kids.mp3": {
    "hash": "6a66119b26b9",
@@ -187,10 +187,10 @@
    "bytes": 97200
   },
   "male/koganemaki-murakobata_adult.mp3": {
-   "hash": "934c3868e51c",
-   "chars": 149,
+   "hash": "5f3573737bd5",
+   "chars": 292,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 141696
+   "bytes": 271872
   },
   "male/bessho-shishimai_kids.mp3": {
    "hash": "33fe2860ab49",
@@ -199,10 +199,10 @@
    "bytes": 98496
   },
   "male/bessho-shishimai_adult.mp3": {
-   "hash": "bce18531c63d",
-   "chars": 140,
+   "hash": "315bf02f9b4c",
+   "chars": 283,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 134208
+   "bytes": 262224
   },
   "male/inazaki-shishimai_kids.mp3": {
    "hash": "9251a652e53d",
@@ -211,10 +211,10 @@
    "bytes": 93456
   },
   "male/inazaki-shishimai_adult.mp3": {
-   "hash": "7e2d98fffcc9",
-   "chars": 129,
+   "hash": "495d53e65d62",
+   "chars": 281,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 119952
+   "bytes": 255744
   },
   "male/kamijuku-kofun_kids.mp3": {
    "hash": "891476c41097",
@@ -223,10 +223,10 @@
    "bytes": 79056
   },
   "male/kamijuku-kofun_adult.mp3": {
-   "hash": "1ea0c99af74b",
-   "chars": 130,
+   "hash": "f64e5cfa9ef2",
+   "chars": 265,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 131616
+   "bytes": 251568
   },
   "male/izumishinden-nomabori-iseki_kids.mp3": {
    "hash": "8427c1babe7b",
@@ -235,10 +235,10 @@
    "bytes": 85104
   },
   "male/izumishinden-nomabori-iseki_adult.mp3": {
-   "hash": "d0ba8943a750",
-   "chars": 146,
+   "hash": "677026f5067d",
+   "chars": 283,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 155664
+   "bytes": 273024
   },
   "male/dosaku-kofungun_kids.mp3": {
    "hash": "8ab170873554",
@@ -247,10 +247,10 @@
    "bytes": 94032
   },
   "male/dosaku-kofungun_adult.mp3": {
-   "hash": "05c669eb4d60",
-   "chars": 136,
+   "hash": "feeff41c087e",
+   "chars": 291,
    "voice": "ja-JP-KeitaNeural",
-   "bytes": 148608
+   "bytes": 288720
   },
   "male/station_kids.mp3": {
    "hash": "6f1573f240f2",
@@ -277,16 +277,16 @@
    "bytes": 126576
   },
   "female/goal_adult.mp3": {
-   "hash": "188a4793cc2b",
-   "chars": 170,
+   "hash": "9ec7eb1a4647",
+   "chars": 272,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 201744
+   "bytes": 295488
   },
   "female/iwaike-jutaku-omoya_adult.mp3": {
-   "hash": "3bb1c70b36fd",
-   "chars": 155,
+   "hash": "3622971e1aa6",
+   "chars": 257,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 180576
+   "bytes": 274320
   },
   "female/houjuin-kannondo_kids.mp3": {
    "hash": "aebd447f8239",
@@ -295,10 +295,10 @@
    "bytes": 106992
   },
   "female/houjuin-kannondo_adult.mp3": {
-   "hash": "f5ad588e6887",
-   "chars": 119,
+   "hash": "9ce6be4db56e",
+   "chars": 255,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 142416
+   "bytes": 278928
   },
   "female/kioroshi-kaiso_kids.mp3": {
    "hash": "3609b1760b6c",
@@ -307,10 +307,10 @@
    "bytes": 101664
   },
   "female/kioroshi-kaiso_adult.mp3": {
-   "hash": "1b3247fc19f4",
-   "chars": 148,
+   "hash": "509d84339dae",
+   "chars": 252,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 176112
+   "bytes": 268128
   },
   "female/enmei-jizo-senzoji_kids.mp3": {
    "hash": "944e3a007d95",
@@ -319,10 +319,10 @@
    "bytes": 103392
   },
   "female/enmei-jizo-senzoji_adult.mp3": {
-   "hash": "7d9386179538",
-   "chars": 139,
+   "hash": "eb0efcb1119e",
+   "chars": 260,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 168768
+   "bytes": 277488
   },
   "female/dozo-juichimen-kannon_kids.mp3": {
    "hash": "e797b05adb52",
@@ -331,10 +331,10 @@
    "bytes": 103248
   },
   "female/dozo-juichimen-kannon_adult.mp3": {
-   "hash": "93608a5fe7c3",
-   "chars": 136,
+   "hash": "d134dfa9e933",
+   "chars": 243,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 174672
+   "bytes": 275184
   },
   "female/jizo-bosatsu-ryuzo-bessho_kids.mp3": {
    "hash": "f5cecc427faf",
@@ -343,10 +343,10 @@
    "bytes": 107568
   },
   "female/jizo-bosatsu-ryuzo-bessho_adult.mp3": {
-   "hash": "912e4ee80191",
-   "chars": 129,
+   "hash": "ae3c8e546e00",
+   "chars": 251,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 150336
+   "bytes": 255744
   },
   "female/kongo-rikishi-ryusuiji_kids.mp3": {
    "hash": "7d8f8d660cea",
@@ -355,10 +355,10 @@
    "bytes": 94752
   },
   "female/kongo-rikishi-ryusuiji_adult.mp3": {
-   "hash": "bd490294a2e0",
-   "chars": 135,
+   "hash": "77416aff64b3",
+   "chars": 246,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 166464
+   "bytes": 260352
   },
   "female/bonsho-oan_kids.mp3": {
    "hash": "fa0bd64b653d",
@@ -367,10 +367,10 @@
    "bytes": 108864
   },
   "female/bonsho-oan_adult.mp3": {
-   "hash": "eb289a9b0642",
-   "chars": 141,
+   "hash": "b0ff466d74cc",
+   "chars": 237,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 165888
+   "bytes": 249120
   },
   "female/bonsho-kenmu_kids.mp3": {
    "hash": "7043d624056e",
@@ -379,10 +379,10 @@
    "bytes": 104976
   },
   "female/bonsho-kenmu_adult.mp3": {
-   "hash": "3056f30ddd4f",
-   "chars": 140,
+   "hash": "967754abeaf9",
+   "chars": 229,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 165024
+   "bytes": 251568
   },
   "female/magome-gato_kids.mp3": {
    "hash": "ed88384b8831",
@@ -391,10 +391,10 @@
    "bytes": 103968
   },
   "female/magome-gato_adult.mp3": {
-   "hash": "8cf4e16ad36a",
-   "chars": 148,
+   "hash": "63838332cecf",
+   "chars": 275,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 158688
+   "bytes": 283968
   },
   "female/tomi-jinja-shishimai_kids.mp3": {
    "hash": "8895123d5fe0",
@@ -403,10 +403,10 @@
    "bytes": 95616
   },
   "female/tomi-jinja-shishimai_adult.mp3": {
-   "hash": "8b17dadea472",
-   "chars": 143,
+   "hash": "9190a307bdfc",
+   "chars": 267,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 153216
+   "bytes": 288288
   },
   "female/yakushi-nyorai-takisuiji_kids.mp3": {
    "hash": "0e9e81766fb6",
@@ -415,10 +415,10 @@
    "bytes": 103248
   },
   "female/yakushi-nyorai-takisuiji_adult.mp3": {
-   "hash": "718b8df0bc5d",
-   "chars": 137,
+   "hash": "17ed2de2f45c",
+   "chars": 269,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 162720
+   "bytes": 264384
   },
   "female/chudo-waniguchi-takefukuro_kids.mp3": {
    "hash": "db041ad41cea",
@@ -427,10 +427,10 @@
    "bytes": 112464
   },
   "female/chudo-waniguchi-takefukuro_adult.mp3": {
-   "hash": "63ce79df36f7",
-   "chars": 124,
+   "hash": "63792bb72271",
+   "chars": 234,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 160848
+   "bytes": 250560
   },
   "female/yoshiokake-kashi-monjo_kids.mp3": {
    "hash": "edaba96fff78",
@@ -439,10 +439,10 @@
    "bytes": 106848
   },
   "female/yoshiokake-kashi-monjo_adult.mp3": {
-   "hash": "c1fbf8deacd9",
-   "chars": 149,
+   "hash": "bc1e740414f9",
+   "chars": 264,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 169200
+   "bytes": 277056
   },
   "female/koganemaki-murakobata_kids.mp3": {
    "hash": "552358f63adb",
@@ -451,10 +451,10 @@
    "bytes": 105840
   },
   "female/koganemaki-murakobata_adult.mp3": {
-   "hash": "88a3e44438b4",
-   "chars": 149,
+   "hash": "6503b253da0a",
+   "chars": 292,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 159264
+   "bytes": 297072
   },
   "female/bessho-shishimai_kids.mp3": {
    "hash": "7e5e635fff5d",
@@ -463,10 +463,10 @@
    "bytes": 110448
   },
   "female/bessho-shishimai_adult.mp3": {
-   "hash": "3b5f6f263de7",
-   "chars": 140,
+   "hash": "270db3d5ce3f",
+   "chars": 283,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 156384
+   "bytes": 295488
   },
   "female/inazaki-shishimai_kids.mp3": {
    "hash": "2d88f4796c0e",
@@ -475,10 +475,10 @@
    "bytes": 105696
   },
   "female/inazaki-shishimai_adult.mp3": {
-   "hash": "d6a26c2c72ad",
-   "chars": 129,
+   "hash": "f4ed9978218e",
+   "chars": 281,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 138240
+   "bytes": 292320
   },
   "female/kamijuku-kofun_kids.mp3": {
    "hash": "c6acfe76fd0d",
@@ -487,10 +487,10 @@
    "bytes": 87264
   },
   "female/kamijuku-kofun_adult.mp3": {
-   "hash": "09b289043d7d",
-   "chars": 130,
+   "hash": "77db0aa0cc45",
+   "chars": 265,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 146448
+   "bytes": 277056
   },
   "female/izumishinden-nomabori-iseki_kids.mp3": {
    "hash": "d0d4a37da756",
@@ -499,10 +499,10 @@
    "bytes": 94752
   },
   "female/izumishinden-nomabori-iseki_adult.mp3": {
-   "hash": "a8299e61abd1",
-   "chars": 146,
+   "hash": "bf4259900ec8",
+   "chars": 283,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 178416
+   "bytes": 296496
   },
   "female/dosaku-kofungun_kids.mp3": {
    "hash": "68862aba6b9d",
@@ -511,10 +511,10 @@
    "bytes": 103392
   },
   "female/dosaku-kofungun_adult.mp3": {
-   "hash": "1c2366ac0e7b",
-   "chars": 136,
+   "hash": "1461fb14d664",
+   "chars": 291,
    "voice": "ja-JP-NanamiNeural",
-   "bytes": 168768
+   "bytes": 314064
   },
   "female/station_kids.mp3": {
    "hash": "355c5b3aeb76",

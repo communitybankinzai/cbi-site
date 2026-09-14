@@ -7365,6 +7365,24 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "紹介動画のスマホ対応と関係者・会場調整の文面づくり＋武蔵屋めぐり大人用説明20件の書き直しと声42本の作り直し 1.20時間",
+          "category": "広報",
+          "outputs": [
+            "events/2026-11-03_武蔵屋/紹介動画/武蔵屋めぐり_体験の流れ_スマホ用.mp4（720p・43MB）・関係者への案内_下書き.md",
+            "events/2026-11-03_武蔵屋/通信_aebeさんへのお願い_下書き.md（らんかさん・aebe さんへの文面）",
+            "site/metaverse/musashiya-texts.json（大人用20件 平均130→264字）",
+            "site/metaverse/assets/narration/{male,female}/*_adult.mp3（42本）・manifest.json",
+            "site/metaverse/musashiya.js（MSY_VERSION 2026-09-14a）・index.html（版）",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json",
+            "cidao/2026-09-14_武蔵屋めぐり紹介動画の自動録画.md・MOC_行政調整.md",
+            "memory/feedback-cbi-no-budget.md"
+          ],
+          "hours": 1.2,
+          "partnerApproved": true,
+          "note": "(1) 紹介動画：1080p版がスマホの Drive で再生できず、720p・43MB のスマホ用を作って Drive に追加（中司さんが配置・誰でも閲覧を確認）、送り直す文面を用意。書き出し中に CPU 100% でパソコン版 LINE が固まったので ffmpeg の優先度を調整。(2) 会場の通信：aebe さんの回線を借りる調整、通信量見積もり（QR交代なら1日0.5〜1.5GB）、root 30回/日は当日引き上げで0円の見込み、らんかさん・aebe さんへのお伺い文（CBI は予算がなく支払わない形に訂正＝中司さん指摘）。(3) 大人用説明：学習レポート（出典つき）の事実だけで20件を約250字に書き直し、読み間違えやすい語に読みを添え、Keita／Nanami の声42本を作り直した（40〜52秒）。子ども用は一字一句変えていないことを HEAD と比較して確認。文面は下書き（確定は既存 plan『説明文40本を確認し確定版にする』10/20）。hours は前回記録 372,465 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 492,576 / cost: $124.91"
+        },
+        {
+          "date": "2026-09-14",
           "title": "関係者向け紹介動画「武蔵屋めぐり 体験の流れ」（5分29秒）を自動録画・声とBGMを合成 1.10時間",
           "category": "広報",
           "outputs": [
