@@ -18,7 +18,7 @@
       "actuals": [
         {
           "date": "2026-09-14",
-          "title": "Gmail共有GASの共有パスワードをスクリプトプロパティへ移す改修（本番反映は中司さん作業待ち）0.2時間",
+          "title": "Gmail共有GASの共有パスワードをスクリプトプロパティへ移し本番反映・ping確認 0.3時間",
           "category": "保守",
           "outputs": [
             "gas-mail-share/コード.gs（SHARED_PASSWORD の直書きを削除し sharedPassword_() でスクリプトプロパティから読む・未設定時は全拒否。commit 5edb742）",
@@ -26,9 +26,9 @@
             "agents/a1-core/credentials.md（§2 に SHARED_PASSWORD の保存場所の行を追加。値は複製せず既存行を参照）",
             "CLAUDE.md（ルール12：パスワードの読み取り先を credentials.md に変更）"
           ],
-          "hours": 0.2,
+          "hours": 0.3,
           "partnerApproved": false,
-          "note": "中司さんの選択：値は変えず置き場所だけ移す／対象は gas-mail-share のみ（cbi-admin-gas は別セッションが Code.gs 編集中のため触らない）。調査で、この共有パスワードが credentials.md の団体Googleアカウント（現行）・管理画面WebApp・GitHubアカウントの各パスワードと同じ値だと判明し報告（2026-09-14 中司さんが③現状維持と決定。値は変えない）。検証：node でプロパティをまねた部品を使い5ケース（未設定×2・一致・不一致・空）で一致時のみ ok:true を確認、構文OK。未検証：本番GAS（プロパティ設定と新バージョンのデプロイは中司さんがGASエディタで行う。反映後に ping で確認する）。副次的に、README の自動保存で edit_autosave.py が commit 後の push 前に止まった（OneDrive 遅延でフックの90秒打ち切りと推定・確信度中）ため手で push。session: b4745943-34c1-488c-a605-2ee88504adc1 / output: 51,657 / cost: $6.89（本セッション累計。前2件の 33,724 を差し引いた 17,933 を本件の工数とした）"
+          "note": "中司さんの選択：値は変えず置き場所だけ移す／対象は gas-mail-share のみ（cbi-admin-gas は別セッションが Code.gs 編集中のため触らない）。調査で、この共有パスワードが credentials.md の団体Googleアカウント（現行）・管理画面WebApp・GitHubアカウントの各パスワードと同じ値だと判明し報告（2026-09-14 中司さんが③現状維持と決定。値は変えない）。検証：node でプロパティをまねた部品を使い5ケース（未設定×2・一致・不一致・空）で一致時のみ ok:true を確認、構文OK。本番反映：中司さんがGASエディタでプロパティ設定→コード置換→新バージョンでデプロイ（パスワードとコードは Set-Clipboard で渡し、値は会話に出さず一致のみ確認）。反映後に本番 Web API へ ping：正しいパスワード ok:true／誤り・空は auth_failed。ただし旧コードでも同じ応答になるため、新コードが動いていることそのものは ping では区別できない（中司さんのデプロイ完了報告に依拠）。副次的に、README の自動保存で edit_autosave.py が commit 後の push 前に止まった（OneDrive 遅延でフックの90秒打ち切りと推定・確信度中）ため手で push。session: b4745943-34c1-488c-a605-2ee88504adc1 / output: 63,532 / cost: $9.10（本セッション累計。前2件の 33,724 を差し引いた 29,808 を本件の工数とした）"
         },
         {
           "date": "2026-09-14",
@@ -5703,15 +5703,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-09-21",
-          "title": "Gmail共有GAS：スクリプトプロパティ SHARED_PASSWORD の設定と新コードの反映を ping で確認",
-          "category": "保守",
-          "priority": "高",
-          "status": "待ち",
-          "blockedBy": "中司さんが communitybankinzai@gmail.com で GAS「CBI Gmail共有」にプロパティを設定し、コード.gs を置換して新バージョンでデプロイすること（手順は gas-mail-share/README.md「共有パスワードの設定」）",
-          "note": "2026-09-14 にコード側は改修済み（gas-mail-share 5edb742）。順番を逆にするとメールタブと Claude の Web API 呼び出しが auth_failed で止まる。反映後、GAS_MAIL_WEBAPP_URL へ {action:'ping'} を送り ok:true を確認したらこの予定を actuals へ移す。"
-        },
         {
           "due": "未定",
           "title": "自動保存フックが OneDrive の遅延で push 前に止まる件の対処",
