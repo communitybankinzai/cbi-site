@@ -17,6 +17,18 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-15",
+          "title": "人材バンク Phase1 push・本番DB適用、Phase2（AIインタビュー）を Codex に委任し検証・コミット・適用 0.25時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao feature/talent-bank-phase1 d5a694c（src/lib/talent-bank/interview, src/app/api/talent-bank/interview, src/app/talent/interview, supabase/migrations/20260915120000_talent_bank_phase2.sql, docs/talent-bank/phase2-report.md）",
+            "本番DB: talent_subjects/consents/api_usage/cost_rates/tts_voices/work_logs/interviews/interview_messages 適用"
+          ],
+          "hours": 0.25,
+          "partnerApproved": true,
+          "note": "中司さん決定（全部A）：push・本番適用・Codex継続。Phase2 は Codex が実装（質問1回で停止→20項目を指定して再開）。Claude 側で tsc 0・vitest 81/81・eslint 0・next build 成功を確認。実ブラウザ（LINEログイン）での動作確認は未実施。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 99,270 / cost: $53.65"
+        },
+        {
           "date": "2026-09-14",
           "title": "人材バンク Phase1（共通基盤）を Codex に委任し、仕上げ・検証・コミット 0.4時間",
           "category": "実装",
@@ -5739,12 +5751,12 @@
       "plans": [
         {
           "due": "未定",
-          "title": "🧑‍🤝‍🧑 AIインタビュー型人材バンク Phase1 の push とマイグレーション本番適用、Phase2 着手",
+          "title": "🧑‍🤝‍🧑 AIインタビュー型人材バンク Phase3（プロフィール生成・版管理・公開承認）着手と、Phase2 の実機確認",
           "category": "実装",
           "priority": "高",
           "status": "待ち",
-          "blockedBy": "中司さんの判断：feature/talent-bank-phase1 の push 可否、20260915100000_talent_bank_phase1.sql の本番適用可否、Phase2（AIインタビュー）の開始指示",
-          "note": "実装は d90cb09 に済み。報告 C:/Repos/cidao/docs/talent-bank/phase1-report.md"
+          "blockedBy": "中司さんの『Phase 3 を開始』指示。Phase2 の実機確認は main へのマージ（本番デプロイ）か Vercel プレビューURLでの LINE ログイン可否の確認が必要",
+          "note": "Phase1/2 は feature/talent-bank-phase1（d5a694c・push済み）。本番DBは適用済み。報告 docs/talent-bank/phase2-report.md"
         },
         {
           "due": "未定",
