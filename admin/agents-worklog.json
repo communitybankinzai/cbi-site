@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "AIインタビュー型人材バンク Phase0 既存環境調査＋設計報告 0.3時間",
+          "category": "調査",
+          "outputs": [
+            "cidao/2026-09-14_AIインタビュー型人材バンク_Phase0調査.md",
+            "MOC_CiDAO.md"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "cidao本体の人材バンク・AI呼び出し・費用計測・検索・非同期・管理画面・テスト基盤を調査。新規テーブル12・確認事項10件を報告。Phase1は中司さんの指示待ち。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 25,249 / cost: $10.74"
+        },
+        {
+          "date": "2026-09-14",
           "title": "Gmail共有GASの共有パスワードをスクリプトプロパティへ移し本番反映・ping確認 0.3時間",
           "category": "保守",
           "outputs": [
@@ -5704,6 +5716,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🧑‍🤝‍🧑 AIインタビュー型人材バンク Phase1（AIProvider抽象・api_usage・consents・vitest）着手",
+          "category": "実装",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "Phase0報告の確認事項10件（実装場所・TTS・モデル・DB新設等）への中司さんの回答と『Phase 1を開始』の指示",
+          "note": "調査ノート cidao/2026-09-14_AIインタビュー型人材バンク_Phase0調査.md"
+        },
+        {
+          "due": "2026-09-16",
+          "title": "⚠️ Anthropic残高・キー期限の警告メール（9/7〜毎日・要対応7通）の中身確認と残高補充判断",
+          "category": "事務",
+          "priority": "高",
+          "note": "AI機能停止の前例あり（2026-07-27）。人材バンクMVPの前提。要対応ラベルの詳細取得はGAS detail が404で読めず未確認"
+        },
         {
           "due": "未定",
           "title": "自動保存フックが OneDrive の遅延で push 前に止まる件の対処",
