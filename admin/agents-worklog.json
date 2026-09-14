@@ -7401,6 +7401,21 @@
     "A9": {
       "actuals": [
         {
+          "date": "2026-09-15",
+          "title": "操作のしかたのキーボード版・スマホ版（手順14・図2種・練習操作・ずんだもん13本・入口2か所）実装と検証 0.62時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/controls-guide.js（VER 20260915-1：版の自動選択とタブ・kbdSvg／phoneSvg・liveLocal・キー／指の練習・端末保存に新しい声）",
+            "site/metaverse/assets/narration/controls-guide.json（keyboard 7手順・phone 7手順・STEPS_VER 20260915-1）",
+            "site/metaverse/assets/narration/build_controls_voicevox.py（keyboard／phone 対応）・zundamon/guide_{kb-*,ph-*,any-end}_common.mp3（13本）・manifest.json",
+            "site/metaverse/index.html（左下キーボード説明の「⌨ くわしく見る」・⚙設定の「🎮 操作のしかた」・版）",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+          ],
+          "hours": 0.62,
+          "partnerApproved": false,
+          "note": "中司さん指示「キーボードの説明版とスマホ説明版も作って（操作要領）」→ 出し分け＝自動＋切替タブ、声＝新しく録音、入口＝今の入口＋左下とメニュー（いずれも推奨案を選択）。ローカル（?notiles=1・port 8766）で確認：⌨版の7手順・W＋Shift で図が光り 3D 側へキーが漏れない（keys.KeyW=false）・手順2で移動8キーが光る・📱タブ切替で手順2のスティックが光る・🎮へ戻すと8手順・スマホ幅（375px・pointer:coarse）で ☰ の「🎮 操作のしかた」から📱版が自動で開き白鳥も表示・端末保存の対象 34件。実機（スマホ・会場PC）での声と操作は未確認。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 554,682 / cost: $142.71"
+        },
+        {
           "date": "2026-09-14",
           "title": "紹介動画のスマホ対応と関係者・会場調整の文面づくり＋武蔵屋めぐり大人用説明20件の書き直しと声42本の作り直し 1.20時間",
           "category": "広報",
@@ -7983,6 +7998,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-10-27",
+          "title": "📱 操作のしかた（キーボード版・スマホ版）を実機で確認する（スマホで📱版の声・スティック練習・☰からの入口、会場PCで⌨版とコントローラーをつないだ時の🎮への自動切替）",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-15 実装（controls-guide.js VER 20260915-1）。ローカルの検証（?notiles=1・スマホ幅の模擬）は通したが、実機の指操作・音声の自動再生・iPhone Safari の表示は未確認。10/27 の実機確認リストと一緒に行う。?notiles=1 で課金なし。"
+        },
         {
           "due": "2026-09-14",
           "title": "📤 紹介動画「武蔵屋めぐり 体験の流れ」（5分29秒）の案内を関係者へ送る（本日夕刻）",

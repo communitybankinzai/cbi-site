@@ -1053,6 +1053,7 @@ if (location.protocol === "file:") {
   <div class="tbGroup" id="tbGroupSettings">
     <button class="tbGroupBtn" type="button" aria-haspopup="true" aria-expanded="false" title="軽量モード・通信量・コントローラー・検証モード・撮影・録画">⚙ 設定 <span class="caret">▾</span></button>
     <div class="tbMenu">
+      <button id="ctlGuideMenuBtn" type="button" onclick="window.CbiControlsGuide&&CbiControlsGuide.open()" title="コントローラー・キーボード・スマホの操作を、ずんだもんの声と鳥の動きで説明します">🎮 操作のしかた</button>
       <button id="liteBtn" class="off" title="動きが重い端末向け。描画の解像度を下げ、街並みを粗めに読み、空の表現やトンビを止めて軽くします（もう一度押すと元に戻ります）">🪶 軽量モード</button>
       <button id="trafficBtn" class="off" title="テザリングで使うときの見張り。今日この端末がダウンロードした3D都市データの推定量を表示し、上限を決めておくと8割で注意、超えたら自動で軽量モードに切り替えます">📶 通信量</button>
       <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
@@ -1973,7 +1974,7 @@ try {
   const bar = document.getElementById("topLeftBar");
   const groups = Array.from(bar.querySelectorAll(".tbGroup"));
   // 押すと別の画面や別タブが開く項目は、押した時点でメニューを畳む（切替系は状態が見えるよう開いたまま）
-  const CLOSE_AFTER = ["reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
+  const CLOSE_AFTER = ["ctlGuideMenuBtn", "reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
   function closeAll(except) {
     groups.forEach((g) => {
       if (g === except) return;
@@ -2327,7 +2328,9 @@ const HELP_KEYBOARD =
   "飛行中は<b>後退できません</b>（旋回して向きを変える）<br>" +
   "見回す：画面を<b>ドラッグ</b><br>" +
   "スポット看板を<b>クリック</b>で説明表示<br>" +
-  "🧩 文化財に<b>80m以内</b>まで近づくとパズルピース獲得";
+  "🧩 文化財に<b>80m以内</b>まで近づくとパズルピース獲得<br>" +
+  // 声と鳥の動きで説明する操作のしかた（キーボード版。2026-09-15 中司さん）
+  '<button type="button" onclick="window.CbiControlsGuide&&CbiControlsGuide.open({device:\'kbd\'})" style="font-size:11px;padding:1px 6px;margin-top:2px;border-radius:6px;border:1px solid #6a9fd8;background:#1c3a5c;color:#fff;cursor:pointer">⌨ くわしく見る</button>';
 // ボタン名はつないでいるコントローラーの種類で変える（2026-09-13 中司さん「GameSir T3 Lite には○ボタンがない」）。
 // PlayStation 系＝R1/R2/○/×/□/OPTIONS、Xbox 配列（GameSir T3 Lite・Xbox 360/One 等）＝RB/RT/A/B/X/≡。ボタン番号は標準配列で同じ
 const PAD_LABELS = {
@@ -6511,7 +6514,7 @@ try {
 <script src="race-radar.js?v=20260913-2"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260914-2"></script>
-<script src="controls-guide.js?v=20260914-6"></script>
+<script src="controls-guide.js?v=20260915-1"></script>
 <script src="musashiya.js?v=20260914-6"></script>
 </body>
 </html>

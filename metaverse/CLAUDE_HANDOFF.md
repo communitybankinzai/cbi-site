@@ -1,5 +1,9 @@
 # CBIメタバース印西 引継ぎ
 
+## 2026-09-15 操作のしかた：キーボード版・スマホ版（controls-guide.js）
+
+操作のしかたは3版：🎮 コントローラー（controls-guide.json の `steps`・8手順）／⌨ キーボード（`keyboard`・7手順）／📱 スマホ（`phone`・7手順）。開いたときの版は `autoDevice()`：パッドあり→pad、`(pointer: coarse)` か幅640px以下（index.html のスマホ表示と同じ条件）→phone、それ以外→kbd。見出しのタブ（`data-dev`）で切り替え（`setDevice(dev, manual)`・手順1から）。タブで選んだ後はパッドをつないでも戻さない（`st.devManual`）。自動で開いた後にパッドをつなぐと🎮へ。`open({device:"kbd"})` で版を指定できる。**手順の文**：キーボード・スマホ版は `voiceId`（`kb-*`／`ph-*`、おしまいは両方 `any-end`）と `demo`（お手本の動きはコントローラー版の `DEMO` を借りる。見る向き `VIEW` も demo の名前で決まる。新規は `ph-mode` だけ）。声は `build_controls_voicevox.py` が keyboard／phone も作る（同じ voiceId は1本・13本）。**図**：`kbdSvg()`（W A S D・Q E・Shift・矢印・マウス。data-k＝キー名、`data-knob="MOUSE"` でマウスごと動く）と `phoneSvg()`（横向きのスマホ。JOY・SWIPE・TAP・MODE・SPEED・UP・DOWN。並びは #joystick・#mobileMoveBar に合わせた）。**練習**：`liveLocal()` がキー（`st.keysDown`・keydown を capture で受けて 3D へ渡さない。keyup は 3D にも渡す＝押しっぱなし扱いを残さない）、図のボタンを押す指（`st.touchKeys`）、鳥の画面や「なぞる」「マウス」のドラッグ（`st.drag` type look）、スマホのスティック（type joy）をコントローラーと同じ入力の形にする。`drawInput` はキーボード・スマホ版では押したもの（`inp.keys`）だけ光らせ、お手本とパッドの入力は動きから光らせる。キーボード版では矢印キーは練習に使い、手順は ◀ ▶ ボタンで選ぶ。スタート／とじるは Enter・クリック・タップ（長押しは🎮版だけ）。**入口の追加**：左下のキーボード説明（`HELP_KEYBOARD`）に「⌨ くわしく見る」、⚙設定（スマホでは ☰ の中）の先頭に `#ctlGuideMenuBtn`「🎮 操作のしかた」（CLOSE_AFTER に入れた）。キーボードもスマホもロール（傾き）の操作は無いので、その手順は無い。版 VER 20260915-1・STEPS_VER 20260915-1（VOICE_VER は据え置き＝新しい声はファイル名が新しいので取り直し不要）。
+
 ## 2026-09-14 武蔵屋めぐり 大人用の説明を深く（musashiya-texts.json）
 
 大人用20件を平均約130字→約250字に書き直した（`version` 2026-09-14-adult-deep・`status` は下書きのまま）。事実は `reports/<reportId>.json` の summary／highlights／timeline に書かれていることだけ（学習レポートは出典つき）。読み間違えやすい語は「漢字（ひらがな）」で読みを添えた（build_narration.py の `speech_text` が大人用でも読みだけにする。漢字だけの語の直後に（ひらがな）を置くこと）。声は `python assets/narration/build_narration.py`（edge-tts・Keita／Nanami・変わった文だけ作り直す）。**説明文や声を変えたら musashiya.js の `MSY_VERSION` を上げる**（説明文 JSON と声の mp3 のアドレスに付くため。上げないとブラウザが古い文・声を使う）。今回 2026-09-14a。ずんだもんの `*_adult.mp3` は大人用では使わない（大人用の声は male／female のみ）ので作り直していない。

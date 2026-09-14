@@ -16,7 +16,8 @@ def main(force):
     try: ver = urllib.request.urlopen(ENGINE + '/version', timeout=5).read().decode()
     except Exception as e: print('VOICEVOX ENGINE が起動していません:', e); sys.exit(1)
     print('engine', ver)
-    steps = json.load(open(os.path.join(HERE, 'controls-guide.json'), encoding='utf-8'))['steps']
+    guide = json.load(open(os.path.join(HERE, 'controls-guide.json'), encoding='utf-8'))
+    steps = guide['steps']
     manifest_path = os.path.join(HERE, 'manifest.json')
     manifest = json.load(open(manifest_path, encoding='utf-8')) if os.path.exists(manifest_path) else {'files': {}}
     files = manifest['files']
@@ -28,6 +29,13 @@ def main(force):
         variants.append((s['id'], s['voice']))
         if s.get('general'):
             variants.append((s['general']['voiceId'], s['general']['voice']))
+    # キーボード版・スマホ版（2026-09-14 追加）。同じ voiceId（例：any-end）は1回だけ作る
+    seen = {v[0] for v in variants}
+    for deck in ('keyboard', 'phone'):
+        for s in guide.get(deck, []):
+            if s['voiceId'] not in seen:
+                seen.add(s['voiceId'])
+                variants.append((s['voiceId'], s['voice']))
     for vid, voice in variants:
         for kind, text in voice.items():
             rel = f"zundamon/guide_{vid}_{kind}.mp3"

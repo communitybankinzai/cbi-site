@@ -3,13 +3,15 @@
 // コントローラーを動かすと、図のボタンが光り、鳥も同じ姿勢になる（練習）。開いている間は index.html の飛行入力を止める（window.cbiInputHold）。
 // 武蔵屋めぐりのスタート待ち（街並みの読み込み中）に musashiya.js が自動で開く。読み込めたら A（○）でそのままスタートできる。
 // 文面と声：assets/narration/controls-guide.json、音声は assets/narration/build_controls_voicevox.py（VOICEVOX:ずんだもん・クレジット必須）
+// 版は3つ（2026-09-15 中司さん「キーボードの説明版とスマホ説明版も」）：🎮 コントローラー（steps）／⌨ キーボード（keyboard）／📱 スマホ（phone）。
+// 開いたときに端末で自動で選び（パッドあり→🎮、指で触る画面→📱、それ以外→⌨）、上のタブで切り替えられる。お手本の動き（DEMO）は3版で共用
 (function () {
   "use strict";
-  const VER = "20260914-6";
+  const VER = "20260915-1";
   // 声と手順データの版。文を変えて音声を作り直したときだけ上げる（上げると端末に保存済みの声も取り直しになる。JS を直しただけでは上げない）
   const VOICE_VER = "20260913-1";
   // 手順データ（controls-guide.json）の版。JSON を変えたら必ず上げる（上げないと端末に保存済みの古い JSON が使われ続ける。2026-09-14 実際に起きた）
-  const STEPS_VER = "20260914-1";
+  const STEPS_VER = "20260915-1";
   const HOLD_MS = 1000; // 操作説明の中では A（○）を1秒長押しでスタート（2026-09-14 中司さん：説明中の誤スタート防止）
   const THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.180.0/+esm";
   const GLTF_URL = "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js/+esm";
@@ -33,6 +35,8 @@
     // ほかのモード用（controls-guide.json の general.voiceId）
     "ok-gen": { T: 7, f: (t) => t > 0.5 && t < 0.9 ? { a: 1 } : t > 2 && t < 2.4 ? { b: 1 } : t > 3.4 && t < 3.8 ? { dl: 1 } : t > 4.2 && t < 4.6 ? { dr: 1 } : t > 5.4 && t < 6.2 ? { menu: 1 } : {} },
     "end-gen": { T: 4, f: (t) => ({ ly: -1, menu: t > 2.2 && t < 3.4 ? 1 : 0 }) },
+    // スマホ版の「飛ぶ・歩く／タップで説明」（mode＝🚁 のボタン）
+    "ph-mode": { T: 5, f: (t) => t > 0.5 && t < 1.2 ? { mode: 1 } : t > 2.6 && t < 3.1 ? { a: 1 } : {} },
   };
   // 手順ごとの見る向き（鳥の +X＝前・+Y＝上・+Z＝右）。上下は横から、傾きは後ろから見ると分かりやすい
   const VIEW = { def: [-9.5, 3.8, 6.5], rstick: [-8.5, 6.5, 6.5], trig: [-1.5, 2, 12.5], bump: [-12.5, 3, 1.5] };
@@ -43,7 +47,8 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const st = { open: false, steps: null, idx: 0, kind: "xbox", bird: "swan", audio: null, stepTimer: 0, stepStart: 0, ended: false,
     raf: 0, last: 0, liveUntil: 0, prev: [], bgmVol: null, opts: {}, three: null,
-    birdWait: false, waitSeq: 0, birdWaitMs: 30000 }; // birdWaitMs：鳥を待つ最長時間（検証では短くできる）
+    birdWait: false, waitSeq: 0, birdWaitMs: 30000, // birdWaitMs：鳥を待つ最長時間（検証では短くできる）
+    decks: null, device: "pad", devManual: false, keysDown: {}, touchKeys: {}, drag: null }; // device：pad／kbd／phone（devManual＝タブで選んだ）
 
   // ---- 見た目 ----
   const css = document.createElement("style");
@@ -55,6 +60,11 @@
     "#cgModal .cgHead b{font-size:22px;color:#ffd166;margin-right:auto}" +
     "#cgModal button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid #6a9fd8;background:#1c3a5c;color:#fff;padding:6px 12px}" +
     "#cgModal button.sel{background:#2f6db0;border-color:#ffd166}" +
+    "#cgModal .cgTabs{display:flex;gap:4px;margin-right:8px;flex-wrap:wrap}" +
+    "#cgModal .cgTabs button{font-size:14px;padding:5px 10px}" +
+    // キーボード・スマホ版は、鳥の画面をドラッグ（指でなぞる）すると向きの練習になる。スクロールと取り合わないように
+    "#cgModal[data-dev=kbd] .cgStage{cursor:grab}" +
+    "#cgModal[data-dev=phone] .cgStage,#cgModal[data-dev=phone] .cgPad svg,#cgModal[data-dev=kbd] .cgPad svg{touch-action:none;cursor:pointer}" +
     "#cgModal .cgMain{display:flex;gap:14px;margin-top:10px}" +
     "#cgModal .cgStage{position:relative;flex:1.25;min-height:340px;border-radius:10px;overflow:hidden;background:linear-gradient(#8fc3ee,#dcefff)}" +
     "#cgModal .cgStage canvas{display:block;width:100%;height:100%;position:absolute;inset:0}" +
@@ -90,8 +100,9 @@
   const modal = document.createElement("div");
   modal.id = "cgModal";
   modal.innerHTML =
-    '<div class="cgBox" role="dialog" aria-label="コントローラーの操作のしかた">' +
+    '<div class="cgBox" role="dialog" aria-label="操作のしかた">' +
       '<div class="cgHead"><b>🎮 操作のしかた</b>' +
+        '<span class="cgTabs"><button type="button" data-dev="pad">🎮 コントローラー</button><button type="button" data-dev="kbd">⌨ キーボード</button><button type="button" data-dev="phone">📱 スマホ</button></span>' +
         '<button type="button" data-bird="swan">🦢 白鳥</button><button type="button" data-bird="kite">🦅 鳶</button>' +
         '<button type="button" data-act="close" title="とじる（Esc）">✕</button></div>' +
       '<div class="cgMain">' +
@@ -99,7 +110,7 @@
         '<div class="cgSide"><div class="cgPad"></div><div class="cgLayout"></div><div class="cgStepTitle"></div><div class="cgSub"></div></div>' +
       "</div>" +
       '<div class="cgNav"><button type="button" data-act="prev">◀ まえ</button><span class="cgDots"></span><button type="button" data-act="next">つぎ ▶</button>' +
-        '<button type="button" data-act="replay">🔊 もう一度</button><span style="font-size:12px;color:#9fb6cc">十字キーの ←→ でも えらべます</span></div>' +
+        '<button type="button" data-act="replay">🔊 もう一度</button><span class="cgNavHint" style="font-size:12px;color:#9fb6cc"></span></div>' +
       '<div class="cgFoot"><span class="cgStatus"></span><button type="button" class="cgGo" data-act="go" hidden></button></div>' +
       '<div class="cgCredit"><span class="cgOffline" style="float:left"></span>音声：VOICEVOX:ずんだもん（VOICEVOX ENGINE で生成）　版 ' + VER + "</div>" +
     "</div>";
@@ -168,7 +179,72 @@
       stick("LS", ls) + stick("RS", rs) + dpad + fb("Y", 0, -26) + fb("X", -26, 0) + fb("B", 26, 0) + fb("A", 0, 26) + small("VIEW", 172) + small("MENU", 228) +
       "</svg>";
   }
+  // ---- キーボード＋マウスの図（data-k＝キー名。data-knob="MOUSE"＝マウスごと動かす）----
+  function kbdSvg() {
+    const key = (k, x, y, w, label) => '<g class="k" data-k="' + k + '"><rect class="sh" x="' + x + '" y="' + y + '" width="' + w + '" height="38" rx="7"/>' +
+      '<text x="' + (x + w / 2) + '" y="' + (y + 19) + '">' + label + "</text></g>";
+    const cap = (x, y, t) => '<text x="' + x + '" y="' + y + '" style="fill:#cfe0f0;font:12px system-ui;text-anchor:middle">' + t + "</text>";
+    return '<svg viewBox="0 0 400 250" aria-hidden="true">' +
+      cap(88, 16, "キーボード") +
+      key("Q", 20, 28, 42, "Q") + key("W", 66, 28, 42, "W") + key("E", 112, 28, 42, "E") +
+      key("A", 32, 72, 42, "A") + key("S", 78, 72, 42, "S") + key("D", 124, 72, 42, "D") +
+      key("SHIFT", 10, 116, 86, "Shift") +
+      cap(211, 176, "矢印キー") +
+      key("UP", 236, 150, 42, "↑") + key("LEFT", 190, 194, 42, "←") + key("DOWN", 236, 194, 42, "↓") + key("RIGHT", 282, 194, 42, "→") +
+      '<g data-knob="MOUSE">' +
+        '<g class="k" data-k="MOUSE"><rect class="sh" x="300" y="20" width="64" height="100" rx="32"/></g>' +
+        '<g class="k" data-k="CLICK"><path class="sh" d="M300 70 V52 A32 32 0 0 1 332 20 V70 Z"/></g>' +
+      "</g>" +
+      cap(340, 136, "マウス") + cap(340, 151, "ドラッグ・クリック") +
+      "</svg>";
+  }
+  // ---- スマホの画面の図（横向きに描く。左下スティック、右下に 🚁・⚡・⬆・⬇。index.html の #joystick・#mobileMoveBar と同じ並び）----
+  function phoneSvg() {
+    const cap = (x, y, t) => '<text x="' + x + '" y="' + y + '" style="fill:#cfe0f0;font:11px system-ui;text-anchor:middle">' + t + "</text>";
+    const btn = (k, cx, label) => '<g class="k" data-k="' + k + '"><circle class="sh" cx="' + cx + '" cy="192" r="17"/><text x="' + cx + '" y="192" style="font-size:14px">' + label + "</text></g>";
+    return '<svg viewBox="0 0 400 250" aria-hidden="true">' +
+      '<rect x="8" y="18" width="384" height="214" rx="26" fill="#1b2a3a" stroke="#6a9fd8" stroke-width="2"/>' +
+      '<rect x="30" y="30" width="340" height="190" rx="8" fill="#2a4f78"/>' +
+      cap(78, 46, "スマホの画面") +
+      '<g class="k" data-k="SWIPE"><rect class="sh" x="140" y="56" width="110" height="80" rx="12" style="fill-opacity:.35;stroke-dasharray:6 4"/>' +
+        '<g data-knob="SWIPE"><text x="195" y="92" style="font-size:26px">👆</text></g></g>' +
+      cap(195, 150, "画面をなぞる") +
+      '<g class="k" data-k="TAP"><circle class="sh" cx="318" cy="84" r="20"/><text x="318" y="84" style="font-size:18px">📍</text></g>' +
+      cap(318, 118, "ピンをタップ") +
+      '<g class="k" data-k="JOY"><circle class="sh" cx="80" cy="160" r="34"/>' +
+        '<g data-knob="JOY"><circle cx="80" cy="160" r="16" fill="#50657c" stroke="#cfe0f0" stroke-width="2"/></g></g>' +
+      cap(80, 208, "スティック") +
+      '<g class="k" data-k="MODE"><rect class="sh" x="170" y="176" width="72" height="32" rx="16"/><text x="206" y="192" style="font-size:12px">🚁 飛行中</text></g>' +
+      btn("SPEED", 264, "⚡") + btn("UP", 302, "⬆") + btn("DOWN", 340, "⬇") +
+      "</svg>";
+  }
+  function autoDevice() {
+    if (firstPad()) return "pad";
+    try { if (matchMedia("(pointer: coarse)").matches || matchMedia("(max-width: 640px)").matches) return "phone"; } catch (e) {} // index.html のスマホ表示と同じ条件
+    return "kbd";
+  }
+  // タブで版を切り替える（手順は1から）。manual＝人が選んだ（コントローラーをつないでも自動で戻さない）
+  function setDevice(dev, manual) {
+    if (manual) st.devManual = true;
+    if (!st.decks || !st.decks[dev]) return;
+    st.device = dev;
+    st.steps = st.decks[dev];
+    st.ended = false;
+    st.keysDown = {}; st.touchKeys = {}; st.drag = null;
+    renderPad();
+    playStep(0);
+  }
   function renderPad() {
+    modal.dataset.dev = st.device;
+    modal.querySelectorAll("[data-dev]").forEach((b) => b.classList.toggle("sel", b.dataset.dev === st.device));
+    $(".cgNavHint").textContent = st.device === "pad" ? "十字キーの ←→ でも えらべます" : st.device === "kbd" ? "（矢印キーは練習に使えます）" : "";
+    $(".cgLive").textContent = st.device === "pad" ? "🎮 コントローラーで操作中" : st.device === "kbd" ? "⌨ キーボード・マウスで操作中" : "👆 指で操作中";
+    if (st.device !== "pad") {
+      $(".cgPad").innerHTML = st.device === "kbd" ? kbdSvg() : phoneSvg();
+      $(".cgLayout").innerHTML = "";
+      markTargets();
+      return;
+    }
     const L = layoutInfo();
     st.layout = L.layout;
     $(".cgPad").innerHTML = padSvg(st.kind, L.layout);
@@ -186,7 +262,34 @@
   }
 
   // ---- 入力（お手本 or 実際のコントローラー）----
-  const ZERO = { lx: 0, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, lb: 0, rb: 0, a: 0, b: 0, x: 0, y: 0, menu: 0, view: 0, dl: 0, dr: 0 };
+  const ZERO = { lx: 0, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, lb: 0, rb: 0, a: 0, b: 0, x: 0, y: 0, menu: 0, view: 0, dl: 0, dr: 0, mode: 0 };
+  // キーボード・スマホ版の練習：押したキー（keysDown）、図のボタンを押している指（touchKeys）、鳥の画面のドラッグ・スティック（drag）。
+  // 入力の形はコントローラーと同じにして、鳥の動きを共用する。keys＝実際に押したものだけ図を光らせる
+  function liveLocal() {
+    if (st.device === "pad") return null;
+    const K = st.keysDown, T = st.touchKeys, d = st.drag;
+    const has = (n) => !!(K[n] || T[n]);
+    const inp = Object.assign({}, ZERO, { keys: {} });
+    Object.keys(K).concat(Object.keys(T)).forEach((n) => { inp.keys[n] = 1; });
+    if (st.device === "kbd") {
+      if (has("W") || has("UP")) inp.ly = -1; // S・↓ は光るだけ（飛んでいる間は下がれない）
+      if (has("A") || has("LEFT")) inp.lx -= 1;
+      if (has("D") || has("RIGHT")) inp.lx += 1;
+      if (has("E")) inp.rt = 1;
+      if (has("Q")) inp.lt = 1;
+      if (has("SHIFT")) inp.x = 1;
+      if (has("CLICK")) inp.a = 1;
+    } else {
+      if (has("UP")) inp.rt = 1;
+      if (has("DOWN")) inp.lt = 1;
+      if (has("SPEED")) inp.x = 1;
+      if (has("MODE")) inp.mode = 1;
+      if (has("TAP")) inp.a = 1;
+    }
+    if (d && d.type === "look") { inp.rx = d.rx; inp.ry = d.ry; inp.keys.MOUSE = inp.keys.SWIPE = 1; }
+    if (d && d.type === "joy") { inp.lx = d.lx; inp.ly = d.ly; inp.keys.JOY = 1; }
+    return Object.keys(inp.keys).length ? inp : null;
+  }
   function liveInput(p) {
     if (!p) return null;
     const ax = (i) => { const v = p.axes[i] || 0; return Math.abs(v) < 0.25 ? 0 : v; };
@@ -201,12 +304,28 @@
     if (st.birdWait) return Object.assign({}, ZERO); // 鳥を待っている間はお手本も止める
     const s = st.steps && st.steps[st.idx];
     const v = s && variant(s);
-    const d = v && DEMO[v.voiceId || v.id];
+    const d = v && DEMO[v.demo || v.voiceId || v.id]; // キーボード・スマホ版は demo でコントローラー版の動きを借りる
     if (!d) return Object.assign({}, ZERO);
     const t = ((now - st.stepStart) / 1000) % d.T;
     return Object.assign({}, ZERO, d.f(t));
   }
   function drawInput(inp) {
+    if (st.device !== "pad") {
+      // お手本（とコントローラーの入力）は動きから光らせるキーを決め、キーボード・指の練習は押したものだけ光らせる
+      const K = inp.keys, f = (n, v) => (K ? !!K[n] : !!v);
+      const on = st.device === "kbd" ? {
+        W: f("W", inp.ly < -0.1), UP: f("UP", inp.ly < -0.1), S: f("S"), DOWN: f("DOWN"),
+        A: f("A", inp.lx < -0.1), LEFT: f("LEFT", inp.lx < -0.1), D: f("D", inp.lx > 0.1), RIGHT: f("RIGHT", inp.lx > 0.1),
+        E: f("E", inp.rt > 0.1), Q: f("Q", inp.lt > 0.1), SHIFT: f("SHIFT", inp.x), MOUSE: f("MOUSE", inp.rx || inp.ry), CLICK: f("CLICK", inp.a),
+      } : {
+        JOY: f("JOY", inp.lx || inp.ly), SWIPE: f("SWIPE", inp.rx || inp.ry), UP: f("UP", inp.rt > 0.1), DOWN: f("DOWN", inp.lt > 0.1),
+        SPEED: f("SPEED", inp.x || inp.y), MODE: f("MODE", inp.mode), TAP: f("TAP", inp.a),
+      };
+      modal.querySelectorAll(".cgPad .k").forEach((g) => g.classList.toggle("on", !!on[g.dataset.k]));
+      const mv = (k, x, y, s) => { const el = modal.querySelector('[data-knob="' + k + '"]'); if (el) el.setAttribute("transform", "translate(" + (x * s).toFixed(1) + " " + (y * s).toFixed(1) + ")"); };
+      mv("MOUSE", inp.rx, inp.ry, 12); mv("SWIPE", inp.rx, inp.ry, 22); mv("JOY", inp.lx, inp.ly, 16);
+      return;
+    }
     const on = { A: inp.a, B: inp.b, X: inp.x, Y: inp.y, LB: inp.lb, RB: inp.rb, LT: inp.lt > 0.1, RT: inp.rt > 0.1, MENU: inp.menu, VIEW: inp.view,
       LS: inp.lx || inp.ly, RS: inp.rx || inp.ry, DPAD: inp.dl || inp.dr };
     modal.querySelectorAll(".cgPad .k").forEach((g) => g.classList.toggle("on", !!on[g.dataset.k]));
@@ -410,16 +529,18 @@
   // 長押しが要るか：スタートと、最後の手順まで見る前に閉じるとき（説明で A をためして押しても始まったり閉じたりしないように）
   function needHold() { const a = action(); return a === "start" || (a === "close" && !st.ended); }
   function updateFoot() {
-    const okName = st.kind === "ps" ? "○" : "A";
+    const okName = st.kind === "ps" ? "○" : "A", dev = st.device;
     const act = action(), go = $(".cgGo"), status = $(".cgStatus");
+    // キーボード・スマホ版は Enter・ボタンのクリック／タップ（長押しは要らない）
+    const tryIt = dev === "pad" ? "コントローラーを動かして、ためしてみよう" : dev === "kbd" ? "キーを押したり、鳥の画面をマウスでドラッグして、ためしてみよう" : "図のボタンや鳥の画面を指でさわって、ためしてみよう";
     if (waitingForStart()) {
-      if (act === "start") { status.innerHTML = "✅ <b>じゅんびOK！</b>"; go.textContent = "🚀 " + okName + " ボタンを長押しでスタート（Enter）"; }
-      else { status.innerHTML = "🌏 街並みを読み込み中…　読み込めたら " + okName + " ボタンの長押しでスタートできます"; }
+      if (act === "start") { status.innerHTML = "✅ <b>じゅんびOK！</b>"; go.textContent = dev === "pad" ? "🚀 " + okName + " ボタンを長押しでスタート（Enter）" : dev === "kbd" ? "🚀 スタート（Enter）" : "🚀 タップでスタート"; }
+      else { status.innerHTML = "🌏 街並みを読み込み中…　読み込めたら " + (dev === "pad" ? okName + " ボタンの長押し" : dev === "kbd" ? "Enter キー" : "下のボタン") + "でスタートできます"; }
     } else if (st.opts.auto === "tiles" && !tilesDone()) {
-      status.innerHTML = "🌏 街並みを読み込み中…　コントローラーを動かして、ためしてみよう";
+      status.innerHTML = "🌏 街並みを読み込み中…　" + tryIt;
     } else {
-      status.innerHTML = act === "close" ? (st.opts.auto === "tiles" ? "✅ <b>街並みの準備OK！</b>" : "") : "コントローラーを動かして、ためしてみよう";
-      go.textContent = okName + (needHold() ? " ボタンを長押しでとじる（Enter）" : " ボタン（Enter）でとじる");
+      status.innerHTML = act === "close" ? (st.opts.auto === "tiles" ? "✅ <b>街並みの準備OK！</b>" : "") : tryIt;
+      go.textContent = dev === "pad" ? okName + (needHold() ? " ボタンを長押しでとじる（Enter）" : " ボタン（Enter）でとじる") : dev === "kbd" ? "とじる（Enter）" : "とじる";
     }
     go.hidden = !act;
     go.classList.toggle("ready", act === "start");
@@ -437,11 +558,12 @@
     st.last = now;
     const p = firstPad();
     if (p) {
+      if (!st.devManual && st.device !== "pad") setDevice("pad"); // 開いてからコントローラーをつないだ（タブで選んだときは戻さない）
       const k = padKind();
-      if (k !== st.kind) { st.kind = k; renderPad(); playStep(st.idx); }
-      else if (layoutInfo().layout !== st.layout) renderPad(); // 別の形のコントローラーに差し替えたとき
+      if (k !== st.kind) { st.kind = k; if (st.device === "pad") { renderPad(); playStep(st.idx); } }
+      else if (st.device === "pad" && layoutInfo().layout !== st.layout) renderPad(); // 別の形のコントローラーに差し替えたとき
     }
-    const live = liveInput(p);
+    const live = liveInput(p) || liveLocal();
     if (live) st.liveUntil = now + 1500;
     const inp = live || (now < st.liveUntil ? Object.assign({}, ZERO) : demoInput(now));
     $(".cgLive").hidden = !(now < st.liveUntil);
@@ -467,17 +589,20 @@
       st.prev = p.buttons.map((b) => b.pressed);
     }
     if (now - (st.footAt || 0) > 300) { st.footAt = now; updateFoot(); } // 街並みの読み込みが終わったかを見る
-    animateBird(inp, dt, st.steps[st.idx].id);
+    const cur = st.steps[st.idx];
+    animateBird(inp, dt, cur.demo || cur.id); // 見る向き（VIEW）はお手本の動きの名前で決める
     st.raf = requestAnimationFrame(loop);
   }
 
   // ---- 開く・とじる ----
   async function loadSteps() {
-    if (st.steps) return st.steps;
+    if (st.decks) return st.decks;
     const r = await fetch("assets/narration/controls-guide.json?v=" + STEPS_VER);
-    st.steps = (await r.json()).steps;
-    return st.steps;
+    const j = await r.json();
+    st.decks = { pad: j.steps, kbd: j.keyboard || j.steps, phone: j.phone || j.steps };
+    return st.decks;
   }
+  // opts.device（"pad"／"kbd"／"phone"）で版を指定して開ける（左下のキーボード説明の「⌨ くわしく見る」など）。無ければ端末で自動
   async function open(opts) {
     st.opts = opts || {};
     try { await loadSteps(); } catch (e) { console.warn("[操作のしかた] 手順を読み込めませんでした", e); return; }
@@ -485,6 +610,10 @@
     st.open = true;
     st.ended = false;
     st.kind = padKind();
+    st.devManual = !!st.opts.device;
+    st.device = st.decks[st.opts.device] ? st.opts.device : autoDevice();
+    st.steps = st.decks[st.device];
+    st.keysDown = {}; st.touchKeys = {}; st.drag = null;
     const p = firstPad();
     st.prev = p ? p.buttons.map((b) => b.pressed) : []; // 開いたときに押していたボタンでは反応しない
     renderPad();
@@ -501,6 +630,7 @@
     if (!st.open) return;
     st.open = false;
     stopVoice();
+    st.keysDown = {}; st.touchKeys = {}; st.drag = null;
     modal.classList.remove("show");
     const btn = document.getElementById("ctlGuideBtn");
     if (btn) btn.focus && btn.blur();
@@ -514,6 +644,7 @@
       return;
     }
     if (b.dataset.layout) { try { localStorage.setItem(LAYOUT_KEY, b.dataset.layout); } catch (e) {} renderPad(); return; }
+    if (b.dataset.dev) { if (b.dataset.dev !== st.device) setDevice(b.dataset.dev, true); return; }
     const act = b.dataset.act;
     if (act === "close") close();
     else if (act === "prev") playStep(st.idx - 1);
@@ -521,17 +652,50 @@
     else if (act === "replay") playStep(st.idx);
     else if (act === "go") doAction();
   });
-  // 開いている間のキーは、ここで受けて他（武蔵屋めぐりの Enter＝スタート、3D の移動キー）へ渡さない
+  // 開いている間のキーは、ここで受けて他（武蔵屋めぐりの Enter＝スタート、3D の移動キー）へ渡さない。
+  // キーボード版では移動キー（矢印も）が練習になる（手順は ◀ ▶ ボタンで選ぶ）
+  const KEYMAP = { KeyW: "W", KeyA: "A", KeyS: "S", KeyD: "D", ArrowUp: "UP", ArrowDown: "DOWN", ArrowLeft: "LEFT", ArrowRight: "RIGHT",
+    KeyE: "E", KeyQ: "Q", ShiftLeft: "SHIFT", ShiftRight: "SHIFT" };
   document.addEventListener("keydown", function (e) {
     if (!st.open) return;
+    const prac = st.device === "kbd" && KEYMAP[e.code];
     if (e.key === "Escape") close();
     else if (e.key === "Enter") doAction();
+    else if (prac) st.keysDown[prac] = 1;
     else if (e.key === "ArrowLeft") playStep(st.idx - 1);
     else if (e.key === "ArrowRight") playStep(st.idx + 1);
     else return;
     e.preventDefault();
     e.stopImmediatePropagation();
   }, true);
+  // 離したキーは 3D 側にも渡す（開く前から押していたキーが、閉じたあと押しっぱなし扱いで残らないように）
+  document.addEventListener("keyup", function (e) { if (KEYMAP[e.code]) delete st.keysDown[KEYMAP[e.code]]; }, true);
+  window.addEventListener("blur", function () { st.keysDown = {}; });
+  // 指・マウスの練習：図のキー／ボタンを押す、スマホ版のスティックを動かす、鳥の画面（またはマウス・なぞる の図）をドラッグして向きをかえる
+  modal.addEventListener("pointerdown", function (e) {
+    if (!st.open || st.device === "pad" || !e.target.closest) return;
+    const g = e.target.closest(".cgPad .k[data-k]");
+    if (g) {
+      const k = g.dataset.k;
+      if (k === "JOY") { const r = g.querySelector(".sh").getBoundingClientRect(); st.drag = { type: "joy", cx: r.left + r.width / 2, cy: r.top + r.height / 2, r: r.width / 2, lx: 0, ly: 0 }; }
+      else if (k === "SWIPE" || k === "MOUSE") st.drag = { type: "look", x0: e.clientX, y0: e.clientY, rx: 0, ry: 0 };
+      else st.touchKeys[k] = 1;
+    } else if (e.target.closest(".cgStage")) st.drag = { type: "look", x0: e.clientX, y0: e.clientY, rx: 0, ry: 0 };
+    else return;
+    e.preventDefault();
+    dragMove(e);
+  });
+  function dragMove(e) {
+    const d = st.drag;
+    if (!d) return;
+    const c = (v) => Math.max(-1, Math.min(1, v));
+    if (d.type === "joy") { d.lx = c((e.clientX - d.cx) / d.r); d.ly = c((e.clientY - d.cy) / d.r); }
+    else { d.rx = c((e.clientX - d.x0) / 60); d.ry = c((e.clientY - d.y0) / 60); }
+  }
+  function dragEnd() { st.drag = null; st.touchKeys = {}; }
+  window.addEventListener("pointermove", dragMove);
+  window.addEventListener("pointerup", dragEnd);
+  window.addEventListener("pointercancel", dragEnd);
   window.addEventListener("pagehide", stopVoice);
 
   // ---- この端末に保存（2026-09-14 中司さん「2回目以降はテザリング通信を食わないように。鳶も同様」）----
@@ -540,10 +704,11 @@
   // 会場PCは事前に自宅の Wi-Fi で1回武蔵屋モードを開けば準備完了
   const OFFLINE_CACHE = "cbi-meta-offline-v1"; // sw.js の CACHE と同じ名前にする
   const off = { started: false, total: 0, done: 0, failed: 0, persisted: null, error: false };
-  function offlineUrls(steps) {
+  function offlineUrls(decks) {
     const rel = [GLB.swan, GLB.kite, "assets/narration/controls-guide.json?v=" + STEPS_VER];
-    steps.forEach((s) => [s].concat(s.general ? [s.general] : []).forEach((v) => // 武蔵屋用とほかのモード用の両方
-      Object.keys(v.voice).forEach((k) => rel.push(VOICE_BASE + (v.voiceId || s.id) + "_" + k + ".mp3?v=" + VOICE_VER))));
+    const add = (id, v) => Object.keys(v.voice).forEach((k) => { const u = VOICE_BASE + id + "_" + k + ".mp3?v=" + VOICE_VER; if (rel.indexOf(u) < 0) rel.push(u); });
+    decks.pad.forEach((s) => { add(s.id, s); if (s.general) add(s.general.voiceId || s.id, s.general); }); // 武蔵屋用とほかのモード用の両方
+    decks.kbd.concat(decks.phone).forEach((s) => add(s.voiceId || s.id, s)); // キーボード・スマホ版（「おしまい」は共用なので1本）
     return [THREE_URL, GLTF_URL].concat(rel.map((u) => new URL(u, location.href).href));
   }
   function offlineText() {

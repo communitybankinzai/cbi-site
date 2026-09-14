@@ -887,6 +887,84 @@
    "chars": 67,
    "voice": "VOICEVOX:ずんだもん",
    "bytes": 87213
+  },
+  "zundamon/guide_kb-intro_common.mp3": {
+   "hash": "b3419dfd7b91",
+   "chars": 61,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 75885
+  },
+  "zundamon/guide_kb-move_common.mp3": {
+   "hash": "1f7f1ba28e9e",
+   "chars": 76,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 110253
+  },
+  "zundamon/guide_kb-look_common.mp3": {
+   "hash": "e6bd5a2219b4",
+   "chars": 55,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 70509
+  },
+  "zundamon/guide_kb-updown_common.mp3": {
+   "hash": "f8d1f1efbdba",
+   "chars": 23,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 28845
+  },
+  "zundamon/guide_kb-boost_common.mp3": {
+   "hash": "ddf60e3dcecf",
+   "chars": 29,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 32685
+  },
+  "zundamon/guide_kb-click_common.mp3": {
+   "hash": "4f0a147e4477",
+   "chars": 52,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 65517
+  },
+  "zundamon/guide_any-end_common.mp3": {
+   "hash": "7bdf13fb24e6",
+   "chars": 35,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 49005
+  },
+  "zundamon/guide_ph-intro_common.mp3": {
+   "hash": "e65b31c73a24",
+   "chars": 55,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 70893
+  },
+  "zundamon/guide_ph-move_common.mp3": {
+   "hash": "da4987984f66",
+   "chars": 65,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 86061
+  },
+  "zundamon/guide_ph-look_common.mp3": {
+   "hash": "81d329e95f5a",
+   "chars": 50,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 66861
+  },
+  "zundamon/guide_ph-updown_common.mp3": {
+   "hash": "aa5c39fbf74a",
+   "chars": 45,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 56493
+  },
+  "zundamon/guide_ph-speed_common.mp3": {
+   "hash": "e2af3e70ba35",
+   "chars": 35,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 49773
+  },
+  "zundamon/guide_ph-mode_common.mp3": {
+   "hash": "b5b71d1c00dc",
+   "chars": 59,
+   "voice": "VOICEVOX:ずんだもん",
+   "bytes": 76077
   }
  },
  "voices": {
