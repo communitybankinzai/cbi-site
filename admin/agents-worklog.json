@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-14",
+          "title": "SNS予約投稿の画像アップロード不具合の本番調査＋GAS受け口追加・clasp push 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "cbi-admin-gas/Code.gs（doPost に case 'uploadSnsMedia' を追加）",
+            "cbi-admin-gas/SnsMediaUpload.gs（SUPABASE_URL 未設定時は CIDAO_REST_URL から保存先URLを作る）",
+            "cbi-admin-gas/.claspignore（SnsMediaUpload.gs を「送らない」から許可リスト !SnsMediaUpload.gs へ）",
+            "本番GAS HEAD（clasp push -f・7ファイル。自動保存 commit 0bf0cf4）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "Apps Script API（projects.content・読み取りのみ）で、本番の HEAD と、管理画面が使うデプロイ（v44）の両方に SnsMediaUpload が無く、Code の doPost にも uploadSnsMedia が無いことを確認（＝毎回 unknown_action で失敗）。Supabase の storage.buckets で sns-media は存在（公開・10MB・画像形式のみ）するが保存数0件で、一度も成功していないと裏付けた。実アップロードは行っていない。push 前に、ローカルと本番 HEAD が6ファイルとも一致していることを確認（他の変更を巻き込まない）。v44 と HEAD の間には Ledger（二重登録の防止）・NewsPublish（絵文字の文字化け対策）・SnsQueue（+218/-50）の未公開変更があり、新バージョンを公開すると一緒に出ることを中司さんに説明し、了承済み。node --check で構文を確認済み（exit 0）。push 後に API で HEAD に SnsMediaUpload と case 'uploadSnsMedia' があることを確認した。デプロイ（GASエディタで新バージョン・アクセス全員）は中司さんに依頼し、plans に動作確認を登録。session: 2ad4d02d-3478-481b-bf49-e7fa4bdaef35 / output: 20,784 / cost: $4.24"
+        },
+        {
+          "date": "2026-09-14",
           "title": "gas-mail-share を非公開リポでgit管理化＋Claude編集時の自動保存フック 0.1時間",
           "category": "保守",
           "outputs": [
@@ -5680,7 +5694,9 @@
           "title": "CBI管理画面の画像アップロード（uploadSnsMedia）を本番GASで動かす",
           "category": "保守",
           "priority": "中",
-          "note": "2026-09-14 の .claspignore 点検で発見。site/admin/admin.js が action 'uploadSnsMedia' を呼ぶが、処理を持つ cbi-admin-gas/SnsMediaUpload.gs は本番GASに無く（本番は6ファイル）、Code.gs の doPost にも振り分けが無い。直すには Code.gs に振り分けを足し clasp push -f → GASエディタから新バージョンでデプロイ（clasp deploy は403になるので禁止）。同日中に別セッションが .claspignore の SnsMediaUpload.gs を「!」へ移しており着手済みの可能性あり。完了していればこの予定は削除して actuals へ。"
+          "status": "待ち",
+          "blockedBy": "中司さんが GAS エディタで cbi-admin-gas の新バージョンを公開する（デプロイを管理→管理画面が使う既存デプロイ AKfycbz0UJbV… を編集→新バージョン・アクセス全員）",
+          "note": "【2026-09-14 09:12 進捗】Code.gs に振り分けを追加、.claspignore を !SnsMediaUpload.gs に、SUPABASE_URL 未設定時は CIDAO_REST_URL から作るよう変更し clasp push -f 済み（API で HEAD を確認済み。管理画面はまだ v44）。公開後の確認：①API で管理画面のデプロイの版が v44 より新しく uploadSnsMedia を含む ②管理画面で小さな画像を1枚アップロードし画像URL欄に sns-media の公開URLが入る ③「SUPABASE_SERVICE_ROLE_KEY 未設定」と出たらプロパティ設定を依頼 ④テスト画像は sns-media から削除。確認できたらこの予定を削除して actuals へ。【発見時】2026-09-14 の .claspignore 点検で発見。site/admin/admin.js が action 'uploadSnsMedia' を呼ぶが、処理を持つ cbi-admin-gas/SnsMediaUpload.gs は本番GASに無く（本番は6ファイル）、Code.gs の doPost にも振り分けが無い。直すには Code.gs に振り分けを足し clasp push -f → GASエディタから新バージョンでデプロイ（clasp deploy は403になるので禁止）。同日中に別セッションが .claspignore の SnsMediaUpload.gs を「!」へ移しており着手済みの可能性あり。完了していればこの予定は削除して actuals へ。"
         },
         {
           "due": "2026-09-22",
