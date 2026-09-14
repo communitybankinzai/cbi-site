@@ -7051,7 +7051,7 @@
       "actuals": [
         {
           "date": "2026-09-14",
-          "title": "Anthropic APIクレジット $20 補充の案内＋収支台帳登録（証憑PDF添付）＋警告メール7通の原因特定 0.3時間",
+          "title": "Anthropic APIクレジット $20 補充の案内＋収支台帳登録（証憑PDF添付）＋警告メール7通の原因特定・基準値更新 0.4時間",
           "category": "事務",
           "outputs": [
             "要対応メール「Anthropic の残高・キー期限の警告」7通（09-07〜09-13）の中身を確認し、原因を特定：09-09 の $10 補充後に CREDIT_BASELINE を更新していなかった（推定 $2.44／Console 実残高 $12.61）",
@@ -7059,11 +7059,13 @@
             "収支台帳 L20260914154342-71181：AI関連費／Anthropic, PBC／CiDAO運営／クレジットカード／立替 中司 祐樹／¥3,389（$22.00＝本体$20.00＋JCT$2.00、レート154.04＝ECB 2026-09-11 直近値）",
             "証憑 EV20260914155028-69988：Receipt-2050-6578-3911.pdf（Gmail の領収書メール本文の Stripe リンクから取得・内容照合済み）",
             "警告メール7通のスターを外した（再取得で starred=false を確認）",
-            "plans：A8「Anthropic のクレジット残高を補充する」と A1「警告メールの中身確認と残高補充判断」を完了として削除、A8 に「Vercel の CREDIT_BASELINE 更新」を追加"
+            "Vercel（cidao・Production and Preview）の CREDIT_BASELINE_USD=32.61 / CREDIT_BASELINE_AT=2026-09-14T00:00:00Z をユーザーがダッシュボードで更新 → Redeploy（GHEwv8LiX・Ready・cidao.vercel.app 割当をスクショで確認）",
+            "C:\\Repos\\cidao\\.env.local の同2行を同値に更新（git 管理外）",
+            "plans：A8「Anthropic のクレジット残高を補充する」と A1「警告メールの中身確認と残高補充判断」を完了として削除、A8 に「9/15 朝に警告メールが届かないことを確認」を追加"
           ],
-          "hours": 0.3,
+          "hours": 0.4,
           "partnerApproved": false,
-          "note": "Receipt #2050-6578-3911 / Invoice SOMHZAHF-0005 / 2026-09-13（米国時間）＝2026-09-14 JST / カード末尾0728。領収書の JCT 換算レートは 153.41983333 だが、過去2件と同じく ECB レート（frankfurter.dev）で計上。当日 09-14 の ECB レートは未公表のため直近の 09-11 を使用。GAS Gmail共有 WebApp は User-Agent ヘッダを付けると 404、台帳 WebApp は付けないと 404（逆の挙動）。session: 9912b11e-2d3c-4a13-9eef-230e65e63c90 / output: 29,568 / cost: $5.10"
+          "note": "Receipt #2050-6578-3911 / Invoice SOMHZAHF-0005 / 2026-09-13（米国時間）＝2026-09-14 JST / カード末尾0728。領収書の JCT 換算レートは 153.41983333 だが、過去2件と同じく ECB レート（frankfurter.dev）で計上。当日 09-14 の ECB レートは未公表のため直近の 09-11 を使用。GAS Gmail共有 WebApp は User-Agent ヘッダを付けると 404、台帳 WebApp は付けないと 404（逆の挙動）。session: 9912b11e-2d3c-4a13-9eef-230e65e63c90 / output: 40,611 / cost: $7.06"
         },
         {
           "date": "2026-09-10",
@@ -7252,10 +7254,10 @@
       "plans": [
         {
           "due": "2026-09-15",
-          "title": "Vercel（cidao）の CREDIT_BASELINE_USD=32.61 / CREDIT_BASELINE_AT=2026-09-14T00:00:00Z へ更新して再デプロイ（警告メールを止める）",
+          "title": "Anthropic 残高の警告メールが 9/15 朝（7:24頃の cron）に届かないことを確認する",
           "category": "事務",
-          "priority": "高",
-          "note": "2026-09-09 の $10 補充後に基準値を更新しなかったため、実残高 $12.61 のときに推定 $2.44 の誤警告が毎日届いていた。09-14 に $20 追加で残高 $32.61（Console 実測）。Vercel CLI 未リンク・トークン無しのため Claude からは更新できず、ダッシュボードでの更新が必要。.env.local も同値に揃える。"
+          "priority": "中",
+          "note": "2026-09-14 に Vercel の CREDIT_BASELINE_USD=32.61 / CREDIT_BASELINE_AT=2026-09-14T00:00:00Z へ更新・再デプロイ済み（GHEwv8LiX・Ready）。届いた場合は推定残高の値を見て、基準値の反映漏れか実際の消費急増かを切り分ける（キー別内訳は usage_report/messages?group_by[]=api_key_id）。"
         },
         {
           "due": "未定",
