@@ -5,7 +5,7 @@
 // 文面と声：assets/narration/controls-guide.json、音声は assets/narration/build_controls_voicevox.py（VOICEVOX:ずんだもん・クレジット必須）
 (function () {
   "use strict";
-  const VER = "20260914-5";
+  const VER = "20260914-6";
   // 声と手順データの版。文を変えて音声を作り直したときだけ上げる（上げると端末に保存済みの声も取り直しになる。JS を直しただけでは上げない）
   const VOICE_VER = "20260913-1";
   // 手順データ（controls-guide.json）の版。JSON を変えたら必ず上げる（上げないと端末に保存済みの古い JSON が使われ続ける。2026-09-14 実際に起きた）
@@ -379,6 +379,14 @@
     }
     if (st.idx === st.steps.length - 1) st.ended = true;
     const next = () => { if (st.open && st.idx < st.steps.length - 1) st.stepTimer = setTimeout(() => playStep(st.idx + 1), 700); };
+    // 録画（scripts/promo/record_musashiya.mjs が window.cbiRec を入れたときだけ）：1コマずつ撮るので音は鳴らさず、
+    // 「いつ・どの声か」を記録して後で重ねる。次の手順へは声の長さで進む（2026-09-14 関係者向けの紹介動画）
+    if (window.cbiRec) {
+      const sec = window.cbiRec.audio(voiceUrl(s), "guide");
+      st.stepTimer = setTimeout(next, Math.round((sec || 5) * 1000));
+      updateFoot();
+      return;
+    }
     const a = new Audio(voiceUrl(s));
     st.audio = a;
     bgmDuck(true);
@@ -548,6 +556,7 @@
   function renderOffline() { const el = $(".cgOffline"); if (el) el.textContent = offlineText(); }
   async function prepareOffline() {
     if (off.started || !("caches" in window) || !("serviceWorker" in navigator)) return;
+    if (window.cbiRec) return; // 録画用のブラウザには保存しない（毎回まっさらなので約53MBを無駄に落とすだけ）
     off.started = true;
     try {
       // 登録と「消さないで」の申請は返事を待たない（どちらも返事に数秒かかることがあり、その間保存が始まらなかった。2026-09-14 実測）。

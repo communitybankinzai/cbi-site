@@ -39,7 +39,8 @@
   const NIGHT_VERSION = "2026-09-13b";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
-  const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1";
+  // 録画（scripts/promo/record_musashiya.mjs がページ読み込み前に window.cbiRec を入れる）も受付を求めない。URL だけでは外せない（2026-09-14）
+  const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1" && !window.cbiRec;
   const CIDAO_ORIGIN = "https://cidao.vercel.app";
   const SIGNUP_URL = CIDAO_ORIGIN + "/login?utm_source=metaverse&utm_medium=reception&utm_campaign=entry"; // 未登録者の登録導線（LINE ログイン＝登録）
   const NIGHT_FLOOR_HEIGHT = 70;            // 地中ロックの下限（楕円体高・標高約34m。コース一帯の地表は約60〜70m）

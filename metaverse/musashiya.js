@@ -686,6 +686,8 @@
   function narrationUrl(key) { return "assets/narration/" + voiceInfo().folder + "/" + key + "_" + (isKids() ? "kids" : "adult") + ".mp3?v=" + MSY_VERSION; }
   function narrate(key, fallbackText) {
     if (!useRec()) { speak(fallbackText); return; }
+    // 録画（window.cbiRec・scripts/promo/record_musashiya.mjs）：音は鳴らさず「いつ・どの声か」を記録して後で重ねる
+    if (window.cbiRec) { speakStop(); state.lastNarration = { key, url: narrationUrl(key), mode: "rec", started: true }; window.cbiRec.audio(narrationUrl(key), "narration"); return; }
     speakStop();
     const url = narrationUrl(key);
     const a = state.preloaded && state.preloaded[url] ? state.preloaded[url] : new Audio(url);
@@ -761,6 +763,7 @@
   function srvStart() {
     srv.trialId = null; srv.ok = false; srv.failed = ""; srv.queue = Promise.resolve();
     srv.routeM = localRouteM();
+    if (window.cbiRec) return; // 録画では記録をサーバーへ送らない（紹介動画のプレイをランキングに載せない）
     const login = typeof window.nightLogin === "function" ? window.nightLogin(1) : null;
     if (!login || !login.token) { srv.failed = "受付がされていないため、今回の記録はランキングに残りません"; return; }
     srv.name = login.nick;
@@ -775,6 +778,7 @@
     });
   }
   function srvFinish() {
+    if (window.cbiRec) { renderRank({ rec: true, elapsedMs: state.finishMs, routeM: srv.routeM }); return; } // 録画：自分の速さと今日のランキングだけ出す
     srv.queue = srv.queue.then(() => {
       if (!srv.ok || !srv.trialId) { renderRank(null); return null; }
       return postRetry({ action: "finish", trialId: srv.trialId }, 4)
@@ -800,7 +804,10 @@
     }
     const speed = d.speedKmh || toKmh(srv.routeM, d.elapsedMs);
     const km = ((d.routeM || srv.routeM) / 1000).toFixed(1);
-    let html = '<p class="msyRankMine">🏆 ' + esc(srv.name) + " さん：時速 <b>" + speed + " km</b>（" + km + " km を " + ttFormat(d.elapsedMs) + "）";
+    let html = d.rec // 録画（紹介動画）：名前と順位は出さず、速さと「受付した人はランキングに載る」ことだけ
+      ? '<p class="msyRankMine">🏆 時速 <b>' + speed + " km</b>（" + km + " km を " + ttFormat(d.elapsedMs) + "）" +
+        '<br><span style="font-size:12px;color:#cfe6ff">受付した人は、この平均の速さで今日のランキングに載ります（紹介動画の記録は載せていません）</span>'
+      : '<p class="msyRankMine">🏆 ' + esc(srv.name) + " さん：時速 <b>" + speed + " km</b>（" + km + " km を " + ttFormat(d.elapsedMs) + "）";
     if (d.rank && d.rank.today) html += "<br>今日 <b>" + d.rank.today.rank + " 位</b>／" + d.rank.today.total + " 人中";
     if (d.rank && d.rank.all) html += "　全期間 " + d.rank.all.rank + " 位／" + d.rank.all.total + " 人中";
     if (d.flagged) html += '<br><span style="color:#ff9b8a">⚠ 記録に確認事項があるため、ランキングには載りません（事務局が確認します）</span>';
@@ -853,6 +860,7 @@
     ttRestorePins();
     ttHideCard();
     if (pieces[state.home] === undefined) awardPiece(state.home);
+    state.finishMs = ms; // 録画のゴール画面（srvFinish → renderRank）で使う
     showFinalPop(ms);
     srvFinish();
   });
@@ -1036,7 +1044,7 @@
     window.flightClearanceM = FLIGHT_CLEARANCE_M; // 飛行中に地面へ近づける（index.html の keepAboveGround が見る）
     if (state.entered) return;
     const loaded = typeof BUNKAZAI !== "undefined" && BUNKAZAI.length > 0;
-    const received = params.has("notiles") || params.has("cinema") || typeof window.nightLogin !== "function" || !!window.nightLogin(1);
+    const received = params.has("notiles") || params.has("cinema") || !!window.cbiRec || typeof window.nightLogin !== "function" || !!window.nightLogin(1);
     if (!loaded || !received) return; // 読み込み・受付（CiDAO照合）待ち。下の巡回が呼び直す
     state.entered = true;
     eventLook(false);
