@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "人材バンク 確認画面を「完成カード＋話しかけて直す」に作り替え＋紹介ショート動画の試作 1.5時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao main 3d9b998（/me/talent 作り替え・EditChat・edit-chat.ts・入力消失の修正・テスト11件）",
+            "C:/Users/nsfactory/talent-video-proto/（render.py・scenes.json・out/nsfactory_talent_short_proto.mp4 55秒 縦型）",
+            "cidao/2026-09-14_AIインタビュー型人材バンク_統合仕様v1.md（方針変更の記録）"
+          ],
+          "hours": 1.5,
+          "partnerApproved": true,
+          "note": "中司さん実機評価『ただのフォームで魅力がない』『入力が半分消えた・保存できない』→案A。原因：未回答欄に書いた文を捨てていた／React 19 のフォーム自動リセット／作り直しボタンで版が3つに。確認画面をカード＋AIに話しかけて直す形へ（edit_profile・Sonnet 5、連絡先除去）。動画試作は回答9項目の事実のみで台本を作り、VOICEVOXずんだもん・サイト掲載写真7枚・甘茶BGMで55秒（費用0円・作成約9分）。tsc 0・lint 0・vitest 135/135・Vercel 成功。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 277,610 / cost: $141.36"
+        },
+        {
+          "date": "2026-09-15",
           "title": "FreeFree 運営者の代理掲載＋掲載終了日の日付指定（DB権限・制約・フォーム・AI読取・一覧/詳細）実装 1.29時間",
           "category": "実装",
           "outputs": [
@@ -5809,8 +5822,8 @@
           "category": "実装",
           "priority": "高",
           "status": "待ち",
-          "blockedBy": "中司さんの Phase3 実機確認の結果と『Phase 4 を開始』の指示。Codex の ChatGPT 利用上限は 09-15 11:20 に解除",
-          "note": "Phase1〜3 は main dedc0e7 で本番稼働。報告 docs/talent-bank/phase3-report.md。実DBで確認すべき RLS 観点4件は報告書に記載（本人が status を直接 published にできないか等）"
+          "blockedBy": "中司さんの試作動画への感想（口調・長さ・字幕量）と、作り替えた確認画面の実機確認（話しかけて直す→公開申請→運営通知→承認）",
+          "note": "Phase1〜3＋確認画面作り替えは main 3d9b998 で本番稼働。試作動画と下書きレンダラーは C:/Users/nsfactory/talent-video-proto/（OneDrive外・未バックアップ）。Phase4 で cidao リポジトリへ移す"
         },
         {
           "due": "未定",
