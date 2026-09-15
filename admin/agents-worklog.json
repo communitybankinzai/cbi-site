@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-16",
+          "title": "CiDAO：イベント通知の個人設定の実装状況を実測し、設定案内を全24人へ一斉送信（ベル＋プッシュ）0.3時間",
+          "category": "広報",
+          "outputs": "CiDAO 一斉お知らせ1件（kind=system・宛先24人・プッシュ8台・broadcast_id da981c49）、cidao/2026-09-16_イベント通知の個人設定と一斉案内の再送.md（新規）、MOC_CiDAO.md（1行追記）。コード変更なし",
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "依頼「新規イベント登録の通知を各自の設定で選べるようにして一斉案内を流したい」。実測の結果、設定は 2026-07-29（e541e35）に /me/edit へ実装済みで、本番でも動作（24人中1人がOFF）。7/29の初回案内は11人宛で、その後の新規13人が未案内だったため文面を作り直して再送。tsx が無いため notify.ts をリポジトリ内一時フォルダへ複製し node --env-file で実行（送信後に削除）。あわせて判明：「CBIからの連絡を許可」はコードのどこからも参照されておらず何も制御しない（12人がOFF）。「提案・投票のメール通知」は本当にメールだが LINE ログインの21人は email が無く、notification_log の累計宛先は0。要対応メールは Vercel の Fluid Active CPU 無料枠100%（9/5）1件のみ・スターは残置。session: e2c7d45b-8557-4a7e-9b5b-909b1d6774ab / output: 30,524 / cost: $8.24"
+        },
+        {
+          "date": "2026-09-16",
           "title": "卒論：市の回答を論文・スライドに反映、発表を15分版（24→18枚）に再構成、音声版が自動で流れない不具合を修正 1.0時間",
           "category": "実装",
           "outputs": "academy/01_草稿/第3章・第5章・参考文献.md（市の回答を反映・251字圧縮）、05_提出版/卒業論文_…_最新版.docx（23ページ）、academy/03_参考資料/2026-09-15_市回答_Liqlid市民意見聴取の反映状況.md（新規・書き起こしと分析）、academy/06_発表/slides.md（18枚・口述4,105字）、add_audio_to_pptx.ps1（音声の再生をクリック待ちから自動に）、build_two_pptx.ps1（発表用のクリック式アニメを手順に組込み）、make_starred_talk.py（STARS表を18枚55回に・表示順で数える）、audio/01〜18.mp3、卒論発表スライド_発表用.pptx・_音声版.pptx、口述原稿.docx・.pdf、site/thesis/（paper.html・slides.html・audio。d070cf1）",
@@ -6025,6 +6034,20 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "🔔 「CBIからの連絡を許可」チェックの扱いを決める（現状はどこからも参照されず何も制御しない）",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-16 実測。members.contact_permission は保存されるだけで、ベル・プッシュ・メールのどれも止めない。24人中12人がOFFにしているが運営の一斉お知らせは届いている。①説明文を実態に合わせる（例：人材バンク等での連絡可否の意思表示）②実際に何かを制御させる③チェックを外す、のいずれか。詳細は cidao/2026-09-16_イベント通知の個人設定と一斉案内の再送.md"
+        },
+        {
+          "due": "未定",
+          "title": "📧 「提案・投票のメール通知」が LINE ログイン勢（21/24人）に届かない件の扱いを決める",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-16 実測。api/cron/notify は auth.users.email がある人だけに Resend で送るが、LINE ログインのメンバーは email が無い。notification_log の recipients_count は累計0＝これまで誰にも届いていない。①投票開始・締切前・結果確定をベル＋プッシュにも流す（notifyAllMembers 流用）②設定の表示文を直す、の順で検討。関連メモ cidao-notification-roadmap"
+        },
+        {
           "due": "2026-09-22",
           "title": "🎭 文化ホール自動取り込みの初回巡回結果を確認する（Vercel ログの [inzai-bunka-sync] 行：inserted/updated/duplicates/errors）",
           "category": "保守",
@@ -7826,32 +7849,32 @@
     "A9": {
       "actuals": [
         {
-                  "date": "2026-09-16",
-                  "title": "会場PC用スクリプトの保険（24時間後の自動OFF・記録なしでも標準へ復旧）と手順書の制限一覧 0.19時間",
-                  "category": "実装",
-                  "outputs": [
-                            "events/2026-11-03_武蔵屋/会場PC/venue-mode.ps1（ScheduleOff／UnscheduleOff・Do-OffDefault・-Auto ログ）・会場モードON.bat（案内文）・README.md（止まるものの表・保険）",
-                            "site/metaverse/venue-pc/cbi-venue-pc.zip（作り直し）",
-                            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
-                  ],
-                  "hours": 0.19,
-                  "partnerApproved": false,
-                  "note": "中司さん「他人がこれを開くと不具合出ますか？復旧できるバッチも同梱だと思いますが」→ 壊れないが一時的に止まるものがあり、OFF 忘れと記録ファイル頼みが弱みと説明 → B（保険を足す）を採用。検証：構文検査 OK、-On -DryRun に予約行、記録なしの -Off -DryRun が標準へ戻す項目を並べて exit 0、-Status に予約の有無。実際の予約登録・自動実行は会場PCで要確認（このPCでは設定を変えていない）。hours は前回記録 647,720 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 667,012 / cost: $192.20"
+          "date": "2026-09-16",
+          "title": "会場PC用スクリプトの保険（24時間後の自動OFF・記録なしでも標準へ復旧）と手順書の制限一覧 0.19時間",
+          "category": "実装",
+          "outputs": [
+            "events/2026-11-03_武蔵屋/会場PC/venue-mode.ps1（ScheduleOff／UnscheduleOff・Do-OffDefault・-Auto ログ）・会場モードON.bat（案内文）・README.md（止まるものの表・保険）",
+            "site/metaverse/venue-pc/cbi-venue-pc.zip（作り直し）",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+          ],
+          "hours": 0.19,
+          "partnerApproved": false,
+          "note": "中司さん「他人がこれを開くと不具合出ますか？復旧できるバッチも同梱だと思いますが」→ 壊れないが一時的に止まるものがあり、OFF 忘れと記録ファイル頼みが弱みと説明 → B（保険を足す）を採用。検証：構文検査 OK、-On -DryRun に予約行、記録なしの -Off -DryRun が標準へ戻す項目を並べて exit 0、-Status に予約の有無。実際の予約登録・自動実行は会場PCで要確認（このPCでは設定を変えていない）。hours は前回記録 647,720 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 667,012 / cost: $192.20"
         },
         {
           "date": "2026-09-16",
           "title": "会場PC用一式の zip 配布（会場モード画面からダウンロード）と .bat の実行前確認の追加 0.11時間",
           "category": "実装",
           "outputs": [
-                    "site/metaverse/venue-pc/cbi-venue-pc.zip（新規・配布用）・scripts/build_venue_pc_zip.py（新規・作り直し）",
-                    "site/metaverse/venue.js（VER 20260916-1：ダウンロードの案内）・index.html（版）",
-                    "events/2026-11-03_武蔵屋/会場PC/会場モードON.bat・OFF.bat（cp932・choice で実行前確認）・README.md（配布の節）",
-                    "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+            "site/metaverse/venue-pc/cbi-venue-pc.zip（新規・配布用）・scripts/build_venue_pc_zip.py（新規・作り直し）",
+            "site/metaverse/venue.js（VER 20260916-1：ダウンロードの案内）・index.html（版）",
+            "events/2026-11-03_武蔵屋/会場PC/会場モードON.bat・OFF.bat（cp932・choice で実行前確認）・README.md（配布の節）",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
           ],
           "hours": 0.11,
           "partnerApproved": false,
           "note": "中司さん「誰のノートパソコンを持って行っても、サイトに繋げばすぐに会場モードを試せるか」→ ブラウザ側は可・PC側は持ち込みが要ると説明し A/B/C を提示 → 「B」「そのあとC」。検証：本番の zip が 200・8,183 バイト、中身5点の日本語名が UTF-8 の印付き、ON.bat に N を渡すと何も起動せず終わることを確認（Y の実行は会場PCで 11/2 までに要確認）。記録の追記スクリプトが heredoc のバックスラッシュ欠落で1回失敗し、コードだけ先に push された（c87169a）。hours は前回記録 636,303 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 647,720 / cost: $177.17"
-},
+        },
         {
           "date": "2026-09-15",
           "title": "会場モードの URL 自動ON・自動事前読み込みと 会場モードON.bat のブラウザ起動（当日の操作を .bat 1回に） 0.20時間",
