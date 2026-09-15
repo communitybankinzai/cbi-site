@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "人材バンク 他己紹介（AI下書き→運営一読→本人承認→会員向け掲載）の画面を本番反映、マイページに入口追加、紹介動画の初回作成の失敗（消した写真を指したまま）を修正 0.35時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260915230000_cbi_intros_no_consent.sql（閲覧を掲載中のみに・本番適用）、src/lib/talent-bank/cbi-intro.ts（AI 下書き adminDraftIntro・保存・確認依頼・本人の承認/差し戻し/取り下げ）、src/lib/ai/types.ts（purpose cbi_intro）、__tests__/cbi-intro.test.ts（3件）",
+            "cidao: src/app/admin/talent-bank/{page,intro-actions}、src/app/me/talent/_components/IntroSection.tsx、me/talent/{page,actions}、talent/[id]/page.tsx（CBI から見た○○さん）、src/app/me/page.tsx（人材バンク画面への入口カード）",
+            "cidao: scripts/talent-video/run_job.py（取れない写真は他の写真で代用）、src/lib/talent-bank/video/jobs.ts（待ち中の仕事の写真を差し替え）。失敗した仕事を今の写真で待ち行列へ戻し Actions を再実行",
+            "検証: vitest 147件成功／tsc exit 0／eslint 0エラー／main 8b6ea7d・160855d・311e1e1 を push、Vercel success／本番で中司さんが AI 下書き→確認依頼→承認まで通し他己紹介1件が掲載中（DB で確認）／Actions 初回実行の失敗ログ（写真 404）を読み原因を特定"
+          ],
+          "hours": 0.35,
+          "partnerApproved": false,
+          "note": "中司さん「あなたのプロフィールとはなにか」「導線がわかりにくい」「しっかりしてね」。マイページに入口が無かったのは事実で、追加した。動画の本番初回作成は再実行中（結果は次の記録）。工数は前回記録（output 654,669）からの差分 34,834 で算出。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 689,503 / cost: $249.12"
+        },
+        {
+          "date": "2026-09-15",
           "title": "人材バンク 紹介動画の自動作成・掲載の仕組みを一気に実装し本番反映（写真登録→AI台本→GitHub Actions＋VOICEVOX→本人確認→運営掲載→再生・保存）、他己紹介の DB 下地 0.95時間",
           "category": "実装",
           "outputs": [
@@ -6021,10 +6035,10 @@
         },
         {
           "due": "未定",
-          "title": "🧑‍🤝‍🧑 人材バンク：他己紹介の画面を作る（AI が自己紹介文から下書き→運営が一読→本人確認→掲載。会員のみ閲覧）",
-          "category": "実装",
-          "priority": "高",
-          "note": "2026-09-15 中司さん決定（推奨案）。表 member_cbi_intros・同意種別 cbi_intro・作業種別 intro_write は本番適用済み、src/lib/talent-bank/cbi-intro.ts に手書き版の処理あり。残り：AI 下書き（purpose を足す）・管理画面の一覧と一読ボタン・本人の確認画面・紹介ページの欄。事前の同意欄は不要にし本人の承認で載せる（同夜の変更）"
+          "title": "📣 人材バンク：他己紹介の AI 下書きの出来を数件見て、文面の指示（長さ・口調・事実の範囲）を調整する",
+          "category": "その他",
+          "priority": "中",
+          "note": "2026-09-15 に画面まで本番反映。中司さんが自分の分で AI 下書き→確認依頼→承認まで通し、掲載済み（1件）。他のメンバー数件で出来を見てから system プロンプトを直す（src/lib/talent-bank/cbi-intro.ts）。1件約数円（Sonnet）"
         },
         {
           "due": "2026-09-16",
