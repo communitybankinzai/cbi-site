@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "人材バンク BGM：ドキュメンタリー番組での使用実績の調査と、OtoLogic のドキュメンタリー曲6曲の追加 0.24時間",
+          "category": "調査",
+          "outputs": [
+            "cidao/talent-bank/BGM/（OtoLogic 社会派ドキュメンタリー01〜06・README・_list.json に credit 欄）",
+            "C:/Users/nsfactory/talent-video-proto/trial_server.py（ドキュメンタリー風の区分・曲ごとのクレジット）"
+          ],
+          "hours": 0.24,
+          "partnerApproved": true,
+          "note": "中司さん依頼『ドキュメンタリー番組で使われた実績のある曲』。調査用エージェント（Sonnet）と Claude が出典を確認した結果、出典で確かめられるドキュメンタリー番組での使用実績を持つ無料 BGM は見つからず（OpenTracks=旧DOVA の作曲者 shimtone はニュース番組テーマ曲・CM、Music-Note.jp はご当地ヒーローのドラマのみ）。案Aで、作曲者自身がドキュメンタリー向けとする OtoLogic の6曲（CC BY 4.0・クレジット必須）を配布用 zip から取得し『ドキュメンタリー風』に追加。BGM は5区分32曲。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 461,278 / cost: $186.24"
+        },
+        {
+          "date": "2026-09-15",
           "title": "人材バンク 申請ボタンの不具合修正、BGM を4つの気分で18曲追加、声・BGM・写真を選べる試し用ページ 1.05時間",
           "category": "実装",
           "outputs": [
@@ -5966,7 +5978,7 @@
           "priority": "高",
           "status": "待ち",
           "blockedBy": "動画の見本2本（おしゃれ・かっこいい、声違い）への中司さんの感想",
-          "note": "2026-09-15 案Aで決定。統合仕様 cidao/2026-09-14_AIインタビュー型人材バンク_統合仕様v1.md「方針決定：登録の流れを簡素化」。AI操作の回数上限・下書き保存可・7キャラの声・顔3択・動画2型／2026-09-15追加決定：原則公開（公開先は本人が会員のみ／一般公開から選ぶ・非公開なし）、そのかわり本人は動画と紹介文をスマホに保存できる。今の /me/talent に残る「非公開」選択肢は登録画面づくりでまとめて外す／2026-09-15：試し用ページ（C:/Users/nsfactory/talent-video-proto/trial_server.py、localhost:8790）で声・BGM（4気分26曲）・映像の型・写真を選んで作れる。本番のナレーションは GitHub Actions＋VOICEVOX Docker で可、AI 画像は自動生成には有料 API が要るため当面は運営が手で作る"
+          "note": "2026-09-15 案Aで決定。統合仕様 cidao/2026-09-14_AIインタビュー型人材バンク_統合仕様v1.md「方針決定：登録の流れを簡素化」。AI操作の回数上限・下書き保存可・7キャラの声・顔3択・動画2型／2026-09-15追加決定：原則公開（公開先は本人が会員のみ／一般公開から選ぶ・非公開なし）、そのかわり本人は動画と紹介文をスマホに保存できる。今の /me/talent に残る「非公開」選択肢は登録画面づくりでまとめて外す／2026-09-15：試し用ページ（C:/Users/nsfactory/talent-video-proto/trial_server.py、localhost:8790）で声・BGM（4気分26曲）・映像の型・写真を選んで作れる。本番のナレーションは GitHub Actions＋VOICEVOX Docker で可、AI 画像は自動生成には有料 API が要るため当面は運営が手で作る／BGM は5つの気分（あたたかい・前向き・落ち着いて信頼できる・想いが伝わる・ドキュメンタリー風）で32曲（甘茶の音楽工房26、OtoLogic 6）。クレジットは曲ごとに _list.json の credit 欄"
         },
         {
           "due": "未定",
