@@ -7698,6 +7698,21 @@
     "A9": {
       "actuals": [
         {
+                  "date": "2026-09-15",
+                  "title": "会場モード（街並みの記憶量3GB・白鳥を残す通信節約・事前読み込み飛行17地点）と会場PCの一括設定/復旧スクリプトの実装と検証 0.62時間",
+                  "category": "実装",
+                  "outputs": [
+                            "site/metaverse/venue.js（新規：🏟 会場モードの画面・cacheBytes 3GB・venueSse・tighten・事前読み込み飛行・端末記憶）",
+                            "site/metaverse/index.html（liteApplyTileset が venueSse を採る・通信量上限で CbiVenue.tighten・liteSuggest を会場モード中は出さない・venue.js 読み込み）",
+                            "site/metaverse/musashiya.js（CbiVenue.place の呼び出し・msyPreloadPoints・msyGoHome 公開）",
+                            "events/2026-11-03_武蔵屋/会場PC/（venue-mode.ps1・会場モードON.bat・会場モードOFF.bat・いまの状態.bat・README.md）",
+                            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+                  ],
+                  "hours": 0.62,
+                  "partnerApproved": false,
+                  "note": "中司さん「現地で通信量を節約するために事前にできることは他にないか」→6案を提示→B（①PC設定＋②記憶量＋③事前読み込み＋④白鳥を消さない通信節約）を「全てボタン一つで処置（復旧も）」で採用。会場PCは体験PC購入リストより自作機 32GB。検証（ローカル ?notiles=1・仮の tileset）：ON で cacheBytes 3,221,225,472・精度16、上限到達で24、管理画面の精度8が届いても24のまま、OFF で 512MB・8・localStorage も戻る。事前読み込み：17地点×2視点をカメラが順に通る（座標を200msごとに採取）・完了報告・スタート地点へ戻る（flyTo が残っていると戻される問題は cancelFlight で対処）。PC側：構文検査 OK・-On -DryRun と -Off -DryRun（仮の記録ファイル）が exit 0。実際の街並みでの効果と会場PCでの ON/OFF は未実施（9/19・11/2）。hours は前回記録 554,682 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 616,495 / cost: $159.20"
+        },
+        {
           "date": "2026-09-15",
           "title": "操作のしかたのキーボード版・スマホ版（手順14・図2種・練習操作・ずんだもん13本・入口2か所）実装と検証 0.62時間",
           "category": "実装",
@@ -8318,10 +8333,10 @@
         },
         {
           "due": "2026-11-02",
-          "title": "💾 会場PCで事前に（自宅Wi-Fiで）武蔵屋モードを開き、「💾 この端末に保存済み」を確認する",
+          "title": "💾 会場PCで事前に（自宅Wi-Fiで）武蔵屋モードを開き「💾 この端末に保存済み」を確認し、当日は 会場モードON.bat と ⚙設定「🏟 会場モード」→「🛫 事前読み込み」を行う（帰宅後 OFF.bat）",
           "category": "事務",
           "priority": "高",
-          "note": "2026-09-14 実装の端末保存（sw.js）。https://communitybankinzai.github.io/cbi-site/metaverse/?mode=musashiya を会場で使うブラウザで開き、「🎮 操作のしかた」の下の表示が「💾 この端末に保存済み」になるまで待つ（白鳥・鳶・描画部品・声 計約53MB）。これで当日は3Dモデルと声にテザリングを使わない（3Dの街並みは保存できないので当日も通信する）。ブラウザのデータ消去・シークレットウィンドウでは保存が消える／使えない。前日設営（11/2）にもう一度表示を確認する。"
+          "note": "2026-09-14 実装の端末保存（sw.js）。https://communitybankinzai.github.io/cbi-site/metaverse/?mode=musashiya を会場で使うブラウザで開き、「🎮 操作のしかた」の下の表示が「💾 この端末に保存済み」になるまで待つ（白鳥・鳶・描画部品・声 計約53MB）。これで当日は3Dモデルと声にテザリングを使わない（3Dの街並みは保存できないので当日も通信する）。ブラウザのデータ消去・シークレットウィンドウでは保存が消える／使えない。前日設営（11/2）にもう一度表示を確認する。【2026-09-15 追加】会場に着いたら events/2026-11-03_武蔵屋/会場PC/会場モードON.bat（管理者）→ ブラウザで ⚙設定「🏟 会場モード」ON → 開場前に「🛫 事前読み込み飛行」（17地点・数分）。3D を読み直したあとも事前読み込みを1回。帰ったら 会場モードOFF.bat。手順は同フォルダの README.md。9/19 の現地確認では会場モード ON で2回続けて飛び、2回目の通信量を測る。"
         },
         {
           "due": "2026-10-27",

@@ -997,6 +997,21 @@
     if (G && !G.isOpen()) G.open();
   }
   window.msyBackToStart = backToStart;
+  // 🏟 会場モード（venue.js）の事前読み込み飛行が回る地点：白鳥の郷 → 駅 → 4km圏の候補すべて（駅から近い順・同じ地点は1つ）→ 武蔵屋。
+  // コースは毎回3か所がランダムなので、候補を全部読んでおくと1人目から軽くなる（2026-09-15 中司さん）
+  window.msyPreloadPoints = function () {
+    const home = homeIdx();
+    if (home < 0) return [];
+    const h = BUNKAZAI[home], stn = station();
+    const rest = [];
+    for (let i = 0; i < BUNKAZAI.length; i++) if (i !== home && distM(h, BUNKAZAI[i]) <= POOL_RADIUS_M && !rest.some((j) => distM(BUNKAZAI[i], BUNKAZAI[j]) < 150)) rest.push(i);
+    const out = [{ name: SWAN_HOME.name, lon: SWAN_HOME.lon, lat: SWAN_HOME.lat }, { name: stn.name, lon: stn.lon, lat: stn.lat }];
+    let cur = stn;
+    while (rest.length) { rest.sort((a, b) => distM(cur, BUNKAZAI[a]) - distM(cur, BUNKAZAI[b])); const n = rest.shift(); cur = BUNKAZAI[n]; out.push({ name: cur.name, lon: cur.lon, lat: cur.lat }); }
+    out.push({ name: h.name, lon: h.lon, lat: h.lat });
+    return out;
+  };
+  window.msyGoHome = goHome; // 事前読み込みが終わったらスタート地点へ戻す
   // ≡（メニュー／PS は OPTIONS）を1秒長押し＝スタート前に戻る。押した瞬間は index.html の「スティックの中心を取り直す」も働くが害はない
   let menuFrom = 0;
   setInterval(function () {
@@ -1039,6 +1054,7 @@
     placeSwanBtn(true);
     placeVoiceBtn(true);
     placeGuideBtn(true);
+    if (window.CbiVenue) window.CbiVenue.place(true); // 🏟 会場モード（venue.js）のボタンを ⚙設定 に置く
     if (window.CbiControlsGuide) window.CbiControlsGuide.prepareOffline(); // 白鳥・鳶・描画部品・声をこの端末に保存（2回目からテザリングを使わない）
     rtDetach(true); // 会場では他の利用者の光点・同行者リストを出さない
     window.flightClearanceM = FLIGHT_CLEARANCE_M; // 飛行中に地面へ近づける（index.html の keepAboveGround が見る）
@@ -1058,6 +1074,7 @@
     placeSwanBtn(false);
     placeVoiceBtn(false);
     placeGuideBtn(false);
+    if (window.CbiVenue) window.CbiVenue.place(false);
     // 操作説明を閉じるのは武蔵屋から出たときだけ（applyMode はほかのモードでも毎回ここを呼ぶので、夜景などで開いた説明を閉じてしまう）
     if (wasIn && window.CbiControlsGuide) window.CbiControlsGuide.close();
     rtDetach(false);

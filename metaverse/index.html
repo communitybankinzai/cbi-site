@@ -2649,7 +2649,8 @@ let liteSuggested = false;
 function liteApplyTileset() {
   if (!tileset) return;
   const base = pendingSse !== null ? pendingSse : 8;
-  const v = liteOn ? Math.max(base, LITE_SSE) : base;
+  let v = liteOn ? Math.max(base, LITE_SSE) : base;
+  if (window.venueSse) v = Math.max(v, window.venueSse); // 🏟 会場モード（venue.js）の通信節約。白鳥は消さずに街並みだけ粗くする（2026-09-15）
   if (tileset.maximumScreenSpaceError !== v) tileset.maximumScreenSpaceError = v;
 }
 function applyLite(on) {
@@ -2670,6 +2671,7 @@ function applyLite(on) {
 }
 function liteSuggest() {
   if (liteOn || liteSuggested || NO_TILES) return;
+  if (window.CbiVenue && window.CbiVenue.on()) return; // 🏟 会場モード中は勧めない（軽量モードは白鳥を消す）
   liteSuggested = true;
   const el = document.getElementById("liteToast");
   if (!el) return;
@@ -2892,8 +2894,8 @@ function trafficRender() {
   if (cap) {
     if (ratio >= 1 && !trafficState.liteApplied) {
       trafficState.liteApplied = true; trafficSave();
-      if (!liteOn) applyLite(true);
-      showPickResult("📶 今日の通信量が上限（" + cap + "GB）に達したため、軽量モードに切り替えました。街並みは粗くなりますが通信量を抑えられます。", 9000);
+      if (window.CbiVenue && window.CbiVenue.tighten()) showPickResult("📶 今日の通信量が上限（" + cap + "GB）に達したため、街並みをさらに粗くしました（会場モード・白鳥はそのまま）。", 9000);
+      else { if (!liteOn) applyLite(true); showPickResult("📶 今日の通信量が上限（" + cap + "GB）に達したため、軽量モードに切り替えました。街並みは粗くなりますが通信量を抑えられます。", 9000); }
     } else if (ratio >= 0.8 && ratio < 1 && !trafficState.warned) {
       trafficState.warned = true; trafficSave();
       showPickResult("📶 今日の通信量が上限の8割（推定 " + trafficFmt(bytes) + "）です。上限に達すると軽量モードに自動で切り替わります。", 8000);
@@ -6515,6 +6517,8 @@ try {
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260914-2"></script>
 <script src="controls-guide.js?v=20260915-1"></script>
-<script src="musashiya.js?v=20260914-6"></script>
+<script src="musashiya.js?v=20260915-1"></script>
+<!-- 🏟 会場モード（11/3 武蔵屋の会場PC用：街並みの記憶量・通信節約・事前読み込み飛行を一括で ON/OFF）。musashiya.js の後に読む -->
+<script src="venue.js?v=20260915-1"></script>
 </body>
 </html>
