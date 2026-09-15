@@ -8,7 +8,7 @@
 // events/2026-11-03_武蔵屋/会場PC/会場モードON.bat が行う（このファイルの範囲外）。
 (function () {
   "use strict";
-  const VER = "20260915-2";
+  const VER = "20260916-1";
   const KEY = "cbi-meta-venue-v1";
   const CACHE_GB = 3;                 // 街並みの記憶量（GB）。会場PC＝32GB のうち。ブラウザの使用メモリが増える
   const DEFAULT_CACHE = 536870912;    // Cesium の既定（512MB）。OFF で戻す
@@ -126,7 +126,8 @@
       '<div class="vRow"><b>🛫 事前読み込み飛行</b><div class="vStat">白鳥の郷 → 駅 → 4km圏の候補すべて → 武蔵屋を自動で回り、街並みを読み込んでおきます（数分・通信あり）。開場前に1回。3D を読み直したあとも1回</div>' +
         '<button type="button" data-act="preload"></button><div class="vBar"><i data-r="bar"></i></div><div class="vStat" data-r="pre"></div></div>' +
       '<div class="vRow"><b>PC 側（このボタンではできないこと）</b><ul>' +
-        '<li>会場PCの「会場モードON.bat」を管理者で実行（Windows Update・OneDrive・ブラウザ自動更新を止め、Wi-Fi を従量制に）。帰ったら「会場モードOFF.bat」</li>' +
+        '<li><a href="venue-pc/cbi-venue-pc.zip" download style="color:#ffd166">📥 会場PC用の一式（zip・数十KB）をダウンロード</a> → 展開して「会場モードON.bat」をダブルクリック → 管理者の確認に「はい」。' +
+          'Windows Update・OneDrive・ブラウザ自動更新を止め、Wi-Fi を従量制にし、このURLでブラウザを開き直します。帰ったら「会場モードOFF.bat」で元どおり（持ち主の了承と管理者パスワードが要ります）</li>' +
         '<li>「🎮 操作のしかた」の下が「💾 この端末に保存済み」になっていること</li>' +
         '<li>⚙設定「📶 通信量」で1日の上限（GB）を入れておくと、8割で注意・超えたら街並みをさらに粗くします（白鳥は消えません）</li>' +
       '</ul></div>' +
