@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "FreeFree 運営者の代理掲載が RLS に拒否される不具合の原因特定と修正（所属判定をDBとそろえる） 0.29時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/freefree/actions.ts（所属判定を canUserEditOrg→「代表者 or 所属確定」に。canUserEditOrg の import を削除）",
+            "調査: 画面のエラー文 new row violates row-level security policy for table \"freefree_posts\" から、canUserEditOrg 内の is_admin()（admin_role が null でなければ true）で運営者が全団体の所属扱いになり proxy_posted_by が付かないことを特定",
+            "検証（本番DB・ゆうさんの権限・武蔵屋保存会・ロールバック）: 代理の印なし（旧）→同じ文言で拒否／印あり（新）→受理／残骸0件",
+            "検証: npx tsc --noEmit exit 0／npx next build 成功",
+            "本番確認: Vercel Production デプロイ success（82cefc1）／/freefree HTTP 200・/freefree/new 未ログインで /login へ 307",
+            "cidao/2026-09-15_フォーム送信失敗で入力が消える仕組みと対策.md（原因の節を確定内容に訂正）・MOC_CiDAO.md の該当行を訂正"
+          ],
+          "hours": 0.29,
+          "partnerApproved": false,
+          "note": "ゆうさんの再試行で入力が残り、エラー文が画面に出た（前回の修正の効果）。前回の推測（デプロイ直後の古い画面）は外れで、同日実装の代理掲載のバグだった。DB直の試験で proxy_posted_by を手で入れたため、アプリがその値を付けない経路を見逃していた。予定「原因を確定する」は解決したので plans から削除。工数は前回記録（output 484,143）からの差分 28,861 で算出。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 513,004 / cost: $157.51"
+        },
+        {
+          "date": "2026-09-15",
           "title": "人材バンク 登録の流れの方針決定（案A・原則公開・端末保存）と、動きのある紹介動画の見本2本（おしゃれ・かっこいい） 0.54時間",
           "category": "実装",
           "outputs": [
