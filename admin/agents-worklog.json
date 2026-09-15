@@ -7817,6 +7817,20 @@
     "A9": {
       "actuals": [
         {
+          "date": "2026-09-16",
+          "title": "会場PC用一式の zip 配布（会場モード画面からダウンロード）と .bat の実行前確認の追加 0.11時間",
+          "category": "実装",
+          "outputs": [
+                    "site/metaverse/venue-pc/cbi-venue-pc.zip（新規・配布用）・scripts/build_venue_pc_zip.py（新規・作り直し）",
+                    "site/metaverse/venue.js（VER 20260916-1：ダウンロードの案内）・index.html（版）",
+                    "events/2026-11-03_武蔵屋/会場PC/会場モードON.bat・OFF.bat（cp932・choice で実行前確認）・README.md（配布の節）",
+                    "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+          ],
+          "hours": 0.11,
+          "partnerApproved": false,
+          "note": "中司さん「誰のノートパソコンを持って行っても、サイトに繋げばすぐに会場モードを試せるか」→ ブラウザ側は可・PC側は持ち込みが要ると説明し A/B/C を提示 → 「B」「そのあとC」。検証：本番の zip が 200・8,183 バイト、中身5点の日本語名が UTF-8 の印付き、ON.bat に N を渡すと何も起動せず終わることを確認（Y の実行は会場PCで 11/2 までに要確認）。記録の追記スクリプトが heredoc のバックスラッシュ欠落で1回失敗し、コードだけ先に push された（c87169a）。hours は前回記録 636,303 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 647,720 / cost: $177.17"
+},
+        {
           "date": "2026-09-15",
           "title": "会場モードの URL 自動ON・自動事前読み込みと 会場モードON.bat のブラウザ起動（当日の操作を .bat 1回に） 0.20時間",
           "category": "実装",

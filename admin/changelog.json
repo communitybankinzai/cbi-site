@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-09-16",
+      "type": "feature",
+      "target": "metaverse",
+      "title": "会場PC用の一式（会場モードON/OFF）を「🏟 会場モード」画面からダウンロードできるようになった（実行前の確認つき）",
+      "detail": "どのノートPCを持って行っても、3Dワールドの ⚙設定「🏟 会場モード」画面の「📥 会場PC用の一式（zip）をダウンロード」から会場モードON.bat・OFF.bat・いまの状態.bat・手順書を落として試せるようになった（USB や Drive で持ち込む必要がない）。ON.bat と OFF.bat は実行前に「このパソコンの設定を変えます…続けますか？」と確認し、N なら何もしないので、他人のPCで誤って動かす心配が減った。zip の正は events/2026-11-03_武蔵屋/会場PC/ で、scripts/build_venue_pc_zip.py で作り直す。",
+      "author": "Claude Code"
+},
+    {
       "date": "2026-09-15",
       "type": "feature",
       "target": "CiDAO: イベントカレンダー（文化ホール自動取り込み）",
