@@ -8,7 +8,7 @@
 // events/2026-11-03_武蔵屋/会場PC/会場モードON.bat が行う（このファイルの範囲外）。
 (function () {
   "use strict";
-  const VER = "20260915-1";
+  const VER = "20260915-2";
   const KEY = "cbi-meta-venue-v1";
   const CACHE_GB = 3;                 // 街並みの記憶量（GB）。会場PC＝32GB のうち。ブラウザの使用メモリが増える
   const DEFAULT_CACHE = 536870912;    // Cesium の既定（512MB）。OFF で戻す
@@ -175,7 +175,24 @@
     } else if (btn) btn.remove();
   }
 
-  // ---- 起動時：記憶した設定を、街並みが読み込めたところで適用 ----
+  // ---- 起動時：URL の指定（会場モードON.bat がこの URL でブラウザを開く。2026-09-15 中司さん「ボタン一つで」）----
+  //   ?venue=1   … 会場モードを自動 ON（スマホ・タブレットでは無視。記憶量 3GB は端末に重いため）
+  //   ?preload=1 … 街並みが読み込めたら（受付のあと）事前読み込み飛行を自動で始め、進み具合の画面を出す
+  const q = new URLSearchParams(location.search);
+  const coarse = (() => { try { return matchMedia("(pointer: coarse)").matches; } catch (e) { return false; } })();
+  if (q.get("venue") === "1" && !coarse) { st.on = true; st.sse = SSE_SAVE; save(); }
+  if (q.get("preload") === "1" && !coarse) {
+    const t0 = Date.now();
+    const t = setInterval(function () {
+      if (Date.now() - t0 > 30 * 60 * 1000) { clearInterval(t); return; } // 受付が済まないまま30分たったら諦める
+      if (!(ts() || notiles()) || !points().length || st.pre) return;
+      if (typeof window.msyOn === "function" && window.msyOn()) return;
+      clearInterval(t);
+      open();
+      preload();
+    }, 1000);
+  }
+  // ---- 記憶した設定を、街並みが読み込めたところで適用 ----
   const saved = load();
   if (saved.on) {
     st.on = true; st.sse = saved.sse || SSE_SAVE;
