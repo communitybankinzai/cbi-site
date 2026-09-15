@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "FreeFree 掲載成功時に一瞬「送信できませんでした」が出る不具合の修正 0.11時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/freefree/new/_components/NewFreefreeForm.tsx（catch で digest が NEXT_REDIRECT のものを失敗扱いにしない）",
+            "調査: next/dist/client/components/router-reducer/reducers/server-action-reducer.js で、サーバーアクションの redirect が呼び出し元の Promise を reject すること（画面移動は別に進む）を確認。redirect-error.js で digest が 'NEXT_REDIRECT;' 始まりであることを確認",
+            "検証: npx tsc --noEmit exit 0／npx next build 成功／Vercel Production success（23aef58）／本番の配信JSに判定が入っていることを確認",
+            "cidao/2026-09-15_フォーム送信失敗で入力が消える仕組みと対策.md（追記）、メモリ nextjs-server-action-redirect-rejects.md（新規）"
+          ],
+          "hours": 0.11,
+          "partnerApproved": false,
+          "note": "中司さん「毎回エラー表示のあとに正常画面にたどりつく。ひやひやする」。同日 cd0ac20 で入れた自前送信の catch が、成功時の redirect まで失敗として表示していた（自分が入れた不具合）。実画面はログインが必要なため未確認。工数は前回記録（output 617,667）からの差分 11,457 で算出。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 629,124 / cost: $175.58"
+        },
+        {
+          "date": "2026-09-15",
           "title": "人材バンク BGM：ドキュメンタリー番組での使用実績の調査と、OtoLogic のドキュメンタリー曲6曲の追加 0.24時間",
           "category": "調査",
           "outputs": [
@@ -5973,12 +5987,21 @@
         },
         {
           "due": "未定",
+          "title": "🖼 人材バンク：自己紹介から関連画像を集め、動画の場面ごとに最適な組み合わせを提案する機能を検討",
+          "category": "その他",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "画像の集め先（本人の写真だけ／無料素材サイト／AI 生成）を中司さんが3択で決めること",
+          "note": "2026-09-15 中司さん要望。写真やネタが少ないメンバーが大半なので、写真1〜2枚しかない人向けに効く。外部サイトの画像を無断で使わない。無料素材サイトは利用条件（クレジット・API 規約）を確認してから。統合仕様ノートの「追加決定：入会は最小限、顔なしは『手元と作品』の型」に記録"
+        },
+        {
+          "due": "未定",
           "title": "🧑‍🤝‍🧑 人材バンク：登録の流れの簡素化（紹介文＋写真＋声・顔・雰囲気の選択→動画自動作成→確認→申請）を実装",
           "category": "実装",
           "priority": "高",
           "status": "待ち",
           "blockedBy": "動画の見本2本（おしゃれ・かっこいい、声違い）への中司さんの感想",
-          "note": "2026-09-15 案Aで決定。統合仕様 cidao/2026-09-14_AIインタビュー型人材バンク_統合仕様v1.md「方針決定：登録の流れを簡素化」。AI操作の回数上限・下書き保存可・7キャラの声・顔3択・動画2型／2026-09-15追加決定：原則公開（公開先は本人が会員のみ／一般公開から選ぶ・非公開なし）、そのかわり本人は動画と紹介文をスマホに保存できる。今の /me/talent に残る「非公開」選択肢は登録画面づくりでまとめて外す／2026-09-15：試し用ページ（C:/Users/nsfactory/talent-video-proto/trial_server.py、localhost:8790）で声・BGM（4気分26曲）・映像の型・写真を選んで作れる。本番のナレーションは GitHub Actions＋VOICEVOX Docker で可、AI 画像は自動生成には有料 API が要るため当面は運営が手で作る／BGM は5つの気分（あたたかい・前向き・落ち着いて信頼できる・想いが伝わる・ドキュメンタリー風）で32曲（甘茶の音楽工房26、OtoLogic 6）。クレジットは曲ごとに _list.json の credit 欄"
+          "note": "2026-09-15 案Aで決定。統合仕様 cidao/2026-09-14_AIインタビュー型人材バンク_統合仕様v1.md「方針決定：登録の流れを簡素化」。AI操作の回数上限・下書き保存可・7キャラの声・顔3択・動画2型／2026-09-15追加決定：原則公開（公開先は本人が会員のみ／一般公開から選ぶ・非公開なし）、そのかわり本人は動画と紹介文をスマホに保存できる。今の /me/talent に残る「非公開」選択肢は登録画面づくりでまとめて外す／2026-09-15：試し用ページ（C:/Users/nsfactory/talent-video-proto/trial_server.py、localhost:8790）で声・BGM（4気分26曲）・映像の型・写真を選んで作れる。本番のナレーションは GitHub Actions＋VOICEVOX Docker で可、AI 画像は自動生成には有料 API が要るため当面は運営が手で作る／BGM は5つの気分（あたたかい・前向き・落ち着いて信頼できる・想いが伝わる・ドキュメンタリー風）で32曲（甘茶の音楽工房26、OtoLogic 6）。クレジットは曲ごとに _list.json の credit 欄／2026-09-15夕 追加決定：入会時の設問は最小限にし、インタビュー項目は入会後に追加入力できる形にする（中司さん「設問が多いと登録がだるくなる」）。顔を出さない人は「手元と作品」の型（templates.json の hands・大きく動く文字の場面 kind=words）を自動で使う。ほとんどのメンバーは写真やネタが少ない前提で、写真1〜2枚でも成り立つ型にする"
         },
         {
           "due": "未定",
