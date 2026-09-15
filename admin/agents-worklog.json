@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "人材バンク 写真が無い人はアイコンで紹介動画を自動作成、移し替えた8人分をまとめて作成開始（運営用のまとめ積み入口を追加） 0.22時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/talent-bank/video/jobs.ts（ensureAvatarPhoto：写真0枚ならアイコンを縮小して talent-media に登録）、src/app/api/cron/talent-video-backfill/route.ts（CRON_SECRET で守った、公開中で動画の無い人のまとめ積み。?limit で人数）",
+            "本番: まとめ積みを limit=20 で呼ぶと Vercel の60秒制限（1人あたり AI 台本10〜20秒）で 504 → 3〜5人ずつ小分けにして8人分を積んだ。写真もアイコンも無い Masami・juri は対象外。Actions を手動で回し、待ち行列が空になるまで繰り返す（1回3本まで・1本約4分）",
+            "検証: tsc exit 0／eslint 0／vitest video 5件成功／main e911cad の Vercel success／DB で8件が queued/rendering、AI が選んだ型・声・曲を確認（cool 5・oshare 3、春日部つむぎ5・玄野武宏3、曲は気分内で無作為）"
+          ],
+          "hours": 0.22,
+          "partnerApproved": false,
+          "note": "中司さん「いとさんは今日登録したけど自動で作られないの？」→写真0枚が原因。アイコンを使う案Aを承認。中司さん自身の動画は本人承認→運営掲載まで通り published。工数は前回記録（output 728,782）からの差分 21,678 で算出。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 750,460 / cost: $280.19"
+        },
+        {
+          "date": "2026-09-15",
           "title": "人材バンク 従来の公開PRと AI インタビュー版を1画面に一本化（4つの箱）、従来PR 10人分を移し替え、本番の紹介動画1本目の自動作成を確認 0.39時間",
           "category": "実装",
           "outputs": [
@@ -6057,10 +6070,36 @@
         },
         {
           "due": "2026-09-16",
-          "title": "🎬 人材バンク：紹介動画の本番の初回作成を確かめる（Actions の実行ログ・所要時間・本人画面の再生・紹介ページの保存）",
+          "title": "🎬 人材バンク：10分ごとの Actions が自動で起動しているか、移し替え8人分の動画が全部できたかを確かめる",
           "category": "保守",
           "priority": "高",
-          "note": "2026-09-15 夜に本番反映（178b311）。中司さんの写真5枚は登録済み。中司さんが /me/talent の「作り直す」を押すか、次にプロフィールを公開し直すと自動で積まれ、10分ごとの Actions が作る。確認点：Noto CJK フォントの見た目、VOICEVOX Docker の起動時間、1本の所要時間（試作 PC で5〜10分）、失敗時の error 欄。GitHub のトークンを Vercel の GITHUB_DISPATCH_TOKEN に置けば即時起動になる（未設定・中司さんが作る fine-grained PAT が要る）"
+          "due": "2026-09-16",
+          "note": "2026-09-15 夜：初回は消した写真を参照して失敗→修正して成功（59秒・4分13秒）。中司さんの分は本人承認→運営掲載まで通り掲載中。移し替えた8人分を 22:5x に積み、手動で Actions を回している（1回3本）。今夜は定期実行（cron */10）が一度も自動では起動していない（新しい定期実行は初回が遅れることがある）。明日、gh run list で schedule 起動の有無を見る。GitHub のトークンを Vercel の GITHUB_DISPATCH_TOKEN に置けば即時起動になる（未設定・中司さんが作る fine-grained PAT が要る）。まとめ積み /api/cron/talent-video-backfill は limit=3〜5 で呼ぶ（60秒制限）"
+        },
+        {
+          "due": "未定",
+          "title": "🎬 人材バンク：写真が少ない人は「文字の場面」を自動で増やす（顔ありの型でも写真1〜2枚なら3場面を文字に）",
+          "category": "実装",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "中司さんが3択（A：文字の場面を増やす／B：運営が ChatGPT で AI 画像／C：無料素材サイト）から選ぶこと（2026-09-15 提示・推奨A）",
+          "note": "写真がアイコン1枚だけの人は6場面すべて同じ写真になる。A は0円で今すぐ効く。B は希望者だけ・「AI生成」表示・事実にない場面を作らない条件。C は利用条件と誤解の心配があり非推奨"
+        },
+        {
+          "due": "未定",
+          "title": "📣 人材バンク：写真もアイコンも無い2人（Masami・juri）に、写真を登録すると紹介動画ができることを案内する",
+          "category": "広報",
+          "priority": "低",
+          "note": "2026-09-15 移し替え。案内文は中司さん確認のうえ送る（自動メールは確認事項）"
+        },
+        {
+          "due": "未定",
+          "title": "🧹 人材バンク：従来PR の表 member_profiles_pr の扱いを決める（声がけ受付の保存先として残す／talent_profiles へ列を移す）",
+          "category": "その他",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "一本化後1か月ほど問題が出ないことを見てから決める（2026-10-15 ごろ）",
+          "note": "2026-09-15 一本化で紹介文・資格・貢献・対応時間は talent_profiles へ移した。残っているのは message_acceptance（声がけの送信可否の判定と RLS が参照）と sns_links（紹介ページに表示）"
         },
         {
           "due": "未定",
@@ -6106,11 +6145,18 @@
           "note": "2026-09-14、gas-mail-share/README.md の編集で ~/.claude/hooks/edit_autosave.py が commit（affa54f）までで止まり push されなかった。OneDrive 配下の git が遅くフックの timeout 90秒を超えたと推定（確信度中）。案：push を切り離して裏で実行／timeout を延ばす／次の保存時にまとめて push（ahead を検知したら push）。clasp_push_autosave.py も同じ作り。"
         },
         {
-          "due": "2026-09-22",
-          "title": "🎓 卒論 9/15中間発表で受けた指摘を論文（01_草稿）とスライド（slides.md）へ反映する",
+          "due": "2026-10-15",
+          "title": "🎓 卒論 15分版（18枚）を Alt+F5 で通しリハーサルし、★の位置と所要時間を確かめる",
           "category": "事務",
-          "priority": "高",
-          "note": "持ち出し一式は academy/06_発表/中間発表_20260915/（09-06版のコピー）。直すときは md を編集して build_docx.py／build_h2p.py→fit_loop.py→build_two_pptx.ps1 で作り直す（docx・pptx を直接編集しない）。本文は20ページちょうどなので加筆は削減とセット。"
+          "priority": "中",
+          "note": "2026-09-15 に市の指示で発表が20分→15分に短縮され、24枚→18枚・口述約4,100字（人の朗読13.2分）に組み直した。★（クリックの合図）の位置は make_starred_talk.py の STARS 表で決めており、話すテンポと合うかは未確認。押しにくい★があれば表を直して build_two_pptx.ps1 を実行する。音声版は音声の自動再生を直した版で、実機（会場のPC）で最後まで自動で流れるかも確かめる。"
+        },
+        {
+          "due": "2026-09-30",
+          "title": "🧹 旧24枚版の残りファイル（06_発表/tts・audio と site/thesis/audio の 19〜24番）を削除する",
+          "category": "保守",
+          "priority": "低",
+          "note": "18枚に組み直したあとも、音声用の文章 tts/19〜24.txt、音声 audio/19〜24.mp3、サイト側 site/thesis/audio/19〜24.mp3 が残っている。18枚の発表とサイトのスライドには使われないので害はない。Claude Code の削除コマンドはこのパスを『システムの根元』と誤判定して止められる（2026-09-15 に2回）ため、エクスプローラーから手で消す。サイト側は消したあと commit・push が要る。"
         },
         {
           "due": "未定",
