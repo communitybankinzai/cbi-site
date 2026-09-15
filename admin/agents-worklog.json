@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-16",
+          "title": "文化ホール自動取り込みの実行記録（event_sync_runs）＋管理画面表示、コスモスパレット公式サイトの取得可否調査 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260916010000_event_sync_runs.sql（新規・本番適用済み：RLS は運営のみ select、service_role が書く）",
+            "cidao: src/app/api/cron/inzai-bunka-sync/route.ts（実行ごとに recordRun。例外時も失敗として記録）、src/app/admin/events/import/page.tsx＋_components/InzaiBunkaSyncRuns.tsx（最新の状態表示＋直近14回の表）",
+            "調査: コスモスパレット公式サイト inzai-cosmospalette.jp は WordPress で /wp-json/wp/v2/events が開いているが投稿は4件のみ（映画上映会・キッチンカー・ピアノ開放日）。マルシェ・夏祭り・ランタンフェス・カラオケ大会は公式サイトに無く Instagram／地域メディア掲載。保管庫に過去の調査記録なし（errand で横断検索）",
+            "検証: tsc 0／eslint 0、ローカル dev（:3123）で cron を dry=1 実行→event_sync_runs に1行（8.6秒）、管理画面は未ログインで 307（500 なし）。ログイン後の画面表示は目視未確認"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "中司さん「06:20 は他の実行と競合しないか」→ Vercel cron は独立実行で競合なし（他は 07:00/07:30/08:07/18:00）と回答。「動いたか DB から区別できない」と説明したところ、実行記録を残して管理画面で見えるようにする指示。前回記録（output 89,520）からの差分 30,338 で算出。session: 85966e1f-5e7b-4f16-8bf9-21ceb3e37d42 / output: 119,858 / cost: $28.42"
+        },
+        {
+          "date": "2026-09-16",
           "title": "CiDAO：イベント通知の個人設定の実装状況を実測し、設定案内を全24人へ一斉送信（ベル＋プッシュ）0.3時間",
           "category": "広報",
           "outputs": "CiDAO 一斉お知らせ1件（kind=system・宛先24人・プッシュ8台・broadcast_id da981c49）、cidao/2026-09-16_イベント通知の個人設定と一斉案内の再送.md（新規）、MOC_CiDAO.md（1行追記）。コード変更なし",
@@ -6049,10 +6063,10 @@
         },
         {
           "due": "2026-09-22",
-          "title": "🎭 文化ホール自動取り込みの初回巡回結果を確認する（Vercel ログの [inzai-bunka-sync] 行：inserted/updated/duplicates/errors）",
+          "title": "🎭 文化ホール自動取り込みの初回巡回結果を確認する（管理画面「イベント一括取り込み」の文化ホール欄で ✅ になっているか）",
           "category": "保守",
           "priority": "高",
-          "note": "2026-09-15 導入。毎朝 06:20 JST に /api/cron/inzai-bunka-sync が動く。errors>0 か list=0（サイト構造変更）なら解析（src/lib/inzai-bunka/）の修正が必要。手動確認は ?dry=1 付きで CRON_SECRET を Bearer に"
+          "note": "2026-09-15 導入・09-16 に実行記録欄を追加。毎朝 06:20 JST に動く。管理画面 /admin/events/import の「印西市文化ホール（毎朝 自動）」で最新実行の成否・件数が見える。⚠️失敗 や 30時間以上なし なら Vercel ログの [inzai-bunka-sync] 行を確認。手動確認は ?dry=1 付きで CRON_SECRET を Bearer に"
         },
         {
           "due": "未定",
