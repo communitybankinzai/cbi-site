@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "人材バンク 紹介動画の自動作成・掲載の仕組みを一気に実装し本番反映（写真登録→AI台本→GitHub Actions＋VOICEVOX→本人確認→運営掲載→再生・保存）、他己紹介の DB 下地 0.95時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260915220000_talent_videos.sql（talent_photos・talent_videos・talent_profiles.face_mode・非公開バケット talent-media／talent-bgm）、20260915210000_cbi_intros.sql（member_cbi_intros・同意 cbi_intro・作業 intro_write）。いずれも本番へ psycopg で適用",
+            "cidao: scripts/talent-video/render.py（試作 render2.py の本番版・Noto CJK 対応）、run_job.py（待ち行列の取得・写真と BGM の取得・作成・アップロード・通知）、bgm_list.json、.github/workflows/talent-video.yml（10分ごと・VOICEVOX Docker）",
+            "cidao: src/lib/talent-bank/video/{script.ts,jobs.ts,catalog.json}（AI 台本・型・声・曲の気分の選択、曲は無作為、写真の登録（sharp で EXIF 除去）、仕事の積み方、本人確認、運営掲載、署名付き URL）、cbi-intro.ts（他己紹介の手書き版の処理）、types.ts、consents.ts、profile/publish.ts（公開時の自動作成）",
+            "cidao: src/app/api/talent-bank/{photos,video/[id]}/route.ts、src/app/me/talent/_components/{VideoSection,PhotoUploader}.tsx、me/talent/{page,actions}、talent/[id]/page.tsx（再生・保存）、admin/talent-bank/{page,video-actions}",
+            "検証: vitest 14ファイル144件成功（video/script.test.ts 5件を追加）／tsc exit 0／eslint 警告1（img）／render.py を手元で2場面の動画に通し yuv420p を確認／main 178b311 を push・Vercel 反映待ち／Actions を手動起動して空回しを確認中",
+            "Supabase: talent-bgm へ BGM 31曲を格納、talent-media へ中司さんの写真5枚を登録（本人許可）。GitHub Secrets に TALENT_SUPABASE_URL／TALENT_SUPABASE_SERVICE_ROLE_KEY を登録（本人許可）",
+            "cidao/2026-09-14_AIインタビュー型人材バンク_統合仕様v1.md（紹介動画の本番の仕組み・他己紹介の方式変更）"
+          ],
+          "hours": 0.95,
+          "partnerApproved": false,
+          "note": "中司さん「動画掲載機能を速やかに実装して」「自己紹介文や画像が追加されるたびに自動生成」「音楽とナレーションはランダム（PR文から選定）」を受けて、自動作成まで一気に作った（推奨案）。本番での初回作成は未確認（plans に登録）。工数は前回記録（output 560,139）からの差分 94,530 で算出。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 654,669 / cost: $225.98"
+        },
+        {
+          "date": "2026-09-15",
           "title": "人材バンク 紹介ページの「活動の足あと」実装・本番反映、顔を出さない型（手元と作品）の動画試作、BGM差し替えの比較 0.99時間",
           "category": "実装",
           "outputs": [
@@ -6004,10 +6021,17 @@
         },
         {
           "due": "未定",
-          "title": "🧑‍🤝‍🧑 人材バンク：CBI が書く他己紹介（本人が掲載可否を選ぶ→CBI が自己紹介文を読んで書く→本人確認→掲載）の設計案を作る",
+          "title": "🧑‍🤝‍🧑 人材バンク：他己紹介の画面を作る（AI が自己紹介文から下書き→運営が一読→本人確認→掲載。会員のみ閲覧）",
           "category": "実装",
           "priority": "高",
-          "note": "2026-09-15 中司さん提案（魅力を引き立てる機能・案Aの2番目。1番目の活動の足あとは同日本番反映済み）。新しい表と本人の同意欄が要るので、表・画面の設計案を見せて確認を取ってから作る。動画も本人確認の後に載せる。統合仕様ノート「追加決定」に記録"
+          "note": "2026-09-15 中司さん決定（推奨案）。表 member_cbi_intros・同意種別 cbi_intro・作業種別 intro_write は本番適用済み、src/lib/talent-bank/cbi-intro.ts に手書き版の処理あり。残り：AI 下書き（purpose を足す）・管理画面の一覧と一読ボタン・本人の確認画面・紹介ページの欄。事前の同意欄は不要にし本人の承認で載せる（同夜の変更）"
+        },
+        {
+          "due": "2026-09-16",
+          "title": "🎬 人材バンク：紹介動画の本番の初回作成を確かめる（Actions の実行ログ・所要時間・本人画面の再生・紹介ページの保存）",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-09-15 夜に本番反映（178b311）。中司さんの写真5枚は登録済み。中司さんが /me/talent の「作り直す」を押すか、次にプロフィールを公開し直すと自動で積まれ、10分ごとの Actions が作る。確認点：Noto CJK フォントの見た目、VOICEVOX Docker の起動時間、1本の所要時間（試作 PC で5〜10分）、失敗時の error 欄。GitHub のトークンを Vercel の GITHUB_DISPATCH_TOKEN に置けば即時起動になる（未設定・中司さんが作る fine-grained PAT が要る）"
         },
         {
           "due": "未定",
