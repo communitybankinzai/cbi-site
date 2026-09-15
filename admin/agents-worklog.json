@@ -45,11 +45,12 @@
             "supabase/migrations/20260915150000_talent_bank_phase3.sql 本番適用（6テーブル・トリガー3・RPC 8・初期タグ20）",
             "docs/talent-bank/phase3-report.md",
             "C:/Repos/cidao main 2df3f13（スキーマ修正）",
-            "C:/Repos/cidao main 40858ca（AI失敗の計測）・6557178（union型上限の修正）"
+            "C:/Repos/cidao main 40858ca（AI失敗の計測）・6557178（union型上限の修正）",
+            "C:/Repos/cidao main a52715e（進み具合の案内）ほか運営通知のコミット"
           ],
           "hours": 0.25,
           "partnerApproved": true,
-          "note": "中司さん決定（推奨案）：main マージ＋本番デプロイ、Phase3 を Codex へ。Codex は実装後 ChatGPT 利用上限で停止（報告書未作成）→ Claude が tsc 0・vitest 122/122・eslint 0・next build 成功を確認し報告書を作成。中司さんの実機フィードバック『完了後どうすればよいか分からない』に対応し、まとめ欄に次の4ステップと『プロフィール案を作る』を配置。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 123,286 / cost: $64.84 ／ 追記：本番で「プロフィール案を作る」が失敗（api_usage: extract_profile が unavailable/unknown）。原因は構造化出力の JSON Schema に非対応制約（maxLength・maxItems・type配列）→ Anthropic が400。修正を main 2df3f13 でデプロイ ／ 追記2：2回目の修正後も失敗。計測コード（api_usage.error に status/種別を記録）を 40858ca で入れ、本番の記録から真因を特定＝「too many parameters with union types」（20項目を anyOf にしていた）。全項目 string＋空文字列で値なしに変更し 6557178 でデプロイ"
+          "note": "中司さん決定（推奨案）：main マージ＋本番デプロイ、Phase3 を Codex へ。Codex は実装後 ChatGPT 利用上限で停止（報告書未作成）→ Claude が tsc 0・vitest 122/122・eslint 0・next build 成功を確認し報告書を作成。中司さんの実機フィードバック『完了後どうすればよいか分からない』に対応し、まとめ欄に次の4ステップと『プロフィール案を作る』を配置。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 123,286 / cost: $64.84 ／ 追記：本番で「プロフィール案を作る」が失敗（api_usage: extract_profile が unavailable/unknown）。原因は構造化出力の JSON Schema に非対応制約（maxLength・maxItems・type配列）→ Anthropic が400。修正を main 2df3f13 でデプロイ ／ 追記2：2回目の修正後も失敗。計測コード（api_usage.error に status/種別を記録）を 40858ca で入れ、本番の記録から真因を特定＝「too many parameters with union types」（20項目を anyOf にしていた）。全項目 string＋空文字列で値なしに変更し 6557178 でデプロイ ／ 追記3：生成成功を確認（1回あたり約4.4円）。実機フィードバック2件に対応：(1)/me/talent に進み具合の案内と「作り直しは任意」の折りたたみ表示（a52715e）(2)公開申請時に運営5名へベル通知＋プッシュ（中司さん決定・案A）。申請処理そのものは本番DBで本人になりきり検証し正常"
         },
         {
           "date": "2026-09-15",
