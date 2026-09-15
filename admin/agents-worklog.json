@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "文化ホール公演の自動取り込み（解析3モジュール＋cron＋テスト42件）実装・本番初回同期 0.9時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/inzai-bunka/calendar.ts（月別カレンダー解析・時刻/料金の読み取り）、events.ts（公演一覧＋詳細ページ解析・複数日程展開・突き合わせ）、sync.ts（今日以降の insert/update・手動登録との重複判定・募集案内除外）",
+            "cidao: src/app/api/cron/inzai-bunka-sync/route.ts（CRON_SECRET 認証・?dry=1）、vercel.json（毎日 21:20 UTC）、__tests__ 3本＋実サイト固定HTML 5本（9456642・8036711）",
+            "本番: events に external_source='inzai-bunka-calendar' 5件登録（画像は event-flyers/inzai-bunka/）。手動登録と重複する13件はスキップ",
+            "保管庫: cidao/2026-09-15_文化ホール公演の自動取り込み.md（新規）、MOC_CiDAO.md 運用手順に追記、site/admin/changelog.json 1件、plans 4件",
+            "検証: vitest 42/42、tsc 0、eslint 0、本番DB dry-run→書込→5行の内容確認、公開ページをブラウザで表示確認、本番の cron ルートが 401（デプロイ済み）を返すことを確認"
+          ],
+          "hours": 0.9,
+          "partnerApproved": false,
+          "note": "中司さん「チラシをダウンロードしてAI読み取りは時間がかかりすぎる、自動化したい」。調査で文化ホールサイトは WordPress で HTML 構造が固定と判明し、AI 不使用の解析に決定。3択で確認し『主催＋貸館の全部・即公開・自動上書き』を採用。dry-run で手動登録済み13件との重複を検出したため、重複判定を追加してから書き込んだ。未確認: 本番の CRON_SECRET がローカルと異なり curl で dry-run を叩けなかった（初回の定期実行 09-16 06:20 の結果確認を plans に登録）。セッション開始時の『要対応』メール確認は Web API が auth_failed で2回失敗し未実施（plans 登録済み）。session: 85966e1f-5e7b-4f16-8bf9-21ceb3e37d42 / output: 89,520 / cost: $15.83"
+        },
+        {
+          "date": "2026-09-15",
           "title": "人材バンク 写真が無い人はアイコンで紹介動画を自動作成、移し替えた8人分をまとめて作成開始（運営用のまとめ積み入口を追加） 0.22時間",
           "category": "実装",
           "outputs": [
@@ -6001,6 +6016,36 @@
       ],
       "plans": [
         {
+          "due": "2026-09-22",
+          "title": "🎭 文化ホール自動取り込みの初回巡回結果を確認する（Vercel ログの [inzai-bunka-sync] 行：inserted/updated/duplicates/errors）",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-09-15 導入。毎朝 06:20 JST に /api/cron/inzai-bunka-sync が動く。errors>0 か list=0（サイト構造変更）なら解析（src/lib/inzai-bunka/）の修正が必要。手動確認は ?dry=1 付きで CRON_SECRET を Bearer に"
+        },
+        {
+          "due": "未定",
+          "title": "🎭 文化ホール：チラシから手動登録済みの13件を自動更新の対象に切り替えるか決める",
+          "category": "実装",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "運営（中司さん）が『手動登録分も文化ホール側の変更に自動追従させてよい』と決めたら。切り替えは既存行に external_source='inzai-bunka-calendar' と external_source_id（post:<id>:<日付>）を付けるだけ",
+          "note": "2026-09-15 の初回同期で重複判定によりスキップした13件（フライデーナイトVol.15・手仕事工房4日分・ものまねLIVE 等）。現状は手動登録の内容のまま。同期の duplicates 一覧に毎朝出続ける"
+        },
+        {
+          "due": "未定",
+          "title": "🎭 文化ホール：貸館公演がカレンダーから消えた（中止・変更）ときに CiDAO 側を closed にする",
+          "category": "実装",
+          "priority": "低",
+          "note": "現状は新規追加と項目更新のみで、消えたものは検知しない。cal:<日付>:<hash> の行が同期結果に現れなくなったら status='cancelled' にする案。主催公演は詳細ページの有無で判定できる"
+        },
+        {
+          "due": "2026-09-16",
+          "title": "📧 CBI公式メール『要対応』の Web API が auth_failed になる原因を調べる（ルール12の巡回ができていない）",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-09-15 のセッション開始時に credentials.md の「WebApp パスワード」行と「SHARED_PASSWORD」行の両方で {action:'list'} を試し、2回とも {ok:false,error:'auth_failed'}。値の転記ミスか GAS 側スクリプトプロパティの未設定か未切り分け。管理画面（admin.js）からは読めているかを先に確認"
+        },
+        {
           "due": "未定",
           "title": "🎬 人材バンク動画：字幕の改行を均等にする（長い一句で『す。』だけの行ができる）",
           "category": "実装",
@@ -6073,7 +6118,6 @@
           "title": "🎬 人材バンク：10分ごとの Actions が自動で起動しているか、移し替え8人分の動画が全部できたかを確かめる",
           "category": "保守",
           "priority": "高",
-          "due": "2026-09-16",
           "note": "2026-09-15 夜：初回は消した写真を参照して失敗→修正して成功（59秒・4分13秒）。中司さんの分は本人承認→運営掲載まで通り掲載中。移し替えた8人分を 22:5x に積み、手動で Actions を回している（1回3本）。今夜は定期実行（cron */10）が一度も自動では起動していない（新しい定期実行は初回が遅れることがある）。明日、gh run list で schedule 起動の有無を見る。GitHub のトークンを Vercel の GITHUB_DISPATCH_TOKEN に置けば即時起動になる（未設定・中司さんが作る fine-grained PAT が要る）。まとめ積み /api/cron/talent-video-backfill は limit=3〜5 で呼ぶ（60秒制限）"
         },
         {
@@ -7773,33 +7817,33 @@
     "A9": {
       "actuals": [
         {
-                  "date": "2026-09-15",
-                  "title": "会場モードの URL 自動ON・自動事前読み込みと 会場モードON.bat のブラウザ起動（当日の操作を .bat 1回に） 0.20時間",
-                  "category": "実装",
-                  "outputs": [
-                            "site/metaverse/venue.js（VER 20260915-2：?venue=1 自動ON・?preload=1 自動事前読み込み）",
-                            "site/metaverse/index.html（版）",
-                            "events/2026-11-03_武蔵屋/会場PC/会場モードON.bat（会場URLでブラウザを開く）・README.md",
-                            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
-                  ],
-                  "hours": 0.2,
-                  "partnerApproved": false,
-                  "note": "中司さん「PC側の .bat 1回＋ブラウザのボタン1回は、プレイ画面から起動できないのか」→ ブラウザから PC のプログラムは起動できないと説明し、A（.bat がブラウザを会場URLで開く）／B（画面から cbi-venue:// で .bat を呼ぶ）／C（両方）を提示 → 「操作が増えると混乱するのでボタン一つで『はい』を誘導する仕組みで十分」＝A を採用。検証（ローカル ?notiles=1&mode=musashiya&venue=1&preload=1・localStorage を消してから）：会場モードが自動 ON（venueSse 16・記憶）、事前読み込みが自動で始まり進み具合の画面が開くことを実測。.bat の実行は会場PC（未組立）で 11/2 までに要確認。hours は前回記録 616,495 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 636,303 / cost: $166.30"
+          "date": "2026-09-15",
+          "title": "会場モードの URL 自動ON・自動事前読み込みと 会場モードON.bat のブラウザ起動（当日の操作を .bat 1回に） 0.20時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/venue.js（VER 20260915-2：?venue=1 自動ON・?preload=1 自動事前読み込み）",
+            "site/metaverse/index.html（版）",
+            "events/2026-11-03_武蔵屋/会場PC/会場モードON.bat（会場URLでブラウザを開く）・README.md",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "中司さん「PC側の .bat 1回＋ブラウザのボタン1回は、プレイ画面から起動できないのか」→ ブラウザから PC のプログラムは起動できないと説明し、A（.bat がブラウザを会場URLで開く）／B（画面から cbi-venue:// で .bat を呼ぶ）／C（両方）を提示 → 「操作が増えると混乱するのでボタン一つで『はい』を誘導する仕組みで十分」＝A を採用。検証（ローカル ?notiles=1&mode=musashiya&venue=1&preload=1・localStorage を消してから）：会場モードが自動 ON（venueSse 16・記憶）、事前読み込みが自動で始まり進み具合の画面が開くことを実測。.bat の実行は会場PC（未組立）で 11/2 までに要確認。hours は前回記録 616,495 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 636,303 / cost: $166.30"
         },
         {
-                  "date": "2026-09-15",
-                  "title": "会場モード（街並みの記憶量3GB・白鳥を残す通信節約・事前読み込み飛行17地点）と会場PCの一括設定/復旧スクリプトの実装と検証 0.62時間",
-                  "category": "実装",
-                  "outputs": [
-                            "site/metaverse/venue.js（新規：🏟 会場モードの画面・cacheBytes 3GB・venueSse・tighten・事前読み込み飛行・端末記憶）",
-                            "site/metaverse/index.html（liteApplyTileset が venueSse を採る・通信量上限で CbiVenue.tighten・liteSuggest を会場モード中は出さない・venue.js 読み込み）",
-                            "site/metaverse/musashiya.js（CbiVenue.place の呼び出し・msyPreloadPoints・msyGoHome 公開）",
-                            "events/2026-11-03_武蔵屋/会場PC/（venue-mode.ps1・会場モードON.bat・会場モードOFF.bat・いまの状態.bat・README.md）",
-                            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
-                  ],
-                  "hours": 0.62,
-                  "partnerApproved": false,
-                  "note": "中司さん「現地で通信量を節約するために事前にできることは他にないか」→6案を提示→B（①PC設定＋②記憶量＋③事前読み込み＋④白鳥を消さない通信節約）を「全てボタン一つで処置（復旧も）」で採用。会場PCは体験PC購入リストより自作機 32GB。検証（ローカル ?notiles=1・仮の tileset）：ON で cacheBytes 3,221,225,472・精度16、上限到達で24、管理画面の精度8が届いても24のまま、OFF で 512MB・8・localStorage も戻る。事前読み込み：17地点×2視点をカメラが順に通る（座標を200msごとに採取）・完了報告・スタート地点へ戻る（flyTo が残っていると戻される問題は cancelFlight で対処）。PC側：構文検査 OK・-On -DryRun と -Off -DryRun（仮の記録ファイル）が exit 0。実際の街並みでの効果と会場PCでの ON/OFF は未実施（9/19・11/2）。hours は前回記録 554,682 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 616,495 / cost: $159.20"
+          "date": "2026-09-15",
+          "title": "会場モード（街並みの記憶量3GB・白鳥を残す通信節約・事前読み込み飛行17地点）と会場PCの一括設定/復旧スクリプトの実装と検証 0.62時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/venue.js（新規：🏟 会場モードの画面・cacheBytes 3GB・venueSse・tighten・事前読み込み飛行・端末記憶）",
+            "site/metaverse/index.html（liteApplyTileset が venueSse を採る・通信量上限で CbiVenue.tighten・liteSuggest を会場モード中は出さない・venue.js 読み込み）",
+            "site/metaverse/musashiya.js（CbiVenue.place の呼び出し・msyPreloadPoints・msyGoHome 公開）",
+            "events/2026-11-03_武蔵屋/会場PC/（venue-mode.ps1・会場モードON.bat・会場モードOFF.bat・いまの状態.bat・README.md）",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+          ],
+          "hours": 0.62,
+          "partnerApproved": false,
+          "note": "中司さん「現地で通信量を節約するために事前にできることは他にないか」→6案を提示→B（①PC設定＋②記憶量＋③事前読み込み＋④白鳥を消さない通信節約）を「全てボタン一つで処置（復旧も）」で採用。会場PCは体験PC購入リストより自作機 32GB。検証（ローカル ?notiles=1・仮の tileset）：ON で cacheBytes 3,221,225,472・精度16、上限到達で24、管理画面の精度8が届いても24のまま、OFF で 512MB・8・localStorage も戻る。事前読み込み：17地点×2視点をカメラが順に通る（座標を200msごとに採取）・完了報告・スタート地点へ戻る（flyTo が残っていると戻される問題は cancelFlight で対処）。PC側：構文検査 OK・-On -DryRun と -Off -DryRun（仮の記録ファイル）が exit 0。実際の街並みでの効果と会場PCでの ON/OFF は未実施（9/19・11/2）。hours は前回記録 554,682 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 616,495 / cost: $159.20"
         },
         {
           "date": "2026-09-15",
