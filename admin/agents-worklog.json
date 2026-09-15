@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "人材バンク 申請ボタンの不具合修正、BGM を4つの気分で18曲追加、声・BGM・写真を選べる試し用ページ 1.05時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao main 26f00bf（確認画面のボタン4つに type=submit、公開範囲から非公開を外す）",
+            "cidao/talent-bank/BGM/（甘茶の音楽工房から計28曲・4つの気分で分類・README・_list.json）",
+            "C:/Users/nsfactory/talent-video-proto/trial_server.py・trial_index.html・render2.py（試し用ページ・声の速さ調整・AI生成表示）",
+            "C:/Users/nsfactory/talent-video-proto/voice_samples/（7人の聞き比べ）・ai_images/ChatGPTで作る手順.md",
+            ".claude/launch.json（talent-video-trial を追加）"
+          ],
+          "hours": 1.05,
+          "partnerApproved": true,
+          "note": "中司さんの実機報告『承認まで飛ばない』の原因は @base-ui/react の Button が type 未指定だと送信しないこと（useButton.js 168行目）。紹介文の直しは本人が『話しかけて直す』で実施でき、AI費用2回で約2.7円。BGM は案Aで『あたたかい／前向き／落ち着いて信頼できる／想いが伝わる』に分け直し18曲追加（ゲーム風3曲は除外）、映像の型は『ゆったり／テンポよく』に改名。試し用ページで1本作成を確認（77秒・九州そらが遅いので声ごとの速さを調整）。Codex の画像生成は Windows サンドボックスのエラーで3回とも未生成、ChatGPT の画面で作る手順に切り替え。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 437,406 / cost: $176.52"
+        },
+        {
+          "date": "2026-09-15",
           "title": "FreeFree 告知の全自動／承認制スイッチを管理画面に追加＋武蔵屋マルシェの初回SNS配信の結果確認 0.27時間",
           "category": "実装",
           "outputs": [
@@ -5885,6 +5900,22 @@
       "plans": [
         {
           "due": "未定",
+          "title": "🎬 人材バンク動画：字幕の改行を均等にする（長い一句で『す。』だけの行ができる）",
+          "category": "実装",
+          "priority": "低",
+          "note": "render2.py の wrap()。句読点で折れない長い句を文字で折るとき、行の長さを均等に分ける。2026-09-15 試し用ページの1本で確認"
+        },
+        {
+          "due": "未定",
+          "title": "🖼 人材バンク：AI 画像の見本4枚を ChatGPT の画面で作り、試し用ページで動画に入れて確かめる",
+          "category": "その他",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "中司さんが ChatGPT で作成し、C:/Users/nsfactory/talent-video-proto/ai_images/ に保存すること（手順：同フォルダの ChatGPTで作る手順.md）",
+          "note": "Codex の画像生成は Windows サンドボックスのエラーで3回とも未生成（2026-09-15）。案Dどおり手作業に切り替え"
+        },
+        {
+          "due": "未定",
           "title": "🖼 人材バンク：全身写真から AI で必要なポーズの写真を作るかを検討（本人同意・「AI生成」表示・事実と違う場面を作らない、が条件案）",
           "category": "その他",
           "priority": "低",
@@ -5935,7 +5966,7 @@
           "priority": "高",
           "status": "待ち",
           "blockedBy": "動画の見本2本（おしゃれ・かっこいい、声違い）への中司さんの感想",
-          "note": "2026-09-15 案Aで決定。統合仕様 cidao/2026-09-14_AIインタビュー型人材バンク_統合仕様v1.md「方針決定：登録の流れを簡素化」。AI操作の回数上限・下書き保存可・7キャラの声・顔3択・動画2型／2026-09-15追加決定：原則公開（公開先は本人が会員のみ／一般公開から選ぶ・非公開なし）、そのかわり本人は動画と紹介文をスマホに保存できる。今の /me/talent に残る「非公開」選択肢は登録画面づくりでまとめて外す"
+          "note": "2026-09-15 案Aで決定。統合仕様 cidao/2026-09-14_AIインタビュー型人材バンク_統合仕様v1.md「方針決定：登録の流れを簡素化」。AI操作の回数上限・下書き保存可・7キャラの声・顔3択・動画2型／2026-09-15追加決定：原則公開（公開先は本人が会員のみ／一般公開から選ぶ・非公開なし）、そのかわり本人は動画と紹介文をスマホに保存できる。今の /me/talent に残る「非公開」選択肢は登録画面づくりでまとめて外す／2026-09-15：試し用ページ（C:/Users/nsfactory/talent-video-proto/trial_server.py、localhost:8790）で声・BGM（4気分26曲）・映像の型・写真を選んで作れる。本番のナレーションは GitHub Actions＋VOICEVOX Docker で可、AI 画像は自動生成には有料 API が要るため当面は運営が手で作る"
         },
         {
           "due": "未定",
