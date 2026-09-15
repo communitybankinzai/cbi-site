@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-16",
+      "type": "fix",
+      "target": "metaverse",
+      "title": "会場PC用の一式に保険：OFF を忘れても24時間後に自動で元に戻り、記録が無くても標準の設定へ戻せるようになった",
+      "detail": "会場モードON.bat を実行すると、24時間後に自動で OFF が走る予約（タスクスケジューラ）が登録されるので、OFF.bat を忘れても翌日には Windows Update・OneDrive・ブラウザ更新・Wi-Fi の従量制が元に戻る。OFF.bat は記録ファイルが消えていても、Windows の標準的な設定（Update は手動起動・OneDrive 起動・従量制解除・Store の自動更新）へ戻す。ON の確認画面と手順書に「ON のあいだ止まるもの」と自動で戻る旨を明記した。配布用 zip も更新。",
+      "author": "Claude Code"
+},
+    {
+      "date": "2026-09-16",
       "type": "feature",
       "target": "metaverse",
       "title": "会場PC用の一式（会場モードON/OFF）を「🏟 会場モード」画面からダウンロードできるようになった（実行前の確認つき）",

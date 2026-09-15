@@ -7826,6 +7826,19 @@
     "A9": {
       "actuals": [
         {
+                  "date": "2026-09-16",
+                  "title": "会場PC用スクリプトの保険（24時間後の自動OFF・記録なしでも標準へ復旧）と手順書の制限一覧 0.19時間",
+                  "category": "実装",
+                  "outputs": [
+                            "events/2026-11-03_武蔵屋/会場PC/venue-mode.ps1（ScheduleOff／UnscheduleOff・Do-OffDefault・-Auto ログ）・会場モードON.bat（案内文）・README.md（止まるものの表・保険）",
+                            "site/metaverse/venue-pc/cbi-venue-pc.zip（作り直し）",
+                            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+                  ],
+                  "hours": 0.19,
+                  "partnerApproved": false,
+                  "note": "中司さん「他人がこれを開くと不具合出ますか？復旧できるバッチも同梱だと思いますが」→ 壊れないが一時的に止まるものがあり、OFF 忘れと記録ファイル頼みが弱みと説明 → B（保険を足す）を採用。検証：構文検査 OK、-On -DryRun に予約行、記録なしの -Off -DryRun が標準へ戻す項目を並べて exit 0、-Status に予約の有無。実際の予約登録・自動実行は会場PCで要確認（このPCでは設定を変えていない）。hours は前回記録 647,720 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 667,012 / cost: $192.20"
+        },
+        {
           "date": "2026-09-16",
           "title": "会場PC用一式の zip 配布（会場モード画面からダウンロード）と .bat の実行前確認の追加 0.11時間",
           "category": "実装",
