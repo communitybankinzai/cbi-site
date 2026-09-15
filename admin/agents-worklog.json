@@ -18,6 +18,26 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "FreeFree 掲載時SNS告知（下書き→承認で即配信）＋定期告知のカウントダウン自動配信＋開催日の追加（DB・フォーム・AI読取・Instagram画像） 0.78時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20260915180000_freefree_sns_countdown.sql（新規・本番適用済み／event_start_date 列、pick_next_sns_targets に sns_share と配信実績の条件、run_sns_rotation_cycle で FreeFree を Threads/Facebook/Instagram に承認済みで作成）",
+            "cidao: src/lib/sns-template.ts（freefreeCountdown・冒頭のカウントダウン・Instagram 用文面・now 引数）、src/lib/sns-target.ts（開催日・掲載終了日）、src/lib/freefree-dates.ts（daysBetweenYmd・jstYmdOf・isValidStartDate）",
+            "cidao: src/lib/sns-announce.ts（announceFreefreeToSns・運営へベル/プッシュ/メール）、src/lib/sns-dispatch.ts（FreeFree の Instagram 画像）、src/app/api/og/freefree/[id]/route.ts（新規・WebP→白地4:5 JPEG）、src/app/api/cron/sns-dispatch/route.ts（空の本文を配信時に作成）",
+            "cidao: src/app/admin/sns/actions.ts（FreeFree は承認で即配信）、_components/SnsDraftEditor.tsx（「承認して配信」）、page.tsx（説明文）",
+            "cidao: src/app/freefree/actions.ts（event_start_date の検証・保存、掲載後に下書き作成）、new/page.tsx、new/_components/NewFreefreeForm.tsx（開催日の欄・下書き保存・AI読取反映）、FreefreeFlyerScan.tsx・FreefreeUrlScan.tsx、api/freefree/scan・scan-url（event_start_date を抽出）",
+            "検証: カウントダウン単体テスト18件合格（各段階・月またぎ・複数日・開催日なし・お店・媒体別1行目・Instagram に URL なし・翌日は数字が変わる）／npx tsc --noEmit exit 0／npx next build 成功",
+            "検証（本番DB）: migration 適用後、定期紹介の候補は配信実績のある2件のみ（武蔵屋は初回前なので対象外）／run_sns_rotation_cycle をロールバック付きで実行し FreeFree は3媒体・承認済み、団体・イベントは従来どおり承認待ち／残骸0件",
+            "本番確認: Vercel Production success（fc6621c）／/api/og/freefree/<武蔵屋> が image/jpeg 1080x1350 を返す／Facebook のページ用トークンは有効（Community Bank INZAI）",
+            "データ: 武蔵屋マルシェに event_start_date=2026-11-03（チラシの開催日＝掲載終了日）を設定し、初回の下書き3件（Threads/Facebook/Instagram・承認待ち）を作成、運営へ通知",
+            "cidao/2026-09-15_FreeFreeのSNS告知の流れとカウントダウン.md（新規）"
+          ],
+          "hours": 0.78,
+          "partnerApproved": false,
+          "note": "中司さんの方針：掲載と同時にまず配信、以後は定期的に繰り返し告知、毎回同じにならないよう冒頭をカウントダウンで強調、承認はベル通知で気づくことが条件。選択：開催日を新設／承認したらすぐ配信／2回目以降は自動（初回だけ承認）／Threads＋Instagram＋Facebook。Bluesky は CBI のアカウントが無いため保留（plans 登録）。定期紹介の間隔は現在「毎月1日」のまま（管理画面で変更可）。工数は前回記録（output 513,004）からの差分 77,980 で算出。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 590,984 / cost: $165.72"
+        },
+        {
+          "date": "2026-09-15",
           "title": "FreeFree 運営者の代理掲載が RLS に拒否される不具合の原因特定と修正（所属判定をDBとそろえる） 0.29時間",
           "category": "保守",
           "outputs": [
@@ -5855,6 +5875,33 @@
           "status": "保留",
           "blockedBy": "登録の流れの簡素化（写真登録・顔の見せ方）が本番で動き、実証の登録者から写真が集まった段階で、必要性と作業時間を見て中司さんが判断する",
           "note": "2026-09-15 中司さん提起『視野に入れる』。実施時は Codex に依頼する（中司さん指示・ChatGPT 契約内の画像生成で API 課金0円）。統合仕様ノートに条件案を記録"
+        },
+        {
+          "due": "未定",
+          "title": "📣 武蔵屋マルシェのSNS初回配信の結果を確認する（Threads・Facebook・Instagram。Facebook は投稿での利用が初めて）",
+          "category": "保守",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "運営が /admin/sns で武蔵屋マルシェの下書き3件を「承認して配信」すること",
+          "note": "fc6621c。Facebook のページ用トークンは有効だが、投稿の権限（pages_manage_posts）は実投稿まで確かめられない。失敗したら投稿ログの理由を見て、SNS接続設定の再取得か権限追加を案内する。Instagram 画像は /api/og/freefree/[id]（JPEG 1080x1350）"
+        },
+        {
+          "due": "未定",
+          "title": "⏱ FreeFree 定期告知の間隔を決めて管理画面で設定する（現在は「毎月1日」）",
+          "category": "その他",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "運営が間隔（毎日／2日ごと／毎週）を決めること。1回に選ばれる FreeFree は1件なので、掲載が増えるほど1件あたりの間隔は延びる",
+          "note": "設定は /admin/sns の「定期紹介の実行間隔」。毎日にすると、配信済みの FreeFree が毎朝9時に1件ずつ承認済みで作られ、18時台にカウントダウン付きで配信される（団体・イベントの承認待ち下書きも毎日1件ずつ増える）"
+        },
+        {
+          "due": "未定",
+          "title": "🦋 SNS告知に Bluesky を追加する（FreeFree・提案）",
+          "category": "実装",
+          "priority": "低",
+          "status": "待ち",
+          "blockedBy": "CBI の Bluesky アカウントを作り、アプリパスワードを用意すること（Claude はアカウントを作れない。いま保存されている Bluesky の接続は N's factory のもので災害検索専用）",
+          "note": "Bluesky の投稿APIは無料。実装は sns_medium への値追加・投稿処理（AT Protocol の createRecord、リンクは facets）・接続設定欄・テンプレートの300字対応"
         },
         {
           "due": "未定",
