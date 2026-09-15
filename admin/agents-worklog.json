@@ -18,6 +18,25 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "FreeFree 掲載失敗で入力が消える不具合の修正＋下書き保存、団体検索の表記ゆれ対応（/orgs・代理掲載の団体選択） 0.84時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/freefree/new/page.tsx（handleCreate が失敗時に例外を投げず { error } を返す・redirect は unstable_rethrow で通す）",
+            "cidao: src/app/freefree/new/_components/NewFreefreeForm.tsx（form action→onSubmit で自前送信・失敗理由の表示・掲載中は二重押し不可・sessionStorage に下書き保存と復元（会員ID別・24時間）・復元の案内・団体選択の検索を matchesSearch に）",
+            "cidao: src/lib/search-normalize.ts（新規／NFKC・小文字化・空白と括弧と中黒の除去で照合）",
+            "cidao: src/app/orgs/_components/OrgsBrowser.tsx（名前・紹介文・登録番号を個別に matchesSearch で照合）",
+            "調査: 本番DBで3通りの掲載（CBI団体／代理／個人）をロールバック付きで模擬し、いずれも受理＝失敗はDBより手前と切り分け。有力な原因はデプロイ直後の古い画面からの送信（Server Action ID の失効・確信度 中）",
+            "検証: 検索の単体テスト12件合格（空白なし・全角英字・小文字＋括弧・中黒・全角空白・カナ区別・空語・null）／npx tsc --noEmit exit 0／npx next build 成功",
+            "本番確認: Vercel Production デプロイ success（cd0ac20）／配信JSに下書き・送信失敗の文言（09b_pm6v92g47.js）と検索の正規化処理（/orgs の 2web6dg7311-5.js）を確認",
+            "cidao: コミット cd0ac20（名指しの4ファイル。他セッションの layout.tsx 未コミット変更は含めていない。push 前に他セッションの 3d9b998 の上へ積み直し）",
+            "cidao/2026-09-15_フォーム送信失敗で入力が消える仕組みと対策.md（新規）"
+          ],
+          "hours": 0.84,
+          "partnerApproved": false,
+          "note": "ゆうさんから「掲載ボタンでエラーになり入力が全部消える」「AI読み取りは再課金されるか」の報告。再課金はされる（1回ごと・チラシ約5〜7円／URL約10〜50円・確信度 中）と回答し、読み取り結果を下書きで残すことで読み取り直しを不要にした。失ったその回の入力は復旧できていない。実際のエラー文は未確認（次回失敗すれば画面に表示される）。工数は前回記録（output 400,492）からの差分 83,651 で算出。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 484,143 / cost: $153.70"
+        },
+        {
+          "date": "2026-09-15",
           "title": "人材バンク 確認画面を「完成カード＋話しかけて直す」に作り替え＋紹介ショート動画の試作 1.5時間",
           "category": "実装",
           "outputs": [
@@ -5798,6 +5817,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🔍 FreeFree 掲載失敗の原因を確定する（ゆうさんの再試行で画面に出たエラー文を確認）",
+          "category": "保守",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "ゆうさんが掲載を再試行し、失敗した場合に表示されたエラー文を知らせてもらうこと（成功すれば、デプロイ直後の古い画面からの送信が原因だったとして閉じる）",
+          "note": "cd0ac20 で失敗理由を画面に出すようにした。模擬ではDBは3通りとも受理＝失敗はDBより手前。有力はServer Action IDの失効（確信度 中）。エラー文が出たら actions.ts の該当の throw を特定する"
+        },
         {
           "due": "未定",
           "title": "🧪 FreeFree 代理掲載・掲載終了日の実機確認（運営アカウントで1件代理掲載→一覧/詳細の表示→チラシ/URL読取で終了日が入るか→削除）",
