@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "FreeFree 告知の全自動／承認制スイッチを管理画面に追加＋武蔵屋マルシェの初回SNS配信の結果確認 0.27時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/admin/sns/_components/AutoPostToggle.tsx（kind＝proposal/freefree で文言と保存先を切替。提案用の表示は従来どおり）",
+            "cidao: src/app/admin/sns/actions.ts（setSnsAutoPost に kind・sns_freefree_auto_post へ保存）、page.tsx（設定の読込とスイッチ2つ目）",
+            "cidao: src/lib/sns-announce.ts（ON なら承認済みで作成→即配信→管理者へ「自動配信しました」をベル＋プッシュ）",
+            "確認（本番DB）: 武蔵屋マルシェの告知3件が 16:26〜16:27 に配信成功（Threads・Instagram・Facebook）。Facebook ページへの投稿も成功",
+            "検証: npx tsc --noEmit exit 0／npx next build 成功／Vercel Production success（30ee9b0）",
+            "cidao/2026-09-15_FreeFreeのSNS告知の流れとカウントダウン.md（初回配信の結果と全自動モードを追記）"
+          ],
+          "hours": 0.27,
+          "partnerApproved": false,
+          "note": "中司さん「全自動モードはなんのためにあるの？わざわざ承認しないといけなかったのか？」→既存スイッチは提案告知専用で FreeFree には効かないと説明し、3択から「FreeFree用の切替を追加」を選択。既定は OFF（承認制）で、ON にするかは運営判断。予定「初回配信の結果確認」は成功を確認したので削除。管理画面の実画面はログインが必要なため未確認。工数は前回記録（output 590,984）からの差分 26,683 で算出。session: 34c461eb-a55d-4f78-824e-0ea4e233dae3 / output: 617,667 / cost: $169.20"
+        },
+        {
+          "date": "2026-09-15",
           "title": "FreeFree 掲載時SNS告知（下書き→承認で即配信）＋定期告知のカウントダウン自動配信＋開催日の追加（DB・フォーム・AI読取・Instagram画像） 0.78時間",
           "category": "実装",
           "outputs": [
@@ -5875,15 +5891,6 @@
           "status": "保留",
           "blockedBy": "登録の流れの簡素化（写真登録・顔の見せ方）が本番で動き、実証の登録者から写真が集まった段階で、必要性と作業時間を見て中司さんが判断する",
           "note": "2026-09-15 中司さん提起『視野に入れる』。実施時は Codex に依頼する（中司さん指示・ChatGPT 契約内の画像生成で API 課金0円）。統合仕様ノートに条件案を記録"
-        },
-        {
-          "due": "未定",
-          "title": "📣 武蔵屋マルシェのSNS初回配信の結果を確認する（Threads・Facebook・Instagram。Facebook は投稿での利用が初めて）",
-          "category": "保守",
-          "priority": "高",
-          "status": "待ち",
-          "blockedBy": "運営が /admin/sns で武蔵屋マルシェの下書き3件を「承認して配信」すること",
-          "note": "fc6621c。Facebook のページ用トークンは有効だが、投稿の権限（pages_manage_posts）は実投稿まで確かめられない。失敗したら投稿ログの理由を見て、SNS接続設定の再取得か権限追加を案内する。Instagram 画像は /api/og/freefree/[id]（JPEG 1080x1350）"
         },
         {
           "due": "未定",
