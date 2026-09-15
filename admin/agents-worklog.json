@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-15",
+          "title": "人材バンク 従来の公開PRと AI インタビュー版を1画面に一本化（4つの箱）、従来PR 10人分を移し替え、本番の紹介動画1本目の自動作成を確認 0.39時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/me/talent/page.tsx（作り直し：紹介文／写真と動画／公開の設定／他己紹介）、me/talent/actions.ts（writeAction＝自己紹介文から AI 案、settingsAction＝公開範囲・声がけ受付）、src/lib/talent-bank/profile/generate.ts（generateProfileFromText）",
+            "cidao: src/app/me/pr/page.tsx（/me/talent へ転送）、src/app/talent/page.tsx（一覧は talent_profiles だけ）、talent/[id]/page.tsx（従来PR項目の表示を廃止・SNS リンクは残す）、me/page.tsx・page.tsx・me/inbox/page.tsx・me/actions.ts・talent/actions.ts（案内を新画面へ）",
+            "本番DB: 従来PR 10人分を talent_profiles/versions/publications へ移し替え（公開範囲・受付は据え置き、必須項目の欠けは declined）。scratchpad/migrate_pr.py（乾式→本番）。DB の検査 valid_talent_fields で1回弾かれ、必須8項目の扱いを直して再実行",
+            "紹介動画: 本番初回の失敗（積んだ後に消した写真を参照・404）を修正し再実行、59秒・11MB・4分13秒で完成（本人確認待ち）",
+            "検証: vitest 147件成功／tsc exit 0／eslint 0エラー／main 464960e を push（Vercel 反映と一覧の表示は確認中）"
+          ],
+          "hours": 0.39,
+          "partnerApproved": false,
+          "note": "中司さん「2系統はまとめます。ごちゃごちゃしすぎ。もっとすっきりさせたい」→案A（新しい方に一本化・移し替え・公開範囲据え置き）を承認。移し替えは本人承認・運営承認を経ずに公開中で入れた（承認者は中司さん・移行日）。従来の表 member_profiles_pr は声がけ受付の保存先として残す。工数は前回記録（output 689,503）からの差分 39,279 で算出。session: ddb12e03-626c-4c06-827d-18458e38b160 / output: 728,782 / cost: $263.96"
+        },
+        {
+          "date": "2026-09-15",
           "title": "人材バンク 他己紹介（AI下書き→運営一読→本人承認→会員向け掲載）の画面を本番反映、マイページに入口追加、紹介動画の初回作成の失敗（消した写真を指したまま）を修正 0.35時間",
           "category": "実装",
           "outputs": [
