@@ -18,6 +18,29 @@
       "actuals": [
         {
           "date": "2026-09-16",
+          "title": "コスモスパレット催しの候補取り込み（号外NET記事→下書き）＋公開/見送りの管理画面、Instagram読み取り可否の検証 0.56時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/goguynet/{cosmos,sync}.ts（記事解析・下書き同期）、__tests__（実記事12件の固定データ・16件）、src/lib/event-sync/record-run.ts（実行記録の共通化）",
+            "cidao: src/app/api/cron/goguynet-cosmos-sync/route.ts、vercel.json（毎日 21:25 UTC）、admin/events/import/{actions.ts（listCosmosCandidates/publish/dismiss・service_role＋is_admin）,page.tsx,_components/CosmosCandidates.tsx}、InzaiBunkaSyncRuns に subject 引数",
+            "調査: Instagram は保存トークンの権限が instagram_basic/pages_show_list/public_profile のみで business_discovery は #10 拒否。ハッシュタグ検索は動くが直近24時間の来場者投稿のみ。災害MAPの市長投稿はハッシュタグ検索で拾ったもの（アカウント直読みではない）",
+            "検証: tsc 0／eslint 0／vitest 58件、本番DB dry-run→書込で下書き3件（カラオケ大会 10/12・11/14・12/13）と event_sync_runs 2行を確認。管理画面のログイン後表示は目視未確認（別チャットの dev サーバーが :3123 を占有し2本目が起動不可）"
+          ],
+          "hours": 0.56,
+          "partnerApproved": false,
+          "note": "中司さん「コスモスパレットは抽出できなかった理解でよいか」→保管庫に記録なし・公式サイトは4件のみと回答し3択提示→案2（号外NET）を選択。「Instagramは直接読めたのでは」→ トークンを1回使う許可を得て検証、権限不足で不可と確認。前回記録（output 119,858）からの差分 55,914 で算出。session: 85966e1f-5e7b-4f16-8bf9-21ceb3e37d42 / output: 175,772 / cost: $44.33"
+        },
+        {
+          "date": "2026-09-16",
+          "title": "卒論：五段階を四段階へ整理（届けて回るのをやめ、いつでもDL／訪ねる／担い手に伴走）0.3時間",
+          "category": "実装",
+          "outputs": "academy/01_草稿/第5章.md（5.3を四段階に・5.6の費用の文・5.8の市民として始めること）、05_提出版/卒業論文_…_最新版.docx（23ページ）、academy/06_発表/slides.md（14・16枚目）、make_starred_talk.py（STARS表の目印を更新）、audio/01〜17.mp3、卒論発表スライド_発表用.pptx・_音声版.pptx、口述原稿.docx、site/thesis/（c0fc883）",
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "中司さんの指摘3点：(1) 学習レポートを届けて回ると作業が増える→「いつでもダウンロードできる状態を保つ」に (2)「文化財めぐりを歩く」が分かりにくい→「訪ねる（レポートを手に、位置情報と三次元地図で場所を確かめて歩く）」に言い換え (3)「次にやることを投票で決める」→「新たな担い手を募り、CiDAO の提案・投票で実行まで伴走する」に統合。五段階が四段階になったため論文5.3・5.6・5.8と発表14・16枚目をそろえた。検証：口述4,019字＝人の朗読13.0分（15分枠に約2分の余裕）、論文23ページ、突合WARNING 0、発表用17枚・クリック53＝ノートの★53で1枚ずつ一致、音声版クリック待ち0・自動再生17・自動送り17。全17枚をPDFにして中司さんへ送付。前回記録(1,719,161)以降の差分で算出。session: 8f104510-74de-47bf-8249-672356aedc78 / output: 1,750,340 / cost: $523.24"
+        },
+        {
+          "date": "2026-09-16",
           "title": "卒論：提言を「市民として始めること」中心に組み直し、市へのお願いを費用ゼロの2点に（論文5章・6章・発表17枚）0.5時間",
           "category": "実装",
           "outputs": "academy/01_草稿/第1・3・4・5・6章.md（5.5を『行政との連携についての考え方』、5.8を『市民として始めること、市への提言』に書き換え、旧提言④⑤を削除、①②を6.2へ、第4章に利害の開示）、05_提出版/卒業論文_…_最新版.docx（23ページ）、academy/06_発表/slides.md（17枚・口述3,960字）、make_starred_talk.py（STARS表を17枚53回に）、audio/01〜17.mp3、卒論発表スライド_発表用.pptx・_音声版.pptx、口述原稿.docx・.pdf、site/thesis/（bee06d7）",
@@ -6056,6 +6079,29 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-18",
+          "title": "🎪 コスモスパレット候補の初回巡回（09-17 06:25）を管理画面で確認し、カラオケ大会3件を公開か見送りにする",
+          "category": "保守",
+          "priority": "高",
+          "note": "管理画面 /admin/events/import の「コスモスパレット」欄。候補の題名は記事共通（3件とも『CosmosPalette カラオケ大会』）なので、公開前に『予選①』『決勝』を題名に足すなら「内容を直してから公開する」から編集"
+        },
+        {
+          "due": "未定",
+          "title": "📷 Instagram の指定アカウント読み取り（business_discovery）に必要な Meta アプリ権限の追加を検討する",
+          "category": "調査",
+          "priority": "低",
+          "status": "待ち",
+          "blockedBy": "Meta 開発者アプリで instagram_manage_insights 等の権限追加とアプリレビューを通す判断がされたら（you0810jmsdf 個人アカウント側の作業）",
+          "note": "2026-09-16 検証: 保存トークンで business_discovery を呼ぶと (#10) Application does not have permission。付与済みは instagram_basic / pages_show_list / public_profile のみ。通れば @cosmos_palette の投稿文を直接の情報源にでき、号外NET 依存を減らせる"
+        },
+        {
+          "due": "未定",
+          "title": "🎪 号外NET 以外の地域メディア（ちいき新聞・印西とぴっく等）も候補の情報源に加えるか検討",
+          "category": "調査",
+          "priority": "低",
+          "note": "号外NET 印西版のコスモスパレット記事は年5〜6本。取りこぼしが多いようなら追加。仕組みは src/lib/goguynet を情報源ごとに差し替えるだけ"
+        },
         {
           "due": "未定",
           "title": "🔔 「CBIからの連絡を許可」チェックを実際に何かへ効かせるか、外すかを決める（説明文は2026-09-16に実態へ修正済み）",
