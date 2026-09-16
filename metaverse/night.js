@@ -73,9 +73,10 @@
   // ゲート定義から、実際に使う図柄キーと色キーを決める（図柄セットが指定されていればそれを優先）
   function artOf(def) {
     const set = ART_SETS[artKey] || {};
+    const design = set.design || def.design;
     return {
-      design: set.design || def.design,
-      color: set.color || def.color,
+      design: design,
+      color: COLORED_DESIGNS[design] ? "logo" : (set.color || def.color),  // ロゴは自分の色で光らせる
       flip: set.noFlip ? false : !!def.flip,
     };
   }
@@ -95,23 +96,23 @@
   // 高さは 160〜480m の間で大きく上下させ、上昇・降下の起伏をつける（2026-09-04 中司さん指示）。
   // 順路：印旛日本医大駅（南東・スタート側）→ 本埜公民館 → 小林駅 → 印西牧の原駅 → ジョイフル本田 → 印西市役所 → 木下駅 → 松山下公園 → イオンモール → 千葉NT中央駅（ゴール）
   const FULL_COURSE = [
-    { name: "印旛日本医大駅", lon: 140.203402, lat: 35.787590, height: 200, design: "kihon", color: "gold", size: 130 },
+    { name: "印旛日本医大駅", lon: 140.203402, lat: 35.787590, height: 200, design: "cbi", color: "logo", size: 130 },  // 1番＝CBIロゴ（2026-09-16。SNSで反応を見るための自団体ロゴ）
     { name: "本埜公民館", lon: 140.197952, lat: 35.808392, height: 420, design: "ongaku", color: "sky", size: 130 },
-    { name: "小林駅", lon: 140.193301, lat: 35.830578, height: 180, design: "placard", color: "green", size: 140 },
-    { name: "印西牧の原駅", lon: 140.166716, lat: 35.803497, height: 450, design: "kihon", color: "pink", size: 130, flip: true },
-    { name: "ジョイフル本田千葉ニュータウン店", lon: 140.155674, lat: 35.807083, height: 220, design: "ongaku", color: "white", size: 130, flip: true },
-    { name: "印西市役所", lon: 140.145795, lat: 35.832338, height: 480, design: "placard", color: "orange", size: 140, flip: true },
+    { name: "小林駅", lon: 140.193301, lat: 35.830578, height: 180, design: "kihon", color: "green", size: 130 },
+    { name: "印西牧の原駅", lon: 140.166716, lat: 35.803497, height: 450, design: "ongaku", color: "pink", size: 130, flip: true },
+    { name: "ジョイフル本田千葉ニュータウン店", lon: 140.155674, lat: 35.807083, height: 220, design: "kihon", color: "white", size: 130, flip: true },
+    { name: "印西市役所", lon: 140.145795, lat: 35.832338, height: 480, design: "ongaku", color: "orange", size: 130, flip: true },
     { name: "木下駅", lon: 140.148377, lat: 35.838908, height: 160, design: "kihon", color: "violet", size: 130 },
     { name: "松山下公園", lon: 140.114947, lat: 35.824677, height: 400, design: "ongaku", color: "cyan", size: 130 },
-    { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 240, design: "placard", color: "magenta", size: 140 },
+    { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 240, design: "kihon", color: "magenta", size: 130 },
     { name: "千葉ニュータウン中央駅", lon: 140.116119, lat: 35.799983, height: 380, design: "xmas", color: "xmas", size: 160, goal: true },
   ];
   // 短縮コース（会場向け・約6km）：印西牧の原駅 → BIG HOP → ジョイフル本田 → イオンモール → 千葉NT中央駅
   const SHORT_COURSE = [
-    { name: "印西牧の原駅", lon: 140.166716, lat: 35.803497, height: 380, design: "kihon", color: "gold", size: 130 },
+    { name: "印西牧の原駅", lon: 140.166716, lat: 35.803497, height: 380, design: "cbi", color: "logo", size: 130 },  // 1番＝CBIロゴ
     { name: "BIG HOPガーデンモール印西", lon: 140.162553, lat: 35.803195, height: 180, design: "ongaku", color: "sky", size: 130 },
-    { name: "ジョイフル本田千葉ニュータウン店", lon: 140.155674, lat: 35.807083, height: 440, design: "placard", color: "green", size: 140 },
-    { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 200, design: "kihon", color: "pink", size: 130, flip: true },
+    { name: "ジョイフル本田千葉ニュータウン店", lon: 140.155674, lat: 35.807083, height: 440, design: "kihon", color: "green", size: 130 },
+    { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 200, design: "ongaku", color: "pink", size: 130, flip: true },
     { name: "千葉ニュータウン中央駅", lon: 140.116119, lat: 35.799983, height: 380, design: "xmas", color: "xmas", size: 160, goal: true },
   ];
   // コース一覧。serverKey は CiDAO metaverse-tt のコース key（night=10か所・night5=5か所）。URL ?course=short で短縮を初期選択
