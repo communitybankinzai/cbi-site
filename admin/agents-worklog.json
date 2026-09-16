@@ -17,6 +17,19 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-17",
+          "title": "SNS予約キューのFacebook投稿を開通（GASに認証設定）＋停電問いかけをInstagram(JPEG)・Facebookへ再投稿 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "cbi-admin-gas スクリプトプロパティ FB_PAGE_ID／FB_PAGE_TOKEN（WebApp setFacebookCredentials で設定）",
+            "site/assets/sns/2026-09-16_teiden/teiden-image.jpg",
+            "SNS予約投稿キュー q1789594491713（Instagram 06:39 成功）／q1789595758001（Facebook 07:09 成功）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "Facebook宛ては『認証未設定』で失敗していた。CiDAO app_settings.sns_facebook_auth のページトークン（PAGE・無期限・pages_manage_posts あり、data_access_expires_at=1796867502）を値を出さずに検証し、GAS WebApp の setFacebookCredentials で設定（中司さんB案）。Instagram は PNG で失敗→JPEG で成功。前件（output 76,716）との差分 14,276 → 0.1時間\nsession: e93e26f4-222b-44cf-be09-ef5e3343b046 / output: 90,992 / cost: $30.73"
+        },
+        {
           "date": "2026-09-16",
           "title": "停電の重ね表示：東電の見せ方・規約・類似事例の調査、イメージ図作成、市民へのSNS問いかけ投稿 0.4時間",
           "category": "広報",
@@ -6227,14 +6240,7 @@
           "title": "📷 更新履歴の自動告知（NewsPublish.gs）で Instagram だけ毎回失敗する件を直す（画像をJPEGにする）",
           "category": "保守",
           "priority": "中",
-          "note": "予約キューの記録で、画像投稿のInstagramは 8/08・8/25・9/01（NewsPublish の即時告知）と 9/16（PNG）がすべて失敗、動画4件と 9/17 のJPEG再投稿は成功。Instagram の投稿APIは JPEG のみ正式対応なので、NewsPublish が渡す画像（OG画像等）をJPEGで用意する。予約キュー（SnsQueue.gs）にも、Instagram宛てで画像URLが .png のときは登録時に警告する案。"
-        },
-        {
-          "due": "未定",
-          "title": "📘 CBI予約投稿キューの Facebook 投稿を使えるようにする（FB_PAGE_TOKEN／FB_PAGE_ID 未設定）",
-          "category": "保守",
-          "priority": "低",
-          "note": "2026-09-17 に初めて Facebook 宛てを予約したところ『認証未設定（FB_PAGE_TOKEN/FB_PAGE_ID）』で失敗。GAS（cbi-admin-gas）のスクリプトプロパティが未設定。SnsQueue.gs の setFacebookCredentials_(pageId, token) で設定できる。ページトークンは CiDAO /admin/sns の Facebook 欄と同じもの（Meta開発者アプリ手順は cidao/2026-08-06_Meta開発者アプリとSNSトークン取得手順.md）。設定はGASエディタでの実行が必要。"
+          "note": "予約キューの記録で、画像投稿のInstagramは 8/08・8/25・9/01（NewsPublish の即時告知）と 9/16（PNG）がすべて失敗、動画4件と 9/17 のJPEG再投稿は成功。Instagram の投稿APIは JPEG のみ正式対応なので、NewsPublish が渡す画像（OG画像等）をJPEGで用意する。予約キュー（SnsQueue.gs）にも、Instagram宛てで画像URLが .png のときは登録時に警告する案。 ⚠ 2026-09-17 別セッション（49281123）の調査では、告知の失敗はPNGではなく告知用画像がそもそも作られていないことが原因の可能性が高い（確信度：中〜高）。着手前にそちらの結論を確認すること。"
         },
         {
           "due": "2026-09-24",
