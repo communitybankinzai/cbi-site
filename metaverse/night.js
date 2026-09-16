@@ -64,14 +64,14 @@
   };
   // 多色でサンプリングする図柄（白い背景を除いた画素の色をそのまま光の色にする）
   const COLORED_DESIGNS = { cbi: true };
-  // 光の粒にせず、絵のまま空中の板に貼って見せる図柄（市の公式イラスト）。
-  // 粒にすると顔が読めずいんザイ君に見えなかったため（2026-09-16 中司さん確認）。絵は変えず、裏から見ても反転しないよう表裏2枚に貼る
-  const PANEL_DESIGNS = {
+  // 市の公式イラスト（塗りのある絵）は、黒い輪郭線だけを拾って光の点にする（今朝までの線画と同じ見え方）。
+  // 板でそのまま貼る方式と電球の枠は「イルミネーションに戻して」との指示でやめた（2026-09-16 中司さん）
+  const OUTLINE_DESIGNS = {
     w_xmas: true, w_tree: true, w_illumi: true, w_muffler: true,
     w_present: true, w_party: true, w_song: true, w_kotatsu: true,
   };
-  // design: "random" のゲートに入れる図柄（ゴールのクリスマスを除く7種）。ページを開くたびに並びが変わる（2026-09-16 中司さん指示）
-  const RANDOM_POOL = ["w_tree", "w_illumi", "w_muffler", "w_present", "w_party", "w_song", "w_kotatsu"];
+  // design: "random" のゲートに入れる図柄（ゴールのクリスマスを除く6種。ツリーは輪郭が残らず外した）。ページを開くたびに並びが変わる（2026-09-16 中司さん指示）
+  const RANDOM_POOL = ["w_illumi", "w_muffler", "w_present", "w_party", "w_song", "w_kotatsu"];
 
   // ---- 図柄セット（2026-09-09）----
   // 既定は inzai（市のデザインガイドマニュアルに合わせた表示）。2026-09-08 に代表の承認を得て使用申請へ進む方針。
@@ -332,7 +332,24 @@
       Math.min(255, Math.round(b * 1.45 + 62)),
     ];
   }
-  function sampleImage(img, flip, colored) {
+  // 公式イラストの輪郭の点の色：すぐ近く（5px 以内）の塗りの色を1つ選び、色みを保って明るくする（2026-09-16 中司さん案A）。
+  // 色は元の絵にある色だけなので、マニュアル p13 の「色を変える」には当たらない。近くに塗りがなければ白
+  function outlineColor(rgba, W, H, x, y) {
+    const R = 5;
+    for (let tries = 0; tries < 24; tries++) {
+      const xx = x + Math.round((Math.random() * 2 - 1) * R), yy = y + Math.round((Math.random() * 2 - 1) * R);
+      if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+      const i = (yy * W + xx) * 4;
+      if (rgba[i + 3] < 128) continue;
+      const m = Math.max(rgba[i], rgba[i + 1], rgba[i + 2]);
+      if (m < 80) continue;                                  // 輪郭線そのもの
+      const k = Math.min(1.5, 255 / m);
+      return [Math.min(255, Math.round(rgba[i] * k)), Math.min(255, Math.round(rgba[i + 1] * k)), Math.min(255, Math.round(rgba[i + 2] * k))];
+    }
+    return [255, 240, 245];
+  }
+  // outline＝公式イラスト：真っ黒の輪郭線だけを拾う（紺の背景・緑の木などの暗い色は拾わない）。下部の文字切り落としもしない
+  function sampleImage(img, flip, colored, outline) {
     const cv = document.createElement("canvas");
     const ctx = cv.getContext("2d", { willReadFrequently: true });
     // ① 全体
@@ -345,7 +362,7 @@
     if (s0.maxX < 0) return null;
     const bw = s0.maxX - s0.minX + 1, bh = s0.maxY - s0.minY + 1;
     // 図柄の範囲の半分以上が不透明＝「抜き」型。白地で塗られたロゴ（colored）は抜き型ではないので除く
-    const holes = !colored && s0.nOpaque > bw * bh * 0.5;
+    const holes = !colored && !outline && s0.nOpaque > bw * bh * 0.5;
     // ② 図柄の範囲だけを拡大して描き直す（元画像の座標に戻してから）
     const sx = s0.minX / W0 * img.width, sy = s0.minY / H0 * img.height;
     const sw = bw / W0 * img.width, sh = bh / H0 * img.height;
@@ -356,7 +373,7 @@
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     const s = scanPixels(ctx, W, H);
-    const rgba = colored ? ctx.getImageData(0, 0, W, H).data : null;
+    const rgba = (colored || outline) ? ctx.getImageData(0, 0, W, H).data : null;
     const lit = new Uint8Array(W * H);
     const rowCount = new Int32Array(H);
     if (holes) {
@@ -379,16 +396,20 @@
         lit[k] = 1; rowCount[y]++;
       }
     } else {
-      for (let k = 0; k < W * H; k++) if (s.dark[k] && !s.red[k]) { lit[k] = 1; rowCount[Math.floor(k / W)]++; }
+      for (let k = 0; k < W * H; k++) {
+        if (!s.dark[k] || s.red[k]) continue;
+        if (outline && Math.max(rgba[k * 4], rgba[k * 4 + 1], rgba[k * 4 + 2]) >= 80) continue;
+        lit[k] = 1; rowCount[Math.floor(k / W)]++;
+      }
     }
     // ロゴ文字を切り落とす：上から最初の点のある行を探し、下へたどって空行が続くところで切る
     let top = -1;
     for (let y = 0; y < H; y++) if (rowCount[y] > 0) { top = y; break; }
     if (top < 0) return null;
     let bottom = H - 1, gap = 0;
-    if (colored) { while (bottom > top && rowCount[bottom] === 0) bottom--; }  // ロゴは文字を切らず、最下行まで使う
+    if (colored || outline) { while (bottom > top && rowCount[bottom] === 0) bottom--; }  // ロゴ・公式イラストは切らず、最下行まで使う
     const gapNeed = Math.max(4, Math.round(H * 0.02));
-    for (let y = top; y < H && !colored; y++) {
+    for (let y = top; y < H && !colored && !outline; y++) {
       if (rowCount[y] === 0) { gap++; if (gap >= gapNeed) { bottom = y - gap; break; } }
       else gap = 0;
     }
@@ -400,6 +421,9 @@
       if (colored) {
         const i = (y * W + x) * 4;
         const lc = litColor(rgba[i], rgba[i + 1], rgba[i + 2]);
+        pts.push([jx, jy, lc[0], lc[1], lc[2]]);
+      } else if (outline) {
+        const lc = outlineColor(rgba, W, H, x, y);
         pts.push([jx, jy, lc[0], lc[1], lc[2]]);
       } else {
         pts.push([jx, jy]);
@@ -476,12 +500,8 @@
         scaleByDistance: new Cesium.NearFarScalar(150, 2.2, 4000, 0.45),
       });
     }
-    g.dotSize = 6;
-    if (sample.panel) addBulbFrame(g, ux, uy);
     g.points.show = window.nightOn;
     viewer.scene.primitives.add(g.points);
-    if (g.panel) viewer.scene.primitives.remove(g.panel);
-    g.panel = sample.panel ? buildPanel(g, sample.panel, g.halfW * 2, g.halfH * 2, f) : null;
     // 番号ラベル（図柄の上）
     if (!labels) { labels = new Cesium.LabelCollection(); viewer.scene.primitives.add(labels); labels.show = window.nightOn; }
     local.x = 0; local.y = 0; local.z = g.halfH + 18;
@@ -498,63 +518,6 @@
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
     });
   }
-  // 公式イラストの外側を電球で縁取り、イルミネーションのゲートにする（2026-09-16 中司さん「イルミネーションぽくない」）。
-  // 電球は絵から離して並べるので、イラスト自体には重ならない。またたき・くぐり演出は g.points の仕組みをそのまま使う
-  const BULB_COLORS = ["#ff4d4d", "#ffd166", "#6ee7a8", "#7cc4ff", "#fff3d6"];
-  function addBulbFrame(g, ux, uy) {
-    g.dotSize = 9;
-    const local = new Cesium.Cartesian3();
-    [{ m: 9, step: 5.5 }, { m: 16, step: 7.5 }].forEach(function (row, ri) {
-      const a = g.halfW + row.m, b = g.halfH + row.m, e = 2 / 5;   // 角の丸い長方形（超楕円 n=5）
-      const N = 1600, pts = [];
-      for (let i = 0; i <= N; i++) {
-        const t = (i / N) * Math.PI * 2, c = Math.cos(t), sn = Math.sin(t);
-        pts.push([a * Math.sign(c) * Math.pow(Math.abs(c), e), b * Math.sign(sn) * Math.pow(Math.abs(sn), e)]);
-      }
-      let acc = 0, next = 0, k = 0;
-      for (let i = 1; i <= N; i++) {
-        acc += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
-        if (acc < next) continue;
-        next += row.step;
-        local.x = ux * pts[i][0]; local.y = uy * pts[i][0]; local.z = pts[i][1];
-        const c = Cesium.Color.fromCssColorString(BULB_COLORS[(k++ + ri * 2) % BULB_COLORS.length]);
-        g.base.push(c);
-        g.points.add({
-          position: Cesium.Matrix4.multiplyByPoint(g.frame, local, new Cesium.Cartesian3()),
-          color: c, pixelSize: g.dotSize,
-          outlineColor: c.withAlpha(0.35), outlineWidth: 3,        // 電球のまわりの淡い光
-          scaleByDistance: new Cesium.NearFarScalar(150, 2.2, 4000, 0.45),
-        });
-      }
-    });
-  }
-  // 絵を縦の板に貼る。表（来る方向）と裏に1枚ずつ、どちらも正しい向きで貼るので裏から見ても左右反転しない
-  function buildPanel(g, img, w, h, f) {
-    const nx = Math.sin(f), ny = Math.cos(f);            // 板の正面の向き（来る方向）
-    function side(sign) {
-      // 列：板の横（見る人の右）×幅／縦×高さ／法線。PlaneGeometry は XY 平面・法線 +Z の単位正方形
-      const m = new Cesium.Matrix4(
-        -sign * Math.cos(f) * w, 0, sign * nx, 0,
-        sign * Math.sin(f) * w, 0, sign * ny, 0,
-        0, h, 0, 0,
-        0, 0, 0, 1);
-      return new Cesium.GeometryInstance({
-        geometry: new Cesium.PlaneGeometry({ vertexFormat: Cesium.MaterialAppearance.MaterialSupport.TEXTURED.vertexFormat }),
-        modelMatrix: Cesium.Matrix4.multiply(g.frame, m, new Cesium.Matrix4()),
-      });
-    }
-    const panel = new Cesium.Primitive({
-      geometryInstances: [side(1), side(-1)],
-      appearance: new Cesium.MaterialAppearance({
-        material: Cesium.Material.fromType("Image", { image: img.src }),
-        translucent: true, flat: true, closed: true,   // closed＝裏面を描かない（裏から見えるのは裏用の1枚だけ）
-      }),
-      asynchronous: false,
-    });
-    panel.show = window.nightOn;
-    viewer.scene.primitives.add(panel);
-    return panel;
-  }
   let gatesLoading = false;
   // コースを切り替える：光の粒とラベルを作り直す（レース中は不可）
   function setCourse(key) {
@@ -564,10 +527,7 @@
     COURSE = COURSES[key].gates;
     START_POINT = COURSES[key].start;
     try { localStorage.setItem(COURSE_KEY_STORE, key); } catch (e) { /* 保存できなくても続ける */ }
-    gates.forEach(function (g) {
-      if (g.points) viewer.scene.primitives.remove(g.points);
-      if (g.panel) viewer.scene.primitives.remove(g.panel);
-    });
+    gates.forEach(function (g) { if (g.points) viewer.scene.primitives.remove(g.points); });
     if (labels) labels.removeAll();
     gates = makeGateObjects();
     gatesLoading = false;
@@ -582,10 +542,7 @@
     gates.forEach(function (g) {
       const art = artOf(g.def);
       loadImage(art.design).then(function (img) {
-        // 公式イラストは粒にせず、画像全体を板として置く（点は作らない）
-        const s = PANEL_DESIGNS[art.design]
-          ? { pts: [], top: 0, bottom: img.naturalHeight, minX: 0, maxX: img.naturalWidth, panel: img }
-          : sampleImage(img, art.flip, !!COLORED_DESIGNS[art.design]);
+        const s = sampleImage(img, art.flip, !!COLORED_DESIGNS[art.design], !!OUTLINE_DESIGNS[art.design]);
         if (!s) { console.warn("夜景: ゲート" + (g.index + 1) + " の図柄から光の粒を作れませんでした"); return; }
         buildGate(g, s);
       }).catch(function (e) { console.warn("夜景: " + e.message); });
@@ -651,7 +608,6 @@
     gates.forEach(function (g) {
       if (!g.points || (burstingUntil[g.index] || 0) > now) return;
       const n = g.points.length;
-      if (!n) return;                                      // 板で見せる図柄は粒がない
       const nextIdx = tt.active ? tt.pos : -1;
       const dim = tt.active && g.index < tt.pos;          // 通過済みは控えめに
       const emph = g.index === nextIdx;                    // 次のゲートは強めに脈打つ
@@ -668,7 +624,7 @@
         g._emph = emph; g._dim = dim;
         for (let i = 0; i < n; i++) {
           const p = g.points.get(i);
-          p.pixelSize = (g.dotSize || 6) + (emph ? 2 : 0);
+          p.pixelSize = emph ? 8 : 6;
           p.color = dim ? Cesium.Color.multiplyByScalar(g.base[i], 0.45, new Cesium.Color()) : g.base[i];
         }
       }
@@ -689,7 +645,7 @@
     function step() {
       const t = (performance.now() - start) / 1600;
       if (t >= 1) {
-        for (let i = 0; i < n; i++) { const p = g.points.get(i); p.color = g.base[i]; p.pixelSize = g.dotSize || 6; }
+        for (let i = 0; i < n; i++) { const p = g.points.get(i); p.color = g.base[i]; p.pixelSize = 6; }
         g._emph = undefined;                             // 次の twinkle で強調・減光を塗り直す
         return;
       }
@@ -697,7 +653,7 @@
       for (let i = 0; i < n; i++) {
         const p = g.points.get(i);
         p.color = Cesium.Color.lerp(g.base[i], white, k, new Cesium.Color());
-        p.pixelSize = (g.dotSize || 6) + 10 * k;
+        p.pixelSize = 6 + 10 * k;
       }
       requestAnimationFrame(step);
     }
@@ -968,7 +924,7 @@
       b.uniforms.sigma = 2.5;
       b.uniforms.stepSize = 1.0;
     } catch (e) { /* ブルームの無い版でも続ける */ }
-    gates.forEach(function (g) { if (g.points) g.points.show = !!on; if (g.panel) g.panel.show = !!on; });
+    gates.forEach(function (g) { if (g.points) g.points.show = !!on; });
     if (labels) labels.show = !!on;
     if (stringPoints) stringPoints.show = !!on;
     hudEl.classList.toggle("on", !!on);
