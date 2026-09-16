@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-17",
+          "title": "千葉豪雨の県補正予算SNS投稿：事実確認・図解JPEG作成・3媒体予約 0.3時間",
+          "category": "広報",
+          "outputs": [
+            "site/assets/sns/2026-09-17_chiba-gouu-hosei/card.jpg（1080×1350）",
+            "site/assets/sns/2026-09-17_chiba-gouu-hosei/card_source.html",
+            "site/assets/sns/2026-09-17_chiba-gouu-hosei/caption.md",
+            "site/admin/changelog.json",
+            "SNS予約キュー q1789600827079（Threads・短縮版426字）／q1789600830244（Instagram＋Facebook・全文757字）いずれも 2026/09/17 12:30"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "中司さんが用意した投稿文案と図解案を受け、公開前に数字と表現を一次資料で照合した。74億円＝73億9,600万円（日刊建設工業9/17・NHK）、新規『都市型水害の対策検討』2億円・アンダーパス進入防止3.6億円・公共土木復旧28.6億円、印西市の農業被害4項目は県農林水産部の9/15正午時点PDFの各表に印西市の記載あり、写真募集は県土整備政策課9/1〜9/30で確認。⚠ 文案の『河川整備だけでは対応が難しい内水氾濫が各地で同時多発』は知事X投稿の原文（同時多発したのは道路冠水・家屋浸水・帰宅困難／氾濫は内水・外水）と違うため修正、主語『私』を『CBI』に変更。図解は puppeteer で HTML→PNG→JPEG（Instagram は JPEG 必須）、背景は気象庁の市区町村境界 GeoJSON から作った印西市の実際の市域界。等倍で小文字部分を切り出して文字化けがないことを確認。⚠ 予約キュー（SnsQueue.gs）は Threads の500字上限を検査しないため、全文757字をそのまま入れると Threads だけ失敗する。Threads は426字の短縮版として別行で予約した。なお作業中、credentials.md の該当行をマスクして表示する際に正規表現が行ラベルに一致せず、管理GASのパスワードがツール出力に一度表示された（会話本文には転記していない）。前回記録(219,773)以降の差分で算出。session: 658daf6d-86cc-4171-90ba-a1d34e08df8b / output: 250,670 / cost: $101.79"
+        },
+        {
+          "date": "2026-09-17",
           "title": "更新履歴のIG告知が毎回失敗する原因調査（PNGではなくVercelの署名キー未設定と特定）＋キー登録支援＋N's factoryのIG用画像をJPEG化 0.2時間",
           "category": "保守",
           "outputs": [
@@ -6248,6 +6263,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-17",
+          "title": "📣 千葉豪雨の県補正予算投稿（9/17 12:30・3媒体）の結果を確認する",
+          "category": "広報",
+          "priority": "中",
+          "note": "予約キュー q1789600827079（Threads短縮版）と q1789600830244（Instagram＋Facebook全文・画像 assets/sns/2026-09-17_chiba-gouu-hosei/card.jpg）。12:45以降に listSnsQueue で状態が posted か、結果メモを確認し、各媒体で画像と本文が正しく出ているか目視する。failed なら結果メモの API 応答から原因を特定する。"
+        },
+        {
+          "due": "未定",
+          "title": "🧰 SNS予約キューで Threads の500字超を登録時に検知する",
+          "category": "保守",
+          "priority": "低",
+          "note": "cbi-admin-gas/SnsQueue.gs の addSnsQueuePost_ は本文の長さを検査しないため、Threads 宛てで500字を超えると投稿時に失敗する（2026-09-17 に757字の本文で気づき、Threads だけ短縮版を別行で予約して回避）。登録時に error:'threads_text_too_long' を返すか、管理画面で文字数を表示するかを決める。clasp deploy は WebApp の公開設定をリセットするので、反映はGASエディタから行うこと。"
+        },
         {
           "due": "未定",
           "title": "📷 次の更新履歴お知らせで Instagram 告知が成功するか確認する（失敗なら GAS の NEWS_OG_SECRET を credentials.md の値に入れ直す）",
