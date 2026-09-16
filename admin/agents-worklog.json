@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-16",
+          "title": "案C実装：広報読み取りの sonnet 化＋費用記録、ちいき新聞・市サイトカレンダーの候補取り込み 0.49時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/api/events/scan-pdf/route.ts（KOUHOU_SCAN_MODEL 既定 claude-sonnet-5、api_usage へ purpose=event_scan_pdf を記録、cost_jpy を返す）、KouhouPdfImport.tsx（読み取り後に費用表示）、admin/events/import/page.tsx（今月／累計の費用）",
+            "cidao: src/lib/chiicomi/press.ts＋__tests__、src/lib/goguynet/{cosmos,sync}.ts（媒体共通化・複数媒体・cosmospalette≒コスモスパレット判定）",
+            "cidao: src/lib/inzai-city/{calendar,sync}.ts＋__tests__（実HTML 5本・16件）、src/app/api/cron/inzai-city-sync/route.ts、vercel.json（21:30 UTC）、actions.ts／CosmosCandidates.tsx（3情報源共通の候補一覧・バッジ）",
+            "本番: 市サイトから下書き14件（重複5件スキップ）、ちいき新聞分は既存3件と重複なし。検証: tsc 0／eslint 0／vitest 228件（lib 全体）／dry-run→書込"
+          ],
+          "hours": 0.49,
+          "partnerApproved": false,
+          "note": "中司さん「ちいき新聞・印西とぴっく等の追加を検討」「広報の画像読み取りはAPI料が高かった、サイト直読みで代替できないか」→調査の3択で C を選択。市サイト直読みは広報の代わりにならないため、費用はモデル変更で下げ、市サイトは候補として追加。ログイン後の管理画面表示は目視未確認。前回記録（output 198,383）からの差分 49,384 で算出。session: 85966e1f-5e7b-4f16-8bf9-21ceb3e37d42 / output: 247,767 / cost: $61.96"
+        },
+        {
+          "date": "2026-09-16",
           "title": "CiDAO ホーム導線の一本化（左上の固定ボタン廃止・余白だけ TopBarSpacer として残す） 0.2時間",
           "category": "実装",
           "outputs": [
@@ -6135,13 +6149,18 @@
       ],
       "plans": [
         {
-          "due": "未定",
-          "title": "📰 広報いんざい読み取りの費用対策と、市サイト・ちいき新聞の追加取り込みの方針を決める（3択提示済み）",
-          "category": "実装",
+          "due": "2026-09-18",
+          "title": "🗓 市サイト候補14件（クライミング教室・献血・報告会 等）を管理画面で確認し、催しでないもの（献血のお知らせ等）は見送りにする",
+          "category": "保守",
           "priority": "中",
-          "status": "保留",
-          "blockedBy": "中司さんが 2026-09-16 提示の3択（A: 広報は sonnet/haiku に下げ＋使用量記録／B: 市カレンダー自動取り込みを追加し広報は手動継続／C: A＋B＋ちいき新聞候補化）のどれかを選んだら",
-          "note": "根拠は cidao/2026-09-16_印西イベント情報源の取得可否調査.md。市カレンダーは広報25件中1件しか重ならないため『置き換え』は不可。scan-pdf は api_usage に記録していないので実費が出せない（記録追加は A に含める）"
+          "note": "/admin/events/import の候補一覧。バッジ「市サイト」。時間が仮置き（09:00〜17:00）のものは「内容を直してから公開する」で時間を入れる。10/16〜11/6 のニュースポーツ教室は4回分"
+        },
+        {
+          "due": "2026-10-05",
+          "title": "📰 広報いんざい10月号を sonnet で読み取り、抽出の質（件数・日時の正確さ）が opus と変わらないかと実費を確認する",
+          "category": "保守",
+          "priority": "中",
+          "note": "質が落ちていれば KOUHOU_SCAN_MODEL を claude-opus-5 に戻すか、haiku を試す（cost_rates に haiku の単価行が必要）。実費は管理画面「広報いんざいから取り込む」の今月／累計"
         },
         {
           "due": "未定",
