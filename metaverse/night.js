@@ -476,6 +476,8 @@
         scaleByDistance: new Cesium.NearFarScalar(150, 2.2, 4000, 0.45),
       });
     }
+    g.dotSize = 6;
+    if (sample.panel) addBulbFrame(g, ux, uy);
     g.points.show = window.nightOn;
     viewer.scene.primitives.add(g.points);
     if (g.panel) viewer.scene.primitives.remove(g.panel);
@@ -494,6 +496,36 @@
       horizontalOrigin: Cesium.HorizontalOrigin.CENTER, verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
       scaleByDistance: new Cesium.NearFarScalar(300, 1.3, 6000, 0.5),
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
+    });
+  }
+  // 公式イラストの外側を電球で縁取り、イルミネーションのゲートにする（2026-09-16 中司さん「イルミネーションぽくない」）。
+  // 電球は絵から離して並べるので、イラスト自体には重ならない。またたき・くぐり演出は g.points の仕組みをそのまま使う
+  const BULB_COLORS = ["#ff4d4d", "#ffd166", "#6ee7a8", "#7cc4ff", "#fff3d6"];
+  function addBulbFrame(g, ux, uy) {
+    g.dotSize = 9;
+    const local = new Cesium.Cartesian3();
+    [{ m: 9, step: 5.5 }, { m: 16, step: 7.5 }].forEach(function (row, ri) {
+      const a = g.halfW + row.m, b = g.halfH + row.m, e = 2 / 5;   // 角の丸い長方形（超楕円 n=5）
+      const N = 1600, pts = [];
+      for (let i = 0; i <= N; i++) {
+        const t = (i / N) * Math.PI * 2, c = Math.cos(t), sn = Math.sin(t);
+        pts.push([a * Math.sign(c) * Math.pow(Math.abs(c), e), b * Math.sign(sn) * Math.pow(Math.abs(sn), e)]);
+      }
+      let acc = 0, next = 0, k = 0;
+      for (let i = 1; i <= N; i++) {
+        acc += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+        if (acc < next) continue;
+        next += row.step;
+        local.x = ux * pts[i][0]; local.y = uy * pts[i][0]; local.z = pts[i][1];
+        const c = Cesium.Color.fromCssColorString(BULB_COLORS[(k++ + ri * 2) % BULB_COLORS.length]);
+        g.base.push(c);
+        g.points.add({
+          position: Cesium.Matrix4.multiplyByPoint(g.frame, local, new Cesium.Cartesian3()),
+          color: c, pixelSize: g.dotSize,
+          outlineColor: c.withAlpha(0.35), outlineWidth: 3,        // 電球のまわりの淡い光
+          scaleByDistance: new Cesium.NearFarScalar(150, 2.2, 4000, 0.45),
+        });
+      }
     });
   }
   // 絵を縦の板に貼る。表（来る方向）と裏に1枚ずつ、どちらも正しい向きで貼るので裏から見ても左右反転しない
@@ -636,7 +668,7 @@
         g._emph = emph; g._dim = dim;
         for (let i = 0; i < n; i++) {
           const p = g.points.get(i);
-          p.pixelSize = emph ? 8 : 6;
+          p.pixelSize = (g.dotSize || 6) + (emph ? 2 : 0);
           p.color = dim ? Cesium.Color.multiplyByScalar(g.base[i], 0.45, new Cesium.Color()) : g.base[i];
         }
       }
@@ -657,7 +689,7 @@
     function step() {
       const t = (performance.now() - start) / 1600;
       if (t >= 1) {
-        for (let i = 0; i < n; i++) { const p = g.points.get(i); p.color = g.base[i]; p.pixelSize = 6; }
+        for (let i = 0; i < n; i++) { const p = g.points.get(i); p.color = g.base[i]; p.pixelSize = g.dotSize || 6; }
         g._emph = undefined;                             // 次の twinkle で強調・減光を塗り直す
         return;
       }
@@ -665,7 +697,7 @@
       for (let i = 0; i < n; i++) {
         const p = g.points.get(i);
         p.color = Cesium.Color.lerp(g.base[i], white, k, new Cesium.Color());
-        p.pixelSize = 6 + 10 * k;
+        p.pixelSize = (g.dotSize || 6) + 10 * k;
       }
       requestAnimationFrame(step);
     }
