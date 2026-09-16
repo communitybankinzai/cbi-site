@@ -926,7 +926,9 @@
     if (tileset) tileset.customShader = on ? nightShader : undefined;
     try {
       const b = sc.postProcessStages.bloom;
-      b.enabled = !!on && !liteOn;
+      // 光のにじみは使わない：画面全体の色が明るく紫寄りに変わり、いんザイ君の公式色（体 241,137,173）が
+      // 255,164,255 になっていた（2026-09-16 実測）。マニュアル p13「色を変える」に当たらないよう切る
+      b.enabled = false;
       b.uniforms.glowOnly = false;
       b.uniforms.contrast = 128;
       b.uniforms.brightness = -0.3;
