@@ -52,9 +52,26 @@
     ongaku: "assets/night/inzaikun_ongaku.svg",   // 音楽（A4の隅に小さく描かれている）
     placard: "assets/night/inzaikun_placard.svg", // プラカード（顔のアップ）
     cbi: "assets/night/cbi_logo.png",             // CBIロゴ（多色・白背景。色をそのまま光にする）
+    // 市の公式デザイン（市サイト配布のGIFを600pxのPNGにしたもの・背景は透明）。冬・クリスマス系8種（2026-09-16）
+    w_xmas: "assets/night/official/w_xmas.png",         // 11-11 クリスマス（ゴール固定）
+    w_tree: "assets/night/official/w_tree.png",         // 11-17 ツリー
+    w_illumi: "assets/night/official/w_illumi.png",     // 11-18 イルミネーション
+    w_muffler: "assets/night/official/w_muffler.png",   // 11-10 マフラー
+    w_present: "assets/night/official/w_present.png",   // 04-21 プレゼント
+    w_party: "assets/night/official/w_party.png",       // 04-23 パーティー
+    w_song: "assets/night/official/w_song.png",         // 08-01 歌
+    w_kotatsu: "assets/night/official/w_kotatsu.png",   // 11-01 こたつ
   };
   // 多色でサンプリングする図柄（白い背景を除いた画素の色をそのまま光の色にする）
   const COLORED_DESIGNS = { cbi: true };
+  // 光の粒にせず、絵のまま空中の板に貼って見せる図柄（市の公式イラスト）。
+  // 粒にすると顔が読めずいんザイ君に見えなかったため（2026-09-16 中司さん確認）。絵は変えず、裏から見ても反転しないよう表裏2枚に貼る
+  const PANEL_DESIGNS = {
+    w_xmas: true, w_tree: true, w_illumi: true, w_muffler: true,
+    w_present: true, w_party: true, w_song: true, w_kotatsu: true,
+  };
+  // design: "random" のゲートに入れる図柄（ゴールのクリスマスを除く7種）。ページを開くたびに並びが変わる（2026-09-16 中司さん指示）
+  const RANDOM_POOL = ["w_tree", "w_illumi", "w_muffler", "w_present", "w_party", "w_song", "w_kotatsu"];
 
   // ---- 図柄セット（2026-09-09）----
   // 既定は inzai（市のデザインガイドマニュアルに合わせた表示）。2026-09-08 に代表の承認を得て使用申請へ進む方針。
@@ -97,25 +114,39 @@
   // 順路：印旛日本医大駅（南東・スタート側）→ 本埜公民館 → 小林駅 → 印西牧の原駅 → ジョイフル本田 → 印西市役所 → 木下駅 → 松山下公園 → イオンモール → 千葉NT中央駅（ゴール）
   const FULL_COURSE = [
     { name: "印旛日本医大駅", lon: 140.203402, lat: 35.787590, height: 200, design: "cbi", color: "logo", size: 130 },  // 1番＝CBIロゴ（2026-09-16。SNSで反応を見るための自団体ロゴ）
-    { name: "本埜公民館", lon: 140.197952, lat: 35.808392, height: 420, design: "ongaku", color: "sky", size: 130 },
-    { name: "小林駅", lon: 140.193301, lat: 35.830578, height: 180, design: "kihon", color: "green", size: 130 },
-    { name: "印西牧の原駅", lon: 140.166716, lat: 35.803497, height: 450, design: "ongaku", color: "pink", size: 130, flip: true },
-    { name: "ジョイフル本田千葉ニュータウン店", lon: 140.155674, lat: 35.807083, height: 220, design: "kihon", color: "white", size: 130, flip: true },
-    { name: "印西市役所", lon: 140.145795, lat: 35.832338, height: 480, design: "ongaku", color: "orange", size: 130, flip: true },
-    { name: "木下駅", lon: 140.148377, lat: 35.838908, height: 160, design: "kihon", color: "violet", size: 130 },
-    { name: "松山下公園", lon: 140.114947, lat: 35.824677, height: 400, design: "ongaku", color: "cyan", size: 130 },
-    { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 240, design: "kihon", color: "magenta", size: 130 },
-    { name: "千葉ニュータウン中央駅", lon: 140.116119, lat: 35.799983, height: 380, design: "xmas", color: "xmas", size: 160, goal: true },
+    { name: "本埜公民館", lon: 140.197952, lat: 35.808392, height: 420, design: "random", color: "sky", size: 130 },
+    { name: "小林駅", lon: 140.193301, lat: 35.830578, height: 180, design: "random", color: "green", size: 130 },
+    { name: "印西牧の原駅", lon: 140.166716, lat: 35.803497, height: 450, design: "random", color: "pink", size: 130, flip: true },
+    { name: "ジョイフル本田千葉ニュータウン店", lon: 140.155674, lat: 35.807083, height: 220, design: "random", color: "white", size: 130, flip: true },
+    { name: "印西市役所", lon: 140.145795, lat: 35.832338, height: 480, design: "random", color: "orange", size: 130, flip: true },
+    { name: "木下駅", lon: 140.148377, lat: 35.838908, height: 160, design: "random", color: "violet", size: 130 },
+    { name: "松山下公園", lon: 140.114947, lat: 35.824677, height: 400, design: "random", color: "cyan", size: 130 },
+    { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 240, design: "random", color: "magenta", size: 130 },
+    { name: "千葉ニュータウン中央駅", lon: 140.116119, lat: 35.799983, height: 380, design: "w_xmas", color: "xmas", size: 160, goal: true },
   ];
   // 短縮コース（会場向け・約6km）：印西牧の原駅 → BIG HOP → ジョイフル本田 → イオンモール → 千葉NT中央駅
   const SHORT_COURSE = [
     { name: "印西牧の原駅", lon: 140.166716, lat: 35.803497, height: 380, design: "cbi", color: "logo", size: 130 },  // 1番＝CBIロゴ
-    { name: "BIG HOPガーデンモール印西", lon: 140.162553, lat: 35.803195, height: 180, design: "ongaku", color: "sky", size: 130 },
-    { name: "ジョイフル本田千葉ニュータウン店", lon: 140.155674, lat: 35.807083, height: 440, design: "kihon", color: "green", size: 130 },
-    { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 200, design: "ongaku", color: "pink", size: 130, flip: true },
-    { name: "千葉ニュータウン中央駅", lon: 140.116119, lat: 35.799983, height: 380, design: "xmas", color: "xmas", size: 160, goal: true },
+    { name: "BIG HOPガーデンモール印西", lon: 140.162553, lat: 35.803195, height: 180, design: "random", color: "sky", size: 130 },
+    { name: "ジョイフル本田千葉ニュータウン店", lon: 140.155674, lat: 35.807083, height: 440, design: "random", color: "green", size: 130 },
+    { name: "イオンモール千葉ニュータウン", lon: 140.111502, lat: 35.800167, height: 200, design: "random", color: "pink", size: 130, flip: true },
+    { name: "千葉ニュータウン中央駅", lon: 140.116119, lat: 35.799983, height: 380, design: "w_xmas", color: "xmas", size: 160, goal: true },
   ];
   // コース一覧。serverKey は CiDAO metaverse-tt のコース key（night=10か所・night5=5か所）。URL ?course=short で短縮を初期選択
+  // design: "random" を公式デザインに置き換える。7種を混ぜて順に使い、足りなければ直前と違うものを足す（隣は同じにしない）
+  function assignRandomDesigns(course) {
+    const bag = RANDOM_POOL.slice();
+    for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = bag[i]; bag[i] = bag[j]; bag[j] = t; }
+    let n = 0, prev = null;
+    course.forEach(function (g) {
+      if (g.design !== "random") { prev = g.design; return; }
+      let d = n < bag.length ? bag[n++] : null;
+      while (!d || d === prev) d = RANDOM_POOL[Math.floor(Math.random() * RANDOM_POOL.length)];
+      g.design = d; prev = d;
+    });
+  }
+  assignRandomDesigns(FULL_COURSE);
+  assignRandomDesigns(SHORT_COURSE);
   const COURSES = {
     full: { label: "全10か所（印旛日本医大駅→千葉NT中央駅・約20km）", serverKey: "night", gates: FULL_COURSE,
             start: { lon: 140.2105, lat: 35.7845, height: 200 }, startName: "印旛日本医大駅の東" },
@@ -355,8 +386,9 @@
     for (let y = 0; y < H; y++) if (rowCount[y] > 0) { top = y; break; }
     if (top < 0) return null;
     let bottom = H - 1, gap = 0;
+    if (colored) { while (bottom > top && rowCount[bottom] === 0) bottom--; }  // ロゴは文字を切らず、最下行まで使う
     const gapNeed = Math.max(4, Math.round(H * 0.02));
-    for (let y = top; y < H; y++) {
+    for (let y = top; y < H && !colored; y++) {
       if (rowCount[y] === 0) { gap++; if (gap >= gapNeed) { bottom = y - gap; break; } }
       else gap = 0;
     }
@@ -446,6 +478,8 @@
     }
     g.points.show = window.nightOn;
     viewer.scene.primitives.add(g.points);
+    if (g.panel) viewer.scene.primitives.remove(g.panel);
+    g.panel = sample.panel ? buildPanel(g, sample.panel, g.halfW * 2, g.halfH * 2, f) : null;
     // 番号ラベル（図柄の上）
     if (!labels) { labels = new Cesium.LabelCollection(); viewer.scene.primitives.add(labels); labels.show = window.nightOn; }
     local.x = 0; local.y = 0; local.z = g.halfH + 18;
@@ -462,6 +496,33 @@
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
     });
   }
+  // 絵を縦の板に貼る。表（来る方向）と裏に1枚ずつ、どちらも正しい向きで貼るので裏から見ても左右反転しない
+  function buildPanel(g, img, w, h, f) {
+    const nx = Math.sin(f), ny = Math.cos(f);            // 板の正面の向き（来る方向）
+    function side(sign) {
+      // 列：板の横（見る人の右）×幅／縦×高さ／法線。PlaneGeometry は XY 平面・法線 +Z の単位正方形
+      const m = new Cesium.Matrix4(
+        -sign * Math.cos(f) * w, 0, sign * nx, 0,
+        sign * Math.sin(f) * w, 0, sign * ny, 0,
+        0, h, 0, 0,
+        0, 0, 0, 1);
+      return new Cesium.GeometryInstance({
+        geometry: new Cesium.PlaneGeometry({ vertexFormat: Cesium.MaterialAppearance.MaterialSupport.TEXTURED.vertexFormat }),
+        modelMatrix: Cesium.Matrix4.multiply(g.frame, m, new Cesium.Matrix4()),
+      });
+    }
+    const panel = new Cesium.Primitive({
+      geometryInstances: [side(1), side(-1)],
+      appearance: new Cesium.MaterialAppearance({
+        material: Cesium.Material.fromType("Image", { image: img.src }),
+        translucent: true, flat: true, closed: true,   // closed＝裏面を描かない（裏から見えるのは裏用の1枚だけ）
+      }),
+      asynchronous: false,
+    });
+    panel.show = window.nightOn;
+    viewer.scene.primitives.add(panel);
+    return panel;
+  }
   let gatesLoading = false;
   // コースを切り替える：光の粒とラベルを作り直す（レース中は不可）
   function setCourse(key) {
@@ -471,7 +532,10 @@
     COURSE = COURSES[key].gates;
     START_POINT = COURSES[key].start;
     try { localStorage.setItem(COURSE_KEY_STORE, key); } catch (e) { /* 保存できなくても続ける */ }
-    gates.forEach(function (g) { if (g.points) viewer.scene.primitives.remove(g.points); });
+    gates.forEach(function (g) {
+      if (g.points) viewer.scene.primitives.remove(g.points);
+      if (g.panel) viewer.scene.primitives.remove(g.panel);
+    });
     if (labels) labels.removeAll();
     gates = makeGateObjects();
     gatesLoading = false;
@@ -486,7 +550,10 @@
     gates.forEach(function (g) {
       const art = artOf(g.def);
       loadImage(art.design).then(function (img) {
-        const s = sampleImage(img, art.flip, !!COLORED_DESIGNS[art.design]);
+        // 公式イラストは粒にせず、画像全体を板として置く（点は作らない）
+        const s = PANEL_DESIGNS[art.design]
+          ? { pts: [], top: 0, bottom: img.naturalHeight, minX: 0, maxX: img.naturalWidth, panel: img }
+          : sampleImage(img, art.flip, !!COLORED_DESIGNS[art.design]);
         if (!s) { console.warn("夜景: ゲート" + (g.index + 1) + " の図柄から光の粒を作れませんでした"); return; }
         buildGate(g, s);
       }).catch(function (e) { console.warn("夜景: " + e.message); });
@@ -552,6 +619,7 @@
     gates.forEach(function (g) {
       if (!g.points || (burstingUntil[g.index] || 0) > now) return;
       const n = g.points.length;
+      if (!n) return;                                      // 板で見せる図柄は粒がない
       const nextIdx = tt.active ? tt.pos : -1;
       const dim = tt.active && g.index < tt.pos;          // 通過済みは控えめに
       const emph = g.index === nextIdx;                    // 次のゲートは強めに脈打つ
@@ -866,7 +934,7 @@
       b.uniforms.sigma = 2.5;
       b.uniforms.stepSize = 1.0;
     } catch (e) { /* ブルームの無い版でも続ける */ }
-    gates.forEach(function (g) { if (g.points) g.points.show = !!on; });
+    gates.forEach(function (g) { if (g.points) g.points.show = !!on; if (g.panel) g.panel.show = !!on; });
     if (labels) labels.show = !!on;
     if (stringPoints) stringPoints.show = !!on;
     hudEl.classList.toggle("on", !!on);
@@ -901,14 +969,15 @@
   window.nightCourse = COURSE;
   window.nightGateCount = function () { return gates.filter(function (g) { return !!g.points; }).length; };
   // 検証用：i 番ゲートの手前（来る方向）から図柄を正面に見る位置へカメラを置く
-  window.nightGateView = function (i, distMeters) {
+  // back＝true で裏側から見る（板の絵が反転していないかの確認用）
+  window.nightGateView = function (i, distMeters, back) {
     const g = gates[i]; if (!g || !g.frame) return false;
     const f = Cesium.Math.toRadians(g.facing);
-    const dm = distMeters || 450;
+    const dm = (distMeters || 450) * (back ? -1 : 1);
     const lon = g.def.lon + Math.sin(f) * dm / mLon(g.def.lat), lat = g.def.lat + Math.cos(f) * dm / M_LAT;
     viewer.camera.setView({
       destination: Cesium.Cartesian3.fromDegrees(lon, lat, g.def.height),
-      orientation: { heading: Cesium.Math.toRadians((g.facing + 180) % 360), pitch: 0, roll: 0 },
+      orientation: { heading: Cesium.Math.toRadians((g.facing + (back ? 0 : 180)) % 360), pitch: 0, roll: 0 },
     });
     return true;
   };
