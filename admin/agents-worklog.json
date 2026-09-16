@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-17",
+          "title": "更新履歴のIG告知が毎回失敗する原因調査（PNGではなくVercelの署名キー未設定と特定）＋キー登録支援＋N's factoryのIG用画像をJPEG化 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "Vercel(cidao) 環境変数 NEWS_OG_SECRET（Production・事業主が画面で登録）",
+            "N's factory sns-gas-nsfactory/PostSodatelog.gs・SnsQueue.gs・SnsDiag.gs（画像URLを .png→.jpg、clasp push）",
+            "ns-factory assets/*-announce.jpg ×5・sodatelog-sns.jpg（commit 9b2270d）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "NewsPublish.gs が渡す cidao /api/og/news は元々JPEG生成だが、本番が『NEWS_OG_SECRET not configured』(503)を返していた（ローカルdevでしか検証されていなかった）。登録＋Redeploy後に本番で 200 image/jpeg を実測、画像も目視確認。NewsPublish.gs 自体は変更なし。PNGでIG成功した記録はCBIに無く、9/16のPNG失敗は『処理途中の打ち切り』でPNG起因とは確定できない。cidao の .env.local の NEWS_OG_SECRET はテスト用の仮値（正はcredentials.md）。\nsession: 49281123-8fa1-4d32-96bd-477484c941c8 / output: 23,997 / cost: $5.15"
+        },
+        {
+          "date": "2026-09-17",
           "title": "SNS予約キューのFacebook投稿を開通（GASに認証設定）＋停電問いかけをInstagram(JPEG)・Facebookへ再投稿 0.1時間",
           "category": "保守",
           "outputs": [
@@ -6237,10 +6250,19 @@
       "plans": [
         {
           "due": "未定",
-          "title": "📷 更新履歴の自動告知（NewsPublish.gs）で Instagram だけ毎回失敗する件を直す（画像をJPEGにする）",
+          "title": "📷 次の更新履歴お知らせで Instagram 告知が成功するか確認する（失敗なら GAS の NEWS_OG_SECRET を credentials.md の値に入れ直す）",
           "category": "保守",
           "priority": "中",
-          "note": "予約キューの記録で、画像投稿のInstagramは 8/08・8/25・9/01（NewsPublish の即時告知）と 9/16（PNG）がすべて失敗、動画4件と 9/17 のJPEG再投稿は成功。Instagram の投稿APIは JPEG のみ正式対応なので、NewsPublish が渡す画像（OG画像等）をJPEGで用意する。予約キュー（SnsQueue.gs）にも、Instagram宛てで画像URLが .png のときは登録時に警告する案。 ⚠ 2026-09-17 別セッション（49281123）の調査では、告知の失敗はPNGではなく告知用画像がそもそも作られていないことが原因の可能性が高い（確信度：中〜高）。着手前にそちらの結論を確認すること。"
+          "status": "待ち",
+          "blockedBy": "次に更新履歴のお知らせを承認・掲載したとき（投稿を伴うため試験投稿はしていない）",
+          "note": "2026-09-17 Vercel 側にキー登録済み・本番APIは 200 image/jpeg を実測。GAS 側の値は直接読めず、Vercel と一致しているかは未確認（一致しないと 403 invalid signature）。"
+        },
+        {
+          "due": "未定",
+          "title": "🖼 予約投稿キュー（SnsQueue.gs）で Instagram 宛ての画像URLが .png なら登録時に警告する",
+          "category": "保守",
+          "priority": "低",
+          "note": "Instagram の投稿APIは JPEG のみ正式対応。2026-09-16 の PNG 投稿が失敗（打ち切り）→JPEGで成功。CBI・N's factory 両方の SnsQueue.gs が対象候補。"
         },
         {
           "due": "2026-09-24",
