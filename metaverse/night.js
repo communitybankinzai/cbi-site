@@ -313,7 +313,8 @@
     try { s0 = scanPixels(ctx, W0, H0); } catch (e) { console.warn("夜景: 画像を読めません", e); return null; }
     if (s0.maxX < 0) return null;
     const bw = s0.maxX - s0.minX + 1, bh = s0.maxY - s0.minY + 1;
-    const holes = s0.nOpaque > bw * bh * 0.5;          // 図柄の範囲の半分以上が不透明＝「抜き」型
+    // 図柄の範囲の半分以上が不透明＝「抜き」型。白地で塗られたロゴ（colored）は抜き型ではないので除く
+    const holes = !colored && s0.nOpaque > bw * bh * 0.5;
     // ② 図柄の範囲だけを拡大して描き直す（元画像の座標に戻してから）
     const sx = s0.minX / W0 * img.width, sy = s0.minY / H0 * img.height;
     const sw = bw / W0 * img.width, sh = bh / H0 * img.height;
