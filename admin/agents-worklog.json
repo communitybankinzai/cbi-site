@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-16",
+          "title": "CiDAO スマホ操作の最適化（下タブ常設・絞り込みのポップアップ化・20件ずつ表示・6秒固まる不具合の修正） 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "cidao 新規: src/components/BottomNav.tsx（下端の固定タブ5枠＋メニューシート10導線）、src/components/ui/sheet.tsx（下から出る共通シート。ESC・背景タップで閉じ、裏面のスクロールを止め、safe-area を確保）",
+            "cidao 変更: src/app/layout.tsx（BottomNav 追加＋body に下余白 56px+safe-area）、src/app/orgs/_components/OrgsBrowser.tsx（絞り込み6グループをシートへ・適用中チップ・20件ずつ）、src/app/freefree/_components/FreefreeBrowser.tsx（同上3グループ）",
+            "cidao 変更: src/components/ButtonFeedback.tsx（data-instant=\"true\" のボタンを「処理中」表示の対象外に）、EventsBrowser.tsx・ProposalsBrowser.tsx（チップ・タブ・年月ピッカーに data-instant 付与）",
+            "計測: スマホ幅375pxで /orgs 63.7画面→5.2画面（51,735px→約4,200px）、/freefree 2.4→2.1画面。/events 2.1・/proposals 1.8・/talent 1.6 は横スクロールなし・下タブとの重なりなし（body padding-bottom 56px を実測）"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "中司さんの依頼「CiDAOの操作をスマホに最適化、文字が多いところは折りたたむかポップアップに」に対し、範囲を3択で確認→「全体の土台＋主要4ページ」「ログイン必要画面は今回含めない」を選択。検証は tsc 0・eslint（新規分）0・ブラウザ実測（375x812）。作業中に layout.tsx へ別作業の未コミット変更（Google Fonts→localFont）があったため、index を分けて自分の変更だけを commit（daade1d）。実機（iPhone/Android）での指タップは未確認。session: bc1b198c-58eb-44a0-a04a-fe5acac7ab6d / output: 81,461 / cost: $15.24"
+        },
+        {
+          "date": "2026-09-16",
           "title": "コスモスパレット催しの候補取り込み（号外NET記事→下書き）＋公開/見送りの管理画面、Instagram読み取り可否の検証 0.56時間",
           "category": "実装",
           "outputs": [
@@ -6079,6 +6093,36 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🧹 CiDAO：FreeFree 一覧に残っている eslint エラー2件（描画中に Date.now() を呼んでいる）を直すか決める",
+          "category": "保守",
+          "priority": "低",
+          "note": "src/app/freefree/_components/FreefreeBrowser.tsx の 48行・238行。2026-09-16 のスマホ最適化より前から出ているもので、今回は依頼の範囲外として触っていない。締切カウントダウンの計算を描画の外へ出せば消える"
+        },
+        {
+          "due": "未定",
+          "title": "📱 CiDAO：ログインが要る画面（マイページ・投票・PR作成・通知）のスマホ最適化",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-16 の最適化では未ログインで見える公開ページだけを対象にした（中司さんの選択）。実機での確認にテスト用 LINE ログインが要るため、着手時は画面の見た目調整までを行い、最終確認を中司さんに依頼する形になる"
+        },
+        {
+          "due": "未定",
+          "title": "📱 CiDAO：左上の「ホーム」ボタンを残すか、下タブのホームに一本化するか決める",
+          "category": "実装",
+          "priority": "低",
+          "note": "下タブにホームを置いたので導線が2つになった。左上ボタン（src/components/HomeButton.tsx）は右上の通知ベル・管理リンクと重ならないための余白（h-10）も兼ねているため、消すならその余白だけ残す必要がある"
+        },
+        {
+          "due": "未定",
+          "title": "📱 CiDAO：スマホで「イベント」を開いたとき、最初からカレンダーではなくリストで出すか決める",
+          "category": "実装",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "既定を変えるとイベントの取得範囲が変わる（カレンダーはその月だけ、リストは先の月まで）。どちらの範囲でリストを出すかを決めれば着手できる",
+          "note": "現状は画面に「スマホではリスト表示の方が読みやすくなります」と案内を出して、利用者に手で切り替えてもらっている（src/app/events/_components/EventsBrowser.tsx の 281行あたり）。取得範囲は src/app/events/page.tsx の 62行 fetchEnd"
+        },
         {
           "due": "2026-09-18",
           "title": "🎪 コスモスパレット候補の初回巡回（09-17 06:25）を管理画面で確認し、カラオケ大会3件を公開か見送りにする",
