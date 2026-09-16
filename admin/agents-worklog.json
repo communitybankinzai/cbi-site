@@ -25,11 +25,13 @@
             "site/assets/sns/2026-09-16_teiden/投稿文.md",
             "site/admin/changelog.json",
             "cidao/2026-09-16_千葉県の大雨対策ビジョンと防災MAPの対応.md",
-            "SNS予約投稿キュー q1789555890961（Threads/Instagram/Facebook）"
+            "SNS予約投稿キュー q1789555890961（Threads/Instagram/Facebook）",
+            "site/assets/sns/2026-09-16_teiden/teiden-image.jpg",
+            "SNS予約投稿キュー q1789594491713（Instagram・JPEG）／q1789594064875（Facebook）"
           ],
           "hours": 0.4,
           "partnerApproved": false,
-          "note": "東電規約は私的利用を超える転用に書面承諾が必要・リンクも事前連絡が必要と判明。NHK・Yahoo!・九電等に停電地図の先例ありCBIは初ではない。東電の画面は市町村の塗り分け＋大字ごとの軒数表＋発生時刻・復旧見込み。投稿結果：Threads成功、Instagramは処理途中で打ち切り（failed）、Facebookは未実行。同一セッションの前件（output 34,684）との差分 42,032 → 0.4時間\nsession: e93e26f4-222b-44cf-be09-ef5e3343b046 / output: 76,716 / cost: $22.56"
+          "note": "東電規約は私的利用を超える転用に書面承諾が必要・リンクも事前連絡が必要と判明。NHK・Yahoo!・九電等に停電地図の先例ありCBIは初ではない。東電の画面は市町村の塗り分け＋大字ごとの軒数表＋発生時刻・復旧見込み。投稿結果：Threads成功（9/16 19:54）。InstagramはPNGで処理途中打ち切り→JPEGで再予約し9/17 06:39成功。Facebookは『認証未設定（FB_PAGE_TOKEN/FB_PAGE_ID）』で失敗。同一セッションの前件（output 34,684）との差分 42,032 → 0.4時間\nsession: e93e26f4-222b-44cf-be09-ef5e3343b046 / output: 76,716 / cost: $22.56"
         },
         {
           "date": "2026-09-16",
@@ -6220,6 +6222,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📷 更新履歴の自動告知（NewsPublish.gs）で Instagram だけ毎回失敗する件を直す（画像をJPEGにする）",
+          "category": "保守",
+          "priority": "中",
+          "note": "予約キューの記録で、画像投稿のInstagramは 8/08・8/25・9/01（NewsPublish の即時告知）と 9/16（PNG）がすべて失敗、動画4件と 9/17 のJPEG再投稿は成功。Instagram の投稿APIは JPEG のみ正式対応なので、NewsPublish が渡す画像（OG画像等）をJPEGで用意する。予約キュー（SnsQueue.gs）にも、Instagram宛てで画像URLが .png のときは登録時に警告する案。"
+        },
+        {
+          "due": "未定",
+          "title": "📘 CBI予約投稿キューの Facebook 投稿を使えるようにする（FB_PAGE_TOKEN／FB_PAGE_ID 未設定）",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-09-17 に初めて Facebook 宛てを予約したところ『認証未設定（FB_PAGE_TOKEN/FB_PAGE_ID）』で失敗。GAS（cbi-admin-gas）のスクリプトプロパティが未設定。SnsQueue.gs の setFacebookCredentials_(pageId, token) で設定できる。ページトークンは CiDAO /admin/sns の Facebook 欄と同じもの（Meta開発者アプリ手順は cidao/2026-08-06_Meta開発者アプリとSNSトークン取得手順.md）。設定はGASエディタでの実行が必要。"
+        },
         {
           "due": "2026-09-24",
           "title": "⚡ 停電の重ね表示：SNSの反応を集計し、東京電力へ申請するか決める",
