@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-17",
+          "title": "卒論スライド：説明を句点で改行、文字とカードの重なり・余計な改行を修正、PowerPoint が止まる原因（OneDrive 上での加工）を解消 0.4時間",
+          "category": "保守",
+          "outputs": "academy/06_発表/build_h2p.py（説明の枠を句点で改行）、slides.md（5枚目の説明文を2段落に）、make_starred_talk.py（STARS表を50回版に）、build_two_pptx.ps1（PowerPoint の加工を C:\\Repos\\slides-h2p\\work で行う）、C:\\Repos\\slides-h2p\\html2pptx.js（<br>と太字が混ざったときの余計な改行を修正）、卒論発表スライド_発表用.pptx・_音声版.pptx、口述原稿.docx・.pdf",
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "中司さんの指摘2点（5枚目で説明文がカードに隠れる／説明は句点で改行したい）に対応。PowerPoint で書き出した画像で全17枚を確認する方法に切り替えたところ、太字の前で改行される不具合（html2pptx が <br> を含む run を分割するとき最後の部分にも改行を付けていた）と、3枚目で説明が大きな文字に重なる問題が見つかり、変換の道具を直して解消。作成途中で PowerPoint が2回止まり、ログから『モーダル ダイアログの表示中』と判明。OneDrive 内のファイルを直接加工していたのをやめ、作業フォルダで加工して完成品だけ戻す形にした後は止まらない。COM で起動した PowerPoint が Quit 後も残る件は、画面なしのものだけ終了。検証：発表用17枚・クリック50＝★50、音声版17枚・クリック待ち0・全スライドが表示秒数内、PowerPoint 表示の17枚をPDFにして送付。前回記録(1,819,330)以降の差分で算出。session: 8f104510-74de-47bf-8249-672356aedc78 / output: 1,857,092 / cost: $581.91"
+        },
+        {
+          "date": "2026-09-17",
           "title": "卒論：音声版の文字を、ナレーションで話す位置に合わせて出すよう変更 0.1時間",
           "category": "実装",
           "outputs": "academy/06_発表/make_starred_talk.py（★の位置の割合を click_times.json に書き出す）、add_animation.ps1（時間モードを発表用と同じまとまりにし、割合×音声の長さ−0.3秒で出す）、build_two_pptx.ps1（★の計算を音声版より前へ）、click_times.json（新規）、卒論発表スライド_音声版.pptx",
