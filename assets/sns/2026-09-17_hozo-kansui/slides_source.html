@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px}
+body{font-family:"BIZ UDPGothic","BIZ UDGothic","Yu Gothic","Meiryo",sans-serif;background:#10283f;color:#fff;position:relative;overflow:hidden}
+.slide{display:none;position:absolute;inset:0;padding:64px 64px 0}
+.slide.on{display:block}
+.pg{position:absolute;right:64px;top:64px;font-size:26px;font-weight:700;opacity:.6}
+.kicker{display:inline-block;background:#c4843a;color:#fff;font-weight:700;font-size:28px;padding:8px 18px;border-radius:8px}
+h1{font-size:80px;line-height:1.2;font-weight:800;margin-top:24px}
+h1 .y{color:#ffd23f}
+h2{font-size:58px;line-height:1.25;font-weight:800;margin-top:20px}
+h2 .y{color:#ffd23f}
+.lead{font-size:32px;line-height:1.65;margin-top:28px;font-weight:700}
+.card{background:#fff;color:#10283f;border-radius:22px;padding:30px 36px;margin-top:30px}
+.card h3{font-size:30px;color:#8a5a22;margin-bottom:10px}
+.card p{font-size:28px;line-height:1.65;font-weight:700}
+.step{display:flex;gap:18px;align-items:flex-start;margin-top:22px}
+.step .n{flex:0 0 58px;height:58px;border-radius:50%;background:#ffd23f;color:#10283f;font-size:32px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.step .t{font-size:30px;line-height:1.55;font-weight:700;padding-top:6px}
+.step .t small{display:block;font-size:22px;opacity:.75;font-weight:400;margin-top:4px}
+/* 棒グラフ */
+.metric{margin-top:52px}
+.metric .q{font-size:32px;font-weight:800;margin-bottom:12px}
+.metric .q span{font-size:22px;font-weight:400;opacity:.75;margin-left:8px}
+.row{display:flex;align-items:center;gap:14px;margin:14px 0}
+.row .lab{flex:0 0 190px;font-size:26px;font-weight:700}
+.row .bar{height:58px;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:14px;font-size:28px;font-weight:800;min-width:120px}
+.hozo{background:#e0a24a;color:#10283f}
+.other{background:#5c7d99;color:#fff}
+.verdict{margin-top:60px;border-radius:18px;padding:22px 28px;font-size:34px;font-weight:800;line-height:1.45;text-align:center}
+.ok{background:#2f7d5b}
+.warn{background:#b8492f}
+.note{font-size:21px;line-height:1.6;opacity:.8;margin-top:16px}
+.big{font-size:40px;font-weight:800;line-height:1.5}
+.box3{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:26px}
+.box3 div{background:rgba(255,255,255,.1);border-radius:16px;padding:30px 28px;font-size:31px;font-weight:700;line-height:1.5}
+.box3 b{color:#ffd23f}
+.foot{position:absolute;left:64px;right:64px;bottom:34px;display:flex;gap:24px;justify-content:space-between;align-items:flex-end;font-size:18px;line-height:1.6}
+.foot .src{flex:1 1 auto;opacity:.75;white-space:nowrap;font-size:16px}
+.foot .org{flex:0 0 auto;white-space:nowrap;font-size:22px;font-weight:700}
+.xsec{margin-top:26px;width:100%}
+.slide[data-s="3"] .metric{margin-top:70px}
+.slide[data-s="3"] .verdict{margin-top:80px}
+</style></head><body>
+
+<!-- 1 なぜ -->
+<section class="slide" data-s="1">
+  <div class="pg">1 / 4</div>
+  <span class="kicker">仮説</span>
+  <h1>遺跡のある土地は<br><span class="y">水害に強い？</span></h1>
+  <p class="lead">8月の千葉豪雨を受けて、こんな仮説を立てました。</p>
+  <div class="card">
+    <h3>遺跡の地図は、水害の少ない土地の目安になる</h3>
+    <p>昔の人は水害を避けて台地に住み、<br>その跡が遺跡として残っている。<br>ならば遺跡のある土地は、水害のリスクが低いはず。</p>
+  </div>
+  <svg class="xsec" viewBox="0 0 952 250" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 250 L0 120 L300 110 C360 108 380 180 430 190 L620 196 C660 196 690 120 740 112 L952 105 L952 250 Z" fill="#3d5a3c"/>
+    <path d="M430 190 L620 196 L620 250 L430 250 Z" fill="#3d5a3c"/>
+    <path d="M438 186 L612 192 L612 204 L438 199 Z" fill="#4aa3d8" opacity=".9"/>
+    <text x="150" y="98" fill="#fff" font-size="26" font-weight="700" text-anchor="middle">台地</text>
+    <text x="846" y="92" fill="#fff" font-size="26" font-weight="700" text-anchor="middle">台地</text>
+    <text x="525" y="170" fill="#9fd4f5" font-size="26" font-weight="700" text-anchor="middle">低地・谷（水が集まる）</text>
+    <g transform="translate(150,150)"><circle r="22" fill="#e0a24a"/><text y="9" fill="#10283f" font-size="24" font-weight="800" text-anchor="middle">遺</text></g>
+    <g transform="translate(846,146)"><circle r="22" fill="#e0a24a"/><text y="9" fill="#10283f" font-size="24" font-weight="800" text-anchor="middle">遺</text></g>
+    <text x="150" y="222" fill="#fff" font-size="21" text-anchor="middle">遺跡（住まいの跡）</text>
+    <text x="846" y="218" fill="#fff" font-size="21" text-anchor="middle">遺跡（住まいの跡）</text>
+  </svg>
+  <div class="step"><div class="n">?</div><div class="t">遺跡の地図（埋蔵文化財包蔵地マップ）とは<small>土器・住居跡・古墳などが土の中にあると分かっている土地の地図。<br>県や市が公開しています。</small></div></div>
+  <div class="step"><div class="n">!</div><div class="t">印西市のデータで確かめる<small>① 地形（高さ・窪地）　② 8月豪雨で実際に冠水した道路　の2つで比べました。</small></div></div>
+</section>
+
+<!-- 2 地形 -->
+<section class="slide" data-s="2">
+  <div class="pg">2 / 4</div>
+  <span class="kicker">検証① 地形</span>
+  <h2>遺跡のある土地は<br><span class="y">高くて、窪地が少ない</span></h2>
+  <div class="metric">
+    <div class="q">標高<span>（真ん中の値）</span></div>
+    <div class="row"><div class="lab">遺跡のある土地</div><div class="bar hozo" style="width:612px">20.4 m</div></div>
+    <div class="row"><div class="lab">それ以外</div><div class="bar other" style="width:381px">12.7 m</div></div>
+  </div>
+  <div class="metric">
+    <div class="q">窪地（深さ10cm超）の割合</div>
+    <div class="row"><div class="lab">遺跡のある土地</div><div class="bar hozo" style="width:212px">10.6%</div></div>
+    <div class="row"><div class="lab">それ以外</div><div class="bar other" style="width:658px">32.9%</div></div>
+  </div>
+  <div class="metric">
+    <div class="q">水がたまりやすい地形の割合<span>（CBIの地形指標50以上）</span></div>
+    <div class="row"><div class="lab">遺跡のある土地</div><div class="bar hozo" style="width:438px">21.9%</div></div>
+    <div class="row"><div class="lab">それ以外</div><div class="bar other" style="width:730px">36.5%</div></div>
+  </div>
+  <div class="verdict ok">地形の面では、仮説を支持</div>
+</section>
+
+<!-- 3 実際の冠水 -->
+<section class="slide" data-s="3" style="--gap:1">
+  <div class="pg">3 / 4</div>
+  <span class="kicker">検証② 8月豪雨で実際に冠水した道路</span>
+  <h2>実際の冠水では<br><span class="y">はっきりした差が出ない</span></h2>
+  <p class="lead" style="font-size:26px;margin-top:18px">道路1kmあたり、冠水が投稿された道路の長さ</p>
+  <div class="metric">
+    <div class="q">印西市内<span>（冠水した道路 76件）</span></div>
+    <div class="row"><div class="lab">遺跡のある土地</div><div class="bar hozo" style="width:264px">9.8 m</div></div>
+    <div class="row"><div class="lab">それ以外</div><div class="bar other" style="width:428px">15.9 m</div></div>
+    <p class="note">遺跡のある土地の中は76件のうち5件だけ。件数が少なく、偶然でも起こりうる差です。</p>
+  </div>
+  <div class="metric">
+    <div class="q">周辺の市まで広げると<span>（358件）</span></div>
+    <div class="row"><div class="lab">遺跡のある土地</div><div class="bar hozo" style="width:700px">26.0 m</div></div>
+    <div class="row"><div class="lab">それ以外</div><div class="bar other" style="width:657px">24.4 m</div></div>
+    <p class="note">ほぼ同じ。遺跡のある土地の中でも冠水は起きています。</p>
+  </div>
+  <div class="verdict warn">実際の冠水では、仮説は裏付けられず</div>
+</section>
+
+<!-- 4 まとめ -->
+<section class="slide" data-s="4">
+  <div class="pg">4 / 4</div>
+  <span class="kicker">結論</span>
+  <h2>遺跡の地図は<br><span class="y">「目安の一つ」</span></h2>
+  <p class="lead">遺跡のある土地は高い所に多いものの、実際に冠水しにくいとまでは言えませんでした。「遺跡がある＝安全」とは判断できません。</p>
+  <div class="box3">
+    <div>🗺 <b>ハザードマップ</b><br>浸水の「予測」を見る</div>
+    <div>🚗 <b>冠水の記録</b><br>実際に水が出た「実績」を見る</div>
+    <div>🏺 <b>遺跡の地図</b><br>高い土地かどうかの目安</div>
+    <div>🏠 <b>現地を歩く</b><br>窪地・水路・坂を自分の目で</div>
+  </div>
+  <p class="big" style="margin-top:44px">いくつも重ねて見ることが、<br>次の豪雨への備えになります。</p>
+  <p class="note" style="margin-top:22px">この検証の限界：赤い破線で囲まれた「群遺跡」の内側は数えていません。冠水は市民から投稿された分だけで、投稿がない場所が冠水しなかったとは限りません。</p>
+</section>
+
+<div class="foot">
+  <div class="src">データ：ちば情報マップ（千葉県）／国土地理院 標高（CBI加工）<br>© OpenStreetMap contributors／みんなでつくる千葉豪雨冠水道路マップ（市民投稿）<br>2026年9月 CBI集計</div>
+  <div class="org">Community Bank INZAI</div>
+</div>
+<script>
+const s = new URLSearchParams(location.search).get('s') || '1';
+document.querySelector(`.slide[data-s="${s}"]`).classList.add('on');
+</script>
+</body></html>
