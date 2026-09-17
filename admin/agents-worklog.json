@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-09-17",
+          "title": "イベント一覧リスト表示を「今日」から始める改修（今日より前を折りたたみ） 0.15時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/events/_components/EventsBrowser.tsx（ListView に today を渡し、今月を past/upcoming に分けて past を <details> に）",
+            "検証: tsc 0／eslint 新規警告なし（既存3件のみ）、ローカル dev（:3123）で /events?view=list を表示し「終了した 38 件（1日〜16日）を表示」の下に17日（今日）から並ぶこと、折りたたみを開けること、来月の枠は従来どおりなことを確認"
+          ],
+          "hours": 0.15,
+          "partnerApproved": false,
+          "note": "中司さん「リスト表示は月初ではなく当日位置から見られるように。月末イベントはスクロールが大変」。今日以降を先頭に出し過去分を畳む方式を採用（自動スクロールより確実）。前回記録（output 247,767）からの差分 15,319 で算出。session: 85966e1f-5e7b-4f16-8bf9-21ceb3e37d42 / output: 263,086 / cost: $79.95"
+        },
+        {
+          "date": "2026-09-17",
           "title": "千葉豪雨の県補正予算SNS投稿：事実確認・図解JPEG作成・3媒体予約 0.3時間",
           "category": "広報",
           "outputs": [
