@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-17",
+          "title": "卒論：音声版が音声の後に止まる不具合を修正（フェード長の変数衝突）＋自動送りの検証スクリプト追加 0.1時間",
+          "category": "保守",
+          "outputs": "academy/06_発表/add_animation.ps1（$dur→$slideSec）、check_voice_timing.py（新規）、build_two_pptx.ps1（音声版の自動送り確認を追加）、卒論発表スライド_音声版.pptx",
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "中司さん『まだスライドが途中で止まる』。音声版の XML を1枚ずつ読むと、フェードの長さが0.5秒ではなく表示秒数と同じ（1枚目12.6秒）だった。add_animation.ps1 の時間モードでスライド秒数を $dur に入れており、PowerShell は大文字小文字を区別しないため定数 $DUR（0.5）を上書きしていた。最後の効果が表示秒数の約1.8倍で終わり、PowerPoint がアニメーション終了まで自動送りしないため、音声の後に最大約50秒止まって見えていた（9/15中間発表から続いていた可能性が高い）。変数名を分けて付け直し、17枚すべてでフェード0.5秒・最後の効果が表示秒数内に終わることを XML で確認。check_voice_timing.py を作り build_two_pptx.ps1 に組み込んだ。実機での再生確認は中司さんに依頼。前回記録(1,793,634)以降の差分で算出。session: 8f104510-74de-47bf-8249-672356aedc78 / output: 1,806,745 / cost: $550.07"
+        },
+        {
+          "date": "2026-09-17",
           "title": "卒論：市の意見反映が公表されているかを調査し、論文5.4・発表7枚目の書き方を事実に合わせた／音声版の枚数重複を検知する仕組みを追加 0.4時間",
           "category": "調査",
           "outputs": "academy/03_参考資料/2026-09-15_市回答_Liqlid市民意見聴取の反映状況.md（調査結果を追記）、academy/01_草稿/第5章.md（5.4・提言②）、05_提出版/卒業論文_…_最新版.docx（23ページ）、academy/06_発表/slides.md（7・16枚目）、count_slides.py（新規）、build_two_pptx.ps1（工程ごとの成否と枚数の確認）、build_talk_pdf.py（新規・Word を使わず口述原稿PDF）、audio/01〜17.mp3、卒論発表スライド_発表用.pptx・_音声版.pptx、口述原稿.docx・.pdf、site/thesis/（9549240）",
