@@ -6335,10 +6335,10 @@
         },
         {
           "due": "2026-09-17",
-          "title": "📣 千葉豪雨の県補正予算投稿（9/17 12:30・3媒体）の結果を確認する",
+          "title": "📣 千葉豪雨の県補正予算投稿（9/17 12:30・3媒体）を各媒体で目視確認する",
           "category": "広報",
           "priority": "中",
-          "note": "予約キュー q1789600827079（Threads短縮版）と q1789600830244（Instagram＋Facebook全文・画像 assets/sns/2026-09-17_chiba-gouu-hosei/card.jpg）。12:45以降に listSnsQueue で状態が posted か、結果メモを確認し、各媒体で画像と本文が正しく出ているか目視する。failed なら結果メモの API 応答から原因を特定する。"
+          "note": "予約キュー q1789600827079（Threads短縮版）と q1789600830244（Instagram＋Facebook全文・画像 assets/sns/2026-09-17_chiba-gouu-hosei/card.jpg）。2026-09-17 15時に listSnsQueue で確認済み：両方 posted（12:39 Threads 成功／Instagram 成功／Facebook 成功）。残りは、各媒体で画像と本文が正しく出ているか目視する。failed なら結果メモの API 応答から原因を特定する。"
         },
         {
           "due": "未定",
