@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-17",
+          "title": "包蔵地検証のSNS図解4枚作成・予約キューのカルーセル対応・3媒体投稿 0.4時間",
+          "category": "広報",
+          "outputs": [
+            "site/assets/sns/2026-09-17_hozo-kansui/slide1〜4.jpg・slides_source.html・caption.md",
+            "site/admin/changelog.json",
+            "cbi-admin-gas/SnsQueue.gs（splitMediaUrls_・checkCarouselItems_・postQueueCarouselToThreads_/Instagram_/Facebook_ を追加、clasp push・自動保存 dcc4fb2）",
+            "SNS予約キュー q1789627573894（Threads短縮版401字）／q1789627580902（Instagram＋Facebook全文790字）いずれも画像4枚・16:30"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "包蔵地と冠水実績の照合結果を、中司さんの指示で『なぜ検証したか・結果』が分かる図解投稿にした。途中の指示で『SNSで紹介されていた』という入り方をやめ、仮説→検証①地形→検証②実際の冠水→結論の4枚構成に変更。画像は puppeteer で HTML→JPEG（Instagram 用）、小さい文字と右下の団体名が切れないことを等倍で確認。予約キューが画像1枚しか扱えなかったため、中司さんの選択でカルーセル対応を追加：画像URL欄を改行区切りで複数入れると、Threads は子コンテナ→CAROUSEL→publish、Instagram は子ごとに FINISHED を待って CAROUSEL→publish、Facebook は published=false で写真を上げて /feed の attached_media で1投稿にまとめる。変更は15分トリガーの投稿処理だけなので WebApp の再デプロイは不要。反映前に clasp pull で GAS 上と手元の6ファイルが一致することを確認。helper は node で単体確認（分割・2枚未満・動画混在・枚数超過）。16:30予約→16:39に Threads・Instagram・Facebook すべて成功（キューの結果メモで確認。各媒体での見た目の確認は未実施）。⚠ WebApp へ続けて POST した2件目の応答が doGet の説明文になったが、一覧で確認すると登録済みだった（再送していたら重複していた）。前回記録(305,211)以降の差分で算出。session: 658daf6d-86cc-4171-90ba-a1d34e08df8b / output: 348,930 / cost: $164.66"
+        },
+        {
+          "date": "2026-09-17",
           "title": "埋蔵文化財包蔵地の説明と「遺跡のある所は水害に強い」説の印西市での検証 0.5時間",
           "category": "調査",
           "outputs": [
@@ -6324,6 +6338,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-18",
+          "title": "🏺 包蔵地検証のカルーセル投稿（9/17 16:39）を各媒体で目視確認する",
+          "category": "広報",
+          "priority": "中",
+          "note": "キュー上は Threads・Instagram・Facebook すべて成功。カルーセル投稿は今回が初めてなので、各媒体で4枚が正しい順（仮説→地形→冠水→結論）で並び、本文が切れていないかを見る。Facebook は複数写真の1投稿になっているか（写真が4件に分かれていないか）も確認する。"
+        },
         {
           "due": "未定",
           "title": "🏺 包蔵地と冠水の照合結果を市民へ伝えるか・防災MAPに参考リンクを置くかを決める",
