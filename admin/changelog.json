@@ -6,6 +6,14 @@
       "date": "2026-09-18",
       "type": "fix",
       "target": "防災MAP（inzai-disaster-map）",
+      "title": "iPhone の Chrome／Firefox／Edge／LINE で位置情報が拒否されたとき、そのアプリ向けの許可手順（設定→アプリ→Chrome→位置情報）を出すようにした",
+      "detail": "iPhone では Safari 以外のブラウザはサイトごとの許可ではなく iOS の「アプリの位置情報」で決まるため、Safari の手順（ぁあ→Webサイトの設定）では直せなかった。UA でアプリを見分けて手順を切り替える。",
+      "author": "Claude Code（A1）"
+    },
+    {
+      "date": "2026-09-18",
+      "type": "fix",
+      "target": "防災MAP（inzai-disaster-map）",
       "title": "位置情報の許可手順を、スマホの実際の画面（🔒マークが出ない）に合わせて書き直し",
       "detail": "iPhone は「アドレスバー左端のアイコン（ぁあ／ページメニュー）→Webサイトの設定→位置情報」と「設定→アプリ→Safari→位置情報」、Android は「アドレスバー左端の調整マーク→権限」と「Chrome ⋮→設定→サイトの設定→位置情報→ブロック中から解除」に変更。🔒 の記述は PC のときだけに限定。",
       "author": "Claude Code（A1）"

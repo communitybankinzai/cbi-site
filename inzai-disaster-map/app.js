@@ -4146,7 +4146,15 @@ function geoDeniedGuideHtml() {
   const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   const isAndroid = /Android/.test(ua);
   let steps;
-  if (isIOS) {
+  // iPhone の Chrome／Firefox／Edge／LINE は Safari と違い、サイトごとの許可ではなく iOS の「アプリの位置情報」で決まる
+  const iosApp = /CriOS/.test(ua) ? "Chrome" : /FxiOS/.test(ua) ? "Firefox" : /EdgiOS/.test(ua) ? "Edge" : /Line\//.test(ua) ? "LINE" : "";
+  if (isIOS && iosApp) {
+    steps = [
+      `iPhone の「設定」→「アプリ」→「${iosApp}」→「位置情報」を「このAppの使用中」（または「確認」）にする（iOS 17 以前は「設定」を下にスクロールして「${iosApp}」）`,
+      "「設定」→「プライバシーとセキュリティ」→「位置情報サービス」が ON になっているか確認する",
+      `${iosApp} に戻ってページを読み直し、もう一度ボタンを押す（許可の確認が出たら「許可」）`
+    ].concat(iosApp === "LINE" ? ["LINE の中では位置情報が使えないことがあります。右上の「…」や共有から Safari か Chrome で開き直してください"] : []);
+  } else if (isIOS) {
     steps = [
       "Safari のアドレスバー左端のアイコン（「ぁあ」またはページメニュー）を押す →「Webサイトの設定」→「位置情報」を「許可」にして、ページを読み直す",
       "出てこないときは iPhone の「設定」→「アプリ」→「Safari」→「位置情報」を「確認」または「許可」にする（iOS 17 以前は「設定」→「Safari」）",
