@@ -2947,3 +2947,32 @@ body.embed-mode .cbi-home-link {
 .legend-line { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
 #road-risk-status { display: block; font-size: 11px; color: #5a6675; margin-left: 22px; }
 #road-risk-status.is-error { color: #c0392b; }
+
+/* 通れた道（GPS記録）の凡例と記録ボタン */
+.passed-roads-legend .legend-line { height: 4px; }
+.passed-road-recorder { margin: 6px 0 4px 22px; display: flex; flex-direction: column; gap: 6px; }
+.passed-road-btn {
+  align-self: flex-start;
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid #1565c0;
+  border-radius: 18px;
+  background: #1565c0;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.passed-road-btn:hover { background: #0d47a1; border-color: #0d47a1; }
+.passed-road-btn.is-recording {
+  background: #fff;
+  color: #b8322c;
+  border-color: #b8322c;
+  animation: passed-road-blink 1.4s ease-in-out infinite;
+}
+.passed-road-btn:disabled { opacity: .6; cursor: default; animation: none; }
+@keyframes passed-road-blink { 50% { box-shadow: 0 0 0 4px rgba(184, 50, 44, .18); } }
+.passed-road-note { min-height: 30px; padding: 4px 8px; border: 1px solid #b9c4d3; border-radius: 6px; font-size: 12px; }
+.passed-road-status { margin: 0; font-size: 11px; line-height: 1.5; color: #5a6675; }
+.passed-road-status.is-error { color: #c0392b; }
+.passed-road-status.is-live { color: #0d47a1; font-weight: 600; }

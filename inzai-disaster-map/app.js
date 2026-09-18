@@ -567,6 +567,11 @@ const map = L.map("map", {
 map.createPane("maskPane");
 map.getPane("maskPane").style.zIndex = 640;
 map.getPane("maskPane").style.pointerEvents = "none";
+// 冠水した道路（みんつく・実績）は事実なので、通れた道（GPS記録）と重なる場所では赤を上に描く
+map.createPane("passedRoadsPane");
+map.getPane("passedRoadsPane").style.zIndex = 440;
+map.createPane("kansuiPane");
+map.getPane("kansuiPane").style.zIndex = 450;
 
 const baseLayers = {
   pale: L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
@@ -1045,6 +1050,7 @@ function initIntegration() {
   }
   initLayerTips();
   initPresets();
+  initPassedRoadRecorder();
 
   const endpoint = String(APP_CONFIG.snsSearchEndpoint || "").trim();
   const monitorEndpoint = String(APP_CONFIG.snsMonitorEndpoint || "").trim();
@@ -1878,8 +1884,8 @@ function showShelterFloodLayers() {
 const PRESETS = {
   // 需要が多い2つを先頭に置いている
   kansui: {
-    label: "冠水した道路",
-    on: ["boundary", "records", "kansui", "roadRisk"],
+    label: "冠水した道・通れた道",
+    on: ["boundary", "records", "kansui", "passedRoads", "roadRisk"],
     openGroups: ["🚗"],
     focus: "layer-panel"
   },
@@ -3265,6 +3271,11 @@ function toggleOverlay(name, checked) {
     else map.removeLayer(kansuiLayer);
     return;
   }
+  if (name === "passedRoads") {
+    if (checked) { ensurePassedRoadsLayer(); passedRoadsLayer.addTo(map); }
+    else map.removeLayer(passedRoadsLayer);
+    return;
+  }
   if (name === "rainForecast") {
     if (checked) { refreshRainForecast(true); rainForecastLayer.addTo(map); }
     else map.removeLayer(rainForecastLayer);
@@ -3803,11 +3814,12 @@ async function ensureKansuiLayer() {
     kansuiLayer.clearLayers();
     (payload.roads || []).forEach(road => {
       if (!Array.isArray(road.path) || !road.path.length) return;
+      // 赤＝入らない道。「通れた道（青）」と並べて見るため、通行止め記録と同じ赤に揃えている
       const shape = road.path.length === 1
-        ? L.circleMarker(road.path[0], { radius: 6, color: "#ffffff", weight: 2, fillColor: "#8e44ad", fillOpacity: 0.9 })
-        : L.polyline(road.path, { color: "#8e44ad", weight: 5, opacity: 0.8 });
+        ? L.circleMarker(road.path[0], { pane: "kansuiPane", radius: 6, color: "#ffffff", weight: 2, fillColor: KANSUI_COLOR, fillOpacity: 0.9 })
+        : L.polyline(road.path, { pane: "kansuiPane", color: KANSUI_COLOR, weight: 5, opacity: 0.8 });
       shape.bindPopup(
-        `<strong>🚗 冠水した道路（市民の投稿）</strong><br>` +
+        `<strong>🔴 冠水した道路（市民の投稿）</strong><br>` +
         `投稿日 ${escapeHtml(formatDateTime(toDateTimeLocal(road.createdAt)) || "不明")}<br>` +
         `<span style="font-size:11px;">令和8年8月の豪雨などで冠水したと投稿された区間です。公式に確認された通行止めではありません。同じ雨で再び冠水するおそれがあるため、通行を避ける判断の参考にしてください。</span><br>` +
         `<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">出典・投稿はこちら: みんなでつくる千葉豪雨冠水道路マップ</a>`
@@ -3819,6 +3831,228 @@ async function ensureKansuiLayer() {
     kansuiLoaded = false;
     setStatus(`取得できません（${error?.message || "接続エラー"}）`, true);
   }
+}
+
+// ============================================================
+// 🔵 通れた道（GPS記録）
+// 閲覧者がスマホの位置情報で「いま通れた道」を記録し、赤（冠水した道路）と並べて見る。
+// 色の濃さ＝記録の新しさ。6時間より前の記録は「冠水時に通れた実績」として薄い青で残す
+// （消さない）。より強い雨では冠水しうるので「安全な道」とは書かない。
+// 保存先は CiDAO（Supabase）。匿名で、端末の乱数IDと軌跡だけを送る。
+// ============================================================
+const KANSUI_COLOR = "#b8322c";
+const PASSED_ROADS_KEY = "cbi-disaster-passed-roads-device-v1";
+const PASSED_ROAD_TIERS = [
+  { maxHours: 1, color: "#0d47a1", weight: 6, label: "1時間以内に通れた道" },
+  { maxHours: 3, color: "#1e88e5", weight: 5, label: "3時間以内に通れた道" },
+  { maxHours: 6, color: "#64b5f6", weight: 5, label: "6時間以内に通れた道" },
+  { maxHours: Infinity, color: "#b3d4f0", weight: 4, label: "冠水時に通れた実績（6時間より前）" }
+];
+const passedRoadsLayer = L.layerGroup();
+const passedRoadDraftLayer = L.layerGroup();
+let passedRoadsLoaded = false;
+
+function passedRoadDeviceId() {
+  let id = localStorage.getItem(PASSED_ROADS_KEY);
+  if (!id || !/^[A-Za-z0-9_-]{8,64}$/.test(id)) {
+    id = `pr-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`.slice(0, 40);
+    localStorage.setItem(PASSED_ROADS_KEY, id);
+  }
+  return id;
+}
+
+function passedRoadTier(endedAt) {
+  const at = new Date(endedAt).getTime();
+  const hours = Number.isFinite(at) ? (Date.now() - at) / 3600000 : Infinity;
+  return PASSED_ROAD_TIERS.find(tier => hours <= tier.maxHours) || PASSED_ROAD_TIERS[PASSED_ROAD_TIERS.length - 1];
+}
+
+function formatAgo(value) {
+  const at = new Date(value).getTime();
+  if (!Number.isFinite(at)) return "";
+  const minutes = Math.max(0, Math.round((Date.now() - at) / 60000));
+  if (minutes < 60) return `${minutes}分前`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 48) return `${hours}時間前`;
+  return `${Math.floor(hours / 24)}日前`;
+}
+
+function setPassedRoadsStatus(text, isError) {
+  const status = document.getElementById("passed-roads-status");
+  if (!status) return;
+  status.textContent = text;
+  status.classList.toggle("is-error", Boolean(isError));
+}
+
+function passedRoadShape(road) {
+  const tier = passedRoadTier(road.endedAt);
+  const line = L.polyline(road.path, { pane: "passedRoadsPane", color: tier.color, weight: tier.weight, opacity: 0.9 });
+  const isOld = tier.maxHours === Infinity;
+  line.bindPopup(
+    `<strong>🔵 ${escapeHtml(tier.label)}</strong><br>` +
+    `通れた時刻 ${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "不明")}（${escapeHtml(formatAgo(road.endedAt))}）<br>` +
+    `距離 約${Math.round(road.lengthM || 0)}m` +
+    (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
+    `<br><span style="font-size:11px;">${isOld
+      ? "6時間より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
+      : "この地図を見ている人がGPSで記録した道です。公式の通行可否ではありません。"}</span>`
+  );
+  return line;
+}
+
+async function ensurePassedRoadsLayer(force) {
+  if (passedRoadsLoaded && !force) return;
+  passedRoadsLoaded = true;
+  const endpoint = String(APP_CONFIG.passedRoadsEndpoint || "").trim();
+  if (!endpoint) { setPassedRoadsStatus("配信先が設定されていません", true); return; }
+  setPassedRoadsStatus("読み込み中");
+  try {
+    const response = await fetch(endpoint, { headers: { Accept: "application/json" }, cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    passedRoadsLayer.clearLayers();
+    const roads = (payload.roads || []).filter(road => Array.isArray(road.path) && road.path.length >= 2);
+    // 古い（薄い）線を先に描き、新しい（濃い）線を上に重ねる
+    roads.slice().reverse().forEach(road => passedRoadShape(road).addTo(passedRoadsLayer));
+    const recent = roads.filter(road => passedRoadTier(road.endedAt).maxHours !== Infinity).length;
+    setPassedRoadsStatus(`${roads.length}件（6時間以内 ${recent}件）・ ${formatDateTime(toDateTimeLocal(payload.generatedAt)) || ""}時点`);
+  } catch (error) {
+    passedRoadsLoaded = false;
+    setPassedRoadsStatus(`取得できません（${error?.message || "接続エラー"}）`, true);
+  }
+}
+
+// 記録ボタン。1回目で watchPosition を開始し、2回目で送信する。
+// 精度の悪い点（50m超）と、前の点から5m未満しか動いていない点は捨てる。
+const passedRoadRecorder = { watchId: null, points: [], startedAt: null, line: null };
+
+function setPassedRoadRecordStatus(text, kind) {
+  const node = document.getElementById("passed-road-record-status");
+  if (!node) return;
+  node.textContent = text;
+  node.classList.toggle("is-error", kind === "error");
+  node.classList.toggle("is-live", kind === "live");
+}
+
+function passedRoadDistanceM([lat1, lon1], [lat2, lon2]) {
+  const R = 6371000;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function passedRoadPathLengthM(points) {
+  let total = 0;
+  for (let i = 1; i < points.length; i += 1) total += passedRoadDistanceM(points[i - 1], points[i]);
+  return total;
+}
+
+function startPassedRoadRecording() {
+  if (!navigator.geolocation) {
+    setPassedRoadRecordStatus("この端末では位置情報が使えません。", "error");
+    return;
+  }
+  const button = document.getElementById("passed-road-record-btn");
+  passedRoadRecorder.points = [];
+  passedRoadRecorder.startedAt = new Date().toISOString();
+  passedRoadRecorder.line = L.polyline([], { pane: "passedRoadsPane", color: "#1565c0", weight: 5, opacity: 0.9, dashArray: "6 8" }).addTo(passedRoadDraftLayer);
+  passedRoadDraftLayer.addTo(map);
+  // 記録中は通れた道レイヤーも出して、赤（冠水）と見比べられるようにする
+  const overlayBox = document.querySelector('[data-overlay="passedRoads"]');
+  if (overlayBox && !overlayBox.checked) { overlayBox.checked = true; toggleOverlay("passedRoads", true); }
+  if (button) { button.textContent = "⏹ 通り終わった（記録を送る）"; button.classList.add("is-recording"); }
+  setPassedRoadRecordStatus("GPSを待っています…（屋外で数秒かかります）", "live");
+  passedRoadRecorder.watchId = navigator.geolocation.watchPosition(
+    position => {
+      const { latitude, longitude, accuracy } = position.coords;
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+      if (Number.isFinite(accuracy) && accuracy > 50) {
+        setPassedRoadRecordStatus(`記録中（GPS精度 ±${Math.round(accuracy)}m・精度が上がるのを待っています）`, "live");
+        return;
+      }
+      const point = [latitude, longitude];
+      const last = passedRoadRecorder.points[passedRoadRecorder.points.length - 1];
+      if (last && passedRoadDistanceM(last, point) < 5) return;
+      passedRoadRecorder.points.push(point);
+      passedRoadRecorder.line.addLatLng(point);
+      const length = Math.round(passedRoadPathLengthM(passedRoadRecorder.points));
+      setPassedRoadRecordStatus(`記録中 ${passedRoadRecorder.points.length}点・約${length}m（もう一度押すと送ります）`, "live");
+    },
+    error => {
+      const messages = { 1: "位置情報の利用が許可されていません。ブラウザの設定で許可してください。", 2: "現在地を取得できません。", 3: "位置情報の取得がタイムアウトしました。" };
+      setPassedRoadRecordStatus(messages[error.code] || error.message || "位置情報エラー", "error");
+    },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
+  );
+}
+
+async function stopPassedRoadRecording() {
+  const button = document.getElementById("passed-road-record-btn");
+  const noteInput = document.getElementById("passed-road-note");
+  if (passedRoadRecorder.watchId !== null) navigator.geolocation.clearWatch(passedRoadRecorder.watchId);
+  passedRoadRecorder.watchId = null;
+  if (button) { button.textContent = "📍 通れた道を記録する（GPS）"; button.classList.remove("is-recording"); }
+
+  const points = passedRoadRecorder.points;
+  const lengthM = passedRoadPathLengthM(points);
+  const reset = () => { passedRoadDraftLayer.clearLayers(); passedRoadRecorder.points = []; passedRoadRecorder.line = null; };
+  if (points.length < 3 || lengthM < 50) {
+    reset();
+    setPassedRoadRecordStatus(`記録が短すぎるため送りませんでした（${points.length}点・約${Math.round(lengthM)}m。50m以上必要です）。`, "error");
+    return;
+  }
+  const endpoint = String(APP_CONFIG.passedRoadsEndpoint || "").trim();
+  if (!endpoint) { reset(); setPassedRoadRecordStatus("送信先が設定されていません。", "error"); return; }
+  if (!window.confirm(`約${Math.round(lengthM)}m の軌跡を「通れた道」として地図に送ります。\n端末の匿名IDと軌跡だけが送られ、名前や電話番号は送られません。よろしいですか？`)) {
+    reset();
+    setPassedRoadRecordStatus("送信をやめました。", "");
+    return;
+  }
+  if (button) button.disabled = true;
+  setPassedRoadRecordStatus("送信中…", "live");
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        deviceId: passedRoadDeviceId(),
+        path: points,
+        startedAt: passedRoadRecorder.startedAt,
+        endedAt: new Date().toISOString(),
+        note: noteInput ? noteInput.value.trim().slice(0, 200) : ""
+      })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const reasons = {
+        too_frequent: "送信の間隔が短すぎます。2分ほど待ってから送ってください。",
+        outside_inzai: "印西市の周辺ではないため受け付けられません。",
+        too_short: "記録が短すぎます（50m以上必要です）。",
+        too_long: "記録が長すぎます（30km以内で区切ってください）。"
+      };
+      throw new Error(reasons[payload.error] || payload.error || `HTTP ${response.status}`);
+    }
+    reset();
+    if (noteInput) noteInput.value = "";
+    setPassedRoadRecordStatus(`送りました（約${payload.lengthM || Math.round(lengthM)}m）。地図の青い線に反映されました。`, "");
+    await ensurePassedRoadsLayer(true);
+  } catch (error) {
+    reset();
+    setPassedRoadRecordStatus(`送れませんでした（${error?.message || "接続エラー"}）`, "error");
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+function initPassedRoadRecorder() {
+  const button = document.getElementById("passed-road-record-btn");
+  if (!button) return;
+  button.addEventListener("click", () => {
+    if (passedRoadRecorder.watchId !== null) stopPassedRoadRecording();
+    else startPassedRoadRecording();
+  });
 }
 
 // 警報・注意報カードのすぐ下に「直近の地震」を1行で出す。

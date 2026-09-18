@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-09-18",
+      "type": "feature",
+      "target": "防災MAP（inzai-disaster-map）",
+      "title": "「通れた道」をスマホのGPSで記録して地図に青い線で出せるようになった（冠水した道路は赤に統一）",
+      "detail": "レイヤー「🔵 通れた道（GPS記録）」と記録ボタンを追加。押して通り、もう一度押すと軌跡が匿名で送られ、地図に青い線で出る（1時間以内＝濃い青／3時間／6時間／それより前は「冠水時に通れた実績」として薄い青で残す・消さない）。みんつくの「冠水した道路」は紫→赤に変え、赤（入らない道）と青（通れた道）で見比べられるようにした。冠水した道路は事実として扱い、青と重なる場所では赤を上に描く。CiDAO 側に /api/disaster/passed-roads（Supabase disaster_passed_roads・印西市周辺のみ・50m未満と2分以内の連投は拒否）を追加。プリセット「🚗 冠水した道・通れた道」で赤・青が一緒にONになる。",
+      "author": "Claude Code（A1）"
+    },
+    {
       "date": "2026-09-17",
       "type": "content",
       "target": "SNS（Threads / Instagram / Facebook）",

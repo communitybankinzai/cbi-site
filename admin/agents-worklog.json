@@ -17,6 +17,22 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-18",
+          "title": "防災MAP「通れた道」GPS記録の実装（Supabaseテーブル＋CiDAO API＋MAP側UI）と冠水道路の赤化 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao supabase/migrations/20260918100000_disaster_passed_roads.sql（本番適用済み・service_roleのみ）",
+            "C:\\Repos\\cidao src/app/api/disaster/passed-roads/route.ts（GET/POST/OPTIONS・62d1971 push済み）",
+            "site/inzai-disaster-map/app.js（passedRoadsLayer・GPS記録ボタン・kansuiPane/passedRoadsPane・冠水色を#b8322cへ）",
+            "site/inzai-disaster-map/index.html（レイヤー・凡例・記録ボタン・プリセット名・バナー注記）",
+            "site/inzai-disaster-map/styles.css（.passed-road-*）／config.js（passedRoadsEndpoint・appVersion 2026.09.18.01）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（節を追加）／site/admin/changelog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "中司さん発案。設計確認4問（誰でも匿名／6時間で濃淡・以後は薄い青で永久保存／冠水は赤／すぐ公開）＋追加指示2件（冠水時に通れた道は実績として残す／みんつく冠水は事実として青の上に描く）。検証：tsc・eslint 0件、本番API GET200・短すぎ400・市外400・正常201・連投429、GPS模擬で開始→4点200m→送信→地図反映を確認、テスト行は削除済み。実機スマホでの記録は未確認。session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: 41,395 / cost: $16.94"
+        },
+        {
           "date": "2026-09-17",
           "title": "包蔵地検証のSNS図解4枚作成・予約キューのカルーセル対応・3媒体投稿 0.4時間",
           "category": "広報",
@@ -6338,6 +6354,36 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-25",
+          "title": "📍 防災MAP「通れた道を記録」を実機スマホ2台（iPhone/Android）で屋外確認する（位置許可の案内・画面消灯で記録が止まる挙動・送信）",
+          "category": "保守",
+          "priority": "高",
+          "note": "ブラウザ模擬でしか通していない。Safari は watchPosition が画面消灯で止まる。実機で 50m 以上歩いて送信まで確認する"
+        },
+        {
+          "due": "未定",
+          "title": "🛠 「通れた道」の運営非表示（hidden=true）を CiDAO 管理画面から操作できるようにする",
+          "category": "実装",
+          "priority": "中",
+          "note": "いま誤情報・いたずらを伏せる手段は DATABASE_URL で直接 update するしかない。/admin/disaster-sources の並びに一覧＋非表示ボタンを置く案"
+        },
+        {
+          "due": "未定",
+          "title": "🔀 冠水した道路（みんつく）と重なる「通れた道」の区間をデータ側で切る（B案）か決める",
+          "category": "分析",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "中司さんの判断待ち。現状は描画順で赤を上にする A案（2026-09-18 実装）。区間を切るには道路マッチング（20m以内の重なり検出）が必要で、その要否を決めてから着手する",
+          "note": "「みんつくのデータは事実なので通れた実績を上書きする」の解釈：A＝赤を上に描く（採用）／B＝重なる区間の青を消す（未実装）"
+        },
+        {
+          "due": "未定",
+          "title": "🔋 「通れた道」記録中の画面消灯対策（Screen Wake Lock API）を入れるか検討",
+          "category": "調査",
+          "priority": "低",
+          "note": "iOS Safari 16.4+ と Android Chrome で Wake Lock が使える。電池消費との兼ね合いで、記録中だけ画面を点けたままにするか判断"
+        },
         {
           "due": "2026-09-18",
           "title": "🏺 包蔵地検証のカルーセル投稿（9/17 16:39）を各媒体で目視確認する",

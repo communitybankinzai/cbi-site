@@ -46,13 +46,13 @@
 
       <div class="prototype-banner" role="status">
         <strong id="operation-banner-title">構想検証版・現在は運用前です</strong>
-        <span id="operation-banner-text">「こんな仕組みがあったら便利か」を検討する試作品です。入力内容はこの端末内だけに保存され、印西市や運営者には送信されません。</span>
+        <span id="operation-banner-text">「こんな仕組みがあったら便利か」を検討する試作品です。入力内容はこの端末内だけに保存され、印西市や運営者には送信されません（「通れた道を記録」だけは匿名の軌跡が地図に送られます）。</span>
       </div>
 
       <nav class="preset-bar" id="preset-bar" aria-label="用途で表示を切り替える">
         <span class="preset-label">見たいもの</span>
         <div class="preset-items">
-          <button type="button" class="preset-btn" data-preset="kansui">🚗 冠水した道路</button>
+          <button type="button" class="preset-btn" data-preset="kansui">🚗 冠水した道・通れた道</button>
           <button type="button" class="preset-btn" data-preset="links">🔗 公式リンク集</button>
           <button type="button" class="preset-btn" data-preset="flood">🌊 浸水の想定</button>
           <button type="button" class="preset-btn" data-preset="shelter">🏫 避難所</button>
@@ -176,7 +176,20 @@
                     <span><span class="legend-line" style="background:#8a9099"></span>判定保留・情報不足</span>
                   </div>
 
-                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="kansui"> <span class="layer-name">🚗 冠水した道路（市民の投稿）<span id="kansui-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>有志プロジェクト「みんなでつくる千葉豪雨冠水道路マップ」に投稿された、実際に冠水した道路です（印西市周辺のみ表示）。<strong>公式に確認された通行止めではありません。</strong></p><p>8月に冠水した道は同じ雨で再び冠水するおそれがあるため、車で通らない判断の参考にしてください。</p><p><strong>新しい冠水地点の投稿は本家サイトからお願いします</strong>：<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつく千葉冠水マップを開く ↗</a></p></span></span></label>
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="kansui"> <span class="layer-name">🔴 冠水した道路（市民の投稿）<span id="kansui-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>有志プロジェクト「みんなでつくる千葉豪雨冠水道路マップ」に投稿された、実際に冠水した道路です（印西市周辺のみ表示）。<strong>公式に確認された通行止めではありません。</strong></p><p>8月に冠水した道は同じ雨で再び冠水するおそれがあるため、車で通らない判断の参考にしてください。</p><p><strong>新しい冠水地点の投稿は本家サイトからお願いします</strong>：<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつく千葉冠水マップを開く ↗</a></p></span></span></label>
+
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="passedRoads"> <span class="layer-name">🔵 通れた道（GPS記録）<span id="passed-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>この地図を見ている人が、スマホの位置情報で<strong>実際に通れた道</strong>を記録したものです。赤（冠水した道路）と見比べて、通れる道を探す参考にしてください。</p><p>色の濃さは記録の新しさです。<strong>6時間以上前の記録は「冠水時に通れた実績」として薄い青で残します。</strong>より強い雨では冠水することがあり、安全を保証するものではありません。</p><p>記録は匿名です（端末の乱数IDと軌跡だけが送られ、名前や電話番号は送られません）。</p></span></span></label>
+                  <div class="jshis-layer-note road-risk-legend passed-roads-legend">
+                    <span><span class="legend-line" style="background:#0d47a1"></span>1時間以内</span>
+                    <span><span class="legend-line" style="background:#1e88e5"></span>3時間以内</span>
+                    <span><span class="legend-line" style="background:#64b5f6"></span>6時間以内</span>
+                    <span><span class="legend-line" style="background:#b3d4f0"></span>冠水時に通れた実績（6時間より前）</span>
+                  </div>
+                  <div class="passed-road-recorder" id="passed-road-recorder">
+                    <button type="button" class="passed-road-btn" id="passed-road-record-btn">📍 通れた道を記録する（GPS）</button>
+                    <input type="text" id="passed-road-note" class="passed-road-note" maxlength="200" placeholder="一言メモ（任意・例：浅い水たまりあり）">
+                    <p class="passed-road-status" id="passed-road-record-status">通り始める前に押し、通り終わったらもう一度押すと地図に送られます。画面を消すと記録が止まります。</p>
+                  </div>
                 </div>
               </details>
 
@@ -1380,7 +1393,7 @@
           <li><b>回答後にピン設定</b><span>分かった場所を地図上でクリックします。</span></li>
           <li><b>内容を確認して保存</b><span>分類、重要度、写真状態を確認します。</span></li>
         </ol>
-        <div class="help-note">現在は運用前です。入力データはこのブラウザ内だけに保存され、印西市や運営者には送信されません。操作を試し、地域で役立ちそうか、心配な点は何か、どのような参加なら協力できそうかをご検討ください。</div>
+        <div class="help-note">現在は運用前です。入力データはこのブラウザ内だけに保存され、印西市や運営者には送信されません（「通れた道を記録」だけは匿名の軌跡が地図に送られます）。操作を試し、地域で役立ちそうか、心配な点は何か、どのような参加なら協力できそうかをご検討ください。</div>
         <div class="modal-actions">
           <span></span><span></span>
           <button class="tool-button" type="button" data-close-dialog>閉じる</button>

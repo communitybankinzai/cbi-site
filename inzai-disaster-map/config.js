@@ -6,6 +6,7 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     shelterEndpoint: "https://cidao.vercel.app/api/disaster/inzai-shelters",
     wellEndpoint: "https://cidao.vercel.app/api/disaster/inzai-wells",
     kansuiEndpoint: "https://cidao.vercel.app/api/disaster/kansui",
+    passedRoadsEndpoint: "https://cidao.vercel.app/api/disaster/passed-roads",
     timelineEndpoint: "https://cidao.vercel.app/api/disaster/timeline",
     openDataEndpoint: "https://cidao.vercel.app/api/disaster/inzai-opendata",
     presenceEndpoint: "https://cidao.vercel.app/api/metaverse-presence",
@@ -18,7 +19,7 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     jshisPshmWmsUrl: "https://www.j-shis.bosai.go.jp/map/wms/pshm/Y2024",
     jshisGroundWmsUrl: "https://www.j-shis.bosai.go.jp/map/wms/sstrct/V4",
     hostOrigin: window.location.origin,
-    appVersion: "2026.09.07.01"
+    appVersion: "2026.09.18.01"
   },
   window.CBI_DISASTER_CONFIG || {}
 );
