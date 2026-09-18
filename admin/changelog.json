@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-18",
+      "type": "fix",
+      "target": "防災MAP（inzai-disaster-map）",
+      "title": "位置情報を許可していないと記録できない件：機種別の許可手順をその場に表示し、GPSなしでも地図の長押しで記録できる案内を追加",
+      "detail": "Webページから端末の設定画面は直接開けない（iOS・Android ともAPIがない）ため、位置情報が拒否されたときに iPhone（Safari）／Android（Chrome）それぞれの許可手順を番号付きでボタンの下に出す。Permissions API がある端末では開いた時点で拒否済みを検知して先に案内する。案内には「📍 地図を長押しして記録する（GPS不要）」ボタンを添え、許可しなくても記録できる道を残した。LINE内ブラウザで開いている場合は Safari／Chrome で開き直す手順も明記。",
+      "author": "Claude Code（A1）"
+    },
+    {
+      "date": "2026-09-18",
       "type": "feature",
       "target": "防災MAP（inzai-disaster-map）",
       "title": "「通れない」記録に記録時刻のアメダス雨量を添え、冠水か工事・事故など別の理由かの目安を表示",

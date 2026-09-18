@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-18",
+          "title": "位置情報拒否時の機種別案内とGPS不要の代替導線を追加（実機報告への対応） 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（geoDeniedGuideHtml・showGeoDeniedGuide・checkGeoPermissionOnLoad）",
+            "site/inzai-disaster-map/index.html（#quick-geo-guide・#passed-road-geo-guide）／styles.css（.geo-denied-guide）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md／site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "中司さんの実機報告「位置情報の利用許可しないと付けない。設定画面に飛べないか」。設定画面はWebから開けないため、拒否検知→機種別手順＋長押し代替を実装。検証：ブラウザで getCurrentPosition の code=1 を模擬し、案内表示→「地図を長押し」ボタンでズーム16・レイヤーONになることを確認。iPhone UA のヘッドレス撮影で Safari 向け手順が出ることを確認。session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: 136,317 / cost: $51.55"
+        },
+        {
+          "date": "2026-09-18",
           "title": "「通れない」記録へのアメダス雨量付与と冠水／工事の目安判定（API＋MAP表示） 0.22時間",
           "category": "実装",
           "outputs": [

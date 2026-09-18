@@ -2982,6 +2982,16 @@ body.embed-mode .cbi-home-link {
 .passed-road-mintsuku { margin: 0; padding: 6px 8px; border: 1px dashed #b8322c; border-radius: 6px; background: #fff5f4; font-size: 11px; line-height: 1.5; color: #4a2a28; }
 .passed-road-mintsuku a { font-weight: 600; }
 
+/* 位置情報が拒否されたときの案内 */
+.geo-denied-guide { margin: 6px 0 0; padding: 8px 10px; border: 1px solid #e0a800; border-radius: 8px; background: #fff8e1; font-size: 12px; line-height: 1.5; color: #4a3a00; text-align: left; }
+.geo-denied-guide p { margin: 4px 0; }
+.geo-denied-guide ol { margin: 4px 0 4px 18px; padding: 0; }
+.geo-denied-guide li { margin: 2px 0; }
+.geo-denied-map-btn { margin-top: 4px; min-height: 36px; padding: 6px 12px; border: 1px solid #16324f; border-radius: 10px; background: #16324f; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+@media (max-width: 820px) {
+  #quick-geo-guide .geo-denied-guide { max-height: 40vh; overflow-y: auto; }
+}
+
 /* 記録の一覧（時間順） */
 .passed-roads-list-wrap { border: 1px solid #dfe6ee; border-radius: 8px; padding: 6px 8px; background: #fff; }
 .passed-roads-list-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; }

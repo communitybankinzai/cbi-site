@@ -4139,6 +4139,70 @@ async function ensurePassedRoadsLayer(force) {
 // 精度の悪い点（50m超）と、前の点から5m未満しか動いていない点は捨てる。
 const passedRoadRecorder = { watchId: null, points: [], startedAt: null, line: null };
 
+// 📵 位置情報が拒否されたときの案内。Webページから端末の設定画面は開けない（iOS・Android ともAPIが無い）ので、
+// 機種ごとの手順をその場に出し、GPS なしで記録できる「地図の長押し」へ誘導する。
+function geoDeniedGuideHtml() {
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/.test(ua);
+  let steps;
+  if (isIOS) {
+    steps = [
+      "Safari のアドレスバー左の「ぁあ」→「Webサイトの設定」→ 位置情報を「許可」にする",
+      "それでも出ないときは iPhone の「設定」→「プライバシーとセキュリティ」→「位置情報サービス」→「Safari のWebサイト」を「このAppの使用中」にする",
+      "LINE など他のアプリの中で開いている場合は、右上の「…」や共有から Safari で開き直す"
+    ];
+  } else if (isAndroid) {
+    steps = [
+      "Chrome のアドレスバー左の🔒（またはⓘ）→「権限」→ 位置情報を「許可」にする",
+      "それでも出ないときは Android の「設定」→「位置情報」を ON にし、「アプリの権限」で Chrome を許可する",
+      "LINE など他のアプリの中で開いている場合は、右上の「…」から Chrome で開き直す"
+    ];
+  } else {
+    steps = ["ブラウザのアドレスバー左の🔒（サイト情報）から位置情報を「許可」にし、ページを読み直す"];
+  }
+  return `<div class="geo-denied-guide">
+    <strong>📵 位置情報が許可されていません</strong>
+    <p>このページから端末の設定画面を直接開くことはできません。次の手順で許可してから、もう一度ボタンを押してください。</p>
+    <ol>${steps.map(t => `<li>${escapeHtml(t)}</li>`).join("")}</ol>
+    <p>許可しなくても、<strong>地図を拡大して長押し（PCは右クリック）</strong>すれば、その場所に「通れない／通れた」を記録できます（GPS不要）。</p>
+    <button type="button" class="geo-denied-map-btn" id="geo-denied-map-btn">📍 地図を長押しして記録する（GPS不要）</button>
+  </div>`;
+}
+
+function showGeoDeniedGuide(show) {
+  [document.getElementById("passed-road-geo-guide"), document.getElementById("quick-geo-guide")].forEach(node => {
+    if (!node) return;
+    node.hidden = !show;
+    node.innerHTML = show ? geoDeniedGuideHtml() : "";
+  });
+  if (show) {
+    document.querySelectorAll("#geo-denied-map-btn").forEach(button => button.addEventListener("click", () => {
+      ensurePassedRoadsOverlayOn();
+      if (map.getZoom() < MAP_RECORD_MIN_ZOOM) map.setZoom(MAP_RECORD_MIN_ZOOM + 1);
+      document.getElementById("map")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      setPassedRoadRecordStatus("地図の記録したい場所を長押し（PCは右クリック）してください。", "live");
+    }));
+  }
+}
+
+// 開いた時点で拒否済みなら、押す前から案内を出す（Permissions API がある端末だけ。無ければ押したときに分かる）
+function checkGeoPermissionOnLoad() {
+  if (!navigator.permissions?.query) return;
+  navigator.permissions.query({ name: "geolocation" }).then(status => {
+    const apply = () => {
+      if (status.state === "denied") {
+        showGeoDeniedGuide(true);
+        setPassedRoadRecordStatus("位置情報が許可されていないため、GPSでの記録はできません（地図の長押しなら記録できます）。", "error");
+      } else {
+        showGeoDeniedGuide(false);
+      }
+    };
+    apply();
+    status.onchange = apply;
+  }).catch(() => {});
+}
+
 function setPassedRoadRecordStatus(text, kind) {
   [document.getElementById("passed-road-record-status"), document.getElementById("quick-record-status")].forEach(node => {
     if (!node) return;
@@ -4192,6 +4256,7 @@ async function recordBlockedPoint() {
     const position = await new Promise((resolve, reject) =>
       navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }));
     const { latitude, longitude, accuracy } = position.coords;
+    showGeoDeniedGuide(false);
     if (Number.isFinite(accuracy) && accuracy > 150) {
       throw new Error(`GPSの精度が低すぎます（±${Math.round(accuracy)}m）。空が見える場所で再度お試しください`);
     }
@@ -4209,7 +4274,8 @@ async function recordBlockedPoint() {
     setPassedRoadRecordStatus("送りました。地図に赤い×で表示されました。みんつく千葉冠水マップにも投稿すると県全体の地図にも残ります。", "");
     showMintsukuHint(true);
   } catch (error) {
-    const messages = { 1: "位置情報の利用が許可されていません。ブラウザの設定で許可してください。", 2: "現在地を取得できません。", 3: "位置情報の取得がタイムアウトしました。" };
+    const messages = { 1: "位置情報が許可されていません（下の手順を見てください）", 2: "現在地を取得できません。", 3: "位置情報の取得がタイムアウトしました。" };
+    if (error?.code === 1) showGeoDeniedGuide(true);
     setPassedRoadRecordStatus(`送れませんでした（${messages[error?.code] || error?.message || "接続エラー"}）`, "error");
   } finally {
     blockedPointBusy = false;
@@ -4251,6 +4317,7 @@ function startPassedRoadRecording() {
     position => {
       const { latitude, longitude, accuracy } = position.coords;
       if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+      showGeoDeniedGuide(false);
       if (Number.isFinite(accuracy) && accuracy > 50) {
         setPassedRoadRecordStatus(`記録中（GPS精度 ±${Math.round(accuracy)}m・精度が上がるのを待っています）`, "live");
         return;
@@ -4264,7 +4331,8 @@ function startPassedRoadRecording() {
       setPassedRoadRecordStatus(`記録中 ${passedRoadRecorder.points.length}点・約${length}m（もう一度押すと送ります）`, "live");
     },
     error => {
-      const messages = { 1: "位置情報の利用が許可されていません。ブラウザの設定で許可してください。", 2: "現在地を取得できません。", 3: "位置情報の取得がタイムアウトしました。" };
+      const messages = { 1: "位置情報が許可されていません（下の手順を見てください）", 2: "現在地を取得できません。", 3: "位置情報の取得がタイムアウトしました。" };
+      if (error.code === 1) { showGeoDeniedGuide(true); stopPassedRoadRecording(); }
       setPassedRoadRecordStatus(messages[error.code] || error.message || "位置情報エラー", "error");
     },
     { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
@@ -4334,6 +4402,7 @@ function initPassedRoadRecorder() {
     if (group) group.open = true;
     document.getElementById("passed-roads-list-wrap")?.scrollIntoView({ behavior: "smooth", block: "center" });
   });
+  checkGeoPermissionOnLoad();
   // 長押し（スマホ）／右クリック（PC）は Leaflet の contextmenu イベントとして届く
   map.on("contextmenu", event => {
     if (event.originalEvent) event.originalEvent.preventDefault();
