@@ -4167,6 +4167,7 @@ function geoDeniedGuideHtml() {
     <ol>${steps.map(t => `<li>${escapeHtml(t)}</li>`).join("")}</ol>
     <p>許可しなくても、<strong>地図を拡大して長押し（PCは右クリック）</strong>すれば、その場所に「通れない／通れた」を記録できます（GPS不要）。</p>
     <button type="button" class="geo-denied-map-btn" id="geo-denied-map-btn">📍 地図を長押しして記録する（GPS不要）</button>
+    <button type="button" class="geo-denied-close-btn" data-geo-guide-close>閉じる</button>
   </div>`;
 }
 
@@ -4177,6 +4178,7 @@ function showGeoDeniedGuide(show) {
     node.innerHTML = show ? geoDeniedGuideHtml() : "";
   });
   if (show) {
+    document.querySelectorAll("[data-geo-guide-close]").forEach(button => button.addEventListener("click", () => showGeoDeniedGuide(false)));
     document.querySelectorAll("#geo-denied-map-btn").forEach(button => button.addEventListener("click", () => {
       ensurePassedRoadsOverlayOn();
       if (map.getZoom() < MAP_RECORD_MIN_ZOOM) map.setZoom(MAP_RECORD_MIN_ZOOM + 1);
