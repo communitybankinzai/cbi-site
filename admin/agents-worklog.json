@@ -18,7 +18,7 @@
       "actuals": [
         {
           "date": "2026-09-18",
-          "title": "「通れない」記録へのアメダス雨量付与と冠水／工事の目安判定（API＋MAP表示） 0.3時間",
+          "title": "「通れない」記録へのアメダス雨量付与と冠水／工事の目安判定（API＋MAP表示） 0.22時間",
           "category": "実装",
           "outputs": [
             "C:\\Repos\\cidao supabase/migrations/20260918140000_disaster_passed_roads_rain.sql（本番適用済み）",
@@ -26,13 +26,13 @@
             "site/inzai-disaster-map/app.js（rainVerdictHtml・一覧の一言）／index.html（レイヤー説明）",
             "site/inzai-disaster-map/CLAUDE_HANDOFF.md／site/admin/changelog.json"
           ],
-          "hours": 0.3,
+          "hours": 0.22,
           "partnerApproved": false,
-          "note": "中司さん指示「アメダスと重ねて冠水による通行止めか判定（工事による通行止めもある）」。しきい値 1h≥5/3h≥10/24h≥30mm は仮置き（実績で校正していない）。検証：tsc・eslint 0件、本番へ5時間前の記録を送って rain（station/at/1h/3h/24h/verdict=no_rain）が保存・GET・GeoJSON に出ることを実測。テスト行削除。session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: PENDING"
+          "note": "中司さん指示「アメダスと重ねて冠水による通行止めか判定（工事による通行止めもある）」。しきい値 1h≥5/3h≥10/24h≥30mm は仮置き（実績で校正していない）。検証：tsc・eslint 0件、本番へ5時間前の記録を送って rain（station/at/1h/3h/24h/verdict=no_rain）が保存・GET・GeoJSON に出ることを実測。テスト行削除。 session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: 125,210 / cost: $47.78"
         },
         {
           "date": "2026-09-18",
-          "title": "防災MAP「通れない」ワンタップ記録・スマホ固定バー・長押し記録・時間順一覧・みんつく提供調査 0.6時間",
+          "title": "防災MAP「通れない」ワンタップ記録・スマホ固定バー・長押し記録・時間順一覧・みんつく提供調査 0.5時間",
           "category": "実装",
           "outputs": [
             "C:\\Repos\\cidao supabase/migrations/20260918120000_disaster_passed_roads_kind.sql／20260918130000_disaster_passed_roads_source.sql（本番適用済み）",
@@ -42,9 +42,9 @@
             "site/inzai-disaster-map/CLAUDE_HANDOFF.md（同日追記）／site/admin/changelog.json",
             "cidao/2026-09-18_みんつく運営への通れない記録提供の打診文.md（保管庫・MOC_CiDAO 登録）"
           ],
-          "hours": 0.6,
+          "hours": 0.5,
           "partnerApproved": false,
-          "note": "中司さん指示4件（スマホですぐ押せるUI／みんつくへも提供／時刻記録と時間順ソート／長押しで後から記録）。みんつくは実測で外部API・URLパラメータなし（ブラウザから先方Supabaseへ直接insert）のため無許可書込はせず、本家リンク＋運営打診（文案作成・送付は中司さん）＋GeoJSON提供口の用意。検証：tsc・eslint 0件、本番API 201/429/GeoJSON・source=map を実測、ブラウザで getCurrentPosition／contextmenu を模擬して 現在地記録→赤×→一覧、長押し→1時間前→記録→一覧の順序 を確認。テスト行は削除（0件）。実機スマホ未確認。session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: PENDING"
+          "note": "中司さん指示4件（スマホですぐ押せるUI／みんつくへも提供／時刻記録と時間順ソート／長押しで後から記録）。みんつくは実測で外部API・URLパラメータなし（ブラウザから先方Supabaseへ直接insert）のため無許可書込はせず、本家リンク＋運営打診（文案作成・送付は中司さん）＋GeoJSON提供口の用意。検証：tsc・eslint 0件、本番API 201/429/GeoJSON・source=map を実測、ブラウザで getCurrentPosition／contextmenu を模擬して 現在地記録→赤×→一覧、長押し→1時間前→記録→一覧の順序 を確認。テスト行は削除（0件）。実機スマホ未確認。 session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: 125,210 / cost: $47.78"
         },
         {
           "date": "2026-09-18",
@@ -60,7 +60,7 @@
           ],
           "hours": 0.5,
           "partnerApproved": false,
-          "note": "中司さん発案。設計確認4問（誰でも匿名／6時間で濃淡・以後は薄い青で永久保存／冠水は赤／すぐ公開）＋追加指示2件（冠水時に通れた道は実績として残す／みんつく冠水は事実として青の上に描く）。検証：tsc・eslint 0件、本番API GET200・短すぎ400・市外400・正常201・連投429、GPS模擬で開始→4点200m→送信→地図反映を確認、テスト行は削除済み。実機スマホでの記録は未確認。session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: 48,312 / cost: $19.06"
+          "note": "中司さん発案。設計確認4問（誰でも匿名／6時間で濃淡・以後は薄い青で永久保存／冠水は赤／すぐ公開）＋追加指示2件（冠水時に通れた道は実績として残す／みんつく冠水は事実として青の上に描く）。検証：tsc・eslint 0件、本番API GET200・短すぎ400・市外400・正常201・連投429、GPS模擬で開始→4点200m→送信→地図反映を確認、テスト行は削除済み。実機スマホでの記録は未確認。 session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: 125,210 / cost: $47.78"
         },
         {
           "date": "2026-09-17",
