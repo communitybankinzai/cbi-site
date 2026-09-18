@@ -1051,6 +1051,7 @@ function initIntegration() {
   initLayerTips();
   initPresets();
   initPassedRoadRecorder();
+  initOperatorTools();
 
   const endpoint = String(APP_CONFIG.snsSearchEndpoint || "").trim();
   const monitorEndpoint = String(APP_CONFIG.snsMonitorEndpoint || "").trim();
@@ -4449,6 +4450,30 @@ async function stopPassedRoadRecording() {
   } finally {
     setPassedRoadButtons(false, false);
   }
+}
+
+// ⚙ 運営用：上部の運営・検証向けボタン（登録・CSV・GeoJSON・管理記録・印刷・状態チップ）は既定で隠す。
+// ふだんの利用者に必要なのは「使い方」「公式情報」だけ。開閉は端末に記憶し、?ops=1 でも開く。
+const OPERATOR_TOOLS_KEY = "cbi-disaster-operator-tools-open-v1";
+function initOperatorTools() {
+  const toggle = document.getElementById("operator-tools-toggle");
+  const box = document.getElementById("operator-tools");
+  if (!toggle || !box) return;
+  const apply = open => {
+    box.hidden = !open;
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    toggle.classList.toggle("is-open", open);
+    toggle.textContent = open ? "⚙ 運営用を閉じる" : "⚙ 運営用";
+  };
+  let open = false;
+  try { open = localStorage.getItem(OPERATOR_TOOLS_KEY) === "1"; } catch {}
+  if (new URLSearchParams(location.search).get("ops") === "1") open = true;
+  apply(open);
+  toggle.addEventListener("click", () => {
+    open = box.hidden;
+    apply(open);
+    try { localStorage.setItem(OPERATOR_TOOLS_KEY, open ? "1" : "0"); } catch {}
+  });
 }
 
 function initPassedRoadRecorder() {

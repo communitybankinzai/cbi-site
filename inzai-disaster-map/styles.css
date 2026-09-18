@@ -2982,6 +2982,12 @@ body.embed-mode .cbi-home-link {
 .passed-road-mintsuku { margin: 0; padding: 6px 8px; border: 1px dashed #b8322c; border-radius: 6px; background: #fff5f4; font-size: 11px; line-height: 1.5; color: #4a2a28; }
 .passed-road-mintsuku a { font-weight: 600; }
 
+/* ⚙ 運営用：上部の運営・検証向けボタンをまとめて隠す枠。開いたときは元の並びのまま */
+.operator-tools { display: contents; }
+.operator-tools[hidden] { display: none; }
+.operator-toggle { color: #5a6675; border-style: dashed; font-size: 12px; }
+.operator-toggle.is-open { color: #16324f; border-style: solid; background: #eaf1f7; }
+
 /* 自分の記録の取り消し */
 .passed-road-undo, .quick-undo { margin: 2px 0 0; font-size: 11px; color: #5a6675; }
 .quick-undo { text-align: center; }

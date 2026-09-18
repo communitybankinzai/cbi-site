@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-18",
+          "title": "防災MAP 上部ボタンの簡素化（運営用ボタンを折りたたみへ） 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/index.html（#operator-tools・#operator-tools-toggle）",
+            "site/inzai-disaster-map/app.js（initOperatorTools）／styles.css（.operator-tools・.operator-toggle）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md／site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "中司さん指示「通常の利用者が使わないボタンは隠して、もっとシンプルに」。残すボタンの確認質問は取り下げられたため推奨案（使い方・公式情報のみ）で実施。検証：既定で見えるのは 使い方／公式情報／⚙運営用 の3つ、開くと13個、閉じると端末に記憶、をブラウザで確認。PC・スマホ幅のヘッドレス撮影で見た目を確認。session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: 176,946 / cost: $79.66"
+        },
+        {
+          "date": "2026-09-18",
           "title": "自分の記録の取り消し（10分以内・同じ端末）API＋MAP実装、iPhone Chrome向け許可手順、実機テスト記録の削除対応 0.2時間",
           "category": "実装",
           "outputs": [

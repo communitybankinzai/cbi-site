@@ -26,21 +26,25 @@
             <span>対象日</span>
             <input id="incident-date" type="date">
           </label>
-          <span class="connection-status" id="api-status">SNS API未接続</span>
-          <span class="connection-status" id="operator-status">試作利用</span>
-          <span class="connection-status presence-chip" id="presence-chip" title="いまこのMAPを開いている人数（直近90秒）と、本日このMAPを見た人数（重複なし・日本時間）">👥 確認中</span>
-          <button class="tool-button primary" id="sns-collector-button" type="button">SNS投稿を登録</button>
           <button class="tool-button" id="help-button" type="button">使い方</button>
           <button class="tool-button official-button" id="official-links-button" type="button">公式情報</button>
-          <button class="tool-button primary" id="add-point-button" type="button">地点追加</button>
-          <button class="tool-button road-button" id="add-road-status-button" type="button">通行止め登録</button>
-          <button class="tool-button" id="map-click-button" type="button" aria-pressed="false">地図クリック追加</button>
-          <button class="tool-button" id="screenshot-button" type="button">スクショ証跡</button>
-          <button class="tool-button" id="import-button" type="button">CSV取込</button>
-          <button class="tool-button" id="export-csv-button" type="button">CSV出力</button>
-          <button class="tool-button" id="export-geojson-button" type="button">GeoJSON出力</button>
-          <a class="tool-button admin-button" href="./admin.html">管理記録</a>
-          <button class="tool-button" id="print-button" type="button">印刷</button>
+          <button class="tool-button operator-toggle" id="operator-tools-toggle" type="button" aria-expanded="false" aria-controls="operator-tools" title="記録の登録・CSV出力など、運営・検証用の操作を出します">⚙ 運営用</button>
+          <!-- 運営・検証用の操作。ふだんの利用者には見せない（⚙ 運営用 で開閉・端末に記憶・?ops=1 でも開く）。id と動作は変えていない -->
+          <div class="operator-tools" id="operator-tools" hidden>
+            <span class="connection-status" id="api-status">SNS API未接続</span>
+            <span class="connection-status" id="operator-status">試作利用</span>
+            <span class="connection-status presence-chip" id="presence-chip" title="いまこのMAPを開いている人数（直近90秒）と、本日このMAPを見た人数（重複なし・日本時間）">👥 確認中</span>
+            <button class="tool-button primary" id="sns-collector-button" type="button">SNS投稿を登録</button>
+            <button class="tool-button primary" id="add-point-button" type="button">地点追加</button>
+            <button class="tool-button road-button" id="add-road-status-button" type="button">通行止め登録</button>
+            <button class="tool-button" id="map-click-button" type="button" aria-pressed="false">地図クリック追加</button>
+            <button class="tool-button" id="screenshot-button" type="button">スクショ証跡</button>
+            <button class="tool-button" id="import-button" type="button">CSV取込</button>
+            <button class="tool-button" id="export-csv-button" type="button">CSV出力</button>
+            <button class="tool-button" id="export-geojson-button" type="button">GeoJSON出力</button>
+            <a class="tool-button admin-button" href="./admin.html">管理記録</a>
+            <button class="tool-button" id="print-button" type="button">印刷</button>
+          </div>
         </div>
       </header>
 
