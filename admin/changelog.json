@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-18",
+      "type": "feature",
+      "target": "防災MAP（inzai-disaster-map）",
+      "title": "自分が送った「通れない／通れた」の記録を、10分以内なら「↩ 取り消す」で地図から消せるようになった",
+      "detail": "送信直後の状態文（固定バー・左パネル）と一覧の自分の記録に「↩ 取り消す」を表示。同じ端末から送信後10分以内の記録だけ非表示にできる（他人の記録は取り消せない・行は残し hidden=true）。誤タップやテスト送信で自宅の位置が公開されたままにならないようにするため（2026-09-18 中司さんの実機テストで発生）。CiDAO 側に DELETE /api/disaster/passed-roads?id=&deviceId= を追加。",
+      "author": "Claude Code（A1）"
+    },
+    {
+      "date": "2026-09-18",
       "type": "fix",
       "target": "防災MAP（inzai-disaster-map）",
       "title": "iPhone の Chrome／Firefox／Edge／LINE で位置情報が拒否されたとき、そのアプリ向けの許可手順（設定→アプリ→Chrome→位置情報）を出すようにした",

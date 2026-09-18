@@ -3878,10 +3878,13 @@ function renderPassedRoadsList() {
     const desc = (road.kind === "blocked"
       ? "通れない地点"
       : (road.path.length === 1 ? "通れた地点" : `通れた道 約${Math.round(road.lengthM || 0)}m`)) + (rainNote ? `・${rainNote}` : "");
+    const own = isOwnRecentPassedRoad(road.id);
     return `<li class="${old ? "pr-old" : ""}"><button type="button" data-passed-road="${escapeAttribute(String(road.id))}">` +
       `<span class="pr-kind">${what}</span><span><span class="pr-time">${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "時刻不明")}</span>` +
       `（${escapeHtml(formatAgo(road.endedAt))}）<span class="pr-meta">${escapeHtml(desc)}・${escapeHtml(road.source === "map" ? "地図で後から記録" : "GPS")}` +
-      `${road.note ? "・" + escapeHtml(road.note) : ""}</span></span></button></li>`;
+      `${road.note ? "・" + escapeHtml(road.note) : ""}</span></span></button>` +
+      (own ? `<button type="button" class="undo-link pr-undo" data-undo-id="${escapeAttribute(String(road.id))}">↩ 取り消す</button>` : "") +
+      `</li>`;
   }).join("");
 }
 
@@ -3964,6 +3967,59 @@ function openMapRecordPopup(latlng) {
   });
 }
 
+// ↩ 自分の記録の取り消し。誤タップやテスト送信で自宅の位置が公開されたままにならないよう、
+// 送信から10分以内・同じ端末からだけ非表示にできる（サーバー側 DELETE が端末IDと時間を確認する）。
+const PASSED_ROADS_OWN_KEY = "cbi-disaster-passed-roads-own-v1";
+const UNDO_WINDOW_MS = 10 * 60 * 1000;
+
+function ownPassedRoads() {
+  try {
+    const list = JSON.parse(localStorage.getItem(PASSED_ROADS_OWN_KEY) || "[]");
+    const fresh = Array.isArray(list) ? list.filter(x => x && Date.now() - new Date(x.createdAt).getTime() < UNDO_WINDOW_MS) : [];
+    localStorage.setItem(PASSED_ROADS_OWN_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch { return []; }
+}
+
+function rememberOwnPassedRoad(id, createdAt) {
+  const list = ownPassedRoads().filter(x => x.id !== id);
+  list.push({ id, createdAt });
+  localStorage.setItem(PASSED_ROADS_OWN_KEY, JSON.stringify(list));
+}
+
+function isOwnRecentPassedRoad(id) {
+  return ownPassedRoads().some(x => x.id === id);
+}
+
+async function undoPassedRoad(id) {
+  const endpoint = String(APP_CONFIG.passedRoadsEndpoint || "").trim();
+  if (!endpoint) return;
+  if (!window.confirm("この記録を取り消して地図から消します。よろしいですか？")) return;
+  try {
+    const url = `${endpoint}?id=${encodeURIComponent(id)}&deviceId=${encodeURIComponent(passedRoadDeviceId())}`;
+    const response = await fetch(url, { method: "DELETE", headers: { Accept: "application/json" } });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const reasons = { too_late: "送信から10分を過ぎたため取り消せません（運営にご連絡ください）", not_found: "この端末から送った記録ではないため取り消せません" };
+      throw new Error(reasons[payload.error] || payload.error || `HTTP ${response.status}`);
+    }
+    localStorage.setItem(PASSED_ROADS_OWN_KEY, JSON.stringify(ownPassedRoads().filter(x => x.id !== id)));
+    setPassedRoadRecordStatus("取り消しました。地図から消えています。", "");
+    await ensurePassedRoadsLayer(true);
+  } catch (error) {
+    setPassedRoadRecordStatus(`取り消せませんでした（${error?.message || "接続エラー"}）`, "error");
+  }
+}
+
+// 状態文の下に「↩ 取り消す」を出す（左パネルと固定バーの両方）。id が無ければ消す
+function setUndoLink(id) {
+  [document.getElementById("passed-road-undo"), document.getElementById("quick-undo")].forEach(node => {
+    if (!node) return;
+    node.hidden = !id;
+    node.innerHTML = id ? `間違えて送った？ <button type="button" class="undo-link" data-undo-id="${escapeAttribute(id)}">↩ この記録を取り消す（10分以内）</button>` : "";
+  });
+}
+
 // 記録を1件送る共通処理（GPSの現在地・軌跡・地図の長押しのいずれも同じ）
 async function submitPassedRoadRecord(record) {
   const endpoint = String(APP_CONFIG.passedRoadsEndpoint || "").trim();
@@ -3985,6 +4041,7 @@ async function submitPassedRoadRecord(record) {
       };
       return { ok: false, error: reasons[payload.error] || payload.error || `HTTP ${response.status}` };
     }
+    if (payload.id) { rememberOwnPassedRoad(payload.id, payload.createdAt || new Date().toISOString()); setUndoLink(payload.id); }
     ensurePassedRoadsOverlayOn();
     await ensurePassedRoadsLayer(true);
     return { ok: true, payload };
@@ -4317,6 +4374,7 @@ function startPassedRoadRecording() {
   }
   if (blockedPointBusy) return;
   showMintsukuHint(false);
+  setUndoLink(null);
   passedRoadRecorder.points = [];
   passedRoadRecorder.startedAt = new Date().toISOString();
   passedRoadRecorder.line = L.polyline([], { pane: "passedRoadsPane", color: "#1565c0", weight: 5, opacity: 0.9, dashArray: "6 8" }).addTo(passedRoadDraftLayer);
@@ -4405,8 +4463,14 @@ function initPassedRoadRecorder() {
   document.getElementById("passed-roads-sort")?.addEventListener("change", renderPassedRoadsList);
   document.getElementById("passed-roads-filter")?.addEventListener("change", renderPassedRoadsList);
   document.getElementById("passed-roads-list")?.addEventListener("click", event => {
+    const undo = event.target.closest("[data-undo-id]");
+    if (undo) { undoPassedRoad(undo.dataset.undoId); return; }
     const button = event.target.closest("[data-passed-road]");
     if (button) focusPassedRoad(button.dataset.passedRoad);
+  });
+  document.addEventListener("click", event => {
+    const undo = event.target.closest("#passed-road-undo [data-undo-id], #quick-undo [data-undo-id]");
+    if (undo) { setUndoLink(null); undoPassedRoad(undo.dataset.undoId); }
   });
   document.getElementById("quick-list-btn")?.addEventListener("click", () => {
     ensurePassedRoadsOverlayOn();

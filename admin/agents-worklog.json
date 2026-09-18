@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-18",
+          "title": "自分の記録の取り消し（10分以内・同じ端末）API＋MAP実装、iPhone Chrome向け許可手順、実機テスト記録の削除対応 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao src/app/api/disaster/passed-roads/route.ts（DELETE・UNDO_WINDOW_SECONDS=600）",
+            "site/inzai-disaster-map/app.js（undoPassedRoad・setUndoLink・ownPassedRoads・iosApp 判定）",
+            "site/inzai-disaster-map/index.html（#quick-undo・#passed-road-undo）／styles.css（.undo-link）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md／site/admin/changelog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "中司さんの実機（iPhone Chrome）テストで、1回目のタップが成功して自宅の位置が公開され、2回目が2分制限で429になった。公開されていた記録（13:43:25）は私が削除。再発防止に A案（取り消し）を採用。検証：本番で POST→DELETE（本人＝200・他端末＝404・10分超は409の分岐はコード確認）→GET から消えることを実測、ブラウザで取り消しリンク表示→取り消し→一覧から消えるまで確認。session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: 164,622 / cost: $64.04"
+        },
+        {
+          "date": "2026-09-18",
           "title": "位置情報拒否時の機種別案内とGPS不要の代替導線を追加（実機報告への対応） 0.1時間",
           "category": "保守",
           "outputs": [
