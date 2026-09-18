@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-18",
+          "title": "「通れない」記録へのアメダス雨量付与と冠水／工事の目安判定（API＋MAP表示） 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao supabase/migrations/20260918140000_disaster_passed_roads_rain.sql（本番適用済み）",
+            "C:\\Repos\\cidao src/app/api/disaster/passed-roads/route.ts（rainAt：気象庁アメダス10分値から記録時刻の雨量を取得・rain_verdict 判定）",
+            "site/inzai-disaster-map/app.js（rainVerdictHtml・一覧の一言）／index.html（レイヤー説明）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md／site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "中司さん指示「アメダスと重ねて冠水による通行止めか判定（工事による通行止めもある）」。しきい値 1h≥5/3h≥10/24h≥30mm は仮置き（実績で校正していない）。検証：tsc・eslint 0件、本番へ5時間前の記録を送って rain（station/at/1h/3h/24h/verdict=no_rain）が保存・GET・GeoJSON に出ることを実測。テスト行削除。session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: PENDING"
+        },
+        {
+          "date": "2026-09-18",
           "title": "防災MAP「通れない」ワンタップ記録・スマホ固定バー・長押し記録・時間順一覧・みんつく提供調査 0.6時間",
           "category": "実装",
           "outputs": [
@@ -6370,6 +6384,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "☔ 「冠水か工事か」の雨量しきい値（1h≥5／3h≥10／24h≥30mm）を実際の冠水記録で校正する",
+          "category": "分析",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "大雨時の「通れない」記録が数十件たまること（現在0件）。みんつくの8月豪雨の投稿とアメダス過去値で先に当たりを付けることは可能",
+          "note": "現在の値は仮置き。API の rainAt だけ直せば変わる"
+        },
         {
           "due": "未定",
           "title": "📨 みんつく運営（X @change_support_）へ「通れない地点」の GeoJSON 提供を打診する（文案は保管庫 cidao/2026-09-18_みんつく運営への通れない記録提供の打診文.md）",

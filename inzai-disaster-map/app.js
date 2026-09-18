@@ -3874,9 +3874,10 @@ function renderPassedRoadsList() {
   list.innerHTML = rows.map(road => {
     const old = passedRoadTier(road.endedAt).maxHours === Infinity;
     const what = road.kind === "blocked" ? "🚫" : "🔵";
-    const desc = road.kind === "blocked"
+    const rainNote = road.kind === "blocked" && road.rain ? `${rainVerdictOf(road).icon} ${rainVerdictOf(road).label}` : "";
+    const desc = (road.kind === "blocked"
       ? "通れない地点"
-      : (road.path.length === 1 ? "通れた地点" : `通れた道 約${Math.round(road.lengthM || 0)}m`);
+      : (road.path.length === 1 ? "通れた地点" : `通れた道 約${Math.round(road.lengthM || 0)}m`)) + (rainNote ? `・${rainNote}` : "");
     return `<li class="${old ? "pr-old" : ""}"><button type="button" data-passed-road="${escapeAttribute(String(road.id))}">` +
       `<span class="pr-kind">${what}</span><span><span class="pr-time">${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "時刻不明")}</span>` +
       `（${escapeHtml(formatAgo(road.endedAt))}）<span class="pr-meta">${escapeHtml(desc)}・${escapeHtml(road.source === "map" ? "地図で後から記録" : "GPS")}` +
@@ -4048,9 +4049,34 @@ function blockedPointShape(road) {
     `<br><span style="font-size:11px;">${isOld
       ? "6時間より前の記録です。すでに通れるようになっている可能性があります。"
       : "この地図を見ている人が冠水で止まった場所を記録したものです。公式の通行止めではありません。"}</span>` +
+    rainVerdictHtml(road) +
     `<br><a href="${MINTSUKU_URL}" target="_blank" rel="noreferrer">みんつく千葉冠水マップにも投稿する ↗</a>`
   );
   return marker;
+}
+
+// ☔ 記録時刻の雨量（最寄りアメダス）から「冠水による通れない」か「工事・事故など別の理由」かの目安を出す。
+// 判定はサーバー（CiDAO）が保存時に行い、ここは表示だけ。確定ではないので言い切らない
+const RAIN_VERDICTS = {
+  flood_likely: { icon: "☔", label: "雨あり → 冠水の可能性が高い" },
+  light_rain: { icon: "🌦", label: "少雨 → 冠水か別の理由かは判断保留" },
+  no_rain: { icon: "🌤", label: "雨なし → 工事・事故など冠水以外の理由の可能性" },
+  unknown: { icon: "❓", label: "雨量を取得できませんでした" }
+};
+
+function rainVerdictOf(road) {
+  return RAIN_VERDICTS[road?.rain?.verdict] || RAIN_VERDICTS.unknown;
+}
+
+function rainVerdictHtml(road) {
+  const rain = road?.rain;
+  if (!rain) return "";
+  const v = rainVerdictOf(road);
+  const mm = x => (x === null || x === undefined ? "−" : `${x}mm`);
+  const detail = rain.verdict === "unknown"
+    ? ""
+    : `<br><span style="font-size:11px;">記録時の雨量（アメダス${escapeHtml(rain.station || "")}・${escapeHtml(formatDateTime(toDateTimeLocal(rain.at)) || "")}）1時間 ${mm(rain.r1h)}／3時間 ${mm(rain.r3h)}／24時間 ${mm(rain.r24h)}</span>`;
+  return `<br><strong>${v.icon} ${escapeHtml(v.label)}</strong>${detail}`;
 }
 
 function passedRoadSourceLabel(road) {
