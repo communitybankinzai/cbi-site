@@ -136,6 +136,17 @@ MAPは `config.js` の `snsMonitorEndpoint` で以下へ接続する。
 - **未確認**：実機スマホでの GPS 記録（ブラウザで `watchPosition` を模擬して開始→4点200m→送信→反映までは確認済み）。iOS Safari は画面消灯で `watchPosition` が止まる（Wake Lock は未導入）。運営の非表示（`hidden=true`）は今は DATABASE_URL から直接 update するしかない。
 - ⚠ 上の見送り表「TOYOTA通れた道データの取込＝取り込まない」は**他社データの二次利用の話**で、閲覧者が自分で記録する本機能とは別。ただし「通れた実績は現在の通行可否を保証しない」という理由は本機能にも当てはまるので、文言は「実績」で統一し「安全」「通行可」とは書かない。
 
+### 同日追記：🚫 通れない地点・スマホ固定バー・長押し記録・一覧（2026-09-18 午後）
+
+- **🚫 ここは通れない**：現在地1点を `kind=blocked` で送る（`recordBlockedPoint`・`getCurrentPosition`・精度150m超は拒否）。地図では丸い赤地に白×（`.blocked-gps-mark`・6時間より前は半透明）。通行止め記録の `.closure-cross` とは別の印。ポップアップと記録直後に「みんつく千葉冠水マップにも投稿する ↗」（本家に外部APIが無いため、同じ場所を本家でなぞってもらう導線）。
+- **スマホ固定バー** `#quick-record-bar`（≤820px のみ・`position:fixed` 画面下）：🚫 ここは通れない／🔵 通れた道を記録／📋（一覧へ）。状態文は左パネルと同じ内容を `setPassedRoadRecordStatus` が両方へ写す。ボタンの見た目は `setPassedRoadButtons` が左パネルとバーの両方を切り替える。
+- **地図の長押し（PCは右クリック＝Leaflet の `contextmenu`）で後から記録** `openMapRecordPopup`：ズーム15未満は断る。「いつ」（いま／30分前／1時間前／2時間前／3時間前／時刻を指定）＋メモ＋🚫通れなかった／🔵通れた。`source=map`・時刻は記録者の申告。API は 24 時間より前を拒否する。1点の「通れた」は青い丸（`.passed-gps-point`）。走行中は操作できないので、止まってから付ける用途（中司さん指示）。
+- **📋 記録の一覧（時間順）** `renderPassedRoadsList`：`passedRoadsData` を `endedAt` で並べ替え（新しい順／古い順）、種類で絞り込み。押すと `focusPassedRoad` がその場所へ移動してポップアップを開く（`passedRoadShapes` の id → 図形）。
+- **送信は `submitPassedRoadRecord` に一本化**（GPS現在地・GPS軌跡・地図長押しのすべて）。同じ端末・同じIPは**2分に1件**（429）なので、通れない→すぐ通れた の連続記録は2分待つ必要がある（緩めるならAPIの `MIN_INTERVAL_SECONDS`）。
+- **DB 列の追加**：`kind`（passed|blocked・migration `20260918120000`）／`source`（gps|map・`20260918130000`）。どちらも本番適用済み。API は `?kind=blocked`・`?format=geojson`（みんつく運営への提供用・[経度,緯度]）に対応。
+- **みんつくへの提供**：先方は外部向けAPI・URLパラメータなし（投稿はブラウザから先方 Supabase へ直接 insert）。無許可で書き込まない。打診文と調査結果は保管庫 `cidao/2026-09-18_みんつく運営への通れない記録提供の打診文.md`（送付は中司さん）。
+- **既知の制約**：バナーの「送信されません」文は「ここは通れない／通れた道を記録だけは送られます」に修正済み。実機スマホでの GPS・長押しは未確認（ブラウザで `getCurrentPosition`／`contextmenu` を模擬して通した）。
+
 ## 千葉県の大雨対策ビジョンとの対応表（2026-09-16 追加）
 
 - 右カラムの折りたたみ `details.vision-acc`「🏛 千葉県の大雨対策ビジョンとこのMAP」（「この地図に出せていないもの」の直前）。熊谷知事の X 投稿（2026-09-14・status 2099262898157871437）の3つの視点・11の論点に、印 `.st-done／.st-part／.st-next／.st-out`（styles.css）と該当機能を付けた静的HTML。

@@ -3851,6 +3851,146 @@ const PASSED_ROAD_TIERS = [
 const passedRoadsLayer = L.layerGroup();
 const passedRoadDraftLayer = L.layerGroup();
 let passedRoadsLoaded = false;
+let passedRoadsData = [];              // 読み込んだ記録（一覧の元）
+const passedRoadShapes = new Map();    // id → 地図上の線・印（一覧から飛ぶため）
+
+// 📋 記録の一覧（時間順）。並び順と種類で絞り、押すとその場所へ移動してポップアップを開く
+function renderPassedRoadsList() {
+  const list = document.getElementById("passed-roads-list");
+  if (!list) return;
+  const order = document.getElementById("passed-roads-sort")?.value || "desc";
+  const filter = document.getElementById("passed-roads-filter")?.value || "all";
+  const rows = passedRoadsData
+    .filter(road => filter === "all" || road.kind === filter)
+    .sort((a, b) => {
+      const ta = new Date(a.endedAt).getTime() || 0;
+      const tb = new Date(b.endedAt).getTime() || 0;
+      return order === "asc" ? ta - tb : tb - ta;
+    });
+  if (!rows.length) {
+    list.innerHTML = `<li class="passed-roads-empty">${passedRoadsData.length ? "該当する記録はありません" : "まだ記録がありません"}</li>`;
+    return;
+  }
+  list.innerHTML = rows.map(road => {
+    const old = passedRoadTier(road.endedAt).maxHours === Infinity;
+    const what = road.kind === "blocked" ? "🚫" : "🔵";
+    const desc = road.kind === "blocked"
+      ? "通れない地点"
+      : (road.path.length === 1 ? "通れた地点" : `通れた道 約${Math.round(road.lengthM || 0)}m`);
+    return `<li class="${old ? "pr-old" : ""}"><button type="button" data-passed-road="${escapeAttribute(String(road.id))}">` +
+      `<span class="pr-kind">${what}</span><span><span class="pr-time">${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "時刻不明")}</span>` +
+      `（${escapeHtml(formatAgo(road.endedAt))}）<span class="pr-meta">${escapeHtml(desc)}・${escapeHtml(road.source === "map" ? "地図で後から記録" : "GPS")}` +
+      `${road.note ? "・" + escapeHtml(road.note) : ""}</span></span></button></li>`;
+  }).join("");
+}
+
+function focusPassedRoad(id) {
+  const shape = passedRoadShapes.get(id);
+  if (!shape) return;
+  ensurePassedRoadsOverlayOn();
+  const center = typeof shape.getLatLng === "function" ? shape.getLatLng() : shape.getBounds().getCenter();
+  map.setView(center, Math.max(map.getZoom(), 16));
+  document.getElementById("map")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  setTimeout(() => shape.openPopup(), 300);
+}
+
+// 🖐 地図の長押し（PCは右クリック）で、後からその場所に記録する。
+// 走行中は操作できないので、止まってから地図を拡大して付ける用途。時刻は記録者の申告。
+const MAP_RECORD_MIN_ZOOM = 15;
+let mapRecordPopup = null;
+
+function openMapRecordPopup(latlng) {
+  if (passedRoadRecorder.watchId !== null) {
+    setPassedRoadRecordStatus("「通れた道」を記録中です。先に停止（送信）してください。", "error");
+    return;
+  }
+  if (map.getZoom() < MAP_RECORD_MIN_ZOOM) {
+    setPassedRoadRecordStatus(`地図をもう少し拡大してから長押ししてください（道路が見分けられる大きさ・ズーム${MAP_RECORD_MIN_ZOOM}以上）。`, "error");
+    return;
+  }
+  const html = `
+    <div class="map-record-popup">
+      <div class="mrp-title">この場所を後から記録する</div>
+      <div class="mrp-row"><label>いつ：<select class="mrp-when">
+        <option value="0">いま</option><option value="30">30分前</option><option value="60">1時間前</option><option value="120">2時間前</option><option value="180">3時間前</option><option value="custom">時刻を指定</option>
+      </select></label><input type="datetime-local" class="mrp-custom" hidden></div>
+      <input type="text" class="mrp-note-input" maxlength="200" placeholder="一言メモ（任意）">
+      <div class="mrp-row"><button type="button" class="mrp-btn is-blocked">🚫 通れなかった</button><button type="button" class="mrp-btn is-passed">🔵 通れた</button></div>
+      <p class="mrp-note">記録した本人の申告として地図に載ります（匿名）。</p>
+      <p class="mrp-status"></p>
+    </div>`;
+  mapRecordPopup = L.popup({ maxWidth: 280, closeButton: true }).setLatLng(latlng).setContent(html).openOn(map);
+  const root = mapRecordPopup.getElement();
+  if (!root) return;
+  const when = root.querySelector(".mrp-when");
+  const custom = root.querySelector(".mrp-custom");
+  const status = root.querySelector(".mrp-status");
+  when.addEventListener("change", () => {
+    custom.hidden = when.value !== "custom";
+    if (!custom.hidden && !custom.value) custom.value = toDateTimeLocal(new Date().toISOString());
+  });
+  const endedAtFromForm = () => {
+    if (when.value === "custom") {
+      const at = new Date(custom.value);
+      return Number.isNaN(at.getTime()) ? null : at;
+    }
+    return new Date(Date.now() - Number(when.value) * 60000);
+  };
+  root.querySelectorAll(".mrp-btn").forEach(button => {
+    button.addEventListener("click", async () => {
+      const kind = button.classList.contains("is-blocked") ? "blocked" : "passed";
+      const endedAt = endedAtFromForm();
+      if (!endedAt) { status.textContent = "時刻を入れてください。"; status.classList.add("is-error"); return; }
+      if (Math.abs(Date.now() - endedAt.getTime()) > 24 * 3600000) { status.textContent = "24時間より前・先の時刻は記録できません。"; status.classList.add("is-error"); return; }
+      root.querySelectorAll(".mrp-btn").forEach(b => { b.disabled = true; });
+      status.classList.remove("is-error");
+      status.textContent = "送信中…";
+      const result = await submitPassedRoadRecord({
+        kind, source: "map", path: [[latlng.lat, latlng.lng]],
+        startedAt: endedAt.toISOString(), endedAt: endedAt.toISOString(),
+        note: root.querySelector(".mrp-note-input").value.trim().slice(0, 200)
+      });
+      if (result.ok) {
+        map.closePopup(mapRecordPopup);
+        setPassedRoadRecordStatus(`記録しました（${kind === "blocked" ? "🚫 通れなかった" : "🔵 通れた"}・${formatDateTime(toDateTimeLocal(endedAt.toISOString()))}）。`, "");
+        showMintsukuHint(kind === "blocked");
+      } else {
+        status.textContent = `送れませんでした（${result.error}）`;
+        status.classList.add("is-error");
+        root.querySelectorAll(".mrp-btn").forEach(b => { b.disabled = false; });
+      }
+    });
+  });
+}
+
+// 記録を1件送る共通処理（GPSの現在地・軌跡・地図の長押しのいずれも同じ）
+async function submitPassedRoadRecord(record) {
+  const endpoint = String(APP_CONFIG.passedRoadsEndpoint || "").trim();
+  if (!endpoint) return { ok: false, error: "送信先が設定されていません" };
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ deviceId: passedRoadDeviceId(), ...record })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const reasons = {
+        too_frequent: "送信の間隔が短すぎます。2分ほど待ってから送ってください",
+        outside_inzai: "印西市の周辺ではないため受け付けられません",
+        too_short: "記録が短すぎます（50m以上必要です）",
+        too_long: "記録が長すぎます（30km以内で区切ってください）",
+        stale_time: "24時間より前の時刻は記録できません"
+      };
+      return { ok: false, error: reasons[payload.error] || payload.error || `HTTP ${response.status}` };
+    }
+    ensurePassedRoadsOverlayOn();
+    await ensurePassedRoadsLayer(true);
+    return { ok: true, payload };
+  } catch (error) {
+    return { ok: false, error: error?.message || "接続エラー" };
+  }
+}
 
 function passedRoadDeviceId() {
   let id = localStorage.getItem(PASSED_ROADS_KEY);
@@ -3884,14 +4024,54 @@ function setPassedRoadsStatus(text, isError) {
   status.classList.toggle("is-error", Boolean(isError));
 }
 
-function passedRoadShape(road) {
+const MINTSUKU_URL = "https://mintsuku-chiba-kansuimap.com/";
+
+// 通れない地点（冠水で止まった現在地・1点）。みんつくの赤い線と同じ意味なので、
+// ポップアップから本家にも投稿できるよう導線を置く（本家に外部向けAPIはない）
+function blockedPointShape(road) {
   const tier = passedRoadTier(road.endedAt);
-  const line = L.polyline(road.path, { pane: "passedRoadsPane", color: tier.color, weight: tier.weight, opacity: 0.9 });
   const isOld = tier.maxHours === Infinity;
+  const marker = L.marker(road.path[0], {
+    pane: "passedRoadsPane",
+    icon: L.divIcon({
+      className: "",
+      html: `<div class="blocked-gps-mark${isOld ? " is-old" : ""}" aria-label="通れない地点">×</div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    })
+  });
+  marker.bindPopup(
+    `<strong>🚫 通れない地点（市民のGPS記録）</strong><br>` +
+    `記録時刻 ${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "不明")}（${escapeHtml(formatAgo(road.endedAt))}）` +
+    `・${escapeHtml(passedRoadSourceLabel(road))}` +
+    (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
+    `<br><span style="font-size:11px;">${isOld
+      ? "6時間より前の記録です。すでに通れるようになっている可能性があります。"
+      : "この地図を見ている人が冠水で止まった場所を記録したものです。公式の通行止めではありません。"}</span>` +
+    `<br><a href="${MINTSUKU_URL}" target="_blank" rel="noreferrer">みんつく千葉冠水マップにも投稿する ↗</a>`
+  );
+  return marker;
+}
+
+function passedRoadSourceLabel(road) {
+  return road.source === "map" ? "地図の長押しで後から記録（時刻は記録者の申告）" : "現地でGPS記録";
+}
+
+function passedRoadShape(road) {
+  if (road.kind === "blocked") return blockedPointShape(road);
+  const tier = passedRoadTier(road.endedAt);
+  const isOld = tier.maxHours === Infinity;
+  const line = road.path.length === 1
+    ? L.marker(road.path[0], {
+        pane: "passedRoadsPane",
+        icon: L.divIcon({ className: "", html: `<div class="passed-gps-point${isOld ? " is-old" : ""}" aria-label="通れた地点"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] })
+      })
+    : L.polyline(road.path, { pane: "passedRoadsPane", color: tier.color, weight: tier.weight, opacity: 0.9 });
   line.bindPopup(
     `<strong>🔵 ${escapeHtml(tier.label)}</strong><br>` +
     `通れた時刻 ${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "不明")}（${escapeHtml(formatAgo(road.endedAt))}）<br>` +
-    `距離 約${Math.round(road.lengthM || 0)}m` +
+    (road.path.length === 1 ? "地点の記録" : `距離 約${Math.round(road.lengthM || 0)}m`) +
+    `・${escapeHtml(passedRoadSourceLabel(road))}` +
     (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
     `<br><span style="font-size:11px;">${isOld
       ? "6時間より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
@@ -3911,11 +4091,18 @@ async function ensurePassedRoadsLayer(force) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     passedRoadsLayer.clearLayers();
-    const roads = (payload.roads || []).filter(road => Array.isArray(road.path) && road.path.length >= 2);
+    const roads = (payload.roads || []).filter(road => Array.isArray(road.path) && road.path.length >= 1);
     // 古い（薄い）線を先に描き、新しい（濃い）線を上に重ねる
-    roads.slice().reverse().forEach(road => passedRoadShape(road).addTo(passedRoadsLayer));
+    passedRoadShapes.clear();
+    roads.slice().reverse().forEach(road => {
+      const shape = passedRoadShape(road).addTo(passedRoadsLayer);
+      passedRoadShapes.set(road.id, shape);
+    });
+    passedRoadsData = roads;
+    renderPassedRoadsList();
     const recent = roads.filter(road => passedRoadTier(road.endedAt).maxHours !== Infinity).length;
-    setPassedRoadsStatus(`${roads.length}件（6時間以内 ${recent}件）・ ${formatDateTime(toDateTimeLocal(payload.generatedAt)) || ""}時点`);
+    const blocked = roads.filter(road => road.kind === "blocked").length;
+    setPassedRoadsStatus(`通れた ${roads.length - blocked}件・通れない ${blocked}件（6時間以内 ${recent}件）・ ${formatDateTime(toDateTimeLocal(payload.generatedAt)) || ""}時点`);
   } catch (error) {
     passedRoadsLoaded = false;
     setPassedRoadsStatus(`取得できません（${error?.message || "接続エラー"}）`, true);
@@ -3927,11 +4114,81 @@ async function ensurePassedRoadsLayer(force) {
 const passedRoadRecorder = { watchId: null, points: [], startedAt: null, line: null };
 
 function setPassedRoadRecordStatus(text, kind) {
-  const node = document.getElementById("passed-road-record-status");
-  if (!node) return;
-  node.textContent = text;
-  node.classList.toggle("is-error", kind === "error");
-  node.classList.toggle("is-live", kind === "live");
+  [document.getElementById("passed-road-record-status"), document.getElementById("quick-record-status")].forEach(node => {
+    if (!node) return;
+    node.textContent = text;
+    node.classList.toggle("is-error", kind === "error");
+    node.classList.toggle("is-live", kind === "live");
+  });
+}
+
+// 記録ボタンの見た目（左パネルとスマホの固定バーの両方）
+function setPassedRoadButtons(recording, disabled) {
+  const panelBtn = document.getElementById("passed-road-record-btn");
+  const quickBtn = document.getElementById("quick-passed-btn");
+  if (panelBtn) {
+    panelBtn.textContent = recording ? "⏹ 通り終わった（記録を送る）" : "📍 通れた道を記録する（GPS）";
+    panelBtn.classList.toggle("is-recording", recording);
+    panelBtn.disabled = Boolean(disabled);
+  }
+  if (quickBtn) {
+    quickBtn.textContent = recording ? "⏹ 通り終わった（送る）" : "🔵 通れた道を記録";
+    quickBtn.classList.toggle("is-recording", recording);
+    quickBtn.disabled = Boolean(disabled);
+  }
+  [document.getElementById("blocked-point-record-btn"), document.getElementById("quick-blocked-btn")].forEach(b => { if (b) b.disabled = Boolean(disabled); });
+}
+
+function showMintsukuHint(show) {
+  const node = document.getElementById("passed-road-mintsuku");
+  if (node) node.hidden = !show;
+}
+
+// 通れる道のレイヤーを ON にする（記録の結果がすぐ見えるように）
+function ensurePassedRoadsOverlayOn() {
+  const overlayBox = document.querySelector('[data-overlay="passedRoads"]');
+  if (overlayBox && !overlayBox.checked) { overlayBox.checked = true; toggleOverlay("passedRoads", true); }
+}
+
+// 🚫 ここは通れない：現在地を1点だけ送る（冠水で止まった場所でワンタップ）
+let blockedPointBusy = false;
+async function recordBlockedPoint() {
+  if (blockedPointBusy) return;
+  if (passedRoadRecorder.watchId !== null) {
+    setPassedRoadRecordStatus("「通れた道」を記録中です。先に停止（送信）してください。", "error");
+    return;
+  }
+  if (!navigator.geolocation) { setPassedRoadRecordStatus("この端末では位置情報が使えません。", "error"); return; }
+  blockedPointBusy = true;
+  setPassedRoadButtons(false, true);
+  setPassedRoadRecordStatus("現在地を取得しています…", "live");
+  try {
+    const position = await new Promise((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }));
+    const { latitude, longitude, accuracy } = position.coords;
+    if (Number.isFinite(accuracy) && accuracy > 150) {
+      throw new Error(`GPSの精度が低すぎます（±${Math.round(accuracy)}m）。空が見える場所で再度お試しください`);
+    }
+    const noteInput = document.getElementById("passed-road-note");
+    const note = noteInput ? noteInput.value.trim().slice(0, 200) : "";
+    if (!window.confirm(`いまいる場所（精度 ±${Math.round(accuracy || 0)}m）を「通れない地点」として地図に送ります。\n端末の匿名IDと位置だけが送られ、名前や電話番号は送られません。よろしいですか？`)) {
+      setPassedRoadRecordStatus("送信をやめました。", "");
+      return;
+    }
+    const now = new Date().toISOString();
+    const result = await submitPassedRoadRecord({ kind: "blocked", source: "gps", path: [[latitude, longitude]], startedAt: now, endedAt: now, note });
+    if (!result.ok) throw new Error(result.error);
+    if (noteInput) noteInput.value = "";
+    map.setView([latitude, longitude], Math.max(map.getZoom(), 16));
+    setPassedRoadRecordStatus("送りました。地図に赤い×で表示されました。みんつく千葉冠水マップにも投稿すると県全体の地図にも残ります。", "");
+    showMintsukuHint(true);
+  } catch (error) {
+    const messages = { 1: "位置情報の利用が許可されていません。ブラウザの設定で許可してください。", 2: "現在地を取得できません。", 3: "位置情報の取得がタイムアウトしました。" };
+    setPassedRoadRecordStatus(`送れませんでした（${messages[error?.code] || error?.message || "接続エラー"}）`, "error");
+  } finally {
+    blockedPointBusy = false;
+    setPassedRoadButtons(false, false);
+  }
 }
 
 function passedRoadDistanceM([lat1, lon1], [lat2, lon2]) {
@@ -3954,15 +4211,15 @@ function startPassedRoadRecording() {
     setPassedRoadRecordStatus("この端末では位置情報が使えません。", "error");
     return;
   }
-  const button = document.getElementById("passed-road-record-btn");
+  if (blockedPointBusy) return;
+  showMintsukuHint(false);
   passedRoadRecorder.points = [];
   passedRoadRecorder.startedAt = new Date().toISOString();
   passedRoadRecorder.line = L.polyline([], { pane: "passedRoadsPane", color: "#1565c0", weight: 5, opacity: 0.9, dashArray: "6 8" }).addTo(passedRoadDraftLayer);
   passedRoadDraftLayer.addTo(map);
   // 記録中は通れた道レイヤーも出して、赤（冠水）と見比べられるようにする
-  const overlayBox = document.querySelector('[data-overlay="passedRoads"]');
-  if (overlayBox && !overlayBox.checked) { overlayBox.checked = true; toggleOverlay("passedRoads", true); }
-  if (button) { button.textContent = "⏹ 通り終わった（記録を送る）"; button.classList.add("is-recording"); }
+  ensurePassedRoadsOverlayOn();
+  setPassedRoadButtons(true, false);
   setPassedRoadRecordStatus("GPSを待っています…（屋外で数秒かかります）", "live");
   passedRoadRecorder.watchId = navigator.geolocation.watchPosition(
     position => {
@@ -3989,11 +4246,10 @@ function startPassedRoadRecording() {
 }
 
 async function stopPassedRoadRecording() {
-  const button = document.getElementById("passed-road-record-btn");
   const noteInput = document.getElementById("passed-road-note");
   if (passedRoadRecorder.watchId !== null) navigator.geolocation.clearWatch(passedRoadRecorder.watchId);
   passedRoadRecorder.watchId = null;
-  if (button) { button.textContent = "📍 通れた道を記録する（GPS）"; button.classList.remove("is-recording"); }
+  setPassedRoadButtons(false, false);
 
   const points = passedRoadRecorder.points;
   const lengthM = passedRoadPathLengthM(points);
@@ -4003,55 +4259,59 @@ async function stopPassedRoadRecording() {
     setPassedRoadRecordStatus(`記録が短すぎるため送りませんでした（${points.length}点・約${Math.round(lengthM)}m。50m以上必要です）。`, "error");
     return;
   }
-  const endpoint = String(APP_CONFIG.passedRoadsEndpoint || "").trim();
-  if (!endpoint) { reset(); setPassedRoadRecordStatus("送信先が設定されていません。", "error"); return; }
   if (!window.confirm(`約${Math.round(lengthM)}m の軌跡を「通れた道」として地図に送ります。\n端末の匿名IDと軌跡だけが送られ、名前や電話番号は送られません。よろしいですか？`)) {
     reset();
     setPassedRoadRecordStatus("送信をやめました。", "");
     return;
   }
-  if (button) button.disabled = true;
+  setPassedRoadButtons(false, true);
   setPassedRoadRecordStatus("送信中…", "live");
   try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        deviceId: passedRoadDeviceId(),
-        path: points,
-        startedAt: passedRoadRecorder.startedAt,
-        endedAt: new Date().toISOString(),
-        note: noteInput ? noteInput.value.trim().slice(0, 200) : ""
-      })
+    const result = await submitPassedRoadRecord({
+      kind: "passed",
+      source: "gps",
+      path: points,
+      startedAt: passedRoadRecorder.startedAt,
+      endedAt: new Date().toISOString(),
+      note: noteInput ? noteInput.value.trim().slice(0, 200) : ""
     });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      const reasons = {
-        too_frequent: "送信の間隔が短すぎます。2分ほど待ってから送ってください。",
-        outside_inzai: "印西市の周辺ではないため受け付けられません。",
-        too_short: "記録が短すぎます（50m以上必要です）。",
-        too_long: "記録が長すぎます（30km以内で区切ってください）。"
-      };
-      throw new Error(reasons[payload.error] || payload.error || `HTTP ${response.status}`);
-    }
+    if (!result.ok) throw new Error(result.error);
     reset();
     if (noteInput) noteInput.value = "";
-    setPassedRoadRecordStatus(`送りました（約${payload.lengthM || Math.round(lengthM)}m）。地図の青い線に反映されました。`, "");
-    await ensurePassedRoadsLayer(true);
+    setPassedRoadRecordStatus(`送りました（約${result.payload.lengthM || Math.round(lengthM)}m）。地図の青い線に反映されました。`, "");
   } catch (error) {
     reset();
     setPassedRoadRecordStatus(`送れませんでした（${error?.message || "接続エラー"}）`, "error");
   } finally {
-    if (button) button.disabled = false;
+    setPassedRoadButtons(false, false);
   }
 }
 
 function initPassedRoadRecorder() {
-  const button = document.getElementById("passed-road-record-btn");
-  if (!button) return;
-  button.addEventListener("click", () => {
+  const togglePassed = () => {
     if (passedRoadRecorder.watchId !== null) stopPassedRoadRecording();
     else startPassedRoadRecording();
+  };
+  document.getElementById("passed-road-record-btn")?.addEventListener("click", togglePassed);
+  document.getElementById("quick-passed-btn")?.addEventListener("click", togglePassed);
+  document.getElementById("blocked-point-record-btn")?.addEventListener("click", recordBlockedPoint);
+  document.getElementById("quick-blocked-btn")?.addEventListener("click", recordBlockedPoint);
+  document.getElementById("passed-roads-sort")?.addEventListener("change", renderPassedRoadsList);
+  document.getElementById("passed-roads-filter")?.addEventListener("change", renderPassedRoadsList);
+  document.getElementById("passed-roads-list")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-passed-road]");
+    if (button) focusPassedRoad(button.dataset.passedRoad);
+  });
+  document.getElementById("quick-list-btn")?.addEventListener("click", () => {
+    ensurePassedRoadsOverlayOn();
+    const group = document.getElementById("passed-roads-list-wrap")?.closest("details.layer-group");
+    if (group) group.open = true;
+    document.getElementById("passed-roads-list-wrap")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  // 長押し（スマホ）／右クリック（PC）は Leaflet の contextmenu イベントとして届く
+  map.on("contextmenu", event => {
+    if (event.originalEvent) event.originalEvent.preventDefault();
+    openMapRecordPopup(event.latlng);
   });
 }
 

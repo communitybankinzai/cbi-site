@@ -2976,3 +2976,90 @@ body.embed-mode .cbi-home-link {
 .passed-road-status { margin: 0; font-size: 11px; line-height: 1.5; color: #5a6675; }
 .passed-road-status.is-error { color: #c0392b; }
 .passed-road-status.is-live { color: #0d47a1; font-weight: 600; }
+.passed-road-btn-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.passed-road-btn.is-blocked { background: #b8322c; border-color: #b8322c; }
+.passed-road-btn.is-blocked:hover { background: #8f2620; border-color: #8f2620; }
+.passed-road-mintsuku { margin: 0; padding: 6px 8px; border: 1px dashed #b8322c; border-radius: 6px; background: #fff5f4; font-size: 11px; line-height: 1.5; color: #4a2a28; }
+.passed-road-mintsuku a { font-weight: 600; }
+
+/* 記録の一覧（時間順） */
+.passed-roads-list-wrap { border: 1px solid #dfe6ee; border-radius: 8px; padding: 6px 8px; background: #fff; }
+.passed-roads-list-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; }
+.passed-roads-list-head strong { flex: 1 1 auto; }
+.passed-roads-list-head select { font-size: 11px; padding: 2px 4px; border: 1px solid #b9c4d3; border-radius: 4px; }
+.passed-roads-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: 220px; overflow-y: auto; font-size: 12px; }
+.passed-roads-list li { border-top: 1px solid #edf1f5; }
+.passed-roads-list li:first-child { border-top: 0; }
+.passed-roads-list button { display: flex; width: 100%; gap: 6px; align-items: flex-start; padding: 5px 2px; border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.passed-roads-list button:hover { background: #f3f7fb; }
+.passed-roads-list .pr-kind { flex: 0 0 auto; font-size: 13px; }
+.passed-roads-list .pr-time { font-weight: 600; color: #16324f; }
+.passed-roads-list .pr-meta { display: block; color: #5a6675; font-size: 11px; }
+.passed-roads-list .pr-old .pr-time { color: #6c7a89; font-weight: 500; }
+.passed-roads-empty { padding: 6px 2px; color: #5a6675; font-size: 11px; }
+
+/* 地図の長押し（PCは右クリック）で後から記録する吹き出し */
+.map-record-popup { min-width: 220px; font-size: 12px; }
+.map-record-popup .mrp-title { font-weight: 700; margin-bottom: 4px; }
+.map-record-popup .mrp-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0; }
+.map-record-popup select, .map-record-popup input { font-size: 12px; padding: 3px 4px; border: 1px solid #b9c4d3; border-radius: 4px; }
+.map-record-popup input[type="text"] { width: 100%; }
+.map-record-popup .mrp-btn { flex: 1 1 0; min-height: 34px; border-radius: 8px; border: 0; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
+.map-record-popup .mrp-btn.is-blocked { background: #b8322c; }
+.map-record-popup .mrp-btn.is-passed { background: #1565c0; }
+.map-record-popup .mrp-btn:disabled { opacity: .6; }
+.map-record-popup .mrp-note { color: #5a6675; font-size: 11px; margin: 4px 0 0; }
+.map-record-popup .mrp-status { font-size: 11px; margin: 4px 0 0; }
+.map-record-popup .mrp-status.is-error { color: #c0392b; }
+.passed-gps-point { width: 16px; height: 16px; border-radius: 50%; background: #1565c0; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.passed-gps-point.is-old { opacity: .5; background: #7fb3e6; }
+@media (max-width: 820px) {
+  .quick-record-btn.is-list { flex: 0 0 48px; background: #16324f; border-color: #16324f; font-size: 20px; padding: 0; }
+}
+
+/* 通れない地点（GPS記録）の印。通行止め記録の × と区別するため丸い赤地に白の × */
+.blocked-gps-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #b8322c; color: #fff; border: 2px solid #fff;
+  font-size: 17px; font-weight: 700; line-height: 1;
+  box-shadow: 0 1px 4px rgba(0,0,0,.35);
+}
+.blocked-gps-mark.is-old { opacity: .5; }
+.blocked-gps-mark.legend-mark { width: 16px; height: 16px; font-size: 11px; border-width: 1px; box-shadow: none; }
+
+/* スマホの画面下に固定する記録バー（PCでは出さない） */
+.quick-record-bar { display: none; }
+@media (max-width: 820px) {
+  .quick-record-bar {
+    display: block;
+    position: fixed;
+    left: 8px; right: 8px; bottom: 8px;
+    z-index: 900;
+    padding: 8px 10px 6px;
+    border: 1px solid #b9c4d3;
+    border-radius: 14px;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 2px 10px rgba(0,0,0,.25);
+  }
+  .quick-record-buttons { display: flex; gap: 8px; }
+  .quick-record-btn {
+    flex: 1 1 0;
+    min-height: 46px;
+    padding: 6px 8px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .quick-record-btn.is-blocked { background: #b8322c; border-color: #b8322c; }
+  .quick-record-btn.is-passed { background: #1565c0; border-color: #1565c0; }
+  .quick-record-btn.is-passed.is-recording { background: #fff; color: #b8322c; border-color: #b8322c; animation: passed-road-blink 1.4s ease-in-out infinite; }
+  .quick-record-btn:disabled { opacity: .6; }
+  .quick-record-status { margin: 5px 0 0; font-size: 11px; line-height: 1.4; color: #5a6675; text-align: center; }
+  .quick-record-status.is-error { color: #c0392b; }
+  .quick-record-status.is-live { color: #0d47a1; font-weight: 600; }
+  body { padding-bottom: 92px; }
+}

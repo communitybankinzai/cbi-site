@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-18",
+          "title": "防災MAP「通れない」ワンタップ記録・スマホ固定バー・長押し記録・時間順一覧・みんつく提供調査 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao supabase/migrations/20260918120000_disaster_passed_roads_kind.sql／20260918130000_disaster_passed_roads_source.sql（本番適用済み）",
+            "C:\\Repos\\cidao src/app/api/disaster/passed-roads/route.ts（kind・source・1点記録・?format=geojson／3ef5b9a・03d6c69 push済み）",
+            "site/inzai-disaster-map/app.js（recordBlockedPoint・openMapRecordPopup・renderPassedRoadsList・submitPassedRoadRecord）",
+            "site/inzai-disaster-map/index.html（#quick-record-bar・🚫ボタン・記録の一覧・みんつく導線・バナー注記）／styles.css",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（同日追記）／site/admin/changelog.json",
+            "cidao/2026-09-18_みんつく運営への通れない記録提供の打診文.md（保管庫・MOC_CiDAO 登録）"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "中司さん指示4件（スマホですぐ押せるUI／みんつくへも提供／時刻記録と時間順ソート／長押しで後から記録）。みんつくは実測で外部API・URLパラメータなし（ブラウザから先方Supabaseへ直接insert）のため無許可書込はせず、本家リンク＋運営打診（文案作成・送付は中司さん）＋GeoJSON提供口の用意。検証：tsc・eslint 0件、本番API 201/429/GeoJSON・source=map を実測、ブラウザで getCurrentPosition／contextmenu を模擬して 現在地記録→赤×→一覧、長押し→1時間前→記録→一覧の順序 を確認。テスト行は削除（0件）。実機スマホ未確認。session: 27c6e190-4003-4e99-ba84-1290c58f41d8 / output: PENDING"
+        },
+        {
+          "date": "2026-09-18",
           "title": "防災MAP「通れた道」GPS記録の実装（Supabaseテーブル＋CiDAO API＋MAP側UI）と冠水道路の赤化 0.5時間",
           "category": "実装",
           "outputs": [
@@ -6354,6 +6370,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📨 みんつく運営（X @change_support_）へ「通れない地点」の GeoJSON 提供を打診する（文案は保管庫 cidao/2026-09-18_みんつく運営への通れない記録提供の打診文.md）",
+          "category": "事務",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "中司さんが X で送付する判断（文案は用意済み）。先方から受け取り方の返答があれば形式・頻度を合わせる",
+          "note": "先方に外部向けAPIが無いため、こちらの GeoJSON（?format=geojson&kind=blocked）を先方が取り込む形。重複の扱い・点→線の変換は先方判断"
+        },
+        {
+          "due": "2026-09-25",
+          "title": "🖐 地図の長押し記録を実機スマホで確認する（iOS Safari の長押しは選択メニューが出て contextmenu が届かない可能性）",
+          "category": "保守",
+          "priority": "高",
+          "note": "届かない場合は touchstart/touchend で 600ms の自前長押し判定に切り替える。PCの右クリックは確認済み"
+        },
         {
           "due": "2026-09-25",
           "title": "📍 防災MAP「通れた道を記録」を実機スマホ2台（iPhone/Android）で屋外確認する（位置許可の案内・画面消灯で記録が止まる挙動・送信）",

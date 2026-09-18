@@ -46,7 +46,7 @@
 
       <div class="prototype-banner" role="status">
         <strong id="operation-banner-title">構想検証版・現在は運用前です</strong>
-        <span id="operation-banner-text">「こんな仕組みがあったら便利か」を検討する試作品です。入力内容はこの端末内だけに保存され、印西市や運営者には送信されません（「通れた道を記録」だけは匿名の軌跡が地図に送られます）。</span>
+        <span id="operation-banner-text">「こんな仕組みがあったら便利か」を検討する試作品です。入力内容はこの端末内だけに保存され、印西市や運営者には送信されません（「ここは通れない」「通れた道を記録」だけは匿名の位置・軌跡が地図に送られます）。</span>
       </div>
 
       <nav class="preset-bar" id="preset-bar" aria-label="用途で表示を切り替える">
@@ -184,11 +184,24 @@
                     <span><span class="legend-line" style="background:#1e88e5"></span>3時間以内</span>
                     <span><span class="legend-line" style="background:#64b5f6"></span>6時間以内</span>
                     <span><span class="legend-line" style="background:#b3d4f0"></span>冠水時に通れた実績（6時間より前）</span>
+                    <span><span class="blocked-gps-mark legend-mark" aria-hidden="true">×</span>通れない地点（GPS記録・6時間より前は薄く）</span>
                   </div>
                   <div class="passed-road-recorder" id="passed-road-recorder">
-                    <button type="button" class="passed-road-btn" id="passed-road-record-btn">📍 通れた道を記録する（GPS）</button>
-                    <input type="text" id="passed-road-note" class="passed-road-note" maxlength="200" placeholder="一言メモ（任意・例：浅い水たまりあり）">
-                    <p class="passed-road-status" id="passed-road-record-status">通り始める前に押し、通り終わったらもう一度押すと地図に送られます。画面を消すと記録が止まります。</p>
+                    <div class="passed-road-btn-row">
+                      <button type="button" class="passed-road-btn is-blocked" id="blocked-point-record-btn">🚫 ここは通れない（現在地）</button>
+                      <button type="button" class="passed-road-btn" id="passed-road-record-btn">📍 通れた道を記録する（GPS）</button>
+                    </div>
+                    <input type="text" id="passed-road-note" class="passed-road-note" maxlength="200" placeholder="一言メモ（任意・例：浅い水たまりあり／タイヤ半分まで）">
+                    <p class="passed-road-status" id="passed-road-record-status">「通れない」は冠水で止まった場所で1回押すだけ。「通れた道」は通り始める前に押し、通り終わったらもう一度押すと地図に送られます（画面を消すと記録が止まります）。</p>
+                    <div class="passed-roads-list-wrap" id="passed-roads-list-wrap">
+                      <div class="passed-roads-list-head">
+                        <strong>📋 記録の一覧（時間順）</strong>
+                        <select id="passed-roads-sort" aria-label="並び順"><option value="desc">新しい順</option><option value="asc">古い順</option></select>
+                        <select id="passed-roads-filter" aria-label="種類"><option value="all">すべて</option><option value="blocked">🚫 通れない</option><option value="passed">🔵 通れた</option></select>
+                      </div>
+                      <ol class="passed-roads-list" id="passed-roads-list"><li class="passed-roads-empty">レイヤーをONにすると読み込みます</li></ol>
+                    </div>
+                    <p class="passed-road-mintsuku" id="passed-road-mintsuku" hidden>みんつく千葉冠水マップにも同じ場所を投稿すると、県全体の地図にも残ります：<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつくを開いて投稿する ↗</a></p>
                   </div>
                 </div>
               </details>
@@ -548,6 +561,14 @@
 
         <section class="map-pane" id="map-pane" aria-label="印西市地図">
           <div id="map"></div>
+          <div class="quick-record-bar" id="quick-record-bar" aria-label="通れない・通れたを記録">
+            <div class="quick-record-buttons">
+              <button type="button" class="quick-record-btn is-blocked" id="quick-blocked-btn">🚫 ここは通れない</button>
+              <button type="button" class="quick-record-btn is-passed" id="quick-passed-btn">🔵 通れた道を記録</button>
+              <button type="button" class="quick-record-btn is-list" id="quick-list-btn" aria-label="記録の一覧（時間順）">📋</button>
+            </div>
+            <p class="quick-record-status" id="quick-record-status">現在地をGPSで記録します（匿名）</p>
+          </div>
           <div class="location-pick-banner" id="location-pick-banner" hidden>
             <div>
               <strong>3. 投稿の場所を地図上でクリック</strong>
@@ -1393,7 +1414,7 @@
           <li><b>回答後にピン設定</b><span>分かった場所を地図上でクリックします。</span></li>
           <li><b>内容を確認して保存</b><span>分類、重要度、写真状態を確認します。</span></li>
         </ol>
-        <div class="help-note">現在は運用前です。入力データはこのブラウザ内だけに保存され、印西市や運営者には送信されません（「通れた道を記録」だけは匿名の軌跡が地図に送られます）。操作を試し、地域で役立ちそうか、心配な点は何か、どのような参加なら協力できそうかをご検討ください。</div>
+        <div class="help-note">現在は運用前です。入力データはこのブラウザ内だけに保存され、印西市や運営者には送信されません（「ここは通れない」「通れた道を記録」だけは匿名の位置・軌跡が地図に送られます）。操作を試し、地域で役立ちそうか、心配な点は何か、どのような参加なら協力できそうかをご検討ください。</div>
         <div class="modal-actions">
           <span></span><span></span>
           <button class="tool-button" type="button" data-close-dialog>閉じる</button>
