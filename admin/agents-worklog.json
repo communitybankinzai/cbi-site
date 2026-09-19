@@ -8583,6 +8583,18 @@
       "actuals": [
         {
           "date": "2026-09-20",
+          "title": "Vercel 100%警告メールの実体確認（GAS経由で取得）と要対応2通の片付け、--restore 誤実行の回避 0.5時間",
+          "category": "保守",
+          "outputs": [
+            "（サイト変更なし）CBI公式メール 要対応2通のスター解除＝次の巡回で対応済みへ（Vercel 9/19・9/05 着）",
+            "確認のみ：Supabase cron.job の現在値／scripts/vercel-cpu-cron-slow.py の仕様"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "中司さん指示「このメールを読んで対処ください」＋Vercel Usage 画面の写真2枚。d4bbea68 が TLS で取れなかった公式メールを GAS Web API（action:list, label:要対応）で取得でき、実体を確認：9/19 17:16 UTC＝9/20 2:16 JST 着『free team cidao has used 100% of the included free tier usage for Fluid Active CPU (4 hours)』。同文が 9/05 にも1通あり未読・★のまま残っていたため、2通ともスターを外して対応済みへ送った（list 再取得で starred:false を確認）。検証：Supabase cron.job を実測し cidao_disaster_sns_monitor=*/30、cidao_disaster_timeline=0 * * * * を確認、d4bbea68 のB案（応急処置）が効いており追加実行は不要と判断。⚠️ 前半の Haiku セッションが scripts/vercel-cpu-cron-slow.py --restore の実行を提案したが、--restore は巡回を 5分/10分に戻す＝CPU消費を増やす逆操作で、応急処置を打ち消すところだった。スクリプト本体を読んで実行前に中止し、中司さんの判断で Opus に切り替えて現状維持とした。Vercel の残枠実数は MCP が cidao スコープ未認証（403 forbidden・team_bM0CxcQc90utf6g6Fj08UPWN）のため未取得で、d4bbea68 の未了「何が CPU を使っているかの実測」は引き続き残る。送られた写真2枚は Overview 上部（Fast Data Transfer 1.31GB/100GB・Fast Origin Transfer 1.2GB/10GB・Edge Requests 267K/1M）までで、Fluid Active CPU の行は写っていない。session: 94279748-f150-4c14-92d3-159c2a97fa25 / output: 45,563 / cost: $6.85"
+        },
+        {
+          "date": "2026-09-20",
           "title": "11/3 武蔵屋の通信手段が決定：会場は aebe さんの Wi-Fi を使わせてもらう（テザリングは予備）",
           "category": "会議",
           "outputs": [],
@@ -9299,6 +9311,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-27",
+          "title": "🔑 Vercel MCP を cidao チームのスコープで認証し直す（使用量を Claude から直接読めるようにする）",
+          "category": "その他",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "対話できるセッションで Vercel の再認証（OAuth）を1回通すこと。今のセッション種別では認証画面を出せない",
+          "note": "2026-09-20 に list_billing_charges を叩いたが 403 forbidden（scope cidao / team_bM0CxcQc90utf6g6Fj08UPWN）で、Fluid Active CPU の残量を Claude 側から確認できなかった。通れば『何が CPU を使っているかの実測』を毎回ブラウザの Usage 画面に頼らず日次で追えるようになる。同日の 🔥 実測の予定と対で進めると早い"
+        },
         {
           "due": "2026-10-27",
           "title": "📶 体験PCを会場の Wi-Fi につなぐ準備：USB Wi-Fi アダプターを自宅で試す（テザリングも予備に確認）",
