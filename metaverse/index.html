@@ -841,12 +841,14 @@ if (location.protocol === "file:") {
     50%  { translate: 0 -9px; } 66.6% { translate: 0 -4px; } 83.3% { translate: 0 4px; }
     100% { translate: 0 9px; }
   }
-  /* 6コマを横につないだ1枚の絵を、窓の幅ぶんずつ送る。要素はこの img ひとつだけで、
-     動かすのは transform だけなので、描き直しはブラウザ（GPU）側で完結する */
+  /* 12コマを横につないだ1枚の絵を、窓の幅ぶんずつ送る。要素はこの img ひとつだけで、
+     動かすのは transform だけなので、描き直しはブラウザ（GPU）側で完結する。
+     2026-09-19 中司さん「動きがぎこちない。中間に写真を追加し、しなるような動きを」→ 6コマ（写真4枚）から12コマへ。
+     帯は assets/tonbi/build-flap-sheet.py が水平の写真1枚から翼のしなりつきで作る。なめらかに動かす方式へは戻さないこと（上の 9/2 の注記） */
   #tonbiViewport { width: 100%; overflow: hidden; contain: paint; }
   #tonbiSheet {
-    width: 600%; height: auto; display: block;
-    animation: tonbiFlap 1.0s steps(6) infinite;
+    width: 1200%; height: auto; display: block;
+    animation: tonbiFlap 1.0s steps(12) infinite;
     animation-play-state: paused;
     will-change: transform; backface-visibility: hidden;
   }
@@ -1414,7 +1416,7 @@ if (location.protocol === "file:") {
 <script src="flight-input.js?v=20260909-1"></script>
 <script src="flight-ground.js?v=20260913-1"></script>
 <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
-<div id="tonbiLayer"><div id="tonbiInner"><div id="tonbiViewport"><img id="tonbiSheet" src="assets/tonbi/tonbi_flap_sheet.webp" alt=""></div></div></div>
+<div id="tonbiLayer"><div id="tonbiInner"><div id="tonbiViewport"><img id="tonbiSheet" src="assets/tonbi/tonbi_flap_sheet12.webp" alt=""></div></div></div>
 
 <div id="padHud">
   <div id="padCross"></div>
@@ -2566,8 +2568,9 @@ let tonbiMode = "";      // いまの飛び方（climb/cruise/dive/glide）。�
 
 // 羽ばたきはCSSのアニメーションに任せる（帯を steps で1コマずつ送る）。
 // ここでやるのは「飛び方が変わったときに速さを設定する／止める」だけで、毎フレームの処理はしない。
-// 止めるときは animation を切って、見せたいコマの位置へ帯をずらす（帯の並びは
-// 0=振り上げ 1=戻し 2=水平 3=打ち下ろし 4=水平 5=戻し）
+// 止めるときは animation を切って、見せたいコマの位置へ帯をずらす（12コマの帯の並びは
+// 0=振り上げの頂点 → 3=水平を通過 → 6=打ち下ろしの底 → 9=水平を通過。いちばん平らに見えるのは 4。build-flap-sheet.py 参照）
+const TONBI_FRAMES = 12, TONBI_FRAME_DIVE = 0, TONBI_FRAME_GLIDE = 4;
 function applyTonbiMode(mode) {
   const strip = document.getElementById("tonbiSheet");
   const inner = document.getElementById("tonbiInner");
@@ -2586,9 +2589,9 @@ function applyTonbiMode(mode) {
     inner.style.animationDuration = dur;
     inner.style.animationPlayState = "running";
   } else {
-    const frame = mode === "dive" ? 0 : 2; // 降下中は翼を上げて風を受ける姿、滑空は水平
+    const frame = mode === "dive" ? TONBI_FRAME_DIVE : TONBI_FRAME_GLIDE; // 降下中は翼を上げて風を受ける姿、滑空は水平
     strip.style.animationName = "none";
-    strip.style.transform = "translateX(" + (-frame * 100 / 6).toFixed(4) + "%)";
+    strip.style.transform = "translateX(" + (-frame * 100 / TONBI_FRAMES).toFixed(4) + "%)";
     inner.style.animationPlayState = "paused";
   }
 }
