@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+          "date": "2026-09-19",
+          "type": "fix",
+          "target": "metaverse",
+          "title": "会場PC用の一式：会場モードON.bat／OFF.bat が「エラーが出てすぐ消える」不具合を修正",
+          "detail": "配布していた 会場モードON.bat と OFF.bat は、最後にスクリプトを管理者で起動する行の引用符の書き方に誤りがあり、「venue-mode.ps1 -Off」という1つのファイル名として渡って即エラー終了していた（現地確認で中司さんが発見）。このため PC 側の設定（Windows Update・OneDrive・Wi-Fi の従量制など）は ON でも一度も変わっておらず、ブラウザだけが会場用URLで開いていた。引用符の渡し方を直し、日本語のフォルダと空白入りのフォルダの両方でスクリプトまで届くことを確認して、配布用 zip を差し替えた。以前の zip を展開したフォルダは捨てて、会場モード画面からダウンロードし直すこと。",
+          "author": "Claude Code"
+    },
+    {
       "date": "2026-09-18",
       "type": "fix",
       "target": "防災MAP（inzai-disaster-map）",

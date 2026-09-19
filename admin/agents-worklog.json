@@ -8575,6 +8575,20 @@
     "A9": {
       "actuals": [
         {
+                  "date": "2026-09-19",
+                  "title": "現地確認の支援と、会場モードON/OFF.bat が起動に失敗する不具合の原因特定・修正・zip 差し替え 0.20時間",
+                  "category": "保守",
+                  "outputs": [
+                            "events/2026-11-03_武蔵屋/会場PC/会場モードON.bat・会場モードOFF.bat（起動行の引用符を修正）",
+                            "site/metaverse/venue-pc/cbi-venue-pc.zip（差し替え・568e938）",
+                            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json",
+                            "memory/feedback-test-the-real-launch-path.md"
+                  ],
+                  "hours": 0.2,
+                  "partnerApproved": false,
+                  "note": "9/19 中司さんが武蔵屋でノートPCとスマホの現地確認。出発前に本番の配信（venue.js 20260916-1・zip・利用枠 0/30）を確認し手順を案内。現地で「会場モードOFF がエラーが出てすぐ消える」との報告 → 同じ起動行を -Status（何も変えない）に替えた試験用 .bat で再現（-File に『パス -Status』が1つのファイル名として渡る＝cmd から powershell -Command へ \"\" で渡した引用符が消える）→ バックスラッシュ＋引用符に直し、日本語パスと空白入りパスで到達を確認 → zip 差し替え・本番で ON.bat に修正が入っていることを確認。原因は私の検証漏れ（スクリプト単体と N の経路しか通しておらず、Y のあとの起動行を一度も実行していなかった）。ON.bat も同じ行で失敗していたため、当日の PC 側設定は一度も変更されていない。UAC を通る実行はこの PC では未実施（確信度中）。中司さんから「問題なくプレイできました」との報告あり（.bat の再実行結果・通信量の数字は未確認）。hours は前回記録 667,012 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 686,796 / cost: $223.18"
+        },
+        {
           "date": "2026-09-16",
           "title": "会場PC用スクリプトの保険（24時間後の自動OFF・記録なしでも標準へ復旧）と手順書の制限一覧 0.19時間",
           "category": "実装",
