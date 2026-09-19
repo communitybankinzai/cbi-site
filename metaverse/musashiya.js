@@ -489,6 +489,7 @@
     const st = station();
     const dir = bearingTo(st);
     document.getElementById("ttHudArrow").style.transform = "rotate(" + dir.relDeg.toFixed(0) + "deg)";
+    if (typeof ttSetFrontDist === "function") ttSetFrontDist(dir.dist); // 正面の「矢印＋距離」（index.html）
     if (now < L.countdownEnd) {
       hudTime.textContent = "🚦 " + Math.ceil((L.countdownEnd - now) / 1000);
       hudNext.textContent = "スタート準備中… まず " + st.name + " へ";
@@ -531,9 +532,8 @@
     const bar = document.getElementById("topLeftBar");
     const hud = document.getElementById("ttHud");
     if (!bar || !hud) return;
-    const r = bar.getBoundingClientRect();
-    const mobile = window.matchMedia("(pointer: coarse), (max-width: 640px)").matches;
-    hud.style.top = (mobile ? 92 : Math.max(52, Math.round(r.bottom + 6))) + "px";
+    hud.style.top = ""; // 箱は右下（index.html の CSS）。上に置いていた頃の指定を残さない
+    if (typeof ttPlaceFront === "function") ttPlaceFront(); // 正面の「矢印＋距離」をメニューのすぐ下へ
   }
   window.addEventListener("resize", placeHud);
   function leaveHudPlace() {

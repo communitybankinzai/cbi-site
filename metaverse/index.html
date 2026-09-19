@@ -432,11 +432,14 @@ if (location.protocol === "file:") {
   #ttModal input[type="text"] { width: 100%; box-sizing: border-box; padding: 8px; border-radius: 8px;
     border: 1px solid #7fc8ff; background: rgba(255,255,255,0.95); color: #1a2533; font-size: 14px; margin: 4px 0 8px; }
   #ttCertCanvas { width: 100%; border-radius: 10px; box-shadow: 0 6px 30px rgba(0,0,0,0.5); }
+  /* 2026-09-19 中司さん（武蔵屋の現地確認）「正面の表示が目的地と重なってすごく見にくい」→ 箱は右下へ、正面（上・中央）には矢印と距離だけ（#ttFront）。
+     ⏱ タイムトライアルと武蔵屋めぐりで共通。上・中央は遠くの目的地を正面に捉えたときの地平線の高さで、ピンの名前と重なっていた。
+     #ttFront は箱の子（箱を display:none にすると一緒に消える）。position:fixed で画面に置くので、#ttHud に transform を付けないこと */
   #ttHud {
-    position: absolute; top: 52px; left: 50%; transform: translateX(-50%);
-    z-index: 36; display: none; background: rgba(20, 30, 40, 0.55); color: #fff;
+    position: absolute; right: 14px; bottom: 14px;
+    z-index: 36; display: none; background: rgba(14, 26, 38, 0.86); color: #fff;
     border: 1px solid rgba(127, 200, 255, 0.7); border-radius: 12px; padding: 8px 14px;
-    font-size: 13px; line-height: 1.5; text-align: center; max-width: min(92vw, 480px);
+    font-size: 13px; line-height: 1.5; text-align: left; max-width: min(60vw, 360px);
     text-shadow: 0 1px 3px rgba(0,0,0,0.9); /* 背景を薄くしても読めるように（2026-09-03「邪魔すぎる」の指摘で半透明化） */
   }
   #ttHud .ttTime { font-size: 20px; font-weight: bold; color: #7fc8ff; font-variant-numeric: tabular-nums; }
@@ -446,6 +449,10 @@ if (location.protocol === "file:") {
   #ttHud .ttArrow { display: inline-block; width: 26px; height: 26px; line-height: 26px; margin-right: 6px;
     font-size: 22px; color: #ffd166; transform-origin: 50% 50%; will-change: transform; vertical-align: middle; }
   #ttHud .ttDir { color: #ffd166; font-weight: bold; }
+  #ttHud #ttFront { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 36; pointer-events: none;
+    display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 20px; font-weight: bold; color: #ffd166;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.85); }
+  #ttHud #ttFront .ttArrow { width: 38px; height: 38px; line-height: 38px; font-size: 32px; margin-right: 0; }
   #ttHud .ttOpt { display: block; margin-top: 4px; font-size: 11px; color: #cfe6ff; cursor: pointer; }
   #ttHud .ttOpt input { vertical-align: middle; margin-right: 4px; }
   #ttHud .ttCardBtn { display: none; margin-left: 8px; padding: 1px 8px; border-radius: 8px; border: 1px solid #ffd166;
@@ -474,7 +481,9 @@ if (location.protocol === "file:") {
   #ttTarget .ttTargetLabel { display: inline-block; margin-top: 2px; padding: 2px 8px; border-radius: 10px;
     background: rgba(20, 30, 40, 0.85); border: 1px solid #ffd166; color: #ffd166; font-size: 12px; font-weight: bold; white-space: nowrap; }
   @media (pointer: coarse), (max-width: 640px) {
-    #ttHud { top: 92px; background: rgba(20, 30, 40, 0.4); padding: 4px 10px; font-size: 11px; line-height: 1.35; max-width: 92vw; }
+    #ttHud { right: 10px; bottom: 96px; background: rgba(14, 26, 38, 0.8); padding: 4px 10px; font-size: 11px; line-height: 1.35; max-width: calc(100vw - 176px); box-sizing: border-box; } /* 左の仮想スティック（右端152px）にかぶらない幅。余白と枠線込みで測る */
+    #ttHud #ttFront { top: 92px; font-size: 16px; }
+    #ttHud #ttFront .ttArrow { width: 30px; height: 30px; line-height: 30px; font-size: 26px; }
     #ttHud .ttTime { font-size: 16px; }
     #ttHud .ttAbort { padding: 2px 8px; font-size: 10px; }
     #ttHud .ttArrow { width: 20px; height: 20px; line-height: 20px; font-size: 17px; margin-right: 4px; }
@@ -1111,7 +1120,7 @@ if (location.protocol === "file:") {
 <div id="ttTarget"><span class="ttTargetArrow">➜</span><br><span class="ttTargetLabel"></span></div>
 <div id="ttHud">
   <span class="ttTime" id="ttHudTime">0:00.0</span><button class="ttAbort" onclick="ttAbort()">中止</button><br>
-  <span class="ttArrow" id="ttHudArrow" aria-hidden="true">⬆</span><span id="ttHudNext"></span>
+  <span id="ttFront"><span class="ttArrow" id="ttHudArrow" aria-hidden="true">⬆</span><span id="ttFrontDist"></span></span><span id="ttHudNext"></span>
   <label class="ttOpt"><input type="checkbox" id="ttOnlyNext" checked onchange="ttApplyPinFocus()">📍 次の地点のピンだけ表示する<button type="button" class="ttCardBtn" onclick="event.preventDefault(); ttToggleCard();">📷 写真と解説</button></label>
 </div>
 
@@ -4483,6 +4492,7 @@ function ttStart(courseKey) {
   ttCountdownEnd = performance.now() + 6000; // テレポート約3秒＋カウントダウン3秒
   ttStartMs = 0;
   document.getElementById("ttHud").style.display = "block";
+  ttPlaceFront();
   ttApplyPinFocus(); // 次の地点以外のピンを隠す（スイッチがONのとき）
   ttShowCard();      // 次の目的地の写真と解説
   // サーバー計測の開始登録はカウントダウン終了（計測開始）の瞬間に行う（onTick内）
@@ -4688,6 +4698,21 @@ function ttDistToNext() {
   const dx = (b.lon - lon) * 111320 * Math.cos(carto.latitude);
   return Math.hypot(dx, dy);
 }
+// 正面（上・中央）の「矢印＋距離」。武蔵屋めぐりの最初の区間（musashiya.js の leg0Tick）からも呼ぶ
+function ttSetFrontDist(m) {
+  const el = document.getElementById("ttFrontDist");
+  if (!el) return;
+  el.textContent = (m === null || m === undefined || !isFinite(m)) ? "" : (m >= 1000 ? (m / 1000).toFixed(1) + "km" : Math.round(m) + "m");
+}
+// 正面の表示は上のメニュー（#topLeftBar。幅が狭いと2段になる）のすぐ下に置く。スマホは固定
+function ttPlaceFront() {
+  const el = document.getElementById("ttFront"), bar = document.getElementById("topLeftBar");
+  if (!el) return;
+  const mobile = window.matchMedia("(pointer: coarse), (max-width: 640px)").matches;
+  if (mobile || !bar) { el.style.top = ""; return; }
+  el.style.top = Math.max(56, Math.round(bar.getBoundingClientRect().bottom + 6)) + "px";
+}
+window.addEventListener("resize", ttPlaceFront);
 viewer.clock.onTick.addEventListener(function () {
   if (!ttActive) return;
   const now = performance.now();
@@ -4697,6 +4722,7 @@ viewer.clock.onTick.addEventListener(function () {
     hudTime.textContent = "🚦 " + Math.ceil((ttCountdownEnd - now) / 1000);
     hudNext.textContent = "スタート準備中… 1か所目: " + BUNKAZAI[ttCourse[0]].name;
     document.getElementById("ttHudArrow").style.transform = "rotate(" + ttBearingToNext().relDeg.toFixed(0) + "deg)";
+    ttSetFrontDist(ttDistToNext());
     ttUpdateTargetMarker();
     return;
   }
@@ -4706,6 +4732,7 @@ viewer.clock.onTick.addEventListener(function () {
   const d = ttDistToNext();
   const dir = ttBearingToNext();
   document.getElementById("ttHudArrow").style.transform = "rotate(" + dir.relDeg.toFixed(0) + "deg)";
+  ttSetFrontDist(d);
   ttUpdateTargetMarker();
   hudNext.innerHTML = "つぎ（" + (ttPos + 1) + "/" + ttCourse.length + "）: " +
     ttEsc(BUNKAZAI[ttCourse[ttPos]].name) + "<br><span class=\"ttDir\">" + dir.word + "（" + dir.compass + "）</span> 約" +
@@ -6517,7 +6544,7 @@ try {
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260914-2"></script>
 <script src="controls-guide.js?v=20260915-1"></script>
-<script src="musashiya.js?v=20260915-1"></script>
+<script src="musashiya.js?v=20260919-1"></script>
 <!-- 🏟 会場モード（11/3 武蔵屋の会場PC用：街並みの記憶量・通信節約・事前読み込み飛行を一括で ON/OFF）。musashiya.js の後に読む -->
 <script src="venue.js?v=20260916-1"></script>
 </body>
