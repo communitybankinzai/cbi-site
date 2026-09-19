@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+          "date": "2026-09-20",
+          "type": "deploy",
+          "target": "inzai-disaster-map / CiDAO",
+          "title": "災害MAPの自動巡回の間隔を一時的に延ばした（SNS巡回 5分→30分、公式発表の巡回 10分→1時間）",
+          "detail": "CiDAO を動かしている Vercel の無料枠（Fluid Active CPU 月4時間）が 100% に達したという警告が 9/20 に届いた（9/5 に続き2回目）。超えると CiDAO が自動で一時停止され、3Dワールドの受付や災害MAPの避難所・公式発表・SNS巡回・冠水・通れた道の層も止まるため、応急処置として、Vercel を定期的に呼んでいる2つの巡回の間隔を延ばした（1日432回→72回）。災害MAPの「SNS新着巡回」は最長30分、「公式発表・市長発信」は最長1時間遅れて反映される。大雨などの災害時は元の間隔へ戻す（scripts/vercel-cpu-cron-slow.py --restore）。画面の文言は変えていない。",
+          "author": "Claude Code"
+    },
+    {
           "date": "2026-09-19",
           "type": "feature",
           "target": "metaverse",

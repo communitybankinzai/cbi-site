@@ -72,6 +72,10 @@
 - 現状は道路中心線への自動スナップや交差点候補の自動抽出ではなく、地図上を手動クリックする方式。
 - JARTICリアルタイム情報とTOYOTA走行データの自動取込は未接続。表示中の道路線は、手入力、SNS/Web、住民通報、公式・職員確認など、各記録の情報源を保持する。
 
+## ⚠ 2026-09-20 自動巡回の間隔を一時的に延ばしている（Vercel の CPU 無料枠対策）
+
+CiDAO を動かす Vercel の無料枠「Fluid Active CPU 月4時間」が 100% に達した警告が届いた（8/26 75% → 9/5 100% → 9/20 100%）。超えると CiDAO が自動で一時停止され、この MAP の避難所・公式発表・SNS巡回・冠水・通れた道の層と、3Dワールドの受付も止まる。応急処置として、Supabase の pg_cron のうち Vercel を呼ぶ2本の間隔を延ばした：**`cidao_disaster_sns_monitor` `*/5`→`*/30`、`cidao_disaster_timeline` `*/10`→`0 * * * *`（毎時）**。下の「5分ごと」「10分ごと」の記述は元の設計値。**大雨などの災害時は `python scripts/vercel-cpu-cron-slow.py --restore`（CBI 直下の scripts）で元に戻す**。一覧は `python scripts/supabase-cron-list.py`。pg_cron 11本のうち Vercel を呼ぶのはこの2本だけ（ほかは DB 内の処理）。画面の文言には間隔を書いていないので変更なし。
+
 ## SNS自動巡回
 
 MAPは `config.js` の `snsMonitorEndpoint` で以下へ接続する。

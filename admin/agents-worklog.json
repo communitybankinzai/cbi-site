@@ -8464,6 +8464,13 @@
       ],
       "plans": [
         {
+                  "due": "2026-10-31",
+                  "title": "💴 Vercel Pro（月20ドル）を協働事業の経費に計上するかを決める（申請書類 v13 の費用内訳・予算タブ）",
+                  "category": "事務",
+                  "priority": "中",
+                  "note": "2026-09-20 中司さん「Pro にするといくら必要か。市との協働事業で必要な経費として計上する必要がある」。vercel.com/pricing（同日取得）：Pro は月20ドル（20ドル分の利用枠込み）、Active CPU の従量は1時間0.128ドルから（CiDAO の規模なら月1〜2ドル相当で枠内）、支出の上限を設定できる。Hobby（いまの無料プラン）は規約上『個人・非商用のみ』なので、市の委託費を受ける段階では CPU 枠と関係なく Pro が必要。年額の目安：240ドル＝約36,000〜40,000円（為替150〜160円・カードの海外手数料込みの概算。消費税の扱いは未確認）。協働事業は提案段階で未成立（令和9年4月開始の計画）なので、それまでは無料枠に収める対策を続ける。メンバーを増やすと1人ごとに加算される可能性あり（要確認）。"
+        },
+        {
           "due": "2026-09-15",
           "title": "Anthropic 残高の警告メールが 9/15 朝（7:24頃の cron）に届かないことを確認する",
           "category": "事務",
@@ -8574,6 +8581,20 @@
     },
     "A9": {
       "actuals": [
+        {
+                  "date": "2026-09-20",
+                  "title": "Vercel 無料枠（Active CPU）100%警告の影響調査と応急処置（定期巡回2本の間隔変更）・Pro 料金の確認 0.28時間",
+                  "category": "保守",
+                  "outputs": [
+                            "Supabase pg_cron：cidao_disaster_sns_monitor */5→*/30、cidao_disaster_timeline */10→毎時0分（cron.alter_job・変更後の一覧で確認）",
+                            "scripts/vercel-cpu-cron-slow.py（新規・間隔を落とす／--restore で戻す）・scripts/supabase-cron-list.py（新規・定期実行の一覧・合言葉は表示しない）",
+                            "site/inzai-disaster-map/CLAUDE_HANDOFF.md・site/admin/changelog.json",
+                            "memory/cidao-vercel-active-cpu-limit.md"
+                  ],
+                  "hours": 0.28,
+                  "partnerApproved": false,
+                  "note": "中司さん「Vercel からメールが届いている。影響は？回避は？」。個人 Gmail には無く、公式メールの仕分け窓口は TLS の段階で2回失敗（時間切れ・接続リセット。PC と回線が終日不安定）→ 同じ試行は止め、中司さんのスマホ画面で内容を確認：9/20 2:16『free team cidao が Fluid Active CPU（4時間）の100%を使用。超えるとプロジェクトを自動で一時停止』。実測：CiDAO は稼働中（トップ・metaverse-usage・metaverse-tt が 200、3〜7秒）。経緯：8/26 75%（通知ベルの呼び出し削減で対処）→ 9/5 100%（未対応）→ 9/20 100%。推測（確信度中）：9/5 ごろ集計が切り替わり15日で使い切った＝先月の約2倍。私につながる Vercel アカウントは別物（チーム0件）で使用量は見られず。3案（A 実測して直す／B 応急処置＋A／C 様子見）→ B。pg_cron 11本を一覧し、Vercel を呼ぶのは2本だけと確認して間隔を変更（想定どおりの値のときだけ変える作り）。Pro の料金は vercel.com/pricing を当日取得：月20ドル（20ドル分の利用枠込み）・Active CPU の従量は1時間0.128ドルから・Hobby は個人・非商用のみ・Pro は支出の上限設定あり。Vercel のログインは GitHub の communitybankinzai 連携（credentials.md 6節）。未了：何が CPU を使っているかの実測（ダッシュボードの Usage／Observability）、proxy.ts の getUser() を API で省く、紹介動画の生成場所の確認。hours は前回記録 750,484 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 778,623 / cost: $342.59"
+        },
         {
                   "date": "2026-09-19",
                   "title": "トンビの羽ばたき12コマ化（水平の写真から翼のしなりつきで中間コマを生成）の試作・見本・本番反映 0.32時間",
@@ -9269,6 +9290,22 @@
         }
       ],
       "plans": [
+        {
+                  "due": "2026-09-27",
+                  "title": "🔥 Vercel の CPU 無料枠（月4時間）を使い切らないよう、何が使っているかを実測して減らす（CiDAO が止まると 11/3 の3Dワールドの受付も止まる）",
+                  "category": "保守",
+                  "priority": "高",
+                  "note": "2026-09-20 100% 警告（9/5 に続き2回目）。応急処置で定期巡回2本の間隔を延ばした（scripts/vercel-cpu-cron-slow.py・戻すときは --restore）。次：①中司さんが Vercel（GitHub の communitybankinzai でログイン・https://vercel.com/cidao）の Usage で集計のリセット日、Observability → Functions で Active CPU の上位を確認 ②src/proxy.ts の updateSession が全リクエストで supabase.auth.getUser() を呼ぶ点を見直す（Cookie の無いリクエストと /api/ は省く）③人材バンクの紹介動画・AIインタビューが Vercel の関数でどれだけ CPU を使うか確認 ④3Dワールドの在席・利用状況の呼び出し間隔。cidao は他セッションが作業中なので申し送りを出してから触る。既存の予定『Vercel Active CPU の削減効果を実測し…』（A1・期限 9/2 超過）と同じ話。"
+        },
+        {
+                  "due": "未定",
+                  "title": "🌧 大雨などの災害時は、災害MAPの自動巡回を元の間隔（SNS 5分・公式発表 10分）へ戻す",
+                  "category": "保守",
+                  "priority": "高",
+                  "status": "待ち",
+                  "blockedBy": "災害が起きたとき、または Vercel の CPU 枠に余裕ができたとき（集計の切り替わり・削減の完了・Pro への移行のいずれか）",
+                  "note": "2026-09-20 に Vercel の CPU 枠対策で 30分／1時間へ延ばしている。戻し方：python scripts/vercel-cpu-cron-slow.py --restore（Supabase の pg_cron を書き換えるだけ・数秒）。確認：python scripts/supabase-cron-list.py。"
+        },
         {
                   "due": "2026-10-27",
                   "title": "🦅 トンビの12コマ羽ばたきを実機で確認する（見た目・🩺診断の fps が落ちていないか。上昇中は毎秒20コマ）",
