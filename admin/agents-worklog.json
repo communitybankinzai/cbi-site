@@ -8464,11 +8464,11 @@
       ],
       "plans": [
         {
-                  "due": "2026-10-31",
-                  "title": "💴 Vercel Pro（月20ドル）を協働事業の経費に計上するかを決める（申請書類 v13 の費用内訳・予算タブ）",
-                  "category": "事務",
-                  "priority": "中",
-                  "note": "2026-09-20 中司さん「Pro にするといくら必要か。市との協働事業で必要な経費として計上する必要がある」。vercel.com/pricing（同日取得）：Pro は月20ドル（20ドル分の利用枠込み）、Active CPU の従量は1時間0.128ドルから（CiDAO の規模なら月1〜2ドル相当で枠内）、支出の上限を設定できる。Hobby（いまの無料プラン）は規約上『個人・非商用のみ』なので、市の委託費を受ける段階では CPU 枠と関係なく Pro が必要。年額の目安：240ドル＝約36,000〜40,000円（為替150〜160円・カードの海外手数料込みの概算。消費税の扱いは未確認）。協働事業は提案段階で未成立（令和9年4月開始の計画）なので、それまでは無料枠に収める対策を続ける。メンバーを増やすと1人ごとに加算される可能性あり（要確認）。"
+          "due": "2026-10-31",
+          "title": "💴 Vercel Pro（月20ドル）を協働事業の経費に計上するかを決める（申請書類 v13 の費用内訳・予算タブ）",
+          "category": "事務",
+          "priority": "中",
+          "note": "2026-09-20 中司さん「Pro にするといくら必要か。市との協働事業で必要な経費として計上する必要がある」。vercel.com/pricing（同日取得）：Pro は月20ドル（20ドル分の利用枠込み）、Active CPU の従量は1時間0.128ドルから（CiDAO の規模なら月1〜2ドル相当で枠内）、支出の上限を設定できる。Hobby（いまの無料プラン）は規約上『個人・非商用のみ』なので、市の委託費を受ける段階では CPU 枠と関係なく Pro が必要。年額の目安：240ドル＝約36,000〜40,000円（為替150〜160円・カードの海外手数料込みの概算。消費税の扱いは未確認）。協働事業は提案段階で未成立（令和9年4月開始の計画）なので、それまでは無料枠に収める対策を続ける。メンバーを増やすと1人ごとに加算される可能性あり（要確認）。"
         },
         {
           "due": "2026-09-15",
@@ -8583,6 +8583,22 @@
       "actuals": [
         {
           "date": "2026-09-20",
+          "title": "体験PC 組立手順書（図つき・A4 12ページ）の作成とN's factoryサイト公開、購入リストの仕様3点を一次資料で訂正 0.9時間",
+          "category": "実装",
+          "outputs": [
+            "events/2026-11-03_武蔵屋/会場PC/build_assembly_guide.py（新規・HTML＋PDF生成／SVG線画12点を内蔵）",
+            "events/2026-11-03_武蔵屋/会場PC/体験PC_組立手順書.pdf（新規・A4 12ページ）",
+            "events/2026-11-03_武蔵屋/会場PC/体験PC_ハード仕様の確認結果.md（新規・訂正3点の出典つき）",
+            "ns-factory: digital-room/pc-build-guide.html・pc-build-guide.pdf・assets/pc-build-guide-announce.png（新規）",
+            "ns-factory: digital-room/index.html（実験・展示にカード追加）・sitemap.xml（a20eb70 で push 済み）",
+            "広報部/告知画像/apps.json（pc-build-guide を1件追加し promo_template.py で告知画像を生成）"
+          ],
+          "hours": 0.9,
+          "partnerApproved": false,
+          "note": "中司さん指示「体験PCの組み立て手順書を図つきPDFで」→ 途中で「HTMLならデジタル幕僚室に載せたい」「導線とPDFのDLを」と追加指示があり、HTML（サイト公開）＋PDF（CBI側）の二本立てに変更。3択で確認して(1)HTML＋PDF両方 (2)別セッション ed77e6d3 の文字版mdを下敷きに (3)pushまで実行、の回答を得て実施。図はすべて自作のSVG線画（メーカー写真・生成AI画像は不使用＝著作権と課金0円の条件を満たす）。写真枠は12か所用意し、会場PC/写真/<スロット名>.jpg を置いて再実行すると base64 で本文に差し込まれる作り。⚠️ 一次資料で確認したところ購入リストに3点の誤りがあった：(1)CPU補助電源は8ピンでなく4ピン（MSI公式マニュアル p.4/p.12）(2)Flash BIOSボタンは無い（背面端子一覧に記載なし＝CPU無しでのBIOS更新は不可、M-FLASHのみ）(3)5600GT対応BIOSは 7C96v2B 以降（MSI CPU対応表）。検証：生成PDFを PyMuPDF で12ページに収まることを確認し、全ページを画像化して図の文字のはみ出し・重なりを目視修正（図2の枠内テキスト、図3の引き出し線→番号＋凡例方式へ作り直し、図9・図10の余白）。公開後に curl で html=200 / pdf=200 を確認し、ブラウザで幕僚室のカード→ページ→PDFボタンの導線を実機確認。session: cf3d8d4c-7491-4bc0-b370-9ed8ca132ad0 / output: 94,362 / cost: $15.37"
+        },
+        {
+          "date": "2026-09-20",
           "title": "Vercel 100%警告メールの実体確認（GAS経由で取得）と要対応2通の片付け、--restore 誤実行の回避 0.5時間",
           "category": "保守",
           "outputs": [
@@ -8603,59 +8619,59 @@
           "note": "中司さんより決定の連絡（2026-09-20）。会場側の設定に関する詳細はここに書かない（中司さんの手元のみ）。体験PC（自作機）は無線が無いため USB Wi-Fi アダプターでつなぐ（別の予定で管理）。当日つながらないときはスマホのテザリングに切り替える。工数はこのセッションの別件に含まれるため 0。元の予定（期限 10/20）：🏠 11/3 岩井家住宅主屋（旧武蔵屋店舗）でのメタバース展示・体験：通信手段を決める（会場Wi-Fiの有無確認／テザリング・モバイルルーター／通信量10GBの目安）"
         },
         {
-                  "date": "2026-09-20",
-                  "title": "Vercel 無料枠（Active CPU）100%警告の影響調査と応急処置（定期巡回2本の間隔変更）・Pro 料金の確認 0.28時間",
-                  "category": "保守",
-                  "outputs": [
-                            "Supabase pg_cron：cidao_disaster_sns_monitor */5→*/30、cidao_disaster_timeline */10→毎時0分（cron.alter_job・変更後の一覧で確認）",
-                            "scripts/vercel-cpu-cron-slow.py（新規・間隔を落とす／--restore で戻す）・scripts/supabase-cron-list.py（新規・定期実行の一覧・合言葉は表示しない）",
-                            "site/inzai-disaster-map/CLAUDE_HANDOFF.md・site/admin/changelog.json",
-                            "memory/cidao-vercel-active-cpu-limit.md"
-                  ],
-                  "hours": 0.28,
-                  "partnerApproved": false,
-                  "note": "中司さん「Vercel からメールが届いている。影響は？回避は？」。個人 Gmail には無く、公式メールの仕分け窓口は TLS の段階で2回失敗（時間切れ・接続リセット。PC と回線が終日不安定）→ 同じ試行は止め、中司さんのスマホ画面で内容を確認：9/20 2:16『free team cidao が Fluid Active CPU（4時間）の100%を使用。超えるとプロジェクトを自動で一時停止』。実測：CiDAO は稼働中（トップ・metaverse-usage・metaverse-tt が 200、3〜7秒）。経緯：8/26 75%（通知ベルの呼び出し削減で対処）→ 9/5 100%（未対応）→ 9/20 100%。推測（確信度中）：9/5 ごろ集計が切り替わり15日で使い切った＝先月の約2倍。私につながる Vercel アカウントは別物（チーム0件）で使用量は見られず。3案（A 実測して直す／B 応急処置＋A／C 様子見）→ B。pg_cron 11本を一覧し、Vercel を呼ぶのは2本だけと確認して間隔を変更（想定どおりの値のときだけ変える作り）。Pro の料金は vercel.com/pricing を当日取得：月20ドル（20ドル分の利用枠込み）・Active CPU の従量は1時間0.128ドルから・Hobby は個人・非商用のみ・Pro は支出の上限設定あり。Vercel のログインは GitHub の communitybankinzai 連携（credentials.md 6節）。未了：何が CPU を使っているかの実測（ダッシュボードの Usage／Observability）、proxy.ts の getUser() を API で省く、紹介動画の生成場所の確認。hours は前回記録 750,484 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 778,623 / cost: $342.59"
+          "date": "2026-09-20",
+          "title": "Vercel 無料枠（Active CPU）100%警告の影響調査と応急処置（定期巡回2本の間隔変更）・Pro 料金の確認 0.28時間",
+          "category": "保守",
+          "outputs": [
+            "Supabase pg_cron：cidao_disaster_sns_monitor */5→*/30、cidao_disaster_timeline */10→毎時0分（cron.alter_job・変更後の一覧で確認）",
+            "scripts/vercel-cpu-cron-slow.py（新規・間隔を落とす／--restore で戻す）・scripts/supabase-cron-list.py（新規・定期実行の一覧・合言葉は表示しない）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md・site/admin/changelog.json",
+            "memory/cidao-vercel-active-cpu-limit.md"
+          ],
+          "hours": 0.28,
+          "partnerApproved": false,
+          "note": "中司さん「Vercel からメールが届いている。影響は？回避は？」。個人 Gmail には無く、公式メールの仕分け窓口は TLS の段階で2回失敗（時間切れ・接続リセット。PC と回線が終日不安定）→ 同じ試行は止め、中司さんのスマホ画面で内容を確認：9/20 2:16『free team cidao が Fluid Active CPU（4時間）の100%を使用。超えるとプロジェクトを自動で一時停止』。実測：CiDAO は稼働中（トップ・metaverse-usage・metaverse-tt が 200、3〜7秒）。経緯：8/26 75%（通知ベルの呼び出し削減で対処）→ 9/5 100%（未対応）→ 9/20 100%。推測（確信度中）：9/5 ごろ集計が切り替わり15日で使い切った＝先月の約2倍。私につながる Vercel アカウントは別物（チーム0件）で使用量は見られず。3案（A 実測して直す／B 応急処置＋A／C 様子見）→ B。pg_cron 11本を一覧し、Vercel を呼ぶのは2本だけと確認して間隔を変更（想定どおりの値のときだけ変える作り）。Pro の料金は vercel.com/pricing を当日取得：月20ドル（20ドル分の利用枠込み）・Active CPU の従量は1時間0.128ドルから・Hobby は個人・非商用のみ・Pro は支出の上限設定あり。Vercel のログインは GitHub の communitybankinzai 連携（credentials.md 6節）。未了：何が CPU を使っているかの実測（ダッシュボードの Usage／Observability）、proxy.ts の getUser() を API で省く、紹介動画の生成場所の確認。hours は前回記録 750,484 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 778,623 / cost: $342.59"
         },
         {
-                  "date": "2026-09-19",
-                  "title": "トンビの羽ばたき12コマ化（水平の写真から翼のしなりつきで中間コマを生成）の試作・見本・本番反映 0.32時間",
-                  "category": "実装",
-                  "outputs": [
-                            "site/metaverse/assets/tonbi/build-flap-sheet.py（新規・帯の生成）・tonbi_flap_sheet12.webp（新規・4512×284）",
-                            "site/metaverse/index.html（#tonbiSheet 1200%・steps(12)・TONBI_FRAMES／止め絵のコマ）",
-                            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json",
-                            "scratchpad/tonbi_out/tonbi_preview.gif（今の6コマ／試作12／試作16 の見本・中司さんへ送付）"
-                  ],
-                  "hours": 0.32,
-                  "partnerApproved": false,
-                  "note": "中司さん「トンビの動きがぎこちない。羽ばたきは中間に写真を追加し、しなるような動きを付けたい」。コードを読むと写真4枚・6コマのコマ送りで、コマ送りは 9/2 の負荷対策（なめらかに動かすと3D画面ごと合成し直しで実機が重い）と判明 → なめらか方式に戻さず『コマを増やしコマ自体にしなりを描き込む』方針で A（写真から計算で中間コマ）／B（3Dの鳶から描き出し）／C（3Dモデルに置換）を提示、AI画像生成は有料のため候補外 → A。帯を見て『打ち下ろし』だけ体の向きが違う写真（尾が上）と気づき、水平の写真1枚から全コマを作る方式にした。12コマの一覧を目視（体の向きがそろう・翼の先が遅れて垂れる・模様の伸びは目立たない）→ 今の6コマと並べた見本 GIF を送付（振れ幅が今より控えめなことも伝えた）→「12コマで」。検証（ローカル ?notiles=1）：帯の幅が窓の12倍、アニメの時計を12等分して進めるとコマ0〜11がそれぞれぴったり1コマ分の位置、滑空＝コマ4・降下＝コマ0、巡航1.0秒・上昇0.6秒は据え置き、エラーなし。実機での見た目と fps は未確認（PC が終日混雑しスクリーンショットも撮れず）。hours は前回記録 718,405 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 750,484 / cost: $296.21"
+          "date": "2026-09-19",
+          "title": "トンビの羽ばたき12コマ化（水平の写真から翼のしなりつきで中間コマを生成）の試作・見本・本番反映 0.32時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/assets/tonbi/build-flap-sheet.py（新規・帯の生成）・tonbi_flap_sheet12.webp（新規・4512×284）",
+            "site/metaverse/index.html（#tonbiSheet 1200%・steps(12)・TONBI_FRAMES／止め絵のコマ）",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json",
+            "scratchpad/tonbi_out/tonbi_preview.gif（今の6コマ／試作12／試作16 の見本・中司さんへ送付）"
+          ],
+          "hours": 0.32,
+          "partnerApproved": false,
+          "note": "中司さん「トンビの動きがぎこちない。羽ばたきは中間に写真を追加し、しなるような動きを付けたい」。コードを読むと写真4枚・6コマのコマ送りで、コマ送りは 9/2 の負荷対策（なめらかに動かすと3D画面ごと合成し直しで実機が重い）と判明 → なめらか方式に戻さず『コマを増やしコマ自体にしなりを描き込む』方針で A（写真から計算で中間コマ）／B（3Dの鳶から描き出し）／C（3Dモデルに置換）を提示、AI画像生成は有料のため候補外 → A。帯を見て『打ち下ろし』だけ体の向きが違う写真（尾が上）と気づき、水平の写真1枚から全コマを作る方式にした。12コマの一覧を目視（体の向きがそろう・翼の先が遅れて垂れる・模様の伸びは目立たない）→ 今の6コマと並べた見本 GIF を送付（振れ幅が今より控えめなことも伝えた）→「12コマで」。検証（ローカル ?notiles=1）：帯の幅が窓の12倍、アニメの時計を12等分して進めるとコマ0〜11がそれぞれぴったり1コマ分の位置、滑空＝コマ4・降下＝コマ0、巡航1.0秒・上昇0.6秒は据え置き、エラーなし。実機での見た目と fps は未確認（PC が終日混雑しスクリーンショットも撮れず）。hours は前回記録 718,405 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 750,484 / cost: $296.21"
         },
         {
-                  "date": "2026-09-19",
-                  "title": "走行中の表示の配置替え（箱を右下へ・正面は矢印＋距離）の実装と PC／スマホ幅での実測 0.32時間",
-                  "category": "実装",
-                  "outputs": [
-                            "site/metaverse/index.html（#ttHud を右下へ・#ttFront 新設・ttSetFrontDist／ttPlaceFront・スマホの幅と位置・musashiya.js の版）",
-                            "site/metaverse/musashiya.js（最初の区間でも正面の距離を更新・placeHud は正面の表示の位置合わせへ）",
-                            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
-                  ],
-                  "hours": 0.32,
-                  "partnerApproved": false,
-                  "note": "9/19 現地確認後の中司さんの指摘「正面の表示が目的地と重なってすごく見にくかった」。最初は白鳥・⬇の目印・ピンの看板のどれかと見立てて3択で確認したが外れで、画面写真で #ttHud（上・中央の箱）と判明。中司さんの案「表示は右下でも」「矢印だけ正面に残せば」を受け、正面に残すもの（①B 矢印＋距離）とスマホの置き場（②A 操作ボタンのすぐ上）を確認、範囲は「全部に共通」の指示で #ttHud を使うタイムトライアルと武蔵屋めぐりの両方。コードを読んで分かったこと：最初の区間（白鳥の郷→駅）は ⬇／➜ の目印が出ない（駅は文化財のピンでない）ので、箱の矢印が唯一の道しるべ＝正面に残すのは必須。検証（ローカル ?notiles=1・武蔵屋めぐりを実際に開始）：PC 幅 1024×768 で箱は右下（621–1010, 604–754）、正面は中央（461–563）・メニュー下端128の下（上134）・「8.3km」。スマホ幅 375 では最初、箱が仮想スティックに12pxかぶった（幅に余白と枠線を入れ忘れ）→ box-sizing と幅を直し、余白14px・操作ボタン／メニューと重なりなしを実測。中止で箱と正面の表示が一緒に消える・距離の書式（1.2km／850m／空）・未捕捉エラーなし。スクリーンショットは PC 混雑で2回時間切れになり撮れていない（見た目は本番で中司さんに確認を依頼）。ふつうのタイムトライアルは実走させておらず、共通の部品の動作確認まで。hours は前回記録 686,796 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 718,405 / cost: $249.48"
+          "date": "2026-09-19",
+          "title": "走行中の表示の配置替え（箱を右下へ・正面は矢印＋距離）の実装と PC／スマホ幅での実測 0.32時間",
+          "category": "実装",
+          "outputs": [
+            "site/metaverse/index.html（#ttHud を右下へ・#ttFront 新設・ttSetFrontDist／ttPlaceFront・スマホの幅と位置・musashiya.js の版）",
+            "site/metaverse/musashiya.js（最初の区間でも正面の距離を更新・placeHud は正面の表示の位置合わせへ）",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+          ],
+          "hours": 0.32,
+          "partnerApproved": false,
+          "note": "9/19 現地確認後の中司さんの指摘「正面の表示が目的地と重なってすごく見にくかった」。最初は白鳥・⬇の目印・ピンの看板のどれかと見立てて3択で確認したが外れで、画面写真で #ttHud（上・中央の箱）と判明。中司さんの案「表示は右下でも」「矢印だけ正面に残せば」を受け、正面に残すもの（①B 矢印＋距離）とスマホの置き場（②A 操作ボタンのすぐ上）を確認、範囲は「全部に共通」の指示で #ttHud を使うタイムトライアルと武蔵屋めぐりの両方。コードを読んで分かったこと：最初の区間（白鳥の郷→駅）は ⬇／➜ の目印が出ない（駅は文化財のピンでない）ので、箱の矢印が唯一の道しるべ＝正面に残すのは必須。検証（ローカル ?notiles=1・武蔵屋めぐりを実際に開始）：PC 幅 1024×768 で箱は右下（621–1010, 604–754）、正面は中央（461–563）・メニュー下端128の下（上134）・「8.3km」。スマホ幅 375 では最初、箱が仮想スティックに12pxかぶった（幅に余白と枠線を入れ忘れ）→ box-sizing と幅を直し、余白14px・操作ボタン／メニューと重なりなしを実測。中止で箱と正面の表示が一緒に消える・距離の書式（1.2km／850m／空）・未捕捉エラーなし。スクリーンショットは PC 混雑で2回時間切れになり撮れていない（見た目は本番で中司さんに確認を依頼）。ふつうのタイムトライアルは実走させておらず、共通の部品の動作確認まで。hours は前回記録 686,796 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 718,405 / cost: $249.48"
         },
         {
-                  "date": "2026-09-19",
-                  "title": "現地確認の支援と、会場モードON/OFF.bat が起動に失敗する不具合の原因特定・修正・zip 差し替え 0.20時間",
-                  "category": "保守",
-                  "outputs": [
-                            "events/2026-11-03_武蔵屋/会場PC/会場モードON.bat・会場モードOFF.bat（起動行の引用符を修正）",
-                            "site/metaverse/venue-pc/cbi-venue-pc.zip（差し替え・568e938）",
-                            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json",
-                            "memory/feedback-test-the-real-launch-path.md"
-                  ],
-                  "hours": 0.2,
-                  "partnerApproved": false,
-                  "note": "9/19 中司さんが武蔵屋でノートPCとスマホの現地確認。出発前に本番の配信（venue.js 20260916-1・zip・利用枠 0/30）を確認し手順を案内。現地で「会場モードOFF がエラーが出てすぐ消える」との報告 → 同じ起動行を -Status（何も変えない）に替えた試験用 .bat で再現（-File に『パス -Status』が1つのファイル名として渡る＝cmd から powershell -Command へ \"\" で渡した引用符が消える）→ バックスラッシュ＋引用符に直し、日本語パスと空白入りパスで到達を確認 → zip 差し替え・本番で ON.bat に修正が入っていることを確認。原因は私の検証漏れ（スクリプト単体と N の経路しか通しておらず、Y のあとの起動行を一度も実行していなかった）。ON.bat も同じ行で失敗していたため、当日の PC 側設定は一度も変更されていない。UAC を通る実行はこの PC では未実施（確信度中）。中司さんから「問題なくプレイできました」との報告あり（.bat の再実行結果・通信量の数字は未確認）。hours は前回記録 667,012 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 686,796 / cost: $223.18"
+          "date": "2026-09-19",
+          "title": "現地確認の支援と、会場モードON/OFF.bat が起動に失敗する不具合の原因特定・修正・zip 差し替え 0.20時間",
+          "category": "保守",
+          "outputs": [
+            "events/2026-11-03_武蔵屋/会場PC/会場モードON.bat・会場モードOFF.bat（起動行の引用符を修正）",
+            "site/metaverse/venue-pc/cbi-venue-pc.zip（差し替え・568e938）",
+            "site/metaverse/CLAUDE_HANDOFF.md・site/admin/changelog.json",
+            "memory/feedback-test-the-real-launch-path.md"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "9/19 中司さんが武蔵屋でノートPCとスマホの現地確認。出発前に本番の配信（venue.js 20260916-1・zip・利用枠 0/30）を確認し手順を案内。現地で「会場モードOFF がエラーが出てすぐ消える」との報告 → 同じ起動行を -Status（何も変えない）に替えた試験用 .bat で再現（-File に『パス -Status』が1つのファイル名として渡る＝cmd から powershell -Command へ \"\" で渡した引用符が消える）→ バックスラッシュ＋引用符に直し、日本語パスと空白入りパスで到達を確認 → zip 差し替え・本番で ON.bat に修正が入っていることを確認。原因は私の検証漏れ（スクリプト単体と N の経路しか通しておらず、Y のあとの起動行を一度も実行していなかった）。ON.bat も同じ行で失敗していたため、当日の PC 側設定は一度も変更されていない。UAC を通る実行はこの PC では未実施（確信度中）。中司さんから「問題なくプレイできました」との報告あり（.bat の再実行結果・通信量の数字は未確認）。hours は前回記録 667,012 からの差分。session: d4bbea68-ce47-4bfa-bab5-fb00fbc3743d / output: 686,796 / cost: $223.18"
         },
         {
           "date": "2026-09-16",
@@ -9312,6 +9328,36 @@
       ],
       "plans": [
         {
+          "due": "2026-10-15",
+          "title": "📶 USB Wi-Fiアダプターを自宅で実際につないで『ドライバー不要』を検証する（確信度：低のまま）",
+          "category": "実装",
+          "priority": "高",
+          "note": "自宅Wi-Fiとスマホのテザリングの両方で試す。Bluetooth のスイッチが出るかも同時に確認。会場で初めて挿すのは危険。手順書11ページに同じ注意を書いてある"
+        },
+        {
+          "due": "2026-10-15",
+          "title": "⚡ 初回起動時に BIOS バージョンを確認する（7C96v2B 未満なら更新手段の確保）",
+          "category": "実装",
+          "priority": "高",
+          "note": "この基板には Flash BIOS ボタンが無いため、画面が出ないと BIOS を更新できない。7C96v2B 未満だった場合は (a) 対応する古いCPUを一時的に借りて M-FLASH (b) 購入店（ツクモ）にBIOS更新を相談、のどちらか。当日まで日数があるうちに判明させる"
+        },
+        {
+          "due": "2026-10-15",
+          "title": "🖥 体験PCを実際に組み、手順書の写真枠12か所を当日の写真で埋める",
+          "category": "実装",
+          "priority": "高",
+          "note": "撮る写真：02-screws／03-board／04-cpu-mark／05-cooler／06-memory／06-m2／07-case／08-power／09-frontpanel／10-firstboot／11-wifi／12-saved。会場PC/写真/ にこの名前で置いて build_assembly_guide.py を再実行するとHTML・PDFの両方に入る。組んだ結果で「確信度：中」の項目（電源の奥行き140mmがドライブケージを外さずに収まるか、T3 PLUSの前面端子、クーラーがクリップ式かネジ式か）も確定させる"
+        },
+        {
+          "due": "未定",
+          "title": "🔧 体験PC_購入リスト.md の仕様3点（8ピン→4ピン／Flash BIOSボタン無し／BIOS 7C96v2B）を本文に反映するか決める",
+          "category": "事務",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "購入リストは『買い物の記録』として当時のまま残すか、訂正を本文に書き込むかの方針判断（中司さん）",
+          "note": "2026-09-20 の一次資料調査で判明。訂正の根拠は events/2026-11-03_武蔵屋/会場PC/体験PC_ハード仕様の確認結果.md に出典つきで残してある。手順書（HTML/PDF）には訂正済みの内容で書いてあるので、当面の実害はない"
+        },
+        {
           "due": "2026-09-27",
           "title": "🔑 Vercel MCP を cidao チームのスコープで認証し直す（使用量を Claude から直接読めるようにする）",
           "category": "その他",
@@ -9328,27 +9374,27 @@
           "note": "2026-09-20 通信手段が決定。体験PC（MSI B550M-A PRO）は無線が無いので USB Wi-Fi アダプター（2.4/5GHz 両対応・Windows 11 でドライバー不要）が必須。届いたら自宅で挿してつながるか確認し、できれば前日設営（11/2）に会場でも一度つなぐ。会場側の設定に関する詳細は記録に書かない。つながらないときはスマホのテザリングに切り替える。"
         },
         {
-                  "due": "2026-09-27",
-                  "title": "🔥 Vercel の CPU 無料枠（月4時間）を使い切らないよう、何が使っているかを実測して減らす（CiDAO が止まると 11/3 の3Dワールドの受付も止まる）",
-                  "category": "保守",
-                  "priority": "高",
-                  "note": "2026-09-20 100% 警告（9/5 に続き2回目）。応急処置で定期巡回2本の間隔を延ばした（scripts/vercel-cpu-cron-slow.py・戻すときは --restore）。次：①中司さんが Vercel（GitHub の communitybankinzai でログイン・https://vercel.com/cidao）の Usage で集計のリセット日、Observability → Functions で Active CPU の上位を確認 ②src/proxy.ts の updateSession が全リクエストで supabase.auth.getUser() を呼ぶ点を見直す（Cookie の無いリクエストと /api/ は省く）③人材バンクの紹介動画・AIインタビューが Vercel の関数でどれだけ CPU を使うか確認 ④3Dワールドの在席・利用状況の呼び出し間隔。cidao は他セッションが作業中なので申し送りを出してから触る。既存の予定『Vercel Active CPU の削減効果を実測し…』（A1・期限 9/2 超過）と同じ話。"
+          "due": "2026-09-27",
+          "title": "🔥 Vercel の CPU 無料枠（月4時間）を使い切らないよう、何が使っているかを実測して減らす（CiDAO が止まると 11/3 の3Dワールドの受付も止まる）",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-09-20 100% 警告（9/5 に続き2回目）。応急処置で定期巡回2本の間隔を延ばした（scripts/vercel-cpu-cron-slow.py・戻すときは --restore）。次：①中司さんが Vercel（GitHub の communitybankinzai でログイン・https://vercel.com/cidao）の Usage で集計のリセット日、Observability → Functions で Active CPU の上位を確認 ②src/proxy.ts の updateSession が全リクエストで supabase.auth.getUser() を呼ぶ点を見直す（Cookie の無いリクエストと /api/ は省く）③人材バンクの紹介動画・AIインタビューが Vercel の関数でどれだけ CPU を使うか確認 ④3Dワールドの在席・利用状況の呼び出し間隔。cidao は他セッションが作業中なので申し送りを出してから触る。既存の予定『Vercel Active CPU の削減効果を実測し…』（A1・期限 9/2 超過）と同じ話。"
         },
         {
-                  "due": "未定",
-                  "title": "🌧 大雨などの災害時は、災害MAPの自動巡回を元の間隔（SNS 5分・公式発表 10分）へ戻す",
-                  "category": "保守",
-                  "priority": "高",
-                  "status": "待ち",
-                  "blockedBy": "災害が起きたとき、または Vercel の CPU 枠に余裕ができたとき（集計の切り替わり・削減の完了・Pro への移行のいずれか）",
-                  "note": "2026-09-20 に Vercel の CPU 枠対策で 30分／1時間へ延ばしている。戻し方：python scripts/vercel-cpu-cron-slow.py --restore（Supabase の pg_cron を書き換えるだけ・数秒）。確認：python scripts/supabase-cron-list.py。"
+          "due": "未定",
+          "title": "🌧 大雨などの災害時は、災害MAPの自動巡回を元の間隔（SNS 5分・公式発表 10分）へ戻す",
+          "category": "保守",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "災害が起きたとき、または Vercel の CPU 枠に余裕ができたとき（集計の切り替わり・削減の完了・Pro への移行のいずれか）",
+          "note": "2026-09-20 に Vercel の CPU 枠対策で 30分／1時間へ延ばしている。戻し方：python scripts/vercel-cpu-cron-slow.py --restore（Supabase の pg_cron を書き換えるだけ・数秒）。確認：python scripts/supabase-cron-list.py。"
         },
         {
-                  "due": "2026-10-27",
-                  "title": "🦅 トンビの12コマ羽ばたきを実機で確認する（見た目・🩺診断の fps が落ちていないか。上昇中は毎秒20コマ）",
-                  "category": "実装",
-                  "priority": "中",
-                  "note": "2026-09-19 実装（tonbi_flap_sheet12.webp・index.html steps(12)）。ローカルではコマの位置を数値で確認したが、実機の見た目と負荷は未確認。重いようなら上昇中の速さ（0.6秒）を 0.8 秒へ、または帯を8コマにする（build-flap-sheet.py の FRAMES と index.html の TONBI_FRAMES・止め絵のコマを合わせて直す）。振れ幅を大きくしたい場合は AMP（いま 34 度）。10/27 の実機確認とまとめて行う。"
+          "due": "2026-10-27",
+          "title": "🦅 トンビの12コマ羽ばたきを実機で確認する（見た目・🩺診断の fps が落ちていないか。上昇中は毎秒20コマ）",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-19 実装（tonbi_flap_sheet12.webp・index.html steps(12)）。ローカルではコマの位置を数値で確認したが、実機の見た目と負荷は未確認。重いようなら上昇中の速さ（0.6秒）を 0.8 秒へ、または帯を8コマにする（build-flap-sheet.py の FRAMES と index.html の TONBI_FRAMES・止め絵のコマを合わせて直す）。振れ幅を大きくしたい場合は AMP（いま 34 度）。10/27 の実機確認とまとめて行う。"
         },
         {
           "due": "2026-10-27",
