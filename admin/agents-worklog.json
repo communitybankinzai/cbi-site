@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "防災MAPに東電の停電履歴画面を枠で表示＋東電説明用ページ teiden-demo.html 新設 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/index.html",
+            "site/inzai-disaster-map/styles.css",
+            "site/inzai-disaster-map/teiden-demo.html",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "東電の停電履歴検索は地区（丁目・大字）まで公開されていると実測（9/21 我孫子市「湖北台２丁目」等）。市全体の合計しか見えないのはトップ画面の見せ方。枠の埋め込みは開いたときだけ読み込み、数値は加工しない。説明用ページは申請フォームの『使用したい素材のURL』に貼る想定。前件（output 90,992）との差分 31,978 → 0.3時間\nsession: e93e26f4-222b-44cf-be09-ef5e3343b046 / output: 122,970 / cost: $46.51"
+        },
+        {
+          "date": "2026-09-21",
           "title": "Codex中断分の引き継ぎ：冠水マップ「地図をなぞる」記録の検証・文言統一・公開 0.3時間",
           "category": "保守",
           "outputs": [
@@ -6452,6 +6466,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-24",
+          "title": "⚡ 東京電力へリンク届出と停電データ利用の申請を出す（説明用ページのURLを添えて）",
+          "category": "事務",
+          "priority": "高",
+          "note": "2026-09-21 に説明用ページ https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/teiden-demo.html を公開（いまの状態／許可後の円表示の例示／お約束／団体情報）。提出はウェブフォーム2つ：リンク設定 https://www.tepco.co.jp/info/link-j.html と 転載 https://www.tepco.co.jp/info/rep-j.html（利用したい素材＝当社HP内に掲載されている情報、利用開始希望日は申請日＋1週間以降）。記入案はClaudeが作り、送信は中司さん。SNS（Threads/Instagram/Facebook・9/16〜17）の反応の数は中司さんから受け取って申請に添える。⚠ 枠の埋め込み（iframe）も事前連絡が未了のまま公開している。不可の回答なら当日中に外す。"
+        },
         {
           "due": "2026-09-28",
           "title": "📱 冠水マップ「地図をなぞって記録」を実機スマホで通す（開始→3点タップ→完了→赤線が出るまで）",

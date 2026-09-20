@@ -803,6 +803,32 @@ details.mini .mini-body {
   font-weight: 700;
 }
 
+/* 停電（東京電力の画面をそのまま表示） */
+.teiden-frame {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.teiden-frame iframe {
+  display: block;
+  width: 100%;
+  height: 560px;
+  border: 0;
+}
+
+.teiden-note {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.teiden-acc .acc-body > p:last-child {
+  margin-bottom: 0;
+}
+
 /* 県ビジョンとの対応表の印 */
 .st {
   display: inline-block;

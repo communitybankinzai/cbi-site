@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>停電情報の表示について（説明用）｜印西市 災害状況整合MAP</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root { --bg:#f4f7f9; --fg:#1d2b33; --muted:#5d6b74; --border:#d5dee4; --accent:#2365a8; --warn:#b8322c; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:"Yu Gothic UI","Hiragino Sans",sans-serif; line-height:1.75; }
+  header { background:#fff; border-bottom:1px solid var(--border); padding:18px 20px; }
+  header h1 { margin:0 0 4px; font-size:19px; }
+  header p { margin:0; color:var(--muted); font-size:13px; }
+  main { max-width:960px; margin:0 auto; padding:20px 16px 60px; }
+  section { background:#fff; border:1px solid var(--border); border-radius:10px; padding:16px 18px; margin:0 0 16px; }
+  h2 { margin:0 0 10px; font-size:16px; border-left:5px solid var(--accent); padding-left:8px; }
+  h3 { margin:16px 0 6px; font-size:14px; }
+  p, li { font-size:13.5px; }
+  table { width:100%; border-collapse:collapse; margin:8px 0; font-size:13px; }
+  th, td { border:1px solid var(--border); padding:6px 8px; text-align:left; vertical-align:top; }
+  th { background:#eef3f7; width:30%; }
+  .note { background:#fff8ec; border:1px solid #e7c98a; border-radius:8px; padding:10px 12px; font-size:13px; }
+  .warn { background:#fdeceb; border:1px solid #e6a9a5; border-radius:8px; padding:10px 12px; font-size:13px; }
+  .warn strong { color:var(--warn); }
+  #demoMap { height:460px; border:1px solid var(--border); border-radius:8px; }
+  .maphead { display:flex; align-items:center; gap:8px; background:var(--warn); color:#fff; font-weight:700;
+    font-size:13.5px; padding:6px 10px; border-radius:8px 8px 0 0; }
+  .mapwrap { margin:10px 0; }
+  .mapwrap #demoMap { border-radius:0 0 8px 8px; border-top:0; }
+  .lbl { background:rgba(255,255,255,.92); border:1px solid #7a4a00; border-radius:4px; padding:0 4px;
+    font-size:11.5px; font-weight:700; color:#5a3500; white-space:nowrap; }
+  .pop { font-size:12.5px; line-height:1.6; }
+  .pop .n { font-size:17px; font-weight:700; color:#a05a00; }
+  a { color:var(--accent); }
+  footer { color:var(--muted); font-size:12px; text-align:center; padding:0 16px 40px; }
+  ul { padding-left:20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>停電情報の表示について（東京電力パワーグリッド株式会社 ご説明用）</h1>
+  <p>Community Bank INZAI（印西市 市民活動団体・登録番号０８－００１）／印西市 災害状況整合MAP</p>
+</header>
+
+<main>
+  <section>
+    <h2>1. このページの目的</h2>
+    <p>私たちは印西市の市民活動団体で、大雨や地震のときに公的な情報を1枚の地図で照合できる「<a href="./" target="_blank" rel="noreferrer">印西市 災害状況整合MAP</a>」を無償で公開しています（構想検証版）。</p>
+    <p>停電の情報について、<strong>いま行っていること</strong>と、<strong>許可をいただけた場合に行いたいこと</strong>を、実際の画面でご確認いただくためのページです。ご説明の際はこのURLをそのままお開きください。</p>
+    <div class="note">
+      このページは説明用で、検索には載せていません。ご指摘があれば、指摘のあった表示は<strong>ただちに取り下げます</strong>。
+    </div>
+  </section>
+
+  <section>
+    <h2>2. いま行っていること（許可をいただく前の状態）</h2>
+    <table>
+      <tr><th>内容</th><td>防災MAPの右側に、貴社「停電情報」へのリンクと、公式アプリ「TEPCO速報」のご案内を置いています。</td></tr>
+      <tr><th>画面の表示</th><td>貴社サイトの<strong>停電履歴検索の画面を枠（iframe）でそのまま表示</strong>しています。数値をこちらで加工しては<strong>いません</strong>。</td></tr>
+      <tr><th>通信</th><td>閲覧者が開いたときだけ読み込みます（折りたたみを開いたとき）。当方のサーバーからの自動取得は行っていません。</td></tr>
+      <tr><th>出典</th><td>画面上に「出典：東京電力パワーグリッド『停電情報』」と明記しています。</td></tr>
+    </table>
+    <div class="warn">
+      <strong>お詫び</strong>：貴社サイトのご利用条件にある「リンクの事前ご連絡」を行わないまま、2026年9月16日にリンクを掲載しました。本申請をもってお届けするとともに、不可のご判断であれば削除いたします。
+    </div>
+  </section>
+
+  <section>
+    <h2>3. 許可をいただけた場合に行いたいこと</h2>
+    <p>貴社が公開されている<strong>地区（丁目・大字）ごとの停電軒数・発生時刻・復旧見込み</strong>を、印西市の地図上の地区の代表点に円で表示したいと考えています。冠水した道路や避難所と同じ地図で見られることが、市民にとっての利点です。</p>
+    <div class="mapwrap">
+      <div class="maphead">表示イメージ（数値・時刻・地区はすべて架空です。貴社のデータは使用していません）</div>
+      <div id="demoMap"></div>
+    </div>
+    <h3>お約束できること</h3>
+    <ul>
+      <li>出典（東京電力パワーグリッド「停電情報」）と取得時刻を必ず画面に表示します。</li>
+      <li>「円の位置は地区の代表点であり、停電範囲そのものではない」と明記します。</li>
+      <li>数値は加工せず、貴社の発表どおり（約○軒）で表示します。独自の推計は行いません。</li>
+      <li>貴社の停電情報ページへのリンクを必ず併記し、最終的な確認は貴社の画面でお願いする旨を記載します。</li>
+      <li>取得の間隔は10分に1回以下とし、当方のサーバーで受けてから配信します（閲覧者の端末から直接の連続取得は行いません）。ご指定の方法・間隔があればそれに従います。</li>
+      <li>広告掲載や有料化は行いません。無償の市民サービスです。</li>
+      <li>中止のご連絡をいただいた場合、<strong>当日中に表示を停止</strong>します。</li>
+    </ul>
+    <h3>取得の方法についてのご相談</h3>
+    <p>取得方法は貴社のご指示に従います。現時点では当方から自動取得は行っておらず、次のいずれかを想定しています。</p>
+    <ul>
+      <li>貴社の「停電情報自動配信サービス」など、正式な提供の枠組みがあればそちらを利用する。</li>
+      <li>公開ページから10分に1回以下で取得する方法をお認めいただく。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>4. 当団体と防災MAPについて</h2>
+    <table>
+      <tr><th>団体</th><td>Community Bank INZAI（コミュニティバンク印西）／印西市の市民活動団体登録 番号０８－００１</td></tr>
+      <tr><th>連絡先</th><td>communitybankinzai@gmail.com</td></tr>
+      <tr><th>防災MAP</th><td><a href="https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/" target="_blank" rel="noreferrer">https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/</a></td></tr>
+      <tr><th>掲載内容</th><td>気象庁の警報・雨雲・キキクル、国のハザードマップ、市の避難所、市・県の公式発表、市民の投稿による冠水情報など</td></tr>
+      <tr><th>位置づけ</th><td>構想検証版の無償公開。行政の公式サイトではなく、緊急通報の代替でもない旨を画面に明記しています。</td></tr>
+      <tr><th>利用状況</th><td>大雨のあった2026年9月6日は157セッション、9月7日は197セッション（当方の計測）</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>5. 市民からのご意見</h2>
+    <p>2026年9月16〜17日に、上と同じ表示イメージを当団体のSNS（Threads・Instagram・Facebook）で公開し、「冠水や避難所と同じ地図で停電を見たいか」を伺いました。いただいた反応は、申請時点の状況として別途ご報告いたします。</p>
+  </section>
+</main>
+
+<footer>
+  Community Bank INZAI ／ 本ページの地図データは国土地理院タイル。画面中の停電の数値はすべて架空の例示です。
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map("demoMap", { scrollWheelZoom: false }).setView([35.812, 140.168], 12);
+  L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", { attribution: "地理院タイル" }).addTo(map);
+  // [地区, 緯度, 経度（国土地理院 住所検索の代表点）, 架空の軒数, 発生, 復旧見込み]
+  const areas = [
+    ["大森", 35.82712, 140.14208, 900, "15:03頃", "20:10頃"],
+    ["竹袋", 35.83139, 140.1595, 320, "15:03頃", "20:10頃"],
+    ["木下", 35.83923, 140.15524, 210, "15:05頃", "調査中"],
+    ["高花", 35.7973, 140.13527, 140, "15:12頃", "19:40頃"],
+    ["平岡", 35.83388, 140.17326, 90, "15:20頃", "18:30頃"],
+    ["瀬戸", 35.77292, 140.21493, 10, "17:40頃", "19:30頃"],
+  ];
+  const r = n => 5 + Math.sqrt(n) * 0.45;
+  let first;
+  for (const [name, lat, lon, n, t0, t1] of areas) {
+    const c = L.circleMarker([lat, lon], { radius: r(n), color: "#a05a00", weight: 1.5, fillColor: "#f0a020", fillOpacity: .55 }).addTo(map);
+    c.bindPopup(`<div class="pop"><b>⚡ ${name}の停電（例示）</b><br><span class="n">約${n.toLocaleString()}軒</span><br>
+      発生：${t0}／復旧見込み：${t1}<br>出典：東京電力パワーグリッド「停電情報」（表示は例示で実際の停電ではありません）</div>`);
+    L.marker([lat, lon], { interactive: false, icon: L.divIcon({ className: "", iconAnchor: [-r(n) - 3, 9],
+      html: `<span class="lbl">${name} 約${n.toLocaleString()}軒</span>` }) }).addTo(map);
+    if (name === "高花") first = c;
+  }
+  setTimeout(() => first.openPopup(), 400);
+</script>
+</body>
+</html>
