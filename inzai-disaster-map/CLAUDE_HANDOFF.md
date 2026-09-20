@@ -155,6 +155,18 @@ MAPは `config.js` の `snsMonitorEndpoint` で以下へ接続する。
 - **↩ 自分の記録の取り消し（同日追記）**：`DELETE /api/disaster/passed-roads?id=<uuid>&deviceId=<端末ID>`。端末IDが一致し送信から **10分以内**（`UNDO_WINDOW_SECONDS`）なら `hidden=true` にする（行は消さない）。他人の記録は 404（存在も教えない）、10分超は 409 `too_late`。MAP側は送信成功時に `rememberOwnPassedRoad`（localStorage `cbi-disaster-passed-roads-own-v1`・10分で自然消滅）し、状態文の下（`#passed-road-undo`／`#quick-undo`）と一覧の自分の記録に「↩ 取り消す」を出す。**経緯**：中司さんの実機テストで1回目のタップが成功して自宅の位置が公開され、2回目が2分制限（429）になった。成功に気づかず連打→「記録できなかった」と誤認、というパターン。10分を過ぎた記録は運営が DATABASE_URL で `hidden=true` にする（管理画面は未実装・plans 登録済み）。
 - **☔ 雨量による「冠水か工事か」の目安（同日追記）**：POST 時にサーバー（`rainAt`）が記録時刻の最寄りアメダス（我孫子45061・佐倉45116・成田45121・船橋45106。印西市内に観測点なし）の10分値 `bosai/amedas/data/point/<code>/<YYYYMMDD>_<HH>.json`（日本時間3時間ごとのファイル・過去数日ぶん残る）から記録時刻以前で最新の行を取り、`rain_station/rain_at/rain_1h_mm/rain_3h_mm/rain_24h_mm/rain_verdict` に保存（migration `20260918140000`・適用済み）。判定は **1h≥5 or 3h≥10 or 24h≥30mm → flood_likely（雨あり・冠水の可能性）／全部0 → no_rain（工事・事故など別の理由の可能性）／それ以外 light_rain（判断保留）／取得失敗 unknown**。取得は8秒でタイムアウトし、失敗しても保存は続ける。画面は `rainVerdictHtml`（ポップアップ）と一覧の一言。**言い切らない**（「可能性」「目安」）。しきい値を変えるのは API 側の `rainAt` だけ。線（通れた道）は終点で判定するが画面には出していない。
 
+### 2026-09-21 追記：地図の道をなぞって記録（みんつく方式）・主たる入口はこちらへ
+
+- **経緯**：中司さんの実機報告「エラーで使えない」（取消直後の再投稿が2分制限に当たる）と「みんつくと同じ記録方法にしてほしい。使い勝手が悪く誰も利用していない」。Codex が実装した分を Claude が引き継いで検証・公開（2026-09-21・site `ee062d9`／cidao `5d879c1`）。
+- **入口**：地図上の固定バー `#quick-record-bar`（**PC でも出す**。`position:absolute` で `.map-pane` 内の下部中央。≤820px は従来どおり `position:fixed`）と左パネルの `[data-draw-citizen-road]` 2つ。どちらも「🚫 通れない道を追加」「🔵 通れた道を追加」で `startCitizenRoadDrawing(kind)` を呼ぶ。**GPS記録（現在地1点・軌跡）は左パネルの `<details>「GPSで記録する」` の中へ移した**（ボタンの id と関数は不変）。
+- **操作**：ボタン → 地図が全画面（`.map-pane.is-citizen-drawing`・`body.citizen-road-editing`）→ 道を始点・曲がり角・終点の順にタップ（`addCitizenRoadPoint`・ズーム15未満は断る・1m未満の連打は無視・30km超で止める）→ `#citizen-road-editor` の「完了」。入力中は既存レイヤーを `pointer-events:none` にして誤クリックを防ぐ。Esc と「取消」で `closeCitizenRoadDrawing`。
+- **送信**：`source=map`・時刻は「いつの状況？」（いま〜12時間前）の申告。**失敗しても線とメモは消さない**。429 のときは `retryAfterSeconds` を1秒ごとに数えて「あと◯秒」を出し、0 になったら同じ線をそのまま送れる。
+- **API 側の変更**（`route.ts`）：`source==='map'` の線は **2点から**（GPS軌跡は従来どおり3点以上）、**50m以上の条件は gps のみ**に適用。連投制限の判定から `hidden=true`（取消済み）を除き、待ち時間は最新の可視記録から計算して返す。
+- **表示**：`kind=blocked` でも `path.length>1` なら赤い**線**（`blockedPointShape` の分岐）。1点のときは従来の赤い×印のまま。一覧の表記は「地図で記録」（旧「地図で後から記録」）。
+- **長押し記録（`openMapRecordPopup`）は残っている**（2026-09-21 事業主判断＝「残す・案内文だけ新方式へ統一」）。描画中は `contextmenu` を無視する。どちらを残すかの見直しは plans に登録済み。
+- **`checkGeoPermissionOnLoad()` の呼び出しは外した**（GPS を折りたたみへ移したため、開いた瞬間に位置情報の警告を出さない）。関数自体と、GPS ボタンを押して拒否されたときの `showGeoDeniedGuide(true)`（2か所）は生きている。
+- **検証（2026-09-21）**：Codex が書いた回帰テスト `レザークラフト\デジタル部\冠水マップ修正_20260920\` の API 13件・画面 10件すべて成功（**API テストは `ROUTE_UNDER_TEST=C:/Repos/cidao/src/app/api/disaster/passed-roads/route.ts` を付けて実行すること**。付けないと作業フォルダの古い route.ts を見て3件落ちる）。同フォルダの `preview-server.cjs`（8766・モックAPI・本番に書かない）で、3点タップ→完了→赤線描画→一覧反映と429の挙動を確認。本番APIへ 2点35m を POST して 201、DELETE で取り消せることも確認済み。**実機スマホは未確認**（plans 登録済み）。
+
 ## 千葉県の大雨対策ビジョンとの対応表（2026-09-16 追加）
 
 - 右カラムの折りたたみ `details.vision-acc`「🏛 千葉県の大雨対策ビジョンとこのMAP」（「この地図に出せていないもの」の直前）。熊谷知事の X 投稿（2026-09-14・status 2099262898157871437）の3つの視点・11の論点に、印 `.st-done／.st-part／.st-next／.st-out`（styles.css）と該当機能を付けた静的HTML。
