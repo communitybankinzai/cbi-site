@@ -17,6 +17,34 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-21",
+          "title": "Codex中断分の引き継ぎ：冠水マップ「地図をなぞる」記録の検証・文言統一・公開 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "inzai-disaster-map/app.js",
+            "admin/changelog.json",
+            "admin/agents-worklog.json",
+            "CiDAO src/app/api/disaster/passed-roads/route.ts（commit/push）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "Codexが型検査待ちで停止したため引き継ぎ。回帰テストを本番ソース対象で再実行（API 13件・画面 10件すべて成功。Codexの失敗3件はテストが作業フォルダの古いroute.tsを見ていたのが原因で、実装の欠陥ではなかった）。モックAPIを立てたローカル検証で、ボタン→3点タップ→完了→赤線描画→一覧反映、および429時の待ち時間カウントダウンと線・メモの保持を確認。長押し記録は残す方針（事業主判断）とし、案内文2か所を新方式へ統一。cidao の layout.tsx のフォントをローカル参照へ変えるCodexの一時変更は本番に入れず破棄。session: f423f041-19ed-4441-8327-a288a48d54d3 / output: 32,015 / cost: $8.18"
+        },
+        {
+          "date": "2026-09-20",
+          "title": "Codex：冠水マップの取消後再投稿エラー調査・修正・回帰検証",
+          "category": "保守",
+          "outputs": [
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/index.html",
+            "CiDAO src/app/api/disaster/passed-roads/route.ts",
+            "admin/changelog.json"
+          ],
+          "hours": null,
+          "partnerApproved": false,
+          "note": "デジタル幕僚が原因調査と独立回帰検証、親が修正を担当。工数集計スクリプトはClaude専用でCodexの当セッションを検出できず、hoursは未計測（推定値を記入しない）。session: 01a0bef8-11af-7103-bc6e-1293980d23a8 / output: unavailable / cost: unavailable"
+        },
+        {
           "date": "2026-09-18",
           "title": "防災MAP 上部ボタンの簡素化（運営用ボタンを折りたたみへ） 0.1時間",
           "category": "保守",

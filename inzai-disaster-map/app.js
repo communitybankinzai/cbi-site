@@ -1015,6 +1015,10 @@ function bindEvents() {
   map.on("moveend", refreshVisibleOpenDataLayers);
   map.on("zoomend", refreshVisibleOpenDataLayers);
   map.on("click", event => {
+    if (citizenRoadDraft.active) {
+      addCitizenRoadPoint(event.latlng);
+      return;
+    }
     if (roadDrawingMode) {
       addRoadSectionPoint(event.latlng);
       return;
@@ -3877,12 +3881,12 @@ function renderPassedRoadsList() {
     const what = road.kind === "blocked" ? "🚫" : "🔵";
     const rainNote = road.kind === "blocked" && road.rain ? `${rainVerdictOf(road).icon} ${rainVerdictOf(road).label}` : "";
     const desc = (road.kind === "blocked"
-      ? "通れない地点"
+      ? (road.path.length === 1 ? "通れない地点" : `通れない道 約${Math.round(road.lengthM || 0)}m`)
       : (road.path.length === 1 ? "通れた地点" : `通れた道 約${Math.round(road.lengthM || 0)}m`)) + (rainNote ? `・${rainNote}` : "");
     const own = isOwnRecentPassedRoad(road.id);
     return `<li class="${old ? "pr-old" : ""}"><button type="button" data-passed-road="${escapeAttribute(String(road.id))}">` +
       `<span class="pr-kind">${what}</span><span><span class="pr-time">${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "時刻不明")}</span>` +
-      `（${escapeHtml(formatAgo(road.endedAt))}）<span class="pr-meta">${escapeHtml(desc)}・${escapeHtml(road.source === "map" ? "地図で後から記録" : "GPS")}` +
+      `（${escapeHtml(formatAgo(road.endedAt))}）<span class="pr-meta">${escapeHtml(desc)}・${escapeHtml(road.source === "map" ? "地図で記録" : "GPS")}` +
       `${road.note ? "・" + escapeHtml(road.note) : ""}</span></span></button>` +
       (own ? `<button type="button" class="undo-link pr-undo" data-undo-id="${escapeAttribute(String(road.id))}">↩ 取り消す</button>` : "") +
       `</li>`;
@@ -3903,6 +3907,146 @@ function focusPassedRoad(id) {
 // 走行中は操作できないので、止まってから地図を拡大して付ける用途。時刻は記録者の申告。
 const MAP_RECORD_MIN_ZOOM = 15;
 let mapRecordPopup = null;
+
+// 道路をタップしてなぞる。GPSの許可や長押しを必要としない市民向けの入口。
+const citizenRoadDraft = { active: false, kind: "blocked", points: [], busy: false, retryAt: 0, timer: null, doubleClickZoom: true };
+const citizenRoadDraftLayer = L.layerGroup();
+
+function citizenRoadMessage(text, error = false) {
+  const node = document.getElementById("citizen-road-status");
+  node.textContent = text;
+  node.classList.toggle("is-error", error);
+}
+
+function updateCitizenRoadControls() {
+  const draft = citizenRoadDraft;
+  const remaining = Math.max(0, Math.ceil((draft.retryAt - Date.now()) / 1000));
+  document.getElementById("citizen-road-count").textContent = `${draft.points.length}点・約${Math.round(passedRoadPathLengthM(draft.points))}m`;
+  document.getElementById("citizen-road-back").disabled = draft.busy || !draft.points.length;
+  document.getElementById("citizen-road-cancel").disabled = draft.busy;
+  const finish = document.getElementById("citizen-road-finish");
+  finish.disabled = draft.busy || draft.points.length < 2 || remaining > 0;
+  finish.textContent = draft.busy ? "送信中…" : remaining ? `あと${remaining}秒` : `完了（${draft.kind === "blocked" ? "赤" : "青"}く塗る）`;
+  document.querySelectorAll("#citizen-road-editor input, #citizen-road-editor select").forEach(node => { node.disabled = draft.busy; });
+}
+
+function drawCitizenRoadPreview() {
+  citizenRoadDraftLayer.clearLayers();
+  const { points, kind } = citizenRoadDraft;
+  const color = kind === "blocked" ? KANSUI_COLOR : "#1565c0";
+  if (points.length > 1) L.polyline(points, { color, weight: 7, opacity: .9, dashArray: "8 6", interactive: false }).addTo(citizenRoadDraftLayer);
+  points.forEach((point, index) => {
+    L.marker(point, { interactive: false, icon: L.divIcon({ className: "citizen-road-point", html: `<span style="background:${color}">${index + 1}</span>`, iconSize: [26, 26], iconAnchor: [13, 13] }) }).addTo(citizenRoadDraftLayer);
+  });
+  updateCitizenRoadControls();
+}
+
+function startCitizenRoadDrawing(kind) {
+  if (citizenRoadDraft.active || blockedPointBusy) return;
+  if (passedRoadRecorder.watchId !== null) {
+    setPassedRoadRecordStatus("GPSで記録中です。先にGPSの記録を終えてください。", "error");
+    return;
+  }
+  if (roadDrawingMode || locationPickRecordId) {
+    setPassedRoadRecordStatus("入力中の場所・区間を確定または取り消してから記録してください。", "error");
+    return;
+  }
+  citizenRoadDraft.active = true;
+  citizenRoadDraft.kind = kind;
+  citizenRoadDraft.points = [];
+  citizenRoadDraft.retryAt = 0;
+  citizenRoadDraft.doubleClickZoom = map.doubleClickZoom.enabled();
+  map.doubleClickZoom.disable();
+  map.closePopup();
+  showGeoDeniedGuide(false);
+  showMintsukuHint(false);
+  document.getElementById("citizen-road-title").textContent = kind === "blocked" ? "🚫 通れない道を赤く塗る" : "🔵 通れた道を青く塗る";
+  document.getElementById("citizen-road-editor").hidden = false;
+  document.getElementById("citizen-road-editor").dataset.kind = kind;
+  document.getElementById("citizen-road-when").value = "0";
+  document.getElementById("citizen-road-note").value = "";
+  document.getElementById("citizen-road-options").open = false;
+  document.getElementById("map-pane").classList.add("is-citizen-drawing");
+  document.body.classList.add("citizen-road-editing");
+  map.invalidateSize({ pan: false });
+  if (map.getZoom() < MAP_RECORD_MIN_ZOOM) map.setZoom(16);
+  citizenRoadDraftLayer.addTo(map);
+  citizenRoadMessage("道の始まりをタップ → 曲がり角 → 終わりの順にタップしてください。");
+  drawCitizenRoadPreview();
+  document.getElementById("citizen-road-cancel").focus({ preventScroll: true });
+  scheduleMapResize();
+}
+
+function addCitizenRoadPoint(latlng) {
+  const draft = citizenRoadDraft;
+  if (!draft.active || draft.busy) return;
+  if (map.getZoom() < MAP_RECORD_MIN_ZOOM) {
+    citizenRoadMessage("道路が見分けられる大きさまで地図を拡大してください。", true);
+    return;
+  }
+  if (draft.points.length >= 2000) { citizenRoadMessage("点が多すぎます。ここまでを完了してください。", true); return; }
+  const point = [Number(latlng.lat.toFixed(6)), Number(latlng.lng.toFixed(6))];
+  const last = draft.points[draft.points.length - 1];
+  if (last && passedRoadDistanceM(last, point) < 1) return;
+  if (passedRoadPathLengthM([...draft.points, point]) > 30000) {
+    citizenRoadMessage("1回に記録できるのは30kmまでです。ここまでを完了してください。", true);
+    return;
+  }
+  draft.points.push(point);
+  drawCitizenRoadPreview();
+  citizenRoadMessage(draft.points.length < 2 ? "次に、道の終わりか曲がり角をタップしてください。" : "曲がり角を追加できます。線の位置を確認して「完了」を押してください。");
+}
+
+function closeCitizenRoadDrawing() {
+  if (citizenRoadDraft.busy) return;
+  citizenRoadDraft.active = false;
+  citizenRoadDraft.points = [];
+  clearInterval(citizenRoadDraft.timer);
+  citizenRoadDraft.timer = null;
+  citizenRoadDraftLayer.clearLayers();
+  map.removeLayer(citizenRoadDraftLayer);
+  if (citizenRoadDraft.doubleClickZoom) map.doubleClickZoom.enable();
+  document.getElementById("citizen-road-editor").hidden = true;
+  document.getElementById("map-pane").classList.remove("is-citizen-drawing");
+  document.body.classList.remove("citizen-road-editing");
+  scheduleMapResize();
+  document.getElementById(citizenRoadDraft.kind === "blocked" ? "quick-blocked-btn" : "quick-passed-btn").focus({ preventScroll: true });
+}
+
+async function finishCitizenRoadDrawing() {
+  const draft = citizenRoadDraft;
+  if (!draft.active || draft.busy || draft.points.length < 2 || draft.retryAt > Date.now()) return;
+  const endedAt = new Date(Date.now() - Number(document.getElementById("citizen-road-when").value) * 60000).toISOString();
+  draft.busy = true;
+  updateCitizenRoadControls();
+  citizenRoadMessage("送信しています…");
+  const result = await submitPassedRoadRecord({
+    kind: draft.kind, source: "map", path: draft.points.map(point => [...point]),
+    startedAt: endedAt, endedAt, note: document.getElementById("citizen-road-note").value.trim().slice(0, 200)
+  });
+  draft.busy = false;
+  if (result.ok) {
+    const kind = draft.kind;
+    closeCitizenRoadDrawing();
+    setPassedRoadRecordStatus(`記録しました。${kind === "blocked" ? "赤" : "青"}い線で表示しています。間違えた場合は下の「取り消す」で戻せます。`, "");
+    document.getElementById("map-pane").scrollIntoView({ block: "center" });
+    return;
+  }
+  citizenRoadMessage(`送れませんでした。${result.error} 線は残っています。`, true);
+  if (result.retryAfterSeconds) {
+    draft.retryAt = Date.now() + result.retryAfterSeconds * 1000;
+    clearInterval(draft.timer);
+    draft.timer = setInterval(() => {
+      updateCitizenRoadControls();
+      if (draft.retryAt <= Date.now()) {
+        clearInterval(draft.timer);
+        draft.timer = null;
+        citizenRoadMessage("もう一度「完了」を押して送れます。線とメモはそのままです。");
+      }
+    }, 1000);
+  }
+  updateCitizenRoadControls();
+}
 
 function openMapRecordPopup(latlng) {
   if (passedRoadRecorder.watchId !== null) {
@@ -4034,13 +4178,14 @@ async function submitPassedRoadRecord(record) {
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       const reasons = {
-        too_frequent: "送信の間隔が短すぎます。2分ほど待ってから送ってください",
+        too_frequent: `前の記録からの待ち時間です。あと${Number.isFinite(Number(payload.retryAfterSeconds)) && Number(payload.retryAfterSeconds) > 0 ? Math.ceil(Number(payload.retryAfterSeconds)) : 120}秒ほど待って、もう一度送ってください（入力内容はそのままです）`,
         outside_inzai: "印西市の周辺ではないため受け付けられません",
         too_short: "記録が短すぎます（50m以上必要です）",
         too_long: "記録が長すぎます（30km以内で区切ってください）",
         stale_time: "24時間より前の時刻は記録できません"
       };
-      return { ok: false, error: reasons[payload.error] || payload.error || `HTTP ${response.status}` };
+      return { ok: false, error: reasons[payload.error] || payload.error || `HTTP ${response.status}`,
+        retryAfterSeconds: payload.error === "too_frequent" ? (Number.isFinite(Number(payload.retryAfterSeconds)) && Number(payload.retryAfterSeconds) > 0 ? Math.ceil(Number(payload.retryAfterSeconds)) : 120) : 0 };
     }
     if (payload.id) { rememberOwnPassedRoad(payload.id, payload.createdAt || new Date().toISOString()); setUndoLink(payload.id); }
     ensurePassedRoadsOverlayOn();
@@ -4090,7 +4235,9 @@ const MINTSUKU_URL = "https://mintsuku-chiba-kansuimap.com/";
 function blockedPointShape(road) {
   const tier = passedRoadTier(road.endedAt);
   const isOld = tier.maxHours === Infinity;
-  const marker = L.marker(road.path[0], {
+  const marker = road.path.length > 1 ? L.polyline(road.path, {
+    pane: "passedRoadsPane", color: KANSUI_COLOR, weight: 7, opacity: isOld ? .5 : .95
+  }) : L.marker(road.path[0], {
     pane: "passedRoadsPane",
     icon: L.divIcon({
       className: "",
@@ -4100,13 +4247,13 @@ function blockedPointShape(road) {
     })
   });
   marker.bindPopup(
-    `<strong>🚫 通れない地点（市民のGPS記録）</strong><br>` +
+    `<strong>🚫 ${road.path.length > 1 ? "通れない道" : "通れない地点"}（市民の記録）</strong><br>` +
     `記録時刻 ${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "不明")}（${escapeHtml(formatAgo(road.endedAt))}）` +
     `・${escapeHtml(passedRoadSourceLabel(road))}` +
     (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
     `<br><span style="font-size:11px;">${isOld
       ? "6時間より前の記録です。すでに通れるようになっている可能性があります。"
-      : "この地図を見ている人が冠水で止まった場所を記録したものです。公式の通行止めではありません。"}</span>` +
+      : "この地図を見ている人が通れなかった場所を記録したものです。公式の通行止めではありません。"}</span>` +
     rainVerdictHtml(road) +
     `<br><a href="${MINTSUKU_URL}" target="_blank" rel="noreferrer">みんつく千葉冠水マップにも投稿する ↗</a>`
   );
@@ -4138,7 +4285,7 @@ function rainVerdictHtml(road) {
 }
 
 function passedRoadSourceLabel(road) {
-  return road.source === "map" ? "地図の長押しで後から記録（時刻は記録者の申告）" : "現地でGPS記録";
+  return road.source === "map" ? "地図で場所を指定（時刻は記録者の申告）" : "現地でGPS記録";
 }
 
 function passedRoadShape(road) {
@@ -4159,7 +4306,7 @@ function passedRoadShape(road) {
     (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
     `<br><span style="font-size:11px;">${isOld
       ? "6時間より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
-      : "この地図を見ている人がGPSで記録した道です。公式の通行可否ではありません。"}</span>`
+      : "この地図を見ている人が通れた道を記録したものです。現在の安全や通行可否を保証するものではありません。"}</span>`
   );
   return line;
 }
@@ -4233,8 +4380,8 @@ function geoDeniedGuideHtml() {
     <strong>📵 位置情報が許可されていません</strong>
     <p>このページから端末の設定画面を直接開くことはできません。次の手順で許可してから、もう一度ボタンを押してください。</p>
     <ol>${steps.map(t => `<li>${escapeHtml(t)}</li>`).join("")}</ol>
-    <p>許可しなくても、<strong>地図を拡大して長押し（PCは右クリック）</strong>すれば、その場所に「通れない／通れた」を記録できます（GPS不要）。</p>
-    <button type="button" class="geo-denied-map-btn" id="geo-denied-map-btn">📍 地図を長押しして記録する（GPS不要）</button>
+    <p>位置情報を許可しなくても、<strong>地図をタップして道をなぞる</strong>方法で記録できます。</p>
+    <button type="button" class="geo-denied-map-btn" id="geo-denied-map-btn">地図をなぞって通れた道を記録する</button>
     <button type="button" class="geo-denied-close-btn" data-geo-guide-close>閉じる</button>
   </div>`;
 }
@@ -4248,10 +4395,7 @@ function showGeoDeniedGuide(show) {
   if (show) {
     document.querySelectorAll("[data-geo-guide-close]").forEach(button => button.addEventListener("click", () => showGeoDeniedGuide(false)));
     document.querySelectorAll("#geo-denied-map-btn").forEach(button => button.addEventListener("click", () => {
-      ensurePassedRoadsOverlayOn();
-      if (map.getZoom() < MAP_RECORD_MIN_ZOOM) map.setZoom(MAP_RECORD_MIN_ZOOM + 1);
-      document.getElementById("map")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      setPassedRoadRecordStatus("地図の記録したい場所を長押し（PCは右クリック）してください。", "live");
+      startCitizenRoadDrawing("passed");
     }));
   }
 }
@@ -4263,7 +4407,7 @@ function checkGeoPermissionOnLoad() {
     const apply = () => {
       if (status.state === "denied") {
         showGeoDeniedGuide(true);
-        setPassedRoadRecordStatus("位置情報が許可されていないため、GPSでの記録はできません（地図の長押しなら記録できます）。", "error");
+        setPassedRoadRecordStatus("位置情報が許可されていないため、GPSでの記録はできません（「通れない道を追加」から地図をなぞれば記録できます）。", "error");
       } else {
         showGeoDeniedGuide(false);
       }
@@ -4285,18 +4429,13 @@ function setPassedRoadRecordStatus(text, kind) {
 // 記録ボタンの見た目（左パネルとスマホの固定バーの両方）
 function setPassedRoadButtons(recording, disabled) {
   const panelBtn = document.getElementById("passed-road-record-btn");
-  const quickBtn = document.getElementById("quick-passed-btn");
   if (panelBtn) {
     panelBtn.textContent = recording ? "⏹ 通り終わった（記録を送る）" : "📍 通れた道を記録する（GPS）";
     panelBtn.classList.toggle("is-recording", recording);
     panelBtn.disabled = Boolean(disabled);
   }
-  if (quickBtn) {
-    quickBtn.textContent = recording ? "⏹ 通り終わった（送る）" : "🔵 通れた道を記録";
-    quickBtn.classList.toggle("is-recording", recording);
-    quickBtn.disabled = Boolean(disabled);
-  }
-  [document.getElementById("blocked-point-record-btn"), document.getElementById("quick-blocked-btn")].forEach(b => { if (b) b.disabled = Boolean(disabled); });
+  const blockedBtn = document.getElementById("blocked-point-record-btn");
+  if (blockedBtn) blockedBtn.disabled = Boolean(disabled);
 }
 
 function showMintsukuHint(show) {
@@ -4482,9 +4621,23 @@ function initPassedRoadRecorder() {
     else startPassedRoadRecording();
   };
   document.getElementById("passed-road-record-btn")?.addEventListener("click", togglePassed);
-  document.getElementById("quick-passed-btn")?.addEventListener("click", togglePassed);
+  document.getElementById("quick-passed-btn")?.addEventListener("click", () => startCitizenRoadDrawing("passed"));
   document.getElementById("blocked-point-record-btn")?.addEventListener("click", recordBlockedPoint);
-  document.getElementById("quick-blocked-btn")?.addEventListener("click", recordBlockedPoint);
+  document.getElementById("quick-blocked-btn")?.addEventListener("click", () => startCitizenRoadDrawing("blocked"));
+  document.querySelectorAll("[data-draw-citizen-road]").forEach(button => button.addEventListener("click", () => startCitizenRoadDrawing(button.dataset.drawCitizenRoad)));
+  document.getElementById("citizen-road-back").addEventListener("click", () => {
+    if (citizenRoadDraft.busy) return;
+    citizenRoadDraft.points.pop();
+    drawCitizenRoadPreview();
+    citizenRoadMessage("1点戻しました。道に沿ってタップして続けてください。");
+  });
+  document.getElementById("citizen-road-cancel").addEventListener("click", closeCitizenRoadDrawing);
+  document.getElementById("citizen-road-finish").addEventListener("click", finishCitizenRoadDrawing);
+  L.DomEvent.disableClickPropagation(document.getElementById("citizen-road-editor"));
+  L.DomEvent.disableScrollPropagation(document.getElementById("citizen-road-editor"));
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && citizenRoadDraft.active) closeCitizenRoadDrawing();
+  });
   document.getElementById("passed-roads-sort")?.addEventListener("change", renderPassedRoadsList);
   document.getElementById("passed-roads-filter")?.addEventListener("change", renderPassedRoadsList);
   document.getElementById("passed-roads-list")?.addEventListener("click", event => {
@@ -4503,9 +4656,9 @@ function initPassedRoadRecorder() {
     if (group) group.open = true;
     document.getElementById("passed-roads-list-wrap")?.scrollIntoView({ behavior: "smooth", block: "center" });
   });
-  checkGeoPermissionOnLoad();
   // 長押し（スマホ）／右クリック（PC）は Leaflet の contextmenu イベントとして届く
   map.on("contextmenu", event => {
+    if (citizenRoadDraft.active) return;
     if (event.originalEvent) event.originalEvent.preventDefault();
     openMapRecordPopup(event.latlng);
   });

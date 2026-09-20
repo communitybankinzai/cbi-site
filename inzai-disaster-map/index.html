@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260907g">
+    <link rel="stylesheet" href="./styles.css?v=20260921a">
   </head>
   <body>
     <div class="app-shell">
@@ -192,11 +192,19 @@
                   </div>
                   <div class="passed-road-recorder" id="passed-road-recorder">
                     <div class="passed-road-btn-row">
+                      <button type="button" class="passed-road-btn is-blocked" data-draw-citizen-road="blocked">🚫 通れない道を追加</button>
+                      <button type="button" class="passed-road-btn" data-draw-citizen-road="passed">🔵 通れた道を追加</button>
+                    </div>
+                    <p class="passed-road-status">ボタンを押して、地図の道に沿ってタップ → 完了。位置情報の許可は不要です。</p>
+                    <details class="road-gps-options"><summary>GPSで記録する</summary>
+                    <div class="passed-road-btn-row">
                       <button type="button" class="passed-road-btn is-blocked" id="blocked-point-record-btn">🚫 ここは通れない（現在地）</button>
                       <button type="button" class="passed-road-btn" id="passed-road-record-btn">📍 通れた道を記録する（GPS）</button>
                     </div>
                     <input type="text" id="passed-road-note" class="passed-road-note" maxlength="200" placeholder="一言メモ（任意・例：浅い水たまりあり／タイヤ半分まで）">
-                    <p class="passed-road-status" id="passed-road-record-status">「通れない」は冠水で止まった場所で1回押すだけ。「通れた道」は通り始める前に押し、通り終わったらもう一度押すと地図に送られます（画面を消すと記録が止まります）。</p>
+                    <p class="passed-road-status">「通れない」は現在地を記録します。「通れた道」は開始・停止で歩いた軌跡を送ります（50m以上・画面消灯中は記録が止まります）。</p>
+                    </details>
+                    <p class="passed-road-status" id="passed-road-record-status" role="status"></p>
                     <div class="passed-roads-list-wrap" id="passed-roads-list-wrap">
                       <div class="passed-roads-list-head">
                         <strong>📋 記録の一覧（時間順）</strong>
@@ -569,14 +577,28 @@
           <div id="map"></div>
           <div class="quick-record-bar" id="quick-record-bar" aria-label="通れない・通れたを記録">
             <div class="quick-record-buttons">
-              <button type="button" class="quick-record-btn is-blocked" id="quick-blocked-btn">🚫 ここは通れない</button>
-              <button type="button" class="quick-record-btn is-passed" id="quick-passed-btn">🔵 通れた道を記録</button>
+              <button type="button" class="quick-record-btn is-blocked" id="quick-blocked-btn">🚫 通れない道を追加</button>
+              <button type="button" class="quick-record-btn is-passed" id="quick-passed-btn">🔵 通れた道を追加</button>
               <button type="button" class="quick-record-btn is-list" id="quick-list-btn" aria-label="記録の一覧（時間順）">📋</button>
             </div>
-            <p class="quick-record-status" id="quick-record-status">現在地をGPSで記録します（匿名）</p>
+            <p class="quick-record-status" id="quick-record-status" role="status">地図の道をタップしてなぞる → 完了（GPS不要）</p>
             <p class="quick-undo" id="quick-undo" hidden></p>
             <div id="quick-geo-guide" hidden></div>
           </div>
+          <section class="citizen-road-editor" id="citizen-road-editor" aria-label="道路の記録" hidden>
+            <div class="citizen-road-heading"><strong id="citizen-road-title">通れない道を赤く塗る</strong><span id="citizen-road-count">0点・約0m</span></div>
+            <p id="citizen-road-status" role="status">道の始まりをタップしてください。</p>
+            <div class="citizen-road-actions">
+              <button type="button" id="citizen-road-back" disabled>1点戻す</button>
+              <button type="button" id="citizen-road-cancel">取消</button>
+              <button type="button" id="citizen-road-finish" disabled>完了（赤く塗る）</button>
+            </div>
+            <details id="citizen-road-options"><summary>時刻・メモ（任意）</summary>
+              <label>いつの状況？ <select id="citizen-road-when"><option value="0">いま</option><option value="30">30分前</option><option value="60">1時間前</option><option value="120">2時間前</option><option value="180">3時間前</option><option value="360">6時間前</option><option value="720">12時間前</option></select></label>
+              <label>メモ <input id="citizen-road-note" type="text" maxlength="200" placeholder="例：タイヤ半分まで冠水"></label>
+            </details>
+            <p class="citizen-road-notice">完了すると匿名の記録として公開されます。間違えた記録は10分以内なら取り消せます。</p>
+          </section>
           <div class="location-pick-banner" id="location-pick-banner" hidden>
             <div>
               <strong>3. 投稿の場所を地図上でクリック</strong>
@@ -1532,7 +1554,7 @@
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260907g"></script>
-    <script src="./app.js?v=20260907g"></script>
+    <script src="./app.js?v=20260921a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>
