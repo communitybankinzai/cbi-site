@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260922e">
+    <link rel="stylesheet" href="./styles.css?v=20260922f">
   </head>
   <body>
     <div class="app-shell">
@@ -193,11 +193,9 @@
 
                   <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="passedRoads" checked> <span class="layer-name">🔵 通れた道（GPS記録）<span id="passed-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>この地図を見ている人が、スマホの位置情報で<strong>実際に通れた道</strong>を記録したものです。赤（冠水した道路）と見比べて、通れる道を探す参考にしてください。</p><p>色の濃さは記録の新しさです。<strong>6時間以上前の記録は「冠水時に通れた実績」として薄い青で残します。</strong>より強い雨では冠水することがあり、安全を保証するものではありません。</p><p>「通れない」には記録時刻の最寄りアメダス（我孫子・佐倉・成田・船橋）の雨量を添え、<strong>☔ 雨あり＝冠水の可能性／🌤 雨なし＝工事・事故など別の理由の可能性</strong>の目安を出します（確定ではありません）。</p><p>記録は匿名です（端末の乱数IDと軌跡だけが送られ、名前や電話番号は送られません）。</p></span></span></label>
                   <div class="jshis-layer-note road-risk-legend passed-roads-legend">
-                    <span><span class="legend-line" style="background:#0d47a1"></span>1時間以内</span>
-                    <span><span class="legend-line" style="background:#1e88e5"></span>3時間以内</span>
-                    <span><span class="legend-line" style="background:#64b5f6"></span>6時間以内</span>
-                    <span><span class="legend-line" style="background:#b3d4f0"></span>冠水時に通れた実績（6時間より前）</span>
-                    <span><span class="blocked-gps-mark legend-mark" aria-hidden="true">×</span>通れない地点（GPS記録・6時間より前は薄く）</span>
+                    <span><span class="legend-line" style="background:#1565c0"></span>通れた道（今回の大雨）</span>
+                    <span><span class="legend-line" style="background:#1565c0;opacity:.4"></span>通れた道（それより前の実績）</span>
+                    <span><span class="legend-line" style="background:#b8322c"></span>通れない道・地点（対象日より前は薄く）</span>
                   </div>
                   <div class="passed-road-recorder" id="passed-road-recorder">
                     <div class="passed-road-btn-row">
@@ -616,6 +614,14 @@
           <!-- 2026-09-21: 市の避難情報の帯を、全員の画面から消す／戻す -->
           <h3 class="moderate-subhead">市の避難情報の帯（地図の上）</h3>
           <div class="moderate-list" id="moderate-evac"></div>
+          <!-- 2026-09-22: 「今回の大雨」の開始日時。これより後の通れた道を濃く、前を薄く描く（次の大雨のときに入れ替える） -->
+          <h3 class="moderate-subhead">今回の大雨の開始日時（通れた道の濃さ）</h3>
+          <div class="moderate-list event-start-box">
+            <p>いま：<b data-event-start-label>読み込み中</b> から後の通れた道を濃く、前を薄く表示しています。</p>
+            <label>開始日時 <input type="datetime-local" id="event-start-input"></label>
+            <button type="button" id="event-start-save">保存（全員の画面に反映）</button>
+            <p id="event-start-status" class="moderate-meta"></p>
+          </div>
           <h3 class="moderate-subhead">市民の道路記録</h3>
           <div class="moderate-list" id="moderate-list"></div>
           <!-- みんつくの投稿は本家のデータなので消せない。CBIの地図から伏せたものだけここに出す -->
@@ -645,9 +651,9 @@
 
           <!-- ⓘ 色の見方（2026-09-22）。色の濃さが「新しさ」を表していることが利用者に伝わらないため -->
           <div class="range-panel color-guide" id="color-guide" hidden>
-            <p class="cg-lead">色が<strong>濃いほど新しい</strong>記録です。薄い線・点は、以前に記録された実績です。</p>
+            <p class="cg-lead"><strong>赤＝通れない道、青＝通れた道</strong>です。薄いものは、以前に記録された実績です。</p>
             <div class="cg-row"><span class="cg-sw" style="background:#b8322c"></span><span class="cg-sw is-faded" style="background:#b8322c"></span><span><b>通れない道</b>（赤。みんつく千葉冠水マップへの投稿と、この地図での記録）：濃い＝対象日の記録、薄い＝それより前の実績</span></div>
-            <div class="cg-row"><span class="cg-sw" style="background:#0d47a1"></span><span class="cg-sw" style="background:#1e88e5"></span><span class="cg-sw" style="background:#64b5f6"></span><span class="cg-sw" style="background:#b3d4f0"></span><span><b>通れた道</b>：左から 1時間以内・3時間以内・6時間以内・それより前（冠水時に通れた実績）</span></div>
+            <div class="cg-row"><span class="cg-sw" style="background:#1565c0"></span><span class="cg-sw is-faded" style="background:#1565c0"></span><span><b>通れた道</b>（青）：濃い＝今回の大雨（<span data-event-start-label>9/21 0:00</span> から後）の記録、薄い＝それより前の実績</span></div>
             <div class="cg-row"><span class="cg-sw" style="background:#2f8ba3"></span><span class="cg-sw" style="background:#e8b23a"></span><span class="cg-sw" style="background:#df7038"></span><span class="cg-sw" style="background:#8e44ad"></span><span><b>地形の推定</b>：左から 冠水しにくい→しやすい（地形だけから推定。実際の冠水の記録ではありません）</span></div>
             <p class="cg-note">「本日」「過去の実績」「⏱ 期間」で、表示する記録をしぼり込めます。どの色も、いま通れるかどうかを保証するものではありません。</p>
           </div>
@@ -1723,7 +1729,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260907g"></script>
-    <script src="./app.js?v=20260922e"></script>
+    <script src="./app.js?v=20260922f"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

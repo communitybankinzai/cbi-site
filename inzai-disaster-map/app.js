@@ -2191,6 +2191,44 @@ document.addEventListener("click", async event => {
   }
 });
 
+// 運営：「今回の大雨」の開始日時を入れ替える（「🗑 市民記録の管理」の中）。次の大雨のときに使う
+document.addEventListener("click", async event => {
+  if (!event.target.closest?.("#event-start-save")) return;
+  const input = document.getElementById("event-start-input");
+  const status = document.getElementById("event-start-status");
+  const value = input?.value || "";
+  if (!value) { if (status) status.textContent = "日時を入れてください"; return; }
+  const endpoint = moderationEndpoint();
+  let key = moderationKey() || askModerationKey();
+  if (!endpoint || !key) return;
+  const send = k => fetch(`${endpoint}?setting=eventStart`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", "x-moderation-key": k },
+    body: JSON.stringify({ eventStart: new Date(value).toISOString() })
+  });
+  try {
+    let response = await send(key);
+    if (response.status === 403) {
+      try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+      key = askModerationKey();
+      if (!key) throw new Error("合言葉が違います");
+      response = await send(key);
+    }
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+    await ensurePassedRoadsLayer(true);
+    if (status) status.textContent = `保存しました（${eventStartLabel()} から後の通れた道を濃く表示）`;
+  } catch (error) {
+    if (status) status.textContent = `保存できませんでした（${error?.message || "接続エラー"}）`;
+  }
+});
+document.addEventListener("click", event => {
+  // 管理画面を開いたとき、いまの設定を入力欄に入れる
+  if (!event.target.closest?.("#moderate-button, #moderate-reload")) return;
+  const input = document.getElementById("event-start-input");
+  if (input && passedEventStart && !input.value) input.value = toDateTimeLocal(passedEventStart);
+});
+
 // 地図のポップアップの「✏ 時刻・メモを直す」（運営）。道からずれた線を引き直すと記録時刻が引き直した時刻になるため、
 // 実際の時刻とメモを上書きする。時刻を変えるとサーバーがその時刻の雨量を取り直す（2026-09-22）
 document.addEventListener("click", async event => {
@@ -4992,12 +5030,25 @@ async function ensureKansuiLayer() {
 // ============================================================
 const KANSUI_COLOR = "#b8322c";
 const PASSED_ROADS_KEY = "cbi-disaster-passed-roads-device-v1";
+// 通れた道の濃さは「今回の大雨」の開始日時（サーバーの設定・運営が入れ替える）で分ける（2026-09-22 事業主判断）：
+// 開始より後＝濃い青、前＝薄い青。その雨量を超えない限りほぼ通れる道なので、時間の経過では薄くしない。
+// 段階は見出しの文言（いつ通れたか）にだけ使う
+const PASSED_ROAD_COLOR = "#1565c0";
 const PASSED_ROAD_TIERS = [
-  { maxHours: 1, color: "#0d47a1", weight: 6, label: "1時間以内に通れた道" },
-  { maxHours: 3, color: "#1e88e5", weight: 5, label: "3時間以内に通れた道" },
-  { maxHours: 6, color: "#64b5f6", weight: 5, label: "6時間以内に通れた道" },
-  { maxHours: Infinity, color: "#b3d4f0", weight: 4, label: "冠水時に通れた実績（6時間より前）" }
+  { maxHours: 1, color: PASSED_ROAD_COLOR, weight: 5, label: "1時間以内に通れた道" },
+  { maxHours: 3, color: PASSED_ROAD_COLOR, weight: 5, label: "3時間以内に通れた道" },
+  { maxHours: 6, color: PASSED_ROAD_COLOR, weight: 5, label: "6時間以内に通れた道" },
+  { maxHours: Infinity, color: PASSED_ROAD_COLOR, weight: 5, label: "冠水時に通れた実績" }
 ];
+var passedEventStart = null; // サーバーの eventStart（ISO）。var：読み込み前に参照されても止まらないように
+function isBeforeEvent(at) {
+  const start = Date.parse(passedEventStart || "");
+  const t = Date.parse(at || "");
+  return Number.isFinite(start) && Number.isFinite(t) && t < start;
+}
+function eventStartLabel() {
+  return passedEventStart ? formatDateTime(toDateTimeLocal(passedEventStart)) : "";
+}
 const passedRoadsLayer = L.layerGroup();
 const passedRoadDraftLayer = L.layerGroup();
 let passedRoadsLoaded = false;
@@ -5434,13 +5485,13 @@ function passedRoadSourceLabel(road) {
 function passedRoadShape(road) {
   if (road.kind === "blocked") return blockedPointShape(road);
   const tier = passedRoadTier(road.endedAt);
-  const isOld = tier.maxHours === Infinity;
+  const isOld = isBeforeEvent(road.endedAt);
   const line = road.path.length === 1
     ? L.marker(road.path[0], {
         pane: "passedRoadsPane", renderer: passedRoadsRenderer,
         icon: L.divIcon({ className: "", html: `<div class="passed-gps-point${isOld ? " is-old" : ""}" aria-label="通れた地点"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] })
       })
-    : L.polyline(road.path, { pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: tier.color, weight: tier.weight, opacity: 0.9 });
+    : L.polyline(road.path, { pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: tier.color, weight: isOld ? 4 : tier.weight, opacity: isOld ? 0.4 : 0.9 });
   line.bindPopup(
     `<strong>🔵 ${escapeHtml(tier.label)}</strong><br>` +
     `通れた時刻 ${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "不明")}（${escapeHtml(formatAgo(road.endedAt))}）<br>` +
@@ -5448,7 +5499,7 @@ function passedRoadShape(road) {
     `・${escapeHtml(passedRoadSourceLabel(road))}` +
     (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
     `<br><span style="font-size:11px;">${isOld
-      ? "6時間より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
+      ? "今回の大雨より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
       : "この地図を見ている人が通れた道を記録したものです。現在の安全や通行可否を保証するものではありません。"}</span>` +
     rainAmountHtml(road) +
     passedRoadHideButtonHtml(road)
@@ -5642,6 +5693,8 @@ async function ensurePassedRoadsLayer(force) {
     const payload = await response.json();
     const roads = (payload.roads || []).filter(road => Array.isArray(road.path) && road.path.length >= 1);
     passedRoadsData = roads;
+    passedEventStart = payload.eventStart || null;
+    document.querySelectorAll("[data-event-start-label]").forEach(node => { node.textContent = eventStartLabel() || "設定なし"; });
     renderPassedRoadsLayer();
     renderPassedRoadsList();
     const recent = roads.filter(road => passedRoadTier(road.endedAt).maxHours !== Infinity).length;
