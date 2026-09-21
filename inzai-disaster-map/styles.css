@@ -3358,6 +3358,10 @@ body.citizen-road-editing { overflow: hidden; }
 .moderate-row-buttons button { min-height: 32px; padding: 5px 10px; border: 1px solid #b9c4d3; border-radius: 8px; background: #fff; color: #16324f; font: inherit; font-size: 12px; cursor: pointer; }
 .moderate-row-buttons button.is-danger { border-color: #b8322c; background: #b8322c; color: #fff; }
 
+.moderate-subhead { margin: 16px 0 4px; font-size: 13.5px; }
+.kansui-hide-btn { margin-top: 6px; padding: 4px 9px; border: 1px solid #b8322c; border-radius: 7px; background: #fff; color: #b8322c; font: inherit; font-size: 12px; cursor: pointer; }
+.kansui-hide-btn:disabled { opacity: .6; cursor: default; }
+
 /* ポップアップの中で、対象日の記録か過去の実績かを示す印 */
 .when-badge { display: inline-block; margin: 3px 0; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: 700; }
 .when-badge.is-today { background: #b8322c; color: #fff; }
@@ -3416,3 +3420,10 @@ body.citizen-road-editing { overflow: hidden; }
   .quick-record-status.is-live { color: #0d47a1; font-weight: 600; }
   body { padding-bottom: 92px; }
 }
+
+/* 🚃 鉄道・バスの運休の要約（地図を覆わないよう1行に畳み、「詳しく」で開く・2026-09-21） */
+.rail-status-summary summary { cursor: pointer; list-style: none; }
+.rail-status-summary summary::-webkit-details-marker { display: none; }
+.rail-status-more { color: #1f6feb; font-size: 12px; text-decoration: underline; }
+.rail-status-summary[open] .rail-status-more { display: none; }
+.rail-status-summary ul { margin: 6px 0 0; padding-left: 18px; max-width: 520px; font-size: 12px; line-height: 1.6; }

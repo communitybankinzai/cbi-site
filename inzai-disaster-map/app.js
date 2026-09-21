@@ -2129,6 +2129,61 @@ async function loadModerationList() {
   }
 }
 
+// みんつくの投稿を CBI の地図から伏せる／戻す（本家のデータには触らない）
+async function moderateKansui(id, hide) {
+  const endpoint = String(APP_CONFIG.kansuiEndpoint || "").trim();
+  const key = moderationKey();
+  if (!endpoint || !key) return false;
+  const url = `${endpoint}?id=${encodeURIComponent(id)}&moderate=1${hide ? "" : "&restore=1"}`;
+  const response = await fetch(url, { method: "DELETE", headers: { "x-moderation-key": key } });
+  if (response.status === 403) throw new Error("合言葉が違います");
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  // 取り直して地図に反映する（一般向けは10分キャッシュだが、運営の取得は no-store）
+  kansuiLoaded = false;
+  await ensureKansuiLayer();
+  return true;
+}
+
+// 地図のポップアップの「🗑 この投稿を地図から伏せる」
+document.addEventListener("click", async event => {
+  const button = event.target.closest?.("[data-kansui-hide]");
+  if (!button) return;
+  if (!confirm("このみんつくの投稿を、CBIの地図から伏せます。よろしいですか？（みんつく本家からは消えません。あとで戻せます）")) return;
+  button.disabled = true;
+  button.textContent = "伏せています…";
+  try {
+    await moderateKansui(button.dataset.kansuiHide, true);
+    map.closePopup();
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = `伏せられませんでした（${error?.message || "接続エラー"}）`;
+  }
+});
+
+async function loadKansuiModerationList() {
+  const endpoint = String(APP_CONFIG.kansuiEndpoint || "").trim();
+  const key = moderationKey();
+  const box = document.getElementById("moderate-kansui-list");
+  if (!box || !endpoint || !key) return;
+  box.innerHTML = "<p>読み込み中…</p>";
+  try {
+    const response = await fetch(`${endpoint}?all=1`, { headers: { "x-moderation-key": key }, cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const hidden = (payload.roads || []).filter(road => road.hidden);
+    if (!hidden.length) { box.innerHTML = "<p>伏せているみんつくの投稿はありません。地図の赤い線を押すと、ポップアップから伏せられます。</p>"; return; }
+    box.innerHTML = hidden.map(road => {
+      let meters = 0;
+      for (let i = 1; i < road.path.length; i++) meters += L.latLng(road.path[i - 1]).distanceTo(L.latLng(road.path[i]));
+      return `<div class="moderate-row is-hidden-row"><div><strong>🔴 みんつく</strong> 投稿 ${escapeHtml(formatDateTime(toDateTimeLocal(road.createdAt)) || "不明")}` +
+        `<span class="moderate-meta">${road.path.length}点・約${(meters / 1000).toFixed(1)}km・伏せ済み</span></div>` +
+        `<div class="moderate-row-buttons"><button type="button" data-kansui-restore="${escapeAttribute(String(road.id))}">戻す</button></div></div>`;
+    }).join("");
+  } catch (error) {
+    box.innerHTML = `<p class="is-error">取得できません（${escapeHtml(error?.message || "接続エラー")}）</p>`;
+  }
+}
+
 async function moderateRecord(id, hide) {
   const endpoint = moderationEndpoint();
   const key = moderationKey();
@@ -2147,7 +2202,7 @@ async function moderateRecord(id, hide) {
 function initModeration() {
   const modal = document.getElementById("moderate-modal");
   if (!modal) return;
-  const open = () => { modal.hidden = false; loadModerationList(); };
+  const open = () => { modal.hidden = false; loadModerationList().then(loadKansuiModerationList); };
   document.getElementById("moderate-button")?.addEventListener("click", open);
   document.getElementById("moderate-close")?.addEventListener("click", () => { modal.hidden = true; });
   document.getElementById("moderate-reload")?.addEventListener("click", loadModerationList);
@@ -2155,8 +2210,14 @@ function initModeration() {
     try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
     setModerateStatus("<p>この端末から合言葉を消しました。</p>");
   });
-  modal.addEventListener("click", event => {
+  modal.addEventListener("click", async event => {
     if (event.target === modal) modal.hidden = true;
+    const restoreId = event.target.closest?.("[data-kansui-restore]")?.dataset.kansuiRestore;
+    if (restoreId) {
+      try { await moderateKansui(restoreId, false); } catch (error) { alert(`戻せませんでした（${error?.message || "接続エラー"}）`); }
+      loadKansuiModerationList();
+      return;
+    }
     const focusId = event.target.closest?.("[data-moderate-focus]")?.dataset.moderateFocus;
     if (focusId) { modal.hidden = true; focusPassedRoad(focusId); return; }
     const button = event.target.closest?.("[data-moderate-id]");
@@ -3619,22 +3680,31 @@ function renderRailStatus() {
   });
 
   const buses = (railStatusData.buses || []).map(bus =>
-    `${bus.name}（${RAIL_STATE_STYLE[bus.state]?.label || "運行情報"}）`
+    `${String(bus.name || "").replace(/^路線バス\s*/, "")}（${RAIL_STATE_STYLE[bus.state]?.label || "運行情報"}）`
   );
   const updated = railStatusTime(railStatusData.updatedAt);
-  const parts = [];
-  if (drawn) {
-    parts.push(`鉄道の運休・遅れ区間を${drawn}区間表示しています${updated ? `（${updated} 時点の市発表）` : ""}。`);
-  } else {
-    parts.push("いま登録されている鉄道の運休・遅れ区間はありません（平常という意味ではありません）。");
-  }
-  if (buses.length) parts.push(`地図に描けない情報: ${buses.join(" / ")}`);
   // 市が再開を発表した区間はサーバー側で外れる（cleared）。黙って消えると不安なので一言添える
   const cleared = Array.isArray(railStatusData.cleared) ? railStatusData.cleared : [];
-  if (cleared.length) parts.push(`${cleared.length}件は解除済みのため表示していません（${cleared[0].why || "解除"}）。`);
-  if (!railStatusData.fromServer) parts.push("※ 最新の状態を取得できなかったため、保存済みの内容を表示しています。");
-  if (railStatusIsStale(railStatusData.updatedAt)) parts.push("⚠ 発表から時間が経っています。事業者の最新情報を確認してください。");
-  document.getElementById("map-status").textContent = parts.join(" ");
+  const stale = railStatusIsStale(railStatusData.updatedAt);
+
+  // 地図を覆わないよう、ふだんは1行の要約だけ出し、バス路線名などは「詳しく」で開く（2026-09-21 指摘）
+  const summary = [];
+  if (drawn) summary.push(`🚃 鉄道 ${drawn}区間`);
+  if (buses.length) summary.push(`🚌 バス ${buses.length}路線`);
+  const head = summary.length
+    ? `${summary.join("・")}が運休・遅れ${updated ? `（${updated} 市発表）` : ""}`
+    : "🚃 登録中の運休・遅れはありません（平常という意味ではありません）";
+
+  const details = [];
+  if (buses.length) details.push(`<li>路線バス：${buses.map(escapeHtml).join(" ／ ")}</li>`);
+  if (cleared.length) details.push(`<li>${cleared.length}件は解除済みのため表示していません（${escapeHtml(cleared[0].why || "解除")}）</li>`);
+  if (!railStatusData.fromServer) details.push("<li>最新の状態を取得できなかったため、保存済みの内容を表示しています</li>");
+  if (stale) details.push("<li>⚠ 発表から時間が経っています。事業者の最新情報を確認してください</li>");
+
+  const status = document.getElementById("map-status");
+  status.innerHTML = details.length
+    ? `<details class="rail-status-summary"><summary>${escapeHtml(head)}${stale ? " ⚠" : ""}　<span class="rail-status-more">詳しく</span></summary><ul>${details.join("")}</ul></details>`
+    : escapeHtml(head);
 }
 
 function toggleOverlay(name, checked) {
@@ -4368,7 +4438,11 @@ function renderKansuiLayer() {
       `（${escapeHtml(formatAgo(road.createdAt) || "")}）<br>` +
       `<span class="when-badge ${isToday ? "is-today" : "is-past"}">${isToday ? "対象日の投稿" : "過去の実績"}</span><br>` +
       `<span style="font-size:11px;">令和8年8月の豪雨などで冠水したと投稿された区間です。公式に確認された通行止めではありません。同じ雨で再び冠水するおそれがあるため、通行を避ける判断の参考にしてください。</span><br>` +
-      `<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">出典・投稿はこちら: みんなでつくる千葉豪雨冠水道路マップ</a>`
+      `<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">出典・投稿はこちら: みんなでつくる千葉豪雨冠水道路マップ</a>` +
+      // 運営の合言葉がある端末だけ、いたずら・誤った投稿を CBI の地図から伏せるボタンを出す
+      (moderationKey() && road.id != null
+        ? `<br><button type="button" class="kansui-hide-btn" data-kansui-hide="${escapeAttribute(String(road.id))}">🗑 この投稿を地図から伏せる（運営）</button>`
+        : "")
     );
     shape.addTo(kansuiLayer);
   });
