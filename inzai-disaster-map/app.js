@@ -3822,15 +3822,25 @@ function renderRailStatus() {
   if (stale) details.push("<li>⚠ 発表から時間が経っています。事業者の最新情報を確認してください</li>");
 
   const status = document.getElementById("map-status");
+  // ✕ で文字だけ隠せる（赤い線は残る）。チェックを入れ直すとまた出る（2026-09-21 指摘：地図が見えない）
+  const hide = `<button type="button" class="rail-status-hide" data-rail-status-hide aria-label="運休の表示を隠す" title="隠す（線は残ります）">✕</button>`;
   status.innerHTML = details.length
-    ? `<details class="rail-status-summary"><summary>${escapeHtml(head)}${stale ? " ⚠" : ""}　<span class="rail-status-more">詳しく</span></summary><ul>${details.join("")}</ul></details>`
-    : escapeHtml(head);
+    ? `<div class="rail-status-box"><details class="rail-status-summary"><summary>${escapeHtml(head)}${stale ? " ⚠" : ""}　<span class="rail-status-more">詳しく ▾</span><span class="rail-status-less">閉じる ▴</span></summary><ul>${details.join("")}</ul></details>${hide}</div>`
+    : `<div class="rail-status-box"><span>${escapeHtml(head)}</span>${hide}</div>`;
+  status.querySelector("[data-rail-status-hide]")?.addEventListener("click", clearRailStatusNote);
+}
+
+// 表示欄が運休の文だけなら空にする（ほかの層の案内が入っていたら触らない）
+function clearRailStatusNote() {
+  const status = document.getElementById("map-status");
+  if (status?.querySelector(".rail-status-box")) status.innerHTML = "";
 }
 
 function toggleOverlay(name, checked) {
   if (name === "railStatus") {
-    if (checked) { ensureRailStatusLayer(); railStatusLayer.addTo(map); }
-    else map.removeLayer(railStatusLayer);
+    // 読み込み済みなら表示欄の文も出し直す（✕で隠したあと、入れ直せば戻る）
+    if (checked) { if (railStatusLoaded && railStatusData) renderRailStatus(); else ensureRailStatusLayer(); railStatusLayer.addTo(map); }
+    else { map.removeLayer(railStatusLayer); clearRailStatusNote(); }
     return;
   }
   if (name === "terrainRisk") {

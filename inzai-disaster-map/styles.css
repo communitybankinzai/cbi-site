@@ -3506,5 +3506,12 @@ body.citizen-road-editing { overflow: hidden; }
 .rail-status-summary summary { cursor: pointer; list-style: none; }
 .rail-status-summary summary::-webkit-details-marker { display: none; }
 .rail-status-more { color: #1f6feb; font-size: 12px; text-decoration: underline; }
+.rail-status-less { display: none; color: #1f6feb; font-size: 12px; text-decoration: underline; }
 .rail-status-summary[open] .rail-status-more { display: none; }
+.rail-status-summary[open] .rail-status-less { display: inline; }
+.rail-status-box { display: flex; align-items: flex-start; gap: 8px; }
+.rail-status-hide { flex: none; border: 0; background: transparent; color: #57606a; font-size: 15px; line-height: 1; padding: 2px 4px; cursor: pointer; }
+.rail-status-hide:hover { color: #1f2933; }
+/* 表示欄が空になったら枠ごと消す（✕で運休の文を隠したとき） */
+.map-status:empty { display: none; }
 .rail-status-summary ul { margin: 6px 0 0; padding-left: 18px; max-width: 520px; font-size: 12px; line-height: 1.6; }
