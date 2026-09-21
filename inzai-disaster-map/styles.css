@@ -3160,19 +3160,44 @@ body.embed-mode .cbi-home-link {
 .amedas-note { font-size: 11px; color: #5a6675; margin-top: 6px; line-height: 1.6; }
 
 /* 🌊 手賀沼・利根川の水位（2026-09-21） */
-.river-item { padding: 8px 10px; border: 1px solid #d5dbe4; border-radius: 8px; background: #f7f9fc; }
-.river-item.is-standby { background: #fff8e6; border-color: #e6c46d; }
-.river-item.is-caution { background: #ffeddd; border-color: #e08a3c; }
-.river-item.is-danger { background: #fdecea; border-color: #c0392b; }
-.river-name { font-size: 12px; color: #5a6675; }
-.river-main { font-size: 26px; font-weight: 700; color: #16324f; line-height: 1.2; }
-.river-main span { font-size: 12px; font-weight: 400; margin-left: 3px; color: #5a6675; }
-.river-badge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 12px; vertical-align: middle; background: #dfe6ee; color: #16324f; }
+.river-list { display: grid; gap: 8px; }
+.river-item { position: relative; padding: 10px 12px 9px 14px; border: 1px solid #d5dbe4; border-radius: 10px; background: #fff; box-shadow: 0 1px 2px rgba(22, 50, 79, .06); overflow: hidden; }
+.river-item::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: #9fb3c8; }
+.river-item.is-standby::before { background: #e6c46d; }
+.river-item.is-caution { border-color: #f0b07a; background: #fffaf5; }
+.river-item.is-caution::before { background: #e08a3c; }
+.river-item.is-danger { border-color: #e5a39b; background: #fff7f6; }
+.river-item.is-danger::before { background: #c0392b; }
+.river-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.river-name { font-size: 14px; font-weight: 700; color: #16324f; }
+.river-badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #dfe6ee; color: #16324f; }
 .river-item.is-standby .river-badge { background: #e6c46d; color: #3b2d00; }
 .river-item.is-caution .river-badge { background: #e08a3c; color: #fff; }
 .river-item.is-danger .river-badge { background: #c0392b; color: #fff; }
-.river-sub, .river-levels { font-size: 12px; color: #33414f; margin-top: 2px; }
-.river-list { display: grid; gap: 6px; }
+.river-main { display: flex; align-items: baseline; gap: 4px; margin-top: 2px; font-size: 30px; font-weight: 800; color: #16324f; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.river-item.is-danger .river-main { color: #a3261b; }
+.river-main > span { font-size: 13px; font-weight: 600; color: #5a6675; }
+.river-change { margin-left: auto; font-size: 13px; font-weight: 700; color: #5a6675; }
+.river-change.is-up { color: #c0392b; }
+.river-change.is-down { color: #1e6fb8; }
+.river-change small { font-size: 10.5px; font-weight: 400; color: #5a6675; margin-left: 1px; }
+.river-sub { font-size: 12px; color: #33414f; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; }
+.river-remain { color: #a3261b; font-weight: 700; }
+.river-gauge { margin: 8px 0 2px; }
+.river-gauge-bar { position: relative; height: 10px; border-radius: 999px; background: #e8edf3; overflow: visible; }
+.river-zone { position: absolute; top: 0; bottom: 0; }
+.river-zone:first-child { border-radius: 999px 0 0 999px; }
+.river-zone:nth-last-of-type(1) { border-radius: 0 999px 999px 0; }
+.river-zone.is-normal { background: #d7e3ee; }
+.river-zone.is-standby { background: #f3dc8f; }
+.river-zone.is-caution { background: #f2b27a; }
+.river-zone.is-danger { background: #e2786d; }
+.river-tick { position: absolute; top: -2px; bottom: -2px; width: 1px; background: rgba(22, 50, 79, .45); }
+.river-marker { position: absolute; top: 50%; width: 16px; height: 16px; margin-left: -8px; transform: translateY(-50%); border: 3px solid #fff; border-radius: 50%; background: #16324f; box-shadow: 0 0 0 1px #16324f, 0 1px 3px rgba(0, 0, 0, .3); }
+.river-item.is-danger .river-marker { background: #a3261b; box-shadow: 0 0 0 1px #a3261b, 0 1px 3px rgba(0, 0, 0, .3); }
+.river-gauge-labels { position: relative; height: 26px; margin-top: 3px; font-size: 10px; line-height: 1.2; color: #5a6675; }
+.river-gauge-labels span { position: absolute; transform: translateX(-50%); text-align: center; white-space: nowrap; }
+.river-foot { margin-top: 4px; font-size: 11px; color: #5a6675; line-height: 1.6; }
 .river-stale { color: #b3261e; }
 .river-note.is-error { color: #b3261e; }
 .river-note { font-size: 11px; color: #5a6675; margin-top: 6px; line-height: 1.6; }
@@ -3215,6 +3240,13 @@ body.embed-mode .cbi-home-link {
 .map-alert-lines { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
 .map-alert-line { display: block; width: 100%; padding: 2px 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
 .map-alert-line.is-evac { font-size: 14px; }
+/* 水位の札（2026-09-21）。スマホで切れないよう横スクロール */
+.map-alert-line.is-chips { display: flex; gap: 5px; overflow-x: auto; text-overflow: clip; scrollbar-width: none; padding-bottom: 3px; }
+.map-alert-line.is-chips::-webkit-scrollbar { display: none; }
+.map-alert-chip { flex: 0 0 auto; display: inline-flex; align-items: baseline; gap: 4px; padding: 2px 8px; border-radius: 999px; background: #fff; color: #a3261b; font-size: 12.5px; font-weight: 700; line-height: 1.5; }
+.map-alert-chip.is-caution { color: #9a4a0b; background: #fff3e6; }
+.map-alert-chip b { color: #16324f; }
+.map-alert-chip small { font-size: 11px; font-weight: 600; }
 .map-alert-line + .map-alert-line { border-top: 1px solid rgba(255, 255, 255, .35); padding-top: 4px; font-weight: 600; }
 .map-alert-detail { padding: 4px 0 6px; font-size: 12.5px; font-weight: 400; line-height: 1.6; max-height: 40vh; overflow-y: auto; }
 .map-alert-item + .map-alert-item { margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(255, 255, 255, .4); }

@@ -4190,7 +4190,43 @@ window.addEventListener("resize", placeRiverAlert);
 
 const TEGANUMA_PAGE = "http://suibo.bousai.pref.chiba.lg.jp/bousaip/river/graph_90_0.html";
 
-// 1つの観測所の欄の HTML と、警告に使う文（注意・危険のときだけ）を作る。
+// 水位の目盛りバー。平常〜待機〜注意〜危険（印旛沼は計画高水位の0.2m手前〜計画高水位）を色帯で並べ、
+// いまの水位の位置に印を付ける。範囲は「待機の1m下」から「最上位の基準の0.4m上」まで
+function riverGaugeHtml(st, planMode) {
+  const lv = st.levels || {};
+  const top = planMode ? lv.planHigh : lv.danger;
+  if (typeof top !== "number" || typeof lv.standby !== "number") return "";
+  const dangerFrom = planMode ? Math.round((lv.planHigh - 0.2) * 100) / 100 : lv.danger;
+  const min = lv.standby - 1;
+  // 上限を超えて増水したときも印が端に張り付かないよう、いまの水位の0.3m上までは広げる
+  const max = Math.max(top + 0.4, st.latest.level + 0.3);
+  const pct = v => `${Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100)).toFixed(1)}%`;
+  const cur = st.latest.level;
+  const zones = [
+    ["normal", min, lv.standby],
+    ["standby", lv.standby, lv.caution ?? dangerFrom],
+    ["caution", lv.caution ?? dangerFrom, dangerFrom],
+    ["danger", dangerFrom, max]
+  ].filter(([, from, to]) => typeof from === "number" && typeof to === "number" && to > from);
+  const ticks = [
+    ["待機", lv.standby],
+    ["注意", lv.caution],
+    [planMode ? "計画高" : "危険", top]
+  ].filter(([, v]) => typeof v === "number");
+  return `
+    <div class="river-gauge" aria-hidden="true">
+      <div class="river-gauge-bar">
+        ${zones.map(([cls, from, to]) => `<span class="river-zone is-${cls}" style="left:${pct(from)};width:calc(${pct(to)} - ${pct(from)})"></span>`).join("")}
+        ${ticks.map(([, v]) => `<span class="river-tick" style="left:${pct(v)}"></span>`).join("")}
+        <span class="river-marker" style="left:${pct(cur)}"></span>
+      </div>
+      <div class="river-gauge-labels">
+        ${ticks.map(([name, v]) => `<span style="left:${pct(v)}">${escapeHtml(name)}<br>${escapeHtml(v.toFixed(2))}</span>`).join("")}
+      </div>
+    </div>`;
+}
+
+// 1つの観測所のカードと、警告帯に使う情報（注意・危険のときだけ）を作る。
 // 印旛沼ははんらん危険水位が無いので、計画高水位の0.2m手前からを「危険」とし（CBIの目安・API側で判定）、
 // 「計画高水位まであと○m」を出す（2026-09-21 事業主決定＝A案）
 function riverStationView(st) {
@@ -4202,31 +4238,33 @@ function riverStationView(st) {
   const at = new Date(st.latest.time);
   const ageMin = Math.round((Date.now() - at.getTime()) / 60000);
   const stale = ageMin > RIVER_STALE_MINUTES;
-  const lv = st.levels || {};
-  const change = typeof st.change1h === "number"
-    ? `1時間で ${st.change1h > 0 ? "+" : ""}${st.change1h.toFixed(2)}m`
-    : "";
-  const remain = planMode && typeof st.toPlanHigh === "number"
-    ? (st.toPlanHigh > 0 ? `計画高水位まであと ${st.toPlanHigh.toFixed(2)}m` : `計画高水位を ${(-st.toPlanHigh).toFixed(2)}m 超えています`)
-    : "";
   const hhmm = `${at.getHours()}:${String(at.getMinutes()).padStart(2, "0")}`;
+  const ch = st.change1h;
+  const change = typeof ch === "number"
+    ? `<span class="river-change ${ch > 0 ? "is-up" : ch < 0 ? "is-down" : ""}">${ch > 0 ? "▲" : ch < 0 ? "▼" : "±"}${escapeHtml(Math.abs(ch).toFixed(2))}m<small>/1時間</small></span>`
+    : "";
+  const remainShort = planMode && typeof st.toPlanHigh === "number"
+    ? (st.toPlanHigh > 0 ? `計画高水位まで${st.toPlanHigh.toFixed(2)}m` : "計画高水位超え")
+    : "";
   const html = `
     <div class="river-item ${stage.cls}">
-      <div class="river-name">${escapeHtml(st.name)}（${escapeHtml(st.manager || "")}）・${escapeHtml(hhmm)}観測${stale ? `<span class="river-stale">（${ageMin}分前の値）</span>` : ""}</div>
-      <div class="river-main">${escapeHtml(st.latest.level.toFixed(2))}<span>m</span><b class="river-badge">${escapeHtml(stage.short)}</b></div>
-      <div class="river-sub">${escapeHtml(label)}${remain ? ` ／ <b>${escapeHtml(remain)}</b>` : ""}${change ? ` ／ ${escapeHtml(change)}` : ""}</div>
-      <div class="river-levels">${planMode
-        ? `待機 ${escapeHtml(String(lv.standby ?? "—"))}／注意 ${escapeHtml(String(lv.caution ?? "—"))}／<b>計画高水位 ${escapeHtml(String(lv.planHigh))}m</b>（危険水位の設定なし・${escapeHtml(String(Math.round((lv.planHigh - 0.2) * 100) / 100))}mから赤）`
-        : `待機 ${escapeHtml(String(lv.standby ?? "—"))}／注意 ${escapeHtml(String(lv.caution ?? "—"))}／<b>危険 ${escapeHtml(String(lv.danger ?? "—"))}m</b>`}
-        ・<a href="${escapeHtml(st.sourceUrl || TEGANUMA_PAGE)}" target="_blank" rel="noreferrer">県のグラフ ↗</a></div>
+      <div class="river-head">
+        <span class="river-name">${escapeHtml(st.name)}</span>
+        <b class="river-badge">${escapeHtml(stage.short)}</b>
+      </div>
+      <div class="river-main">${escapeHtml(st.latest.level.toFixed(2))}<span>m</span>${change}</div>
+      <div class="river-sub">${escapeHtml(label)}${remainShort ? `<b class="river-remain">${escapeHtml(remainShort)}</b>` : ""}</div>
+      ${riverGaugeHtml(st, planMode)}
+      <div class="river-foot">${escapeHtml(hhmm)}観測${stale ? `<span class="river-stale">（${ageMin}分前の値）</span>` : ""}・${escapeHtml(st.manager || "")}・<a href="${escapeHtml(st.sourceUrl || TEGANUMA_PAGE)}" target="_blank" rel="noreferrer">県のグラフ ↗</a>${planMode ? "<br>危険水位の設定がないため、計画高水位の0.2m手前から赤（CBIの目安）" : ""}</div>
     </div>`;
   const warning = st.stage === "danger" || st.stage === "caution"
     ? {
         severe: st.stage === "danger",
-        // 帯はスマホで1行に切られるので短く（詳しい文は水位欄に出している）
-        text: `${st.name} ${st.latest.level.toFixed(2)}m ${planMode && typeof st.toPlanHigh === "number"
-          ? (st.toPlanHigh > 0 ? `計画高水位まで${st.toPlanHigh.toFixed(2)}m` : "計画高水位超え")
-          : (st.stage === "danger" ? "危険水位超え" : "注意水位超え")}${stale ? "（古い値）" : ""}`
+        name: st.name,
+        value: `${st.latest.level.toFixed(2)}m`,
+        // 帯の札は短く（詳しい文は水位欄）
+        note: remainShort ? remainShort.replace("計画高水位まで", "計画高まで") : (st.stage === "danger" ? "危険水位超え" : "注意水位超え"),
+        text: `${st.name} ${st.latest.level.toFixed(2)}m ${remainShort || (st.stage === "danger" ? "危険水位超え" : "注意水位超え")}${stale ? "（古い値）" : ""}`
       }
     : null;
   return { html, warning, at, stale };
@@ -4243,6 +4281,10 @@ function renderLakes(node, status, data) {
     }
     return [];
   }
+  // カードも警告帯と同じ並び（危険→注意→…、同じ段階なら西印旛沼→手賀沼→北印旛沼）
+  const stageRank = { danger: 0, caution: 1, standby: 2, normal: 3, unknown: 4 };
+  const nameOrder = ["西印旛沼", "手賀沼", "北印旛沼"];
+  list.sort((a, b) => (stageRank[a.stage] ?? 4) - (stageRank[b.stage] ?? 4) || nameOrder.indexOf(a.name) - nameOrder.indexOf(b.name));
   const views = list.map(riverStationView);
   const failed = (data.errors || []).filter(e => !/^利根川/.test(e));
   node.innerHTML = `
@@ -4256,7 +4298,10 @@ function renderLakes(node, status, data) {
     status.textContent = `${formatDateTime(toDateTimeLocal(latestAt.toISOString()))}観測${anyStale ? "（一部の観測所の更新が止まっている可能性）" : ""}`;
     status.classList.toggle("is-error", anyStale);
   }
-  return views.map(v => v.warning).filter(Boolean).sort((a, b) => Number(b.severe) - Number(a.severe));
+  // 危険を先、同じなら西印旛沼→手賀沼→北印旛沼（避難指示の出ている印旛沼を先頭に）
+  const order = ["西印旛沼", "手賀沼", "北印旛沼"];
+  return views.map(v => v.warning).filter(Boolean)
+    .sort((a, b) => Number(b.severe) - Number(a.severe) || order.indexOf(a.name) - order.indexOf(b.name));
 }
 
 // 利根川の指定河川洪水予報（気象庁）。null＝取得失敗、[]＝発表なし
@@ -4282,6 +4327,9 @@ function renderToneFlood(data) {
   const top = list[0];
   return {
     severe: top.level >= 4,
+    name: top.area,
+    value: `レベル${top.level}`,
+    note: top.kindName.replace(/^レベル.?/, ""),
     text: `${top.area} レベル${top.level} ${top.kindName.replace(/^レベル.?/, "")}（${new Date(top.reportedAt).getHours()}:${String(new Date(top.reportedAt).getMinutes()).padStart(2, "0")}発表）`
   };
 }
@@ -4375,7 +4423,8 @@ function renderMapAlert() {
     }
   }
   if (riverWarnings.length) {
-    lines.push(`<button type="button" class="map-alert-line" data-map-alert="river">⚠ ${escapeHtml(riverWarnings.map(w => w.text).join("　／　"))}</button>`);
+    // 観測所ごとの札。スマホで切れないよう横に流す（危険が先・押すと水位欄へ）
+    lines.push(`<button type="button" class="map-alert-line is-chips" data-map-alert="river" aria-label="${escapeAttribute(riverWarnings.map(w => w.text).join("、"))}">${riverWarnings.map(w => `<span class="map-alert-chip ${w.severe ? "is-danger" : "is-caution"}"><b>${escapeHtml(w.name || "")}</b>${escapeHtml(w.value || "")}${w.note ? `<small>${escapeHtml(w.note)}</small>` : ""}</span>`).join("")}</button>`);
   }
   alertNode.innerHTML = `<div class="map-alert-lines">${lines.join("")}</div>
     <button type="button" class="map-alert-close" data-map-alert="close" title="この端末で閉じる（内容が変われば再び出ます）" aria-label="警告を閉じる">✕</button>`;
