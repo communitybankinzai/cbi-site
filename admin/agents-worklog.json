@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-22",
+          "title": "防災MAPに停電の円表示の仕組み（東電許可まで非表示・?teiden=demo で見本） 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（⚡ 停電の円表示 節）",
+            "site/inzai-disaster-map/teiden-sample.json（新規・架空の数値）",
+            "site/inzai-disaster-map/config.js（teidenEndpoint 空）",
+            "site/inzai-disaster-map/styles.css",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "台風25号の停電（千葉県約5万2千軒）を受け事業主が案Aを選択。東電データには一切アクセスせず、teiden-demo.html の円表示を本体へ隠しレイヤーとして移植。本番の既定で円0・層なしを確認、?teiden=demo で6地区の円・名前・注記付きポップアップを確認。印西市の実際の停電状況は東電ページが市町村別を読み込まず未確認。前件（output 66,961）との差分 18,763 → 0.2時間\nsession: d338459c-e5b8-4513-ae80-ce489b3369cc / output: 85,724 / cost: $28.98"
+        },
+        {
+          "date": "2026-09-22",
           "title": "防災MAPの赤い帯・警報カードに何の警戒レベルかを表示（297bc2e9経由の事業主指示）＋停電情報の現況確認 0.2時間",
           "category": "実装",
           "outputs": [
@@ -6844,7 +6860,7 @@
           "priority": "高",
           "status": "待ち",
           "blockedBy": "東京電力パワーグリッドからの回答（2026-09-21 に2件送信済み：リンク設定の申請と転載の申請）。利用開始希望日は 2026-09-29。",
-          "note": "記入案と提出内容は 調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md。可の回答＝地区（丁目・大字）ごとの軒数・発生時刻・復旧見込みを地図に円で表示する実装へ（取得は CiDAO 経由・10分に1回以下・出典と取得時刻を明記）。不可の回答＝当日中に防災MAPの teiden-acc（枠の埋め込み）・公式情報ダイアログの東電カード・対応表⑩のリンク・説明用ページ teiden-demo.html を外す。提出時の注意：リンク申請の項目4は1行1URL（『／』区切りは弾かれる）。"
+          "note": "記入案と提出内容は 調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md。可の回答＝地区（丁目・大字）ごとの軒数・発生時刻・復旧見込みを地図に円で表示する（画面側は 2026-09-22 に用意済み・?teiden=demo で見本。残りは CiDAO の /api/disaster/teiden と config.js の teidenEndpoint 記入・index.html のチェック追加。CLAUDE_HANDOFF.md「⚡ 停電の円表示」）（取得は CiDAO 経由・10分に1回以下・出典と取得時刻を明記）。不可の回答＝当日中に防災MAPの teiden-acc（枠の埋め込み）・公式情報ダイアログの東電カード・対応表⑩のリンク・説明用ページ teiden-demo.html を外す。提出時の注意：リンク申請の項目4は1行1URL（『／』区切りは弾かれる）。"
         },
         {
           "due": "2026-09-21",
