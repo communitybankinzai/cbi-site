@@ -3144,6 +3144,16 @@ body.embed-mode .cbi-home-link {
 .river-note { font-size: 11px; color: #5a6675; margin-top: 6px; line-height: 1.6; }
 .river-tone { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #d5dbe4; }
 .river-tone-title { font-size: 12px; font-weight: 700; color: #16324f; margin-bottom: 4px; }
+.river-flood { margin-bottom: 6px; }
+.river-flood-none { font-size: 12px; color: #33414f; padding: 6px 8px; border-radius: 6px; background: #eef5ee; }
+.river-flood-none.is-error { background: #fdecea; color: #7a1f16; }
+.river-flood-item { padding: 8px 10px; margin-bottom: 6px; border: 1px solid #e08a3c; border-radius: 8px; background: #ffeddd; }
+.river-flood-item.is-danger { border-color: #c0392b; background: #fdecea; }
+.river-flood-item .river-badge { margin: 0 6px 0 0; background: #e08a3c; color: #fff; }
+.river-flood-item.is-danger .river-badge { background: #c0392b; }
+.river-flood-head { font-size: 13px; font-weight: 700; color: #16324f; }
+.river-flood-text { font-size: 12px; color: #33414f; margin-top: 4px; line-height: 1.6; }
+.river-flood-meta { font-size: 11px; color: #5a6675; margin-top: 4px; }
 .river-tone-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .river-tone-list li { font-size: 12px; display: flex; flex-wrap: wrap; gap: 2px 8px; }
 .river-tone-list span { color: #5a6675; }

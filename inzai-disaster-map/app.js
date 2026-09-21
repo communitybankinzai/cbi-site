@@ -4023,6 +4023,74 @@ function placeRiverAlert() {
 }
 window.addEventListener("resize", placeRiverAlert);
 
+const TEGANUMA_PAGE = "http://suibo.bousai.pref.chiba.lg.jp/bousaip/river/graph_90_0.html";
+
+// 手賀沼の欄を描き、警告に使う文（注意・危険のときだけ）を返す
+function renderTeganuma(node, status, data) {
+  const st = data.stations?.[0];
+  if (!st?.latest) {
+    node.innerHTML = `<div class="detail-empty">手賀沼の水位を取得できませんでした。千葉県のページで確認してください。<br><a href="${TEGANUMA_PAGE}" target="_blank" rel="noreferrer">千葉県 水位グラフ:手賀沼 ↗</a></div>`;
+    if (status) {
+      status.textContent = "手賀沼の水位を取得できません";
+      status.classList.add("is-error");
+    }
+    return null;
+  }
+  const stage = RIVER_STAGE[st.stage] || RIVER_STAGE.unknown;
+  const at = new Date(st.latest.time);
+  const ageMin = Math.round((Date.now() - at.getTime()) / 60000);
+  const stale = ageMin > RIVER_STALE_MINUTES;
+  const lv = st.levels || {};
+  const change = typeof st.change1h === "number"
+    ? `1時間で ${st.change1h > 0 ? "+" : ""}${st.change1h.toFixed(2)}m`
+    : "";
+  node.innerHTML = `
+    <div class="river-item ${stage.cls}">
+      <div class="river-name">${escapeHtml(st.name)}（${escapeHtml(st.manager || "")}）</div>
+      <div class="river-main">${escapeHtml(st.latest.level.toFixed(2))}<span>m</span><b class="river-badge">${escapeHtml(stage.short)}</b></div>
+      <div class="river-sub">${escapeHtml(stage.label)}${change ? ` ／ ${escapeHtml(change)}` : ""}</div>
+      <div class="river-levels">待機 ${escapeHtml(String(lv.standby ?? "—"))}／注意 ${escapeHtml(String(lv.caution ?? "—"))}／<b>危険 ${escapeHtml(String(lv.danger ?? "—"))}m</b></div>
+    </div>
+    <div class="river-note">出典：<a href="${escapeHtml(data.source?.url || TEGANUMA_PAGE)}" target="_blank" rel="noreferrer">${escapeHtml(data.source?.name || "千葉県 水防情報")} ↗</a>（CBIが読み取って表示・0.00と欠測は除外）。避難の判断は印西市の避難情報に従ってください。</div>
+  `;
+  if (status) {
+    status.textContent = `手賀沼 ${formatDateTime(toDateTimeLocal(at.toISOString()))}観測${stale ? `（${ageMin}分前・県のページの更新が止まっている可能性）` : ""}`;
+    status.classList.toggle("is-error", stale);
+  }
+  if (st.stage !== "danger" && st.stage !== "caution") return null;
+  return {
+    severe: st.stage === "danger",
+    text: `手賀沼 ${st.latest.level.toFixed(2)}m：${stage.label}（${at.getHours()}:${String(at.getMinutes()).padStart(2, "0")}観測${stale ? "・古い値" : ""}）`
+  };
+}
+
+// 利根川の指定河川洪水予報（気象庁）。null＝取得失敗、[]＝発表なし
+function renderToneFlood(data) {
+  const node = document.getElementById("river-flood");
+  if (!node) return null;
+  const list = data.floodForecasts;
+  if (!Array.isArray(list)) {
+    node.innerHTML = '<div class="river-flood-none is-error">利根川の洪水予報を取得できませんでした。<a href="https://www.jma.go.jp/bosai/flood/" target="_blank" rel="noreferrer">気象庁 指定河川洪水予報 ↗</a>で確認してください。</div>';
+    return null;
+  }
+  if (!list.length) {
+    node.innerHTML = '<div class="river-flood-none">利根川に洪水予報（氾濫注意・警戒・危険・発生）は出ていません。</div>';
+    return null;
+  }
+  node.innerHTML = list.map(f => `
+    <div class="river-flood-item ${f.level >= 4 ? "is-danger" : "is-caution"}">
+      <div class="river-flood-head"><b class="river-badge">レベル${escapeHtml(String(f.level))}</b>${escapeHtml(f.area)} ${escapeHtml(f.kindName.replace(/^レベル.?/, ""))}</div>
+      <div class="river-flood-text">${escapeHtml(f.mainText || f.headline)}</div>
+      <div class="river-flood-meta">${escapeHtml(formatDateTime(toDateTimeLocal(new Date(f.reportedAt).toISOString())))} 発表 ／ <a href="${escapeHtml(f.sourceUrl)}" target="_blank" rel="noreferrer">気象庁 ↗</a></div>
+    </div>
+  `).join("");
+  const top = list[0];
+  return {
+    severe: top.level >= 4,
+    text: `${top.area} レベル${top.level} ${top.kindName.replace(/^レベル.?/, "")}（${new Date(top.reportedAt).getHours()}:${String(new Date(top.reportedAt).getMinutes()).padStart(2, "0")}発表）`
+  };
+}
+
 async function refreshRiverLevel(manual) {
   const node = document.getElementById("river-content");
   const status = document.getElementById("river-status");
@@ -4034,40 +4102,17 @@ async function refreshRiverLevel(manual) {
     const response = await fetch(endpoint, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    const st = data.stations?.[0];
-    if (!st?.latest) throw new Error("観測値がありません");
-    const stage = RIVER_STAGE[st.stage] || RIVER_STAGE.unknown;
-    const at = new Date(st.latest.time);
-    const ageMin = Math.round((Date.now() - at.getTime()) / 60000);
-    const stale = ageMin > RIVER_STALE_MINUTES;
-    const lv = st.levels || {};
-    const change = typeof st.change1h === "number"
-      ? `1時間で ${st.change1h > 0 ? "+" : ""}${st.change1h.toFixed(2)}m`
-      : "";
-    node.innerHTML = `
-      <div class="river-item ${stage.cls}">
-        <div class="river-name">${escapeHtml(st.name)}（${escapeHtml(st.manager || "")}）</div>
-        <div class="river-main">${escapeHtml(st.latest.level.toFixed(2))}<span>m</span><b class="river-badge">${escapeHtml(stage.short)}</b></div>
-        <div class="river-sub">${escapeHtml(stage.label)}${change ? ` ／ ${escapeHtml(change)}` : ""}</div>
-        <div class="river-levels">待機 ${escapeHtml(String(lv.standby ?? "—"))}／注意 ${escapeHtml(String(lv.caution ?? "—"))}／<b>危険 ${escapeHtml(String(lv.danger ?? "—"))}m</b></div>
-      </div>
-      <div class="river-note">出典：<a href="${escapeHtml(data.source?.url || "#")}" target="_blank" rel="noreferrer">${escapeHtml(data.source?.name || "千葉県 水防情報")} ↗</a>（CBIが読み取って表示・0.00と欠測は除外）。避難の判断は印西市の避難情報に従ってください。</div>
-    `;
-    if (status) {
-      status.textContent = `${formatDateTime(toDateTimeLocal(at.toISOString()))}観測${stale ? `（${ageMin}分前・県のページの更新が止まっている可能性）` : ""}`;
-      status.classList.toggle("is-error", stale);
-    }
+    const warnings = [renderTeganuma(node, status, data), renderToneFlood(data)].filter(Boolean);
     if (alertNode) {
-      const warn = st.stage === "danger" || st.stage === "caution";
-      alertNode.hidden = !warn;
-      alertNode.className = `river-alert ${stage.cls}`;
-      if (warn) {
-        alertNode.textContent = `⚠ 手賀沼 ${st.latest.level.toFixed(2)}m：${stage.label}（${at.getHours()}:${String(at.getMinutes()).padStart(2, "0")}観測${stale ? "・古い値" : ""}）`;
-      }
-      placeRiverAlert();
+      alertNode.hidden = !warnings.length;
+      alertNode.className = `river-alert ${warnings.some(w => w.severe) ? "is-danger" : "is-caution"}`;
+      if (warnings.length) alertNode.textContent = `⚠ ${warnings.map(w => w.text).join("　／　")}`;
     }
+    placeRiverAlert();
   } catch (error) {
-    node.innerHTML = '<div class="detail-empty">水位を取得できませんでした。下の千葉県のページで確認してください。<br><a href="http://suibo.bousai.pref.chiba.lg.jp/bousaip/river/graph_90_0.html" target="_blank" rel="noreferrer">千葉県 水位グラフ:手賀沼 ↗</a></div>';
+    node.innerHTML = `<div class="detail-empty">水位を取得できませんでした。千葉県のページで確認してください。<br><a href="${TEGANUMA_PAGE}" target="_blank" rel="noreferrer">千葉県 水位グラフ:手賀沼 ↗</a></div>`;
+    const flood = document.getElementById("river-flood");
+    if (flood) flood.innerHTML = '<div class="river-flood-none is-error">利根川の洪水予報を取得できませんでした。<a href="https://www.jma.go.jp/bosai/flood/" target="_blank" rel="noreferrer">気象庁 指定河川洪水予報 ↗</a>で確認してください。</div>';
     if (status) {
       status.textContent = `取得できません（${error?.message || "接続エラー"}）`;
       status.classList.add("is-error");
