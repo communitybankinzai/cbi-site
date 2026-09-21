@@ -873,6 +873,7 @@ initTimeline();
 initQuickNav();
 refreshAmedas(false);
 refreshRiverLevel(false);
+refreshEvacAlert();
 refreshRainForecast(false);
 renderRoadFloodSites();
 initIntegration();
@@ -945,7 +946,7 @@ function bindEvents() {
   document.getElementById("refresh-earthquake-button").addEventListener("click", () => refreshEarthquakeSummary(true));
   document.getElementById("refresh-amedas-button")?.addEventListener("click", () => refreshAmedas(true));
   document.getElementById("refresh-river-button")?.addEventListener("click", () => refreshRiverLevel(true));
-  document.getElementById("river-alert")?.addEventListener("click", () => document.getElementById("river-panel")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  document.getElementById("river-alert")?.addEventListener("click", handleMapAlertClick);
   document.getElementById("refresh-weather-warning-button").addEventListener("click", () => refreshWeatherWarnings(true));
   document.getElementById("refresh-sns-monitor-button").addEventListener("click", () => refreshSnsMonitor(true));
   document.getElementById("sns-monitor-list").addEventListener("click", handleSnsMonitorAction);
@@ -2199,10 +2200,66 @@ async function moderateRecord(id, hide) {
   }
 }
 
+// 市の避難情報の帯（2026-09-21）。運営が消すのは放送ごと。ほかの放送・新しい放送は出る
+function setEvacModerateStatus(html) {
+  const node = document.getElementById("moderate-evac");
+  if (node) node.innerHTML = html;
+}
+
+async function loadEvacModeration() {
+  const endpoint = APP_CONFIG.evacAlertEndpoint;
+  if (!endpoint) { setEvacModerateStatus("<p>配信先が設定されていません。</p>"); return; }
+  setEvacModerateStatus("<p>読み込み中…</p>");
+  try {
+    const response = await fetch(endpoint, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    evacAlertPayload = await response.json();
+    renderMapAlert();
+    const alerts = Array.isArray(evacAlertPayload.alerts) ? evacAlertPayload.alerts : [];
+    if (!alerts.length) {
+      const why = { cancelled: "解除の放送がありました。", expired: "発令から24時間たちました。" }[evacAlertPayload.reason] || "発令中の避難情報はありません。";
+      setEvacModerateStatus(`<p>いまは帯を出していません。${escapeHtml(why)}</p>`);
+      return;
+    }
+    setEvacModerateStatus(alerts.map(alert => {
+      const head = `${escapeHtml(evacAlertHead(alert))}（${escapeHtml(alert.publishedAt)} 放送）`;
+      return alert.suppressed
+        ? `<div class="moderate-row is-hidden-row"><div><strong>全員の画面から消しています</strong><br>${head}</div>
+            <div class="moderate-row-buttons"><button type="button" data-evac-off="0" data-evac-published="${escapeAttribute(alert.publishedAt)}">帯に戻す</button></div></div>`
+        : `<div class="moderate-row"><div><strong>全員の画面に出しています</strong><br>${head}</div>
+            <div class="moderate-row-buttons"><button type="button" class="is-danger" data-evac-off="1" data-evac-published="${escapeAttribute(alert.publishedAt)}">全員の画面から消す</button></div></div>`;
+    }).join(""));
+  } catch (error) {
+    setEvacModerateStatus(`<p class="is-error">状態を取得できません（${escapeHtml(error?.message || "接続エラー")}）</p>`);
+  }
+}
+
+async function setEvacAlertOff(off, publishedAt) {
+  const endpoint = APP_CONFIG.evacAlertEndpoint;
+  const key = moderationKey() || askModerationKey();
+  if (!endpoint || !key) return;
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-moderation-key": key },
+      body: JSON.stringify({ off, publishedAt })
+    });
+    if (response.status === 403) {
+      try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+      setEvacModerateStatus("<p class=\"is-error\">合言葉が違います。もう一度押して入れ直してください。</p>");
+      return;
+    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    await loadEvacModeration();
+  } catch (error) {
+    setEvacModerateStatus(`<p class="is-error">変更できません（${escapeHtml(error?.message || "接続エラー")}）</p>`);
+  }
+}
+
 function initModeration() {
   const modal = document.getElementById("moderate-modal");
   if (!modal) return;
-  const open = () => { modal.hidden = false; loadModerationList().then(loadKansuiModerationList); };
+  const open = () => { modal.hidden = false; loadEvacModeration(); loadModerationList().then(loadKansuiModerationList); };
   document.getElementById("moderate-button")?.addEventListener("click", open);
   document.getElementById("moderate-close")?.addEventListener("click", () => { modal.hidden = true; });
   document.getElementById("moderate-reload")?.addEventListener("click", loadModerationList);
@@ -2212,6 +2269,13 @@ function initModeration() {
   });
   modal.addEventListener("click", async event => {
     if (event.target === modal) modal.hidden = true;
+    const evacButton = event.target.closest?.("[data-evac-off]");
+    if (evacButton) {
+      const off = evacButton.dataset.evacOff === "1";
+      if (off && !confirm("この放送の帯を、地図を見ている全員の画面から消します。よろしいですか？（ほかの放送や、新しい放送は出ます。あとで戻せます）")) return;
+      await setEvacAlertOff(off, evacButton.dataset.evacPublished || "");
+      return;
+    }
     const restoreId = event.target.closest?.("[data-kansui-restore]")?.dataset.kansuiRestore;
     if (restoreId) {
       try { await moderateKansui(restoreId, false); } catch (error) { alert(`戻せませんでした（${error?.message || "接続エラー"}）`); }
@@ -4203,13 +4267,8 @@ async function refreshRiverLevel(manual) {
     const response = await fetch(endpoint, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    const warnings = [renderTeganuma(node, status, data), renderToneFlood(data)].filter(Boolean);
-    if (alertNode) {
-      alertNode.hidden = !warnings.length;
-      alertNode.className = `river-alert ${warnings.some(w => w.severe) ? "is-danger" : "is-caution"}`;
-      if (warnings.length) alertNode.textContent = `⚠ ${warnings.map(w => w.text).join("　／　")}`;
-    }
-    placeRiverAlert();
+    riverWarnings = [renderTeganuma(node, status, data), renderToneFlood(data)].filter(Boolean);
+    renderMapAlert();
   } catch (error) {
     node.innerHTML = `<div class="detail-empty">水位を取得できませんでした。千葉県のページで確認してください。<br><a href="${TEGANUMA_PAGE}" target="_blank" rel="noreferrer">千葉県 水位グラフ:手賀沼 ↗</a></div>`;
     const flood = document.getElementById("river-flood");
@@ -4219,9 +4278,104 @@ async function refreshRiverLevel(manual) {
       status.classList.add("is-error");
     }
     // 取得できないときは警告を消さずに残すと誤解を生むので消す（カードに取得失敗を出している）
-    if (alertNode) alertNode.hidden = true;
-    placeRiverAlert();
+    riverWarnings = [];
+    renderMapAlert();
   }
+}
+
+// ============================================================
+// 地図の上の警告帯（2026-09-21）
+// 帯を増やすと地図が見えなくなるので、市の避難情報と水位を1本にまとめる。
+// 1行＝1項目で、はみ出す分は「…」。市の避難情報は押すと全文と出典を開く。
+// ✕ はこの端末だけ閉じる（内容が変われば再び出る）。全員から消すのは運営の「🗑 市民記録の管理」。
+// ============================================================
+let riverWarnings = [];
+let evacAlertPayload = null;
+let mapAlertExpanded = false;
+const MAP_ALERT_DISMISS_KEY = "cbi-disaster-map-alert-dismissed-v1";
+
+function mapAlertSignature() {
+  return JSON.stringify([visibleEvacAlerts().map(a => a.publishedAt), riverWarnings.map(w => w.text)]);
+}
+
+// 発令中で、運営が消していないもの（新しい順）
+function visibleEvacAlerts() {
+  const list = evacAlertPayload && Array.isArray(evacAlertPayload.alerts) ? evacAlertPayload.alerts : [];
+  return list.filter(a => !a.suppressed);
+}
+
+function evacAlertHead(alert) {
+  const when = evacAlertTime(alert);
+  return `警戒レベル${alert.level}「${alert.label}」${alert.area ? `（${alert.area}）` : ""}${when ? ` ${when}` : ""}`;
+}
+
+function evacAlertTime(alert) {
+  const m = String(alert.publishedAt || "").match(/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})/);
+  return m ? `${Number(m[1])}/${Number(m[2])} ${Number(m[3])}:${m[4]}` : "";
+}
+
+function renderMapAlert() {
+  const alertNode = document.getElementById("river-alert");
+  if (!alertNode) return;
+  const evacs = visibleEvacAlerts();
+  let dismissed = "";
+  try { dismissed = sessionStorage.getItem(MAP_ALERT_DISMISS_KEY) || ""; } catch {}
+  const show = (evacs.length || riverWarnings.length) && dismissed !== mapAlertSignature();
+  alertNode.hidden = !show;
+  if (!show) {
+    mapAlertExpanded = false;
+    placeRiverAlert();
+    return;
+  }
+  const severe = evacs.some(a => a.level >= 4) || riverWarnings.some(w => w.severe);
+  alertNode.className = `river-alert ${severe ? "is-danger" : "is-caution"}`;
+  const lines = [];
+  if (evacs.length) {
+    // 何件出ていても1行。2件以上は「避難指示 2件」とまとめ、押すと1件ずつ開く
+    const top = evacs.reduce((a, b) => (b.level > a.level ? b : a));
+    const summary = evacs.length === 1
+      ? evacAlertHead(evacs[0])
+      : `警戒レベル${top.level}「${top.label}」ほか 計${evacs.length}件：${evacs.map(a => a.area || a.label).join("／")}`;
+    lines.push(`<button type="button" class="map-alert-line is-evac" data-map-alert="evac" aria-expanded="${mapAlertExpanded}">📢 印西市：${escapeHtml(summary)}</button>`);
+    if (mapAlertExpanded) {
+      lines.push(`<div class="map-alert-detail">
+        ${evacs.map(a => `<div class="map-alert-item"><strong>${escapeHtml(evacAlertHead(a))}</strong><div>${escapeHtml(a.message).replace(/\n/g, "<br>")}</div></div>`).join("")}
+        <div class="map-alert-source">出典：<a href="${escapeAttribute(evacs[0].sourceUrl)}" target="_blank" rel="noreferrer">印西市防災速報（防災行政無線）↗</a>。CBIが読み取って表示しています。解除の放送があるか、発表から24時間たつと消えます。</div>
+      </div>`);
+    }
+  }
+  if (riverWarnings.length) {
+    lines.push(`<button type="button" class="map-alert-line" data-map-alert="river">⚠ ${escapeHtml(riverWarnings.map(w => w.text).join("　／　"))}</button>`);
+  }
+  alertNode.innerHTML = `<div class="map-alert-lines">${lines.join("")}</div>
+    <button type="button" class="map-alert-close" data-map-alert="close" title="この端末で閉じる（内容が変われば再び出ます）" aria-label="警告を閉じる">✕</button>`;
+  placeRiverAlert();
+}
+
+function handleMapAlertClick(event) {
+  const kind = event.target.closest?.("[data-map-alert]")?.dataset.mapAlert;
+  if (kind === "evac") {
+    mapAlertExpanded = !mapAlertExpanded;
+    renderMapAlert();
+  } else if (kind === "river") {
+    document.getElementById("river-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else if (kind === "close") {
+    try { sessionStorage.setItem(MAP_ALERT_DISMISS_KEY, mapAlertSignature()); } catch {}
+    renderMapAlert();
+  }
+}
+
+async function refreshEvacAlert() {
+  const endpoint = APP_CONFIG.evacAlertEndpoint;
+  if (!endpoint) return;
+  try {
+    const response = await fetch(endpoint, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    evacAlertPayload = await response.json();
+  } catch {
+    // 取れないときは前回の内容を残す（一時的な失敗で避難指示の帯が消えるのを避ける）
+  }
+  renderMapAlert();
 }
 
 // 降水短時間予報（この先1時間の雨の予想）。実況の雨雲レーダーとは別配信
@@ -5701,6 +5855,7 @@ setInterval(() => {
 setInterval(() => refreshEarthquakeSummary(false), 10 * 60 * 1000);
 setInterval(() => refreshAmedas(false), 5 * 60 * 1000);
 setInterval(() => refreshRiverLevel(false), 5 * 60 * 1000);
+setInterval(refreshEvacAlert, 5 * 60 * 1000);
 setInterval(() => {
   if (document.querySelector('[data-overlay="rainForecast"]')?.checked) refreshRainForecast(false);
 }, 10 * 60 * 1000);

@@ -13,6 +13,8 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     timelineEndpoint: "https://cidao.vercel.app/api/disaster/timeline",
     // 手賀沼の水位（千葉県のページをCiDAOが10分キャッシュで読み取る）。利根川は取得せずリンクのみ
     riverLevelEndpoint: "https://cidao.vercel.app/api/disaster/river-level",
+    // 市の避難情報（避難指示など）。防災速報から拾い、解除・24時間経過・運営のオフで消える
+    evacAlertEndpoint: "https://cidao.vercel.app/api/disaster/evac-alert",
     openDataEndpoint: "https://cidao.vercel.app/api/disaster/inzai-opendata",
     presenceEndpoint: "https://cidao.vercel.app/api/metaverse-presence",
     locationAiEndpoint: "",

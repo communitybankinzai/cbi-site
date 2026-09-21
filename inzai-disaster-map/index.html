@@ -611,6 +611,10 @@
             <button type="button" id="moderate-reload">一覧を読み直す</button>
             <button type="button" id="moderate-forget">合言葉をこの端末から消す</button>
           </div>
+          <!-- 2026-09-21: 市の避難情報の帯を、全員の画面から消す／戻す -->
+          <h3 class="moderate-subhead">市の避難情報の帯（地図の上）</h3>
+          <div class="moderate-list" id="moderate-evac"></div>
+          <h3 class="moderate-subhead">市民の道路記録</h3>
           <div class="moderate-list" id="moderate-list"></div>
           <!-- みんつくの投稿は本家のデータなので消せない。CBIの地図から伏せたものだけここに出す -->
           <h3 class="moderate-subhead">みんつくの投稿（CBIの地図から伏せたもの）</h3>
@@ -621,8 +625,9 @@
 
       <section class="map-pane" id="map-pane" aria-label="印西市地図">
           <div id="map"></div>
-          <!-- 2026-09-21: 手賀沼が注意・危険水位を超えたときだけ地図の上に出す警告。押すと水位カードへ -->
-          <button class="river-alert" id="river-alert" type="button" hidden></button>
+          <!-- 2026-09-21: 地図の上の警告帯（1本にまとめる）。先頭＝市の避難情報（押すと全文と出典）、
+               続けて手賀沼・利根川（押すと水位カードへ）。中身は app.js の renderMapAlert が描く -->
+          <div class="river-alert" id="river-alert" role="status" hidden></div>
           <!-- 2026-09-21: 「オレンジは何なのか分からない」（中司さん）への対応。地図の上端に置き、
                押すとその色の表示を消せる。本日／過去の実績は記録の絞り込み（既定はどちらもON） -->
           <div class="map-legend" id="map-legend" aria-label="地図の凡例と絞り込み">
