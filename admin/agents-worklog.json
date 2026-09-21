@@ -6491,6 +6491,20 @@
           "note": "記入案と提出内容は 調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md。可の回答＝地区（丁目・大字）ごとの軒数・発生時刻・復旧見込みを地図に円で表示する実装へ（取得は CiDAO 経由・10分に1回以下・出典と取得時刻を明記）。不可の回答＝当日中に防災MAPの teiden-acc（枠の埋め込み）・公式情報ダイアログの東電カード・対応表⑩のリンク・説明用ページ teiden-demo.html を外す。提出時の注意：リンク申請の項目4は1行1URL（『／』区切りは弾かれる）。"
         },
         {
+          "due": "2026-09-21",
+          "title": "⏱ 夕方（雨が収まったら）巡回間隔を元に戻す：SNS巡回 5分→30分、公式発表 10分→1時間",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-09-21 10:40 に大雨警報（レベル3相当）のため災害時の間隔へ戻した（事業主指示「戻すけど夕方まで」）。Vercel の Active CPU 無料枠を使うので、雨が収まったら遅い方へ戻すこと。⚠ scripts/vercel-cpu-cron-slow.py は動かない（下の plans 参照）ので、pooler 経由で cron.alter_job を直接実行する"
+        },
+        {
+          "due": "2026-09-30",
+          "title": "🔧 scripts/vercel-cpu-cron-slow.py が Supabase に接続できない（IPv6直結のため）— pooler 経由へ直す",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-21 実測。.env.local の DATABASE_URL は db.<ref>.supabase.co（IPv6のみ）で、この環境からは接続タイムアウトになる。接続できるのは postgres.<ref>@aws-1-ap-northeast-1.pooler.supabase.com:5432（パスワードは DATABASE_URL のものが有効）。agents/a1-core/credentials.md に載っている接続文字列2本はどちらも認証に失敗するので更新が要る。災害時に --restore が動かないと困るので早めに直す"
+        },
+        {
           "due": "未定",
           "title": "🌊 過去の冠水実績レイヤー（pastFlood）のトグルが画面から消えている — 復活させるか判断する",
           "category": "保守",
