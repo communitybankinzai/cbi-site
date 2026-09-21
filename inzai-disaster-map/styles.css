@@ -1008,11 +1008,26 @@ details.layer-group .layer-group-body {
 .legend-chip.is-when::before { display: none; }
 .legend-chip.is-when { padding: 3px 10px; color: #16324f; }
 
-/* 消しているときは灰色＋取り消し線 */
+/* ON＝その色で塗りつぶして明るく濃く、OFF＝灰色で暗く薄く（2026-09-21）。
+   以前は OFF を取り消し線で表していたが「消去方式で使いにくい」（中司さんの実機指摘）。
+   ON が白地に色文字だったため、ON と OFF の差がほとんど見分けられなかった */
+.legend-chip[aria-pressed="true"] {
+  color: #fff;
+  border-color: transparent;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(15, 30, 60, .25);
+}
+.legend-chip.is-kansui[aria-pressed="true"] { background: #b8322c; }
+.legend-chip.is-passed[aria-pressed="true"] { background: #1565c0; }
+.legend-chip.is-risk[aria-pressed="true"] { background: #df7038; }
+.legend-chip.is-when[aria-pressed="true"] { background: #16324f; }
+
 .legend-chip[aria-pressed="false"] {
-  color: #8a9099;
-  background: #eef1f5;
-  text-decoration: line-through;
+  color: #9aa3ad;
+  background: #eceff3;
+  border-color: #dde2e8;
+  font-weight: 400;
+  opacity: .7;
 }
 
 .legend-sep {
@@ -1022,10 +1037,12 @@ details.layer-group .layer-group-body {
   background: #d5dbe4;
 }
 
-.legend-chip.is-range { color: #16324f; }
 .legend-chip.is-range::before { display: none; }
-.legend-chip.is-range[aria-pressed="true"] { background: #16324f; color: #fff; border-color: #16324f; text-decoration: none; }
-.legend-chip.is-muted { opacity: .45; }
+/* ⏱ 期間は「ON/OFF」ではなくパネルを開くボタン。未指定でも薄くしない（押せないように見えるため） */
+.legend-chip.is-range[aria-pressed="false"] { color: #16324f; background: #fff; border-color: #c3ccd8; opacity: 1; }
+.legend-chip.is-range[aria-pressed="true"] { background: #16324f; color: #fff; border-color: #16324f; }
+/* 期間を指定しているあいだの「本日／過去の実績」（押せない） */
+.legend-chip.is-muted { opacity: .35; }
 
 /* ⏱ 期間のしぼり込みパネル（凡例の下に出す） */
 .range-panel {
