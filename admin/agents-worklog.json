@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "運行情報A案（バス自動反映・鉄道ワンタップ承認）＋仕分けで要対応に入る件名 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "CiDAO src/lib/disaster-rail-watch.ts",
+            "CiDAO src/lib/disaster-timeline.ts",
+            "CiDAO src/app/api/disaster/rail-status/approve/route.ts",
+            "CiDAO src/lib/__tests__/disaster-rail-watch.test.ts",
+            "memory cbi-mail-triage.md（仕分けGASは公式アカウント所有・件名に『警告』で要対応）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "中司さんの選択（A案）。市ページ更新時、路線バスは本文の『・〇〇線（…）』から自動反映、鉄道は『〇〇駅～〇〇駅間』＋見合わせ/運休/遅れを読み取り、地図と違えば承認リンクをメール。承認ページはGETで確認のみ・POSTで反映（リンク事前確認対策）・12時間・1回限り。駅名は路線データの駅一覧で照合（正規表現だと『線路冠水のため新鎌ヶ谷』を駅名と誤認した）。通知メールは仕分けGAS（CBI公式アカウント所有で手元から変更不可）の RE_ACTION に合わせ件名に『警告』を入れ、classify_ を抜き出して要対応になることを確認。テスト12件・tsc/eslint 0。本番で承認ページを通し検証（GETでは反映されない→POSTで反映→再押下は400→地図の内容は不変）。session 累計2.7時間から先行分2.4時間を除いた分。session: 297bc2e9-ca4e-4883-a1e8-5c69c0c8a15d / output: 270,744 / cost: $92.06"
+        },
+        {
+          "date": "2026-09-21",
           "title": "運行情報の更新漏れ対策（市ページ変化の通知メール）＋表示の1行化・4→5路線更新 0.5時間",
           "category": "実装",
           "outputs": [
