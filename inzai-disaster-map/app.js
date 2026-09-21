@@ -572,6 +572,14 @@ map.createPane("passedRoadsPane");
 map.getPane("passedRoadsPane").style.zIndex = 440;
 map.createPane("kansuiPane");
 map.getPane("kansuiPane").style.zIndex = 450;
+
+// ⚠ この2つの層は SVG で描く（2026-09-21）。地図全体は preferCanvas: true だが、canvas のままだと
+// 各 pane の canvas が画面いっぱいに広がり、上にある冠水（450）の canvas が下の「通れた道」（440）の
+// クリックを全部吸ってしまう（elementFromPoint で実測。一覧からしかポップアップを開けなかった）。
+// SVG なら線のある場所だけがクリックを受け、外れた場所は下の層へ通る。
+// 本数が多い「道路の冠水リスク」（22,902本）は canvas のまま＝最下層なので邪魔をしない。
+const passedRoadsRenderer = L.svg({ pane: "passedRoadsPane" });
+const kansuiRenderer = L.svg({ pane: "kansuiPane" });
 // 鉄道の運休・遅れ区間。既定OFFで、ONにした人には冠水の線より上に見せる。
 // 専用の面に置かないと、道路の冠水リスク層（同じ面の canvas）がクリックを拾ってしまい
 // ポップアップが開かない。
@@ -4136,11 +4144,11 @@ function renderKansuiLayer() {
     // 赤＝入らない道。「通れた道（青）」と並べて見るため、通行止め記録と同じ赤に揃えている
     const shape = road.path.length === 1
       ? L.circleMarker(road.path[0], {
-          pane: "kansuiPane", radius: isToday ? 7 : 5, color: "#ffffff", weight: 2,
+          pane: "kansuiPane", renderer: kansuiRenderer, radius: isToday ? 7 : 5, color: "#ffffff", weight: 2,
           fillColor: KANSUI_COLOR, fillOpacity: isToday ? 0.95 : 0.55
         })
       : L.polyline(road.path, {
-          pane: "kansuiPane", color: KANSUI_COLOR,
+          pane: "kansuiPane", renderer: kansuiRenderer, color: KANSUI_COLOR,
           weight: isToday ? 6 : 4, opacity: isToday ? 0.95 : 0.5
         });
     shape.bindPopup(
@@ -4575,9 +4583,9 @@ function blockedPointShape(road) {
   const tier = passedRoadTier(road.endedAt);
   const isOld = tier.maxHours === Infinity;
   const marker = road.path.length > 1 ? L.polyline(road.path, {
-    pane: "passedRoadsPane", color: KANSUI_COLOR, weight: 7, opacity: isOld ? .5 : .95
+    pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: KANSUI_COLOR, weight: 7, opacity: isOld ? .5 : .95
   }) : L.marker(road.path[0], {
-    pane: "passedRoadsPane",
+    pane: "passedRoadsPane", renderer: passedRoadsRenderer,
     icon: L.divIcon({
       className: "",
       html: `<div class="blocked-gps-mark${isOld ? " is-old" : ""}" aria-label="通れない地点">×</div>`,
@@ -4633,10 +4641,10 @@ function passedRoadShape(road) {
   const isOld = tier.maxHours === Infinity;
   const line = road.path.length === 1
     ? L.marker(road.path[0], {
-        pane: "passedRoadsPane",
+        pane: "passedRoadsPane", renderer: passedRoadsRenderer,
         icon: L.divIcon({ className: "", html: `<div class="passed-gps-point${isOld ? " is-old" : ""}" aria-label="通れた地点"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] })
       })
-    : L.polyline(road.path, { pane: "passedRoadsPane", color: tier.color, weight: tier.weight, opacity: 0.9 });
+    : L.polyline(road.path, { pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: tier.color, weight: tier.weight, opacity: 0.9 });
   line.bindPopup(
     `<strong>🔵 ${escapeHtml(tier.label)}</strong><br>` +
     `通れた時刻 ${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "不明")}（${escapeHtml(formatAgo(road.endedAt))}）<br>` +
@@ -4969,7 +4977,7 @@ function startPassedRoadRecording() {
   setUndoLink(null);
   passedRoadRecorder.points = [];
   passedRoadRecorder.startedAt = new Date().toISOString();
-  passedRoadRecorder.line = L.polyline([], { pane: "passedRoadsPane", color: "#1565c0", weight: 5, opacity: 0.9, dashArray: "6 8" }).addTo(passedRoadDraftLayer);
+  passedRoadRecorder.line = L.polyline([], { pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: "#1565c0", weight: 5, opacity: 0.9, dashArray: "6 8" }).addTo(passedRoadDraftLayer);
   passedRoadDraftLayer.addTo(map);
   // 記録中は通れた道レイヤーも出して、赤（冠水）と見比べられるようにする
   ensurePassedRoadsOverlayOn();
