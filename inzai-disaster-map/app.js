@@ -4325,11 +4325,29 @@ function setKansuiStatus(text, isError) {
 
 // 取得済みのデータから描き直す（「本日」「過去の実績」の絞り込みを反映する）。
 // 対象日と同じ日の投稿は濃く太く、それ以前の実績は薄く細く描く（2026-09-21）
+// 道路をなぞって記録した線なら、隣り合う点どうしは近い。1区間でも3km以上離れている線は、
+// 地図を拡大しないまま2か所をタップした誤操作（またはいたずら）とみなして表示しない。
+// 2026-09-21 の大雨の最中に、2点だけで27km・35kmの直線がみんつくに投稿され、地図を横切っていた。
+// みんつくのデータは CBI のデータベースではないので「🗑 市民記録の管理」では消せない。そのための安全装置。
+// 正常な線の最長は 2026-09-21 時点で 3.0km（15点）なので、区間3kmで切っても本物は落ちない
+const KANSUI_MAX_SEGMENT_M = 3000;
+let kansuiHiddenImplausible = 0;
+
+function isImplausibleKansuiLine(path) {
+  if (!Array.isArray(path) || path.length < 2) return false;
+  for (let i = 1; i < path.length; i++) {
+    if (L.latLng(path[i - 1]).distanceTo(L.latLng(path[i])) > KANSUI_MAX_SEGMENT_M) return true;
+  }
+  return false;
+}
+
 function renderKansuiLayer() {
   kansuiLayer.clearLayers();
   let shown = 0;
   let todayCount = 0;
+  kansuiHiddenImplausible = 0;
   kansuiData.forEach(road => {
+    if (isImplausibleKansuiLine(road.path)) { kansuiHiddenImplausible += 1; return; }
     const isToday = isTargetDayRecord(road.createdAt);
     if (isToday) todayCount += 1;
     if (!passesWhenFilter(road.createdAt)) return;
@@ -4355,7 +4373,8 @@ function renderKansuiLayer() {
     shape.addTo(kansuiLayer);
   });
   const filtered = shown !== kansuiData.length ? `${shown}件表示 / 全${kansuiData.length}件` : `${kansuiData.length}件`;
-  setKansuiStatus(`${filtered}（対象日 ${todayCount}件）・ ${formatDateTime(toDateTimeLocal(kansuiGeneratedAt)) || ""}時点`);
+  const skipped = kansuiHiddenImplausible ? `・道路をなぞっていない線 ${kansuiHiddenImplausible}件は非表示` : "";
+  setKansuiStatus(`${filtered}（対象日 ${todayCount}件）${skipped}・ ${formatDateTime(toDateTimeLocal(kansuiGeneratedAt)) || ""}時点`);
 }
 
 async function ensureKansuiLayer() {
