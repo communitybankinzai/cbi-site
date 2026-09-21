@@ -4481,7 +4481,58 @@ function visibleEvacAlerts() {
 
 function evacAlertHead(alert) {
   const when = evacAlertTime(alert);
-  return `警戒レベル${alert.level}「${alert.label}」${alert.area ? `（${alert.area}）` : ""}${when ? ` ${when}` : ""}`;
+  const cause = evacAlertCause(alert);
+  return `警戒レベル${alert.level}「${alert.label}」${cause ? `・${cause}` : ""}${alert.area ? `（${alert.area}）` : ""}${when ? ` ${when}` : ""}`;
+}
+
+// 何による避難情報かを放送の本文から読む（2026-09-22：気象庁の「警戒レベル相当」と混同されたため）
+function evacAlertCause(alert) {
+  const text = String(alert.message || "");
+  if (/印旛沼/.test(text)) return "印旛沼の水位による";
+  if (/手賀沼/.test(text)) return "手賀沼の水位による";
+  if (/利根川/.test(text)) return "利根川の増水による";
+  if (/土砂/.test(text)) return "土砂災害のおそれによる";
+  if (/浸水|洪水|氾濫/.test(text)) return "浸水のおそれによる";
+  return "";
+}
+
+// 帯の見出し。市の避難情報（行動のレベル）であることと、何によるものかを先に書く
+function evacAlertSummary(evacs) {
+  const top = evacs.reduce((a, b) => (b.level > a.level ? b : a));
+  const causes = Array.from(new Set(evacs.map(evacAlertCause).filter(Boolean)));
+  // 「周辺の低い土地」と「印旛沼周辺の低い土地」のように、ほかに含まれる地域名は省く
+  const areas = Array.from(new Set(evacs.map(a => a.area).filter(Boolean)))
+    .filter((area, _, all) => !all.some(other => other !== area && other.includes(area)));
+  const parts = [causes.join("／"), areas.join("／")].filter(Boolean).join("・");
+  return `印西市の${top.label}（警戒レベル${top.level}）${parts ? `：${parts}` : ""}${evacs.length > 1 ? ` 計${evacs.length}件` : ""}`;
+}
+
+// 右の「印西市 警報・注意報」カードに、市の避難情報が出ている間だけ1行添える
+let weatherAlertLevelNow = 0;
+function updateEvacCardNote() {
+  const node = document.getElementById("weather-warning-content");
+  if (!node) return;
+  let note = node.querySelector(".weather-warning-evac-note");
+  const evacs = visibleEvacAlerts();
+  if (!evacs.length) { note?.remove(); return; }
+  if (!note) {
+    note = document.createElement("button");
+    note.type = "button";
+    note.className = "weather-warning-evac-note";
+    note.addEventListener("click", () => {
+      mapAlertDismissed = "";
+      mapAlertExpanded = true;
+      renderMapAlert();
+      document.getElementById("map-pane")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+  if (node.firstChild !== note) node.prepend(note);
+  const top = evacs.reduce((a, b) => (b.level > a.level ? b : a));
+  const cause = Array.from(new Set(evacs.map(evacAlertCause).filter(Boolean))).join("／");
+  const what = `市の${top.label}（警戒レベル${top.level}${cause ? `・${cause}` : ""}）`;
+  note.textContent = weatherAlertLevelNow < top.level
+    ? `📢 気象の危険度は下がっていますが、${what}は続いています。地図の上の赤い帯を見る →`
+    : `📢 気象庁の警報とは別に、${what}が出ています。地図の上の赤い帯を見る →`;
 }
 
 function evacAlertTime(alert) {
@@ -4492,6 +4543,7 @@ function evacAlertTime(alert) {
 function renderMapAlert() {
   const alertNode = document.getElementById("river-alert");
   if (!alertNode) return;
+  updateEvacCardNote();
   const evacs = visibleEvacAlerts();
   let dismissed = "";
   dismissed = mapAlertDismissed;
@@ -4520,13 +4572,11 @@ function renderMapAlert() {
   const lines = [];
   if (evacs.length) {
     // 何件出ていても1行。2件以上は「避難指示 2件」とまとめ、押すと1件ずつ開く
-    const top = evacs.reduce((a, b) => (b.level > a.level ? b : a));
-    const summary = evacs.length === 1
-      ? evacAlertHead(evacs[0])
-      : `警戒レベル${top.level}「${top.label}」ほか 計${evacs.length}件：${evacs.map(a => a.area || a.label).join("／")}`;
-    lines.push(`<button type="button" class="map-alert-line is-evac" data-map-alert="evac" aria-expanded="${mapAlertExpanded}">📢 印西市：${escapeHtml(summary)}</button>`);
+    const summary = evacAlertSummary(evacs);
+    lines.push(`<button type="button" class="map-alert-line is-evac" data-map-alert="evac" aria-expanded="${mapAlertExpanded}" title="市が出す避難の呼びかけです（気象庁の警報・注意報の「警戒レベル相当」とは別）">📢 ${escapeHtml(summary)}</button>`);
     if (mapAlertExpanded) {
       lines.push(`<div class="map-alert-detail">
+        <div class="map-alert-kind">市が出す避難の呼びかけ（行動の警戒レベル）です。気象庁の警報・注意報が下がっても、市が解除するまで続きます。</div>
         ${evacs.map(a => `<div class="map-alert-item"><strong>${escapeHtml(evacAlertHead(a))}</strong><div>${escapeHtml(a.message).replace(/\n/g, "<br>")}</div></div>`).join("")}
         <div class="map-alert-source">出典：<a href="${escapeAttribute(evacs[0].sourceUrl)}" target="_blank" rel="noreferrer">印西市防災速報（防災行政無線）↗</a>。CBIが読み取って表示しています。解除の放送があるか、発表から24時間たつと消えます。</div>
       </div>`);
@@ -6022,6 +6072,8 @@ function renderWeatherWarnings(node, panel, summary) {
       <div class="weather-warning-note">河川ごとの氾濫情報と印西市の避難情報は別に発表されます。</div>
       ${weatherWarningOfficialLink("気象庁の印西市ページを確認")}
     `;
+    weatherAlertLevelNow = 0;
+    updateEvacCardNote();
     return;
   }
 
@@ -6051,6 +6103,8 @@ function renderWeatherWarnings(node, panel, summary) {
     <div class="weather-warning-note">${alertLevel ? "警戒レベル相当情報は避難指示そのものではありません。" : "この表示は印西市の避難情報ではありません。"}印西市の避難情報も確認してください。</div>
     ${weatherWarningOfficialLink("気象庁で詳細・時系列を確認")}
   `;
+  weatherAlertLevelNow = alertLevel;
+  updateEvacCardNote();
 }
 
 function setWeatherWarningPanelState(panel, state) {
