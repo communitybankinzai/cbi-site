@@ -4405,7 +4405,9 @@ async function refreshRiverLevel(manual) {
 let riverWarnings = [];
 let evacAlertPayload = null;
 let mapAlertExpanded = false;
-const MAP_ALERT_DISMISS_KEY = "cbi-disaster-map-alert-dismissed-v1";
+// 警告帯を閉じた記録はこの画面を開いている間だけ持つ。再読み込み（F5）すれば出直す。
+// 以前は sessionStorage に残していたため、F5 しても出てこなかった（2026-09-21 事業主指摘）
+let mapAlertDismissed = "";
 
 function mapAlertSignature() {
   return JSON.stringify([visibleEvacAlerts().map(a => a.publishedAt), riverWarnings.map(w => w.text)]);
@@ -4432,7 +4434,7 @@ function renderMapAlert() {
   if (!alertNode) return;
   const evacs = visibleEvacAlerts();
   let dismissed = "";
-  try { dismissed = sessionStorage.getItem(MAP_ALERT_DISMISS_KEY) || ""; } catch {}
+  dismissed = mapAlertDismissed;
   const hasAny = Boolean(evacs.length || riverWarnings.length);
   const show = hasAny && dismissed !== mapAlertSignature();
   // ✕で閉じても、警告が出ている間は小さな「表示する」ボタンを残す（2026-09-21：閉じたら戻せなかった）
@@ -4475,7 +4477,7 @@ function renderMapAlert() {
     lines.push(`<button type="button" class="map-alert-line is-chips" data-map-alert="river" aria-label="${escapeAttribute(riverWarnings.map(w => w.text).join("、"))}">${riverWarnings.map(w => `<span class="map-alert-chip ${w.severe ? "is-danger" : "is-caution"}"><b>${escapeHtml(w.name || "")}</b>${escapeHtml(w.value || "")}${w.note ? `<small>${escapeHtml(w.note)}</small>` : ""}</span>`).join("")}</button>`);
   }
   alertNode.innerHTML = `<div class="map-alert-lines">${lines.join("")}</div>
-    <button type="button" class="map-alert-close" data-map-alert="close" title="この端末で閉じる（内容が変われば再び出ます）" aria-label="警告を閉じる">✕</button>`;
+    <button type="button" class="map-alert-close" data-map-alert="close" title="閉じる（再読み込みするか、内容が変われば再び出ます）" aria-label="警告を閉じる">✕</button>`;
   placeRiverAlert();
   if (inzaiFitDone && !mapAlertExpanded) fitToInzai(true);
 }
@@ -4488,10 +4490,10 @@ function handleMapAlertClick(event) {
   } else if (kind === "river") {
     document.getElementById("river-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
   } else if (kind === "close") {
-    try { sessionStorage.setItem(MAP_ALERT_DISMISS_KEY, mapAlertSignature()); } catch {}
+    mapAlertDismissed = mapAlertSignature();
     renderMapAlert();
   } else if (kind === "reopen") {
-    try { sessionStorage.removeItem(MAP_ALERT_DISMISS_KEY); } catch {}
+    mapAlertDismissed = "";
     renderMapAlert();
   }
 }
