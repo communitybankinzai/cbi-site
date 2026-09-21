@@ -3426,6 +3426,9 @@ const RAIL_STATE_STYLE = {
 // 発表からこれだけ経ったら「古い情報かもしれない」と添える
 const RAIL_STALE_HOURS = 6;
 const railStatusLayer = L.layerGroup();
+// 地図全体は canvas 描画（preferCanvas）だが、この層だけは SVG で描く。
+// 区間は多くて23本と少なく、canvas だと他の層とクリックを取り合ってポップアップが開かない。
+const railStatusRenderer = L.svg({ pane: "railStatusPane" });
 let railStatusLoaded = false;
 let railSegmentsData = null;
 let railStatusData = null;
@@ -3498,6 +3501,7 @@ function renderRailStatus() {
     (line.segments || []).slice(start, end).forEach(segment => {
       L.polyline(segment.path, {
         pane: "railStatusPane",
+        renderer: railStatusRenderer,
         color: style.color,
         weight: style.weight,
         opacity: 0.9,
