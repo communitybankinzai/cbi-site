@@ -1934,6 +1934,14 @@ const PRESETS = {
     openGroups: ["🌧"],
     focus: "layer-panel"
   },
+  // 市が発表した鉄道の運休・遅れ。路線の線（鉄道）も一緒に出して、
+  // どの区間が止まっているかを位置関係で読めるようにする
+  rail: {
+    label: "鉄道の運休・遅れ",
+    on: ["boundary", "railStatus", "railway"],
+    openGroups: ["🏫"],
+    focus: "layer-panel"
+  },
   landslide: {
     label: "土砂災害",
     on: ["boundary", "records", "landslide", "landslideWarning", "landslideSpecial"],
@@ -1969,6 +1977,7 @@ function applyPreset(name) {
   });
   // 押したボタンを目立たせる
   document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("is-current", b.dataset.preset === name));
+  document.querySelector(`.preset-btn[data-preset="${name}"]`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
   syncMapLegend();
 
   const panel = document.querySelector(".left-panel");
@@ -7387,4 +7396,7 @@ function escapeAttribute(value) {
   // （2026-09-21 中司さんの指示）。applyPreset は呼ばない（チェックは上で入れ終えており、
   // 左パネルの開閉とスクロールまで動かす必要がないため）
   document.querySelector('.preset-btn[data-preset="kansui"]')?.classList.add("is-current");
+  // 「見たいもの」は横スクロールの行なので、選んでいるボタンが画面外から始まらないようにする
+  // （2026-09-21 実機で、右端の「いまの雨・土砂災害」だけが見えている状態になっていた）
+  document.querySelector(".preset-items")?.scrollTo?.({ left: 0 });
 })();

@@ -2759,6 +2759,28 @@ body.embed-mode .cbi-home-link {
     padding: 5px 10px;
   }
 
+  /* 運営用のボタン群は数が多く、開くとスマホの画面の半分を占めていた（2026-09-21 実機指摘）。
+     横に流して1行に収める。中身と id は変えていないので、機能は従来どおり */
+  .operator-tools {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .operator-tools::-webkit-scrollbar { display: none; }
+
+  .operator-tools > * {
+    flex: 0 0 auto;
+    font-size: 12px;
+    min-height: 32px;
+    padding: 5px 9px;
+    white-space: nowrap;
+  }
+
   /* 凡例は横に5つ並ばないので2行にする（横スクロールだと見落とすため） */
   .map-legend {
     flex-wrap: wrap;
