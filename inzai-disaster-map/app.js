@@ -2188,6 +2188,54 @@ document.addEventListener("click", async event => {
   }
 });
 
+// 地図のポップアップの「✏ 時刻・メモを直す」（運営）。道からずれた線を引き直すと記録時刻が引き直した時刻になるため、
+// 実際の時刻とメモを上書きする。時刻を変えるとサーバーがその時刻の雨量を取り直す（2026-09-22）
+document.addEventListener("click", async event => {
+  const button = event.target.closest?.("[data-passed-edit]");
+  if (!button) return;
+  const id = button.dataset.passedEdit;
+  const road = passedRoadsData.find(r => String(r.id) === id);
+  if (!road) return;
+  const current = (toDateTimeLocal(road.endedAt) || "").replace("T", " ").slice(0, 16);
+  const timeInput = prompt("記録の時刻（例：2026-09-22 05:30）。変えない場合はそのまま OK", current);
+  if (timeInput === null) return;
+  const noteInput = prompt("メモ（200字まで）。変えない場合はそのまま OK", road.note || "");
+  if (noteInput === null) return;
+  const payload = {};
+  const timeText = timeInput.trim().replace(/\//g, "-");
+  if (timeText && timeText !== current) {
+    const m = timeText.match(/^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{2})$/);
+    if (!m) { alert("時刻は「2026-09-22 05:30」の形で入れてください。"); return; }
+    payload.endedAt = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).toISOString();
+  }
+  if (noteInput !== (road.note || "")) payload.note = noteInput;
+  if (!Object.keys(payload).length) return;
+  const endpoint = moderationEndpoint();
+  let key = moderationKey();
+  if (!endpoint || !key) return;
+  map.closePopup();
+  const send = k => fetch(`${endpoint}?id=${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", "x-moderation-key": k },
+    body: JSON.stringify(payload)
+  });
+  try {
+    let response = await send(key);
+    if (response.status === 403) {
+      try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+      key = askModerationKey();
+      if (!key) throw new Error("合言葉が違います");
+      response = await send(key);
+    }
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+    await ensurePassedRoadsLayer(true);
+    focusPassedRoad(road.id);
+  } catch (error) {
+    alert(`直せませんでした（${error?.message || "接続エラー"}）`);
+  }
+});
+
 // 地図のポップアップの「🗑 この記録を地図から伏せる」（通れた道・通れない道）
 document.addEventListener("click", async event => {
   const button = event.target.closest?.("[data-passed-hide]");
@@ -5399,6 +5447,7 @@ function passedRoadShape(road) {
     `<br><span style="font-size:11px;">${isOld
       ? "6時間より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
       : "この地図を見ている人が通れた道を記録したものです。現在の安全や通行可否を保証するものではありません。"}</span>` +
+    rainAmountHtml(road) +
     passedRoadHideButtonHtml(road)
   );
   return line;
@@ -5407,8 +5456,18 @@ function passedRoadShape(road) {
 // 運営の合言葉がある端末だけ、いたずら・誤った記録を地図から伏せるボタンを出す（冠水の投稿と同じ作り）
 function passedRoadHideButtonHtml(road) {
   return moderationKey() && road?.id != null
-    ? `<br><button type="button" class="kansui-hide-btn" data-passed-hide="${escapeAttribute(String(road.id))}">🗑 この記録を地図から伏せる（運営）</button>`
+    ? `<br><button type="button" class="kansui-hide-btn" data-passed-edit="${escapeAttribute(String(road.id))}">✏ 時刻・メモを直す（運営）</button>` +
+      `<br><button type="button" class="kansui-hide-btn" data-passed-hide="${escapeAttribute(String(road.id))}">🗑 この記録を地図から伏せる（運営）</button>`
     : "";
+}
+
+// 通れた道：どのくらいの雨で通れたかの参考に、記録時刻の雨量（最寄りアメダス）だけを添える（2026-09-22）。
+// 「冠水の可能性」の判定は通れない記録のためのものなので、ここには出さない
+function rainAmountHtml(road) {
+  const rain = road?.rain;
+  if (!rain || rain.verdict === "unknown" || !rain.station) return "";
+  const mm = x => (x === null || x === undefined ? "−" : `${x}mm`);
+  return `<br><span style="font-size:11px;">☔ 記録時の雨量（アメダス${escapeHtml(rain.station)}・${escapeHtml(formatDateTime(toDateTimeLocal(rain.at)) || "")}）1時間 ${mm(rain.r1h)}／3時間 ${mm(rain.r3h)}／24時間 ${mm(rain.r24h)}</span>`;
 }
 
 // 記録の絞り込み（凡例バーのチップ）。「本日」「過去の実績」はどちらも既定ON。
