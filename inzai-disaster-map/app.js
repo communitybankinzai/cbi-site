@@ -4403,6 +4403,7 @@ function renderMapAlert() {
   if (!show) {
     mapAlertExpanded = false;
     placeRiverAlert();
+    if (inzaiFitDone) fitToInzai(true);
     return;
   }
   const severe = evacs.some(a => a.level >= 4) || riverWarnings.some(w => w.severe);
@@ -4429,6 +4430,7 @@ function renderMapAlert() {
   alertNode.innerHTML = `<div class="map-alert-lines">${lines.join("")}</div>
     <button type="button" class="map-alert-close" data-map-alert="close" title="この端末で閉じる（内容が変われば再び出ます）" aria-label="警告を閉じる">✕</button>`;
   placeRiverAlert();
+  if (inzaiFitDone && !mapAlertExpanded) fitToInzai(true);
 }
 
 function handleMapAlertClick(event) {
@@ -5963,18 +5965,40 @@ function initBoundary() {
 // 開いたときに印西市が画面へちょうど収まるようにする（2026-09-21 中司さんの指示）。
 // 市境が届いてから1回だけ動かす。利用者が地図を動かしたあと（moveend が起きたあと）は
 // 勝手に戻さない。URL で場所を指定して開いた場合も動かさない。
-let inzaiFitDone = false;
-let userMovedMap = false;
-map.on("movestart", () => { if (inzaiFitDone) userMovedMap = true; });
-function fitToInzai() {
-  if (inzaiFitDone || userMovedMap) return;
+var inzaiFitDone = false;
+var userMovedMap = false;
+var fittingInzai = false; // 自分で合わせた移動を「利用者が動かした」と数えないため
+map.on("movestart", () => { if (inzaiFitDone && !fittingInzai) userMovedMap = true; });
+// 地図の上に重なる凡例・警告帯と、下の記録バーの高さを実測する
+function inzaiFitPadding() {
+  const mapRect = map.getContainer().getBoundingClientRect();
+  let top = 12;
+  ["map-legend", "river-alert"].forEach(id => {
+    const node = document.getElementById(id);
+    if (!node || node.hidden || !node.offsetParent) return;
+    const rect = node.getBoundingClientRect();
+    if (rect.height && rect.bottom > mapRect.top && rect.top < mapRect.bottom) top = Math.max(top, rect.bottom - mapRect.top + 8);
+  });
+  let bottom = 92;
+  const bar = document.getElementById("quick-record-bar");
+  if (bar && !bar.hidden && bar.getClientRects().length) { // スマホでは fixed なので offsetParent は null になる
+    const rect = bar.getBoundingClientRect();
+    if (rect.height && rect.top < mapRect.bottom && rect.bottom > mapRect.top) bottom = Math.max(12, mapRect.bottom - rect.top + 8);
+  }
+  return { top, bottom };
+}
+// 警告帯が出た・消えたときも、利用者がまだ地図を動かしていなければ合わせ直す（force）
+function fitToInzai(force = false) {
+  if (userMovedMap || (inzaiFitDone && !force)) return;
   const params = new URLSearchParams(location.search);
-  if (params.has("lat") || params.has("lon") || params.has("zoom")) { inzaiFitDone = true; return; }
+  if (params.has("lat") || params.has("lon") || params.has("zoom")) { inzaiFitDone = true; userMovedMap = true; return; }
   const bounds = boundaryLayer.getBounds?.();
   if (!bounds || !bounds.isValid()) return;
   inzaiFitDone = true;
-  // 下の記録バーと上のズームボタンに隠れる分だけ内側に余白を取る
-  map.fitBounds(bounds, { paddingTopLeft: [12, 12], paddingBottomRight: [12, 92] });
+  const pad = inzaiFitPadding();
+  fittingInzai = true;
+  map.fitBounds(bounds, { paddingTopLeft: [12, pad.top], paddingBottomRight: [12, pad.bottom], animate: false });
+  fittingInzai = false;
 }
 
 function renderRoadFloodSites() {
