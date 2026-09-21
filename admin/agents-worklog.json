@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "防災MAP 手賀沼水位の表示と警告帯＋利根川の洪水予報（気象庁）表示 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "CiDAO src/app/api/disaster/river-level/route.ts（新規・691339d／86c3c79）",
+            "site/inzai-disaster-map/app.js",
+            "site/inzai-disaster-map/index.html",
+            "site/inzai-disaster-map/styles.css",
+            "site/inzai-disaster-map/config.js",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json（2件）"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "新井会長のThreads投稿（手賀沼がはんらん危険水位超え）を受けた中司さんの依頼。方針B1（手賀沼は県ページを閲覧時のみ10分キャッシュで取得・利根川は国の規約とツール取得403のため水位は取らず、気象庁の指定河川洪水予報で代替）、警告は地図上のみ（事業主決定）。本番で15:00観測2.82m・危険の表示と、利根川『発表なし』の表示を確認。session: 0c1e0cb2-319b-4414-89ef-415195ea0a55 / output: 61,369 / cost: $17.01"
+        },
+        {
+          "date": "2026-09-21",
           "title": "SNS3媒体告知＋鉄道運休の自動解除API＋警報自動投稿の頻度修正 0.9時間",
           "category": "実装",
           "outputs": [
@@ -6559,6 +6576,29 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📨 千葉県（水防情報の担当）へ、防災MAPで手賀沼の水位ページを読み取って表示してよいか問い合わせる",
+          "category": "事務",
+          "priority": "高",
+          "note": "2026-09-21 から CiDAO /api/disaster/river-level が suibo.bousai.pref.chiba.lg.jp の手賀沼ページを閲覧時のみ10分キャッシュで取得している（1日最大144回）。県の利用条件は見つからず未確認のまま開始した（事業主判断 B1）。送付は中司さん。停止の要請があれば直ちに止める。"
+        },
+        {
+          "due": "未定",
+          "title": "🌊 利根川に初めて洪水予報が出たとき、防災MAPの水位欄と警告帯に正しく出るか確かめる",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "利根川（上流部・下流部）に指定河川洪水予報が発表されること",
+          "note": "予報区域名を ^利根川(上流部|下流部)?$ で拾っているが、実物の電文では未確認（2026-09-21 は発表なし。桜川・中川の電文では解析が通った）。一致しなければ FLOOD_AREA_PATTERN（CiDAO river-level/route.ts）を直す。"
+        },
+        {
+          "due": "未定",
+          "title": "📱 防災MAPの水位欄と警告帯を実機スマホで確認する",
+          "category": "保守",
+          "priority": "中",
+          "note": "ブラウザで375×812を模擬して、凡例2段の下に警告帯、その下に状態表示が並ぶことは確認済み。実機での見え方・押して水位欄へ移る動きは未確認。"
+        },
         {
           "due": "2026-09-21",
           "title": "⏱ 15時以降の巡回で、警報の自動投稿が新ルール（同じレベルの間は黙る）で動いているか確認する",
