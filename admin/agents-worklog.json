@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "防災MAPに市の避難指示の警告帯（水位と統合・運営で放送ごとにオフ）＋CiDAO避難情報API 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "CiDAO src/app/api/disaster/evac-alert/route.ts（新規・GET/POST）",
+            "CiDAO src/lib/inzai-evac-alert.ts（新規・発令/解除の判定）",
+            "site/inzai-disaster-map/app.js（renderMapAlert・refreshEvacAlert・運営用 loadEvacModeration/setEvacAlertOff）",
+            "site/inzai-disaster-map/index.html・styles.css・config.js",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": true,
+          "note": "市公式LINEの避難指示（14:30）を受け、避難所10施設の開設が防災MAPに反映済みであることを本番APIで照合（10/10一致）。避難指示そのものは未表示だったため、事業主の選択（帯は水位と1本・運営オフは全員に効く）で実装。作業中に17:35の印旛沼周辺の避難指示が追加発令され、最新1件だけでは14:30の発令が消えると判明→発令中を全件返し、解除は災害の種類・場所の語で対応づける形に変更。判定を実データ＋解除3例＋24h経過で試験、運営POSTは実在しない日時で200/403/400を確認（本番の帯は消していない）。本番でPC・スマホの表示を確認。session: d338459c-e5b8-4513-ae80-ce489b3369cc / output: 49,183 / cost: $12.47"
+        },
+        {
+          "date": "2026-09-21",
           "title": "大雨中のSNS投稿の取り込み漏れ調査と巡回の語追加・通行止め2件の代理登録 0.4時間",
           "category": "保守",
           "outputs": [
@@ -6607,6 +6623,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📢 市の解除放送が出たら、防災MAPの避難指示の帯が消えるかを確かめる",
+          "category": "保守",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "印西市が避難指示・高齢者等避難の解除を防災行政無線で放送すること",
+          "note": "2026-09-21 実装の警告帯（CiDAO /api/disaster/evac-alert）は、解除を『○○を解除』の文と災害の種類・場所の語（土砂・印旛沼など）で対応づけている。実際の解除放送の文面は未確認。消えなければ src/lib/inzai-evac-alert.ts の CANCELLED と AREA_TOKENS を実文に合わせる。24時間で自動的に外れるので出しっぱなしにはならない"
+        },
+        {
+          "due": "2026-09-30",
+          "title": "📱 避難指示の警告帯を実機スマホで確認する（1行表示・開閉・✕）",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-21 はブラウザの 375×812 表示でのみ確認。iPhone・Android で帯が1〜2行に収まるか、押して全文が開くか、✕で閉じるかを見る"
+        },
         {
           "due": "2026-09-28",
           "title": "🛣 市HPの「道路冠水による通行止め」のお知らせが公式発表タイムラインに入らない — 取り込み元を足す",
