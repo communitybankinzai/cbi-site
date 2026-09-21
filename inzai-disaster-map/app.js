@@ -5096,7 +5096,8 @@ async function submitPassedRoadRecord(record) {
   try {
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      // 運営の合言葉がある端末は付けて送る（サーバーが連続記録の待ち時間を免除する）
+      headers: { "Content-Type": "application/json", Accept: "application/json", ...(moderationKey() ? { "x-moderation-key": moderationKey() } : {}) },
       body: JSON.stringify({ deviceId: passedRoadDeviceId(), ...record })
     });
     const payload = await response.json().catch(() => ({}));

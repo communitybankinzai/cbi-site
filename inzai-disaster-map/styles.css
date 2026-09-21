@@ -3345,7 +3345,9 @@ body.embed-mode .cbi-home-link {
 .undo-link { border: 1px solid #b8322c; border-radius: 8px; background: #fff; color: #b8322c; font-size: 11px; font-weight: 600; padding: 3px 8px; cursor: pointer; }
 .undo-link:hover { background: #fff5f4; }
 .passed-roads-list li { position: relative; }
-.pr-undo { position: absolute; right: 2px; top: 6px; }
+/* 行ボタン（.passed-roads-list button）の幅いっぱい・flex が効くと文字に重なるので、行の下に独立して置く */
+.passed-roads-list .pr-undo { position: static; display: inline-block; width: auto; margin: 0 0 6px 26px; padding: 3px 10px; border: 1px solid #b8322c; background: #fff; color: #b8322c; }
+.passed-roads-list .pr-undo:hover { background: #fff5f4; }
 
 /* 位置情報が拒否されたときの案内 */
 .geo-denied-guide { margin: 6px 0 0; padding: 8px 10px; border: 1px solid #e0a800; border-radius: 8px; background: #fff8e1; font-size: 12px; line-height: 1.5; color: #4a3a00; text-align: left; }
