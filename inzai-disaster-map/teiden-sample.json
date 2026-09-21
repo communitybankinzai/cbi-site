@@ -1,0 +1,14 @@
+{
+  "_comment": "停電の円表示の見本（2026-09-22）。数値はすべて架空。東京電力パワーグリッドの許可が出るまで、?teiden=demo を付けたときだけ防災MAPが読む。許可後は CiDAO の配信（config.js の teidenEndpoint）を同じ形で返す。lat/lon が無い地区は国土地理院の住所検索で代表点を引く。",
+  "sample": true,
+  "fetchedAt": "2026-09-22T15:30:00+09:00",
+  "source": { "name": "東京電力パワーグリッド「停電情報」", "url": "https://teideninfo.tepco.co.jp/flash/12000000000.html" },
+  "areas": [
+    { "city": "印西市", "district": "大森", "households": 900, "occurredAt": "15:03頃", "restoreEta": "20:10頃", "lat": 35.82712, "lon": 140.14208 },
+    { "city": "印西市", "district": "竹袋", "households": 320, "occurredAt": "15:03頃", "restoreEta": "20:10頃", "lat": 35.83139, "lon": 140.1595 },
+    { "city": "印西市", "district": "木下", "households": 210, "occurredAt": "15:05頃", "restoreEta": "調査中", "lat": 35.83923, "lon": 140.15524 },
+    { "city": "印西市", "district": "高花", "households": 140, "occurredAt": "15:12頃", "restoreEta": "19:40頃", "lat": 35.7973, "lon": 140.13527 },
+    { "city": "印西市", "district": "平岡", "households": 90, "occurredAt": "15:20頃", "restoreEta": "18:30頃", "lat": 35.83388, "lon": 140.17326 },
+    { "city": "印西市", "district": "瀬戸", "households": 10, "occurredAt": "17:40頃", "restoreEta": "19:30頃" }
+  ]
+}

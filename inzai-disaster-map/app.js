@@ -585,6 +585,9 @@ const kansuiRenderer = L.svg({ pane: "kansuiPane" });
 // ポップアップが開かない。
 map.createPane("railStatusPane");
 map.getPane("railStatusPane").style.zIndex = 460;
+// 停電の円（2026-09-22・東電の許可待ち）。冠水の線より上、運休の線と同じ高さ
+map.createPane("teidenPane");
+map.getPane("teidenPane").style.zIndex = 465;
 
 const baseLayers = {
   pale: L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
@@ -8381,6 +8384,93 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll("`", "&#096;");
+}
+
+// ============================================================
+// ⚡ 停電の円表示（2026-09-22・東京電力パワーグリッドの許可待ち）
+// 地区（丁目・大字）の代表点に、停電軒数に応じた大きさの円を置く。数値は東電の発表どおり（加工しない）。
+// ⛔ 許可が出るまで一般の画面には出さない：config.js の teidenEndpoint は空、見本は ?teiden=demo のときだけ
+//    teiden-sample.json（架空の数値）を読む。許可後は CiDAO が同じ形の JSON を10分に1回以下の取得で配る。
+// 形：{ sample, fetchedAt, source:{name,url}, areas:[{city, district, households, occurredAt, restoreEta, lat?, lon?}] }
+// ============================================================
+const TEIDEN_POINT_CACHE_KEY = "cbi-disaster-teiden-points-v1";
+const teidenRenderer = L.svg({ pane: "teidenPane" });
+const teidenLayer = L.layerGroup();
+const teidenMode = new URLSearchParams(window.location.search).get("teiden") === "demo"
+  ? "demo"
+  : (String(APP_CONFIG.teidenEndpoint || "").trim() ? "live" : "");
+
+function teidenRadius(households) {
+  return 5 + Math.sqrt(Math.max(0, Number(households) || 0)) * 0.45;
+}
+
+// 地区の代表点。データに無ければ国土地理院の住所検索で引き、この端末に覚える
+async function teidenPoint(area) {
+  if (Number.isFinite(Number(area.lat)) && Number.isFinite(Number(area.lon))) return { lat: Number(area.lat), lon: Number(area.lon) };
+  const query = `千葉県${area.city || ""}${area.district || ""}`;
+  let cache = {};
+  try { cache = JSON.parse(localStorage.getItem(TEIDEN_POINT_CACHE_KEY) || "{}") || {}; } catch {}
+  if (cache[query]) return cache[query];
+  // 1件の検索が返らなくても、ほかの地区の円は出す（8秒で諦める）
+  const point = await Promise.race([
+    geocodeCity(query).catch(() => null),
+    new Promise(resolve => setTimeout(() => resolve(null), 8000))
+  ]);
+  if (point) {
+    cache[query] = point;
+    try { localStorage.setItem(TEIDEN_POINT_CACHE_KEY, JSON.stringify(cache)); } catch {}
+  }
+  return point;
+}
+
+async function refreshTeidenLayer() {
+  if (!teidenMode) return;
+  const url = teidenMode === "demo" ? "teiden-sample.json" : String(APP_CONFIG.teidenEndpoint).trim();
+  let data;
+  try {
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    data = await response.json();
+  } catch (error) {
+    // 取れないときは古い円を消す（前の停電が続いているように見せない）
+    teidenLayer.clearLayers();
+    return;
+  }
+  const sample = Boolean(data.sample) || teidenMode === "demo";
+  const sourceName = data.source?.name || "東京電力パワーグリッド「停電情報」";
+  const sourceUrl = data.source?.url || "https://teideninfo.tepco.co.jp/flash/12000000000.html";
+  const fetchedAt = data.fetchedAt ? formatDateTime(toDateTimeLocal(new Date(data.fetchedAt).toISOString())) : "";
+  const areas = Array.isArray(data.areas) ? data.areas.filter(a => Number(a.households) > 0) : [];
+  const points = await Promise.all(areas.map(teidenPoint));
+  teidenLayer.clearLayers();
+  areas.forEach((area, index) => {
+    const point = points[index];
+    if (!point) return; // 代表点が引けない地区は描かない（違う場所に置かない）
+    const n = Number(area.households);
+    const r = teidenRadius(n);
+    const name = `${area.city && area.city !== "印西市" ? area.city : ""}${area.district || ""}`;
+    L.circleMarker([point.lat, point.lon], {
+      renderer: teidenRenderer, pane: "teidenPane",
+      radius: r, color: "#a05a00", weight: 1.5, fillColor: "#f0a020", fillOpacity: 0.55
+    }).bindPopup(`
+      <div class="teiden-popup">
+        <strong>⚡ ${escapeHtml(name)}の停電${sample ? "（見本・架空の数値）" : ""}</strong>
+        <div class="teiden-popup-n">約${escapeHtml(n.toLocaleString())}軒</div>
+        <div>発生：${escapeHtml(area.occurredAt || "不明")}／復旧見込み：${escapeHtml(area.restoreEta || "調査中")}</div>
+        <div class="teiden-popup-note">円の位置は地区の代表点で、停電の範囲そのものではありません。</div>
+        <div class="teiden-popup-note">出典：<a href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(sourceName)} ↗</a>${fetchedAt ? `（${escapeHtml(fetchedAt)}取得）` : ""}${sample ? "。この表示は見本で、実際の停電ではありません。" : ""}</div>
+      </div>`).addTo(teidenLayer);
+    L.marker([point.lat, point.lon], {
+      pane: "teidenPane", interactive: false,
+      icon: L.divIcon({ className: "", iconAnchor: [-r - 3, 9], html: `<span class="teiden-label">${escapeHtml(name)} 約${escapeHtml(n.toLocaleString())}軒${sample ? "（見本）" : ""}</span>` })
+    }).addTo(teidenLayer);
+  });
+}
+
+if (teidenMode) {
+  teidenLayer.addTo(map);
+  refreshTeidenLayer();
+  if (teidenMode === "live") setInterval(refreshTeidenLayer, 10 * 60 * 1000);
 }
 
 // 最初の画面は冠水の情報だけにする（2026-09-21 中司さんの実機指摘）。開いた直後に
