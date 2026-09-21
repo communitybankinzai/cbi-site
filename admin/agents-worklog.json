@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-22",
+          "title": "防災MAPの赤い帯・警報カードに何の警戒レベルかを表示（297bc2e9経由の事業主指示）＋停電情報の現況確認 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（evacAlertCause・evacAlertSummary・updateEvacCardNote）",
+            "site/inzai-disaster-map/styles.css",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "事業主『もうレベル4ではない』の指摘。気象庁は注意報（レベル2相当）、市の避難指示（印旛沼の水位・レベル4）は継続で、両表示とも正しいが区別の説明がなかった。帯の見出しに市の避難指示と原因を明記し、警報カードに継続中の1行を追加。7:00の一部解除で土砂の発令が外れたことを本番APIで確認（解除の対応づけが実例で機能）。停電は東電ページが市町村別の軒数を読み込まず印西市の状況は未確認、選択肢を提示済み。前件（output 49,183）との差分 17,778 → 0.2時間\nsession: d338459c-e5b8-4513-ae80-ce489b3369cc / output: 66,961 / cost: $22.51"
+        },
+        {
           "date": "2026-09-21",
           "title": "事業者発表の運休を運営確認で登録（スカイアクセス線）＋表示欄と警告帯の出し入れ修正 0.5時間",
           "category": "実装",
