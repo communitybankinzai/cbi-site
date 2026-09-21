@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260921k">
+    <link rel="stylesheet" href="./styles.css?v=20260922rail3">
   </head>
   <body>
     <div class="app-shell">
@@ -396,13 +396,15 @@
           <details class="acc teiden-acc" id="teiden-acc">
             <summary>⚡ いまの停電（東京電力パワーグリッド）</summary>
             <div class="acc-body">
-              <p class="teiden-note">東京電力パワーグリッドの<strong>停電履歴検索</strong>の画面をそのまま表示しています。発生日を選ぶと、地区（丁目・大字）ごとの停電軒数・発生時刻・復旧日時・停電理由が出ます。<strong>この地図が数値を加工して表示しているものではありません。</strong></p>
+              <p class="teiden-note">東京電力パワーグリッドの<strong>千葉県の停電情報（いま発生中）</strong>の画面をそのまま表示しています。市町村ごとの停電軒数が出て、「印西市」を押すと地区ごとの軒数と復旧見込みが出ます。<strong>この地図が数値を加工して表示しているものではありません。</strong></p>
+              <p class="teiden-note">軒数が「-」のままのときや更新時刻が出ないときは、アクセスの集中などで読み込めていないことがあります。<strong>下の「別の画面で開く」から東京電力のページを直接開いてください。</strong></p>
               <div class="teiden-frame">
-                <iframe data-src="https://teideninfo.tepco.co.jp/day/teiden/index-j.html" title="東京電力パワーグリッド 停電履歴検索" loading="lazy" referrerpolicy="no-referrer"></iframe>
+                <iframe data-src="https://teideninfo.tepco.co.jp/html/12000000000.html" title="東京電力パワーグリッド 停電情報（千葉県）" loading="lazy" referrerpolicy="no-referrer"></iframe>
               </div>
               <p>
-                <a class="golink" href="https://teideninfo.tepco.co.jp/day/teiden/index-j.html" target="_blank" rel="noreferrer">停電履歴検索を別の画面で開く ↗</a>
-                <a class="golink" href="https://teideninfo.tepco.co.jp/flash/12000000000.html" target="_blank" rel="noreferrer">いま発生中の停電（千葉県）↗</a>
+                <a class="golink" href="https://teideninfo.tepco.co.jp/html/12000000000.html" target="_blank" rel="noreferrer">いま発生中の停電（千葉県）を別の画面で開く ↗</a>
+                <a class="golink" href="https://teideninfo.tepco.co.jp/html/12231000000.html" target="_blank" rel="noreferrer">印西市の停電 ↗</a>
+                <a class="golink" href="https://teideninfo.tepco.co.jp/day/teiden/index-j.html" target="_blank" rel="noreferrer">終わった停電の記録（停電履歴）↗</a>
               </p>
               <p class="teiden-note">出典：東京電力パワーグリッド「停電情報」。公式アプリ「TEPCO速報」に地域を登録すると、停電の通知を受け取れます。</p>
             </div>
@@ -1711,7 +1713,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260907g"></script>
-    <script src="./app.js?v=20260921rail2"></script>
+    <script src="./app.js?v=20260922rail3"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

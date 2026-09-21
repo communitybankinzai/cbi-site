@@ -3519,3 +3519,10 @@ body.citizen-road-editing { overflow: hidden; }
 /* 警告帯を ✕ で閉じたあとに残す小さなボタン（押すと警告帯に戻る・2026-09-21） */
 .river-alert.is-collapsed { right: auto; padding: 0; }
 .map-alert-reopen { border: 0; background: none; color: #fff; font: inherit; font-size: 13px; font-weight: 700; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+
+/* 運休の表示欄の見分け方（赤＝運休・遅れ／灰色の点線＝線路の位置・2026-09-22） */
+.rail-status-main { flex: 1 1 auto; min-width: 0; }
+.rail-status-legend { margin-top: 3px; font-size: 11px; color: #57606a; display: flex; align-items: center; flex-wrap: wrap; gap: 2px 12px; }
+.rail-legend-item { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.rail-legend-red { display: inline-block; width: 18px; height: 5px; border-radius: 3px; background: #dc2626; }
+.rail-legend-gray { display: inline-block; width: 18px; border-top: 3px dashed #4b5563; }

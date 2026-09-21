@@ -3833,10 +3833,18 @@ function renderRailStatus() {
   const buses = (railStatusData.buses || []).map(bus =>
     `${String(bus.name || "").replace(/^路線バス\s*/, "")}（${RAIL_STATE_STYLE[bus.state]?.label || "運行情報"}）`
   );
-  const updated = railStatusTime(railStatusData.updatedAt);
+  // 時刻は、出している項目のうちいちばん新しい発表の時刻にする。市の発表（updatedAt）だけを見ると、
+  // 運営が今朝登録し直した項目があっても昨日の時刻と⚠が出ていた（2026-09-22 事業主指摘）
+  const announcedTimes = [...(railStatusData.railways || []), ...(railStatusData.buses || [])]
+    .map(item => item.announcedAt)
+    .concat(railStatusData.updatedAt)
+    .filter(Boolean)
+    .sort((a, b) => Date.parse(b) - Date.parse(a));
+  const newest = announcedTimes[0] || railStatusData.updatedAt;
+  const updated = railStatusTime(newest);
   // 市が再開を発表した区間はサーバー側で外れる（cleared）。黙って消えると不安なので一言添える
   const cleared = Array.isArray(railStatusData.cleared) ? railStatusData.cleared : [];
-  const stale = railStatusIsStale(railStatusData.updatedAt);
+  const stale = railStatusIsStale(newest);
 
   // 地図を覆わないよう、ふだんは1行の要約だけ出し、バス路線名などは「詳しく」で開く（2026-09-21 指摘）
   const summary = [];
@@ -3844,7 +3852,7 @@ function renderRailStatus() {
   if (buses.length) summary.push(`🚌 バス ${buses.length}路線`);
   const operatorRails = (railStatusData.railways || []).filter(r => r.sourceType === "operator");
   const head = summary.length
-    ? `${summary.join("・")}が運休・遅れ${updated ? `（${updated} 市発表${operatorRails.length ? "ほか" : ""}）` : ""}`
+    ? `${summary.join("・")}が運休・遅れ${updated ? `（${updated} ${operatorRails.length ? "市・事業者の発表" : "市発表"}）` : ""}`
     : "🚃 登録中の運休・遅れはありません（平常という意味ではありません）";
 
   const details = [];
@@ -3858,9 +3866,14 @@ function renderRailStatus() {
   const status = document.getElementById("map-status");
   // ✕ で文字だけ隠せる（赤い線は残る）。チェックを入れ直すとまた出る（2026-09-21 指摘：地図が見えない）
   const hide = `<button type="button" class="rail-status-hide" data-rail-status-hide aria-label="運休の表示を隠す" title="文字だけ隠す（線は残ります）">隠す</button>`;
+  // 「鉄道」レイヤーの灰色の点線（線路の位置）を、色の薄い運休と読み違えないよう見分け方を添える（2026-09-22 事業主指摘）
+  const railwayShown = Boolean(document.querySelector('[data-overlay="railway"]')?.checked);
+  const legend = drawn
+    ? `<div class="rail-status-legend"><span class="rail-legend-item"><span class="rail-legend-red"></span>運休・遅れ</span>${railwayShown ? `<span class="rail-legend-item"><span class="rail-legend-gray"></span>線路の位置（平常も表示）</span>` : ""}</div>`
+    : "";
   status.innerHTML = details.length
-    ? `<div class="rail-status-box"><details class="rail-status-summary"><summary>${escapeHtml(head)}${stale ? " ⚠" : ""}　<span class="rail-status-more">詳しく ▾</span><span class="rail-status-less">閉じる ▴</span></summary><ul>${details.join("")}</ul></details>${hide}</div>`
-    : `<div class="rail-status-box"><span>${escapeHtml(head)}</span>${hide}</div>`;
+    ? `<div class="rail-status-box"><div class="rail-status-main"><details class="rail-status-summary"><summary>${escapeHtml(head)}${stale ? " ⚠" : ""}　<span class="rail-status-more">詳しく ▾</span><span class="rail-status-less">閉じる ▴</span></summary><ul>${details.join("")}</ul></details>${legend}</div>${hide}</div>`
+    : `<div class="rail-status-box"><div class="rail-status-main"><span>${escapeHtml(head)}</span>${legend}</div>${hide}</div>`;
   status.querySelector("[data-rail-status-hide]")?.addEventListener("click", clearRailStatusNote);
 }
 
