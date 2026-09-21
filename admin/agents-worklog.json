@@ -61,6 +61,24 @@
         },
         {
           "date": "2026-09-21",
+          "title": "防災MAP：スマホ表示・注記・期間フィルター・線のクリック不具合・X無料取り込み 1.1時間",
+          "category": "実装",
+          "outputs": [
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/index.html",
+            "inzai-disaster-map/styles.css",
+            "inzai-disaster-map/past-flood-points.json",
+            "inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "admin/changelog.json",
+            "CiDAO disaster_info_sources（Xアカウント2件追加）",
+            "広報部/防災MAP_冠水記録のお願い_LINE用.md"
+          ],
+          "hours": 1.1,
+          "partnerApproved": true,
+          "note": "中司さんの実機指摘への連続対応。スマホで運営用ボタンを1行に（display:contents に負けていたのを実測で発見し再修正）、試作の注記3か所を実態に合わせ書き換え、⏱期間フィルター（本番で596件→直近3時間4件を確認）、過去の冠水実績トグル復活と白井市の記録（画像から読み取り・誤差±150m）、地図上の線を押しても反応しない不具合（冠水の canvas が上を覆っていた・elementFromPoint で特定）を SVG 化で解消し実クリックで確認、X は URL 貼り付けで本文・時刻・写真を自動入力（fxtwitter・CORS *）と見張りアカウントを3件へ。外部の方と見られる初の記録（12:07 吉高）を端末ID・IPで判定。session 累計3.0時間から先行分1.8時間を除いた分。session: f423f041-19ed-4441-8327-a288a48d54d3 / output: 296,409 / cost: $106.69"
+        },
+        {
+          "date": "2026-09-21",
           "title": "防災MAP：凡例バー・本日/過去の描き分け・運営用の記録管理（いたずら対応） 1.0時間",
           "category": "実装",
           "outputs": [
