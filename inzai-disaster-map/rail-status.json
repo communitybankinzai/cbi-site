@@ -1,56 +1,25 @@
 {
  "note": "印西市の発表を書き写したものです。運行の可否を保証するものではありません。最新は各事業者の運行情報で確認してください。",
- "buses": [
-  {
-   "name": "路線バス 六合路線（小林駅～印旛日本医大駅～京成佐倉駅）",
-   "state": "suspended",
-   "detail": "運休しています。",
-   "announcedAt": "2026-09-21T18:00:00+09:00"
-  },
-  {
-   "name": "路線バス 宗像路線（全線）",
-   "state": "suspended",
-   "detail": "全線で運休しています。",
-   "announcedAt": "2026-09-21T18:00:00+09:00"
-  },
-  {
-   "name": "路線バス 順大線（平賀学園台～京成酒々井駅）",
-   "state": "suspended",
-   "detail": "運休しています。",
-   "announcedAt": "2026-09-21T18:00:00+09:00"
-  },
-  {
-   "name": "路線バス 神崎線（船尾車庫～八千代方面）",
-   "state": "suspended",
-   "detail": "運休しています。",
-   "announcedAt": "2026-09-21T18:00:00+09:00"
-  },
-  {
-   "name": "路線バス 印旛学園線（仲の台～京成酒々井駅西口）",
-   "state": "suspended",
-   "detail": "区間運休です。",
-   "announcedAt": "2026-09-21T18:00:00+09:00"
-  }
- ],
+ "buses": [],
  "source": {
   "url": "https://www.city.inzai.lg.jp/0000022520.html",
   "label": "印西市 災害時の公共交通のご案内"
  },
  "railways": [
   {
-   "line": "jr-narita-abiko",
-   "from": "我孫子",
    "to": "成田",
+   "from": "我孫子",
+   "line": "jr-narita-abiko",
    "state": "suspended",
-   "detail": "台風の影響で、成田〜我孫子駅間の運転を見合わせています。昼ごろの運転再開見込み、代行輸送はなし（JR東日本の発表・22日4時34分時点）。",
-   "announcedAt": "2026-09-22T04:34:00+09:00",
-   "expiresAt": "2026-09-22T10:34:00+09:00",
-   "sourceType": "operator",
-   "sourceLabel": "JR東日本 運行情報",
+   "detail": "台風の影響で、成田〜我孫子駅間の運転を見合わせています。昼ごろの運転再開見込み。振替輸送を行っています（JR東日本の発表・22日6時36分時点）。",
+   "expiresAt": "2026-09-22T12:36:00+09:00",
+   "lineLabel": "JR成田線（我孫子支線）",
    "sourceUrl": "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=1&lineid=naritaline",
-   "lineLabel": "JR成田線（我孫子支線）"
+   "sourceType": "operator",
+   "announcedAt": "2026-09-22T06:36:00+09:00",
+   "sourceLabel": "JR東日本 運行情報"
   }
  ],
- "checkedAt": "2026-09-21T10:14:17.730Z",
- "updatedAt": "2026-09-21T18:00:00+09:00"
+ "checkedAt": "2026-09-21T21:10:02.576Z",
+ "updatedAt": "2026-09-21T21:00:00.000Z"
 }
