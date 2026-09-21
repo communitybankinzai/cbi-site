@@ -73,13 +73,16 @@ a {
 }
 
 /* 既定は1行に畳み、タップで全文（2026-09-21・スマホで画面の半分を占めていたため） */
+/* 試作である旨の帯は控えめに（2026-09-21 夕・「あまり重要でない情報なので」と中司さん）。
+   黄色い注意帯をやめ、細い灰色の1行にした。タップすると全文が出るのは同じ */
 .prototype-banner {
-  border-bottom: 1px solid #e5c86a;
-  padding: 6px 16px;
-  background: #fff8dc;
-  color: #5f4b08;
-  font-size: 12px;
+  border-bottom: 1px solid #e3e7ec;
+  padding: 3px 16px;
+  background: #f6f7f9;
+  color: #6b7684;
+  font-size: 11px;
 }
+.prototype-banner strong { font-weight: 500; }
 
 .prototype-banner > summary {
   display: flex;
@@ -1047,7 +1050,7 @@ details.layer-group .layer-group-body {
 /* ⏱ 期間のしぼり込みパネル（凡例の下に出す） */
 .range-panel {
   position: absolute;
-  top: 46px; left: 8px;
+  top: calc(var(--legend-h, 38px) + 6px); left: 8px; /* 凡例のすぐ下（高さは app.js が --legend-h に入れる） */
   z-index: 640;
   width: min(330px, calc(100% - 16px));
   padding: 10px;
@@ -1072,11 +1075,12 @@ details.layer-group .layer-group-body {
 .is-citizen-drawing .range-panel { display: none; }
 
 @media (max-width: 820px) {
-  .range-panel { top: 76px; }
+  /* .range-panel の位置は --legend-h で決まる */
 }
 
-/* ズームボタンと状態表示は凡例の下へ避ける */
-.map-pane .leaflet-top .leaflet-control { margin-top: 44px; }
+/* ズームボタンと状態表示は凡例の下へ避ける。凡例の高さは app.js の initMapLegend が
+   --legend-h に入れる（2〜3行に伸び縮みするので固定値だと裏に隠れる） */
+.map-pane .leaflet-top .leaflet-control { margin-top: calc(var(--legend-h, 38px) + 6px); }
 
 .map-status,
 .map-disclaimer {
@@ -1091,18 +1095,29 @@ details.layer-group .layer-group-body {
 }
 
 .map-status {
-  top: 50px; /* 地図上端の凡例バーの下へ（2026-09-21） */
+  top: calc(var(--legend-h, 38px) + 12px); /* 地図上端の凡例バーの下へ */
   left: 58px; /* ズームボタンの右へ逃がす */
   padding: 8px 10px;
   font-size: 13px;
 }
 
+/* 「CBIの試作・市の公式情報ではありません」は控えめに（2026-09-21 夕・中司さん）。
+   枠も影もやめ、右下に小さな1行で出す */
 .map-disclaimer {
-  bottom: 16px;
-  max-width: min(620px, calc(100% - 28px));
-  padding: 9px 11px;
-  color: var(--muted);
-  font-size: 12px;
+  left: auto;
+  right: 6px;
+  bottom: 22px;
+  max-width: calc(100% - 12px);
+  padding: 2px 7px;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.75);
+  color: #6b7684;
+  font-size: 10.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .location-pick-banner,
@@ -2849,8 +2864,7 @@ body.embed-mode .cbi-home-link {
     background: none;
   }
 
-  .map-status { top: 74px; }
-  .map-pane .leaflet-top .leaflet-control { margin-top: 70px; }
+  /* 凡例の下に置く位置は --legend-h で決まる（固定値は凡例が3行になると裏に隠れるのでやめた） */
 
   .prototype-banner > summary {
     justify-content: flex-start;

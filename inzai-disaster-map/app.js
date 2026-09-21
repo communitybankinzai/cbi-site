@@ -2252,6 +2252,15 @@ function initMapLegend() {
     renderPassedRoadsLayer();
   });
   syncMapLegend();
+  // 凡例は画面幅や期間のラベルで2〜3行に伸び縮みする。高さが変わるたびに、下に置く
+  // ズームボタン・手賀沼の警告帯・状態表示を連動させる（2026-09-21：期間を指定すると
+  // 凡例が3行目に回り込み、「⏱ 期間」が警告帯とズームボタンの裏に隠れて押せなくなっていた）
+  const syncLegendHeight = () => {
+    document.getElementById("map-pane")?.style.setProperty("--legend-h", `${legend.offsetHeight}px`);
+    if (typeof placeRiverAlert === "function") placeRiverAlert();
+  };
+  if (typeof ResizeObserver === "function") new ResizeObserver(syncLegendHeight).observe(legend);
+  syncLegendHeight();
 }
 
 function syncMapLegend() {
@@ -5030,11 +5039,19 @@ function initRecordRange() {
       return;
     }
     if (fromMs === null && toMs === null) { applyRecordRange(null, null, ""); panel.hidden = true; return; }
-    const fmt = ms => formatDateTime(toDateTimeLocal(new Date(ms).toISOString())) || "";
-    const label = fromMs !== null && toMs !== null ? `${fmt(fromMs)}〜${fmt(toMs)}`
-      : fromMs !== null ? `${fmt(fromMs)}から` : `${fmt(toMs)}まで`;
+    // ボタンの文字は短く（長いと凡例が3行目に回り込み、ほかの表示の裏に隠れる）。
+    // 同じ日なら「9/21 7:11〜13:11」、日をまたぐなら「9/12〜9/21」。正確な期間はボタンの説明に入れる
+    const day = ms => { const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()}`; };
+    const hm = ms => { const d = new Date(ms); return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`; };
+    const full = ms => formatDateTime(toDateTimeLocal(new Date(ms).toISOString())) || "";
+    const label = fromMs !== null && toMs !== null
+      ? (day(fromMs) === day(toMs) ? `${day(fromMs)} ${hm(fromMs)}〜${hm(toMs)}` : `${day(fromMs)}〜${day(toMs)}`)
+      : fromMs !== null ? `${day(fromMs)} ${hm(fromMs)}から` : `${day(toMs)} ${hm(toMs)}まで`;
+    const fullLabel = fromMs !== null && toMs !== null ? `${full(fromMs)}〜${full(toMs)}`
+      : fromMs !== null ? `${full(fromMs)}から` : `${full(toMs)}まで`;
     document.getElementById("range-note").textContent = "";
     applyRecordRange(fromMs, toMs, label);
+    document.getElementById("legend-range")?.setAttribute("title", `期間：${fullLabel}（押して変更）`);
     panel.hidden = true;
   });
   document.getElementById("range-clear")?.addEventListener("click", () => {

@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260921b">
+    <link rel="stylesheet" href="./styles.css?v=20260921d">
   </head>
   <body>
     <div class="app-shell">
@@ -699,9 +699,9 @@
           <!-- 2026-09-21: 「市民投稿の収集・公開運用は開始していません」は事実と合わなくなったので直した
                （冠水・通れた道の記録は実際に集めて地図に出している）。ただし市の公式情報ではないこと、
                協働事業がまだ提案段階であることは伝え続ける -->
-          <div class="map-disclaimer">
-            CBI（Community Bank INZAI）が自主的に試作している画面です。印西市の公式情報ではありません。冠水・通れた道の記録は、実際に集めて地図に出しています。
-          </div>
+          <!-- 2026-09-21 夕：「試作の話はあまり重要でないので控えめに」（中司さん）。
+               地図の下を3行ぶん覆っていたので1行に縮めた。市の公式情報ではないことだけは残す -->
+          <div class="map-disclaimer">ⓘ CBIの試作・印西市の公式情報ではありません</div>
         </section>
 
         <aside class="side-panel right-panel" aria-label="被害一覧と詳細">
@@ -1700,7 +1700,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260907g"></script>
-    <script src="./app.js?v=20260921b"></script>
+    <script src="./app.js?v=20260921d"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>
