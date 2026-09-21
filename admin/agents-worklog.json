@@ -18,6 +18,25 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "事業者発表の運休を運営確認で登録（スカイアクセス線）＋表示欄と警告帯の出し入れ修正 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "CiDAO src/lib/disaster-rail-status.ts（sourceType operator）",
+            "CiDAO src/lib/disaster-rail-watch.ts",
+            "CiDAO src/app/api/disaster/rail-status/approve/route.ts",
+            "CiDAO テスト2件追加",
+            "inzai-disaster-map/app.js（ポップアップの出典・要約／隠す・警告帯の表示する・F5で復帰）",
+            "inzai-disaster-map/styles.css",
+            "inzai-disaster-map/index.html（京成電鉄運行情報リンク・app.js版番号）",
+            "inzai-disaster-map/rail-status.json",
+            "Supabase app_settings disaster_rail_status（スカイアクセス線 新鎌ヶ谷〜印旛日本医大・21:53時点・03:53まで）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": true,
+          "note": "中司さんの指摘への対応。(1) 運休の表示欄と警告帯の✕が縦に並び、警告帯を誤って閉じると戻せなかった→運休側は『隠す』、警告帯は閉じても『表示する』を残し、閉じた記録はsessionStorageをやめてF5で戻るように。(2) 『JRは出ていて北総線が出ないのは意味がわからない／乗換アプリと何が違う』→JRは市の案内由来であること、北総鉄道が禁じているのはページの転載・複写で事実の伝達とは別と整理し直し（確信度中・法的助言ではない）、事業者発表を運営が確認して自分の言葉で登録する方式を追加。京成電鉄の運行情報ページで21:53時点の見合わせを確認してから登録。北総鉄道のページに掲載がないため『北総線が止まっている』とは書かず、スカイアクセス線として登録。本番で線15本・要約『市発表ほか』・ポップアップの出典表示を確認（配信側が旧app.jsを返したため版番号を更新）。session 累計3.2時間から先行分2.7時間を除いた分。session: 297bc2e9-ca4e-4883-a1e8-5c69c0c8a15d / output: 319,516 / cost: $119.54"
+        },
+        {
+          "date": "2026-09-21",
           "title": "防災MAP 水位キャッシュ10分→5分（印旛沼の急増水対応）0.1時間",
           "category": "保守",
           "outputs": [
@@ -6700,6 +6719,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-22",
+          "title": "🚃 スカイアクセス線（新鎌ヶ谷〜印旛日本医大）の見合わせ登録が 03:53 に自動で消える前後の確認",
+          "category": "保守",
+          "priority": "中",
+          "note": "運営が京成電鉄の発表を確認して登録した項目（sourceType operator）は市の案内と照合しないため、再開しても期限（2026-09-22 03:53）までは赤いまま。朝に京成電鉄の運行情報を見て、再開済みなら早めに外し、続いていれば新しい時刻で登録し直す。北総線（各駅停車）は北総鉄道のページに掲載がなく登録していない。"
+        },
         {
           "due": "未定",
           "title": "🎥 Threads アプリ審査の録画をパソコンで行う（Claude が操作・録画、中司さんは許可画面で「許可」を1回）",
