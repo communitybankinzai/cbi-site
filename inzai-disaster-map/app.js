@@ -975,6 +975,14 @@ function bindEvents() {
   });
   document.getElementById("paste-social-link-button").addEventListener("click", pasteSocialLink);
   document.getElementById("collector-post-url").addEventListener("input", syncCollectorPlatformFromUrl);
+  // X の投稿URLを直接貼った場合も、本文・時刻・写真を自動で入れる（同じURLは1回だけ）
+  let lastFetchedXUrl = "";
+  document.getElementById("collector-post-url").addEventListener("input", event => {
+    const url = event.target.value.trim();
+    if (url === lastFetchedXUrl || !parseXStatusUrl(url)) return;
+    lastFetchedXUrl = url;
+    fillCollectorFromXUrl(url);
+  });
   document.getElementById("collector-platform").addEventListener("change", updateCollectorPlatformHelp);
   document.querySelectorAll('[name="collector-search-mode"]').forEach(input => {
     input.addEventListener("change", updateCollectorPlatformHelp);
@@ -1291,6 +1299,60 @@ function registerManualMonitorUrl() {
   const firstQuery = (snsMonitorPayload?.rules || []).find(rule => rule.enabled && (!platform || rule.platform === platform))?.query;
   if (firstQuery) setFormValue("collector-query", firstQuery);
   document.getElementById("collector-link-status").textContent = "手動巡回で見つけたURLを設定しました。分かる範囲で本文・時刻・場所を補ってください。";
+  fillCollectorFromXUrl(url);
+}
+
+// ============================================================
+// X（旧Twitter）の投稿URLを貼ると、本文・投稿時刻・写真を自動で入れる（2026-09-21）
+// X の検索APIは有料だが、投稿1件の中身は fxtwitter（api.fxtwitter.com）が無料・認証なしで返す。
+// CORS が「*」なのでブラウザから直接呼べる（サーバー・課金なし）。公開投稿のみ。
+// 取得できなくても手入力はそのまま続けられる（失敗は状態文に出すだけ）。
+// ============================================================
+function parseXStatusUrl(url) {
+  const match = String(url || "").match(/^https?:\/\/(?:www\.|mobile\.)?(?:x|twitter)\.com\/([A-Za-z0-9_]{1,15})\/status(?:es)?\/(\d{1,25})/i);
+  return match ? { user: match[1], id: match[2] } : null;
+}
+
+async function fillCollectorFromXUrl(url) {
+  const parsed = parseXStatusUrl(url);
+  if (!parsed) return;
+  const status = document.getElementById("collector-link-status");
+  status.textContent = "X の投稿から本文・時刻・写真を読み込んでいます…";
+  try {
+    const response = await fetch(`https://api.fxtwitter.com/${parsed.user}/status/${parsed.id}`, { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const tweet = payload.tweet;
+    if (!tweet) throw new Error("投稿が見つかりません（非公開・削除の可能性）");
+    const text = String(tweet.text || "").trim();
+    const photos = ((tweet.media && tweet.media.photos) || []).map(photo => photo.url).filter(Boolean);
+    // 投稿時刻は既存の読み取り（parseCollectorPostTime）が受け付ける「YYYY/MM/DD HH:MM」で入れる
+    const created = new Date((tweet.created_timestamp ? tweet.created_timestamp * 1000 : Date.parse(tweet.created_at)));
+    if (Number.isFinite(created.getTime()) && !getFormValue("collector-post-time")) {
+      const local = toLocalInputValue(created.getTime()).replace("T", " ").replace(/-/g, "/");
+      setFormValue("collector-post-time", local);
+    }
+    if (text && !getFormValue("collector-post-text")) setFormValue("collector-post-text", text);
+    const platform = document.getElementById("collector-platform");
+    if (platform && [...platform.options].some(option => option.value === "x")) platform.value = "x";
+    // 写真は位置の手がかりとして状態文に並べる（地図に自動では載せない）
+    const author = tweet.author ? `${tweet.author.name}（@${tweet.author.screen_name}）` : `@${parsed.user}`;
+    status.innerHTML = `X の投稿を読み込みました：${escapeHtml(author)}。本文と投稿時刻を入れました。` +
+      (photos.length ? ` 写真 ${photos.length}枚：` + photos.map((src, i) => `<a href="${escapeAttribute(src)}" target="_blank" rel="noreferrer">写真${i + 1}</a>`).join("・") : "") +
+      `<br><strong>場所は自動では決めません。</strong>本文の地名から「場所を探す」で確認してから保存してください。`;
+    // 本文に地名があれば候補を1つ示すところまで進める（地図への確定は人がする）
+    if (text) {
+      const candidateStatus = document.getElementById("collector-location-candidate-status");
+      suggestLocationFromOcr(text).then(candidate => {
+        const name = candidate && (candidate.label || candidate.name || candidate.title || candidate.query);
+        if (!name) return;
+        if (!getFormValue("collector-location-note")) setFormValue("collector-location-note", name);
+        if (candidateStatus) candidateStatus.textContent = `本文から場所の候補：${name}${candidate.outsideInzai ? "（印西市外）" : ""}。「場所を探す」で地図上の位置を確かめてください。`;
+      }).catch(() => {});
+    }
+  } catch (error) {
+    status.textContent = `X の投稿を自動で読み込めませんでした（${error?.message || "接続エラー"}）。本文・時刻は手で入れてください。`;
+  }
 }
 
 function initShelters() {
