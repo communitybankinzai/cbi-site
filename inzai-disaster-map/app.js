@@ -2361,7 +2361,13 @@ function initMapLegend() {
       passedKindFilter[chip.dataset.kind] = turnOn;
       const box = document.querySelector('[data-overlay="passedRoads"]');
       if (turnOn && box && !box.checked) box.click(); // 層ごと OFF だったら ON にする（読み込みはそちらが持つ）
+      // 赤（通れない道）は、みんつくへの投稿も同じ「通れない道」として一緒に出し入れする（2026-09-22）
+      if (chip.dataset.kind === "blocked") {
+        const kansuiBox = document.querySelector('[data-overlay="kansui"]');
+        if (kansuiBox && kansuiBox.checked !== turnOn) kansuiBox.click();
+      }
       renderPassedRoadsLayer();
+      syncMapLegend();
       return;
     }
     if (chip.dataset.legend) {
@@ -2414,9 +2420,12 @@ function syncMapLegend() {
     chip.setAttribute("aria-pressed", String(Boolean(box?.checked)));
   });
   const passedOn = Boolean(document.querySelector('[data-overlay="passedRoads"]')?.checked);
+  const kansuiOn = Boolean(document.querySelector('[data-overlay="kansui"]')?.checked);
   document.querySelectorAll("#map-legend [data-kind]").forEach(chip => {
     // 初期化の早い段階では passedKindFilter にまだ値が無い（後方で代入）ので、そのときは両方表示とみなす
-    chip.setAttribute("aria-pressed", String(passedOn && (passedKindFilter?.[chip.dataset.kind] ?? true)));
+    const own = passedOn && (passedKindFilter?.[chip.dataset.kind] ?? true);
+    // 赤（通れない道）は、みんつくの層が出ていれば押された状態にする
+    chip.setAttribute("aria-pressed", String(chip.dataset.kind === "blocked" ? own || kansuiOn : own));
   });
 }
 
@@ -5318,19 +5327,15 @@ const MINTSUKU_URL = "https://mintsuku-chiba-kansuimap.com/";
 
 // 通れない地点（冠水で止まった現在地・1点）。みんつくの赤い線と同じ意味なので、
 // ポップアップから本家にも投稿できるよう導線を置く（本家に外部向けAPIはない）
+// 通れない道は、みんつくへの投稿（renderKansuiLayer）と見た目をそろえる（2026-09-22）：
+// 同じ赤・濃い＝対象日の記録／薄い＝それより前・1地点は白ふちの赤い丸
 function blockedPointShape(road) {
-  const tier = passedRoadTier(road.endedAt);
-  const isOld = tier.maxHours === Infinity;
+  const isOld = !isTargetDayRecord(road.endedAt);
   const marker = road.path.length > 1 ? L.polyline(road.path, {
-    pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: KANSUI_COLOR, weight: 7, opacity: isOld ? .5 : .95
-  }) : L.marker(road.path[0], {
-    pane: "passedRoadsPane", renderer: passedRoadsRenderer,
-    icon: L.divIcon({
-      className: "",
-      html: `<div class="blocked-gps-mark${isOld ? " is-old" : ""}" aria-label="通れない地点">×</div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
-    })
+    pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: KANSUI_COLOR, weight: isOld ? 4 : 6, opacity: isOld ? .5 : .95
+  }) : L.circleMarker(road.path[0], {
+    pane: "passedRoadsPane", renderer: passedRoadsRenderer, radius: isOld ? 5 : 7, color: "#ffffff", weight: 2,
+    fillColor: KANSUI_COLOR, fillOpacity: isOld ? .55 : .95
   });
   marker.bindPopup(
     `<strong>🚫 ${road.path.length > 1 ? "通れない道" : "通れない地点"}（市民の記録）</strong><br>` +
@@ -5338,7 +5343,7 @@ function blockedPointShape(road) {
     `・${escapeHtml(passedRoadSourceLabel(road))}` +
     (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
     `<br><span style="font-size:11px;">${isOld
-      ? "6時間より前の記録です。すでに通れるようになっている可能性があります。"
+      ? "対象日より前の記録です。すでに通れるようになっている可能性があります。"
       : "この地図を見ている人が通れなかった場所を記録したものです。公式の通行止めではありません。"}</span>` +
     rainVerdictHtml(road) +
     `<br><a href="${MINTSUKU_URL}" target="_blank" rel="noreferrer">みんつく千葉冠水マップにも投稿する ↗</a>` +
