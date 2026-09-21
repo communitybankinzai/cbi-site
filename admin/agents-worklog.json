@@ -6671,11 +6671,11 @@
       ],
       "plans": [
         {
-          "due": "2026-09-22",
-          "title": "↩ Threads 審査の録画が終わったら、巡回の除外に communitybankinzai を戻し、検索語「防災MAPを更新」を消す",
+          "due": "未定",
+          "title": "🎥 Threads アプリ審査の録画をパソコンで行う（Claude が操作・録画、中司さんは許可画面で「許可」を1回）",
           "category": "保守",
           "priority": "高",
-          "note": "2026-09-21 夜、録画でテスト用アカウントの投稿を映すため、CiDAO src/lib/disaster-sns-monitor.ts の EXCLUDED_ACCOUNTS から communitybankinzai を一時的に外した（d0c9d89）。disaster_sns_monitor_rules に threads『防災MAPを更新』を一時追加。戻さないと CBI 自身の投稿が候補に混ざり続ける"
+          "note": "2026-09-21 夜、スマホでは手順を見ながら録画できなかったため延期（一時設定は戻し済み・1751fd4）。録画の直前に Claude が (1) CiDAO の EXCLUDED_ACCOUNTS から communitybankinzai を外す (2) threads の検索語『防災MAPを更新』を有効に戻す（今は enabled=false） (3) CBIの投稿を候補に戻す。録画後に全部戻す。手順は保管庫 cidao/2026-09-21_Threadsキーワード検索のアプリ審査申請の準備.md"
         },
         {
           "due": "2026-09-30",
