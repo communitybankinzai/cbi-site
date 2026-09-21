@@ -2161,6 +2161,19 @@ document.addEventListener("click", async event => {
   }
 });
 
+// 地図のポップアップの「🗑 この記録を地図から伏せる」（通れた道・通れない道）
+document.addEventListener("click", async event => {
+  const button = event.target.closest?.("[data-passed-hide]");
+  if (!button) return;
+  if (!confirm("この記録を地図から伏せます。よろしいですか？（記録は消えず、「🗑 市民記録の管理」から戻せます）")) return;
+  button.disabled = true;
+  button.textContent = "伏せています…";
+  map.closePopup();
+  if (!(await moderateRecord(button.dataset.passedHide, true))) {
+    alert("伏せられませんでした。合言葉か通信を確認して、「🗑 市民記録の管理」からもう一度お試しください。");
+  }
+});
+
 async function loadKansuiModerationList() {
   const endpoint = String(APP_CONFIG.kansuiEndpoint || "").trim();
   const key = moderationKey();
@@ -2195,8 +2208,10 @@ async function moderateRecord(id, hide) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     await ensurePassedRoadsLayer(true); // 地図と一覧を取り直す
     await loadModerationList();
+    return true;
   } catch (error) {
     setModerateStatus(`<p class="is-error">変更できません（${escapeHtml(error?.message || "接続エラー")}）</p>`);
+    return false;
   }
 }
 
@@ -5154,7 +5169,8 @@ function blockedPointShape(road) {
       ? "6時間より前の記録です。すでに通れるようになっている可能性があります。"
       : "この地図を見ている人が通れなかった場所を記録したものです。公式の通行止めではありません。"}</span>` +
     rainVerdictHtml(road) +
-    `<br><a href="${MINTSUKU_URL}" target="_blank" rel="noreferrer">みんつく千葉冠水マップにも投稿する ↗</a>`
+    `<br><a href="${MINTSUKU_URL}" target="_blank" rel="noreferrer">みんつく千葉冠水マップにも投稿する ↗</a>` +
+    passedRoadHideButtonHtml(road)
   );
   return marker;
 }
@@ -5205,9 +5221,17 @@ function passedRoadShape(road) {
     (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
     `<br><span style="font-size:11px;">${isOld
       ? "6時間より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
-      : "この地図を見ている人が通れた道を記録したものです。現在の安全や通行可否を保証するものではありません。"}</span>`
+      : "この地図を見ている人が通れた道を記録したものです。現在の安全や通行可否を保証するものではありません。"}</span>` +
+    passedRoadHideButtonHtml(road)
   );
   return line;
+}
+
+// 運営の合言葉がある端末だけ、いたずら・誤った記録を地図から伏せるボタンを出す（冠水の投稿と同じ作り）
+function passedRoadHideButtonHtml(road) {
+  return moderationKey() && road?.id != null
+    ? `<br><button type="button" class="kansui-hide-btn" data-passed-hide="${escapeAttribute(String(road.id))}">🗑 この記録を地図から伏せる（運営）</button>`
+    : "";
 }
 
 // 記録の絞り込み（凡例バーのチップ）。「本日」「過去の実績」はどちらも既定ON。
