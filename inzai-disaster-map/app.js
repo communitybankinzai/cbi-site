@@ -4776,8 +4776,19 @@ function isImplausibleKansuiLine(path) {
   return false;
 }
 
+// 千葉県全域（6,000件超）を一度に描くとスマホで重いので、画面に見えている範囲（少しの余白つき）だけ描く。
+// 描いた範囲の外へ動かしたときと、2段階以上拡大したときだけ描き直す（ポップアップを開いたときの小さな移動では描き直さない）。
+// 県全体が見えるほど縮めたとき（ズーム KANSUI_TODAY_ONLY_BELOW 未満）は、対象日の投稿だけ描く
+const KANSUI_TODAY_ONLY_BELOW = 10;
+let kansuiRenderedBounds = null;
+let kansuiRenderedZoom = null;
 function renderKansuiLayer() {
   kansuiLayer.clearLayers();
+  const view = map.getBounds().pad(0.15);
+  kansuiRenderedBounds = view;
+  kansuiRenderedZoom = map.getZoom();
+  const todayOnly = kansuiRenderedZoom < KANSUI_TODAY_ONLY_BELOW;
+  let drawn = 0;
   let shown = 0;
   let todayCount = 0;
   kansuiHiddenImplausible = 0;
@@ -4787,6 +4798,10 @@ function renderKansuiLayer() {
     if (isToday) todayCount += 1;
     if (!passesWhenFilter(road.createdAt)) return;
     shown += 1;
+    if (!road.bounds) road.bounds = L.latLngBounds(road.path);
+    if (!view.intersects(road.bounds)) return;
+    if (todayOnly && !isToday) return;
+    drawn += 1;
     // 赤＝入らない道。「通れた道（青）」と並べて見るため、通行止め記録と同じ赤に揃えている
     const shape = road.path.length === 1
       ? L.circleMarker(road.path[0], {
@@ -4813,8 +4828,17 @@ function renderKansuiLayer() {
   });
   const filtered = shown !== kansuiData.length ? `${shown}件表示 / 全${kansuiData.length}件` : `${kansuiData.length}件`;
   const skipped = kansuiHiddenImplausible ? `・道路をなぞっていない線 ${kansuiHiddenImplausible}件は非表示` : "";
-  setKansuiStatus(`${filtered}（対象日 ${todayCount}件）${skipped}・ ${formatDateTime(toDateTimeLocal(kansuiGeneratedAt)) || ""}時点`);
+  const partial = todayOnly ? `・縮小中は対象日の投稿だけ表示（拡大すると過去の投稿も出ます）` : `・画面の範囲の${drawn}件を表示中`;
+  setKansuiStatus(`${filtered}（対象日 ${todayCount}件）${skipped}${partial}・ ${formatDateTime(toDateTimeLocal(kansuiGeneratedAt)) || ""}時点`);
 }
+
+map.on("moveend", () => {
+  if (!map.hasLayer(kansuiLayer) || !kansuiData.length) return;
+  const zoomedIn = kansuiRenderedZoom !== null && map.getZoom() - kansuiRenderedZoom >= 2;
+  const crossedTodayOnly = kansuiRenderedZoom !== null && (kansuiRenderedZoom < KANSUI_TODAY_ONLY_BELOW) !== (map.getZoom() < KANSUI_TODAY_ONLY_BELOW);
+  if (!zoomedIn && !crossedTodayOnly && kansuiRenderedBounds && kansuiRenderedBounds.contains(map.getBounds())) return;
+  renderKansuiLayer();
+});
 
 async function ensureKansuiLayer() {
   if (kansuiLoaded) return;
