@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "運行情報の更新漏れ対策（市ページ変化の通知メール）＋表示の1行化・4→5路線更新 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "CiDAO src/lib/disaster-rail-watch.ts",
+            "CiDAO src/lib/disaster-timeline.ts",
+            "CiDAO src/lib/__tests__/disaster-rail-watch.test.ts",
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/styles.css",
+            "inzai-disaster-map/index.html",
+            "inzai-disaster-map/rail-status.json",
+            "Supabase app_settings disaster_rail_status（12:00版4路線→18:00版 成田線見合わせ・5路線）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": true,
+          "note": "中司さんの指摘への対応。(1) ふれあいバス：市の案内に記載がなく反映不可と実測（市長Instagram・防災ポータル・SNS巡回も確認）→公式情報に京成バス運行状況リンクを追加。(2) 運休表示が地図を覆う→1行要約＋『詳しく』に畳む（高さ35px）。(3) 市ページの12:00・18:00更新が地図に未反映だったのを更新。北総鉄道は運行情報の転載・公開を明示的に禁止しているため北総線・スカイアクセス線は地図に出さずリンクのみ。(4) 再発防止に、巡回で市ページの変化を検知したら地図との食い違い（地図にない鉄道・バス／状態違い／消えた項目）を添えてCBI公式メールへ送る仕組みを追加。当日の18:00版文面で12:00版のままの地図の漏れを指摘できることをテスト6件で確認、実送信でCBI公式メールへの着信（18:54）を確認。本文保存上限600→3000字（誤った自動解除の防止）。session 累計2.4時間から先行分1.9時間を除いた分。session: 297bc2e9-ca4e-4883-a1e8-5c69c0c8a15d / output: 239,596 / cost: $81.63"
+        },
+        {
+          "date": "2026-09-21",
           "title": "防災MAP 水位の警告帯を観測所ごとの札に・水位欄に目盛りバー 0.2時間",
           "category": "実装",
           "outputs": [
