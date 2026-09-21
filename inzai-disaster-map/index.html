@@ -559,7 +559,7 @@
                 <summary>⑤ 川の水位と雨量の実況</summary>
                 <div class="item-body">
                   <p><span class="why">出せていない理由</span>：河川水位のリアルタイム配信は有償のみで、無償の公開APIが存在しません（2026-08-23調査）。</p>
-                  <p>2026-09-21から、<b>手賀沼だけ</b>は千葉県の水位ページを読み取って右の「🌊 手賀沼・利根川の水位」に出しています。利根川は国の利用規約で定期的な自動取得を控えるよう求められているため、基準値とリンクだけです。雨量はアメダス実況を出しています。</p>
+                  <p>2026-09-21から、<b>手賀沼・西印旛沼・北印旛沼</b>は千葉県の水位ページを読み取って右の「🌊 手賀沼・印旛沼・利根川の水位」に出しています。利根川の水位は国の利用規約で定期的な自動取得を控えるよう求められているため取り込まず、気象庁の指定河川洪水予報が出たときだけ表示します。雨量はアメダス実況を出しています。</p>
                   <p><a class="golink" href="https://www.river.go.jp/" target="_blank" rel="noreferrer">川の防災情報（国土交通省）↗</a></p>
                 </div>
               </details>
@@ -734,7 +734,7 @@
                定期取得できないため、基準値と公式ページへのリンクだけ（CLAUDE_HANDOFF.md 参照） -->
           <section class="panel-section river-panel" id="river-panel">
             <div class="section-title">
-              <h2>🌊 手賀沼・利根川の水位</h2>
+              <h2>🌊 手賀沼・印旛沼・利根川の水位</h2>
               <button class="text-button" id="refresh-river-button" type="button">更新</button>
             </div>
             <div class="meta-note" id="river-status">水位を確認中です</div>

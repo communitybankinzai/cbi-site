@@ -3172,6 +3172,9 @@ body.embed-mode .cbi-home-link {
 .river-item.is-caution .river-badge { background: #e08a3c; color: #fff; }
 .river-item.is-danger .river-badge { background: #c0392b; color: #fff; }
 .river-sub, .river-levels { font-size: 12px; color: #33414f; margin-top: 2px; }
+.river-list { display: grid; gap: 6px; }
+.river-stale { color: #b3261e; }
+.river-note.is-error { color: #b3261e; }
 .river-note { font-size: 11px; color: #5a6675; margin-top: 6px; line-height: 1.6; }
 .river-tone { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #d5dbe4; }
 .river-tone-title { font-size: 12px; font-weight: 700; color: #16324f; margin-bottom: 4px; }
