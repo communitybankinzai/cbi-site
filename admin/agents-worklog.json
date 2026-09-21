@@ -18,7 +18,7 @@
       "actuals": [
         {
           "date": "2026-09-21",
-          "title": "防災MAP：鉄道の運休・遅れ区間レイヤー＋市の運行情報ページ監視 0.9時間",
+          "title": "防災MAP：鉄道の運休・遅れ区間レイヤー＋市の運行情報ページ監視 1.0時間",
           "category": "実装",
           "outputs": [
             "inzai-disaster-map/rail-segments.json",
@@ -32,9 +32,9 @@
             "CiDAO src/lib/__tests__/disaster-timeline-page-watch.test.ts",
             "Supabase disaster_info_sources に1件登録（印西市 公共交通の運行情報）"
           ],
-          "hours": 0.9,
+          "hours": 1.0,
           "partnerApproved": true,
-          "note": "中司さんの「運行情報は反映される仕組みになっているか」への調査から実装まで。調査の答えは反映ゼロ（本番タイムライン87件に交通の情報源なし・市の案内ページは防災カテゴリ外）。対応は3つ：(1) CiDAO に情報源の種別 city-page-watch を新設し市の固定ページ（0000022520.html）の本文変化を公式発表へ流す、(2) OpenStreetMap の路線を駅で切った rail-segments.json（JR成田線9区間・北総線14区間）を作り、市の発表を書き写した rail-status.json の区間を地図に赤く塗るレイヤー（既定OFF・プリセット『🚃 鉄道の運休・遅れ』）、(3) 公式情報に鉄道各社リンクを追加。検証はローカル puppeteer で線9本/0本・ポップアップ・出典リンク、CiDAO はテスト5件と本番巡回 fetched:1 inserted:1。台風25号の当日発表（成田線の遅れ・運休、六合路線バスの午後運休）を実データとして登録済み。バスは線で描く道路データがないため文字表示。session: 297bc2e9-ca4e-4883-a1e8-5c69c0c8a15d / output: 90,486 / cost: $22.64"
+          "note": "中司さんの「運行情報は反映される仕組みになっているか」への調査から実装まで。調査の答えは反映ゼロ（本番タイムライン87件に交通の情報源なし・市の案内ページは防災カテゴリ外）。対応は3つ：(1) CiDAO に情報源の種別 city-page-watch を新設し市の固定ページ（0000022520.html）の本文変化を公式発表へ流す、(2) OpenStreetMap の路線を駅で切った rail-segments.json（JR成田線9区間・北総線14区間）を作り、市の発表を書き写した rail-status.json の区間を地図に赤く塗るレイヤー（既定OFF・プリセット『🚃 鉄道の運休・遅れ』）、(3) 公式情報に鉄道各社リンクを追加。検証はローカル puppeteer で線9本/0本・ポップアップ・出典リンク、CiDAO はテスト5件と本番巡回 fetched:1 inserted:1。台風25号の当日発表（成田線の遅れ・運休、六合路線バスの午後運休）を実データとして登録済み。バスは線で描く道路データがないため文字表示。session: 297bc2e9-ca4e-4883-a1e8-5c69c0c8a15d / output: 104,101 / cost: $27.18"
         },
         {
           "date": "2026-09-21",
