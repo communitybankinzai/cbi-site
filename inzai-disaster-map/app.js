@@ -1060,12 +1060,38 @@ function bindEvents() {
       completeLocationPick(event.latlng);
       return;
     }
-    if (!clickAddMode) return;
+    if (!clickAddMode) {
+      // iPhone では線そのもののタップが届かないことがあるので、近くの記録の線を探して詳細を開く
+      if (!event.originalEvent?.target?.closest?.("path.leaflet-interactive")) openNearestRecordPopup(event); // 下の canvas にも leaflet-interactive が付くので path に限る
+      return;
+    }
     openRecordDialog({ lat: event.latlng.lat, lng: event.latlng.lng });
   });
 
   window.addEventListener("resize", scheduleMapResize);
   window.addEventListener("orientationchange", scheduleMapResize);
+}
+
+// タップした位置から一定の画面距離（指の太さ程度）にある、通れた道・通れない道・冠水の線／印を探し、いちばん近いものの詳細を開く
+const NEAREST_RECORD_TAP_PX = 22;
+function openNearestRecordPopup(event) {
+  const tap = event.layerPoint;
+  if (!tap) return;
+  let best = null;
+  const consider = layer => {
+    if (!layer?.getPopup?.()) return;
+    let d = Infinity;
+    if (layer.getLatLngs) {
+      const pts = layer.getLatLngs().flat(Infinity).map(ll => map.latLngToLayerPoint(ll));
+      if (pts.length === 1) d = tap.distanceTo(pts[0]);
+      for (let i = 1; i < pts.length; i++) d = Math.min(d, L.LineUtil.pointToSegmentDistance(tap, pts[i - 1], pts[i]));
+    } else if (layer.getLatLng) {
+      d = tap.distanceTo(map.latLngToLayerPoint(layer.getLatLng()));
+    }
+    if (d <= NEAREST_RECORD_TAP_PX && (!best || d < best.d)) best = { layer, d };
+  };
+  [passedRoadsLayer, kansuiLayer].forEach(group => { if (map.hasLayer(group)) group.eachLayer(consider); });
+  if (best) best.layer.openPopup(best.layer.getLatLngs ? event.latlng : undefined);
 }
 
 function scheduleMapResize() {
