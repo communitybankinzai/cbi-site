@@ -18,6 +18,26 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "防災MAP：鉄道の運休・遅れ区間レイヤー＋市の運行情報ページ監視 0.9時間",
+          "category": "実装",
+          "outputs": [
+            "inzai-disaster-map/rail-segments.json",
+            "inzai-disaster-map/rail-status.json",
+            "inzai-disaster-map/pipeline/build_rail_segments.py",
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/index.html",
+            "inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "admin/changelog.json",
+            "CiDAO src/lib/disaster-timeline.ts",
+            "CiDAO src/lib/__tests__/disaster-timeline-page-watch.test.ts",
+            "Supabase disaster_info_sources に1件登録（印西市 公共交通の運行情報）"
+          ],
+          "hours": 0.9,
+          "partnerApproved": true,
+          "note": "中司さんの「運行情報は反映される仕組みになっているか」への調査から実装まで。調査の答えは反映ゼロ（本番タイムライン87件に交通の情報源なし・市の案内ページは防災カテゴリ外）。対応は3つ：(1) CiDAO に情報源の種別 city-page-watch を新設し市の固定ページ（0000022520.html）の本文変化を公式発表へ流す、(2) OpenStreetMap の路線を駅で切った rail-segments.json（JR成田線9区間・北総線14区間）を作り、市の発表を書き写した rail-status.json の区間を地図に赤く塗るレイヤー（既定OFF・プリセット『🚃 鉄道の運休・遅れ』）、(3) 公式情報に鉄道各社リンクを追加。検証はローカル puppeteer で線9本/0本・ポップアップ・出典リンク、CiDAO はテスト5件と本番巡回 fetched:1 inserted:1。台風25号の当日発表（成田線の遅れ・運休、六合路線バスの午後運休）を実データとして登録済み。バスは線で描く道路データがないため文字表示。session: 297bc2e9-ca4e-4883-a1e8-5c69c0c8a15d / output: 90,486 / cost: $22.64"
+        },
+        {
+          "date": "2026-09-21",
           "title": "防災MAP：凡例バー・本日/過去の描き分け・運営用の記録管理（いたずら対応） 1.0時間",
           "category": "実装",
           "outputs": [
@@ -6498,6 +6518,27 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🚌 路線バスの運休を地図に線で出す（いまは文字だけ）",
+          "category": "実装",
+          "priority": "中",
+          "note": "鉄道は駅で切った区間を塗れるが、バスは路線の道路データがない。六合路線（小林駅～印旛日本医大駅～京成佐倉駅）のような発表を線にするには、OpenStreetMap のバス路線 relation か市の地域公共交通の資料から経路を作る必要がある。まず六合路線1本で試す。"
+        },
+        {
+          "due": "未定",
+          "title": "🚃 rail-status.json（鉄道の運休区間）を管理画面から更新できるようにする",
+          "category": "実装",
+          "priority": "中",
+          "note": "いまは市の発表を見て人が JSON を書き換えて git push する運用。災害中にCodeを使えないメンバーでも更新できるよう、管理画面か CiDAO の API に移す。自動抽出（発表文から駅名を機械で読む）は誤った区間を赤く塗る危険があるため、まず人が選ぶ形のまま置き換える。"
+        },
+        {
+          "due": "2026-09-28",
+          "title": "📱 実機スマホで「🚃 鉄道の運休・遅れ」の表示を確認する",
+          "category": "保守",
+          "priority": "中",
+          "note": "PCのヘッドレスブラウザでは線9本・ポップアップ・出典リンクまで確認済み。スマホ幅で赤い線と冠水の色が見分けられるか、ポップアップが画面に収まるかは未確認。"
+        },
         {
           "due": "未定",
           "title": "⚡ 東京電力からの回答を待ち、可否に応じて停電表示を進める／取り下げる",
