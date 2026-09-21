@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "防災MAP 水位の警告帯を観測所ごとの札に・水位欄に目盛りバー 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js",
+            "site/inzai-disaster-map/styles.css",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "中司さん『見栄えよくして』→対象は警告帯と水位欄の両方（確認済み）。スマホで水位行が切れていたのを札＋横送りに、カードを目盛りバー付きにそろえ、危険・西印旛沼を先頭に。本番で札3枚・目盛り3本を確認。hoursは同セッション累計から前回までの記録0.9時間を引いた値。session: 0c1e0cb2-319b-4414-89ef-415195ea0a55 / output: 108,558 / cost: $33.41"
+        },
+        {
+          "date": "2026-09-21",
           "title": "防災MAP 西印旛沼・北印旛沼の水位追加（計画高水位の0.2m手前から赤）0.3時間",
           "category": "実装",
           "outputs": [
