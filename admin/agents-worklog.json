@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "防災MAP 西印旛沼・北印旛沼の水位追加（計画高水位の0.2m手前から赤）0.3時間",
+          "category": "実装",
+          "outputs": [
+            "CiDAO src/app/api/disaster/river-level/route.ts（56311f8）",
+            "site/inzai-disaster-map/app.js",
+            "site/inzai-disaster-map/index.html",
+            "site/inzai-disaster-map/styles.css",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "市長の印旛沼周辺への避難指示（西印旛沼4.11m）を受けた中司さんの依頼。印旛沼は危険水位が無いため計画高水位4.25mの0.2m手前から赤（A案・事業主決定）。基準読み取りが---のとき次の数字を拾う不具合も修正。本番で西印旛沼4.13m・計画高水位まで0.12mの表示を確認。hoursは同セッション累計0.9時間から前回記録0.6時間を引いた値。session: 0c1e0cb2-319b-4414-89ef-415195ea0a55 / output: 91,590 / cost: $28.10"
+        },
+        {
+          "date": "2026-09-21",
           "title": "防災MAPに市の避難指示の警告帯（水位と統合・運営で放送ごとにオフ）＋CiDAO避難情報API 0.5時間",
           "category": "実装",
           "outputs": [
