@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260922b">
+    <link rel="stylesheet" href="./styles.css?v=20260922c">
   </head>
   <body>
     <div class="app-shell">
@@ -634,7 +634,8 @@
                押すとその色の表示を消せる。本日／過去の実績は記録の絞り込み（既定はどちらもON） -->
           <div class="map-legend" id="map-legend" aria-label="地図の凡例と絞り込み">
             <button type="button" class="legend-chip is-kansui" data-legend="kansui" aria-pressed="true" title="みんつく千葉冠水マップに投稿された、実際に冠水した道路">冠水した道路</button>
-            <button type="button" class="legend-chip is-passed" data-legend="passedRoads" aria-pressed="true" title="この地図の利用者が記録した、通れた道・通れない道">通れた/通れない</button>
+            <button type="button" class="legend-chip is-passed" data-kind="passed" aria-pressed="true" title="この地図の利用者が記録した、通れた道（青）">通れた道</button>
+            <button type="button" class="legend-chip is-blocked" data-kind="blocked" aria-pressed="true" title="この地図の利用者が記録した、通れない道・×印（赤）">通れない道</button>
             <button type="button" class="legend-chip is-risk" data-legend="roadRisk" aria-pressed="true" title="地形の形から推定した冠水しやすさ。実際に冠水した記録ではありません（未校正）">地形の推定</button>
             <span class="legend-sep" aria-hidden="true"></span>
             <button type="button" class="legend-chip is-when" data-when="today" aria-pressed="true" title="対象日の記録だけ濃く太く描いています">本日</button>
@@ -1724,7 +1725,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260907g"></script>
-    <script src="./app.js?v=20260922b"></script>
+    <script src="./app.js?v=20260922c"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

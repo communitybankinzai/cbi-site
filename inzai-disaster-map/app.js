@@ -2353,10 +2353,17 @@ function initMapLegend() {
   const legend = document.getElementById("map-legend");
   if (!legend) return;
   legend.addEventListener("click", event => {
-    const chip = event.target.closest("[data-legend], [data-when]");
+    const chip = event.target.closest("[data-legend], [data-when], [data-kind]");
     if (!chip) return;
     const turnOn = chip.getAttribute("aria-pressed") !== "true";
     chip.setAttribute("aria-pressed", String(turnOn));
+    if (chip.dataset.kind) {
+      passedKindFilter[chip.dataset.kind] = turnOn;
+      const box = document.querySelector('[data-overlay="passedRoads"]');
+      if (turnOn && box && !box.checked) box.click(); // 層ごと OFF だったら ON にする（読み込みはそちらが持つ）
+      renderPassedRoadsLayer();
+      return;
+    }
     if (chip.dataset.legend) {
       // レイヤーのチェック欄と同じ経路を通す（読み込みや描き直しはそちらが持っている）
       const box = document.querySelector(`[data-overlay="${chip.dataset.legend}"]`);
@@ -2405,6 +2412,11 @@ function syncMapLegend() {
   document.querySelectorAll("#map-legend [data-legend]").forEach(chip => {
     const box = document.querySelector(`[data-overlay="${chip.dataset.legend}"]`);
     chip.setAttribute("aria-pressed", String(Boolean(box?.checked)));
+  });
+  const passedOn = Boolean(document.querySelector('[data-overlay="passedRoads"]')?.checked);
+  document.querySelectorAll("#map-legend [data-kind]").forEach(chip => {
+    // 初期化の早い段階では passedKindFilter にまだ値が無い（後方で代入）ので、そのときは両方表示とみなす
+    chip.setAttribute("aria-pressed", String(passedOn && (passedKindFilter?.[chip.dataset.kind] ?? true)));
   });
 }
 
@@ -5482,12 +5494,20 @@ function initRecordRange() {
 }
 
 // データは持ったまま、絞り込みだけを描き直す（取得し直さない）
+// 凡例の「通れた道」「通れない道」で種類ごとに出し入れする（2026-09-22。以前は1つのボタンで両方が消え、
+// 青いボタンで赤い線まで消えて分かりにくかった）
+var passedKindFilter = { passed: true, blocked: true }; // var：初期化の早い段階（syncMapLegend）から参照されても止まらないように
+function passedRoadKindOf(road) {
+  return road.kind === "blocked" ? "blocked" : "passed";
+}
+
 function renderPassedRoadsLayer() {
   passedRoadsLayer.clearLayers();
   passedRoadShapes.clear();
   // 古い（薄い）線を先に描き、新しい（濃い）線を上に重ねる
   passedRoadsData.slice().reverse().forEach(road => {
     if (!passesWhenFilter(road.endedAt)) return;
+    if (!passedKindFilter[passedRoadKindOf(road)]) return;
     const shape = passedRoadShape(road).addTo(passedRoadsLayer);
     passedRoadShapes.set(road.id, shape);
   });

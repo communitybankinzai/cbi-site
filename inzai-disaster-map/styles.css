@@ -1007,6 +1007,7 @@ details.layer-group .layer-group-body {
 
 .legend-chip.is-kansui { color: #b8322c; }
 .legend-chip.is-passed { color: #1565c0; }
+.legend-chip.is-blocked { color: #b8322c; }
 .legend-chip.is-risk { color: #df7038; }
 .legend-chip.is-when::before { display: none; }
 .legend-chip.is-when { padding: 3px 10px; color: #16324f; }
@@ -1022,6 +1023,7 @@ details.layer-group .layer-group-body {
 }
 .legend-chip.is-kansui[aria-pressed="true"] { background: #b8322c; }
 .legend-chip.is-passed[aria-pressed="true"] { background: #1565c0; }
+.legend-chip.is-blocked[aria-pressed="true"] { background: #b8322c; }
 .legend-chip.is-risk[aria-pressed="true"] { background: #df7038; }
 .legend-chip.is-when[aria-pressed="true"] { background: #16324f; }
 
