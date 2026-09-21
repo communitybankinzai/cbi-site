@@ -3510,8 +3510,12 @@ body.citizen-road-editing { overflow: hidden; }
 .rail-status-summary[open] .rail-status-more { display: none; }
 .rail-status-summary[open] .rail-status-less { display: inline; }
 .rail-status-box { display: flex; align-items: flex-start; gap: 8px; }
-.rail-status-hide { flex: none; border: 0; background: transparent; color: #57606a; font-size: 15px; line-height: 1; padding: 2px 4px; cursor: pointer; }
+.rail-status-hide { flex: none; border: 1px solid #d0d7de; background: #fff; color: #57606a; font-size: 12px; line-height: 1.2; padding: 2px 8px; border-radius: 999px; cursor: pointer; }
 .rail-status-hide:hover { color: #1f2933; }
 /* 表示欄が空になったら枠ごと消す（✕で運休の文を隠したとき） */
 .map-status:empty { display: none; }
 .rail-status-summary ul { margin: 6px 0 0; padding-left: 18px; max-width: 520px; font-size: 12px; line-height: 1.6; }
+
+/* 警告帯を ✕ で閉じたあとに残す小さなボタン（押すと警告帯に戻る・2026-09-21） */
+.river-alert.is-collapsed { right: auto; padding: 0; }
+.map-alert-reopen { border: 0; background: none; color: #fff; font: inherit; font-size: 13px; font-weight: 700; padding: 6px 12px; cursor: pointer; white-space: nowrap; }

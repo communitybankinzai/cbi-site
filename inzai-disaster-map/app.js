@@ -3823,7 +3823,7 @@ function renderRailStatus() {
 
   const status = document.getElementById("map-status");
   // ✕ で文字だけ隠せる（赤い線は残る）。チェックを入れ直すとまた出る（2026-09-21 指摘：地図が見えない）
-  const hide = `<button type="button" class="rail-status-hide" data-rail-status-hide aria-label="運休の表示を隠す" title="隠す（線は残ります）">✕</button>`;
+  const hide = `<button type="button" class="rail-status-hide" data-rail-status-hide aria-label="運休の表示を隠す" title="文字だけ隠す（線は残ります）">隠す</button>`;
   status.innerHTML = details.length
     ? `<div class="rail-status-box"><details class="rail-status-summary"><summary>${escapeHtml(head)}${stale ? " ⚠" : ""}　<span class="rail-status-more">詳しく ▾</span><span class="rail-status-less">閉じる ▴</span></summary><ul>${details.join("")}</ul></details>${hide}</div>`
     : `<div class="rail-status-box"><span>${escapeHtml(head)}</span>${hide}</div>`;
@@ -4433,7 +4433,19 @@ function renderMapAlert() {
   const evacs = visibleEvacAlerts();
   let dismissed = "";
   try { dismissed = sessionStorage.getItem(MAP_ALERT_DISMISS_KEY) || ""; } catch {}
-  const show = (evacs.length || riverWarnings.length) && dismissed !== mapAlertSignature();
+  const hasAny = Boolean(evacs.length || riverWarnings.length);
+  const show = hasAny && dismissed !== mapAlertSignature();
+  // ✕で閉じても、警告が出ている間は小さな「表示する」ボタンを残す（2026-09-21：閉じたら戻せなかった）
+  if (hasAny && !show) {
+    const count = evacs.length + riverWarnings.length;
+    const severeClosed = evacs.some(a => a.level >= 4) || riverWarnings.some(w => w.severe);
+    alertNode.hidden = false;
+    alertNode.className = `river-alert is-collapsed ${severeClosed ? "is-danger" : "is-caution"}`;
+    alertNode.innerHTML = `<button type="button" class="map-alert-reopen" data-map-alert="reopen">📢 警告 ${count}件（閉じています）　表示する</button>`;
+    mapAlertExpanded = false;
+    placeRiverAlert();
+    return;
+  }
   alertNode.hidden = !show;
   if (!show) {
     mapAlertExpanded = false;
@@ -4477,6 +4489,9 @@ function handleMapAlertClick(event) {
     document.getElementById("river-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
   } else if (kind === "close") {
     try { sessionStorage.setItem(MAP_ALERT_DISMISS_KEY, mapAlertSignature()); } catch {}
+    renderMapAlert();
+  } else if (kind === "reopen") {
+    try { sessionStorage.removeItem(MAP_ALERT_DISMISS_KEY); } catch {}
     renderMapAlert();
   }
 }
