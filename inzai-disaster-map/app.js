@@ -2261,6 +2261,25 @@ function initMapLegend() {
   };
   if (typeof ResizeObserver === "function") new ResizeObserver(syncLegendHeight).observe(legend);
   syncLegendHeight();
+
+  // ポップアップが、地図の上に重ねている帯（凡例・手賀沼の警告・運休の表示）の裏に隠れないようにする。
+  // Leaflet のポップアップは地図の面の中（z-index 400 の重なり）にあるため、外に重ねた帯より上には出せない。
+  // 2026-09-21 夕：スマホで線を押すと、時刻の行がちょうど警告帯の裏に来て「押しても時間がわからない」状態だった。
+  // 開いた時点で重なっていたら、その分だけ地図を下へずらす
+  map.on("popupopen", event => {
+    const popupNode = event.popup.getElement?.();
+    const pane = document.getElementById("map-pane");
+    if (!popupNode || !pane) return;
+    requestAnimationFrame(() => {
+      const covers = ["map-legend", "river-alert", "map-status"]
+        .map(id => document.getElementById(id))
+        .filter(node => node && !node.hidden && node.offsetParent !== null && getComputedStyle(node).display !== "none");
+      const coverBottom = Math.max(0, ...covers.map(node => node.getBoundingClientRect().bottom));
+      const popupTop = popupNode.getBoundingClientRect().top;
+      const gap = coverBottom + 8 - popupTop;
+      if (gap > 0) map.panBy([0, -gap], { animate: true });
+    });
+  });
 }
 
 function syncMapLegend() {
