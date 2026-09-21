@@ -11,6 +11,8 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     // 取得できないときは同じフォルダの rail-status.json（静的）を使う。
     railStatusEndpoint: "https://cidao.vercel.app/api/disaster/rail-status",
     timelineEndpoint: "https://cidao.vercel.app/api/disaster/timeline",
+    // 手賀沼の水位（千葉県のページをCiDAOが10分キャッシュで読み取る）。利根川は取得せずリンクのみ
+    riverLevelEndpoint: "https://cidao.vercel.app/api/disaster/river-level",
     openDataEndpoint: "https://cidao.vercel.app/api/disaster/inzai-opendata",
     presenceEndpoint: "https://cidao.vercel.app/api/metaverse-presence",
     locationAiEndpoint: "",

@@ -3127,6 +3127,49 @@ body.embed-mode .cbi-home-link {
 .amedas-main span { font-size: 12px; font-weight: 400; margin-left: 3px; color: #5a6675; }
 .amedas-sub { font-size: 11px; color: #5a6675; margin-top: 2px; }
 .amedas-note { font-size: 11px; color: #5a6675; margin-top: 6px; line-height: 1.6; }
+
+/* 🌊 手賀沼・利根川の水位（2026-09-21） */
+.river-item { padding: 8px 10px; border: 1px solid #d5dbe4; border-radius: 8px; background: #f7f9fc; }
+.river-item.is-standby { background: #fff8e6; border-color: #e6c46d; }
+.river-item.is-caution { background: #ffeddd; border-color: #e08a3c; }
+.river-item.is-danger { background: #fdecea; border-color: #c0392b; }
+.river-name { font-size: 12px; color: #5a6675; }
+.river-main { font-size: 26px; font-weight: 700; color: #16324f; line-height: 1.2; }
+.river-main span { font-size: 12px; font-weight: 400; margin-left: 3px; color: #5a6675; }
+.river-badge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 12px; vertical-align: middle; background: #dfe6ee; color: #16324f; }
+.river-item.is-standby .river-badge { background: #e6c46d; color: #3b2d00; }
+.river-item.is-caution .river-badge { background: #e08a3c; color: #fff; }
+.river-item.is-danger .river-badge { background: #c0392b; color: #fff; }
+.river-sub, .river-levels { font-size: 12px; color: #33414f; margin-top: 2px; }
+.river-note { font-size: 11px; color: #5a6675; margin-top: 6px; line-height: 1.6; }
+.river-tone { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #d5dbe4; }
+.river-tone-title { font-size: 12px; font-weight: 700; color: #16324f; margin-bottom: 4px; }
+.river-tone-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.river-tone-list li { font-size: 12px; display: flex; flex-wrap: wrap; gap: 2px 8px; }
+.river-tone-list span { color: #5a6675; }
+/* 地図の上（凡例の帯の下）に出す警告。注意・危険のときだけ表示 */
+.river-alert {
+  position: absolute;
+  top: 44px; left: 58px; right: 10px; /* ズームボタンの右から右端まで。状態表示（.map-status）はその下へずらす */
+  z-index: 630;
+  padding: 6px 12px;
+  text-align: left;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #fff;
+  background: #c0392b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+  cursor: pointer;
+}
+.river-alert.is-caution { background: #d9731f; }
+.river-alert[hidden] { display: none; }
+.map-pane.is-citizen-drawing .river-alert,
+.map-pane.is-location-pick .river-alert,
+.map-pane.is-road-drawing .river-alert { display: none; }
 #rain-forecast-status { display: block; font-size: 11px; color: #5a6675; margin-left: 22px; }
 #rain-forecast-status.is-error { color: #c0392b; }
 

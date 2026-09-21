@@ -872,6 +872,7 @@ refreshEarthquakeSummary(false);
 initTimeline();
 initQuickNav();
 refreshAmedas(false);
+refreshRiverLevel(false);
 refreshRainForecast(false);
 renderRoadFloodSites();
 initIntegration();
@@ -943,6 +944,8 @@ function bindEvents() {
   });
   document.getElementById("refresh-earthquake-button").addEventListener("click", () => refreshEarthquakeSummary(true));
   document.getElementById("refresh-amedas-button")?.addEventListener("click", () => refreshAmedas(true));
+  document.getElementById("refresh-river-button")?.addEventListener("click", () => refreshRiverLevel(true));
+  document.getElementById("river-alert")?.addEventListener("click", () => document.getElementById("river-panel")?.scrollIntoView({ behavior: "smooth", block: "start" }));
   document.getElementById("refresh-weather-warning-button").addEventListener("click", () => refreshWeatherWarnings(true));
   document.getElementById("refresh-sns-monitor-button").addEventListener("click", () => refreshSnsMonitor(true));
   document.getElementById("sns-monitor-list").addEventListener("click", handleSnsMonitorAction);
@@ -3930,6 +3933,89 @@ async function refreshAmedas(manual) {
   }
 }
 
+// 🌊 手賀沼の水位（2026-09-21）。CiDAO が千葉県のページを10分キャッシュで読み取って返す。
+// 利根川は国の規約上取得しない（index.html にリンクと基準値だけ）。警告はこの地図の上だけに出す（SNSへは流さない）
+const RIVER_STAGE = {
+  danger: { label: "はんらん危険水位を超えています", short: "危険", cls: "is-danger" },
+  caution: { label: "はんらん注意水位を超えています", short: "注意", cls: "is-caution" },
+  standby: { label: "水防団待機水位を超えています", short: "待機", cls: "is-standby" },
+  normal: { label: "平常", short: "平常", cls: "" },
+  unknown: { label: "水位を取得できません", short: "不明", cls: "" }
+};
+// 観測から この時間を過ぎたら「古い」と添える（県のページの更新が止まったとき用）
+const RIVER_STALE_MINUTES = 60;
+
+// 凡例の帯はスマホで2段になり高さが変わるので、実際の高さの下に警告を置き、
+// 地図の状態表示（.map-status）はさらにその下へずらす。警告を消したら CSS の位置に戻す
+function placeRiverAlert() {
+  const alertNode = document.getElementById("river-alert");
+  const statusNode = document.getElementById("map-status");
+  const legend = document.getElementById("map-legend");
+  if (!alertNode) return;
+  if (alertNode.hidden) {
+    if (statusNode) statusNode.style.top = "";
+    return;
+  }
+  alertNode.style.top = `${(legend?.offsetHeight || 36) + 6}px`;
+  if (statusNode) statusNode.style.top = `${alertNode.offsetTop + alertNode.offsetHeight + 6}px`;
+}
+window.addEventListener("resize", placeRiverAlert);
+
+async function refreshRiverLevel(manual) {
+  const node = document.getElementById("river-content");
+  const status = document.getElementById("river-status");
+  const alertNode = document.getElementById("river-alert");
+  const endpoint = APP_CONFIG.riverLevelEndpoint;
+  if (!node || !endpoint) return;
+  if (manual) node.innerHTML = '<div class="detail-empty">最新の水位を取得中です。</div>';
+  try {
+    const response = await fetch(endpoint, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const st = data.stations?.[0];
+    if (!st?.latest) throw new Error("観測値がありません");
+    const stage = RIVER_STAGE[st.stage] || RIVER_STAGE.unknown;
+    const at = new Date(st.latest.time);
+    const ageMin = Math.round((Date.now() - at.getTime()) / 60000);
+    const stale = ageMin > RIVER_STALE_MINUTES;
+    const lv = st.levels || {};
+    const change = typeof st.change1h === "number"
+      ? `1時間で ${st.change1h > 0 ? "+" : ""}${st.change1h.toFixed(2)}m`
+      : "";
+    node.innerHTML = `
+      <div class="river-item ${stage.cls}">
+        <div class="river-name">${escapeHtml(st.name)}（${escapeHtml(st.manager || "")}）</div>
+        <div class="river-main">${escapeHtml(st.latest.level.toFixed(2))}<span>m</span><b class="river-badge">${escapeHtml(stage.short)}</b></div>
+        <div class="river-sub">${escapeHtml(stage.label)}${change ? ` ／ ${escapeHtml(change)}` : ""}</div>
+        <div class="river-levels">待機 ${escapeHtml(String(lv.standby ?? "—"))}／注意 ${escapeHtml(String(lv.caution ?? "—"))}／<b>危険 ${escapeHtml(String(lv.danger ?? "—"))}m</b></div>
+      </div>
+      <div class="river-note">出典：<a href="${escapeHtml(data.source?.url || "#")}" target="_blank" rel="noreferrer">${escapeHtml(data.source?.name || "千葉県 水防情報")} ↗</a>（CBIが読み取って表示・0.00と欠測は除外）。避難の判断は印西市の避難情報に従ってください。</div>
+    `;
+    if (status) {
+      status.textContent = `${formatDateTime(toDateTimeLocal(at.toISOString()))}観測${stale ? `（${ageMin}分前・県のページの更新が止まっている可能性）` : ""}`;
+      status.classList.toggle("is-error", stale);
+    }
+    if (alertNode) {
+      const warn = st.stage === "danger" || st.stage === "caution";
+      alertNode.hidden = !warn;
+      alertNode.className = `river-alert ${stage.cls}`;
+      if (warn) {
+        alertNode.textContent = `⚠ 手賀沼 ${st.latest.level.toFixed(2)}m：${stage.label}（${at.getHours()}:${String(at.getMinutes()).padStart(2, "0")}観測${stale ? "・古い値" : ""}）`;
+      }
+      placeRiverAlert();
+    }
+  } catch (error) {
+    node.innerHTML = '<div class="detail-empty">水位を取得できませんでした。下の千葉県のページで確認してください。<br><a href="http://suibo.bousai.pref.chiba.lg.jp/bousaip/river/graph_90_0.html" target="_blank" rel="noreferrer">千葉県 水位グラフ:手賀沼 ↗</a></div>';
+    if (status) {
+      status.textContent = `取得できません（${error?.message || "接続エラー"}）`;
+      status.classList.add("is-error");
+    }
+    // 取得できないときは警告を消さずに残すと誤解を生むので消す（カードに取得失敗を出している）
+    if (alertNode) alertNode.hidden = true;
+    placeRiverAlert();
+  }
+}
+
 // 降水短時間予報（この先1時間の雨の予想）。実況の雨雲レーダーとは別配信
 const rainForecastLayer = L.tileLayer("", {
   attribution: "気象庁 降水短時間予報",
@@ -5375,6 +5461,7 @@ setInterval(() => {
 
 setInterval(() => refreshEarthquakeSummary(false), 10 * 60 * 1000);
 setInterval(() => refreshAmedas(false), 5 * 60 * 1000);
+setInterval(() => refreshRiverLevel(false), 5 * 60 * 1000);
 setInterval(() => {
   if (document.querySelector('[data-overlay="rainForecast"]')?.checked) refreshRainForecast(false);
 }, 10 * 60 * 1000);
