@@ -3155,6 +3155,19 @@ body.embed-mode .cbi-home-link {
 /* ⚙ 運営用：上部の運営・検証向けボタンをまとめて隠す枠。開いたときは元の並びのまま */
 .operator-tools { display: contents; }
 .operator-tools[hidden] { display: none; }
+/* スマホでは横に流れる1行に畳む（開くと画面の半分を占めていた・2026-09-21 実機指摘）。
+   ⚠ 上のメディアクエリより後ろにこの行があるため、ここで指定しないと display:contents に負ける */
+@media (max-width: 820px) {
+  .operator-tools:not([hidden]) {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+}
 .operator-toggle { color: #5a6675; border-style: dashed; font-size: 12px; }
 .operator-toggle.is-open { color: #16324f; border-style: solid; background: #eaf1f7; }
 
