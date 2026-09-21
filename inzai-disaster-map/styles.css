@@ -3216,6 +3216,24 @@ body.citizen-road-editing { overflow: hidden; }
 .map-pane.is-citizen-drawing { position: fixed; inset: 0; z-index: 2000; height: 100dvh; background: #dfe8ec; }
 .map-pane.is-citizen-drawing #map { height: 100%; cursor: crosshair; }
 .is-citizen-drawing .quick-record-bar, .is-citizen-drawing .map-status, .is-citizen-drawing .map-disclaimer, .is-citizen-drawing .map-legend { display: none; }
+/* 運営用：市民記録の管理（いたずらを地図から伏せる・2026-09-21） */
+.moderate-modal { position: fixed; inset: 0; z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 30, 60, .45); }
+.moderate-modal[hidden] { display: none; }
+.moderate-box { width: min(640px, 100%); max-height: 84dvh; overflow-y: auto; padding: 16px; border-radius: 12px; background: #fff; box-shadow: 0 10px 40px rgba(15, 30, 60, .3); }
+.moderate-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.moderate-head strong { font-size: 15px; }
+.moderate-head button, .moderate-actions button { min-height: 34px; padding: 6px 12px; border: 1px solid #b9c4d3; border-radius: 8px; background: #f7f9fc; color: #16324f; font: inherit; cursor: pointer; }
+.moderate-note { margin: 10px 0; font-size: 12.5px; line-height: 1.6; color: #445; }
+.moderate-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.moderate-list { display: grid; gap: 8px; }
+.moderate-list .is-error { color: #b8322c; }
+.moderate-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 10px; border: 1px solid #dde3ea; border-radius: 9px; font-size: 13px; }
+.moderate-row.is-hidden-row { background: #f2f4f7; color: #6b7684; }
+.moderate-meta { display: block; margin-top: 2px; font-size: 11.5px; color: #5a6675; }
+.moderate-row-buttons { display: flex; gap: 6px; flex: 0 0 auto; }
+.moderate-row-buttons button { min-height: 32px; padding: 5px 10px; border: 1px solid #b9c4d3; border-radius: 8px; background: #fff; color: #16324f; font: inherit; font-size: 12px; cursor: pointer; }
+.moderate-row-buttons button.is-danger { border-color: #b8322c; background: #b8322c; color: #fff; }
+
 /* ポップアップの中で、対象日の記録か過去の実績かを示す印 */
 .when-badge { display: inline-block; margin: 3px 0; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: 700; }
 .when-badge.is-today { background: #b8322c; color: #fff; }

@@ -42,6 +42,7 @@
             <button class="tool-button" id="import-button" type="button">CSV取込</button>
             <button class="tool-button" id="export-csv-button" type="button">CSV出力</button>
             <button class="tool-button" id="export-geojson-button" type="button">GeoJSON出力</button>
+            <button class="tool-button" id="moderate-button" type="button" title="いたずらや誤った市民の道路記録を、地図から伏せる（行は消さないので戻せます）">🗑 市民記録の管理</button>
             <a class="tool-button admin-button" href="./admin.html">管理記録</a>
             <button class="tool-button" id="print-button" type="button">印刷</button>
           </div>
@@ -156,6 +157,7 @@
                   <label><input type="checkbox" data-overlay="cityOffice"> 市役所・支所</label>
                   <label><input type="checkbox" data-overlay="emergencyRoute"> 緊急輸送路</label>
                   <label><input type="checkbox" data-overlay="railway"> 鉄道</label>
+                  <label class="has-tip"><input type="checkbox" data-overlay="railStatus"> <span class="layer-name">🚃 鉄道の運休・遅れ区間（市発表）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>印西市が出した<a href="https://www.city.inzai.lg.jp/0000022520.html" target="_blank" rel="noreferrer">災害時の公共交通のご案内</a>を、駅と駅のあいだの線として塗ります。<strong>運休・遅れは赤、遅れのみは橙</strong>です。</p><p>区間の形は OpenStreetMap の路線データ（ODbL 1.0）を駅で切り分けたものです。<strong>いま列車が走っているかどうかを示すものではありません。</strong>最新は各事業者の運行情報で確認してください。</p><p>路線バスの運休など線で描けない情報は、ONにしたとき地図の下の状態欄に文字で出ます。</p></span></span></label>
                 </div>
               </details>
 
@@ -460,7 +462,8 @@
                 <summary>⑤ 交通レジリエンスの向上 <span class="st st-part">一部反映</span></summary>
                 <div class="item-body">
                   <p>公式発表のタイムラインに千葉県防災のX（鉄道の運転見合わせ等）を取り込み、県管理道路の通行規制へのリンクを置いています。</p>
-                  <p><span class="st st-next">今後反映</span>鉄道各社の運行情報へのリンクをまとめます。</p>
+                  <p>2026-09-21 追加：「公式情報」に鉄道各社（JR成田線・北総線）と市「災害時の公共交通のご案内」へのリンクをまとめ、市が発表した鉄道の運休・遅れ区間をレイヤー「🚃 鉄道の運休・遅れ区間」で地図に塗れるようにしました（既定OFF）。</p>
+                  <p><span class="st st-next">今後反映</span>路線バスの運休を線で表示します（いまは文字で表示）。市の発表から運休区間を自動で読み取る処理も未実装で、いまは発表を見て人が登録します。</p>
                 </div>
               </details>
               <details class="item">
@@ -590,7 +593,23 @@
           </details>
         </aside>
 
-        <section class="map-pane" id="map-pane" aria-label="印西市地図">
+        <!-- 運営用：いたずら・誤記録を地図から伏せる（2026-09-21）。合言葉はこの端末にだけ保存する -->
+      <div class="moderate-modal" id="moderate-modal" hidden>
+        <div class="moderate-box" role="dialog" aria-label="市民の道路記録の管理">
+          <div class="moderate-head">
+            <strong>🗑 市民の道路記録の管理</strong>
+            <button type="button" id="moderate-close">閉じる</button>
+          </div>
+          <p class="moderate-note">いたずらや誤った記録を<strong>地図から伏せます</strong>。記録そのものは消えないので、間違えたら「戻す」で元に戻せます。繰り返すいたずらの端末は、あとから運営が調べられます。</p>
+          <div class="moderate-actions">
+            <button type="button" id="moderate-reload">一覧を読み直す</button>
+            <button type="button" id="moderate-forget">合言葉をこの端末から消す</button>
+          </div>
+          <div class="moderate-list" id="moderate-list"></div>
+        </div>
+      </div>
+
+      <section class="map-pane" id="map-pane" aria-label="印西市地図">
           <div id="map"></div>
           <!-- 2026-09-21: 「オレンジは何なのか分からない」（中司さん）への対応。地図の上端に置き、
                押すとその色の表示を消せる。本日／過去の実績は記録の絞り込み（既定はどちらもON） -->
@@ -1561,6 +1580,30 @@
             <strong>日本道路交通情報センター</strong>
             <small>通行止め、規制、渋滞などを公式サイトで確認。現在このMAPへのデータ自動反映は未接続</small>
             <span class="external-label">道路交通情報を開く</span>
+          </a>
+          <a class="official-link-card" href="https://www.city.inzai.lg.jp/0000022520.html" target="_blank" rel="noreferrer">
+            <span class="authority-label">印西市</span>
+            <strong>災害時の公共交通のご案内</strong>
+            <small>市内と周辺の鉄道・路線バスの遅れや運休を市がまとめたページ。レイヤー「🚃 鉄道の運休・遅れ区間」はこの発表を地図に塗っています</small>
+            <span class="external-label">市の案内を開く</span>
+          </a>
+          <a class="official-link-card" href="https://traininfo.jreast.co.jp/train_info/line.aspx?gid=1&amp;lineid=naritaline" target="_blank" rel="noreferrer">
+            <span class="authority-label">JR東日本</span>
+            <strong>成田線の運行情報</strong>
+            <small>我孫子支線（我孫子〜成田）を含む成田線の遅れ・運休・直通運転の中止を確認</small>
+            <span class="external-label">運行情報を開く</span>
+          </a>
+          <a class="official-link-card" href="https://www.hokuso-railway.co.jp/" target="_blank" rel="noreferrer">
+            <span class="authority-label">北総鉄道</span>
+            <strong>北総線の運行情報</strong>
+            <small>印旛日本医大〜京成高砂の運行状況を公式サイトで確認</small>
+            <span class="external-label">公式サイトを開く</span>
+          </a>
+          <a class="official-link-card" href="https://transit.yahoo.co.jp/diainfo/area/4" target="_blank" rel="noreferrer">
+            <span class="authority-label">Yahoo!路線情報</span>
+            <strong>関東の鉄道 運行情報（一覧）</strong>
+            <small>複数路線をまとめて見たいとき用。一次情報は各事業者の発表を確認してください</small>
+            <span class="external-label">一覧を開く</span>
           </a>
         </div>
 

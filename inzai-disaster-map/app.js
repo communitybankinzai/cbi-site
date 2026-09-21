@@ -572,6 +572,11 @@ map.createPane("passedRoadsPane");
 map.getPane("passedRoadsPane").style.zIndex = 440;
 map.createPane("kansuiPane");
 map.getPane("kansuiPane").style.zIndex = 450;
+// 鉄道の運休・遅れ区間。既定OFFで、ONにした人には冠水の線より上に見せる。
+// 専用の面に置かないと、道路の冠水リスク層（同じ面の canvas）がクリックを拾ってしまい
+// ポップアップが開かない。
+map.createPane("railStatusPane");
+map.getPane("railStatusPane").style.zIndex = 460;
 
 const baseLayers = {
   pale: L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
@@ -869,6 +874,7 @@ initSnsMonitor();
 initShelters();
 initHelpGuide();
 initMapLegend();
+initModeration();
 scheduleMapResize();
 
 function bindEvents() {
@@ -1973,6 +1979,112 @@ function applyPreset(name) {
   } else if (preset.focus === "layer-panel") {
     panel.scrollTop = 0;
   }
+}
+
+// ============================================================
+// 🗑 市民記録の管理（運営用・2026-09-21）
+// いたずらや誤った記録を地図から伏せる。API の DELETE に ?moderate=1 と合言葉ヘッダを付ける。
+// 行は消さない（hidden=true）ので、間違えても戻せるし、繰り返すいたずらの端末も追える。
+// 合言葉は CiDAO の環境変数（DISASTER_MODERATION_KEY、無ければ CRON_SECRET）と同じもの。
+// この端末の localStorage にだけ保存し、コードにもサイトにも書かない。
+// ============================================================
+const MODERATION_KEY_STORAGE = "cbi-disaster-moderation-key-v1";
+
+function moderationKey() {
+  try { return localStorage.getItem(MODERATION_KEY_STORAGE) || ""; } catch { return ""; }
+}
+
+function askModerationKey() {
+  const input = prompt("運営用の合言葉を入れてください（この端末にだけ保存します）", "");
+  const value = String(input ?? "").trim();
+  if (!value) return "";
+  try { localStorage.setItem(MODERATION_KEY_STORAGE, value); } catch {}
+  return value;
+}
+
+function moderationEndpoint() {
+  return String(APP_CONFIG.passedRoadsEndpoint || "").trim();
+}
+
+function setModerateStatus(html) {
+  const list = document.getElementById("moderate-list");
+  if (list) list.innerHTML = html;
+}
+
+async function loadModerationList() {
+  const endpoint = moderationEndpoint();
+  if (!endpoint) { setModerateStatus("<p>配信先が設定されていません。</p>"); return; }
+  const key = moderationKey() || askModerationKey();
+  if (!key) { setModerateStatus("<p>合言葉が入力されていないため表示できません。</p>"); return; }
+  setModerateStatus("<p>読み込み中…</p>");
+  try {
+    const response = await fetch(`${endpoint}?all=1`, { headers: { "x-moderation-key": key }, cache: "no-store" });
+    if (response.status === 403) {
+      try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+      setModerateStatus("<p class=\"is-error\">合言葉が違います。「一覧を読み直す」でもう一度入れてください。</p>");
+      return;
+    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const roads = payload.roads || [];
+    if (!roads.length) { setModerateStatus("<p>記録はありません。</p>"); return; }
+    setModerateStatus(roads.map(road => {
+      const what = road.kind === "blocked" ? "🚫 通れない" : "🔵 通れた";
+      const how = road.source === "map" ? "地図で記録" : "GPS";
+      const shape = road.pointCount > 1 ? `線 ${road.pointCount}点・約${Math.round(road.lengthM || 0)}m` : "地点";
+      return `<div class="moderate-row ${road.hidden ? "is-hidden-row" : ""}">` +
+        `<div><strong>${what}</strong> ${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "時刻不明")}` +
+        `<span class="moderate-meta">${escapeHtml(how)}・${escapeHtml(shape)}${road.note ? "・" + escapeHtml(road.note) : ""}` +
+        `${road.hidden ? "・<em>伏せ済み</em>" : ""}</span></div>` +
+        `<div class="moderate-row-buttons">` +
+        `<button type="button" data-moderate-focus="${escapeAttribute(String(road.id))}">地図で見る</button>` +
+        `<button type="button" class="${road.hidden ? "" : "is-danger"}" data-moderate-id="${escapeAttribute(String(road.id))}" data-moderate-hide="${road.hidden ? "0" : "1"}">${road.hidden ? "戻す" : "伏せる"}</button>` +
+        `</div></div>`;
+    }).join(""));
+  } catch (error) {
+    setModerateStatus(`<p class="is-error">取得できません（${escapeHtml(error?.message || "接続エラー")}）</p>`);
+  }
+}
+
+async function moderateRecord(id, hide) {
+  const endpoint = moderationEndpoint();
+  const key = moderationKey();
+  if (!endpoint || !key) return;
+  const url = `${endpoint}?id=${encodeURIComponent(id)}&moderate=1${hide ? "" : "&restore=1"}`;
+  try {
+    const response = await fetch(url, { method: "DELETE", headers: { "x-moderation-key": key } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    await ensurePassedRoadsLayer(true); // 地図と一覧を取り直す
+    await loadModerationList();
+  } catch (error) {
+    setModerateStatus(`<p class="is-error">変更できません（${escapeHtml(error?.message || "接続エラー")}）</p>`);
+  }
+}
+
+function initModeration() {
+  const modal = document.getElementById("moderate-modal");
+  if (!modal) return;
+  const open = () => { modal.hidden = false; loadModerationList(); };
+  document.getElementById("moderate-button")?.addEventListener("click", open);
+  document.getElementById("moderate-close")?.addEventListener("click", () => { modal.hidden = true; });
+  document.getElementById("moderate-reload")?.addEventListener("click", loadModerationList);
+  document.getElementById("moderate-forget")?.addEventListener("click", () => {
+    try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+    setModerateStatus("<p>この端末から合言葉を消しました。</p>");
+  });
+  modal.addEventListener("click", event => {
+    if (event.target === modal) modal.hidden = true;
+    const focusId = event.target.closest?.("[data-moderate-focus]")?.dataset.moderateFocus;
+    if (focusId) { modal.hidden = true; focusPassedRoad(focusId); return; }
+    const button = event.target.closest?.("[data-moderate-id]");
+    if (!button) return;
+    const hide = button.dataset.moderateHide === "1";
+    if (hide && !confirm("この記録を地図から伏せます。よろしいですか？（あとで戻せます）")) return;
+    moderateRecord(button.dataset.moderateId, hide);
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !modal.hidden) modal.hidden = true;
+  });
 }
 
 // 地図の上端の凡例。色チップを押すとその表示を消せる。本日／過去の実績は記録の絞り込み。
@@ -3300,7 +3412,122 @@ function renderPastFloodMarkers() {
   });
 }
 
+// 🚃 鉄道の運休・遅れ区間（2026-09-21追加）
+// 市「災害時の公共交通のご案内」は「成田駅～我孫子駅間」のように駅名で来るため、
+// 区間の形（rail-segments.json・OpenStreetMap 由来／pipeline/build_rail_segments.py で生成）と
+// どこが止まっているか（rail-status.json・市の発表を見て人が書き換える）を分けて持つ。
+// 冠水の赤・青と色が混ざるので既定OFF。ONにした人にだけ描く。
+const RAIL_STATE_STYLE = {
+  suspended: { label: "運休", color: "#b91c1c", weight: 8 },
+  disrupted: { label: "遅れ・運休", color: "#dc2626", weight: 8 },
+  delayed: { label: "遅れ", color: "#d97706", weight: 7 },
+  restored: { label: "運転再開", color: "#2f855a", weight: 6 }
+};
+// 発表からこれだけ経ったら「古い情報かもしれない」と添える
+const RAIL_STALE_HOURS = 6;
+const railStatusLayer = L.layerGroup();
+let railStatusLoaded = false;
+let railSegmentsData = null;
+let railStatusData = null;
+
+async function ensureRailStatusLayer() {
+  if (railStatusLoaded) return;
+  railStatusLoaded = true;
+  try {
+    const [segments, status] = await Promise.all([
+      fetch("rail-segments.json", { cache: "no-store" }),
+      fetch("rail-status.json", { cache: "no-store" })
+    ]);
+    if (!segments.ok) throw new Error(`rail-segments.json HTTP ${segments.status}`);
+    if (!status.ok) throw new Error(`rail-status.json HTTP ${status.status}`);
+    railSegmentsData = await segments.json();
+    railStatusData = await status.json();
+    renderRailStatus();
+  } catch (error) {
+    railStatusLoaded = false;
+    console.error("鉄道の運行情報の読み込みに失敗:", error);
+    document.getElementById("map-status").textContent =
+      `鉄道の運行情報を取得できませんでした（${error?.message || "接続エラー"}）。`;
+  }
+}
+
+function railStatusTime(iso) {
+  const time = Date.parse(iso || "");
+  if (!Number.isFinite(time)) return "";
+  return new Date(time).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function railStatusIsStale(iso) {
+  const time = Date.parse(iso || "");
+  if (!Number.isFinite(time)) return false;
+  return Date.now() - time > RAIL_STALE_HOURS * 3600 * 1000;
+}
+
+function renderRailStatus() {
+  railStatusLayer.clearLayers();
+  if (!railSegmentsData || !railStatusData) return;
+  const lines = railSegmentsData.lines || [];
+  const source = railStatusData.source || {};
+  let drawn = 0;
+
+  (railStatusData.railways || []).forEach(entry => {
+    const line = lines.find(item => item.id === entry.line);
+    if (!line) return;
+    const names = (line.stations || []).map(station => station.name);
+    const fromIndex = names.indexOf(entry.from);
+    const toIndex = names.indexOf(entry.to);
+    // 駅名が路線のどこにも無ければ描かない（誤った区間を赤くしないため）
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+    const [start, end] = fromIndex < toIndex ? [fromIndex, toIndex] : [toIndex, fromIndex];
+    const style = RAIL_STATE_STYLE[entry.state] || RAIL_STATE_STYLE.delayed;
+    const announced = railStatusTime(entry.announcedAt || railStatusData.updatedAt);
+    const stale = railStatusIsStale(entry.announcedAt || railStatusData.updatedAt);
+    const popup =
+      `<strong>🚃 ${escapeHtml(line.name)}</strong><br>` +
+      `<span style="color:${style.color};font-weight:700;">${escapeHtml(entry.from)}〜${escapeHtml(entry.to)}：${escapeHtml(style.label)}</span><br>` +
+      (entry.detail ? `${escapeHtml(entry.detail)}<br>` : "") +
+      (announced ? `発表: ${escapeHtml(announced)} 時点<br>` : "") +
+      (source.url
+        ? `出典: <a href="${escapeAttribute(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.label || "印西市")}</a><br>`
+        : "") +
+      (line.infoUrl
+        ? `<a href="${escapeAttribute(line.infoUrl)}" target="_blank" rel="noreferrer">${escapeHtml(line.operator || "事業者")}の運行情報を見る ↗</a><br>`
+        : "") +
+      `<span style="font-size:11px;">${stale ? "⚠ 発表から時間が経っています。" : ""}区間は駅と駅のあいだを目安に塗っています（形の出典: OpenStreetMap）。最新は事業者の発表で確認してください。</span>`;
+
+    (line.segments || []).slice(start, end).forEach(segment => {
+      L.polyline(segment.path, {
+        pane: "railStatusPane",
+        color: style.color,
+        weight: style.weight,
+        opacity: 0.9,
+        lineCap: "round"
+      }).bindPopup(popup).addTo(railStatusLayer);
+      drawn += 1;
+    });
+  });
+
+  const buses = (railStatusData.buses || []).map(bus =>
+    `${bus.name}（${RAIL_STATE_STYLE[bus.state]?.label || "運行情報"}）`
+  );
+  const updated = railStatusTime(railStatusData.updatedAt);
+  const parts = [];
+  if (drawn) {
+    parts.push(`鉄道の運休・遅れ区間を${drawn}区間表示しています${updated ? `（${updated} 時点の市発表）` : ""}。`);
+  } else {
+    parts.push("いま登録されている鉄道の運休・遅れ区間はありません（平常という意味ではありません）。");
+  }
+  if (buses.length) parts.push(`地図に描けない情報: ${buses.join(" / ")}`);
+  if (railStatusIsStale(railStatusData.updatedAt)) parts.push("⚠ 発表から時間が経っています。事業者の最新情報を確認してください。");
+  document.getElementById("map-status").textContent = parts.join(" ");
+}
+
 function toggleOverlay(name, checked) {
+  if (name === "railStatus") {
+    if (checked) { ensureRailStatusLayer(); railStatusLayer.addTo(map); }
+    else map.removeLayer(railStatusLayer);
+    return;
+  }
   if (name === "terrainRisk") {
     if (checked) { ensureTerrainRiskLayer(); terrainRiskLayer.addTo(map); }
     else map.removeLayer(terrainRiskLayer);
