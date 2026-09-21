@@ -6653,6 +6653,13 @@
       ],
       "plans": [
         {
+          "due": "2026-09-22",
+          "title": "↩ Threads 審査の録画が終わったら、巡回の除外に communitybankinzai を戻し、検索語「防災MAPを更新」を消す",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-09-21 夜、録画でテスト用アカウントの投稿を映すため、CiDAO src/lib/disaster-sns-monitor.ts の EXCLUDED_ACCOUNTS から communitybankinzai を一時的に外した（d0c9d89）。disaster_sns_monitor_rules に threads『防災MAPを更新』を一時追加。戻さないと CBI 自身の投稿が候補に混ざり続ける"
+        },
+        {
           "due": "2026-09-30",
           "title": "🧵 Threads の巡回が他人の投稿を1件も取れていない — Meta のアプリ審査（threads_keyword_search の上位権限）を申請する",
           "category": "事務",
