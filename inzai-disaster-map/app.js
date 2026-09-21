@@ -2266,19 +2266,22 @@ function initMapLegend() {
   // Leaflet のポップアップは地図の面の中（z-index 400 の重なり）にあるため、外に重ねた帯より上には出せない。
   // 2026-09-21 夕：スマホで線を押すと、時刻の行がちょうど警告帯の裏に来て「押しても時間がわからない」状態だった。
   // 開いた時点で重なっていたら、その分だけ地図を下へずらす
+  // Leaflet 自身の「はみ出したら地図をずらす」（autoPan）に、上の帯の分の余白を教える。
+  // 自前で panBy すると Leaflet の autoPan と打ち消し合うので、余白を渡して Leaflet に任せる
+  const coverBottomInMap = () => {
+    const mapTop = document.getElementById("map")?.getBoundingClientRect().top ?? 0;
+    const covers = ["map-legend", "river-alert", "map-status"]
+      .map(id => document.getElementById(id))
+      .filter(node => node && !node.hidden && node.offsetParent !== null && getComputedStyle(node).display !== "none");
+    return Math.max(0, ...covers.map(node => node.getBoundingClientRect().bottom - mapTop));
+  };
   map.on("popupopen", event => {
-    const popupNode = event.popup.getElement?.();
-    const pane = document.getElementById("map-pane");
-    if (!popupNode || !pane) return;
-    requestAnimationFrame(() => {
-      const covers = ["map-legend", "river-alert", "map-status"]
-        .map(id => document.getElementById(id))
-        .filter(node => node && !node.hidden && node.offsetParent !== null && getComputedStyle(node).display !== "none");
-      const coverBottom = Math.max(0, ...covers.map(node => node.getBoundingClientRect().bottom));
-      const popupTop = popupNode.getBoundingClientRect().top;
-      const gap = coverBottom + 8 - popupTop;
-      if (gap > 0) map.panBy([0, -gap], { animate: true });
-    });
+    const popup = event.popup;
+    setTimeout(() => {
+      popup.options.autoPanPaddingTopLeft = L.point(10, Math.round(coverBottomInMap()) + 10);
+      popup.options.autoPan = true;
+      if (typeof popup._adjustPan === "function") popup._adjustPan();
+    }, 30);
   });
 }
 
