@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "防災MAP：凡例バー・本日/過去の描き分け・運営用の記録管理（いたずら対応） 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "inzai-disaster-map/index.html",
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/styles.css",
+            "CiDAO src/app/api/disaster/passed-roads/route.ts",
+            "admin/changelog.json",
+            "Vercel 環境変数 DISASTER_MODERATION_KEY",
+            "agents/a1-core/credentials.md"
+          ],
+          "hours": 1.0,
+          "partnerApproved": true,
+          "note": "中司さんの実機指摘（オレンジが何か分からない／実績と当日を見分けたい／運営が消せるように）への対応。地図上端に凡例チップ（押すとその色を消せる）、対象日の記録は濃く太く・それ以前は薄く細く、「本日」「過去の実績」で絞り込み。ポップアップに投稿日時と区分を表示。開いたら市境にフィット。運営用は API の DELETE に ?moderate=1 と x-moderation-key を足し、サイトは「⚙ 運営用 → 🗑 市民記録の管理」から伏せる／戻す（行は消さない）。本番実測で 合言葉なし403・誤った合言葉403・正しい合言葉で伏せる/戻すが反映、画面からも7件の一覧と操作を確認。大雨警報のため巡回間隔を災害時へ戻す作業も含む。session 累計1.8時間から先行分0.8時間を除いた分。session: f423f041-19ed-4441-8327-a288a48d54d3 / output: 181,537 / cost: $55.29"
+        },
+        {
+          "date": "2026-09-21",
           "title": "防災MAPの初期表示を冠水だけに絞り、上部の案内・メニューを圧縮 0.5時間",
           "category": "実装",
           "outputs": [
