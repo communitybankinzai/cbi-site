@@ -3799,16 +3799,21 @@ function renderRailStatus() {
     const style = RAIL_STATE_STYLE[entry.state] || RAIL_STATE_STYLE.delayed;
     const announced = railStatusTime(entry.announcedAt || railStatusData.updatedAt);
     const stale = railStatusIsStale(entry.announcedAt || railStatusData.updatedAt);
+    // 出典は項目ごと。市の案内に載らない事業者発表を運営が確認して登録した項目（sourceType: operator）は
+    // その事業者を出典として出し、線の名前も実際の路線名（例：北総線の線路を走るスカイアクセス線）で見せる
+    const operatorSourced = entry.sourceType === "operator";
+    const entrySource = entry.sourceUrl ? { url: entry.sourceUrl, label: entry.sourceLabel } : source;
+    const infoUrl = operatorSourced ? entry.sourceUrl : line.infoUrl;
     const popup =
-      `<strong>🚃 ${escapeHtml(line.name)}</strong><br>` +
+      `<strong>🚃 ${escapeHtml(entry.lineLabel || line.name)}</strong><br>` +
       `<span style="color:${style.color};font-weight:700;">${escapeHtml(entry.from)}〜${escapeHtml(entry.to)}：${escapeHtml(style.label)}</span><br>` +
       (entry.detail ? `${escapeHtml(entry.detail)}<br>` : "") +
       (announced ? `発表: ${escapeHtml(announced)} 時点<br>` : "") +
-      (source.url
-        ? `出典: <a href="${escapeAttribute(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.label || "印西市")}</a><br>`
+      (entrySource.url
+        ? `出典: <a href="${escapeAttribute(entrySource.url)}" target="_blank" rel="noreferrer">${escapeHtml(entrySource.label || "印西市")}</a>${operatorSourced ? "（運営が確認して登録）" : ""}<br>`
         : "") +
-      (line.infoUrl
-        ? `<a href="${escapeAttribute(line.infoUrl)}" target="_blank" rel="noreferrer">${escapeHtml(line.operator || "事業者")}の運行情報を見る ↗</a><br>`
+      (infoUrl && !operatorSourced
+        ? `<a href="${escapeAttribute(infoUrl)}" target="_blank" rel="noreferrer">${escapeHtml(line.operator || "事業者")}の運行情報を見る ↗</a><br>`
         : "") +
       `<span style="font-size:11px;">${stale ? "⚠ 発表から時間が経っています。" : ""}区間は駅と駅のあいだを目安に塗っています（形の出典: OpenStreetMap）。最新は事業者の発表で確認してください。</span>`;
 
@@ -3837,11 +3842,14 @@ function renderRailStatus() {
   const summary = [];
   if (drawn) summary.push(`🚃 鉄道 ${drawn}区間`);
   if (buses.length) summary.push(`🚌 バス ${buses.length}路線`);
+  const operatorRails = (railStatusData.railways || []).filter(r => r.sourceType === "operator");
   const head = summary.length
-    ? `${summary.join("・")}が運休・遅れ${updated ? `（${updated} 市発表）` : ""}`
+    ? `${summary.join("・")}が運休・遅れ${updated ? `（${updated} 市発表${operatorRails.length ? "ほか" : ""}）` : ""}`
     : "🚃 登録中の運休・遅れはありません（平常という意味ではありません）";
 
   const details = [];
+  // 市の案内に載らず、運営が事業者の発表を確認して登録した区間（出典を分けて見せる）
+  operatorRails.forEach(r => details.push(`<li>${escapeHtml(r.lineLabel || "鉄道")} ${escapeHtml(r.from)}〜${escapeHtml(r.to)}：${escapeHtml(r.sourceLabel || "事業者")}の発表を運営が確認${r.announcedAt ? `（${escapeHtml(railStatusTime(r.announcedAt))} 時点）` : ""}</li>`));
   if (buses.length) details.push(`<li>路線バス：${buses.map(escapeHtml).join(" ／ ")}</li>`);
   if (cleared.length) details.push(`<li>${cleared.length}件は解除済みのため表示していません（${escapeHtml(cleared[0].why || "解除")}）</li>`);
   if (!railStatusData.fromServer) details.push("<li>最新の状態を取得できなかったため、保存済みの内容を表示しています</li>");

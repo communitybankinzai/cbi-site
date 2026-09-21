@@ -1,21 +1,5 @@
 {
- "updatedAt": "2026-09-21T18:00:00+09:00",
- "checkedAt": "2026-09-21T18:45:00+09:00",
  "note": "印西市の発表を書き写したものです。運行の可否を保証するものではありません。最新は各事業者の運行情報で確認してください。",
- "source": {
-  "label": "印西市 災害時の公共交通のご案内",
-  "url": "https://www.city.inzai.lg.jp/0000022520.html"
- },
- "railways": [
-  {
-   "line": "jr-narita-abiko",
-   "from": "我孫子",
-   "to": "成田",
-   "state": "suspended",
-   "detail": "台風の影響で、成田駅～我孫子駅間の運転を見合わせています（21日18時現在）。",
-   "announcedAt": "2026-09-21T18:00:00+09:00"
-  }
- ],
  "buses": [
   {
    "name": "路線バス 六合路線（小林駅～印旛日本医大駅～京成佐倉駅）",
@@ -47,5 +31,34 @@
    "detail": "区間運休です。",
    "announcedAt": "2026-09-21T18:00:00+09:00"
   }
- ]
+ ],
+ "source": {
+  "url": "https://www.city.inzai.lg.jp/0000022520.html",
+  "label": "印西市 災害時の公共交通のご案内"
+ },
+ "railways": [
+  {
+   "to": "成田",
+   "from": "我孫子",
+   "line": "jr-narita-abiko",
+   "state": "suspended",
+   "detail": "台風の影響で、成田駅～我孫子駅間の運転を見合わせています（21日18時現在）。",
+   "announcedAt": "2026-09-21T18:00:00+09:00"
+  },
+  {
+   "line": "hokuso",
+   "from": "新鎌ヶ谷",
+   "to": "印旛日本医大",
+   "state": "suspended",
+   "detail": "線路冠水のため、新鎌ヶ谷〜印旛日本医大で運転を見合わせています（京成電鉄の発表・21時53分時点）。北総線（各駅停車）の運行は北総鉄道の発表で確認してください。",
+   "announcedAt": "2026-09-21T21:53:00+09:00",
+   "expiresAt": "2026-09-22T03:53:00+09:00",
+   "sourceType": "operator",
+   "sourceLabel": "京成電鉄 京成線運行情報",
+   "sourceUrl": "https://www.keisei.co.jp/traininfo/index.php",
+   "lineLabel": "成田スカイアクセス線（北総線と同じ線路）"
+  }
+ ],
+ "checkedAt": "2026-09-21T10:14:17.730Z",
+ "updatedAt": "2026-09-21T18:00:00+09:00"
 }
