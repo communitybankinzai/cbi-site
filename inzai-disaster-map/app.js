@@ -2169,9 +2169,8 @@ document.addEventListener("click", async event => {
   button.disabled = true;
   button.textContent = "伏せています…";
   map.closePopup();
-  if (!(await moderateRecord(button.dataset.passedHide, true))) {
-    alert("伏せられませんでした。合言葉か通信を確認して、「🗑 市民記録の管理」からもう一度お試しください。");
-  }
+  const result = await moderateRecord(button.dataset.passedHide, true);
+  if (result !== true) alert(`伏せられませんでした（${result || "接続エラー"}）。もう一度線を押して試すか、「🗑 市民記録の管理」から操作してください。`);
 });
 
 async function loadKansuiModerationList() {
@@ -2204,14 +2203,25 @@ async function moderateRecord(id, hide) {
   if (!endpoint || !key) return;
   const url = `${endpoint}?id=${encodeURIComponent(id)}&moderate=1${hide ? "" : "&restore=1"}`;
   try {
-    const response = await fetch(url, { method: "DELETE", headers: { "x-moderation-key": key } });
+    let response = await fetch(url, { method: "DELETE", headers: { "x-moderation-key": key } });
+    if (response.status === 403) {
+      // 端末に保存した合言葉が違う。消して入れ直してもらい、1回だけやり直す
+      try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+      const retryKey = askModerationKey();
+      if (!retryKey) throw new Error("合言葉が違います");
+      response = await fetch(url, { method: "DELETE", headers: { "x-moderation-key": retryKey } });
+      if (response.status === 403) {
+        try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+        throw new Error("合言葉が違います");
+      }
+    }
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     await ensurePassedRoadsLayer(true); // 地図と一覧を取り直す
     await loadModerationList();
     return true;
   } catch (error) {
     setModerateStatus(`<p class="is-error">変更できません（${escapeHtml(error?.message || "接続エラー")}）</p>`);
-    return false;
+    return error?.message || "接続エラー";
   }
 }
 
