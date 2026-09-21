@@ -874,6 +874,7 @@ initSnsMonitor();
 initShelters();
 initHelpGuide();
 initMapLegend();
+initRecordRange();
 initModeration();
 scheduleMapResize();
 
@@ -4621,8 +4622,9 @@ function passedRoadShape(road) {
   return line;
 }
 
-// 「本日」「過去の実績」の絞り込み（凡例バーのチップ）。どちらも既定ON
-const recordWhenFilter = { today: true, past: true };
+// 記録の絞り込み（凡例バーのチップ）。「本日」「過去の実績」はどちらも既定ON。
+// from / to（ミリ秒）を入れると、そちらが優先される（⏱ 期間・2026-09-21 追加）
+const recordWhenFilter = { today: true, past: true, from: null, to: null, label: "" };
 
 // その記録が対象日のものか。対象日を変えれば、その日の記録が「本日」側になる
 function isTargetDayRecord(iso) {
@@ -4632,7 +4634,99 @@ function isTargetDayRecord(iso) {
 }
 
 function passesWhenFilter(iso) {
+  const time = Date.parse(iso || "");
+  // 期間を指定しているあいだは「本日／過去の実績」ではなく期間だけで絞る
+  if (recordWhenFilter.from !== null || recordWhenFilter.to !== null) {
+    if (!Number.isFinite(time)) return false;
+    if (recordWhenFilter.from !== null && time < recordWhenFilter.from) return false;
+    if (recordWhenFilter.to !== null && time > recordWhenFilter.to) return false;
+    return true;
+  }
   return isTargetDayRecord(iso) ? recordWhenFilter.today : recordWhenFilter.past;
+}
+
+// ⏱ 期間の絞り込み。災害中は「直近3時間」をすぐ押せることが大事なので、
+// よく使う範囲のボタンと、開始・終了の手入力の両方を出す（2026-09-21 中司さんの要望）
+function applyRecordRange(from, to, label) {
+  recordWhenFilter.from = from;
+  recordWhenFilter.to = to;
+  recordWhenFilter.label = label || "";
+  const chip = document.getElementById("legend-range");
+  if (chip) {
+    chip.textContent = label ? `⏱ ${label}` : "⏱ 期間";
+    chip.setAttribute("aria-pressed", label ? "true" : "false");
+  }
+  // 期間を使っているあいだは「本日／過去の実績」を押せなくする（どちらが効いているか分からなくなるため）
+  document.querySelectorAll("#map-legend [data-when]").forEach(button => {
+    button.disabled = Boolean(label);
+    button.classList.toggle("is-muted", Boolean(label));
+  });
+  renderKansuiLayer();
+  renderPassedRoadsLayer();
+}
+
+function toLocalInputValue(ms) {
+  const d = new Date(ms - new Date().getTimezoneOffset() * 60000);
+  return d.toISOString().slice(0, 16);
+}
+
+function initRecordRange() {
+  const panel = document.getElementById("range-panel");
+  const chip = document.getElementById("legend-range");
+  if (!panel || !chip) return;
+  chip.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) {
+      const now = Date.now();
+      const fromInput = document.getElementById("range-from");
+      const toInput = document.getElementById("range-to");
+      if (!fromInput.value) fromInput.value = toLocalInputValue(now - 6 * 3600 * 1000);
+      if (!toInput.value) toInput.value = toLocalInputValue(now);
+    }
+  });
+  panel.addEventListener("click", event => {
+    const preset = event.target.closest("[data-range]")?.dataset.range;
+    if (!preset) return;
+    const now = Date.now();
+    if (preset === "all") applyRecordRange(null, null, "");
+    else if (preset === "today") {
+      const start = new Date(); start.setHours(0, 0, 0, 0);
+      applyRecordRange(start.getTime(), null, "今日");
+    } else {
+      const hours = Number(preset);
+      applyRecordRange(now - hours * 3600 * 1000, null, `直近${hours}時間`);
+    }
+    panel.hidden = true;
+  });
+  document.getElementById("range-apply")?.addEventListener("click", () => {
+    const from = document.getElementById("range-from").value;
+    const to = document.getElementById("range-to").value;
+    const fromMs = from ? Date.parse(from) : null;
+    const toMs = to ? Date.parse(to) : null;
+    if (fromMs !== null && toMs !== null && fromMs > toMs) {
+      document.getElementById("range-note").textContent = "「から」が「まで」より後になっています。";
+      return;
+    }
+    if (fromMs === null && toMs === null) { applyRecordRange(null, null, ""); panel.hidden = true; return; }
+    const fmt = ms => formatDateTime(toDateTimeLocal(new Date(ms).toISOString())) || "";
+    const label = fromMs !== null && toMs !== null ? `${fmt(fromMs)}〜${fmt(toMs)}`
+      : fromMs !== null ? `${fmt(fromMs)}から` : `${fmt(toMs)}まで`;
+    document.getElementById("range-note").textContent = "";
+    applyRecordRange(fromMs, toMs, label);
+    panel.hidden = true;
+  });
+  document.getElementById("range-clear")?.addEventListener("click", () => {
+    document.getElementById("range-from").value = "";
+    document.getElementById("range-to").value = "";
+    document.getElementById("range-note").textContent = "";
+    applyRecordRange(null, null, "");
+    panel.hidden = true;
+  });
+  document.addEventListener("click", event => {
+    if (panel.hidden) return;
+    if (event.target.closest("#range-panel") || event.target.closest("#legend-range")) return;
+    panel.hidden = true;
+  });
 }
 
 // データは持ったまま、絞り込みだけを描き直す（取得し直さない）

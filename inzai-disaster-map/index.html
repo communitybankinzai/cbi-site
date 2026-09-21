@@ -187,6 +187,10 @@
 
                   <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="kansui" checked> <span class="layer-name">🔴 冠水した道路（市民の投稿）<span id="kansui-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>有志プロジェクト「みんなでつくる千葉豪雨冠水道路マップ」に投稿された、実際に冠水した道路です（印西市周辺のみ表示）。<strong>公式に確認された通行止めではありません。</strong></p><p>8月に冠水した道は同じ雨で再び冠水するおそれがあるため、車で通らない判断の参考にしてください。</p><p><strong>新しい冠水地点の投稿は本家サイトからお願いします</strong>：<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつく千葉冠水マップを開く ↗</a></p></span></span></label>
 
+                  <!-- 2026-09-21: このトグルは画面から失われていた（app.js 側の処理だけ生きていた）。
+                       白井市の冠水実績（住民のSNS投稿から読み取り）を載せるにあたり復活させた -->
+                  <label class="has-tip"><input type="checkbox" data-overlay="pastFlood"> <span class="layer-name">🌊 過去の冠水実績（運営が記録した地点）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>過去に冠水したと<strong>確認できた地点</strong>を、運営が1件ずつ記録したものです（県の災害対策本部会議資料、住民の投稿など）。出典と確認日をポップアップに書いています。</p><p><strong>対象日のしぼり込みは掛かりません。</strong>いつの対象日を選んでいても、記録のある地点をすべて表示します。長く残す実績だからです。</p><p>ハザード想定でも、いまの冠水状況でもありません。</p></span></span></label>
+
                   <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="passedRoads" checked> <span class="layer-name">🔵 通れた道（GPS記録）<span id="passed-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>この地図を見ている人が、スマホの位置情報で<strong>実際に通れた道</strong>を記録したものです。赤（冠水した道路）と見比べて、通れる道を探す参考にしてください。</p><p>色の濃さは記録の新しさです。<strong>6時間以上前の記録は「冠水時に通れた実績」として薄い青で残します。</strong>より強い雨では冠水することがあり、安全を保証するものではありません。</p><p>「通れない」には記録時刻の最寄りアメダス（我孫子・佐倉・成田・船橋）の雨量を添え、<strong>☔ 雨あり＝冠水の可能性／🌤 雨なし＝工事・事故など別の理由の可能性</strong>の目安を出します（確定ではありません）。</p><p>記録は匿名です（端末の乱数IDと軌跡だけが送られ、名前や電話番号は送られません）。</p></span></span></label>
                   <div class="jshis-layer-note road-risk-legend passed-roads-legend">
                     <span><span class="legend-line" style="background:#0d47a1"></span>1時間以内</span>
@@ -621,6 +625,26 @@
             <span class="legend-sep" aria-hidden="true"></span>
             <button type="button" class="legend-chip is-when" data-when="today" aria-pressed="true" title="対象日の記録だけ濃く太く描いています">本日</button>
             <button type="button" class="legend-chip is-when" data-when="past" aria-pressed="true" title="対象日より前の記録。薄く細く描いています">過去の実績</button>
+            <button type="button" class="legend-chip is-range" id="legend-range" aria-pressed="false" title="記録を好きな期間でしぼり込む">⏱ 期間</button>
+          </div>
+
+          <!-- ⏱ 期間のしぼり込み（2026-09-21）。災害中は「直近3時間」をすぐ押せることが大事なので、
+               よく使う範囲のボタンと、開始・終了の手入力の両方を出す -->
+          <div class="range-panel" id="range-panel" hidden>
+            <div class="range-presets">
+              <button type="button" data-range="3">直近3時間</button>
+              <button type="button" data-range="6">6時間</button>
+              <button type="button" data-range="24">24時間</button>
+              <button type="button" data-range="today">今日</button>
+              <button type="button" data-range="all">すべて</button>
+            </div>
+            <label>から <input type="datetime-local" id="range-from"></label>
+            <label>まで <input type="datetime-local" id="range-to"></label>
+            <p class="range-note" id="range-note"></p>
+            <div class="range-actions">
+              <button type="button" id="range-apply">この期間で見る</button>
+              <button type="button" id="range-clear">解除</button>
+            </div>
           </div>
           <div class="quick-record-bar" id="quick-record-bar" aria-label="通れない・通れたを記録">
             <div class="quick-record-buttons">
