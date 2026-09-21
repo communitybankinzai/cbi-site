@@ -3443,18 +3443,42 @@ let railStatusLoaded = false;
 let railSegmentsData = null;
 let railStatusData = null;
 
+// 運休の状態は CiDAO から取る（市が再開を発表するとサーバー側で自動的に解除される）。
+// 通信できないときだけ、同じフォルダの静的ファイルを使う（古い情報が残りうるので最後の手段）。
+async function fetchRailStatusData() {
+  const endpoint = String(APP_CONFIG.railStatusEndpoint || "").trim();
+  if (endpoint) {
+    try {
+      const res = await fetch(endpoint, { headers: { Accept: "application/json" }, cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const payload = await res.json();
+      payload.fromServer = true;
+      return payload;
+    } catch (error) {
+      console.warn("運行情報APIを取得できないため静的ファイルを使います:", error);
+    }
+  }
+  const res = await fetch("rail-status.json", { cache: "no-store" });
+  if (!res.ok) throw new Error(`rail-status.json HTTP ${res.status}`);
+  const payload = await res.json();
+  payload.fromServer = false;
+  return payload;
+}
+
 async function ensureRailStatusLayer() {
   if (railStatusLoaded) return;
   railStatusLoaded = true;
   try {
     const [segments, status] = await Promise.all([
       fetch("rail-segments.json", { cache: "no-store" }),
-      fetch("rail-status.json", { cache: "no-store" })
+      fetchRailStatusData()
     ]);
     if (!segments.ok) throw new Error(`rail-segments.json HTTP ${segments.status}`);
-    if (!status.ok) throw new Error(`rail-status.json HTTP ${status.status}`);
     railSegmentsData = await segments.json();
-    railStatusData = await status.json();
+    railStatusData = status;
+    if (Array.isArray(status.cleared) && status.cleared.length) {
+      console.info("運行情報：解除済みのため表示していない項目", status.cleared);
+    }
     renderRailStatus();
   } catch (error) {
     railStatusLoaded = false;
@@ -3532,6 +3556,10 @@ function renderRailStatus() {
     parts.push("いま登録されている鉄道の運休・遅れ区間はありません（平常という意味ではありません）。");
   }
   if (buses.length) parts.push(`地図に描けない情報: ${buses.join(" / ")}`);
+  // 市が再開を発表した区間はサーバー側で外れる（cleared）。黙って消えると不安なので一言添える
+  const cleared = Array.isArray(railStatusData.cleared) ? railStatusData.cleared : [];
+  if (cleared.length) parts.push(`${cleared.length}件は解除済みのため表示していません（${cleared[0].why || "解除"}）。`);
+  if (!railStatusData.fromServer) parts.push("※ 最新の状態を取得できなかったため、保存済みの内容を表示しています。");
   if (railStatusIsStale(railStatusData.updatedAt)) parts.push("⚠ 発表から時間が経っています。事業者の最新情報を確認してください。");
   document.getElementById("map-status").textContent = parts.join(" ");
 }
