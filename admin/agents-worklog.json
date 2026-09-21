@@ -18,6 +18,29 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "SNS3媒体告知＋鉄道運休の自動解除API＋警報自動投稿の頻度修正 0.9時間",
+          "category": "実装",
+          "outputs": [
+            "site/assets/sns/2026-09-21_unkou/rail.jpg",
+            "site/assets/sns/2026-09-21_unkou/kansui.jpg",
+            "CBI予約投稿キュー 3件（Threads・Instagram・Facebook すべて成功 12:54）",
+            "CiDAO src/lib/disaster-rail-status.ts",
+            "CiDAO src/app/api/disaster/rail-status/route.ts",
+            "CiDAO src/lib/disaster-auto-post.ts",
+            "CiDAO src/lib/__tests__/disaster-rail-status.test.ts",
+            "CiDAO src/lib/__tests__/disaster-auto-post-quote.test.ts",
+            "CiDAO src/lib/__tests__/disaster-auto-post-decide.test.ts",
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/config.js",
+            "admin/changelog.json",
+            "Supabase app_settings（disaster_rail_status 新設／disaster_auto_post の間隔30→180分／disaster_auto_post_state に lastPostedLevel 補完）"
+          ],
+          "hours": 0.9,
+          "partnerApproved": true,
+          "note": "中司さんの指示4件への対応。(1)「運行情報と冠水MAPの投稿を広めたい」→ 告知画像2枚（地図部分だけを正方形JPEGで撮影）と記録者へのお礼入りの本文で3媒体へ投稿、キューで成否を確認。(2)「運行再開でMAPは直るか」→ 直らなかったので、運休の状態をCiDAOから配るAPIを作り、市の案内本文から記述が消えた項目と発表12時間超の項目を自動で外す（消す方向だけ）。本番で一時項目を入れて cleared に理由付きで出ることを確認。(3)「同じ情報が重複投稿」→ 気象庁の同一本文を2回引用していたのを除去。(4)「同じような投稿が続くルールは」→ 当日8回の原因（警報の組み合わせ変化で再投稿・12:00解除→12:10再発表の揺れ）を実測で特定し、判定を純粋関数に切り出して決め直し。当日の流れの再現テストで8回→3回。以前は間隔チェックがレベル上昇時にも掛かり3→4も止められうる状態だった点も解消。テスト計16件・tsc/eslint 0。session 累計1.9時間から先行分1.0時間を除いた分。session: 297bc2e9-ca4e-4883-a1e8-5c69c0c8a15d / output: 191,087 / cost: $55.82"
+        },
+        {
+          "date": "2026-09-21",
           "title": "防災MAP：鉄道の運休・遅れ区間レイヤー＋市の運行情報ページ監視 1.0時間",
           "category": "実装",
           "outputs": [
@@ -6518,6 +6541,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-21",
+          "title": "⏱ 15時以降の巡回で、警報の自動投稿が新ルール（同じレベルの間は黙る）で動いているか確認する",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-09-21 14時台に判定を差し替えた（CiDAO d28682f）。確認は app_settings の disaster_auto_post_state の history に posted が増えていないこと、droppedAt が一時的な低下で入り30分以内の復帰で消えること。レベル3が続いていれば投稿0件が正しい。レベルが4へ上がったら間隔に関係なく出ること（未実地）。"
+        },
         {
           "due": "未定",
           "title": "🚌 路線バスの運休を地図に線で出す（いまは文字だけ）",
