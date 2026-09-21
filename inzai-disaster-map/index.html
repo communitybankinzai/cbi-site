@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260922a">
+    <link rel="stylesheet" href="./styles.css?v=20260922b">
   </head>
   <body>
     <div class="app-shell">
@@ -640,6 +640,17 @@
             <button type="button" class="legend-chip is-when" data-when="today" aria-pressed="true" title="対象日の記録だけ濃く太く描いています">本日</button>
             <button type="button" class="legend-chip is-when" data-when="past" aria-pressed="true" title="対象日より前の記録。薄く細く描いています">過去の実績</button>
             <button type="button" class="legend-chip is-range" id="legend-range" aria-pressed="false" title="記録を好きな期間でしぼり込む">⏱ 期間</button>
+            <button type="button" class="legend-chip is-range" id="legend-colors" aria-pressed="false" aria-controls="color-guide" title="線や点の色の濃さが何を表しているか">ⓘ 色の見方</button>
+          </div>
+
+          <!-- ⓘ 色の見方（2026-09-22）。色の濃さが「新しさ」を表していることが利用者に伝わらないため -->
+          <div class="range-panel color-guide" id="color-guide" hidden>
+            <p class="cg-lead">色が<strong>濃いほど新しい</strong>記録です。薄い線・点は、以前に記録された実績です。</p>
+            <div class="cg-row"><span class="cg-sw" style="background:#b8322c"></span><span class="cg-sw is-faded" style="background:#b8322c"></span><span><b>冠水した道路</b>（みんつくへの投稿）：濃い＝対象日の投稿、薄い＝過去の実績</span></div>
+            <div class="cg-row"><span class="cg-sw" style="background:#b8322c"></span><span class="cg-sw is-faded" style="background:#b8322c"></span><span><b>通れない道・×印</b>（この地図の利用者の記録）：濃い＝6時間以内、薄い＝6時間より前</span></div>
+            <div class="cg-row"><span class="cg-sw" style="background:#0d47a1"></span><span class="cg-sw" style="background:#1e88e5"></span><span class="cg-sw" style="background:#64b5f6"></span><span class="cg-sw" style="background:#b3d4f0"></span><span><b>通れた道</b>：左から 1時間以内・3時間以内・6時間以内・それより前（冠水時に通れた実績）</span></div>
+            <div class="cg-row"><span class="cg-sw" style="background:#2f8ba3"></span><span class="cg-sw" style="background:#e8b23a"></span><span class="cg-sw" style="background:#df7038"></span><span class="cg-sw" style="background:#8e44ad"></span><span><b>地形の推定</b>：左から 冠水しにくい→しやすい（地形だけから推定。実際の冠水の記録ではありません）</span></div>
+            <p class="cg-note">「本日」「過去の実績」「⏱ 期間」で、表示する記録をしぼり込めます。どの色も、いま通れるかどうかを保証するものではありません。</p>
           </div>
 
           <!-- ⏱ 期間のしぼり込み（2026-09-21）。災害中は「直近3時間」をすぐ押せることが大事なので、
@@ -1713,7 +1724,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260907g"></script>
-    <script src="./app.js?v=20260922a"></script>
+    <script src="./app.js?v=20260922b"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

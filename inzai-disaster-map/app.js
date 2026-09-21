@@ -885,6 +885,7 @@ initShelters();
 initHelpGuide();
 initMapLegend();
 initRecordRange();
+initColorGuide();
 initModeration();
 scheduleMapResize();
 
@@ -5389,6 +5390,28 @@ function applyRecordRange(from, to, label) {
 function toLocalInputValue(ms) {
   const d = new Date(ms - new Date().getTimezoneOffset() * 60000);
   return d.toISOString().slice(0, 16);
+}
+
+// ⓘ 色の見方のパネル。期間のパネルと同じ場所に出すので、片方を開いたらもう片方は閉じる
+function initColorGuide() {
+  const panel = document.getElementById("color-guide");
+  const chip = document.getElementById("legend-colors");
+  if (!panel || !chip) return;
+  chip.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    chip.setAttribute("aria-pressed", String(!panel.hidden));
+    if (!panel.hidden) document.getElementById("range-panel")?.setAttribute("hidden", "");
+  });
+  document.getElementById("legend-range")?.addEventListener("click", () => {
+    panel.hidden = true;
+    chip.setAttribute("aria-pressed", "false");
+  });
+  document.addEventListener("click", event => {
+    if (panel.hidden) return;
+    if (event.target.closest("#color-guide") || event.target.closest("#legend-colors")) return;
+    panel.hidden = true;
+    chip.setAttribute("aria-pressed", "false");
+  });
 }
 
 function initRecordRange() {
