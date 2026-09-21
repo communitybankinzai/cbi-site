@@ -173,7 +173,7 @@
                     <span><span class="legend-line" style="background:#e07b39;height:10px"></span>高い</span>
                   </div>
 
-                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="roadRisk"> <span class="layer-name">🚗 道路の冠水リスク傾向（地形のみ・未校正）<span id="road-risk-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>国土地理院の標高から作った地形の指標を、OpenStreetMapの車道に割り当てて色分けしたものです。<strong>排水能力・路面高・アンダーパスは未考慮で、通行できるかどうかではありません。</strong>公式の通行止め情報が最優先です。</p><p>しきい値は実際の冠水実績と照合していません（未検証）。</p><p><a href="./simulation-spec.html" target="_blank" rel="noopener">技術仕様</a> · <a href="./LICENSE.md" target="_blank" rel="noopener">利用条件</a> · <a href="./naisui.html" target="_blank" rel="noopener">研究用MAPで詳しく見る</a></p></span></span></label>
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="roadRisk" checked> <span class="layer-name">🚗 道路の冠水リスク傾向（地形のみ・未校正）<span id="road-risk-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>国土地理院の標高から作った地形の指標を、OpenStreetMapの車道に割り当てて色分けしたものです。<strong>排水能力・路面高・アンダーパスは未考慮で、通行できるかどうかではありません。</strong>公式の通行止め情報が最優先です。</p><p>しきい値は実際の冠水実績と照合していません（未検証）。</p><p><a href="./simulation-spec.html" target="_blank" rel="noopener">技術仕様</a> · <a href="./LICENSE.md" target="_blank" rel="noopener">利用条件</a> · <a href="./naisui.html" target="_blank" rel="noopener">研究用MAPで詳しく見る</a></p></span></span></label>
                   <div class="jshis-layer-note road-risk-legend">
                     <span><span class="legend-line" style="background:#2f8ba3"></span>冠水リスク低</span>
                     <span><span class="legend-line" style="background:#e8b23a"></span>注意</span>
@@ -592,6 +592,16 @@
 
         <section class="map-pane" id="map-pane" aria-label="印西市地図">
           <div id="map"></div>
+          <!-- 2026-09-21: 「オレンジは何なのか分からない」（中司さん）への対応。地図の上端に置き、
+               押すとその色の表示を消せる。本日／過去の実績は記録の絞り込み（既定はどちらもON） -->
+          <div class="map-legend" id="map-legend" aria-label="地図の凡例と絞り込み">
+            <button type="button" class="legend-chip is-kansui" data-legend="kansui" aria-pressed="true" title="みんつく千葉冠水マップに投稿された、実際に冠水した道路">冠水した道路</button>
+            <button type="button" class="legend-chip is-passed" data-legend="passedRoads" aria-pressed="true" title="この地図の利用者が記録した、通れた道・通れない道">通れた/通れない</button>
+            <button type="button" class="legend-chip is-risk" data-legend="roadRisk" aria-pressed="true" title="地形の形から推定した冠水しやすさ。実際に冠水した記録ではありません（未校正）">地形の推定</button>
+            <span class="legend-sep" aria-hidden="true"></span>
+            <button type="button" class="legend-chip is-when" data-when="today" aria-pressed="true" title="対象日の記録だけ濃く太く描いています">本日</button>
+            <button type="button" class="legend-chip is-when" data-when="past" aria-pressed="true" title="対象日より前の記録。薄く細く描いています">過去の実績</button>
+          </div>
           <div class="quick-record-bar" id="quick-record-bar" aria-label="通れない・通れたを記録">
             <div class="quick-record-buttons">
               <button type="button" class="quick-record-btn is-blocked" id="quick-blocked-btn">🚫 通れない道を追加</button>

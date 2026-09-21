@@ -868,6 +868,7 @@ bindEvents();
 initSnsMonitor();
 initShelters();
 initHelpGuide();
+initMapLegend();
 scheduleMapResize();
 
 function bindEvents() {
@@ -877,7 +878,10 @@ function bindEvents() {
   });
 
   document.querySelectorAll("[data-overlay]").forEach(input => {
-    input.addEventListener("change", () => toggleOverlay(input.dataset.overlay, input.checked));
+    input.addEventListener("change", () => {
+      toggleOverlay(input.dataset.overlay, input.checked);
+      syncMapLegend();
+    });
   });
 
   document.getElementById("hazard-opacity").addEventListener("input", event => {
@@ -895,6 +899,9 @@ function bindEvents() {
     renderAll();
     refreshSnsMonitor(false);
     refreshTimeline(false);
+    // 「本日（＝対象日）」の判定が変わるので、冠水の色分けも描き直す
+    renderKansuiLayer();
+    renderPassedRoadsLayer();
   });
   document.getElementById("timeline-days").addEventListener("change", () => refreshTimeline(false));
   document.getElementById("refresh-timeline-button").addEventListener("click", () => refreshTimeline(true));
@@ -1887,9 +1894,12 @@ function showShelterFloodLayers() {
 // on に挙げたものだけを ON にし、keep は現在の状態を保つ。
 const PRESETS = {
   // 需要が多い2つを先頭に置いている
+  // 開いたときの既定でもある（index.html の checked ／ initInitialOverlays と同じ内容にする）。
+  // 2026-09-21 に records（被害・確認候補のピン）を外した。冠水の道を見るボタンなので、
+  // SNS 由来の被害候補ピンまで出すと地図が読めないため（中司さんの実機指摘）
   kansui: {
     label: "冠水した道・通れた道",
-    on: ["boundary", "records", "kansui", "passedRoads", "roadRisk"],
+    on: ["boundary", "kansui", "passedRoads", "roadRisk"],
     openGroups: ["🚗"],
     focus: "layer-panel"
   },
@@ -1927,7 +1937,7 @@ const PRESETS = {
   // 読み込み直後と同じ状態へ戻す（index.html の checked と、初期化の toggleOverlay と揃える）
   reset: {
     label: "最初の表示",
-    on: ["boundary", "kansui", "passedRoads"],
+    on: ["boundary", "kansui", "passedRoads", "roadRisk"],
     openGroups: ["🚗"],
     focus: null
   }
@@ -1953,6 +1963,7 @@ function applyPreset(name) {
   });
   // 押したボタンを目立たせる
   document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("is-current", b.dataset.preset === name));
+  syncMapLegend();
 
   const panel = document.querySelector(".left-panel");
   if (!panel) return;
@@ -1962,6 +1973,36 @@ function applyPreset(name) {
   } else if (preset.focus === "layer-panel") {
     panel.scrollTop = 0;
   }
+}
+
+// 地図の上端の凡例。色チップを押すとその表示を消せる。本日／過去の実績は記録の絞り込み。
+// レイヤー一覧から操作されたときも syncMapLegend() で見た目をそろえる（2026-09-21）
+function initMapLegend() {
+  const legend = document.getElementById("map-legend");
+  if (!legend) return;
+  legend.addEventListener("click", event => {
+    const chip = event.target.closest("[data-legend], [data-when]");
+    if (!chip) return;
+    const turnOn = chip.getAttribute("aria-pressed") !== "true";
+    chip.setAttribute("aria-pressed", String(turnOn));
+    if (chip.dataset.legend) {
+      // レイヤーのチェック欄と同じ経路を通す（読み込みや描き直しはそちらが持っている）
+      const box = document.querySelector(`[data-overlay="${chip.dataset.legend}"]`);
+      if (box && box.checked !== turnOn) box.click();
+      return;
+    }
+    recordWhenFilter[chip.dataset.when] = turnOn;
+    renderKansuiLayer();
+    renderPassedRoadsLayer();
+  });
+  syncMapLegend();
+}
+
+function syncMapLegend() {
+  document.querySelectorAll("#map-legend [data-legend]").forEach(chip => {
+    const box = document.querySelector(`[data-overlay="${chip.dataset.legend}"]`);
+    chip.setAttribute("aria-pressed", String(Boolean(box?.checked)));
+  });
 }
 
 function initPresets() {
@@ -3741,12 +3782,15 @@ async function ensureTerrainRiskLayer() {
 // 既定OFFにして、見たい人だけが出す扱いにしている（2026-09-07 B案）。
 // 22,000本を超える線を描くので Canvas レンダラを使う（SVGでは重すぎる）。
 // ============================================================
+// 2026-09-21: 既定でONにしたため、実際の冠水記録（赤・青）より前に出ないよう薄く描く。
+// 描画の上下は pane でも決めている（kansuiPane 450 ＞ passedRoadsPane 440 ＞ この線 400）が、
+// 本数が22,902本あるので不透明のままだと赤い記録が視覚的に埋もれる
 const ROAD_RISK_STYLE = [
-  { color: "#2f8ba3", weight: 1.6 },
-  { color: "#e8b23a", weight: 1.6 },
-  { color: "#df7038", weight: 2.2 },
-  { color: "#8e44ad", weight: 3.4 },
-  { color: "#8a9099", weight: 1.4, dashArray: "4 4" }
+  { color: "#2f8ba3", weight: 1.4, opacity: 0.4 },
+  { color: "#e8b23a", weight: 1.4, opacity: 0.4 },
+  { color: "#df7038", weight: 2.0, opacity: 0.45 },
+  { color: "#8e44ad", weight: 3.0, opacity: 0.5 },
+  { color: "#8a9099", weight: 1.2, opacity: 0.35, dashArray: "4 4" }
 ];
 const roadRiskLayer = L.layerGroup();
 let roadRiskLoaded = false;
@@ -3799,15 +3843,55 @@ async function ensureRoadRiskLayer() {
 const kansuiLayer = L.layerGroup();
 let kansuiLoaded = false;
 
+let kansuiData = [];
+let kansuiGeneratedAt = "";
+
+function setKansuiStatus(text, isError) {
+  const status = document.getElementById("kansui-status");
+  if (!status) return;
+  status.textContent = text;
+  status.classList.toggle("is-error", Boolean(isError));
+}
+
+// 取得済みのデータから描き直す（「本日」「過去の実績」の絞り込みを反映する）。
+// 対象日と同じ日の投稿は濃く太く、それ以前の実績は薄く細く描く（2026-09-21）
+function renderKansuiLayer() {
+  kansuiLayer.clearLayers();
+  let shown = 0;
+  let todayCount = 0;
+  kansuiData.forEach(road => {
+    const isToday = isTargetDayRecord(road.createdAt);
+    if (isToday) todayCount += 1;
+    if (!passesWhenFilter(road.createdAt)) return;
+    shown += 1;
+    // 赤＝入らない道。「通れた道（青）」と並べて見るため、通行止め記録と同じ赤に揃えている
+    const shape = road.path.length === 1
+      ? L.circleMarker(road.path[0], {
+          pane: "kansuiPane", radius: isToday ? 7 : 5, color: "#ffffff", weight: 2,
+          fillColor: KANSUI_COLOR, fillOpacity: isToday ? 0.95 : 0.55
+        })
+      : L.polyline(road.path, {
+          pane: "kansuiPane", color: KANSUI_COLOR,
+          weight: isToday ? 6 : 4, opacity: isToday ? 0.95 : 0.5
+        });
+    shape.bindPopup(
+      `<strong>🔴 冠水した道路（市民の投稿）</strong><br>` +
+      `投稿日 ${escapeHtml(formatDateTime(toDateTimeLocal(road.createdAt)) || "不明")}` +
+      `（${escapeHtml(formatAgo(road.createdAt) || "")}）<br>` +
+      `<span class="when-badge ${isToday ? "is-today" : "is-past"}">${isToday ? "対象日の投稿" : "過去の実績"}</span><br>` +
+      `<span style="font-size:11px;">令和8年8月の豪雨などで冠水したと投稿された区間です。公式に確認された通行止めではありません。同じ雨で再び冠水するおそれがあるため、通行を避ける判断の参考にしてください。</span><br>` +
+      `<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">出典・投稿はこちら: みんなでつくる千葉豪雨冠水道路マップ</a>`
+    );
+    shape.addTo(kansuiLayer);
+  });
+  const filtered = shown !== kansuiData.length ? `${shown}件表示 / 全${kansuiData.length}件` : `${kansuiData.length}件`;
+  setKansuiStatus(`${filtered}（対象日 ${todayCount}件）・ ${formatDateTime(toDateTimeLocal(kansuiGeneratedAt)) || ""}時点`);
+}
+
 async function ensureKansuiLayer() {
   if (kansuiLoaded) return;
   kansuiLoaded = true;
-  const status = document.getElementById("kansui-status");
-  const setStatus = (text, isError) => {
-    if (!status) return;
-    status.textContent = text;
-    status.classList.toggle("is-error", Boolean(isError));
-  };
+  const setStatus = setKansuiStatus;
   const endpoint = String(APP_CONFIG.kansuiEndpoint || "").trim();
   if (!endpoint) { setStatus("配信先が設定されていません", true); return; }
   setStatus("読み込み中");
@@ -3815,22 +3899,9 @@ async function ensureKansuiLayer() {
     const response = await fetch(endpoint, { headers: { Accept: "application/json" }, cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
-    kansuiLayer.clearLayers();
-    (payload.roads || []).forEach(road => {
-      if (!Array.isArray(road.path) || !road.path.length) return;
-      // 赤＝入らない道。「通れた道（青）」と並べて見るため、通行止め記録と同じ赤に揃えている
-      const shape = road.path.length === 1
-        ? L.circleMarker(road.path[0], { pane: "kansuiPane", radius: 6, color: "#ffffff", weight: 2, fillColor: KANSUI_COLOR, fillOpacity: 0.9 })
-        : L.polyline(road.path, { pane: "kansuiPane", color: KANSUI_COLOR, weight: 5, opacity: 0.8 });
-      shape.bindPopup(
-        `<strong>🔴 冠水した道路（市民の投稿）</strong><br>` +
-        `投稿日 ${escapeHtml(formatDateTime(toDateTimeLocal(road.createdAt)) || "不明")}<br>` +
-        `<span style="font-size:11px;">令和8年8月の豪雨などで冠水したと投稿された区間です。公式に確認された通行止めではありません。同じ雨で再び冠水するおそれがあるため、通行を避ける判断の参考にしてください。</span><br>` +
-        `<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">出典・投稿はこちら: みんなでつくる千葉豪雨冠水道路マップ</a>`
-      );
-      shape.addTo(kansuiLayer);
-    });
-    setStatus(`${payload.count || 0}件 ・ ${formatDateTime(toDateTimeLocal(payload.generatedAt)) || ""}時点`);
+    kansuiData = (payload.roads || []).filter(road => Array.isArray(road.path) && road.path.length);
+    kansuiGeneratedAt = payload.generatedAt || "";
+    renderKansuiLayer();
   } catch (error) {
     kansuiLoaded = false;
     setStatus(`取得できません（${error?.message || "接続エラー"}）`, true);
@@ -4310,6 +4381,32 @@ function passedRoadShape(road) {
   return line;
 }
 
+// 「本日」「過去の実績」の絞り込み（凡例バーのチップ）。どちらも既定ON
+const recordWhenFilter = { today: true, past: true };
+
+// その記録が対象日のものか。対象日を変えれば、その日の記録が「本日」側になる
+function isTargetDayRecord(iso) {
+  const key = String(toDateTimeLocal(iso) || "").slice(0, 10);
+  const target = document.getElementById("incident-date")?.value || todayJst();
+  return Boolean(key) && key === target;
+}
+
+function passesWhenFilter(iso) {
+  return isTargetDayRecord(iso) ? recordWhenFilter.today : recordWhenFilter.past;
+}
+
+// データは持ったまま、絞り込みだけを描き直す（取得し直さない）
+function renderPassedRoadsLayer() {
+  passedRoadsLayer.clearLayers();
+  passedRoadShapes.clear();
+  // 古い（薄い）線を先に描き、新しい（濃い）線を上に重ねる
+  passedRoadsData.slice().reverse().forEach(road => {
+    if (!passesWhenFilter(road.endedAt)) return;
+    const shape = passedRoadShape(road).addTo(passedRoadsLayer);
+    passedRoadShapes.set(road.id, shape);
+  });
+}
+
 async function ensurePassedRoadsLayer(force) {
   if (passedRoadsLoaded && !force) return;
   passedRoadsLoaded = true;
@@ -4320,15 +4417,9 @@ async function ensurePassedRoadsLayer(force) {
     const response = await fetch(endpoint, { headers: { Accept: "application/json" }, cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
-    passedRoadsLayer.clearLayers();
     const roads = (payload.roads || []).filter(road => Array.isArray(road.path) && road.path.length >= 1);
-    // 古い（薄い）線を先に描き、新しい（濃い）線を上に重ねる
-    passedRoadShapes.clear();
-    roads.slice().reverse().forEach(road => {
-      const shape = passedRoadShape(road).addTo(passedRoadsLayer);
-      passedRoadShapes.set(road.id, shape);
-    });
     passedRoadsData = roads;
+    renderPassedRoadsLayer();
     renderPassedRoadsList();
     const recent = roads.filter(road => passedRoadTier(road.endedAt).maxHours !== Infinity).length;
     const blocked = roads.filter(road => road.kind === "blocked").length;
@@ -4931,11 +5022,29 @@ function initBoundary() {
       // 境界が届く前に「印西市の外を伏せる」を押されていた場合はここで描き直す
       const cityMaskBox = document.querySelector('[data-overlay="maskCity"]');
       if (cityMaskBox?.checked) maskCityGroup.addTo(map);
+      fitToInzai();
       document.getElementById("map-status").textContent = `公開レイヤー接続済み・確認日 ${SOURCE_CHECKED_AT}`;
     })
     .catch(() => {
       document.getElementById("map-status").textContent = "境界データを取得できませんでした。背景地図と手元データで表示しています。";
     });
+}
+
+// 開いたときに印西市が画面へちょうど収まるようにする（2026-09-21 中司さんの指示）。
+// 市境が届いてから1回だけ動かす。利用者が地図を動かしたあと（moveend が起きたあと）は
+// 勝手に戻さない。URL で場所を指定して開いた場合も動かさない。
+let inzaiFitDone = false;
+let userMovedMap = false;
+map.on("movestart", () => { if (inzaiFitDone) userMovedMap = true; });
+function fitToInzai() {
+  if (inzaiFitDone || userMovedMap) return;
+  const params = new URLSearchParams(location.search);
+  if (params.has("lat") || params.has("lon") || params.has("zoom")) { inzaiFitDone = true; return; }
+  const bounds = boundaryLayer.getBounds?.();
+  if (!bounds || !bounds.isValid()) return;
+  inzaiFitDone = true;
+  // 下の記録バーと上のズームボタンに隠れる分だけ内側に余白を取る
+  map.fitBounds(bounds, { paddingTopLeft: [12, 12], paddingBottomRight: [12, 92] });
 }
 
 function renderRoadFloodSites() {
@@ -7043,4 +7152,8 @@ function escapeAttribute(value) {
     if (name === "boundary") return;
     toggleOverlay(name, true);
   });
+  // 「見たいもの」の最初のボタンを押した状態で開く。いま何が出ているのかを分かるようにする
+  // （2026-09-21 中司さんの指示）。applyPreset は呼ばない（チェックは上で入れ終えており、
+  // 左パネルの開閉とスクロールまで動かす必要がないため）
+  document.querySelector('.preset-btn[data-preset="kansui"]')?.classList.add("is-current");
 })();
