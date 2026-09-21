@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "防災MAP：いたずら線の自動非表示・みんつく投稿の運営伏せ・凡例ボタン・期間ボタンとポップアップの隠れ解消・通行止め代理登録 0.7時間",
+          "category": "実装",
+          "outputs": [
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/index.html",
+            "inzai-disaster-map/styles.css",
+            "inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "admin/changelog.json",
+            "CiDAO src/app/api/disaster/kansui/route.ts",
+            "CiDAO disaster_passed_roads（県道61号 八千代市佐山付近の通行止めを代理登録）"
+          ],
+          "hours": 0.7,
+          "partnerApproved": true,
+          "note": "大雨警報中の実機指摘への対応。2点で27km・35kmのみんつく直線を特定し（CBIのDBでないため運営画面で消せなかった）、1区間3km超を自動非表示に。みんつく投稿を運営がCBIの地図から伏せる仕組み（CiDAO app_settings.kansui_hidden_ids・本家データは不変）を本番で 403/伏せる/戻す まで確認。凡例ボタンをON塗りつぶし・OFF灰色に。期間指定で凡例が3行化しボタンが警告帯の裏に隠れる問題を、ラベル短縮と --legend-h 連動で解消。スマホでポップアップの時刻行が警告帯の裏に隠れていた問題（Leafletのポップアップは地図面z400内）を autoPanPaddingTopLeft で解消し本番で上端95→190px（帯180px）を確認。FB投稿の画像から県道61号の通行止めを推定座標で代理登録。session 累計3.7時間から先行分3.0時間を除いた分。session: f423f041-19ed-4441-8327-a288a48d54d3 / output: 366,032 / cost: $143.98"
+        },
+        {
+          "date": "2026-09-21",
           "title": "防災MAP 手賀沼水位の表示と警告帯＋利根川の洪水予報（気象庁）表示 0.6時間",
           "category": "実装",
           "outputs": [
