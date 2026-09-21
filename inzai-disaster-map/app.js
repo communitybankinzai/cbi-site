@@ -836,14 +836,13 @@ const boundaryLayer = L.geoJSON(null, {
 });
 
 baseLayers.pale.addTo(map);
-hazardLayers.floodMax.addTo(map);
 // 内水浸水想定は 2026-09-09 の照合で、市の公式内水ハザードマップの代わりにならないと
 // 分かったため既定OFFにした（市の想定区域6,537件のうち82.1%はこのタイルが存在しない
 // 場所にあり、浸水深1m以上では87%が欠けている）。チェック欄の ⓘ に理由を書いてある。
-recordLayer.addTo(map);
 roadDrawingLayer.addTo(map);
 boundaryLayer.addTo(map);
-shelterLayer.addTo(map);
+// 最初に出す冠水レイヤーはファイル末尾の initInitialOverlays() で入れる
+// （kansuiLayer などの const 宣言がこの行より後ろにあり、ここでは触れないため）
 
 // 対象日はHTMLに固定値を書かず、開いた日（日本時間）を既定にする。
 // 2026-09-06 まで value="2026-08-13" が埋め込まれており、市民が開くと8月の日付のまま
@@ -1925,11 +1924,11 @@ const PRESETS = {
     openGroups: ["🌊"],
     focus: "layer-panel"
   },
-  // 読み込み直後と同じ状態へ戻す
+  // 読み込み直後と同じ状態へ戻す（index.html の checked と、初期化の toggleOverlay と揃える）
   reset: {
     label: "最初の表示",
-    on: ["boundary", "records", "floodMax", "shelters"],
-    openGroups: ["🌊"],
+    on: ["boundary", "kansui", "passedRoads"],
+    openGroups: ["🚗"],
     focus: null
   }
 };
@@ -7026,3 +7025,22 @@ function escapeHtml(value) {
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll("`", "&#096;");
 }
+
+// 最初の画面は冠水の情報だけにする（2026-09-21 中司さんの実機指摘）。開いた直後に
+// 避難所55施設のピン・被害候補のピン・洪水浸水想定の赤い面が全部出ていて、地図そのものが
+// 読めなかった。浸水想定と避難所は「🌊 浸水の想定」「🏫 避難所」のボタン（プリセット）か
+// レイヤー一覧からONにする。
+// ⚠ ここはファイル末尾でなければならない。kansuiLayer・passedRoadsLayer は const で
+// 後方に宣言されており、上の初期化ブロック（baseLayers.pale.addTo あたり）で呼ぶと
+// 「Cannot access 'kansuiLayer' before initialization」でページ全体の初期化が止まる。
+// 状態は index.html の checked と PRESETS.reset（「↺ 最初の表示」）にも書いてあるので、
+// 変えるときは3か所そろえること。
+(function initInitialOverlays() {
+  document.querySelectorAll("[data-overlay]").forEach(input => {
+    if (!input.checked) return;
+    const name = input.dataset.overlay;
+    // 既定でONのうち、boundary は上の初期化で addTo 済み
+    if (name === "boundary") return;
+    toggleOverlay(name, true);
+  });
+})();

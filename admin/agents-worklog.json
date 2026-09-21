@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-21",
+          "title": "防災MAPの初期表示を冠水だけに絞り、上部の案内・メニューを圧縮 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "inzai-disaster-map/index.html",
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/styles.css",
+            "inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "admin/changelog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": true,
+          "note": "中司さんの実機スクショ（避難所ピン・被害候補ピン・浸水想定が全部出て地図が画面の下半分）を受けた修正。初期ONを boundary/kansui/passedRoads の3つに限定、検証版バナーを1行の details 化、スマホで見出し縮小＋画面内ジャンプ帯を非表示。375×812 実測で地図の開始位置 227px（画面の72%）。途中、初期化を先頭側に置いてTDZで全機能が止まる不具合を作り込み、ファイル末尾の initInitialOverlays() へ移して解消（対象日の既定値が入るかで確認）。session 累計 0.8時間のうち、先行の引き継ぎ作業0.3時間を除いた分。session: f423f041-19ed-4441-8327-a288a48d54d3 / output: 77,141 / cost: $23.30"
+        },
+        {
+          "date": "2026-09-21",
           "title": "防災MAPに東電の停電履歴画面を枠で表示＋東電説明用ページ teiden-demo.html 新設 0.3時間",
           "category": "実装",
           "outputs": [
@@ -6474,6 +6489,15 @@
           "status": "待ち",
           "blockedBy": "東京電力パワーグリッドからの回答（2026-09-21 に2件送信済み：リンク設定の申請と転載の申請）。利用開始希望日は 2026-09-29。",
           "note": "記入案と提出内容は 調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md。可の回答＝地区（丁目・大字）ごとの軒数・発生時刻・復旧見込みを地図に円で表示する実装へ（取得は CiDAO 経由・10分に1回以下・出典と取得時刻を明記）。不可の回答＝当日中に防災MAPの teiden-acc（枠の埋め込み）・公式情報ダイアログの東電カード・対応表⑩のリンク・説明用ページ teiden-demo.html を外す。提出時の注意：リンク申請の項目4は1行1URL（『／』区切りは弾かれる）。"
+        },
+        {
+          "due": "未定",
+          "title": "🌊 過去の冠水実績レイヤー（pastFlood）のトグルが画面から消えている — 復活させるか判断する",
+          "category": "保守",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "記録が1件（2026-08-13 船橋印西線 泉野1丁目）しかなく、独立したレイヤーとして出す価値が判断できない。県の災対本部会議資料から次の冠水地点を数件転記できれば判断できる",
+          "note": "2026-09-21 発見。app.js 側（toggleOverlay の pastFlood 分岐・ensurePastFloodLayer・#past-flood-dates の参照）は生きているが、index.html にチェックボックスと日付チップの置き場が無い。CLAUDE_HANDOFF.md の『🌊 過去の冠水実績トグル（デフォルトOFF）』の記述も現状と合っていない"
         },
         {
           "due": "2026-09-28",

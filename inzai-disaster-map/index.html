@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260921a">
+    <link rel="stylesheet" href="./styles.css?v=20260921b">
   </head>
   <body>
     <div class="app-shell">
@@ -48,10 +48,12 @@
         </div>
       </header>
 
-      <div class="prototype-banner" role="status">
-        <strong id="operation-banner-title">構想検証版・現在は運用前です</strong>
-        <span id="operation-banner-text">「こんな仕組みがあったら便利か」を検討する試作品です。入力内容はこの端末内だけに保存され、印西市や運営者には送信されません（「ここは通れない」「通れた道を記録」だけは匿名の位置・軌跡が地図に送られます）。</span>
-      </div>
+      <!-- 2026-09-21: 全文を出すと、スマホで画面の半分が案内で埋まり地図が見えなかった（中司さんの実機指摘）。
+           1行に畳み、タップした人に全文を見せる。文言自体は消さない。ID は app.js が運営モードで書き換える -->
+      <details class="prototype-banner" id="prototype-banner">
+        <summary><span aria-hidden="true">⚠</span> <strong id="operation-banner-title">構想検証版・現在は運用前です</strong></summary>
+        <p id="operation-banner-text">「こんな仕組みがあったら便利か」を検討する試作品です。入力内容はこの端末内だけに保存され、印西市や運営者には送信されません（「ここは通れない」「通れた道を記録」だけは匿名の位置・軌跡が地図に送られます）。</p>
+      </details>
 
       <nav class="preset-bar" id="preset-bar" aria-label="用途で表示を切り替える">
         <span class="preset-label">見たいもの</span>
@@ -99,14 +101,14 @@
 
             <div class="check-list" id="overlay-controls">
               <label><input type="checkbox" data-overlay="boundary" checked> 印西市境界</label>
-              <label><input type="checkbox" data-overlay="records" checked> 被害・確認候補</label>
+              <label><input type="checkbox" data-overlay="records"> 被害・確認候補</label>
               <label class="has-tip"><input type="checkbox" data-overlay="maskCity"> <span class="layer-name">⬜ 印西市の外を伏せる</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>印西市の外側に薄い幕をかけて、市域だけが見えるようにします。</p><p><strong>市外にデータが無いという意味ではありません。</strong>となりの市の浸水想定や避難所も実際には表示できます。見やすさのために伏せているだけです。</p></span></span></label>
               <label class="has-tip"><input type="checkbox" data-overlay="maskRect"> <span class="layer-name">⬜ 計算範囲（四角）の外を伏せる</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>「CBI独自シミュレーション」と「地形の冠水リスク」は、市境ではなく<strong>四角い範囲</strong>で計算しています（北緯35.718〜35.912／東経140.068〜140.322）。</p><p>この四角の外側を伏せて、どこまでが計算した範囲かをはっきりさせます。<strong>四角の辺は地形の境目ではなく、計算を打ち切った線です。</strong></p></span></span></label>
 
               <details class="layer-group" open>
                 <summary>🌊 浸水・土砂の想定区域</summary>
                 <div class="layer-group-body">
-                  <label><input type="checkbox" data-overlay="floodMax" checked> 洪水浸水想定 最大規模</label>
+                  <label><input type="checkbox" data-overlay="floodMax"> 洪水浸水想定 最大規模</label>
                   <label><input type="checkbox" data-overlay="floodPlan"> 洪水浸水想定 計画規模</label>
                   <label class="has-tip"><input type="checkbox" data-overlay="inland"> <span class="layer-name">内水浸水想定（国ポータル・市域は西端のみ）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>国のハザードマップポータルのタイルです。<strong>印西市の公式内水ハザードマップとは別物で、代わりにはなりません。</strong></p><p>2026-09-09に市の公式PDFと突き合わせたところ、<strong>市が想定している区域6,537件のうち82.1%は、このタイルが存在しない場所にありました</strong>（浸水深1m以上の149件では87%）。市域では西端にしかデータがないため、既定でOFFにしています。</p><p><strong>色が付いていない場所が安全という意味ではありません。</strong>市の想定は下のリンクのPDFで確認してください。</p><p><a class="golink" href="https://www.city.inzai.lg.jp/bousaiportal/0000008837.html" target="_blank" rel="noreferrer">印西市 公式ハザードマップ ↗</a></p></span></span></label>
                   <label class="has-tip"><input type="checkbox" data-overlay="floodKeizoku"> <span class="layer-name">⏳ 浸水が引くまでの時間（浸水継続時間）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>水が引くまでの目安です。長い場所ほど在宅避難の備えが要ります。</p><p>印西市でデータがあるのは市域42区画中41区画（2026-09-09実測）。<strong>色が付いていない場所が安全という意味ではありません。</strong></p></span></span></label>
@@ -147,7 +149,7 @@
               <details class="layer-group">
                 <summary>🏫 避難所・防災拠点</summary>
                 <div class="layer-group-body">
-                  <label><input type="checkbox" data-overlay="shelters" checked> 避難所（印西市公式）</label>
+                  <label><input type="checkbox" data-overlay="shelters"> 避難所（印西市公式）</label>
                   <label><input type="checkbox" data-overlay="wells"> 災害用井戸（印西市公式）</label>
                   <label><input type="checkbox" data-overlay="fire"> 消防署</label>
                   <label><input type="checkbox" data-overlay="police"> 警察機関</label>
@@ -180,9 +182,9 @@
                     <span><span class="legend-line" style="background:#8a9099"></span>判定保留・情報不足</span>
                   </div>
 
-                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="kansui"> <span class="layer-name">🔴 冠水した道路（市民の投稿）<span id="kansui-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>有志プロジェクト「みんなでつくる千葉豪雨冠水道路マップ」に投稿された、実際に冠水した道路です（印西市周辺のみ表示）。<strong>公式に確認された通行止めではありません。</strong></p><p>8月に冠水した道は同じ雨で再び冠水するおそれがあるため、車で通らない判断の参考にしてください。</p><p><strong>新しい冠水地点の投稿は本家サイトからお願いします</strong>：<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつく千葉冠水マップを開く ↗</a></p></span></span></label>
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="kansui" checked> <span class="layer-name">🔴 冠水した道路（市民の投稿）<span id="kansui-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>有志プロジェクト「みんなでつくる千葉豪雨冠水道路マップ」に投稿された、実際に冠水した道路です（印西市周辺のみ表示）。<strong>公式に確認された通行止めではありません。</strong></p><p>8月に冠水した道は同じ雨で再び冠水するおそれがあるため、車で通らない判断の参考にしてください。</p><p><strong>新しい冠水地点の投稿は本家サイトからお願いします</strong>：<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつく千葉冠水マップを開く ↗</a></p></span></span></label>
 
-                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="passedRoads"> <span class="layer-name">🔵 通れた道（GPS記録）<span id="passed-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>この地図を見ている人が、スマホの位置情報で<strong>実際に通れた道</strong>を記録したものです。赤（冠水した道路）と見比べて、通れる道を探す参考にしてください。</p><p>色の濃さは記録の新しさです。<strong>6時間以上前の記録は「冠水時に通れた実績」として薄い青で残します。</strong>より強い雨では冠水することがあり、安全を保証するものではありません。</p><p>「通れない」には記録時刻の最寄りアメダス（我孫子・佐倉・成田・船橋）の雨量を添え、<strong>☔ 雨あり＝冠水の可能性／🌤 雨なし＝工事・事故など別の理由の可能性</strong>の目安を出します（確定ではありません）。</p><p>記録は匿名です（端末の乱数IDと軌跡だけが送られ、名前や電話番号は送られません）。</p></span></span></label>
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="passedRoads" checked> <span class="layer-name">🔵 通れた道（GPS記録）<span id="passed-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>この地図を見ている人が、スマホの位置情報で<strong>実際に通れた道</strong>を記録したものです。赤（冠水した道路）と見比べて、通れる道を探す参考にしてください。</p><p>色の濃さは記録の新しさです。<strong>6時間以上前の記録は「冠水時に通れた実績」として薄い青で残します。</strong>より強い雨では冠水することがあり、安全を保証するものではありません。</p><p>「通れない」には記録時刻の最寄りアメダス（我孫子・佐倉・成田・船橋）の雨量を添え、<strong>☔ 雨あり＝冠水の可能性／🌤 雨なし＝工事・事故など別の理由の可能性</strong>の目安を出します（確定ではありません）。</p><p>記録は匿名です（端末の乱数IDと軌跡だけが送られ、名前や電話番号は送られません）。</p></span></span></label>
                   <div class="jshis-layer-note road-risk-legend passed-roads-legend">
                     <span><span class="legend-line" style="background:#0d47a1"></span>1時間以内</span>
                     <span><span class="legend-line" style="background:#1e88e5"></span>3時間以内</span>
@@ -1583,7 +1585,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260907g"></script>
-    <script src="./app.js?v=20260921a"></script>
+    <script src="./app.js?v=20260921b"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

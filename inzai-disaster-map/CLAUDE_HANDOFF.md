@@ -155,6 +155,20 @@ MAPは `config.js` の `snsMonitorEndpoint` で以下へ接続する。
 - **↩ 自分の記録の取り消し（同日追記）**：`DELETE /api/disaster/passed-roads?id=<uuid>&deviceId=<端末ID>`。端末IDが一致し送信から **10分以内**（`UNDO_WINDOW_SECONDS`）なら `hidden=true` にする（行は消さない）。他人の記録は 404（存在も教えない）、10分超は 409 `too_late`。MAP側は送信成功時に `rememberOwnPassedRoad`（localStorage `cbi-disaster-passed-roads-own-v1`・10分で自然消滅）し、状態文の下（`#passed-road-undo`／`#quick-undo`）と一覧の自分の記録に「↩ 取り消す」を出す。**経緯**：中司さんの実機テストで1回目のタップが成功して自宅の位置が公開され、2回目が2分制限（429）になった。成功に気づかず連打→「記録できなかった」と誤認、というパターン。10分を過ぎた記録は運営が DATABASE_URL で `hidden=true` にする（管理画面は未実装・plans 登録済み）。
 - **☔ 雨量による「冠水か工事か」の目安（同日追記）**：POST 時にサーバー（`rainAt`）が記録時刻の最寄りアメダス（我孫子45061・佐倉45116・成田45121・船橋45106。印西市内に観測点なし）の10分値 `bosai/amedas/data/point/<code>/<YYYYMMDD>_<HH>.json`（日本時間3時間ごとのファイル・過去数日ぶん残る）から記録時刻以前で最新の行を取り、`rain_station/rain_at/rain_1h_mm/rain_3h_mm/rain_24h_mm/rain_verdict` に保存（migration `20260918140000`・適用済み）。判定は **1h≥5 or 3h≥10 or 24h≥30mm → flood_likely（雨あり・冠水の可能性）／全部0 → no_rain（工事・事故など別の理由の可能性）／それ以外 light_rain（判断保留）／取得失敗 unknown**。取得は8秒でタイムアウトし、失敗しても保存は続ける。画面は `rainVerdictHtml`（ポップアップ）と一覧の一言。**言い切らない**（「可能性」「目安」）。しきい値を変えるのは API 側の `rainAt` だけ。線（通れた道）は終点で判定するが画面には出していない。
 
+### 2026-09-21 追記②：最初の画面は「冠水だけ」にした（⚠ 状態を3か所に書いている）
+
+- **経緯**：中司さんの実機スクショで、開いた直後に**避難所55施設のピン・被害候補のピン・洪水浸水想定の赤い面**が全部出ており、さらに上部が案内とメニューで埋まって**地図が画面の下半分にしか見えなかった**。
+- **既定でONにするのは `boundary`・`kansui`・`passedRoads` の3つだけ**。`records`（被害・確認候補）・`floodMax`（洪水浸水想定 最大規模）・`shelters`（避難所）は**既定OFF**にした。浸水想定と避難所は「🌊 浸水の想定」「🏫 避難所」のプリセットか、レイヤー一覧からONにする。
+- ⚠ **同じ状態を3か所に書いている。変えるときは必ず3つそろえること**：
+  1. `index.html` のチェックボックスの `checked`（**ここが正**）
+  2. `app.js` 末尾の `initInitialOverlays()`（checked のものを `toggleOverlay` で実際に地図へ載せる）
+  3. `app.js` の `PRESETS.reset`（＝「↺ 最初の表示」で戻る状態）
+- ⚠ **`initInitialOverlays()` をファイルの先頭側（`baseLayers.pale.addTo(map)` のあたり）へ移さないこと**。`kansuiLayer`／`passedRoadsLayer` は `const` で後方に宣言されているため `Cannot access 'kansuiLayer' before initialization` になり、**ページの初期化が丸ごと止まる**（対象日の既定値すら入らなくなる。2026-09-21 に実際に踏んだ）。
+- **上部の圧縮**：「構想検証版・現在は運用前です」の黄色い帯は `<details class="prototype-banner">` で1行に畳み、タップで全文（文言も `operation-banner-title/text` の id も残してある）。スマホ（≤820px）では見出し・ボタンを小さくし、**画面内ジャンプの帯 `.quick-nav` を `display:none`**（sticky で常に上に残り地図を押し下げていた）。戻すときは styles.css の該当メディアクエリの `display` を `flex` に。
+- **効果（375×812 で実測）**：地図の開始位置が画面の下半分 → **上から227px（画面の72%が地図）**。
+- **副作用として受け入れたこと**：開いた瞬間に CiDAO の `/api/disaster/kansui` と `/api/disaster/passed-roads` を必ず1回ずつ取りにいく（以前はレイヤーをONにした人だけ）。Vercel の Active CPU 無料枠が逼迫しているので、**アクセスが増えたら kansui 側のサーバーキャッシュ（10分）を延ばすか、既定ONを passedRoads だけにする**。
+- **`pastFlood`（過去の冠水実績）のトグルは index.html から失われている**（`app.js` の `toggleOverlay` と `ensurePastFloodLayer` は生きているが、チェックボックスと `#past-flood-dates` が無い）。この文書の上の方にある「🌊 過去の冠水実績トグル」の記述は現状と合っていない。復活させるかは plans に登録済み。
+
 ### 2026-09-21 追記：地図の道をなぞって記録（みんつく方式）・主たる入口はこちらへ
 
 - **経緯**：中司さんの実機報告「エラーで使えない」（取消直後の再投稿が2分制限に当たる）と「みんつくと同じ記録方法にしてほしい。使い勝手が悪く誰も利用していない」。Codex が実装した分を Claude が引き継いで検証・公開（2026-09-21・site `ee062d9`／cidao `5d879c1`）。
