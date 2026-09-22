@@ -172,19 +172,971 @@ const alignmentLabels = {
   resolved: "解消済"
 };
 
+// 千葉国道事務所「千葉県内におけるアンダーパス部等の道路冠水注意箇所」（令和8年6月30日更新・95か所）を
+// 国土地理院の住所検索で位置に直したもの（2026-09-22）。番地まで分かるものは「住所の代表点」、
+// 町名・丁目までのものは「町丁目の代表点」で、実際のアンダーパスから大きくずれることがある。
+// 住所の書かれていない15か所（施設名だけのもの）は位置を決められず載せていない：No.22 松戸市 指向アンダーパス／No.23 松戸市 忠仲アンダーパス／No.24 松戸市 新松戸アンダーパス／No.25 松戸市 幸谷アンダーパス(じゃんけん道路)／No.26 松戸市 宮前アンダーパス／No.27 野田市 川間ガード下／No.51 鴨川市 太海地下道／No.64 松戸市 矢切トンネル／No.69 我孫子市 布佐アンダー／No.70 袖ケ浦市 袖ケ浦アンダーパス／No.71 松戸市 新松戸1丁目アンダーパス／No.75 我孫子市 JR常磐線(久寺家ガード)／No.76 市川市 二俣アンダーパス／No.78 松戸市 上矢切トンネル／No.95 流山市 木地区(つくばエクスプレスガード下)
+const ROAD_FLOOD_SOURCE_URL = "https://www.ktr.mlit.go.jp/chiba/chiba_index030.html";
 const roadFloodSites = [
   {
-    id: "road-39",
-    no: 39,
-    city: "印西市",
-    roadType: "市道",
-    route: "印西市 08-014号線",
-    name: "大森4233-10 六軒ガード下",
-    lat: 35.8379,
-    lng: 140.1494,
-    accuracy: "住所・通称名からの暫定位置",
-    source: "国土交通省 関東地方整備局 千葉国道事務所 道路冠水注意箇所マップ 令和8年6月30日更新",
-    sourceUrl: "https://www.ktr.mlit.go.jp/chiba/chiba_index030.html"
+    "id": "road-1",
+    "no": 1,
+    "city": "習志野市",
+    "roadType": "市道",
+    "route": "習志野市 市道00-002号線",
+    "name": "袖ケ浦1丁目11番地先",
+    "lat": 35.67411,
+    "lng": 140.016983,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-2",
+    "no": 2,
+    "city": "習志野市",
+    "roadType": "市道",
+    "route": "習志野市 市道00-003号線",
+    "name": "津田沼3丁目11番地先",
+    "lat": 35.685478,
+    "lng": 140.026306,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-3",
+    "no": 3,
+    "city": "習志野市",
+    "roadType": "市道",
+    "route": "習志野市 市道00-005号線",
+    "name": "鷺沼台1丁目1番地先",
+    "lat": 35.684303,
+    "lng": 140.029343,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-4",
+    "no": 4,
+    "city": "市原市",
+    "roadType": "国道(県管理)",
+    "route": "297号",
+    "name": "五井(五井アンダーパス)",
+    "lat": 35.518326,
+    "lng": 140.085892,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-5",
+    "no": 5,
+    "city": "市原市",
+    "roadType": "県道",
+    "route": "茂原五井線",
+    "name": "廿五里(廿五里アンダーパス)",
+    "lat": 35.489525,
+    "lng": 140.083405,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-6",
+    "no": 6,
+    "city": "市原市",
+    "roadType": "市道",
+    "route": "市原市 10号線",
+    "name": "五井中央西3丁目(五井本仲ガード下)",
+    "lat": 35.51585,
+    "lng": 140.090927,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-7",
+    "no": 7,
+    "city": "市原市",
+    "roadType": "市道",
+    "route": "市原市 2084号線",
+    "name": "村上(市原ICアンダーパス)",
+    "lat": 35.495647,
+    "lng": 140.097839,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-8",
+    "no": 8,
+    "city": "市原市",
+    "roadType": "市道",
+    "route": "市原市 2110号線",
+    "name": "西広(西広アンダーパス)",
+    "lat": 35.487316,
+    "lng": 140.113419,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-9",
+    "no": 9,
+    "city": "市原市",
+    "roadType": "市道",
+    "route": "市原市 3529号線",
+    "name": "古市場(古町橋下)",
+    "lat": 35.543747,
+    "lng": 140.142166,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-10",
+    "no": 10,
+    "city": "市川市",
+    "roadType": "県道",
+    "route": "市川松戸線",
+    "name": "市川3丁目",
+    "lat": 35.735973,
+    "lng": 139.903503,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-11",
+    "no": 11,
+    "city": "市川市",
+    "roadType": "市道",
+    "route": "市川市 7002号線",
+    "name": "原木1丁目(原木地下道)",
+    "lat": 35.704967,
+    "lng": 139.945709,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-12",
+    "no": 12,
+    "city": "船橋市",
+    "roadType": "県道",
+    "route": "長沼船橋線",
+    "name": "前原西2丁目",
+    "lat": 35.693729,
+    "lng": 140.021027,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-13",
+    "no": 13,
+    "city": "船橋市",
+    "roadType": "県道",
+    "route": "船橋行徳線",
+    "name": "山野町",
+    "lat": 35.704445,
+    "lng": 139.96257,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-14",
+    "no": 14,
+    "city": "船橋市",
+    "roadType": "県道",
+    "route": "松戸原木線",
+    "name": "本郷町",
+    "lat": 35.707909,
+    "lng": 139.952087,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-15",
+    "no": 15,
+    "city": "船橋市",
+    "roadType": "市道",
+    "route": "船橋市 14-003号線(都市計画道路3・3・7号)",
+    "name": "海神1丁目1番地先(JR総武線下・東武野田線下)",
+    "lat": 35.701542,
+    "lng": 139.981735,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-16",
+    "no": 16,
+    "city": "船橋市",
+    "roadType": "市道",
+    "route": "船橋市 06-029号線",
+    "name": "海神6丁目24番地先(JR総武線下)",
+    "lat": 35.703087,
+    "lng": 139.969666,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-17",
+    "no": 17,
+    "city": "船橋市",
+    "roadType": "市道",
+    "route": "船橋市 14-010号線",
+    "name": "本町7丁目4番地先(JR総武線下・東武野田線下)",
+    "lat": 35.702415,
+    "lng": 139.983215,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-18",
+    "no": 18,
+    "city": "船橋市",
+    "roadType": "市道",
+    "route": "船橋市 00-033号線",
+    "name": "市場1丁目2番地先(JR総武線下)",
+    "lat": 35.701248,
+    "lng": 139.99353,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-19",
+    "no": 19,
+    "city": "船橋市",
+    "roadType": "市道",
+    "route": "船橋市 00-178号線",
+    "name": "丸山1丁目1番地先(東武野田線下)",
+    "lat": 35.743256,
+    "lng": 139.992203,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-20",
+    "no": 20,
+    "city": "船橋市",
+    "roadType": "市道",
+    "route": "船橋市 25-013号線",
+    "name": "印内2丁目2番地先(JR武蔵野線下)",
+    "lat": 35.714359,
+    "lng": 139.963196,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-21",
+    "no": 21,
+    "city": "松戸市",
+    "roadType": "県道",
+    "route": "松戸鎌ケ谷線",
+    "name": "五香(五香立体)",
+    "lat": 35.794498,
+    "lng": 139.968704,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-28",
+    "no": 28,
+    "city": "流山市",
+    "roadType": "市道",
+    "route": "流山市 106号線",
+    "name": "南流山1丁目(南流山駅ガード下)",
+    "lat": 35.837894,
+    "lng": 139.906448,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-29",
+    "no": 29,
+    "city": "流山市",
+    "roadType": "市道",
+    "route": "流山市 109号線",
+    "name": "南流山4丁目(馬場下ガード)",
+    "lat": 35.84087,
+    "lng": 139.903397,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-30",
+    "no": 30,
+    "city": "流山市",
+    "roadType": "市道",
+    "route": "流山市 114号線",
+    "name": "おおたかの森東一丁目(中・駒木線ガード下)",
+    "lat": 35.871841,
+    "lng": 139.926956,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-31",
+    "no": 31,
+    "city": "流山市",
+    "roadType": "県道",
+    "route": "松戸野田線",
+    "name": "流山市南",
+    "lat": 35.884785,
+    "lng": 139.897812,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-32",
+    "no": 32,
+    "city": "鎌ケ谷市",
+    "roadType": "市道",
+    "route": "鎌ケ谷市 37号線",
+    "name": "丸山1丁目(丸山アンダー)",
+    "lat": 35.761906,
+    "lng": 140.009598,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-33",
+    "no": 33,
+    "city": "我孫子市",
+    "roadType": "国道(県管理)",
+    "route": "356号",
+    "name": "本町1丁目(JR常磐線第4浜街道ガード)",
+    "lat": 35.87199,
+    "lng": 140.007996,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-34",
+    "no": 34,
+    "city": "我孫子市",
+    "roadType": "県道",
+    "route": "船橋我孫子線",
+    "name": "泉(JR常磐線船取ガード)",
+    "lat": 35.870586,
+    "lng": 140.031387,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-35",
+    "no": 35,
+    "city": "我孫子市",
+    "roadType": "市道",
+    "route": "我孫子市 00-011号線",
+    "name": "柴崎台1丁目地先(利根山隧道)",
+    "lat": 35.87352,
+    "lng": 140.040268,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-36",
+    "no": 36,
+    "city": "柏市",
+    "roadType": "県道",
+    "route": "市川柏線",
+    "name": "富里(JR常磐線中原ガード)",
+    "lat": 35.852676,
+    "lng": 139.967514,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-37",
+    "no": 37,
+    "city": "柏市",
+    "roadType": "県道",
+    "route": "北柏停車場線",
+    "name": "北柏",
+    "lat": 35.874477,
+    "lng": 139.985413,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-38",
+    "no": 38,
+    "city": "柏市",
+    "roadType": "県道",
+    "route": "白井流山線",
+    "name": "逆井",
+    "lat": 35.815441,
+    "lng": 139.982468,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-39",
+    "no": 39,
+    "city": "印西市",
+    "roadType": "市道",
+    "route": "印西市 08-014号線",
+    "name": "大森4233-10(六軒ガード下)",
+    "lat": 35.841385,
+    "lng": 140.141281,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-40",
+    "no": 40,
+    "city": "栄町",
+    "roadType": "町道",
+    "route": "栄町 21037号線",
+    "name": "北781-47地先(国道356号バイパス道路ガード下)",
+    "lat": 35.855194,
+    "lng": 140.214828,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-41",
+    "no": 41,
+    "city": "栄町",
+    "roadType": "町道",
+    "route": "栄町 24063号線",
+    "name": "北80-3地先(国道356号バイパス道路ガード下)",
+    "lat": 35.856922,
+    "lng": 140.20813,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-42",
+    "no": 42,
+    "city": "栄町",
+    "roadType": "町道",
+    "route": "栄町 24057号線",
+    "name": "北444-4地先(国道356号バイパス道路ガード下)",
+    "lat": 35.856319,
+    "lng": 140.204941,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-43",
+    "no": 43,
+    "city": "銚子市",
+    "roadType": "国道(県管理)",
+    "route": "126号",
+    "name": "三軒町(三軒町立体交差)",
+    "lat": 35.732517,
+    "lng": 140.824585,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-44",
+    "no": 44,
+    "city": "東金市",
+    "roadType": "市道",
+    "route": "東金市 5028号線",
+    "name": "東金市山田213-2地先",
+    "lat": 35.573814,
+    "lng": 140.31163,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-45",
+    "no": 45,
+    "city": "大網白里市",
+    "roadType": "県道",
+    "route": "山田台大網白里線",
+    "name": "大網(アンダーパス)",
+    "lat": 35.529552,
+    "lng": 140.328415,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-46",
+    "no": 46,
+    "city": "一宮町",
+    "roadType": "町道",
+    "route": "一宮町 3154号線",
+    "name": "一宮町綱田字麦田37-1(綱田アンダー)",
+    "lat": 35.335579,
+    "lng": 140.37883,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-47",
+    "no": 47,
+    "city": "一宮町",
+    "roadType": "町道",
+    "route": "一宮町 2156号線",
+    "name": "一宮町一宮字下村9278(下村アンダー)",
+    "lat": 35.3694,
+    "lng": 140.380539,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-48",
+    "no": 48,
+    "city": "白子町",
+    "roadType": "町道",
+    "route": "白子町 3051号線",
+    "name": "白子町古所3290-23地先",
+    "lat": 35.449169,
+    "lng": 140.40123,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-49",
+    "no": 49,
+    "city": "いすみ市",
+    "roadType": "市道",
+    "route": "いすみ市 6129号線",
+    "name": "いすみ市岬町椎木地先(椎木JR外房線ガード下)",
+    "lat": 35.324001,
+    "lng": 140.375092,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-50",
+    "no": 50,
+    "city": "いすみ市",
+    "roadType": "市道",
+    "route": "いすみ市 1415号線",
+    "name": "いすみ市行川地先(行川いすみ鉄道鉄橋下)",
+    "lat": 35.28392,
+    "lng": 140.281464,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-52",
+    "no": 52,
+    "city": "木更津市",
+    "roadType": "市道",
+    "route": "木更津市 5010号線",
+    "name": "牛袋1242番地(アクアライン連絡道下)",
+    "lat": 35.410793,
+    "lng": 139.958038,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-53",
+    "no": 53,
+    "city": "木更津市",
+    "roadType": "市道",
+    "route": "木更津市 112-2号線",
+    "name": "牛袋605番地(アクアライン連絡道下)",
+    "lat": 35.405525,
+    "lng": 139.962219,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-54",
+    "no": 54,
+    "city": "木更津市",
+    "roadType": "市道",
+    "route": "木更津市 5109号線",
+    "name": "牛袋679番地(アクアライン連絡道下)",
+    "lat": 35.401787,
+    "lng": 139.960968,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-55",
+    "no": 55,
+    "city": "木更津市",
+    "roadType": "市道",
+    "route": "木更津市 5041号線",
+    "name": "十日市場45-2番地(アクアライン連絡道下)",
+    "lat": 35.400097,
+    "lng": 139.966293,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-56",
+    "no": 56,
+    "city": "君津市",
+    "roadType": "県道",
+    "route": "加茂木更津線",
+    "name": "末吉(小櫃立体地下道)",
+    "lat": 35.327866,
+    "lng": 140.062119,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-57",
+    "no": 57,
+    "city": "富津市",
+    "roadType": "県道",
+    "route": "竹岡インター線",
+    "name": "竹岡(竹岡立体地下道)",
+    "lat": 35.187023,
+    "lng": 139.866516,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-58",
+    "no": 58,
+    "city": "富津市",
+    "roadType": "県道",
+    "route": "大貫青堀線",
+    "name": "大堀(大堀立体地下道)",
+    "lat": 35.337543,
+    "lng": 139.854172,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-59",
+    "no": 59,
+    "city": "袖ケ浦市",
+    "roadType": "市道",
+    "route": "袖ケ浦市 坂戸川間尻線",
+    "name": "坂戸市場2433-4(東京湾アクアライン連絡道ガード下)",
+    "lat": 35.413811,
+    "lng": 139.952133,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-60",
+    "no": 60,
+    "city": "袖ケ浦市",
+    "roadType": "市道",
+    "route": "袖ケ浦市 坂戸市場21号線",
+    "name": "神納4189-2(東京湾アクアライン連絡道ガード下)",
+    "lat": 35.412895,
+    "lng": 139.954254,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-61",
+    "no": 61,
+    "city": "袖ケ浦市",
+    "roadType": "市道",
+    "route": "袖ケ浦市 坂戸市場18号線",
+    "name": "神納4191-1(東京湾アクアライン連絡道ガード下)",
+    "lat": 35.413139,
+    "lng": 139.954956,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-62",
+    "no": 62,
+    "city": "袖ケ浦市",
+    "roadType": "市道",
+    "route": "袖ケ浦市 坂戸市場23号線",
+    "name": "神納4207-4(東京湾アクアライン連絡道ガード下)",
+    "lat": 35.41238,
+    "lng": 139.956619,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-63",
+    "no": 63,
+    "city": "成田市",
+    "roadType": "国道(国管理)",
+    "route": "51号",
+    "name": "成田市十余三(十余三トンネル)",
+    "lat": 35.804314,
+    "lng": 140.380966,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-65",
+    "no": 65,
+    "city": "四街道市",
+    "roadType": "市道",
+    "route": "四街道市 四街道鹿渡線",
+    "name": "四街道市鹿渡1046-1地先(みのり町アンダーパス)",
+    "lat": 35.666164,
+    "lng": 140.170547,
+    "accuracy": "住所（番地）の代表点",
+    "precise": true
+  },
+  {
+    "id": "road-66",
+    "no": 66,
+    "city": "我孫子市",
+    "roadType": "県道",
+    "route": "船橋我孫子線",
+    "name": "柴崎(天王谷ランプ)",
+    "lat": 35.877205,
+    "lng": 140.034195,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-67",
+    "no": 67,
+    "city": "習志野市",
+    "roadType": "県道",
+    "route": "幕張八千代線",
+    "name": "実籾(実籾アンダーパス)",
+    "lat": 35.688072,
+    "lng": 140.065826,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-68",
+    "no": 68,
+    "city": "市川市",
+    "roadType": "市道",
+    "route": "市川市 0131号線",
+    "name": "八幡1丁目",
+    "lat": 35.720284,
+    "lng": 139.932526,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-72",
+    "no": 72,
+    "city": "市川市",
+    "roadType": "国道(国管理)",
+    "route": "298号",
+    "name": "北国分(小塚山トンネル)",
+    "lat": 35.758881,
+    "lng": 139.905197,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-73",
+    "no": 73,
+    "city": "市川市",
+    "roadType": "国道(国管理)",
+    "route": "298号",
+    "name": "菅野(菅野トンネル)",
+    "lat": 35.72784,
+    "lng": 139.925934,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-74",
+    "no": 74,
+    "city": "松戸市",
+    "roadType": "国道(国管理)",
+    "route": "298号(側道)",
+    "name": "千葉県松戸市小山",
+    "lat": 35.77317,
+    "lng": 139.894501,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-77",
+    "no": 77,
+    "city": "流山市",
+    "roadType": "県道",
+    "route": "守谷流山線",
+    "name": "流山市おおたかの森西4丁目",
+    "lat": 35.874409,
+    "lng": 139.919556,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-79",
+    "no": 79,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 松波新港線",
+    "name": "中央区春日1、2丁目(春日地下道)",
+    "lat": 35.619396,
+    "lng": 140.103928,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-80",
+    "no": 80,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 登戸44号線",
+    "name": "中央区汐見丘町(商高前地下道)",
+    "lat": 35.617069,
+    "lng": 140.10582,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-81",
+    "no": 81,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 弁天27号線",
+    "name": "中央区富士見1丁目(弁天地下道)",
+    "lat": 35.612537,
+    "lng": 140.117218,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-82",
+    "no": 82,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 新町若松町線",
+    "name": "中央区新町・富士見1丁目(駅前地下道)",
+    "lat": 35.610493,
+    "lng": 140.113434,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-83",
+    "no": 83,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 寒川町20・千葉寺町70号線",
+    "name": "中央区寒川町3丁目(寒川・稲荷地下道)",
+    "lat": 35.592529,
+    "lng": 140.122787,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-84",
+    "no": 84,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 西千葉駅稲荷町線",
+    "name": "中央区稲荷町3丁目(末広地下道)",
+    "lat": 35.586319,
+    "lng": 140.126495,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-85",
+    "no": 85,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 蘇我町線",
+    "name": "中央区蘇我2、3、4、5丁目(蘇我町線地下道)",
+    "lat": 35.571819,
+    "lng": 140.131607,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-86",
+    "no": 86,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 村田町10号線",
+    "name": "中央区村田町(村田町JR内房線地下道)",
+    "lat": 35.549427,
+    "lng": 140.129715,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-87",
+    "no": 87,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 千葉港黒砂台線",
+    "name": "中央区新千葉1、2丁目、新町、登戸2丁目",
+    "lat": 35.612926,
+    "lng": 140.113693,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-88",
+    "no": 88,
+    "city": "千葉市",
+    "roadType": "国道(国管理)",
+    "route": "16号",
+    "name": "中央区村田町(村田町アンダーパス)",
+    "lat": 35.549427,
+    "lng": 140.129715,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-89",
+    "no": 89,
+    "city": "千葉市",
+    "roadType": "県道(市管理)",
+    "route": "千葉市 千葉鎌ヶ谷松戸線",
+    "name": "花見川区幕張町4丁目(幕張昆陽地下道)",
+    "lat": 35.667072,
+    "lng": 140.057922,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-90",
+    "no": 90,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 幕張366号線",
+    "name": "花見川区幕張町5丁目(武石地下道)",
+    "lat": 35.655067,
+    "lng": 140.056351,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-91",
+    "no": 91,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 新港穴川線",
+    "name": "美浜区幸町2丁目~稲毛区穴川3丁目(新港穴川線地下道)",
+    "lat": 35.621826,
+    "lng": 140.091583,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-92",
+    "no": 92,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 桜木町13号線",
+    "name": "若葉区若松町・桜木北1、2丁目(滑橋地下道)",
+    "lat": 35.644627,
+    "lng": 140.164902,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-93",
+    "no": 93,
+    "city": "千葉市",
+    "roadType": "市道",
+    "route": "千葉市 おゆみ野東南部5号線",
+    "name": "緑区おゆみ野3丁目・鎌取町(鎌取地下道)",
+    "lat": 35.560665,
+    "lng": 140.176941,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
+  },
+  {
+    "id": "road-94",
+    "no": 94,
+    "city": "千葉市",
+    "roadType": "国道(国管理)",
+    "route": "357号(東京湾岸道路)",
+    "name": "中央区千葉港~中央区問屋町",
+    "lat": 35.606827,
+    "lng": 140.106308,
+    "accuracy": "町丁目の代表点（数百m〜1km以上ずれることがある）",
+    "precise": false
   }
 ];
 
@@ -6709,17 +7661,17 @@ function renderRoadFloodSites() {
     const marker = L.marker([site.lat, site.lng], {
       icon: L.divIcon({
         className: "",
-        html: '<div class="risk-point" aria-hidden="true"></div>',
+        html: `<div class="risk-point${site.precise ? "" : " is-approx"}" aria-hidden="true"></div>`,
         iconSize: [22, 22],
         iconAnchor: [11, 11]
       })
     });
     marker.bindPopup(`
-      <div class="popup-title">参考リスク箇所 No.${site.no}</div>
-      <div class="reference-warning">被害発生を示すピンではありません</div>
-      <div>${escapeHtml(site.name)}</div>
-      <div class="detail-meta">${escapeHtml(site.route)} / ${escapeHtml(site.accuracy)}</div>
-      <a href="${escapeAttribute(site.sourceUrl)}" target="_blank" rel="noreferrer">出典: 道路冠水注意箇所マップ</a>
+      <div class="popup-title">🚇 冠水に注意するアンダーパス等 No.${site.no}</div>
+      <div class="reference-warning">いま冠水しているという意味ではありません</div>
+      <div>${escapeHtml(site.city)}　${escapeHtml(site.name)}</div>
+      <div class="detail-meta">${escapeHtml(site.roadType)}　${escapeHtml(site.route)}<br>位置：${escapeHtml(site.accuracy)}</div>
+      <a href="${escapeAttribute(ROAD_FLOOD_SOURCE_URL)}" target="_blank" rel="noreferrer">出典：千葉国道事務所「道路冠水注意箇所マップ」（令和8年6月30日更新）</a>
     `);
     roadFloodLayer.addLayer(marker);
   });
@@ -8543,7 +9495,7 @@ function getRiskHits(record) {
   if (record.hazardFlags?.flood) hits.push("洪水");
   if (record.hazardFlags?.inland) hits.push("内水");
   if (record.hazardFlags?.landslide) hits.push("土砂");
-  const nearRoad = hasCoordinates(record) && roadFloodSites.some(site => distanceMeters(record.lat, record.lng, site.lat, site.lng) <= 220);
+  const nearRoad = hasCoordinates(record) && roadFloodSites.some(site => site.precise && distanceMeters(record.lat, record.lng, site.lat, site.lng) <= 220);
   if (record.hazardFlags?.road || nearRoad) hits.push("道路冠水注意箇所");
   return [...new Set(hits)];
 }
