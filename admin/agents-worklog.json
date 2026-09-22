@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-09-22",
+          "title": "防災MAP 標高の断面図・避難所と避難指示の判定修正・通行止めの代理登録・お礼投稿2通目 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js・index.html・styles.css・CLAUDE_HANDOFF.md（⛰ 標高の断面図）",
+            "C:/Repos/cidao/src/app/api/disaster/inzai-shelters/route.ts（開設判定を新しい放送から文ごとに）",
+            "C:/Repos/cidao/src/lib/inzai-evac-alert.ts（避難指示の帯を24時間で消さない）",
+            "C:/Repos/cidao/src/app/api/disaster/passed-roads/route.ts（運営の時刻修正で過去日時可）",
+            "C:/Repos/cidao/src/app/api/disaster/kansui/route.ts（伏せた一覧を毎回読み直す）",
+            "site/assets/sns/2026-09-22_thanks/map2.jpg・profile.jpg",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.8,
+          "partnerApproved": true,
+          "note": "標高の断面図（道をなぞる／線のポップアップから）を実装。地理院の1m標高タイル(dem1a)を優先し、標高APIと7地点で0.05m以内の一致を確認（5mだけだと北柏で3m以上ずれる）。避難所の開設判定が『閉鎖』の語を含む放送を日時無視・放送全体で読み、印旛公民館を閉鎖と誤表示していたのを修正。避難指示の帯が24時間で消え継続中の印旛沼2件が消えていたのを修正。みんつくの伏せた一覧が Next.js の fetch キャッシュで古いまま配信されていたのを修正。運営の時刻修正の7日制限を撤廃。佐倉・佐山（神崎橋のマンホール崩壊）・成田公津地区（北千葉道路・宗吾街道）の通行止めを代理登録／更新、お礼投稿2通目（通れた道66件・断面図の案内・3媒体成功）。session 累計8.1時間から先行分7.3時間を除いた分。\nsession: f423f041-19ed-4441-8327-a288a48d54d3 / output: 807,302 / cost: $329.90"
+        },
+        {
+          "date": "2026-09-22",
           "title": "通行止め：印旛土木事務所の新着を情報源に追加（期間つき）0.3時間",
           "category": "実装",
           "outputs": [
