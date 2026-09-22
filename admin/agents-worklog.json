@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-22",
+          "title": "通行止め：栄町さかえ情報メールを情報源に追加（解除時に市民記録も伏せる連動）0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/src/lib/disaster-road-closures.ts（scanSugumail・解除時の linkedPassedRoadIds 伏せ）",
+            "C:/Repos/cidao/src/lib/disaster-timeline.ts（種別 road-closure-sugumail）",
+            "C:/Repos/cidao/src/lib/__tests__/disaster-road-closures.test.ts（21件成功）",
+            "本番DB：情報源『通行止め：栄町』登録・通行止め行に passed-roads 75158255… を紐づけ",
+            "site/inzai-disaster-map/index.html・CLAUDE_HANDOFF.md・site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "cidao 97b03cb／site 08c9849。f423f041 経由の事業主指示。本番の読み取りで県道鎌ヶ谷本埜線バイパス（全線）を取込。解除の文面は未確認（plans の確認項目に追加）。session: 15791c1c-7d6f-4b06-886c-e0b75e2e7e16 / output: 256,035 / cost: $86.77"
+        },
+        {
+          "date": "2026-09-22",
           "title": "通行止め：佐倉市マイマップ追加・巡回の時間切れ対策（通行止めを別の定期実行へ分離）0.5時間",
           "category": "実装",
           "outputs": [
@@ -6867,7 +6882,7 @@
       "plans": [
         {
           "due": "未定",
-          "title": "🚧 通行止め：解除が実際に起きたときに自動で外れるか確かめる（印西市3件・9/21〜）",
+          "title": "🚧 通行止め：解除が実際に起きたときに自動で外れるか確かめる（印西市3件・9/21〜／栄町 県道鎌ヶ谷本埜線バイパス・9/22〜）",
           "category": "保守",
           "priority": "高",
           "status": "待ち",
