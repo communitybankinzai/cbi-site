@@ -1842,6 +1842,7 @@ initShelters();
 initHelpGuide();
 initMapLegend();
 initRecordRange();
+initMapStatusAutoHide();
 initColorGuide();
 initModeration();
 scheduleMapResize();
@@ -2050,6 +2051,21 @@ function openNearestRecordPopup(event) {
   };
   [passedRoadsLayer, kansuiLayer].forEach(group => { if (map.hasLayer(group)) group.eachLayer(consider); });
   if (best) best.layer.openPopup(best.layer.getLatLngs ? event.latlng : undefined);
+}
+
+// 地図の上の細い帯（#map-status）は、知らせることが無いときも「公開レイヤー接続済み・確認日…」を出し続けていて
+// 地図が見にくかった（2026-09-23 事業主指摘）。待機中の文のときは隠し、意味のある知らせが入ったら出す。
+// 鉄道・バスの運休など、ほかの処理がこの帯に書き込むところは触っていない
+function initMapStatusAutoHide() {
+  const node = document.getElementById("map-status");
+  if (!node || typeof MutationObserver !== "function") return;
+  const apply = () => {
+    const idle = /^(公開レイヤー接続済み|地図を読み込み中)/.test((node.textContent || "").trim());
+    node.classList.toggle("is-idle", idle);
+    if (typeof placeRiverAlert === "function") placeRiverAlert();
+  };
+  new MutationObserver(apply).observe(node, { childList: true, characterData: true, subtree: true });
+  apply();
 }
 
 function scheduleMapResize() {

@@ -1075,6 +1075,8 @@ details.layer-group .layer-group-body {
 .range-actions { display: flex; gap: 6px; margin-top: 8px; }
 .range-actions #range-apply { flex: 1; background: #16324f; border-color: #16324f; color: #fff; font-weight: 700; }
 .is-citizen-drawing .range-panel { display: none; }
+/* 待機中（公開レイヤー接続済み…）の帯は隠す（2026-09-23） */
+.map-status.is-idle { display: none; }
 /* 🚇 冠水に注意するアンダーパス等：位置が町丁目までしか分からないものは薄く */
 .risk-point.is-approx { opacity: .45; }
 /* ⛰ 標高の断面図（2026-09-22）。地図の下側に重ねる */
