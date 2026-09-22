@@ -4100,7 +4100,9 @@ function renderRoadClosures() {
   }
 
   const rows = active.map(item => {
-    const period = item.publishedAt ? `${roadClosureTime(item.publishedAt)}〜解除の発表まで` : "発表日不明〜解除の発表まで";
+    // 役所が期間を示している件（印旛土木事務所の工事など）はその終わりまで、無ければ解除の発表まで
+    const until = item.periodEnd ? `${roadClosureTime(item.periodEnd)}（予定）` : "解除の発表まで";
+    const period = item.publishedAt ? `${roadClosureTime(item.publishedAt)}〜${until}` : `発表日不明〜${until}`;
     // 線は引かない運用（2026-09-22 事業主決定C）。場所は役所の位置図か出典で見てもらう
     const onMap = Array.isArray(item.path) && item.path.length >= 2 ? "地図に線あり" : item.mapUrl ? "場所は位置図で確認" : "場所は出典で確認";
     return `<li><strong>${escapeHtml(roadClosureName(item))}</strong>` +
