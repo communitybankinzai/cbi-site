@@ -7,17 +7,17 @@
  },
  "railways": [
   {
-   "to": "成田",
-   "from": "我孫子",
    "line": "jr-narita-abiko",
+   "from": "我孫子",
+   "to": "成田",
    "state": "suspended",
-   "detail": "台風の影響で、成田〜我孫子駅間の運転を見合わせています。昼ごろの運転再開見込み。振替輸送を行っています（JR東日本の発表・22日6時36分時点）。",
-   "expiresAt": "2026-09-22T12:36:00+09:00",
-   "lineLabel": "JR成田線（我孫子支線）",
-   "sourceUrl": "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=1&lineid=naritaline",
+   "detail": "布佐〜新木駅間での線路支障の影響で、成田〜我孫子駅間の上下線は【終日】運転を見合わせます。代行輸送はなし、振替輸送あり（JR東日本の発表・22日10時12分時点）。",
+   "announcedAt": "2026-09-22T10:12:00+09:00",
+   "expiresAt": "2026-09-23T00:30:00+09:00",
    "sourceType": "operator",
-   "announcedAt": "2026-09-22T06:36:00+09:00",
-   "sourceLabel": "JR東日本 運行情報"
+   "sourceLabel": "JR東日本 運行情報",
+   "sourceUrl": "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=1&lineid=naritaline",
+   "lineLabel": "JR成田線（我孫子支線）"
   }
  ],
  "checkedAt": "2026-09-21T21:10:02.576Z",
