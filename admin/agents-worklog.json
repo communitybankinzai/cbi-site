@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-23",
+          "title": "千葉県の台風25号 被害情報PDFを市町村別の地図ページにする（新規 /chiba-typhoon25/）0.6時間",
+          "category": "実装",
+          "outputs": [
+            "site/chiba-typhoon25/index.html",
+            "site/chiba-typhoon25/data.json",
+            "scripts/build_chiba_higai.py",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "県の被害情報（第5報・9/22 17:30発表）を PDF から抽出し、市町村ごとの円で表示。県の合計と突き合わせて床上341・床下86・全壊19・半壊4・一部破損25・死者4・不明2・重傷1・軽傷21 が一致（停電のみ概数の丸めで 45,250 対 約45,230）。抽出の罠：1文字の市名（柏市）・カタカナ入り（袖ケ浦市）・『10軒未満』・単位文字が市名に食い込む（棟千葉市）。前件（output 122,970）との差分 56,169 → 0.6時間\nsession: e93e26f4-222b-44cf-be09-ef5e3343b046 / output: 179,139 / cost: $82.71"
+        },
+        {
+          "date": "2026-09-23",
           "title": "防災MAP 道路線の一括修正・Vercel無料枠対策・アンダーパス層・地形の推定を近隣市へ拡大 1.7時間",
           "category": "実装",
           "outputs": [
@@ -6897,6 +6911,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🗺 千葉県の被害情報マップを次の報（第6報以降）で更新するか決める",
+          "category": "保守",
+          "priority": "中",
+          "note": "更新は `python scripts/build_chiba_higai.py <PDFのパス>` で data.json を作り直すだけ（PDFのURLは県防災ポータルの災害対策本部資料。ファイルIDが報ごとに変わるため自動取得は未対応）。続けるなら (1) PDFのURLを自動で見つける方法 (2) 報ごとの履歴を残すか (3) 収束後にページをどう畳むか を決める。印西市は第5報時点で一部破損1棟のみ。"
+        },
         {
           "due": "未定",
           "title": "🛣 道路から外れたままの線の始末（19kmの1本と、迂回が疑われる31本）",

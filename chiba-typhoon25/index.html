@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>千葉県 台風第25号 被害マップ（市町村別）｜Community Bank INZAI</title>
+<meta name="description" content="千葉県の災害対策本部資料（被害情報）の数値を、市町村ごとに地図で見られるようにしたものです。停電・浸水・住家被害・人的被害を切り替えて表示します。">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root { --bg:#f4f7f9; --fg:#1d2b33; --muted:#5d6b74; --border:#d5dee4; --accent:#2365a8; --warn:#b8322c; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:"Yu Gothic UI","Hiragino Sans",sans-serif; line-height:1.7; }
+  header { background:#fff; border-bottom:1px solid var(--border); padding:12px 16px; }
+  header h1 { margin:0 0 2px; font-size:17px; }
+  header p { margin:0; color:var(--muted); font-size:12.5px; }
+  header a { color:var(--accent); }
+  main { max-width:1100px; margin:0 auto; padding:12px 12px 48px; }
+  .tabs { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+  .tabs button { border:1px solid var(--border); border-radius:999px; background:#fff; color:var(--fg);
+    padding:6px 12px; font-size:13px; font-weight:700; cursor:pointer; }
+  .tabs button[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+  #map { height:min(64vh,560px); border:1px solid var(--border); border-radius:10px; background:#fff; }
+  .legend, .card { background:#fff; border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:12.5px; }
+  .grid { display:grid; grid-template-columns:1fr 300px; gap:12px; align-items:start; }
+  @media (max-width:820px){ .grid{ grid-template-columns:1fr; } }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td { border-bottom:1px solid var(--border); padding:4px 6px; text-align:right; }
+  th:first-child, td:first-child { text-align:left; }
+  thead th { background:#eef3f7; position:sticky; top:0; }
+  .rank { max-height:420px; overflow:auto; }
+  .note { color:var(--muted); font-size:12px; margin:10px 0 0; }
+  .warn { background:#fdeceb; border:1px solid #e6a9a5; border-radius:8px; padding:8px 10px; font-size:12.5px; }
+  .lbl { background:rgba(255,255,255,.92); border:1px solid #7a4a00; border-radius:4px; padding:0 4px;
+    font-size:11px; font-weight:700; color:#5a3500; white-space:nowrap; }
+  .pop b { font-size:14px; }
+  .pop table { font-size:12px; }
+  .inzai { color:var(--warn); font-weight:700; }
+</style>
+</head>
+<body>
+<header>
+  <h1>千葉県 台風第25号 被害マップ（市町村別）</h1>
+  <p id="src">読み込み中…</p>
+</header>
+
+<main>
+  <div class="warn">
+    千葉県が文字で公表している被害情報を、<strong>市町村ごとに地図で見えるようにしたもの</strong>です（Community Bank INZAI が作成）。
+    数値は県の資料のとおりで、加工していません。<strong>暫定値・概数を含み、最新の状況とは異なることがあります。</strong>
+    避難や安全の判断は、<a href="https://www.bousai.pref.chiba.lg.jp" target="_blank" rel="noreferrer">千葉県防災ポータル</a>と市町村の発表でご確認ください。
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="grid">
+    <div>
+      <div id="map"></div>
+      <p class="note" id="metricNote"></p>
+    </div>
+    <div>
+      <div class="legend" id="legend"></div>
+      <div class="card" style="margin-top:12px">
+        <b id="rankTitle">多い順</b>
+        <div class="rank"><table><thead><tr><th>市町村</th><th id="rankUnit">件数</th></tr></thead><tbody id="rankBody"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note" id="footnote"></p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const METRICS = [
+    { key: "停電", label: "⚡ 停電", unit: "軒", color: "#f0a020", stroke: "#a05a00" },
+    { key: "床上浸水", label: "🌊 床上浸水", unit: "棟", color: "#3f8fd6", stroke: "#1d5a96" },
+    { key: "床下浸水", label: "💧 床下浸水", unit: "棟", color: "#7fc4e8", stroke: "#3f7fa6" },
+    { key: "住家被害", label: "🏠 住家被害（全壊・半壊・一部破損）", unit: "棟", color: "#b8322c", stroke: "#7a1f1b",
+      sum: ["全壊", "半壊", "一部破損"] },
+    { key: "人的被害", label: "🚑 人的被害（死者・行方不明・重傷・軽傷）", unit: "人", color: "#7050a8", stroke: "#4a3475",
+      sum: ["死者", "行方不明", "重傷者", "軽傷者"] },
+  ];
+  const DETAIL = ["死者", "行方不明", "重傷者", "軽傷者", "全壊", "半壊", "一部破損", "床上浸水", "床下浸水", "停電"];
+  const UNITS = { 死者: "人", 行方不明: "人", 重傷者: "人", 軽傷者: "人", 停電: "軒" };
+
+  const map = L.map("map").setView([35.45, 140.25], 9);
+  L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png",
+    { attribution: "地理院タイル", maxZoom: 16 }).addTo(map);
+  const layer = L.layerGroup().addTo(map);
+  let data = null, metric = METRICS[0];
+
+  const val = (c, m) => m.sum ? m.sum.reduce((a, k) => a + (c[k] || 0), 0) : (c[m.key] || 0);
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+  function radius(n, max) {
+    if (!n) return 0;
+    return 5 + 26 * Math.sqrt(n) / Math.sqrt(max || 1);
+  }
+
+  function popupHtml(c) {
+    const rows = DETAIL.filter(k => c[k] !== undefined)
+      .map(k => `<tr><td>${k}</td><td style="text-align:right">${c[k].toLocaleString()}${UNITS[k] || "棟"}${c[k + "注"] ? "（" + esc(c[k + "注"]) + "）" : ""}</td></tr>`)
+      .join("");
+    return `<div class="pop"><b>${esc(c.name)}</b><table>${rows}</table>
+      <div style="color:#5d6b74;font-size:11px;margin-top:4px">出典：${esc(data.source)}</div></div>`;
+  }
+
+  function draw() {
+    layer.clearLayers();
+    const vals = data.cities.map(c => val(c, metric));
+    const max = Math.max(...vals, 1);
+    let shown = 0;
+    data.cities.forEach(c => {
+      const n = val(c, metric);
+      if (!n) return;
+      shown++;
+      L.circleMarker([c.lat, c.lon], { radius: radius(n, max), color: metric.stroke, weight: 1.4,
+        fillColor: metric.color, fillOpacity: .55 }).addTo(layer).bindPopup(popupHtml(c));
+      if (n >= max * 0.18) {
+        L.marker([c.lat, c.lon], { interactive: false, icon: L.divIcon({ className: "",
+          iconAnchor: [-radius(n, max) - 3, 8],
+          html: `<span class="lbl">${esc(c.name)} ${n.toLocaleString()}${metric.unit}</span>` }) }).addTo(layer);
+      }
+    });
+    const total = vals.reduce((a, b) => a + b, 0);
+    document.getElementById("metricNote").textContent =
+      `${metric.label.replace(/^\S+\s/, "")}：${shown}市町村・合計 ${total.toLocaleString()}${metric.unit}（円の大きさは市町村ごとの数。円の位置は市役所・役場の場所で、被害のあった場所そのものではありません）`;
+    document.getElementById("legend").innerHTML =
+      `<b>${esc(metric.label)}</b><br>円の大きさ＝${metric.unit}数<br>
+       いちばん大きい円：${max.toLocaleString()}${metric.unit}<br>
+       <span style="color:#5d6b74">数のない市町村は円を出していません（被害なしとは限りません）。</span>`;
+    const rows = data.cities.map(c => [c.name, val(c, metric)]).filter(r => r[1] > 0).sort((a, b) => b[1] - a[1]);
+    document.getElementById("rankUnit").textContent = metric.unit + "数";
+    document.getElementById("rankBody").innerHTML = rows.map(([n, v]) =>
+      `<tr><td class="${n === "印西市" ? "inzai" : ""}">${esc(n)}</td><td>${v.toLocaleString()}</td></tr>`).join("")
+      || `<tr><td colspan="2">この項目の記載はありません</td></tr>`;
+  }
+
+  function buildTabs() {
+    const box = document.getElementById("tabs");
+    METRICS.forEach(m => {
+      const b = document.createElement("button");
+      b.textContent = m.label;
+      b.setAttribute("aria-pressed", m === metric);
+      b.onclick = () => { metric = m; [...box.children].forEach(x => x.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", "true"); draw(); };
+      box.appendChild(b);
+    });
+  }
+
+  fetch("./data.json?v=" + Date.now()).then(r => r.json()).then(d => {
+    data = d;
+    document.getElementById("src").innerHTML =
+      `出典：${esc(d.source)}「${esc(d.title)}」${esc(d.sourceNote)}
+       <a href="${esc(d.sourceUrl)}" target="_blank" rel="noreferrer">千葉県防災ポータル ↗</a>`;
+    document.getElementById("footnote").innerHTML =
+      `県の資料は文章と表で書かれています。このページは、そこに書かれた市町村名と数をそのまま地図に置いたものです。
+       停電の合計は県の資料で「約${esc(d.powerTotal)}軒」とされており、市町村ごとの数（いずれも概数）を足した値とは数十軒の差が出ます。
+       「10軒未満」と書かれた市町村は0として扱い、内訳に注記しています。
+       このページは Community Bank INZAI が作成したもので、千葉県・印西市の公式サイトではありません。
+       データ作成：${esc(d.generatedAt)}`;
+    buildTabs();
+    draw();
+  }).catch(e => {
+    document.getElementById("src").textContent = "データを読み込めませんでした。";
+    console.error(e);
+  });
+</script>
+</body>
+</html>
