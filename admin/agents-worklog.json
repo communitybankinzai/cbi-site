@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-09-22",
+          "title": "通行止め：印旛土木事務所の新着を情報源に追加（期間つき）0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/src/lib/disaster-road-closures.ts（scanInba・parsePeriod）",
+            "C:/Repos/cidao/src/lib/disaster-timeline.ts（種別 road-closure-inba）",
+            "C:/Repos/cidao/src/app/api/disaster/road-closures/route.ts（periodEnd）",
+            "C:/Repos/cidao/src/lib/__tests__/disaster-road-closures.test.ts（17件成功）",
+            "本番DB disaster_info_sources に情報源1件を登録",
+            "site/inzai-disaster-map/app.js・index.html（期間の終わりを表示・版 20260922rc7）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "cidao a9e7ee0／site f58812c。本番巡回 11:30 で success、佐倉市先崎干拓の自転車道（1/7〜11/30・工事）を取込、本番画面で4件目として表示を確認。臼井田（11/1から予定）は期間前なので出していない。セッション累計 2.0h。session: 15791c1c-7d6f-4b06-886c-e0b75e2e7e16 / output: 191,934 / cost: $48.48"
+        },
+        {
+          "date": "2026-09-22",
           "title": "通行止め：見たいものボタン・位置図リンク・線の位置合わせ検証（不採用）・取得失敗時の間隔修正 0.7時間",
           "category": "実装",
           "outputs": [
@@ -6822,13 +6839,6 @@
           "status": "待ち",
           "blockedBy": "印西市が9/21の通行止め3件（師戸・江川線／吉田・岩戸線／山田・平賀線）の解除を発表すること",
           "note": "2026-09-22 実装。市が記事の題名を『…解除いたしました』に書き換える／まとめページ 0000022578 から消える で外れる設計だが実例未確認。解除が出たら disaster_road_closures の cleared_at・clear_reason と防災MAPの『24時間以内に解除』表示を確認する。外れなければ src/lib/disaster-road-closures.ts の scanInzai を直す。"
-        },
-        {
-          "due": "未定",
-          "title": "🚧 通行止め：印旛土木事務所の新着を情報源に加えるか決める（印西・白井・佐倉・酒々井・栄町の県道・国道464号）",
-          "category": "調査",
-          "priority": "中",
-          "note": "2026-09-22 調査で判明：印旛土木事務所（cs-inba）は通行規制を県の一覧とは別に自所の新着（/cs-inba/shinchaku.html）へ載せる（例：八千代印旛栄自転車道線の通行止め）。印西市内の国道464号も同事務所の管理。県の一覧（pl_6301/6302）に載らない規制を拾える可能性がある。規約は千葉県サイト共通（無断転用不可）なので事実だけ・出典リンクの方式で可。事業主の判断待ち。"
         },
         {
           "due": "未定",
