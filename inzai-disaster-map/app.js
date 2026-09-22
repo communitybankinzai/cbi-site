@@ -7034,6 +7034,55 @@ async function searchPlaceNames(query) {
     .slice(0, 8);
 }
 
+// OpenStreetMap（Nominatim）。国土地理院に無い「お店・橋・公園・名所」の名前を探せる。
+// 利用規約で1秒1回まで・自動補完（入力のたびの検索）は禁止のため、押したときだけ1回呼ぶ。
+// 出典表示（© OpenStreetMap contributors）を結果に添える。
+const OSM_SEARCH_URL = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&accept-language=ja&countrycodes=jp&q=";
+// 千葉県のあたりを先に見る（bounded=0 なので、外の候補も後ろに出る）
+const OSM_VIEWBOX = "&viewbox=139.70,36.10,140.90,35.40";
+
+async function searchOsmPlaces(query) {
+  const response = await fetch(OSM_SEARCH_URL + encodeURIComponent(query) + OSM_VIEWBOX, { headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const rows = await response.json();
+  return (Array.isArray(rows) ? rows : [])
+    .map(row => {
+      const full = String(row?.display_name || "");
+      const parts = full.split("、").length > 1 ? full.split("、") : full.split(", ");
+      return {
+        label: (parts[0] || full).trim(),
+        sub: parts.slice(1, 4).join(" ").trim(),
+        lat: Number(row?.lat),
+        lon: Number(row?.lon),
+      };
+    })
+    .filter(item => item.label && Number.isFinite(item.lat) && Number.isFinite(item.lon))
+    // 同じ名前・ほぼ同じ場所のものが2件以上返ることがあるので1件にまとめる
+    .filter((item, index, all) => index === all.findIndex(other => other.label === item.label
+      && Math.abs(other.lat - item.lat) < 0.002 && Math.abs(other.lon - item.lon) < 0.002))
+    .slice(0, 8);
+}
+
+async function runOsmSearch(query) {
+  const results = document.getElementById("place-results");
+  const more = document.getElementById("place-more");
+  if (!results) return;
+  if (more) { more.disabled = true; more.textContent = "OpenStreetMap を探しています…"; }
+  let rows = [];
+  let failed = "";
+  try {
+    rows = await searchOsmPlaces(query);
+  } catch (error) {
+    failed = error?.message || "接続エラー";
+  }
+  const block = rows.length
+    ? `<p class="place-group">お店・目印（OpenStreetMap）</p>${rows.map(placeHitHtml).join("")}` +
+      `<p class="place-credit">© OpenStreetMap contributors</p>`
+    : `<p class="place-group">${failed ? `OpenStreetMap を探せませんでした（${escapeHtml(failed)}）` : "OpenStreetMap にも見つかりませんでした"}</p>`;
+  if (more) more.remove();
+  results.insertAdjacentHTML("beforeend", block);
+}
+
 async function runPlaceSearch(query) {
   const results = document.getElementById("place-results");
   const note = document.getElementById("place-note");
@@ -7053,8 +7102,11 @@ async function runPlaceSearch(query) {
   html += places.length
     ? `<p class="place-group">地名・施設（国土地理院）</p>${places.map(placeHitHtml).join("")}`
     : `<p class="place-group">${failed ? `地名をさがせませんでした（${escapeHtml(failed)}）` : "地名は見つかりませんでした"}</p>`;
+  html += `<button type="button" class="place-more" id="place-more" data-place-query="${escapeAttribute(query)}">🔎 お店・目印の名前でさらに探す（OpenStreetMap）</button>`;
   results.innerHTML = html;
   if (note) note.textContent = `「${query}」の結果です。押すとその場所へ地図が動きます。`;
+  // 地名が1件も無いときは、そのまま OpenStreetMap まで探す（押させる手間を省く）
+  if (!places.length && !failed) runOsmSearch(query);
 }
 
 function initPlaceSearch() {
@@ -7088,6 +7140,11 @@ function initPlaceSearch() {
     results.querySelector(".place-hit")?.click();
   });
   results.addEventListener("click", event => {
+    const more = event.target.closest("#place-more");
+    if (more) {
+      runOsmSearch(String(more.dataset.placeQuery || input.value.trim()));
+      return;
+    }
     const button = event.target.closest(".place-hit");
     if (!button) return;
     const roadId = button.dataset.placeRoad;

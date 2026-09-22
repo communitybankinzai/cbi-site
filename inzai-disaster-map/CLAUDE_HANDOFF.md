@@ -4,6 +4,7 @@
 - 地名は国土地理院 `https://msearch.gsi.go.jp/address-search/AddressSearch?q=`。**Origin を付けたときだけ `Access-Control-Allow-Origin: *` が返る**ので、ブラウザから直接呼べる（サーバーを挟む必要はない）。
 - 記録側は `passedRoadsData` のメモ、`roadFloodSites`、`shelterPayload.shelters` を見る。みんつくの投稿は本文を持っていないので語では探せない（場所で飛んだ先の件数には入る）。
 - 飛んだ先の件数は `nearbyRecordCounts()`（半径500m）。表示の絞り込みに関係なく数えている。
+- 2026-09-23 追記：2つ目の情報源に OpenStreetMap（Nominatim）。**入力のたびに呼ばないこと**（利用規約で自動補完は禁止）。`#place-more` を押したとき、または国土地理院が0件のときだけ `runOsmSearch()` を1回呼ぶ。出典表示を消さない。
 
 # 印西市 災害状況整合MAP 引継ぎ
 

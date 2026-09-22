@@ -1088,6 +1088,13 @@ details.layer-group .layer-group-body {
 .place-hit:hover { background: #eef4fb; }
 .place-hit .ph-sub { display: block; margin-top: 2px; color: #667586; font-size: 11px; }
 .place-group { margin: 6px 0 2px; color: #55637a; font-size: 11px; font-weight: 700; }
+.place-credit { margin: 3px 0 0; color: #7b879a; font-size: 10.5px; }
+.place-more {
+  margin-top: 6px; width: 100%; min-height: 40px; padding: 8px;
+  border: 1px solid #b9c4d3; border-radius: 8px; background: #f2f6fb;
+  color: #16324f; font: inherit; font-size: 12.5px; cursor: pointer;
+}
+.place-more:disabled { color: #7b879a; }
 .place-pin { font-size: 22px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
 /* 待機中（公開レイヤー接続済み…）の帯は隠す（2026-09-23） */
 .map-status.is-idle { display: none; }
