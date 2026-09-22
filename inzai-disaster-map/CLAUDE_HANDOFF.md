@@ -336,3 +336,16 @@ score = 100 × [ 0.25·clip(−相対標高/5m) + 0.35·clip(窪地深さ/2m)
 - **MAP**：`app.js` の「⚡ 停電の円表示」節。`teidenMode` は `?teiden=demo`→`demo`（`teiden-sample.json`＝架空の数値）、`config.js` の `teidenEndpoint` が空でなければ `live`（10分ごと再取得）、どちらでもなければ何もしない（**今の本番はこれ**）。面 `teidenPane`（zIndex 465・SVG の `teidenRenderer`。canvas にしないこと）。円の半径 `5 + √軒数 × 0.45`（teiden-demo.html と同じ）。代表点はデータの `lat`/`lon`、無ければ国土地理院の住所検索（`千葉県<市><地区>`・8秒で諦める・localStorage `cbi-disaster-teiden-points-v1`）。引けない地区は描かない。取得に失敗したら円を消す。
 - **データの形**：`{ sample, fetchedAt, source:{name,url}, areas:[{city, district, households, occurredAt, restoreEta, lat?, lon?}] }`。**許可後にやること**：CiDAO に `/api/disaster/teiden`（東電の正式な取得方法・間隔に従い、この形で返す）を作り、`teidenEndpoint` に書き、index.html にレイヤーのチェックと凡例を足す。見本・説明用ページ（teiden-demo.html）と表示を揃えてある。不可の回答なら、この節のコードと teiden-sample.json を消す。
 - **検証（2026-09-22）**：127.0.0.1:8766 で、既定では層が地図に載らず円0、`?teiden=demo` で円6つ・名前6つ・ポップアップ（見本の注記・代表点の注記・出典・取得時刻）を PC とスマホ 375×812 で確認。
+
+## 2026-09-22 🚧 通行止め（役所の発表）を常時表示・解除は自動
+
+- **方針（事業主決定・すべてA）**：情報源は役所の公式ページだけ／まず印西市とその周辺／地図の線は運営が位置を確かめたものだけ、それ以外は一覧。ON/OFF は利用者がレイヤーで切り替える。調査表は保管庫 `cidao/2026-09-22_通行止め情報源の調査_規約と位置表記.md`（**役所の座標付き発表はゼロ・二次利用可は千葉国道事務所だけ**。文章は写さず路線名・場所・理由・発表日だけを持つ）。
+- **CiDAO**：`src/lib/disaster-road-closures.ts`。災害タイムラインの巡回（pg_cron）が情報源の kind `road-closure-inzai`／`road-closure-kokudo`／`road-closure-pref` に来たとき、タイムラインには積まず表 `disaster_road_closures`（migration `20260922100000`・本番適用済み・service_role のみ）に記事ごと1行を反映する。各情報源は前回から `minIntervalMinutes`（既定50分）空ける（app_settings `road_closure_last_fetch:<id>`）。管理画面の「テスト取得」は DB に書かずに一覧を返す。
+  - **印西市**：トップの新着の通行止め記事＋「道路の通行止めの状況」まとめページ（災害ごとに新しいURL。config `statusUrls`＝今は 0000022578）。解除＝記事の題名に「解除」／記事が404／**まとめページに載っていた記事がまとめページから消えた（空になった）**（事業主提案）。新着から落ちただけでは解除しない。
+  - **千葉国道事務所**：記者発表一覧の「～国道N号 区間～」を古い順にたどり、最後が通行止めなら通行止め中、「解除のお知らせ【終報】」で解除。題名に市名が無いので周辺かは config `routes`（既定 16,6）。
+  - **千葉県**：一覧の本体 `pl_6302`（県道）・`pl_6301`（県管理国道）と解除 `pl_7310`・`pl_7929`。県は通行止めの一覧に古い記事を残すので、**同じ路線・場所の解除記事が後から出たら解除**（日付は題名か記事URLの YYMMDD）。片側交互通行・車線規制は除く。周辺かは市町村名（config `areas`）、題名に無ければ記事本文を1回3件まで読む。
+  - ⚠ **取得失敗・ページの形が変わったときは例外で止め、何も解除しない**（市サイトの不具合で全件「復旧」にしないため）。テスト `src/lib/__tests__/disaster-road-closures.test.ts`（14件）。
+- **API**：`GET https://cidao.vercel.app/api/disaster/road-closures`（周辺の通行止め中 `active`＋24時間以内の解除 `recentlyCleared`＋情報源の最終確認 `sources`。CDN 5分）。役所の題名（source_title）は返さない。
+- **MAP**：「🏫 避難所・防災拠点」内のレイヤー `roadClosures`「🚧 通行止め（役所の発表）」（**既定OFF**）。ONで `#road-closures-list`（チェックの真下）に一覧（路線・場所・理由・発表日〜解除の発表まで・出典リンク・線の有無）、24時間以内の解除、読めなかった情報源、最終確認時刻。10分ごと再取得。**線は `path`（[[lat,lon],…]）がある行だけ**赤い破線で描く（`roadClosuresPane` zIndex 462・SVG）。
+- **運営が線を付ける方法（管理画面は未実装）**：今は DATABASE_URL から `update disaster_road_closures set path='[[lat,lon],...]', path_checked_by='名前', path_checked_at=now() where id='...'`。運営が手で解除するなら `cleared_at=now(), clear_reason='operator'`（以後、巡回で通行止めに戻さない）。
+- **未確認**：解除が実際に起きたときの動き（9/22 時点で印西市3件が通行止め中。市が題名を「解除」に書き換えたら外れるはず）。千葉国道の一覧に16号・6号の周辺区間の通行止めが出た実例はまだない。

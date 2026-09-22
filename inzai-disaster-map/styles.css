@@ -3544,3 +3544,16 @@ body.citizen-road-editing { overflow: hidden; }
 .rail-legend-item { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .rail-legend-red { display: inline-block; width: 18px; height: 5px; border-radius: 3px; background: #dc2626; }
 .rail-legend-gray { display: inline-block; width: 18px; border-top: 3px dashed #4b5563; }
+
+/* 🚧 通行止め（役所の発表）の一覧。レイヤーのチェックの真下に開く */
+.road-closures-list { margin: 4px 0 8px 22px; padding: 8px 10px; border: 1px solid #f0c8c4; border-left: 4px solid #b8322c; border-radius: 6px; background: #fff8f7; font-size: 12px; line-height: 1.55; }
+.road-closures-list ul { margin: 0; padding-left: 16px; }
+.road-closure-items li { margin-bottom: 6px; }
+.road-closure-items strong { color: #8a1f1a; }
+.road-closure-meta { display: block; color: #57606a; }
+.road-closure-items a, .road-closure-note a, .road-closure-cleared a { color: #0b57d0; }
+.road-closure-empty { margin: 0; color: #333; }
+.road-closure-cleared { margin-top: 6px; color: #57606a; }
+.road-closure-cleared summary { cursor: pointer; }
+.road-closure-warn { margin: 6px 0 0; color: #9a3412; }
+.road-closure-note { margin: 6px 0 0; font-size: 11px; color: #57606a; }

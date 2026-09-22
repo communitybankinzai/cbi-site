@@ -10,6 +10,7 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     // 鉄道・バスの運休。市が再開を発表するとサーバー側で自動的に解除される。
     // 取得できないときは同じフォルダの rail-status.json（静的）を使う。
     railStatusEndpoint: "https://cidao.vercel.app/api/disaster/rail-status",
+    roadClosuresEndpoint: "https://cidao.vercel.app/api/disaster/road-closures",
     timelineEndpoint: "https://cidao.vercel.app/api/disaster/timeline",
     // 手賀沼・西印旛沼・北印旛沼の水位（千葉県のページをCiDAOが5分キャッシュで読み取る）と利根川の洪水予報（気象庁）
     riverLevelEndpoint: "https://cidao.vercel.app/api/disaster/river-level",

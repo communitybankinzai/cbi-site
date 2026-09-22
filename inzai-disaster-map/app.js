@@ -585,6 +585,8 @@ const kansuiRenderer = L.svg({ pane: "kansuiPane" });
 // ポップアップが開かない。
 map.createPane("railStatusPane");
 map.getPane("railStatusPane").style.zIndex = 460;
+map.createPane("roadClosuresPane");
+map.getPane("roadClosuresPane").style.zIndex = 462;
 // 停電の円（2026-09-22・東電の許可待ち）。冠水の線より上、運休の線と同じ高さ
 map.createPane("teidenPane");
 map.getPane("teidenPane").style.zIndex = 465;
@@ -3994,7 +3996,140 @@ function clearRailStatusNote() {
   if (status?.querySelector(".rail-status-box")) status.innerHTML = "";
 }
 
+// ---------------------------------------------------------------------------
+// 🚧 通行止め（役所の発表）
+// ---------------------------------------------------------------------------
+// CiDAO の巡回が千葉国道事務所・千葉県・印西市のページを毎時読み、解除も自動で外す（src/lib/disaster-road-closures.ts）。
+// 役所の発表には座標がないので、線を引くのは運営が位置を確かめた件（path あり）だけ。それ以外は一覧に文字で出す
+// （2026-09-22 事業主決定：情報源は役所のみ・まず印西市周辺・線は運営が確かめたものだけ）。
+const roadClosuresLayer = L.layerGroup();
+// 他の層と同じ理由で SVG（canvas だとクリックを吸われてポップアップが開かない）
+const roadClosuresRenderer = L.svg({ pane: "roadClosuresPane" });
+const ROAD_CLOSURE_REFRESH_MS = 10 * 60 * 1000;
+let roadClosuresData = null;
+let roadClosuresTimer = null;
+
+function roadClosureTime(iso, withTime = false) {
+  const time = Date.parse(iso || "");
+  if (!Number.isFinite(time)) return "";
+  const opts = withTime
+    ? { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }
+    : { month: "numeric", day: "numeric" };
+  return new Date(time).toLocaleString("ja-JP", opts);
+}
+
+// 情報源の名前は「通行止め：印西市」なので、出典には「印西市」だけを出す
+function roadClosureSourceName(label) {
+  return String(label || "役所の発表").replace(/^通行止め[：:]\s*/, "");
+}
+
+function roadClosureName(item) {
+  const road = item.road || "道路";
+  return item.place ? `${road}（${item.place}）` : road;
+}
+
+async function refreshRoadClosures() {
+  const statusEl = document.getElementById("road-closures-status");
+  const endpoint = String(APP_CONFIG.roadClosuresEndpoint || "").trim();
+  if (!endpoint) return;
+  if (statusEl && !roadClosuresData) statusEl.textContent = "読み込み中…";
+  try {
+    const res = await fetch(endpoint, { headers: { Accept: "application/json" }, cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    roadClosuresData = await res.json();
+    renderRoadClosures();
+  } catch (error) {
+    console.error("通行止め情報の読み込みに失敗:", error);
+    // 前回の内容があれば残す（一時的な失敗で一覧を消さない）
+    if (statusEl) statusEl.textContent = roadClosuresData
+      ? `更新できませんでした（前回の内容を表示中）`
+      : `取得できませんでした（${error?.message || "接続エラー"}）`;
+  }
+}
+
+function renderRoadClosures() {
+  const data = roadClosuresData;
+  const listEl = document.getElementById("road-closures-list");
+  const statusEl = document.getElementById("road-closures-status");
+  if (!data || !listEl) return;
+  roadClosuresLayer.clearLayers();
+
+  const active = Array.isArray(data.active) ? data.active : [];
+  const cleared = Array.isArray(data.recentlyCleared) ? data.recentlyCleared : [];
+  const sources = Array.isArray(data.sources) ? data.sources : [];
+  let drawn = 0;
+
+  active.forEach(item => {
+    if (!Array.isArray(item.path) || item.path.length < 2) return;
+    const popup =
+      `<strong>🚧 ${escapeHtml(roadClosureName(item))}</strong><br>` +
+      `<span style="color:#b8322c;font-weight:700;">通行止め</span>${item.reason ? `（${escapeHtml(item.reason)}）` : ""}<br>` +
+      (item.publishedAt ? `発表: ${escapeHtml(roadClosureTime(item.publishedAt))}〜解除の発表まで<br>` : "") +
+      (item.url ? `出典: <a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(roadClosureSourceName(item.sourceLabel))}</a><br>` : "") +
+      `<span style="font-size:11px;">線の位置は運営が発表をもとに確かめたものです。最新は出典で確認してください。</span>`;
+    L.polyline(item.path, {
+      pane: "roadClosuresPane",
+      renderer: roadClosuresRenderer,
+      color: "#b8322c",
+      weight: 7,
+      opacity: 0.9,
+      dashArray: "10 8",
+      lineCap: "butt"
+    }).bindPopup(popup).addTo(roadClosuresLayer);
+    drawn += 1;
+  });
+
+  if (statusEl) {
+    statusEl.textContent = active.length
+      ? `通行止め ${active.length}件${drawn ? `（うち地図に線 ${drawn}件）` : ""}`
+      : "役所が発表中の通行止めはありません";
+  }
+
+  const rows = active.map(item => {
+    const period = item.publishedAt ? `${roadClosureTime(item.publishedAt)}〜解除の発表まで` : "発表日不明〜解除の発表まで";
+    const onMap = Array.isArray(item.path) && item.path.length >= 2 ? "地図に線あり" : "位置は未確認（線なし）";
+    return `<li><strong>${escapeHtml(roadClosureName(item))}</strong>` +
+      `<span class="road-closure-meta">${item.reason ? `${escapeHtml(item.reason)}・` : ""}${escapeHtml(period)}・${onMap}</span>` +
+      (item.url ? `<a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典：${escapeHtml(roadClosureSourceName(item.sourceLabel))} ↗</a>` : "") +
+      `</li>`;
+  });
+  const clearedRows = cleared.map(item =>
+    `<li>${escapeHtml(roadClosureName(item))}：${escapeHtml(roadClosureTime(item.clearedAt, true))}に${item.clearReason === "announced" ? "解除の発表" : item.clearReason === "operator" ? "運営が解除" : "掲載終了で解除"}` +
+    (item.url ? ` <a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典 ↗</a>` : "") + `</li>`
+  );
+  const failed = sources.filter(s => s.lastStatus === "failed");
+  const lastFetched = sources.map(s => s.lastFetchedAt).filter(Boolean).sort().pop();
+
+  listEl.innerHTML =
+    (rows.length
+      ? `<ul class="road-closure-items">${rows.join("")}</ul>`
+      : `<p class="road-closure-empty">役所の発表で、いま通行止めになっている道はありません。<br>（発表されていない通行止めがあることもあります）</p>`) +
+    (clearedRows.length ? `<details class="road-closure-cleared"><summary>24時間以内に解除 ${clearedRows.length}件</summary><ul>${clearedRows.join("")}</ul></details>` : "") +
+    (failed.length ? `<p class="road-closure-warn">⚠ 前回 ${failed.map(s => escapeHtml(s.label)).join("・")} を読めませんでした。出典のページで確認してください。</p>` : "") +
+    `<p class="road-closure-note">確認先：${sources.map(s => s.url ? `<a href="${escapeAttribute(s.url)}" target="_blank" rel="noreferrer">${escapeHtml(roadClosureSourceName(s.label))}</a>` : escapeHtml(s.label)).join("／") || "―"}` +
+    `${lastFetched ? `<br>最終確認：${escapeHtml(roadClosureTime(lastFetched, true))}（1時間ごと）` : ""}</p>`;
+  listEl.hidden = false;
+}
+
 function toggleOverlay(name, checked) {
+  if (name === "roadClosures") {
+    const listEl = document.getElementById("road-closures-list");
+    if (checked) {
+      roadClosuresLayer.addTo(map);
+      if (roadClosuresData) renderRoadClosures();
+      refreshRoadClosures();
+      clearInterval(roadClosuresTimer);
+      roadClosuresTimer = setInterval(refreshRoadClosures, ROAD_CLOSURE_REFRESH_MS);
+    } else {
+      map.removeLayer(roadClosuresLayer);
+      clearInterval(roadClosuresTimer);
+      roadClosuresTimer = null;
+      if (listEl) listEl.hidden = true;
+      const statusEl = document.getElementById("road-closures-status");
+      if (statusEl) statusEl.textContent = "ONにすると読み込みます";
+    }
+    return;
+  }
   if (name === "railStatus") {
     // 読み込み済みなら表示欄の文も出し直す（✕で隠したあと、入れ直せば戻る）
     if (checked) { if (railStatusLoaded && railStatusData) renderRailStatus(); else ensureRailStatusLayer(); railStatusLayer.addTo(map); }
