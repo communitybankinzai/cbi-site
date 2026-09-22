@@ -6210,8 +6210,27 @@ function renderPassedRoadsList() {
 }
 
 function focusPassedRoad(id) {
-  const shape = passedRoadShapes.get(id);
-  if (!shape) return;
+  let shape = passedRoadShapes.get(id);
+  if (!shape) {
+    // 一覧には出ていても、凡例で種類をOFFにしている・期間でしぼり込んでいると地図には描かれていない。
+    // 以前はここで黙って終わっていたため「一覧から押しても飛ばない」状態だった（2026-09-23）
+    const road = passedRoadsData.find(item => String(item.id) === String(id));
+    if (!road) return;
+    const kind = passedRoadKindOf(road);
+    if (!passedKindFilter[kind]) {
+      passedKindFilter[kind] = true;
+      document.querySelector(`#map-legend [data-kind="${kind}"]`)?.setAttribute("aria-pressed", "true");
+    }
+    ensurePassedRoadsOverlayOn();
+    renderPassedRoadsLayer();
+    shape = passedRoadShapes.get(id);
+    if (!shape) {
+      // 期間のしぼり込みの外。その1本だけ描いて飛ぶ（しぼり込みを変えると消える）
+      shape = passedRoadShape(road).addTo(passedRoadsLayer);
+      passedRoadShapes.set(road.id, shape);
+      setPassedRoadsStatus("しぼり込みの外の記録を1件だけ表示しています。しぼり込みを変えると消えます。");
+    }
+  }
   ensurePassedRoadsOverlayOn();
   const center = typeof shape.getLatLng === "function" ? shape.getLatLng() : shape.getBounds().getCenter();
   map.setView(center, Math.max(map.getZoom(), 16));
