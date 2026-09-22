@@ -4105,6 +4105,8 @@ function renderRoadClosures() {
     return `<li><strong>${escapeHtml(roadClosureName(item))}</strong>` +
       `<span class="road-closure-meta">${item.reason ? `${escapeHtml(item.reason)}・` : ""}${escapeHtml(period)}・${onMap}</span>` +
       (item.url ? `<a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典：${escapeHtml(roadClosureSourceName(item.sourceLabel))} ↗</a>` : "") +
+      // 線の無い件は、役所の位置図（区間を赤線で描いた地図）で場所を見てもらう
+      (item.mapUrl ? `<br><a href="${escapeAttribute(item.mapUrl)}" target="_blank" rel="noreferrer">📍 位置図（${escapeHtml(roadClosureSourceName(item.sourceLabel))}のPDF） ↗</a>` : "") +
       `</li>`;
   });
   const clearedRows = cleared.map(item =>
