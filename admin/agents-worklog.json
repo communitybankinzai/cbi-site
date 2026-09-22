@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-09-22",
+          "title": "通行止め（役所の発表）の常時表示と自動解除を実装・本番公開 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/supabase/migrations/20260922100000_disaster_road_closures.sql（新規・本番適用済み）",
+            "C:/Repos/cidao/src/lib/disaster-road-closures.ts（新規：千葉国道・千葉県・印西市の読み取りと解除判定）",
+            "C:/Repos/cidao/src/lib/disaster-timeline.ts（巡回へのつなぎ込み・50分間隔・テスト取得）",
+            "C:/Repos/cidao/src/app/api/disaster/road-closures/route.ts（新規）",
+            "C:/Repos/cidao/src/lib/__tests__/disaster-road-closures.test.ts（新規・14件成功）",
+            "本番DB disaster_info_sources に情報源3件を登録",
+            "site/inzai-disaster-map/app.js・index.html・config.js・styles.css（レイヤー roadClosures・版 20260922rc1）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "cidao e58ac75／site 99058f3。本番巡回 9/22 9:50 で3か所とも success、印西市3件を取込・本番画面で一覧表示を確認。解除の実例は未確認（plans 登録）。同一セッションの調査 0.2h と合わせて計 1.0h。session: 15791c1c-7d6f-4b06-886c-e0b75e2e7e16 / output: 102,634 / cost: $22.32"
+        },
+        {
+          "date": "2026-09-22",
           "title": "通行止め情報源の調査（県・国・印西市と周辺7市町の規約・更新頻度・位置表記）0.2時間",
           "category": "調査",
           "outputs": [
@@ -6782,10 +6800,35 @@
       "plans": [
         {
           "due": "未定",
-          "title": "🚧 通行止め情報を平時から常時表示：役所の公式ページを見張り、復旧したら自動で解除する仕組み",
-          "category": "実装",
+          "title": "🚧 通行止め：解除が実際に起きたときに自動で外れるか確かめる（印西市3件・9/21〜）",
+          "category": "保守",
           "priority": "高",
-          "note": "2026-09-22 事業主決定（すべてA）：①情報源は役所の公式ページのみ（千葉県・千葉国道事務所・印西市と周辺市）、取得条件を1つずつ確認してから入れる ②まず印西市周辺→うまく回れば県全域 ③地図の線は運営が位置を確かめたものだけ、それ以外は一覧（場所の文章・期間・出典リンク）。次の一歩は情報源の調査表（利用規約・更新頻度・位置の書き方）を作って事業主に見せること。土台は CiDAO の city-page-watch（ページの書き換わりで1件積む）。解除は『見張るページから消えたら解除』。JARTIC は規約でリンクのみ（決定済み）。Vercel 無料枠が上限に近いので巡回回数に注意。【2026-09-22 情報源調査済み】県・国交省道路情報提供システム・千葉国道・印西市と周辺7市町を確認。緯度経度を出す役所はゼロ／二次利用可は千葉国道事務所（PDL1.0）のみ、他は無断転用不可→事実だけ自分の言葉＋出典リンク／『消えたら解除』が効くのは柏市型のみ、県・国・印西・八千代は解除記事が別に出る。国の道路情報提供システムは転載不可でリンクのみが妥当。詳細は保管庫 cidao/2026-09-22_通行止め情報源の調査_規約と位置表記.md。事業主から追加要望『ON/OFFできるように』→2026-09-22 A確定：利用者が地図のレイヤーとして表示を切り替える（他レイヤーと同じチェックボックス。運営側の取込停止ボタンではない）。次の一歩は事業主が表を見て入れる情報源を選ぶこと。"
+          "status": "待ち",
+          "blockedBy": "印西市が9/21の通行止め3件（師戸・江川線／吉田・岩戸線／山田・平賀線）の解除を発表すること",
+          "note": "2026-09-22 実装。市が記事の題名を『…解除いたしました』に書き換える／まとめページ 0000022578 から消える で外れる設計だが実例未確認。解除が出たら disaster_road_closures の cleared_at・clear_reason と防災MAPの『24時間以内に解除』表示を確認する。外れなければ src/lib/disaster-road-closures.ts の scanInzai を直す。"
+        },
+        {
+          "due": "未定",
+          "title": "🚧 通行止め：運営が地図に線を付ける画面を作る（いまは DATABASE_URL で path を直接更新）",
+          "category": "実装",
+          "priority": "中",
+          "note": "方針A（線は運営が位置を確かめたものだけ）の運用に必要。disaster_road_closures.path（[[lat,lon],…]）・path_checked_by/at と、手での解除（clear_reason=operator）を防災MAPの⚙運営用か CiDAO 管理画面から入れられるようにする。手順は CLAUDE_HANDOFF.md の 2026-09-22 🚧 節。"
+        },
+        {
+          "due": "未定",
+          "title": "🚧 通行止め：印旛土木事務所の新着を情報源に加えるか決める（印西・白井・佐倉・酒々井・栄町の県道・国道464号）",
+          "category": "調査",
+          "priority": "中",
+          "note": "2026-09-22 調査で判明：印旛土木事務所（cs-inba）は通行規制を県の一覧とは別に自所の新着（/cs-inba/shinchaku.html）へ載せる（例：八千代印旛栄自転車道線の通行止め）。印西市内の国道464号も同事務所の管理。県の一覧（pl_6301/6302）に載らない規制を拾える可能性がある。規約は千葉県サイト共通（無断転用不可）なので事実だけ・出典リンクの方式で可。事業主の判断待ち。"
+        },
+        {
+          "due": "未定",
+          "title": "🚧 通行止め：うまく回ったら千葉県全域へ広げる（方針②）",
+          "category": "実装",
+          "priority": "低",
+          "status": "待ち",
+          "blockedBy": "印西市周辺で解除まで一巡し、運用に問題がないと事業主が判断すること",
+          "note": "2026-09-22 事業主決定②『まず印西市周辺、うまく回ったら県全域』。広げるときは road-closure-pref の config.areas を外す／千葉国道の routes を全路線に／周辺の市（柏・八千代・佐倉など）の通行止めページを情報源に追加（調査表は保管庫 cidao/2026-09-22_通行止め情報源の調査_規約と位置表記.md）。Vercel の Active CPU を見てから。"
         },
         {
           "due": "未定",
