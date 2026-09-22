@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-22",
+          "title": "通行止め：見たいものボタン・位置図リンク・線の位置合わせ検証（不採用）・取得失敗時の間隔修正 0.7時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js・index.html（プリセット closures『🚧 通行止め』・位置図リンク・線は引かない文言・版 20260922rc6）",
+            "C:/Repos/cidao/src/lib/disaster-road-closures.ts（印西市の位置図PDFのURLを raw.mapUrl に保存）",
+            "C:/Repos/cidao/src/app/api/disaster/road-closures/route.ts（mapUrl を配信）",
+            "C:/Repos/cidao/src/lib/disaster-timeline.ts（50分の間隔は成功時だけ記録）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md・site/admin/changelog.json",
+            "保管庫 cidao/2026-09-22_通行止め情報源の調査_規約と位置表記.md（決定と位置合わせの検証結果）"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "site 6d55d2e・50b70fd・c47d06e／cidao 488a699・49c8fef。事業主決定：見たいものボタン（A）→位置図リンク＋線の案（C）→自動で線（B）→2方式とも800m〜1kmずれて中止→半自動（A）→①吉田・岩戸線は位置図の道が地理院・OSMに無く合わず→最終的に線は引かない（C）。本番で位置図リンク2件・文言を確認。セッション累計 1.7h（調査0.2＋実装0.8＋本件0.7）。session: 15791c1c-7d6f-4b06-886c-e0b75e2e7e16 / output: 172,320 / cost: $42.60"
+        },
+        {
+          "date": "2026-09-22",
           "title": "通行止め（役所の発表）の常時表示と自動解除を実装・本番公開 0.8時間",
           "category": "実装",
           "outputs": [
@@ -6806,13 +6822,6 @@
           "status": "待ち",
           "blockedBy": "印西市が9/21の通行止め3件（師戸・江川線／吉田・岩戸線／山田・平賀線）の解除を発表すること",
           "note": "2026-09-22 実装。市が記事の題名を『…解除いたしました』に書き換える／まとめページ 0000022578 から消える で外れる設計だが実例未確認。解除が出たら disaster_road_closures の cleared_at・clear_reason と防災MAPの『24時間以内に解除』表示を確認する。外れなければ src/lib/disaster-road-closures.ts の scanInzai を直す。"
-        },
-        {
-          "due": "未定",
-          "title": "🚧 通行止め：運営が地図に線を付ける画面を作る（いまは DATABASE_URL で path を直接更新）",
-          "category": "実装",
-          "priority": "中",
-          "note": "方針A（線は運営が位置を確かめたものだけ）の運用に必要。disaster_road_closures.path（[[lat,lon],…]）・path_checked_by/at と、手での解除（clear_reason=operator）を防災MAPの⚙運営用か CiDAO 管理画面から入れられるようにする。手順は CLAUDE_HANDOFF.md の 2026-09-22 🚧 節。"
         },
         {
           "due": "未定",
