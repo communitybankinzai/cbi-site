@@ -1075,6 +1075,17 @@ details.layer-group .layer-group-body {
 .range-actions { display: flex; gap: 6px; margin-top: 8px; }
 .range-actions #range-apply { flex: 1; background: #16324f; border-color: #16324f; color: #fff; font-weight: 700; }
 .is-citizen-drawing .range-panel { display: none; }
+/* ⛰ 標高の断面図（2026-09-22）。地図の下側に重ねる */
+.profile-panel { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 1150; max-width: 680px; margin: 0 auto; padding: 8px 10px 10px; border: 1px solid #bac9d5; border-radius: 10px; background: #fff; box-shadow: 0 4px 18px rgba(15, 30, 60, .25); font-size: 12.5px; }
+.profile-panel[hidden] { display: none; }
+.profile-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.profile-head button { border: 0; background: #eef2f6; border-radius: 6px; width: 30px; height: 30px; font-size: 14px; cursor: pointer; }
+.profile-svg { display: block; width: 100%; height: auto; touch-action: none; }
+.profile-readout { margin: 4px 0 0; }
+.profile-readout span { color: #5a6675; font-size: 11px; }
+.profile-note { margin: 4px 0 0; color: #5a6675; font-size: 11px; line-height: 1.5; }
+.profile-btn { margin-top: 4px; padding: 4px 10px; border: 1px solid #6d4c41; border-radius: 8px; background: #fff; color: #6d4c41; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.citizen-road-editor[data-kind="profile"] #citizen-road-options, .citizen-road-editor[data-kind="profile"] .citizen-road-notice { display: none; }
 /* ⓘ 色の見方（期間パネルと同じ位置に出す） */
 .color-guide { width: min(360px, calc(100% - 16px)); line-height: 1.5; z-index: 1100; } /* 地図の＋−（z-index 1000）より上に出す */
 .color-guide .cg-lead { margin: 0 0 8px; }

@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260922rc1">
+    <link rel="stylesheet" href="./styles.css?v=20260922pf1">
   </head>
   <body>
     <div class="app-shell">
@@ -683,12 +683,18 @@
             <div class="quick-record-buttons">
               <button type="button" class="quick-record-btn is-blocked" id="quick-blocked-btn">🚫 通れない道を追加</button>
               <button type="button" class="quick-record-btn is-passed" id="quick-passed-btn">🔵 通れた道を追加</button>
+              <button type="button" class="quick-record-btn is-list" id="quick-profile-btn" aria-label="標高の断面図（道をなぞる）" title="道をなぞって標高の断面図を見る">⛰</button>
               <button type="button" class="quick-record-btn is-list" id="quick-list-btn" aria-label="記録の一覧（時間順）">📋</button>
             </div>
             <p class="quick-record-status" id="quick-record-status" role="status">地図の道をタップしてなぞる → 完了（GPS不要）</p>
             <p class="quick-undo" id="quick-undo" hidden></p>
             <div id="quick-geo-guide" hidden></div>
           </div>
+          <!-- ⛰ 標高の断面図（2026-09-22） -->
+          <section class="profile-panel" id="profile-panel" aria-label="標高の断面図" hidden>
+            <div class="profile-head"><strong id="profile-title">⛰ 標高の断面図</strong><button type="button" id="profile-close" aria-label="断面図を閉じる">✕</button></div>
+            <div id="profile-body"></div>
+          </section>
           <section class="citizen-road-editor" id="citizen-road-editor" aria-label="道路の記録" hidden>
             <div class="citizen-road-heading"><strong id="citizen-road-title">通れない道を赤く塗る</strong><span id="citizen-road-count">0点・約0m</span></div>
             <p id="citizen-road-status" role="status">道の始まりをタップしてください。</p>
@@ -1732,7 +1738,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260922rc7"></script>
+    <script src="./app.js?v=20260922pf1"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

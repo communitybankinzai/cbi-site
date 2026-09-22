@@ -5134,6 +5134,7 @@ function renderKansuiLayer() {
       `<span class="when-badge ${isToday ? "is-today" : "is-past"}">${isToday ? "対象日の投稿" : "過去の実績"}</span><br>` +
       `<span style="font-size:11px;">令和8年8月の豪雨などで冠水したと投稿された区間です。公式に確認された通行止めではありません。同じ雨で再び冠水するおそれがあるため、通行を避ける判断の参考にしてください。</span><br>` +
       `<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">出典・投稿はこちら: みんなでつくる千葉豪雨冠水道路マップ</a>` +
+      profileButtonHtml("kansui", road) +
       // 運営の合言葉がある端末だけ、いたずら・誤った投稿を CBI の地図から伏せるボタンを出す
       (moderationKey() && road.id != null
         ? `<br><button type="button" class="kansui-hide-btn" data-kansui-hide="${escapeAttribute(String(road.id))}">🗑 この投稿を地図から伏せる（運営）</button>`
@@ -5259,6 +5260,177 @@ const MAP_RECORD_MIN_ZOOM = 15;
 let mapRecordPopup = null;
 
 // 道路をタップしてなぞる。GPSの許可や長押しを必要としない市民向けの入口。
+
+// ⛰ 標高の断面図（2026-09-22）。国土地理院の標高タイル（DEM1A → DEM5A → DEM5B → DEM10B の順に値のあるもの）を
+// ブラウザで読み、線に沿って標高を取る。サーバー（CiDAO）は使わない。
+// 標高タイルは地面の高さで、アンダーパスの路面が正しく入っていないこともある。冠水する高さを示すものではない
+// 1m（航空レーザー）が最優先。地理院地図の断面図・標高APIと同じ並びで、アンダーパスのような細い窪みは1mでないと出ない
+// （北柏付近で 5m=4.74m に対し 1m=1.36m／地理院の標高API 1.4m を確認）
+const DEM_SOURCES = [
+  { url: "https://cyberjapandata.gsi.go.jp/xyz/dem1a_png/{z}/{x}/{y}.png", z: 17, label: "1mメッシュ（航空レーザー）" },
+  { url: "https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png", z: 15, label: "5mメッシュ（航空レーザー）" },
+  { url: "https://cyberjapandata.gsi.go.jp/xyz/dem5b_png/{z}/{x}/{y}.png", z: 15, label: "5mメッシュ（写真測量）" },
+  { url: "https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png", z: 14, label: "10mメッシュ" }
+];
+const demTileCache = new Map();
+const profileLayer = L.layerGroup();
+
+function demTile(source, x, y) {
+  const key = `${source.z}/${source.url}/${x}/${y}`;
+  if (!demTileCache.has(key)) {
+    demTileCache.set(key, new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = 256; canvas.height = 256;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          ctx.drawImage(img, 0, 0);
+          resolve(ctx.getImageData(0, 0, 256, 256).data);
+        } catch { resolve(null); }
+      };
+      img.onerror = () => resolve(null); // 海や測量のない場所はタイル自体が無い（404）
+      img.src = source.url.replace("{z}", source.z).replace("{x}", x).replace("{y}", y);
+    }));
+  }
+  return demTileCache.get(key);
+}
+
+// 標高PNGの値：R*65536 + G*256 + B。2^23 は「値なし」、2^23 を超えると負の値（0.01m単位）
+async function elevationAt(lat, lon) {
+  for (const source of DEM_SOURCES) {
+    const n = 2 ** source.z;
+    const fx = (lon + 180) / 360 * n * 256;
+    const rad = lat * Math.PI / 180;
+    const fy = (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * n * 256;
+    const data = await demTile(source, Math.floor(fx / 256), Math.floor(fy / 256));
+    if (!data) continue;
+    const i = ((Math.floor(fy) % 256) * 256 + (Math.floor(fx) % 256)) * 4;
+    const v = data[i] * 65536 + data[i + 1] * 256 + data[i + 2];
+    if (v === 8388608) continue;
+    return { h: (v < 8388608 ? v : v - 16777216) * 0.01, source: source.label };
+  }
+  return { h: null, source: "" };
+}
+
+// 線に沿って等間隔に点を取る（最短2m・最大1500点。1mのデータの細い窪みを見落とさないため）
+function samplePath(path) {
+  const cum = [0];
+  for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + passedRoadDistanceM(path[i - 1], path[i]));
+  const total = cum[cum.length - 1];
+  const step = Math.max(2, total / 1500);
+  const count = Math.max(1, Math.ceil(total / step));
+  const out = [];
+  let j = 0;
+  for (let k = 0; k <= count; k++) {
+    const d = Math.min(total, k * step);
+    while (j < cum.length - 2 && cum[j + 1] < d) j++;
+    const seg = cum[j + 1] - cum[j];
+    const r = seg ? (d - cum[j]) / seg : 0;
+    const a = path[j], b = path[j + 1];
+    out.push({ lat: a[0] + (b[0] - a[0]) * r, lon: a[1] + (b[1] - a[1]) * r, d });
+  }
+  return out;
+}
+
+function closeElevationProfile() {
+  document.getElementById("profile-panel")?.setAttribute("hidden", "");
+  profileLayer.clearLayers();
+  map.removeLayer(profileLayer);
+}
+
+async function showElevationProfile(path, title) {
+  if (!Array.isArray(path) || path.length < 2) return;
+  const panel = document.getElementById("profile-panel");
+  const body = document.getElementById("profile-body");
+  if (!panel || !body) return;
+  map.closePopup();
+  panel.hidden = false;
+  document.getElementById("profile-title").textContent = `⛰ 標高の断面図：${title}`;
+  body.innerHTML = `<p class="profile-note">標高を読み込み中…</p>`;
+  profileLayer.clearLayers();
+  profileLayer.addTo(map);
+  L.polyline(path, { color: "#6d4c41", weight: 4, opacity: .8, dashArray: "6 5", interactive: false }).addTo(profileLayer);
+
+  const samples = samplePath(path);
+  const values = await Promise.all(samples.map(s => elevationAt(s.lat, s.lon)));
+  samples.forEach((s, i) => { s.h = values[i].h; s.source = values[i].source; });
+  const valid = samples.filter(s => s.h !== null);
+  if (!valid.length) { body.innerHTML = `<p class="profile-note">この区間の標高データがありません（海の上など）。</p>`; return; }
+
+  const total = samples[samples.length - 1].d;
+  const min = valid.reduce((a, b) => (b.h < a.h ? b : a));
+  const max = valid.reduce((a, b) => (b.h > a.h ? b : a));
+  const lo = Math.floor(min.h - 1), hi = Math.ceil(max.h + 1);
+  const W = 640, H = 220, L0 = 44, R0 = 12, T0 = 12, B0 = 28;
+  const px = d => L0 + (total ? d / total : 0) * (W - L0 - R0);
+  const py = h => T0 + (hi - h) / (hi - lo || 1) * (H - T0 - B0);
+  let dLine = "", pen = false;
+  samples.forEach(s => {
+    if (s.h === null) { pen = false; return; }
+    dLine += `${pen ? "L" : "M"}${px(s.d).toFixed(1)},${py(s.h).toFixed(1)} `;
+    pen = true;
+  });
+  const area = `M${px(valid[0].d).toFixed(1)},${H - B0} ` + valid.map(s => `L${px(s.d).toFixed(1)},${py(s.h).toFixed(1)}`).join(" ") + ` L${px(valid[valid.length - 1].d).toFixed(1)},${H - B0} Z`;
+  const km = d => (d >= 1000 ? `${(d / 1000).toFixed(2)}km` : `${Math.round(d)}m`);
+  const sources = Array.from(new Set(valid.map(s => s.source))).join("・");
+  body.innerHTML = `
+    <svg class="profile-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="標高の断面図">
+      <rect x="${L0}" y="${T0}" width="${W - L0 - R0}" height="${H - T0 - B0}" fill="#f7f9fc" stroke="#d5dde6"/>
+      <path d="${area}" fill="rgba(109,76,65,.14)"/>
+      <path d="${dLine}" fill="none" stroke="#6d4c41" stroke-width="2.2"/>
+      <text x="${L0 - 6}" y="${py(hi) + 4}" text-anchor="end" font-size="11" fill="#5a6675">${hi}m</text>
+      <text x="${L0 - 6}" y="${py(lo) + 4}" text-anchor="end" font-size="11" fill="#5a6675">${lo}m</text>
+      <text x="${L0}" y="${H - 8}" font-size="11" fill="#5a6675">始</text>
+      <text x="${W - R0}" y="${H - 8}" text-anchor="end" font-size="11" fill="#5a6675">終 ${km(total)}</text>
+      <circle cx="${px(min.d)}" cy="${py(min.h)}" r="5" fill="#b8322c"/>
+      <text x="${Math.min(W - R0 - 4, Math.max(L0 + 4, px(min.d)))}" y="${Math.min(H - B0 - 6, py(min.h) + 18)}" text-anchor="middle" font-size="12" font-weight="700" fill="#b8322c">最低 ${min.h.toFixed(2)}m</text>
+      <line id="profile-cursor" x1="0" x2="0" y1="${T0}" y2="${H - B0}" stroke="#16324f" stroke-width="1" visibility="hidden"/>
+    </svg>
+    <p class="profile-readout" id="profile-readout">最低 <b>${min.h.toFixed(2)}m</b>（始点から${km(min.d)}）・最高 ${max.h.toFixed(2)}m・高低差 ${(max.h - min.h).toFixed(2)}m　<span>グラフをなぞると、その地点の標高が出ます</span></p>
+    <p class="profile-note">周りより低い場所を見つける参考です。<strong>冠水する高さを示すものではありません。</strong>標高は地面の高さで、アンダーパスの路面などは正しく入っていないことがあります。出典：国土地理院 標高タイル（${escapeHtml(sources)}）。始＝なぞり始めた側。</p>`;
+
+  const minMark = L.circleMarker([min.lat, min.lon], { radius: 7, color: "#fff", weight: 2, fillColor: "#b8322c", fillOpacity: 1, interactive: false }).addTo(profileLayer);
+  minMark.bindTooltip(`最低 ${min.h.toFixed(2)}m`, { permanent: true, direction: "top", offset: [0, -6] });
+  const cursorMark = L.circleMarker([samples[0].lat, samples[0].lon], { radius: 6, color: "#fff", weight: 2, fillColor: "#16324f", fillOpacity: 1, interactive: false });
+  const svg = body.querySelector(".profile-svg");
+  const readout = document.getElementById("profile-readout");
+  const baseReadout = readout.innerHTML;
+  const onMove = event => {
+    const rect = svg.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width * W;
+    const d = Math.max(0, Math.min(total, (x - L0) / (W - L0 - R0) * total));
+    const s = samples.reduce((a, b) => (Math.abs(b.d - d) < Math.abs(a.d - d) ? b : a));
+    const cursor = svg.querySelector("#profile-cursor");
+    cursor.setAttribute("x1", px(s.d)); cursor.setAttribute("x2", px(s.d)); cursor.setAttribute("visibility", "visible");
+    cursorMark.setLatLng([s.lat, s.lon]).addTo(profileLayer);
+    readout.innerHTML = `始点から${km(s.d)}：<b>${s.h === null ? "データなし" : `${s.h.toFixed(2)}m`}</b>（最低 ${min.h.toFixed(2)}m）`;
+  };
+  svg.addEventListener("pointermove", onMove);
+  svg.addEventListener("pointerdown", onMove);
+  svg.addEventListener("pointerleave", () => { readout.innerHTML = baseReadout; svg.querySelector("#profile-cursor").setAttribute("visibility", "hidden"); profileLayer.removeLayer(cursorMark); });
+}
+
+document.addEventListener("click", event => {
+  if (event.target.closest?.("#profile-close")) { closeElevationProfile(); return; }
+  const button = event.target.closest?.("[data-profile]");
+  if (!button) return;
+  const [type, id] = button.dataset.profile.split(":");
+  const road = type === "kansui"
+    ? kansuiData.find(r => String(r.id) === id)
+    : passedRoadsData.find(r => String(r.id) === id);
+  if (!road) return;
+  const label = type === "kansui" ? "冠水した道路（みんつくへの投稿）" : road.kind === "blocked" ? "通れない道" : "通れた道";
+  showElevationProfile(road.path, label);
+});
+
+function profileButtonHtml(type, road) {
+  return road?.path?.length > 1 && road.id != null
+    ? `<br><button type="button" class="profile-btn" data-profile="${type}:${escapeAttribute(String(road.id))}">⛰ この道の断面図（標高）</button>`
+    : "";
+}
+
 const citizenRoadDraft = { active: false, kind: "blocked", points: [], busy: false, retryAt: 0, timer: null, doubleClickZoom: true };
 const citizenRoadDraftLayer = L.layerGroup();
 
@@ -5276,14 +5448,14 @@ function updateCitizenRoadControls() {
   document.getElementById("citizen-road-cancel").disabled = draft.busy;
   const finish = document.getElementById("citizen-road-finish");
   finish.disabled = draft.busy || draft.points.length < 2 || remaining > 0;
-  finish.textContent = draft.busy ? "送信中…" : remaining ? `あと${remaining}秒` : `完了（${draft.kind === "blocked" ? "赤" : "青"}く塗る）`;
+  finish.textContent = draft.kind === "profile" ? "完了（断面図を見る）" : draft.busy ? "送信中…" : remaining ? `あと${remaining}秒` : `完了（${draft.kind === "blocked" ? "赤" : "青"}く塗る）`;
   document.querySelectorAll("#citizen-road-editor input, #citizen-road-editor select").forEach(node => { node.disabled = draft.busy; });
 }
 
 function drawCitizenRoadPreview() {
   citizenRoadDraftLayer.clearLayers();
   const { points, kind } = citizenRoadDraft;
-  const color = kind === "blocked" ? KANSUI_COLOR : "#1565c0";
+  const color = kind === "blocked" ? KANSUI_COLOR : kind === "profile" ? "#6d4c41" : "#1565c0";
   if (points.length > 1) L.polyline(points, { color, weight: 7, opacity: .9, dashArray: "8 6", interactive: false }).addTo(citizenRoadDraftLayer);
   points.forEach((point, index) => {
     L.marker(point, { interactive: false, icon: L.divIcon({ className: "citizen-road-point", html: `<span style="background:${color}">${index + 1}</span>`, iconSize: [26, 26], iconAnchor: [13, 13] }) }).addTo(citizenRoadDraftLayer);
@@ -5310,7 +5482,8 @@ function startCitizenRoadDrawing(kind) {
   map.closePopup();
   showGeoDeniedGuide(false);
   showMintsukuHint(false);
-  document.getElementById("citizen-road-title").textContent = kind === "blocked" ? "🚫 通れない道を赤く塗る" : "🔵 通れた道を青く塗る";
+  closeElevationProfile();
+  document.getElementById("citizen-road-title").textContent = kind === "blocked" ? "🚫 通れない道を赤く塗る" : kind === "profile" ? "⛰ 断面図を作る道をなぞる（記録はしません）" : "🔵 通れた道を青く塗る";
   document.getElementById("citizen-road-editor").hidden = false;
   document.getElementById("citizen-road-editor").dataset.kind = kind;
   document.getElementById("citizen-road-when").value = "0";
@@ -5360,12 +5533,19 @@ function closeCitizenRoadDrawing() {
   document.getElementById("map-pane").classList.remove("is-citizen-drawing");
   document.body.classList.remove("citizen-road-editing");
   scheduleMapResize();
-  document.getElementById(citizenRoadDraft.kind === "blocked" ? "quick-blocked-btn" : "quick-passed-btn").focus({ preventScroll: true });
+  document.getElementById(citizenRoadDraft.kind === "blocked" ? "quick-blocked-btn" : citizenRoadDraft.kind === "profile" ? "quick-profile-btn" : "quick-passed-btn")?.focus({ preventScroll: true });
 }
 
 async function finishCitizenRoadDrawing() {
   const draft = citizenRoadDraft;
   if (!draft.active || draft.busy || draft.points.length < 2 || draft.retryAt > Date.now()) return;
+  if (draft.kind === "profile") {
+    // 断面図は記録を送らない。線を残して断面図を開く
+    const path = draft.points.map(point => [...point]);
+    closeCitizenRoadDrawing();
+    showElevationProfile(path, "なぞった道");
+    return;
+  }
   const endedAt = new Date(Date.now() - Number(document.getElementById("citizen-road-when").value) * 60000).toISOString();
   draft.busy = true;
   updateCitizenRoadControls();
@@ -5603,6 +5783,7 @@ function blockedPointShape(road) {
       : "この地図を見ている人が通れなかった場所を記録したものです。公式の通行止めではありません。"}</span>` +
     rainVerdictHtml(road) +
     `<br><a href="${MINTSUKU_URL}" target="_blank" rel="noreferrer">みんつく千葉冠水マップにも投稿する ↗</a>` +
+    profileButtonHtml("passed", road) +
     passedRoadHideButtonHtml(road)
   );
   return marker;
@@ -5656,6 +5837,7 @@ function passedRoadShape(road) {
       ? "今回の大雨より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
       : "この地図を見ている人が通れた道を記録したものです。現在の安全や通行可否を保証するものではありません。"}</span>` +
     rainAmountHtml(road) +
+    profileButtonHtml("passed", road) +
     passedRoadHideButtonHtml(road)
   );
   return line;
@@ -6144,6 +6326,7 @@ function initPassedRoadRecorder() {
   document.getElementById("quick-passed-btn")?.addEventListener("click", () => startCitizenRoadDrawing("passed"));
   document.getElementById("blocked-point-record-btn")?.addEventListener("click", recordBlockedPoint);
   document.getElementById("quick-blocked-btn")?.addEventListener("click", () => startCitizenRoadDrawing("blocked"));
+  document.getElementById("quick-profile-btn")?.addEventListener("click", () => startCitizenRoadDrawing("profile"));
   document.querySelectorAll("[data-draw-citizen-road]").forEach(button => button.addEventListener("click", () => startCitizenRoadDrawing(button.dataset.drawCitizenRoad)));
   document.getElementById("citizen-road-back").addEventListener("click", () => {
     if (citizenRoadDraft.busy) return;
