@@ -6037,7 +6037,9 @@ async function ensurePassedRoadsLayer(force) {
   if (!endpoint) { setPassedRoadsStatus("配信先が設定されていません", true); return; }
   setPassedRoadsStatus("読み込み中");
   try {
-    const response = await fetch(endpoint, { headers: { Accept: "application/json" }, cache: "no-store" });
+    // 一般向けの配信は Vercel 側で15秒保存される（2026-09-22）。記録・修正の直後（force）は保存を飛ばして最新を取る
+    const url = force ? `${endpoint}${endpoint.includes("?") ? "&" : "?"}t=${Date.now()}` : endpoint;
+    const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     const roads = (payload.roads || []).filter(road => Array.isArray(road.path) && road.path.length >= 1);
