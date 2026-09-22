@@ -4038,7 +4038,9 @@ function roadClosureSourceName(label) {
 }
 
 function roadClosureName(item) {
-  const road = item.road || "道路";
+  // 路線名の無い件（佐倉市のマイマップなど）は場所だけを出す
+  if (!item.road) return item.place || "道路";
+  const road = item.road;
   return item.place ? `${road}（${item.place}）` : road;
 }
 
@@ -4099,7 +4101,7 @@ function renderRoadClosures() {
       : "役所が発表中の通行止めはありません";
   }
 
-  const rows = active.map(item => {
+  const rowOf = item => {
     // 役所が期間を示している件（印旛土木事務所の工事など）はその終わりまで、無ければ解除の発表まで
     const until = item.periodEnd ? `${roadClosureTime(item.periodEnd)}（予定）` : "解除の発表まで";
     const period = item.publishedAt ? `${roadClosureTime(item.publishedAt)}〜${until}` : `発表日不明〜${until}`;
@@ -4111,7 +4113,18 @@ function renderRoadClosures() {
       // 線の無い件は、役所の位置図（区間を赤線で描いた地図）で場所を見てもらう
       (item.mapUrl ? `<br><a href="${escapeAttribute(item.mapUrl)}" target="_blank" rel="noreferrer">📍 位置図（${escapeHtml(roadClosureSourceName(item.sourceLabel))}のPDF） ↗</a>` : "") +
       `</li>`;
+  };
+  // 情報源ごとにまとめる。件数の多い情報源（佐倉市のマイマップは50件以上）は畳んで件数だけ見せる
+  const groups = new Map();
+  active.forEach(item => {
+    const name = roadClosureSourceName(item.sourceLabel);
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(item);
   });
+  const rows = [...groups.entries()].map(([name, items]) =>
+    `<details class="road-closure-group"${items.length <= 5 ? " open" : ""}><summary>${escapeHtml(name)} ${items.length}件</summary>` +
+    `<ul class="road-closure-items">${items.map(rowOf).join("")}</ul></details>`
+  );
   const clearedRows = cleared.map(item =>
     `<li>${escapeHtml(roadClosureName(item))}：${escapeHtml(roadClosureTime(item.clearedAt, true))}に${item.clearReason === "announced" ? "解除の発表" : item.clearReason === "operator" ? "運営が解除" : "掲載終了で解除"}` +
     (item.url ? ` <a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典 ↗</a>` : "") + `</li>`
@@ -4121,7 +4134,7 @@ function renderRoadClosures() {
 
   listEl.innerHTML =
     (rows.length
-      ? `<ul class="road-closure-items">${rows.join("")}</ul>`
+      ? rows.join("")
       : `<p class="road-closure-empty">役所の発表で、いま通行止めになっている道はありません。<br>（発表されていない通行止めがあることもあります）</p>`) +
     (clearedRows.length ? `<details class="road-closure-cleared"><summary>24時間以内に解除 ${clearedRows.length}件</summary><ul>${clearedRows.join("")}</ul></details>` : "") +
     (failed.length ? `<p class="road-closure-warn">⚠ 前回 ${failed.map(s => escapeHtml(s.label)).join("・")} を読めませんでした。出典のページで確認してください。</p>` : "") +

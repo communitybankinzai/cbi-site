@@ -3568,3 +3568,6 @@ body.citizen-road-editing { overflow: hidden; }
 .road-closure-cleared summary { cursor: pointer; }
 .road-closure-warn { margin: 6px 0 0; color: #9a3412; }
 .road-closure-note { margin: 6px 0 0; font-size: 11px; color: #57606a; }
+.road-closure-group { margin-bottom: 6px; }
+.road-closure-group > summary { cursor: pointer; font-weight: 700; color: #8a1f1a; }
+.road-closure-group > ul { margin-top: 4px; }
