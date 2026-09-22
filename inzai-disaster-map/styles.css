@@ -1075,6 +1075,20 @@ details.layer-group .layer-group-body {
 .range-actions { display: flex; gap: 6px; margin-top: 8px; }
 .range-actions #range-apply { flex: 1; background: #16324f; border-color: #16324f; color: #fff; font-weight: 700; }
 .is-citizen-drawing .range-panel { display: none; }
+/* 🔍 場所をさがす（2026-09-23） */
+.place-panel input[type="search"] { width: 100%; box-sizing: border-box; font-size: 16px; }
+.place-note { margin: 6px 0 4px; color: #55637a; font-size: 11.5px; }
+.place-results { display: grid; gap: 4px; max-height: 46vh; overflow-y: auto; }
+.place-results:empty { display: none; }
+.place-hit {
+  display: block; width: 100%; text-align: left; min-height: 40px;
+  padding: 7px 9px; border: 1px solid #ccd6e2; border-radius: 8px;
+  background: #fff; color: #16324f; font: inherit; font-size: 12.5px; cursor: pointer;
+}
+.place-hit:hover { background: #eef4fb; }
+.place-hit .ph-sub { display: block; margin-top: 2px; color: #667586; font-size: 11px; }
+.place-group { margin: 6px 0 2px; color: #55637a; font-size: 11px; font-weight: 700; }
+.place-pin { font-size: 22px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
 /* 待機中（公開レイヤー接続済み…）の帯は隠す（2026-09-23） */
 .map-status.is-idle { display: none; }
 /* 🚇 冠水に注意するアンダーパス等：位置が町丁目までしか分からないものは薄く */

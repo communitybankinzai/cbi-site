@@ -1843,6 +1843,7 @@ initHelpGuide();
 initMapLegend();
 initRecordRange();
 initMapStatusAutoHide();
+initPlaceSearch();
 initColorGuide();
 initModeration();
 scheduleMapResize();
@@ -6927,6 +6928,175 @@ function initColorGuide() {
     if (event.target.closest("#color-guide") || event.target.closest("#legend-colors")) return;
     panel.hidden = true;
     chip.setAttribute("aria-pressed", "false");
+  });
+}
+
+
+// ============================================================
+// 🔍 場所をさがす（2026-09-23）
+// 「報告のあった冠水場所を探すのが大変」（中司さん）への対応。
+//   ・地名／駅／施設名 → 国土地理院の住所検索（CORS 可・費用0）で座標を得て地図を動かす
+//   ・記録のメモ、アンダーパスの名前、避難所の名前 → この画面が持っているデータから探す
+// 飛んだ先では、半径500mにある記録の件数を地図上端の帯に出す（探す手間を減らすため）。
+// ============================================================
+const PLACE_SEARCH_URL = "https://msearch.gsi.go.jp/address-search/AddressSearch?q=";
+const PLACE_NEAR_RADIUS_M = 500;
+let placeSearchMarker = null;
+let placeSearchTimer = null;
+let placeSearchSeq = 0;
+
+function metersBetween(aLat, aLon, bLat, bLon) {
+  const dLat = (bLat - aLat) * 111320;
+  const dLon = (bLon - aLon) * 111320 * Math.cos((aLat * Math.PI) / 180);
+  return Math.hypot(dLat, dLon);
+}
+
+function nearbyRecordCounts(lat, lon, radius = PLACE_NEAR_RADIUS_M) {
+  const counts = { blocked: 0, passed: 0, kansui: 0 };
+  const hit = path => Array.isArray(path)
+    && path.some(point => metersBetween(lat, lon, Number(point[0]), Number(point[1])) <= radius);
+  (passedRoadsData || []).forEach(road => {
+    if (!hit(road.path)) return;
+    if (passedRoadKindOf(road) === "blocked") counts.blocked += 1;
+    else counts.passed += 1;
+  });
+  (kansuiData || []).forEach(road => { if (hit(road.path)) counts.kansui += 1; });
+  return counts;
+}
+
+function jumpToPlace(lat, lon, label) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+  userMovedMap = true;   // 検索で動かした後は、初期表示の自動あわせを止める
+  map.flyTo([lat, lon], Math.max(map.getZoom(), 16), { duration: 0.6 });
+  if (placeSearchMarker) map.removeLayer(placeSearchMarker);
+  placeSearchMarker = L.marker([lat, lon], {
+    icon: L.divIcon({ className: "", html: '<div class="place-pin" aria-hidden="true">📍</div>', iconSize: [26, 26], iconAnchor: [13, 24] }),
+    zIndexOffset: 1000,
+  }).addTo(map);
+  const c = nearbyRecordCounts(lat, lon);
+  const near = (c.blocked + c.passed + c.kansui)
+    ? `半径${PLACE_NEAR_RADIUS_M}m：通れない道 ${c.blocked + c.kansui}件・通れた道 ${c.passed}件`
+    : `半径${PLACE_NEAR_RADIUS_M}m に記録はありません`;
+  placeSearchMarker.bindPopup(`<strong>${escapeHtml(label)}</strong><br><span style="font-size:11.5px;">${escapeHtml(near)}</span>`).openPopup();
+  const status = document.getElementById("map-status");
+  if (status) status.textContent = `🔍 ${label}　${near}`;
+}
+
+function placeHitHtml(item) {
+  return `<button type="button" class="place-hit" data-place-lat="${item.lat}" data-place-lon="${item.lon}"` +
+    (item.roadId != null ? ` data-place-road="${escapeAttribute(String(item.roadId))}"` : "") +
+    ` data-place-label="${escapeAttribute(item.label)}">${escapeHtml(item.label)}` +
+    (item.sub ? `<span class="ph-sub">${escapeHtml(item.sub)}</span>` : "") + `</button>`;
+}
+
+function searchLocalRecords(query) {
+  const q = query.toLowerCase();
+  const hits = [];
+  (passedRoadsData || []).forEach(road => {
+    const note = String(road.note || "");
+    if (!note.toLowerCase().includes(q)) return;
+    const kind = passedRoadKindOf(road) === "blocked" ? "🚫 通れない道" : "🔵 通れた道";
+    const mid = road.path?.[Math.floor((road.path.length - 1) / 2)];
+    if (!mid) return;
+    hits.push({ label: `${kind}　${note}`, sub: formatDateTime(toDateTimeLocal(road.endedAt)) || "",
+                lat: Number(mid[0]), lon: Number(mid[1]), roadId: road.id });
+  });
+  (typeof roadFloodSites !== "undefined" ? roadFloodSites : []).forEach(site => {
+    const text = `${site.name} ${site.city} ${site.route}`.toLowerCase();
+    if (!text.includes(q)) return;
+    hits.push({ label: `🚇 ${site.name}`, sub: `${site.city}　${site.route}`, lat: site.lat, lon: site.lng });
+  });
+  (shelterPayload?.shelters || []).forEach(shelter => {
+    const text = `${shelter.name || ""} ${shelter.address || ""}`.toLowerCase();
+    if (!text.includes(q)) return;
+    const lat = Number(shelter.latitude), lon = Number(shelter.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+    hits.push({ label: `🏫 ${shelter.name}`, sub: shelter.address || "避難所", lat, lon });
+  });
+  return hits.slice(0, 8);
+}
+
+async function searchPlaceNames(query) {
+  const response = await fetch(PLACE_SEARCH_URL + encodeURIComponent(query), { headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const rows = await response.json();
+  const seen = new Set();
+  return (Array.isArray(rows) ? rows : [])
+    .map(row => ({
+      label: String(row?.properties?.title || "").trim(),
+      lat: Number(row?.geometry?.coordinates?.[1]),
+      lon: Number(row?.geometry?.coordinates?.[0]),
+    }))
+    .filter(item => item.label && Number.isFinite(item.lat) && Number.isFinite(item.lon))
+    .filter(item => (seen.has(item.label) ? false : seen.add(item.label)))
+    // 千葉県のものを先に（同じ地名が全国にあるため）
+    .sort((a, b) => Number(b.label.startsWith("千葉県")) - Number(a.label.startsWith("千葉県")))
+    .slice(0, 8);
+}
+
+async function runPlaceSearch(query) {
+  const results = document.getElementById("place-results");
+  const note = document.getElementById("place-note");
+  if (!results) return;
+  const seq = ++placeSearchSeq;
+  const local = searchLocalRecords(query);
+  let html = local.length ? `<p class="place-group">この地図の記録</p>${local.map(placeHitHtml).join("")}` : "";
+  results.innerHTML = html + `<p class="place-group">地名をさがしています…</p>`;
+  let places = [];
+  let failed = "";
+  try {
+    places = await searchPlaceNames(query);
+  } catch (error) {
+    failed = error?.message || "接続エラー";
+  }
+  if (seq !== placeSearchSeq) return;   // もっと新しい入力がある
+  html += places.length
+    ? `<p class="place-group">地名・施設（国土地理院）</p>${places.map(placeHitHtml).join("")}`
+    : `<p class="place-group">${failed ? `地名をさがせませんでした（${escapeHtml(failed)}）` : "地名は見つかりませんでした"}</p>`;
+  results.innerHTML = html;
+  if (note) note.textContent = `「${query}」の結果です。押すとその場所へ地図が動きます。`;
+}
+
+function initPlaceSearch() {
+  const panel = document.getElementById("place-panel");
+  const chip = document.getElementById("legend-place");
+  const input = document.getElementById("place-search-input");
+  const results = document.getElementById("place-results");
+  if (!panel || !chip || !input || !results) return;
+
+  const close = () => { panel.hidden = true; chip.setAttribute("aria-pressed", "false"); };
+  chip.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    chip.setAttribute("aria-pressed", panel.hidden ? "false" : "true");
+    document.getElementById("color-guide")?.setAttribute("hidden", "");
+    if (!panel.hidden) input.focus();
+  });
+  document.addEventListener("click", event => {
+    if (panel.hidden) return;
+    if (event.target.closest("#place-panel") || event.target.closest("#legend-place")) return;
+    close();
+  });
+  input.addEventListener("input", () => {
+    const query = input.value.trim();
+    window.clearTimeout(placeSearchTimer);
+    if (query.length < 2) { results.innerHTML = ""; placeSearchSeq += 1; return; }
+    placeSearchTimer = window.setTimeout(() => runPlaceSearch(query), 320);
+  });
+  input.addEventListener("keydown", event => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    results.querySelector(".place-hit")?.click();
+  });
+  results.addEventListener("click", event => {
+    const button = event.target.closest(".place-hit");
+    if (!button) return;
+    const roadId = button.dataset.placeRoad;
+    if (roadId) {
+      focusPassedRoad(roadId);
+    } else {
+      jumpToPlace(Number(button.dataset.placeLat), Number(button.dataset.placeLon), button.dataset.placeLabel || "");
+    }
+    close();
   });
 }
 

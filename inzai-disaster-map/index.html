@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260923b">
+    <link rel="stylesheet" href="./styles.css?v=20260923d">
   </head>
   <body>
     <div class="app-shell">
@@ -651,6 +651,15 @@
             <button type="button" class="legend-chip is-when" data-when="past" aria-pressed="true" title="対象日より前の記録。薄く細く描いています">過去の実績</button>
             <button type="button" class="legend-chip is-range" id="legend-range" aria-pressed="false" title="記録を好きな期間でしぼり込む">⏱ 期間</button>
             <button type="button" class="legend-chip is-range" id="legend-colors" aria-pressed="false" aria-controls="color-guide" title="線や点の色の濃さが何を表しているか">ⓘ 色の見方</button>
+            <button type="button" class="legend-chip is-range" id="legend-place" aria-pressed="false" aria-controls="place-panel" title="地名や施設名で地図を動かす。記録のメモもさがせる">🔍 場所をさがす</button>
+          </div>
+
+          <!-- 🔍 場所をさがす（2026-09-23）。「報告のあった冠水場所を探すのが大変」（中司さん）への対応。
+               地名は国土地理院の住所検索、記録はこの画面が持っているデータから探す -->
+          <div class="range-panel place-panel" id="place-panel" hidden>
+            <input type="search" id="place-search-input" placeholder="地名・駅・施設名（例：吉高、木下駅）" autocomplete="off" enterkeyhint="search" aria-label="場所をさがす">
+            <p class="place-note" id="place-note">地名を入れるとその場所へ地図が動き、近くの記録の件数が出ます。記録のメモも一緒にさがします。</p>
+            <div class="place-results" id="place-results"></div>
           </div>
 
           <!-- ⓘ 色の見方（2026-09-22）。色の濃さが「新しさ」を表していることが利用者に伝わらないため -->
@@ -1739,7 +1748,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260923c"></script>
+    <script src="./app.js?v=20260923d"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

@@ -1,3 +1,10 @@
+## 2026-09-23 🔍 場所をさがす
+
+- 凡例の `🔍 場所をさがす`（`#legend-place` → `#place-panel`）。中身は app.js の `initPlaceSearch()`。
+- 地名は国土地理院 `https://msearch.gsi.go.jp/address-search/AddressSearch?q=`。**Origin を付けたときだけ `Access-Control-Allow-Origin: *` が返る**ので、ブラウザから直接呼べる（サーバーを挟む必要はない）。
+- 記録側は `passedRoadsData` のメモ、`roadFloodSites`、`shelterPayload.shelters` を見る。みんつくの投稿は本文を持っていないので語では探せない（場所で飛んだ先の件数には入る）。
+- 飛んだ先の件数は `nearbyRecordCounts()`（半径500m）。表示の絞り込みに関係なく数えている。
+
 # 印西市 災害状況整合MAP 引継ぎ
 
 最終更新: 2026-08-23
