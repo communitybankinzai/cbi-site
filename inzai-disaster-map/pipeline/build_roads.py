@@ -53,7 +53,39 @@ def klass(lat, lon):
         return 2
     return 3
 
-raw = json.load(io.open(SCR + r'\osm_roads_raw.json', encoding='utf-8'))
+def simplify(points, tol):
+    """Douglas-Peucker で、向きがほとんど変わらない点を落とす（端の2点は必ず残す）。
+    範囲を広げて点が43万個になり、そのままでは道路ファイルが重くなるため入れた（2026-09-23）。"""
+    if len(points) <= 2:
+        return points
+    keep = [False] * len(points)
+    keep[0] = keep[-1] = True
+    stack = [(0, len(points) - 1)]
+    while stack:
+        a, b = stack.pop()
+        if b <= a + 1:
+            continue
+        ax, ay = points[a][1], points[a][0]
+        bx, by = points[b][1], points[b][0]
+        dx, dy = bx - ax, by - ay
+        den = math.hypot(dx, dy)
+        best, bi = -1.0, -1
+        for i in range(a + 1, b):
+            px, py = points[i][1], points[i][0]
+            d = (math.hypot(px - ax, py - ay) if den == 0
+                 else abs(dy * px - dx * py + bx * ay - by * ax) / den)
+            if d > best:
+                best, bi = d, i
+        if best > tol and bi > 0:
+            keep[bi] = True
+            stack.append((a, bi))
+            stack.append((bi, b))
+    return [p for p, k in zip(points, keep) if k]
+
+
+TOLERANCE_DEG = 4.0 / 111000.0  # 約4m
+
+raw = json.load(io.open(os.path.join(SCR, 'osm_roads_raw.json'), encoding='utf-8'))
 ways = [e for e in raw.get('elements', [])
         if e.get('type') == 'way' and e.get('geometry')
         and (e.get('tags') or {}).get('highway') in KEEP]
@@ -66,7 +98,7 @@ nodes_in = 0
 for w in ways:
     geo = w['geometry']
     nodes_in += len(geo)
-    pts = [(p['lat'], p['lon']) for p in geo]
+    pts = simplify([(p['lat'], p['lon']) for p in geo], TOLERANCE_DEG)
     ks = [klass(la, lo) for la, lo in pts]
     # 区分が変わる所で線を切る（切れ目の点は両方の線に入れて隙間を作らない）
     start = 0

@@ -106,7 +106,7 @@
               <label><input type="checkbox" data-overlay="boundary" checked> 印西市境界</label>
               <label><input type="checkbox" data-overlay="records"> 被害・確認候補</label>
               <label class="has-tip"><input type="checkbox" data-overlay="maskCity"> <span class="layer-name">⬜ 印西市の外を伏せる</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>印西市の外側に薄い幕をかけて、市域だけが見えるようにします。</p><p><strong>市外にデータが無いという意味ではありません。</strong>となりの市の浸水想定や避難所も実際には表示できます。見やすさのために伏せているだけです。</p></span></span></label>
-              <label class="has-tip"><input type="checkbox" data-overlay="maskRect"> <span class="layer-name">⬜ 計算範囲（四角）の外を伏せる</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>「CBI独自シミュレーション」と「地形の冠水リスク」は、市境ではなく<strong>四角い範囲</strong>で計算しています（北緯35.718〜35.912／東経140.068〜140.322）。</p><p>この四角の外側を伏せて、どこまでが計算した範囲かをはっきりさせます。<strong>四角の辺は地形の境目ではなく、計算を打ち切った線です。</strong></p></span></span></label>
+              <label class="has-tip"><input type="checkbox" data-overlay="maskRect"> <span class="layer-name">⬜ 計算範囲（四角）の外を伏せる</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>「CBI独自シミュレーション」と「地形の冠水リスク」は、市境ではなく<strong>四角い範囲</strong>で計算しています（北緯35.640〜35.930／東経139.980〜140.400）。2026-09-23 に印西市だけの範囲から、白井市・八千代市・佐倉市・酒々井町・成田市西部・栄町・利根川の南側までへ広げました。</p><p>この四角の外側を伏せて、どこまでが計算した範囲かをはっきりさせます。<strong>四角の辺は地形の境目ではなく、計算を打ち切った線です。</strong></p></span></span></label>
 
               <details class="layer-group" open>
                 <summary>🌊 浸水・土砂の想定区域</summary>
@@ -1739,7 +1739,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260923b"></script>
+    <script src="./app.js?v=20260923c"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

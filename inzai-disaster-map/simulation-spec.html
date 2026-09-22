@@ -76,8 +76,9 @@ li{margin:5px 0}
 
 <h3>3.1 格子</h3>
 <p>
-標高タイルの画素を、各セルに入るぶんだけ平均して集約します。格子は <strong>283列 × 266行</strong>、範囲は南西 (35.717910, 140.067782)、北東 (35.911679, 140.322005) の<strong>矩形</strong>です。
-行政界ではないため、白井市・栄町・成田市など隣接自治体を含みます。<strong>有効セルは75,278（欠測なし）</strong>。
+標高タイルの画素を、各セルに入るぶんだけ平均して集約します。格子は <strong>468列 × 398行</strong>、範囲は南西 (35.640000, 139.980000)、北東 (35.930033, 140.400412) の<strong>矩形</strong>です。
+行政界ではないため、白井市・八千代市・佐倉市・四街道市・酒々井町・成田市・栄町・印旛沼周辺など、印西市の周りの市町を含みます。<strong>有効セルは184,912／186,264（99.3%）</strong>。
+（2026-09-23 に範囲を広げました。それ以前は印西市を囲む 283列 × 266行・南西 (35.717910, 140.067782)〜北東 (35.911679, 140.322005) でした。四角の外へ出ると道路の色分けが消えてしまい、隣の市へ抜ける道を見られなかったためです。）
 格子は Web メルカトル（EPSG:3857）で 1セル＝メルカトル上の100 m。<strong>地上では約81 m</strong>にあたるため、
 面積・距離・傾斜は行ごとの縮尺係数 cos(φ) を掛けて地上値に直して計算しています。
 </p>
@@ -86,7 +87,7 @@ li{margin:5px 0}
 <ul>
   <li><strong>窪地埋め</strong>：Priority-Flood。埋める前後の標高差を「窪地深さ（<code>depression_depth</code>, m）」として保持します。単純に埋めると窪地の跡が完全に平坦になり D8 が下流を選べなくなるため、流下計算には内側へ進むごとに 1×10⁻⁵ m を足した ε 版の標高を使います（Barnes ほか）。窪地深さは ε を足さない方から求めます。</li>
   <li><strong>流向</strong>：D8（8方向の最急勾配1方向へ流す）。</li>
-  <li><strong>流量</strong>：上流から流れ込むセルの<strong>地上面積</strong>の積算（<code>flow_accumulation_m2</code>, m²）。1セルは約6,560〜6,592 m²。</li>
+  <li><strong>流量</strong>：上流から流れ込むセルの<strong>地上面積</strong>の積算（<code>flow_accumulation_m2</code>, m²）。1セルは約6,557〜6,605 m²。</li>
   <li><strong>相対標高</strong>（<code>relative_elevation</code>, m）：<strong>半径3セル（地上 約240 m）の円形近傍の平均</strong>との差。負が「周りより低い」。</li>
   <li><strong>傾斜</strong>（<code>slope</code>, 度）：Horn 法（3×3）。地上セル寸法で除算します。</li>
 </ul>
@@ -176,7 +177,7 @@ E = max( 0, R × C − D ) × T<br>
 <p>
 現在の版では、格子は Web メルカトルのまま（表示の重ね位置を変えないため）で、
 <strong>面積・距離・傾斜の計算時に行ごとの縮尺係数 cos(φ) を掛けて地上値に直しています</strong>。
-1セルの地上面積は6,560〜6,592 m²です。UTM へ移さなかったのは、この地域では子午線収差により最大約100 mの回転ずれが生じ、
+1セルの地上面積は6,557〜6,605 m²です（広げる前の範囲では6,560〜6,592 m²）。UTM へ移さなかったのは、この地域では子午線収差により最大約100 mの回転ずれが生じ、
 地図への重ね合わせが崩れるためです。
 </p>
 <p style="margin-bottom:0">
@@ -272,7 +273,7 @@ E = max( 0, R × C − D ) × T<br>
 
 <h2>8. 再現と照会</h2>
 <ul>
-  <li>格子データ：<a href="./simulation-data/map_grid.json">map_grid.json</a>（283×266、score／elevation／slope／depression_depth／flow_accumulation_m2／relative_elevation）</li>
+  <li>格子データ：<a href="./simulation-data/map_grid.json">map_grid.json</a>（468×398、score／elevation／slope／depression_depth／flow_accumulation_m2／relative_elevation）</li>
   <li>パラメータと生成日時：<a href="./simulation-data/status.json">status.json</a>（※ 6.1 の食い違いに注意）</li>
   <li>標高データの取得元・チェックサム：<a href="./simulation-data/sources.json">sources.json</a></li>
   <li>道路の色分けデータ：<a href="./simulation-data/road_risk.json">road_risk.json</a></li>

@@ -1742,7 +1742,7 @@ const landslideGroup = L.layerGroup([
 // 穴あきポリゴンは L.polygon([外周, 穴]) で作れる（SVG の evenodd 塗り）。
 const WORLD_RING = [[-89.9, -359.9], [-89.9, 359.9], [89.9, 359.9], [89.9, -359.9]];
 // simulation-data/status.json の area.bounding_box と同じ値。変えるときは両方直すこと。
-const SIM_BOUNDS = { north: 35.911678605516755, south: 35.71790967909823, east: 140.322004928388, west: 140.06778170298216 };
+const SIM_BOUNDS = { north: 35.93003327846164, south: 35.64, east: 140.4004115529679, west: 139.98 };
 const MASK_STYLE = { stroke: false, fillColor: "#f2f6f8", fillOpacity: 0.86, interactive: false, pane: "maskPane" };
 const maskRectLayer = L.polygon([
   WORLD_RING,
@@ -5914,7 +5914,7 @@ async function ensureTerrainRiskLayer() {
     status.textContent = text;
     status.classList.toggle("is-error", Boolean(isError));
   };
-  setStatus("読み込み中（約0.5MB）");
+  setStatus("読み込み中（約1.9MB）");
   try {
     if (!map.getPane("terrainRiskPane")) {
       const pane = map.createPane("terrainRiskPane");
@@ -6005,7 +6005,7 @@ async function ensureRoadRiskLayer() {
     status.textContent = text;
     status.classList.toggle("is-error", Boolean(isError));
   };
-  setStatus("読み込み中（約0.4MB）");
+  setStatus("読み込み中（約0.6MB）");
   try {
     const response = await fetch("./simulation-data/road_risk.json", { headers: { Accept: "application/json" } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
