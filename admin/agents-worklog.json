@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-09-22",
+          "title": "通行止め：佐倉市マイマップ追加・巡回の時間切れ対策（通行止めを別の定期実行へ分離）0.5時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/src/lib/disaster-road-closures.ts（scanMyMap・parseKml）",
+            "C:/Repos/cidao/src/lib/disaster-timeline.ts（巡回から road-closure-* を外し runRoadClosures を新設）",
+            "C:/Repos/cidao/src/app/api/disaster/road-closures/route.ts（POST で読み直し）",
+            "C:/Repos/cidao/src/lib/__tests__/disaster-road-closures.test.ts（19件成功）",
+            "本番DB：情報源『通行止め：佐倉市』登録・pg_cron cidao_road_closures（毎時5分）新設",
+            "site/inzai-disaster-map/app.js・index.html・styles.css（一覧を情報源ごとにまとめる・版 rc9）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md・site/admin/changelog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "cidao 5f21e57・1eff3b2／site 38eb01b・46e5caf。f423f041 経由の事業主指示で佐倉市を追加→22:20の巡回が60秒超で打ち切り（今日の通行止め追加が原因）→佐倉市を一時無効化して分離→22:33 手動実行で佐倉市56件取込（23秒）・22:40の巡回は32秒で完走を確認。事業主決定：佐倉市の線は出さない／Threadsの迂回路は通れた道として f423f041 へ依頼。画面での確認は内蔵ブラウザが開けず未実施（本番の app.js 入れ替わりは確認）。session: 15791c1c-7d6f-4b06-886c-e0b75e2e7e16 / output: 240,813 / cost: $82.00"
+        },
+        {
+          "date": "2026-09-22",
           "title": "防災MAP 標高の断面図・避難所と避難指示の判定修正・通行止めの代理登録・お礼投稿2通目 0.8時間",
           "category": "実装",
           "outputs": [
