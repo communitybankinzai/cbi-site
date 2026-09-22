@@ -2049,6 +2049,13 @@ const PRESETS = {
     openGroups: ["🏫"],
     focus: "layer-panel"
   },
+  // 役所が発表した通行止め。場所の文章しかないので、左の一覧まで移動して見せる（2026-09-22 事業主指示）
+  closures: {
+    label: "通行止め",
+    on: ["boundary", "roadClosures"],
+    openGroups: ["🏫"],
+    focus: "#road-closures-list"
+  },
   landslide: {
     label: "土砂災害",
     on: ["boundary", "records", "landslide", "landslideWarning", "landslideSpecial"],
@@ -2094,6 +2101,13 @@ function applyPreset(name) {
     if (target) panel.scrollTop = target.offsetTop - panel.offsetTop - 8;
   } else if (preset.focus === "layer-panel") {
     panel.scrollTop = 0;
+  } else if (preset.focus?.startsWith("#")) {
+    // 一覧は読み込み後に高さが変わるので、少し待ってから寄せる（PCは左パネルの中、スマホはページごと）
+    // 初回は読み込みが終わるまで一覧が隠れているので、そのときは真上のチェックの行へ寄せる（一覧はその下に開く）
+    setTimeout(() => {
+      const el = document.querySelector(preset.focus);
+      (el?.hidden ? el.previousElementSibling : el)?.scrollIntoView({ block: "start" });
+    }, 600);
   }
 }
 
