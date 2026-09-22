@@ -4101,7 +4101,8 @@ function renderRoadClosures() {
 
   const rows = active.map(item => {
     const period = item.publishedAt ? `${roadClosureTime(item.publishedAt)}〜解除の発表まで` : "発表日不明〜解除の発表まで";
-    const onMap = Array.isArray(item.path) && item.path.length >= 2 ? "地図に線あり" : "位置は未確認（線なし）";
+    // 線は引かない運用（2026-09-22 事業主決定C）。場所は役所の位置図か出典で見てもらう
+    const onMap = Array.isArray(item.path) && item.path.length >= 2 ? "地図に線あり" : item.mapUrl ? "場所は位置図で確認" : "場所は出典で確認";
     return `<li><strong>${escapeHtml(roadClosureName(item))}</strong>` +
       `<span class="road-closure-meta">${item.reason ? `${escapeHtml(item.reason)}・` : ""}${escapeHtml(period)}・${onMap}</span>` +
       (item.url ? `<a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典：${escapeHtml(roadClosureSourceName(item.sourceLabel))} ↗</a>` : "") +
