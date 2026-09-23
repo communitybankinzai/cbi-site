@@ -261,14 +261,29 @@ input[type="checkbox"] {
   margin-top: 2px;
 }
 
-.live-layer-label span {
+/* 状態の行（「ONにすると読み込みます」など）だけを小さな灰色で次の行へ。
+   以前は span すべてに効いており、レイヤー名（.layer-name）と ⓘ（.tip）まで次の行へ押し出していた（2026-09-23） */
+.live-layer-label > span:not(.layer-name):not(.tip) {
   flex-basis: 100%;
   margin-left: 22px;
   color: var(--muted);
   font-size: 11px;
 }
 
-.live-layer-label span.is-error {
+/* 状態の行をレイヤー名の中に持つラベルは折り返さない（長い名前が丸ごと次の行へ落ちるため） */
+.live-layer-label:has(> .layer-name) {
+  flex-wrap: nowrap;
+}
+
+.live-layer-label .layer-name > span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: normal;
+}
+
+.live-layer-label span.is-error,
+.live-layer-label .layer-name > span.is-error {
   color: var(--red);
 }
 
