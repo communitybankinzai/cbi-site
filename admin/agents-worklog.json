@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-23",
+          "title": "防災MAPに「場所をさがす」を実装（地名・お店・記録のメモ）＋SNS告知3媒体 0.7時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（initPlaceSearch／searchLocalRecords／searchPlaceNames／searchOsmPlaces／nearbyRecordCounts／jumpToPlace）",
+            "site/inzai-disaster-map/index.html（凡例に🔍ボタン・検索パネル）・styles.css（パネルと候補の見た目・z-index 1100）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（検索の情報源と規約上の注意）",
+            "site/assets/sns/2026-09-23_place-search/place1〜3.jpg（テロップ入り・1080x1350）",
+            "SNS予約投稿キュー q1790121221912（Threads/Instagram/Facebook すべて成功・09:09）",
+            "site/admin/changelog.json（3件）"
+          ],
+          "hours": 0.7,
+          "partnerApproved": true,
+          "note": "「報告のあった冠水場所を探すのが大変」という事業主の指摘への対応。地図上端に検索窓を追加し、(1)国土地理院の住所検索（Origin を付けるとCORSが許可されるのでブラウザから直接呼べる＝サーバー不要・費用0）、(2)この画面が持つ記録のメモ・アンダーパス名・避難所名、(3)OpenStreetMap（規約で自動補完が禁止のため、押したときだけ1回）の3つから候補を出す。押すとその場所へ飛び、半径500mの通れない道・通れた道の件数を地図上端の帯に出す。本番で『木下駅』『白井』『セブンイレブン印西』『吉高の大桜』を実測。入力欄が地図の＋−ボタン（Leafletのcontrolはz-index 1000）に隠れて打った文字が読めない不具合を見つけて修正。紹介用にテロップ入り画像3枚（本番画面・JPEG）を作り、3媒体へ投稿（本文354字・Threadsの500字制限内）。session 累計10.5時間から先行分9.8時間を除いた分。\nsession: f423f041-19ed-4441-8327-a288a48d54d3 / output: 1,049,554 / cost: $450.13"
+        },
+        {
+          "date": "2026-09-23",
           "title": "千葉県被害マップ：続報の自動取り込み・第7報反映・SNS告知 0.5時間",
           "category": "実装",
           "outputs": [
@@ -6926,6 +6942,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🔍 場所さがしの結果を近隣だけに絞るか決める（いまは全国の同名地名も出る）",
+          "category": "その他",
+          "priority": "低",
+          "note": "2026-09-23 実装。『吉高』で福島県南会津町の吉高も出る（千葉県のものを先頭へ並べてはいる）。成田・佐倉の報告も扱うため今は絞っていない。使いにくいという声が出たら、千葉県＋隣接県だけに絞る。"
+        },
+        {
+          "due": "未定",
+          "title": "🔍 みんつくの冠水投稿を言葉でも探せるようにするか（いまは本文を持っていない）",
+          "category": "実装",
+          "priority": "低",
+          "note": "2026-09-23 実装した場所さがしでは、CBIの記録（メモ）・アンダーパス・避難所は語で探せるが、みんつく千葉冠水マップから取り込んだ投稿は本文がAPIに無いため語で探せない（場所で飛んだ先の件数には入る）。本文を取り込むかどうかは、みんつく側の利用条件を確認してから判断する。"
+        },
         {
           "due": "未定",
           "title": "🛑 台風25号が収束したら被害マップの自動更新を止める（タスク CBI-ChibaHigai）",
