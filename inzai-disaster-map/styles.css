@@ -1075,6 +1075,11 @@ details.layer-group .layer-group-body {
 .range-actions { display: flex; gap: 6px; margin-top: 8px; }
 .range-actions #range-apply { flex: 1; background: #16324f; border-color: #16324f; color: #fff; font-weight: 700; }
 .is-citizen-drawing .range-panel { display: none; }
+/* 災害ごとのボタン（2026-09-23）。押すとその期間だけにしぼる */
+/* 色の凡例ではないので、線の見本（—）は出さない。押していないときも読める濃さにする */
+.legend-chip.is-event::before { display: none; }
+.legend-chip.is-event { padding: 3px 10px; color: #16324f; background: #fff; border-color: #c3ccd8; opacity: 1; }
+.legend-chip.is-event[aria-pressed="true"] { background: #16324f; border-color: #16324f; color: #fff; }
 /* 通行止めが続いている長さ（2026-09-23） */
 .closure-continued { color: #b8322c; font-weight: 700; }
 .road-closure-meta.closure-continued { display: block; font-size: 11.5px; }

@@ -1848,6 +1848,7 @@ initMapLegend();
 initRecordRange();
 initMapStatusAutoHide();
 initPlaceSearch();
+initRecordEvents();
 initColorGuide();
 initModeration();
 scheduleMapResize();
@@ -6933,6 +6934,43 @@ function passesWhenFilter(iso) {
 
 // ⏱ 期間の絞り込み。災害中は「直近3時間」をすぐ押せることが大事なので、
 // よく使う範囲のボタンと、開始・終了の手入力の両方を出す（2026-09-21 中司さんの要望）
+// 災害ごとのボタン（2026-09-23 事業主指示）。「8月の豪雨」「台風25号」の記録だけを一発で見る。
+// 期間は、みんつくの投稿数とCBIの記録数の山から決めた（8/24 428件・8/25 2371件・8/26 795件・
+// 8/27 464件・8/28 95件／9/20 147件・9/21 463件、CBIの記録は9/21〜9/23で256件）。
+// 終わりが null の災害（進行中）は「今まで」の意味になる。
+// 定数ではなく関数にしてある：初期化（ファイル前半の initRecordEvents()）から呼ぶため。
+// const で書くと、宣言より前に呼ばれて TDZ エラーになり、以降の初期化が全部止まる（2026-09-23 に踏んだ）
+function recordEvents() {
+  return {
+    aug2026: { label: "8月豪雨", from: "2026-08-24T00:00:00+09:00", to: "2026-08-29T00:00:00+09:00" },
+    typhoon25: { label: "台風25号", from: "2026-09-20T00:00:00+09:00", to: null },
+  };
+}
+
+function syncEventChips() {
+  document.querySelectorAll("#map-legend [data-event]").forEach(button => {
+    const event = recordEvents()[button.dataset.event];
+    const on = Boolean(event) && recordWhenFilter.label === event.label;
+    button.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+
+function initRecordEvents() {
+  document.querySelectorAll("#map-legend [data-event]").forEach(button => {
+    button.addEventListener("click", () => {
+      const event = recordEvents()[button.dataset.event];
+      if (!event) return;
+      // もう一度押したら解除（「本日／過去の実績」に戻る）
+      if (recordWhenFilter.label === event.label) applyRecordRange(null, null, "");
+      else applyRecordRange(Date.parse(event.from), event.to ? Date.parse(event.to) : null, event.label);
+      document.getElementById("range-panel")?.setAttribute("hidden", "");
+    });
+  });
+  // ここで syncEventChips() は呼ばない。初期化はファイル前半で走るため、
+  // 後ろで宣言している recordWhenFilter に触れると TDZ で全体が止まる（2026-09-23 に踏んだ）。
+  // 押した状態は applyRecordRange のたびに合わせている
+}
+
 function applyRecordRange(from, to, label) {
   // 通行止め（役所の発表）も同じ期間で絞る（2026-09-23 事業主指示A）
   if (typeof roadClosuresData !== "undefined" && roadClosuresData) setTimeout(() => renderRoadClosures(), 0);
@@ -6949,6 +6987,7 @@ function applyRecordRange(from, to, label) {
     button.disabled = Boolean(label);
     button.classList.toggle("is-muted", Boolean(label));
   });
+  if (typeof syncEventChips === "function") syncEventChips();
   renderKansuiLayer();
   renderPassedRoadsLayer();
 }
