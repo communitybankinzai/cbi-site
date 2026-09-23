@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=20260910analytics2">
+<link rel="stylesheet" href="admin.css?v=20260924org">
 </head>
 <body>
 <script>
@@ -80,6 +80,7 @@ if (location.protocol === 'file:') {
       <button type="button" class="tab-btn" data-tab="sns" role="tab" aria-selected="false">📣 自動投稿</button>
       <button type="button" class="tab-btn" data-tab="bug-reports" role="tab" aria-selected="false">🐛 不具合レポート</button>
       <button type="button" class="tab-btn" data-tab="ledger" role="tab" aria-selected="false">💰 収支管理</button>
+      <button type="button" class="tab-btn" data-tab="org" role="tab" aria-selected="false">📋 団体書類</button>
       <button type="button" class="tab-btn" data-tab="metaverse" role="tab" aria-selected="false">🌐 ３D・防災MAP</button>
       <button type="button" class="tab-btn" data-tab="budget" role="tab" aria-selected="false">💰 予算</button>
     </nav>
@@ -997,6 +998,85 @@ if (location.protocol === 'file:') {
 
     </div><!-- /tab-ledger -->
 
+    <!-- ===== タブ: 団体書類（収支報告書・活動報告書・口座開設の書類）2026-09-23 ===== -->
+    <div class="tab-panel" id="tab-org" role="tabpanel" hidden>
+
+      <section class="panel">
+        <h2 class="panel-title">📄 書類を作る
+          <select id="org-fy" class="ledger-fy-select" title="会計年度（4月〜翌3月）"></select>
+        </h2>
+        <div class="org-actions">
+          <button type="button" class="btn btn-primary" id="org-report-finance">💴 収支報告書</button>
+          <button type="button" class="btn btn-primary" id="org-report-activity">🗓 活動報告書</button>
+        </div>
+        <div id="org-check" class="org-check"></div>
+        <p class="meta-note">年度を選んで押すと、印刷用の画面が開きます（「印刷 / PDF保存」でPDFにできます）。収支は「💰 収支管理」の台帳、活動は下の「活動の記録」から作ります。</p>
+      </section>
+
+      <section class="panel panel-form">
+        <h2 class="panel-title">🏢 団体の基本情報</h2>
+        <form id="org-settings-form" class="idea-form">
+          <div class="grid-3">
+            <label class="field"><span>団体名</span><input type="text" id="org-orgName" placeholder="Community Bank INZAI（CBI）"></label>
+            <label class="field"><span>設立日</span><input type="date" id="org-foundedDate"></label>
+            <label class="field"><span>会計年度の始まり</span>
+              <select id="org-fiscalStartMonth"><option value="4">4月（4月〜翌3月）</option></select>
+            </label>
+          </div>
+          <div class="grid-3">
+            <label class="field"><span>代表</span><input type="text" id="org-representative"></label>
+            <label class="field"><span>会計</span><input type="text" id="org-treasurer"></label>
+            <label class="field"><span>監事（会計監査）</span><input type="text" id="org-auditor"></label>
+          </div>
+          <label class="field"><span>所在地（書類に載せる場合）</span><input type="text" id="org-address" placeholder="例：千葉県印西市（番地は載せなくてもよい）"></label>
+          <label class="field"><span id="org-carryover-label">前年度からの繰越金（円）</span><input type="number" id="org-carryover" min="0" step="1" inputmode="numeric" placeholder="設立した年度は 0"></label>
+
+          <h3 class="org-sub">口座開設などに要る書類の置き場（Google Drive のリンク）</h3>
+          <div class="org-docs" id="org-docs"></div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="org-settings-save">保存</button>
+            <span class="meta-note" id="org-settings-status"></span>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel panel-form">
+        <h2 class="panel-title"><span id="org-act-form-title">活動の記録を追加</span>
+          <button type="button" class="btn-link" id="org-act-cancel" hidden>キャンセル</button>
+        </h2>
+        <form id="org-act-form" class="idea-form">
+          <input type="hidden" id="org-act-id">
+          <div class="grid-3">
+            <label class="field"><span>日付 <em class="req">*</em></span><input type="date" id="org-act-date" required></label>
+            <label class="field"><span>活動名 <em class="req">*</em></span><input type="text" id="org-act-title" required maxlength="100" placeholder="例：イルミライINZAI 出展"></label>
+            <label class="field"><span>場所</span><input type="text" id="org-act-place" maxlength="100"></label>
+          </div>
+          <div class="grid-3">
+            <label class="field"><span>参加人数</span><input type="number" id="org-act-participants" min="0" step="1" inputmode="numeric"></label>
+            <label class="field"><span>事業区分</span><select id="org-act-project"></select></label>
+            <label class="field"><span>写真・資料のリンク（任意）</span><input type="url" id="org-act-photoUrl" placeholder="https://"></label>
+          </div>
+          <label class="field"><span>内容</span><textarea id="org-act-body" rows="3" maxlength="2000"></textarea></label>
+          <label class="field"><span>成果（分かる範囲で・数字があれば）</span><textarea id="org-act-result" rows="2" maxlength="2000"></textarea></label>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="org-act-save">追加</button>
+            <span class="meta-note" id="org-act-status"></span>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">🗓 活動の記録 <span class="meta-note" id="org-act-count"></span></h2>
+        <div class="ledger-table-wrap">
+          <table class="ledger-table">
+            <thead><tr><th>日付</th><th>活動名</th><th>場所</th><th class="ledger-th-amount">人数</th><th>事業区分</th><th></th></tr></thead>
+            <tbody id="org-act-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div><!-- /tab-org -->
+
     <!-- ===== タブ: ３Dワールド（アクセス・課金モニタ／位置修正履歴） ===== -->
     <div class="tab-panel" id="tab-budget" role="tabpanel" hidden>
       <section class="panel">
@@ -1274,7 +1354,7 @@ if (location.protocol === 'file:') {
   <div id="toast" class="toast" hidden></div>
 </section>
 
-<script src="admin.js?v=20260823budget"></script>
+<script src="admin.js?v=20260924org"></script>
 <script src="cbi-content-analytics.js?v=20260910-2"></script>
 </body>
 </html>

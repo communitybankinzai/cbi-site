@@ -42,6 +42,13 @@ const UNREAD_POLL_MS = 30000;
     actualsDynamic: [],
     plansDynamic: [],
     bugReports: [],
+    org: {               // 団体書類タブ（OrgDocs.gs）
+      loaded: false,
+      settings: {},
+      activities: [],
+      changelog: null,
+      editingId: null,
+    },
     ledger: {
       loaded: false,
       entries: [],
@@ -253,7 +260,7 @@ const UNREAD_POLL_MS = 30000;
       b.classList.toggle('active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports', 'ledger', 'budget', 'metaverse'].forEach(t => {
+    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports', 'ledger', 'org', 'budget', 'metaverse'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
     document.body.classList.toggle('mail-fullwidth', name === 'mail');
@@ -269,6 +276,7 @@ const UNREAD_POLL_MS = 30000;
     if (name === 'sns' && !state.snsLoaded) { loadSnsConfig(); loadSnsQueue(); loadFreefreeSnsConfig(); }
     if (name === 'bug-reports') loadBugReports();
     if (name === 'ledger' && !state.ledger.loaded) initLedger();
+    if (name === 'org') openOrgTab();
     if (name === 'metaverse') openMetaverseTab();
   }
 
@@ -4546,6 +4554,8 @@ const UNREAD_POLL_MS = 30000;
       buildLedgerFySelect();
       renderLedger();
       setStatus('');
+      // 決算資料に団体情報・繰越金を載せるため、団体書類のデータも裏で読んでおく
+      if (!state.org.loaded) loadOrgData().catch(() => {});
     } catch (e) {
       setStatus('収支データの読み込みに失敗: ' + e.message, 'err');
       $('ledger-tbody').innerHTML = '<tr><td colspan="10" class="empty">通信エラーのため台帳を読み込めません（科目等は入力できます）</td></tr>';
@@ -5287,20 +5297,380 @@ const UNREAD_POLL_MS = 30000;
     toast('メモの内容をフォームに転記しました。登録後、メモを「済み」にしてください', 'ok', 5000);
   }
 
+  // =========================================================
+  // 📋 団体書類（団体設定・活動記録・活動報告書）2026-09-23
+  // 保存先は GAS の org_settings / activities シート（cbi-admin-gas/OrgDocs.gs）
+  // =========================================================
+  const ORG_DEFAULTS = { orgName: 'Community Bank INZAI（CBI）', fiscalStartMonth: '4' };
+  const ORG_DOCS = [
+    { key: 'Rules', label: '規約・会則' },
+    { key: 'Minutes', label: '総会の議事録' },
+    { key: 'Agenda', label: '総会の議案書' },
+    { key: 'MemberList', label: '団体の名簿（個人情報は隠してよい）' },
+  ];
+  const ORG_FIELDS = ['orgName', 'foundedDate', 'fiscalStartMonth', 'address', 'representative', 'treasurer', 'auditor'];
+
+  // 書類に載せる団体情報（未入力は既定値）
+  function orgInfo() {
+    const s = state.org.settings || {};
+    const founded = s.foundedDate || '';
+    return {
+      name: s.orgName || ORG_DEFAULTS.orgName,
+      founded,
+      address: s.address || '',
+      representative: s.representative || '',
+      treasurer: s.treasurer || '',
+      auditor: s.auditor || '',
+      carryover(fy) {
+        const v = s['carryover:' + fy];
+        return v === undefined || v === '' ? null : Number(v) || 0;
+      },
+      // 設立した年度は設立日から始まる
+      periodLabel(fy) {
+        const start = founded && fiscalYearOf(founded) === fy ? founded : `${fy}-04-01`;
+        const [y, m, d] = start.split('-').map(Number);
+        return `${y}年${m}月${d}日〜${fy + 1}年3月31日`;
+      },
+    };
+  }
+
+  async function loadOrgData() {
+    const r = await ledgerCall({ action: 'orgGet', password: state.password });
+    if (!r.ok) throw new Error(r.error || 'org_load_failed');
+    state.org.settings = r.settings || {};
+    state.org.activities = r.activities || [];
+    state.org.loaded = true;
+  }
+
+  let orgEventsBound = false;
+  async function openOrgTab() {
+    if (!orgEventsBound) { bindOrgEvents(); orgEventsBound = true; }
+    buildOrgFySelect();
+    renderOrgDocs();
+    setStatus('団体書類を読み込み中…');
+    try {
+      const jobs = [loadOrgData()];
+      if (!state.ledger.loaded) jobs.push(initLedger());
+      if (!state.org.changelog) jobs.push(fetch('changelog.json', { cache: 'no-store' }).then(r => r.json()).then(j => { state.org.changelog = j; }).catch(() => {}));
+      await Promise.all(jobs);
+      renderOrgSettings();
+      renderOrgActivities();
+      renderOrgCheck();
+      setStatus('');
+    } catch (e) {
+      setStatus('団体書類の読み込みに失敗: ' + e.message + '（GASのデプロイ前は使えません）', 'err');
+      renderOrgCheck();
+    }
+  }
+
+  function bindOrgEvents() {
+    $('org-settings-form').addEventListener('submit', onOrgSettingsSubmit);
+    $('org-act-form').addEventListener('submit', onOrgActSubmit);
+    $('org-act-cancel').addEventListener('click', resetOrgActForm);
+    $('org-fy').addEventListener('change', () => { renderOrgSettings(); renderOrgCheck(); });
+    $('org-report-finance').addEventListener('click', () => {
+      if (!state.ledger.loaded) { toast('収支の台帳を読み込めていません', 'err'); return; }
+      openLedgerReport(Number($('org-fy').value));
+    });
+    $('org-report-activity').addEventListener('click', () => openActivityReport(Number($('org-fy').value)));
+    $('org-act-tbody').addEventListener('click', onOrgActTableClick);
+    const m = (state.ledger.meta || LEDGER_FALLBACK_META).projects;
+    $('org-act-project').innerHTML = '<option value="">選択</option>' +
+      m.map(v => `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join('');
+    $('org-act-date').value = new Date().toISOString().slice(0, 10);
+  }
+
+  function buildOrgFySelect() {
+    const nowFy = fiscalYearOf(new Date().toISOString().slice(0, 10));
+    const founded = state.org.settings.foundedDate;
+    const first = founded ? fiscalYearOf(founded) : nowFy;
+    const cur = $('org-fy').value;
+    const fys = [];
+    for (let y = nowFy; y >= Math.min(first, nowFy); y--) fys.push(y);
+    $('org-fy').innerHTML = fys.map(fy => `<option value="${fy}">${fy}年度（R${fy - 2018}）</option>`).join('');
+    $('org-fy').value = cur && fys.includes(Number(cur)) ? cur : String(nowFy);
+  }
+
+  function renderOrgSettings() {
+    const s = state.org.settings;
+    ORG_FIELDS.forEach(k => { $('org-' + k).value = s[k] || ORG_DEFAULTS[k] || ''; });
+    buildOrgFySelect();
+    const fy = Number($('org-fy').value);
+    $('org-carryover-label').textContent = `${fy}年度の前年度からの繰越金（円）`;
+    const cv = s['carryover:' + fy];
+    $('org-carryover').value = cv === undefined ? '' : cv;
+    ORG_DOCS.forEach(d => {
+      $('org-doc' + d.key + 'Url').value = s['doc' + d.key + 'Url'] || '';
+      $('org-doc' + d.key + 'Ok').checked = s['doc' + d.key + 'Ok'] === '1';
+    });
+  }
+
+  function renderOrgDocs() {
+    if ($('org-docs').childElementCount) return;
+    $('org-docs').innerHTML = ORG_DOCS.map(d => `
+      <div class="org-doc-row">
+        <label class="org-doc-ok"><input type="checkbox" id="org-doc${d.key}Ok"> そろった</label>
+        <label class="field"><span>${escapeHtml(d.label)}</span><input type="url" id="org-doc${d.key}Url" placeholder="https://drive.google.com/..."></label>
+      </div>`).join('');
+  }
+
+  async function onOrgSettingsSubmit(ev) {
+    ev.preventDefault();
+    const fy = Number($('org-fy').value);
+    const settings = {};
+    ORG_FIELDS.forEach(k => { settings[k] = $('org-' + k).value.trim(); });
+    const cv = $('org-carryover').value.trim();
+    if (cv !== '' && !/^\d+$/.test(cv)) { toast('繰越金は0以上の整数で入力してください', 'err'); return; }
+    settings['carryover:' + fy] = cv;
+    ORG_DOCS.forEach(d => {
+      const url = $('org-doc' + d.key + 'Url').value.trim();
+      if (url && !/^https:\/\//.test(url)) return;
+      settings['doc' + d.key + 'Url'] = url;
+      settings['doc' + d.key + 'Ok'] = $('org-doc' + d.key + 'Ok').checked ? '1' : '';
+    });
+    $('org-settings-save').disabled = true;
+    $('org-settings-status').textContent = '保存中…';
+    try {
+      const r = await ledgerCall({ action: 'orgSettingsSave', password: state.password, actor: state.me || '', settings });
+      if (!r.ok) throw new Error(r.error || 'save_failed');
+      Object.assign(state.org.settings, settings);
+      $('org-settings-status').textContent = '保存しました';
+      renderOrgCheck();
+    } catch (e) {
+      $('org-settings-status').textContent = '保存できませんでした：' + e.message;
+    } finally {
+      $('org-settings-save').disabled = false;
+    }
+  }
+
+  function orgActFromForm() {
+    const a = {};
+    ['date', 'title', 'place', 'participants', 'body', 'result', 'photoUrl', 'project'].forEach(k => { a[k] = $('org-act-' + k).value.trim(); });
+    return a;
+  }
+
+  function resetOrgActForm() {
+    state.org.editingId = null;
+    $('org-act-form').reset();
+    $('org-act-id').value = '';
+    $('org-act-date').value = new Date().toISOString().slice(0, 10);
+    $('org-act-form-title').textContent = '活動の記録を追加';
+    $('org-act-save').textContent = '追加';
+    $('org-act-cancel').hidden = true;
+  }
+
+  async function onOrgActSubmit(ev) {
+    ev.preventDefault();
+    const a = orgActFromForm();
+    if (a.photoUrl && !/^https?:\/\//.test(a.photoUrl)) { toast('リンクは http から始まるURLにしてください', 'err'); return; }
+    const editing = state.org.editingId;
+    $('org-act-save').disabled = true;
+    $('org-act-status').textContent = '保存中…';
+    try {
+      let r;
+      if (editing) {
+        r = await ledgerCall({ action: 'activityUpdate', password: state.password, actor: state.me || '', activity: { ...a, id: editing } });
+        if (!r.ok) throw new Error(r.error || 'update_failed');
+        const cur = state.org.activities.find(x => x.id === editing);
+        if (cur) Object.assign(cur, a);
+      } else {
+        // 通信の再試行で二重登録しないよう、IDは画面側で先に決める
+        const now = new Date(Date.now() + 9 * 3600 * 1000).toISOString().replace(/\D/g, '').slice(0, 14);
+        const id = `AC${now}-${Math.floor(Math.random() * 1000)}`;
+        r = await ledgerCall({ action: 'activityAdd', password: state.password, actor: state.me || '', activity: { ...a, id } });
+        if (!r.ok) throw new Error(r.error || 'add_failed');
+        if (!r.duplicate) state.org.activities.push(r.activity);
+      }
+      $('org-act-status').textContent = editing ? '直しました' : '追加しました';
+      resetOrgActForm();
+      renderOrgActivities();
+      renderOrgCheck();
+    } catch (e) {
+      const msg = { date_required: '日付を入れてください', title_required: '活動名を入れてください', participants_number: '参加人数は数字で入れてください' }[e.message] || e.message;
+      $('org-act-status').textContent = '保存できませんでした：' + msg;
+    } finally {
+      $('org-act-save').disabled = false;
+    }
+  }
+
+  async function onOrgActTableClick(ev) {
+    const btn = ev.target.closest('[data-org-act]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const a = state.org.activities.find(x => x.id === id);
+    if (!a) return;
+    if (btn.dataset.orgAct === 'edit') {
+      state.org.editingId = id;
+      ['title', 'place', 'participants', 'body', 'result', 'photoUrl', 'project'].forEach(k => { $('org-act-' + k).value = a[k] == null ? '' : a[k]; });
+      $('org-act-date').value = ledgerDateStr(a.date);
+      $('org-act-form-title').textContent = '活動の記録を直す';
+      $('org-act-save').textContent = '直す';
+      $('org-act-cancel').hidden = false;
+      $('org-act-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (btn.dataset.orgAct === 'delete') {
+      if (!confirm(`「${a.title}」の記録を消しますか？（シートには残り、報告書には出なくなります）`)) return;
+      try {
+        const r = await ledgerCall({ action: 'activityDelete', password: state.password, actor: state.me || '', id });
+        if (!r.ok) throw new Error(r.error || 'delete_failed');
+        state.org.activities = state.org.activities.filter(x => x.id !== id);
+        renderOrgActivities();
+        renderOrgCheck();
+      } catch (e) {
+        toast('消せませんでした：' + e.message, 'err');
+      }
+    }
+  }
+
+  function orgActivitiesOf(fy) {
+    return state.org.activities
+      .filter(a => a.status !== 'deleted' && (fy == null || fiscalYearOf(a.date) === fy))
+      .sort((x, y) => ledgerDateStr(x.date).localeCompare(ledgerDateStr(y.date)));
+  }
+
+  function renderOrgActivities() {
+    const list = orgActivitiesOf(null).reverse();
+    $('org-act-count').textContent = `${list.length}件`;
+    $('org-act-tbody').innerHTML = list.map(a => `
+      <tr>
+        <td>${escapeHtml(ledgerDateStr(a.date))}</td>
+        <td>${escapeHtml(a.title)}</td>
+        <td>${escapeHtml(a.place || '')}</td>
+        <td class="num">${escapeHtml(a.participants === '' || a.participants == null ? '' : String(a.participants))}</td>
+        <td>${escapeHtml(a.project || '')}</td>
+        <td class="org-act-ops"><button type="button" class="btn-link" data-org-act="edit" data-id="${escapeAttr(a.id)}">直す</button>
+          <button type="button" class="btn-link" data-org-act="delete" data-id="${escapeAttr(a.id)}">消す</button></td>
+      </tr>`).join('') || '<tr><td colspan="6" class="empty">まだ記録がありません。上のフォームから追加してください</td></tr>';
+  }
+
+  // 書類を出す前の確認リスト（足りないものを見える化）
+  function renderOrgCheck() {
+    const fy = Number($('org-fy').value) || fiscalYearOf(new Date().toISOString().slice(0, 10));
+    const s = state.org.settings || {};
+    const fyLedger = state.ledger.entries.filter(e => e.status === 'active' && fiscalYearOf(e.date) === fy);
+    const unsettled = state.ledger.entries.filter(e => e.status === 'active' && e.type === 'expense' && e.paidBy && !e.settledDate);
+    const items = [
+      [!!s.foundedDate, '設立日'],
+      [!!(s.representative && s.treasurer && s.auditor), '代表・会計・監事の名前'],
+      [s['carryover:' + fy] !== undefined && s['carryover:' + fy] !== '', `${fy}年度の前年度からの繰越金`],
+      [fyLedger.some(e => e.type === 'income'), `${fy}年度の収入の記録（会費など）`],
+      [fyLedger.some(e => e.type === 'expense'), `${fy}年度の支出の記録`],
+      [unsettled.length === 0, unsettled.length ? `未精算の立替が${unsettled.length}件あります（報告書には「未払金」として載ります）` : '未精算の立替なし'],
+      [orgActivitiesOf(fy).length > 0, `${fy}年度の活動の記録`],
+      ...ORG_DOCS.map(d => [s['doc' + d.key + 'Ok'] === '1', d.label]),
+    ];
+    if (!state.org.loaded) {
+      $('org-check').innerHTML = '<p class="meta-note">団体書類のデータを読み込めていません。</p>';
+      return;
+    }
+    const ok = items.filter(i => i[0]).length;
+    $('org-check').innerHTML = `<p class="org-check-head">書類の準備：${ok} / ${items.length}</p><ul class="org-check-list">` +
+      items.map(([done, label]) => `<li class="${done ? 'is-done' : 'is-todo'}">${done ? '✅' : '⬜'} ${escapeHtml(label)}</li>`).join('') + '</ul>';
+  }
+
+  // 活動報告書を印刷用ウィンドウで生成
+  function openActivityReport(fy) {
+    const org = orgInfo();
+    const list = orgActivitiesOf(fy);
+    const reiwa = fy - 2018;
+    const people = list.reduce((s, a) => s + (Number(a.participants) || 0), 0);
+    const byProj = {};
+    list.forEach(a => { const k = a.project || '（未設定）'; byProj[k] = (byProj[k] || 0) + 1; });
+    const cl = ((state.org.changelog && state.org.changelog.entries) || []).filter(e => e.date && fiscalYearOf(e.date) === fy);
+    // 更新先（target）は書き方がばらばらなので、更新の種類でまとめる
+    const CL_TYPE = { feature: '機能の追加', fix: '不具合の修正', content: '内容の更新', docs: '資料の作成・更新', deploy: '公開作業' };
+    const clByTarget = {};
+    cl.forEach(e => { const k = CL_TYPE[e.type] || 'その他'; clByTarget[k] = (clByTarget[k] || 0) + 1; });
+    const rows = list.map(a => `<tr><td class="nowrap">${escapeHtml(ledgerDateStr(a.date))}</td><td><strong>${escapeHtml(a.title)}</strong>${a.place ? `<br><span class="muted">${escapeHtml(a.place)}</span>` : ''}</td>` +
+      `<td class="num">${escapeHtml(a.participants === '' || a.participants == null ? '' : String(a.participants))}</td>` +
+      `<td>${escapeHtml(a.body || '')}${a.result ? `<br><span class="muted">成果：${escapeHtml(a.result)}</span>` : ''}</td></tr>`).join('');
+    const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>活動報告書 ${fy}年度（R${reiwa}）</title>
+<style>
+  body { font-family: "Noto Sans JP", "Yu Gothic", sans-serif; color: #1a2330; margin: 40px; font-size: 13px; }
+  h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
+  .sub { text-align: center; color: #4a5663; margin-bottom: 24px; }
+  h2 { font-size: 15px; border-bottom: 2px solid #1e3a5f; padding-bottom: 4px; margin: 24px 0 8px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
+  th, td { border: 1px solid #999; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f1ece0; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .nowrap { white-space: nowrap; }
+  .muted { color: #4a5663; font-size: 12px; }
+  .note { color: #4a5663; font-size: 11px; margin-top: 16px; }
+  .print-btn { position: fixed; top: 10px; right: 10px; padding: 8px 16px; }
+  @media print { .print-btn { display: none; } body { margin: 10mm; } tr { break-inside: avoid; } }
+</style></head><body>
+<button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
+<h1>活動報告書</h1>
+<p class="sub">${escapeHtml(org.name)}<br>${fy}年度（令和${reiwa}年度）：${org.periodLabel(fy)}<br>作成日: ${new Date().toISOString().slice(0, 10)}</p>
+<h2>Ⅰ 団体の概要</h2>
+<table>
+<tr><th>団体名</th><td>${escapeHtml(org.name)}</td></tr>
+${org.founded ? `<tr><th>設立日</th><td>${escapeHtml(org.founded)}</td></tr>` : ''}
+${org.address ? `<tr><th>所在地</th><td>${escapeHtml(org.address)}</td></tr>` : ''}
+<tr><th>役員</th><td>代表　${escapeHtml(org.representative || '（未入力）')}／会計　${escapeHtml(org.treasurer || '（未入力）')}／監事　${escapeHtml(org.auditor || '（未入力）')}</td></tr>
+</table>
+<h2>Ⅱ 活動のまとめ</h2>
+<table>
+<tr><th>活動の件数</th><td class="num">${list.length}件</td></tr>
+<tr><th>参加人数の合計（のべ）</th><td class="num">${people.toLocaleString()}人</td></tr>
+${Object.keys(byProj).map(k => `<tr><th>${escapeHtml(k)}</th><td class="num">${byProj[k]}件</td></tr>`).join('')}
+</table>
+<h2>Ⅲ 活動の内容</h2>
+<table><tr><th>日付</th><th>活動名・場所</th><th class="num">人数</th><th>内容・成果</th></tr>
+${rows || '<tr><td colspan="4">（記録なし）</td></tr>'}</table>
+${cl.length ? `<h2>Ⅳ ウェブサイト・システムの更新</h2>
+<table><tr><th>更新の種類</th><th class="num">件数</th></tr>
+${Object.keys(clByTarget).sort((x, y) => clByTarget[y] - clByTarget[x]).map(k => `<tr><td>${escapeHtml(k)}</td><td class="num">${clByTarget[k]}件</td></tr>`).join('')}
+<tr><td><strong>合計</strong></td><td class="num"><strong>${cl.length}件</strong></td></tr></table>` : ''}
+<p class="note">※ 本資料は管理画面の「活動の記録」${cl.length ? 'と「更新履歴」' : ''}から自動生成。参加人数は記録のある活動の合計。</p>
+<p style="margin-top:28px">上記のとおり報告します。</p>
+<p>${fy + 1}年　　月　　日　　${escapeHtml(org.name)}　代表　${escapeHtml(org.representative || '　　　　　　')}　　印</p>
+</body></html>`;
+    openPrintWindow(html, `CBI活動報告書_${fy}年度.html`);
+  }
+
+  function openPrintWindow(html, filename) {
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, '_blank');
+    if (!w) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast('新しいタブを開けないため、ファイルとして保存しました。開いて「印刷/PDF保存」してください', 'ok', 6000);
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
   // 決算資料（収支計算書）を印刷用ウィンドウで生成
-  function openLedgerReport() {
-    const fySel = $('ledger-fy').value;
+  function openLedgerReport(fyOverride) {
+    const fySel = fyOverride != null && typeof fyOverride !== 'object' ? String(fyOverride) : $('ledger-fy').value;
     const fy = fySel ? Number(fySel) : fiscalYearOf(new Date().toISOString().slice(0, 10));
     const fyStart = `${fy}-04-01`;
     const fyEnd = `${fy + 1}-03-31`;
     const active = state.ledger.entries.filter(e => e.status === 'active');
     const inFy = e => { const d = ledgerDateStr(e.date); return d >= fyStart && d <= fyEnd; };
+    const org = orgInfo();
 
-    // 前期繰越金 = 年度開始日より前の全収支累計（台帳運用開始前の繰越は「雑収入」等での登録が必要）
+    // 前期繰越金 = 団体書類タブで年度ごとに入力した値。無ければ年度開始日より前の台帳の累計
     let carryOver = 0;
-    active.forEach(e => {
+    const carrySet = org.carryover(fy);
+    if (carrySet != null) carryOver = carrySet;
+    else active.forEach(e => {
       if (ledgerDateStr(e.date) < fyStart) carryOver += (e.type === 'income' ? 1 : -1) * (Number(e.amount) || 0);
     });
+    // 立替金（メンバーが立て替えた支出）の年度末時点の状況。精算日が年度末より後か空なら未精算
+    const advRows = {};
+    active.filter(e => e.type === 'expense' && e.paidBy && ledgerDateStr(e.date) <= fyEnd).forEach(e => {
+      const r = advRows[e.paidBy] || (advRows[e.paidBy] = { total: 0, settled: 0 });
+      r.total += Number(e.amount) || 0;
+      const sd = e.settledDate ? ledgerDateStr(e.settledDate) : '';
+      if (sd && sd <= fyEnd) r.settled += Number(e.amount) || 0;
+    });
+    const advUnsettled = Object.values(advRows).reduce((s, r) => s + r.total - r.settled, 0);
 
     // 科目別・事業区分別集計
     const m = state.ledger.meta || LEDGER_FALLBACK_META;
@@ -5316,7 +5686,8 @@ const UNREAD_POLL_MS = 30000;
     const expByAcc = sumBy(expenses, 'account');
     const incTotal = incomes.reduce((s, e) => s + (Number(e.amount) || 0), 0);
     const expTotal = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
-    const yen = v => '¥' + v.toLocaleString();
+    // マイナスは会計書類の慣例どおり △ を付ける
+    const yen = v => (v < 0 ? '△' : '') + '¥' + Math.abs(v).toLocaleString();
 
     const accRows = (defined, byAcc) => {
       const names = [...defined.filter(a => byAcc[a]), ...Object.keys(byAcc).filter(a => !defined.includes(a))];
@@ -5346,11 +5717,13 @@ const UNREAD_POLL_MS = 30000;
   .grand td { font-weight: 700; background: #e8effa; }
   .note { color: #4a5663; font-size: 11px; margin-top: 16px; }
   .print-btn { position: fixed; top: 10px; right: 10px; padding: 8px 16px; }
-  @media print { .print-btn { display: none; } body { margin: 10mm; } }
+  .sign { margin-top: 28px; }
+  .sign p { margin: 10px 0; }
+  @media print { .print-btn { display: none; } body { margin: 10mm; } h2 { break-after: avoid; } .sign { break-inside: avoid; } }
 </style></head><body>
 <button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
-<h1>収支計算書</h1>
-<p class="sub">Community Bank INZAI（CBI）<br>${fy}年度（令和${reiwa}年度）：${fy}年4月1日〜${fy + 1}年3月31日<br>作成日: ${new Date().toISOString().slice(0, 10)}</p>
+<h1>収支報告書</h1>
+<p class="sub">${escapeHtml(org.name)}<br>${fy}年度（令和${reiwa}年度）：${org.periodLabel(fy)}<br>作成日: ${new Date().toISOString().slice(0, 10)}</p>
 <h2>Ⅰ 収入の部</h2>
 <table><tr><th>科目</th><th class="num">金額</th></tr>
 ${accRows(m.accounts.income, incByAcc) || '<tr><td colspan="2">（収入なし）</td></tr>'}
@@ -5367,7 +5740,21 @@ ${accRows(m.accounts.expense, expByAcc) || '<tr><td colspan="2">（支出なし�
 <h2>Ⅳ 事業区分別内訳</h2>
 <table><tr><th>事業区分</th><th class="num">収入</th><th class="num">支出</th><th class="num">差引</th></tr>
 ${projRows() || '<tr><td colspan="4">（記録なし）</td></tr>'}</table>
-<p class="note">※ 本資料は収支管理台帳（証憑・訂正履歴つき）から自動生成。対象は有効な記録のみ（無効化された記録は含まない）。前期繰越金は台帳上の${fy}年3月31日以前の収支累計。金額単位: 円。</p>
+<h2>Ⅴ 立替金の状況（${fy + 1}年3月31日時点）</h2>
+<table><tr><th>立替者</th><th class="num">立替額</th><th class="num">精算済み</th><th class="num">未精算（団体が返すお金）</th></tr>
+${Object.keys(advRows).map(n => `<tr><td>${escapeHtml(n)}</td><td class="num">${yen(advRows[n].total)}</td><td class="num">${yen(advRows[n].settled)}</td><td class="num">${yen(advRows[n].total - advRows[n].settled)}</td></tr>`).join('') || '<tr><td colspan="4">（立替なし）</td></tr>'}
+<tr class="total"><td>未精算の合計（未払金）</td><td></td><td></td><td class="num">${yen(advUnsettled)}</td></tr></table>
+<table><tr><td>次期繰越金（上記Ⅲ）</td><td class="num">${yen(carryOver + incTotal - expTotal)}</td></tr>
+<tr><td>＋ 未精算の立替金（メンバーが支払い、団体の手元から出ていないお金）</td><td class="num">${yen(advUnsettled)}</td></tr>
+<tr class="grand"><td>団体の手元にあるはずのお金（現金・預金）</td><td class="num">${yen(carryOver + incTotal - expTotal + advUnsettled)}</td></tr></table>
+<p class="note">※ 本資料は収支管理台帳（証憑・訂正履歴つき）から自動生成。対象は有効な記録のみ（無効化された記録は含まない）。前期繰越金は${org.carryover(fy) != null ? '団体書類タブで入力した値' : `台帳上の${fy}年3月31日以前の収支累計`}。金額単位: 円。</p>
+<div class="sign">
+<p>上記のとおり報告します。</p>
+<p>${fy + 1}年　　月　　日　　${escapeHtml(org.name)}　会計　${escapeHtml(org.treasurer || '　　　　　　')}　　印</p>
+<h2>監査報告</h2>
+<p>${fy}年度の会計について、帳簿・証憑を監査した結果、上記のとおり正確であることを認めます。</p>
+<p>${fy + 1}年　　月　　日　　監事　${escapeHtml(org.auditor || '　　　　　　')}　　印</p>
+</div>
 </body></html>`;
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
