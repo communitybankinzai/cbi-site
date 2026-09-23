@@ -1529,6 +1529,9 @@ map.getPane("passedRoadsPane").style.zIndex = 440;
 // 堤防の決壊地点と浸水範囲（公式の推定）。面が広いので、市民記録の線（440・450）より下に置く
 map.createPane("leveeBreachPane");
 map.getPane("leveeBreachPane").style.zIndex = 435;
+// CBI の浸水の試算（公式の推定より下）
+map.createPane("leveeSimPane");
+map.getPane("leveeSimPane").style.zIndex = 432;
 map.createPane("kansuiPane");
 map.getPane("kansuiPane").style.zIndex = 450;
 
@@ -4874,6 +4877,65 @@ function renderLeveeBreaches(data) {
   });
 }
 
+// 🧪 決壊地点からの浸水の試算（CBI・公式ではない）（2026-09-23追加・事業主決定＝一般公開・既定OFF）
+// levee-sim.json は 5m標高で「決壊地点につながる、この高さ以下の陸地」を塗ったもの（scripts/levee-breach/）。
+// 水位はボタンで切り替える。公式の推定（leveeBreach）より下の面に描く。
+const leveeSimLayer = L.layerGroup();
+const leveeSimRenderer = L.svg({ pane: "leveeSimPane" });
+let leveeSimData = null;
+let leveeSimH = null;
+async function ensureLeveeSimLayer() {
+  if (!leveeSimData) {
+    try {
+      const res = await fetch("levee-sim.json", { cache: "no-store" });
+      if (!res.ok) throw new Error(`levee-sim.json HTTP ${res.status}`);
+      leveeSimData = await res.json();
+      if (leveeSimH === null) leveeSimH = leveeSimData.defaultH;
+    } catch (error) {
+      console.error("浸水の試算データの読み込みに失敗:", error);
+      return;
+    }
+  }
+  renderLeveeSim();
+}
+
+function renderLeveeSim() {
+  const box = document.getElementById("levee-sim-levels");
+  const levels = leveeSimData?.levels || [];
+  if (box) {
+    box.innerHTML = levels.map(l =>
+      `<button type="button" class="levee-sim-btn${l.h === leveeSimH ? " is-on" : ""}" data-levee-sim-h="${escapeAttribute(String(l.h))}">${escapeHtml(l.h.toFixed(1))}m</button>`
+    ).join("") +
+      `<p class="levee-sim-note">標高（T.P.）何mまで水が入ったかを選びます。${escapeHtml(leveeSimData?.officialMatch || "")}。</p>`;
+    box.hidden = false;
+  }
+  leveeSimLayer.clearLayers();
+  const level = levels.find(l => l.h === leveeSimH);
+  if (!level) return;
+  const popup =
+    `<strong>🧪 浸水の試算（CBI・公式ではありません）</strong><br>` +
+    `標高 T.P.${escapeHtml(level.h.toFixed(1))}m 以下の土地に、決壊地点から水が入った場合：約${escapeHtml(String(level.areaKm2))}km²<br>` +
+    `<span style="font-size:11px;">国土地理院の5m標高から計算した目安です。堤防・排水機場・時間の経過・雨は入っていません。川と沼は水が越えないものとして扱っているため、印西市側への広がりは分かりません。実際の浸水範囲は県の発表（💥のレイヤー）で確認してください。</span>`;
+  level.polygons.forEach(rings => {
+    L.polygon(rings, {
+      pane: "leveeSimPane",
+      renderer: leveeSimRenderer,
+      color: "#c2410c",
+      weight: 1.5,
+      dashArray: "4 4",
+      fillColor: "#f97316",
+      fillOpacity: 0.28
+    }).bindPopup(popup).addTo(leveeSimLayer);
+  });
+}
+
+document.addEventListener("click", event => {
+  const btn = event.target.closest?.("[data-levee-sim-h]");
+  if (!btn) return;
+  leveeSimH = Number(btn.dataset.leveeSimH);
+  renderLeveeSim();
+});
+
 // 🚃 鉄道の運休・遅れ区間（2026-09-21追加）
 // 市「災害時の公共交通のご案内」は「成田駅～我孫子駅間」のように駅名で来るため、
 // 区間の形（rail-segments.json・OpenStreetMap 由来／pipeline/build_rail_segments.py で生成）と
@@ -5295,6 +5357,12 @@ function toggleOverlay(name, checked) {
   if (name === "kominkan") {
     if (checked) { ensureKominkanLayer(); kominkanLayer.addTo(map); }
     else map.removeLayer(kominkanLayer);
+    return;
+  }
+  if (name === "leveeSim") {
+    const box = document.getElementById("levee-sim-levels");
+    if (checked) { ensureLeveeSimLayer(); leveeSimLayer.addTo(map); }
+    else { map.removeLayer(leveeSimLayer); if (box) box.hidden = true; }
     return;
   }
   if (name === "leveeBreach") {

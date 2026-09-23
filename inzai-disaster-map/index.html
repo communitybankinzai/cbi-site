@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260923m">
+    <link rel="stylesheet" href="./styles.css?v=20260923n">
   </head>
   <body>
     <div class="app-shell">
@@ -161,6 +161,8 @@
                   <label><input type="checkbox" data-overlay="railway"> 鉄道</label>
                   <label class="has-tip"><input type="checkbox" data-overlay="railStatus"> <span class="layer-name">🚃 鉄道の運休・遅れ区間（市発表）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>印西市が出した<a href="https://www.city.inzai.lg.jp/0000022520.html" target="_blank" rel="noreferrer">災害時の公共交通のご案内</a>を、駅と駅のあいだの線として塗ります。<strong>運休・遅れは赤、遅れのみは橙</strong>です。</p><p>区間の形は OpenStreetMap の路線データ（ODbL 1.0）を駅で切り分けたものです。<strong>いま列車が走っているかどうかを示すものではありません。</strong>最新は各事業者の運行情報で確認してください。</p><p>路線バスの運休など線で描けない情報は、ONにしたとき地図の下の状態欄に文字で出ます。</p></span></span></label>
                   <label class="has-tip"><input type="checkbox" data-overlay="leveeBreach" checked> <span class="layer-name">💥 堤防の決壊地点・浸水範囲（公式の推定）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>県が公表した浸水状況図にある<strong>堤防の決壊地点（赤い✕）と浸水範囲（推定）</strong>を地図に重ねます。いまは台風25号の北印旛沼（成田市船形干拓・下方）の2か所です（9月22日16時時点・水資源機構がドローンで推定）。</p><p>公表された図の線を運営が地図に写したもので、<strong>数十mずれることがあります</strong>。時点より後の広がりや引き水は反映されません。最新は<a href="https://www.pref.chiba.lg.jp/kendosei/press/2026/kitainba.html" target="_blank" rel="noreferrer">千葉県の発表</a>で確認してください。</p></span></span></label>
+                  <label class="has-tip"><input type="checkbox" data-overlay="leveeSim"> <span class="layer-name">🧪 決壊地点からの浸水の試算（CBI・公式ではない）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>北印旛沼の決壊地点2か所から、<strong>標高が何mの土地まで水が入るか</strong>をCBIが計算した目安です（国土地理院の5m標高）。ONにすると水位を選ぶボタンが出ます。</p><p>T.P.3.0〜3.5mのとき、県が公表した推定範囲とよく重なります。それより高い水位は「もし水位が上がったら」の比較用です。</p><p><strong>公式の情報ではありません。</strong>堤防・排水機場・時間の経過・雨は入っていません。川と沼は水が越えないものとして扱っているため、印西市側への広がりは分かりません。避難の判断は市の避難情報に従ってください。</p></span></span></label>
+                  <div id="levee-sim-levels" class="levee-sim-levels" hidden></div>
                   <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="roadClosures"> <span class="layer-name">🚧 通行止め（役所の発表）<span id="road-closures-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>千葉国道事務所・千葉県（印旛土木事務所を含む）・印西市・佐倉市の公式ページと栄町の情報メールを1時間ごとに確認し、<strong>印西市とその周辺でいま通行止めになっている道</strong>を一覧で出します。役所が解除を発表するか、ページから消えると自動で外れます。</p><p><strong>役所が座標付きで公開している区間（佐倉市の地図など）は、赤い破線で地図に重ねます。</strong>座標のない発表（路線名と場所の文章だけのもの）は線を引かないので、一覧の「📍 位置図」か出典のページで場所を確認してください。</p><p>発表の反映には最大1時間ほどかかります。最新は出典のページで確認してください。発表されていない通行止めもあります。</p></span></span></label>
                   <div id="road-closures-list" class="road-closures-list" hidden></div>
                 </div>
@@ -1763,7 +1765,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260923m"></script>
+    <script src="./app.js?v=20260923n"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

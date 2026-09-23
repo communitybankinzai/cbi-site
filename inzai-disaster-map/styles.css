@@ -3633,3 +3633,34 @@ body.citizen-road-editing { overflow: hidden; }
 .road-closure-group { margin-bottom: 6px; }
 .road-closure-group > summary { cursor: pointer; font-weight: 700; color: #8a1f1a; }
 .road-closure-group > ul { margin-top: 4px; }
+
+/* 🧪 浸水の試算：水位の切り替えボタン */
+.levee-sim-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 2px 0 8px 22px;
+}
+
+.levee-sim-btn {
+  border: 1px solid #c2410c;
+  border-radius: 999px;
+  background: #fff;
+  color: #c2410c;
+  font-size: 12px;
+  padding: 2px 9px;
+  cursor: pointer;
+}
+
+.levee-sim-btn.is-on {
+  background: #c2410c;
+  color: #fff;
+  font-weight: 700;
+}
+
+.levee-sim-note {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
