@@ -8,6 +8,10 @@ const SOURCE_CHECKED_AT = "2026-08-15";
 const APP_CONFIG = window.CBI_DISASTER_CONFIG || {};
 const PUBLIC_VIEW = new URLSearchParams(window.location.search).get("view") === "public";
 const INZAI_CITY_CODE = "1223100";
+// ⚠ 2026-09-23 追加：CiDAO（Vercel）の関数呼び出しが無料枠 100万回/月 に達したため、
+// CiDAO から取る情報（公式発表・避難所・SNS巡回・水位・避難情報・通行止め）の取り直しを 2倍の間隔に延ばしている。
+// **次の災害のときは 1 に戻す**（気象庁から直接取る雨雲・キキクル・警報は対象外なので影響しない）。
+const CIDAO_POLL_SLOWDOWN = 2;
 
 const weatherWarningDefinitions = {
   "33": { name: "レベル5大雨特別警報", element: "rain", level: 50, alertLevel: 5 },
@@ -2145,7 +2149,7 @@ function initSnsMonitor() {
   }
   refreshSnsMonitor(false);
   clearInterval(snsMonitorTimer);
-  snsMonitorTimer = setInterval(() => refreshSnsMonitor(true, true), 5 * 60 * 1000);
+  snsMonitorTimer = setInterval(() => refreshSnsMonitor(true, true), 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
 }
 
 async function refreshSnsMonitor(runScan = false, quiet = false) {
@@ -2365,7 +2369,7 @@ function initShelters() {
   }
   refreshShelters(false);
   clearInterval(shelterTimer);
-  shelterTimer = setInterval(() => refreshShelters(false, true), 5 * 60 * 1000);
+  shelterTimer = setInterval(() => refreshShelters(false, true), 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
   // 災害用井戸は静的データのため初回のみ取得する
   refreshWells();
   initPresence();
@@ -2490,8 +2494,16 @@ function initPresence() {
   if (!String(APP_CONFIG.presenceEndpoint || "").trim()) return;
   sendPresence();
   clearInterval(presenceTimer);
-  // 在席とみなされるのは直近90秒のため、その半分以下の間隔で合図を送る
-  presenceTimer = setInterval(sendPresence, 40 * 1000);
+  // 在席とみなされるのは直近300秒（CiDAO の ACTIVE_SEC）。その半分以下の間隔で合図を送る。
+  // 2026-09-23: Vercel の関数呼び出しが無料枠に達したため 40秒 → 150秒。
+  // 画面を見ていない間（別のタブ・最小化）は送らず、戻ってきたときに1回送る。
+  presenceTimer = setInterval(() => {
+    if (document.hidden) return;
+    sendPresence();
+  }, 150 * 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) sendPresence();
+  });
 }
 
 // 印西市公式オープンデータの追加レイヤー（消防・警察・市役所・緊急輸送路・鉄道・市版土砂災害）。
@@ -2839,7 +2851,7 @@ function initTimeline() {
   refreshTimeline(false);
   clearInterval(timelineTimer);
   // 巡回は10分ごとなので、表示側は5分ごとに追従すれば十分
-  timelineTimer = setInterval(() => refreshTimeline(false), 5 * 60 * 1000);
+  timelineTimer = setInterval(() => refreshTimeline(false), 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
 }
 
 function getShelterFilters() {
@@ -5128,7 +5140,7 @@ function toggleOverlay(name, checked) {
       if (roadClosuresData) renderRoadClosures();
       refreshRoadClosures();
       clearInterval(roadClosuresTimer);
-      roadClosuresTimer = setInterval(refreshRoadClosures, ROAD_CLOSURE_REFRESH_MS);
+      roadClosuresTimer = setInterval(refreshRoadClosures, ROAD_CLOSURE_REFRESH_MS * CIDAO_POLL_SLOWDOWN);
     } else {
       map.removeLayer(roadClosuresLayer);
       clearInterval(roadClosuresTimer);
@@ -7861,8 +7873,8 @@ setInterval(() => {
 
 setInterval(() => refreshEarthquakeSummary(false), 10 * 60 * 1000);
 setInterval(() => refreshAmedas(false), 5 * 60 * 1000);
-setInterval(() => refreshRiverLevel(false), 5 * 60 * 1000);
-setInterval(refreshEvacAlert, 5 * 60 * 1000);
+setInterval(() => refreshRiverLevel(false), 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
+setInterval(refreshEvacAlert, 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
 setInterval(() => {
   if (document.querySelector('[data-overlay="rainForecast"]')?.checked) refreshRainForecast(false);
 }, 10 * 60 * 1000);
