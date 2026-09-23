@@ -2901,6 +2901,7 @@ function renderShelters() {
     <strong>${escapeHtml(hazardLabels[filters.hazard] || filters.hazard)}対応 ${suitableCount} / 表示${filtered.length}施設</strong>
     <span>開設中 ${openCount}施設${manualCount ? `（手動入力 ${manualCount}件${supersededCount ? `・うち${supersededCount}件は公式で確認済み` : ""}）` : ""}${updateTime ? ` ・ ${escapeHtml(updateTime)}取得` : ""}</span>
     <span>${escapeHtml(shelterPayload?.openingInformation || "公式の開設発表を確認中です。")}</span>
+    ${shelterPayload?.stale ? `<span class="shelter-stale">⚠ ${escapeHtml(lastBroadcastNote(shelterPayload))}市の発表でご確認ください。</span>` : ""}
   `;
 
   shelterLayer.clearLayers();
@@ -6013,7 +6014,16 @@ function evacAlertSummary(evacs) {
     .filter((area, _, all) => !all.some(other => other !== area && other.includes(area)));
   // 川の名前が「長門川・旧長門川」と並ぶので、理由と地域の区切りは中黒を使わない
   const parts = [causes.join("／"), areas.join("／")].filter(Boolean).join(" ／ ");
-  return `印西市の${top.label}（警戒レベル${top.level}）${parts ? `：${parts}` : ""}${evacs.length > 1 ? ` 計${evacs.length}件` : ""}`;
+  // 市の放送データが空になったあとは「参考」と断る（2026-09-24。解除を確認したわけではない）
+  const stale = evacAlertPayload && evacAlertPayload.stale ? "【参考】" : "";
+  return `${stale}印西市の${top.label}（警戒レベル${top.level}）${parts ? `：${parts}` : ""}${evacs.length > 1 ? ` 計${evacs.length}件` : ""}`;
+}
+
+// 「◯◯の放送以降、新しい放送はありません」。市の防災速報は災害が落ち着くと0件になる
+function lastBroadcastNote(payload) {
+  if (!payload || !payload.stale) return "";
+  const at = String(payload.lastBroadcastAt || "").replace(/:\d\d$/, "");
+  return `市の防災速報は現在0件です。${at ? `${at}の放送` : "最後の放送"}以降、新しい放送はありません（解除・閉鎖を確認したわけではありません）。`;
 }
 
 // 右の「印西市 警報・注意報」カードに、市の避難情報が出ている間だけ1行添える
@@ -6086,6 +6096,7 @@ function renderMapAlert() {
     if (mapAlertExpanded) {
       lines.push(`<div class="map-alert-detail">
         <div class="map-alert-kind">市が出す避難の呼びかけ（行動の警戒レベル）です。気象庁の警報・注意報が下がっても、市が解除するまで続きます。</div>
+        ${evacAlertPayload?.stale ? `<div class="map-alert-kind">⚠ ${escapeHtml(lastBroadcastNote(evacAlertPayload))}</div>` : ""}
         ${evacs.map(a => `<div class="map-alert-item"><strong>${escapeHtml(evacAlertHead(a))}</strong><div>${escapeHtml(a.message).replace(/\n/g, "<br>")}</div></div>`).join("")}
         <div class="map-alert-source">出典：<a href="${escapeAttribute(evacs[0].sourceUrl)}" target="_blank" rel="noreferrer">印西市防災速報（防災行政無線）↗</a>。CBIが読み取って表示しています。解除の放送があるか、発表から24時間たつと消えます。</div>
       </div>`);

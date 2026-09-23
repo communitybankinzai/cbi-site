@@ -2768,6 +2768,9 @@ details.layer-group .layer-group-body {
   font-size: 11px;
 }
 
+/* 2026-09-24: 市の放送が0件になり、直前の開設を出しているときの断り書き */
+.shelter-stale { padding: 4px 6px; border-radius: 4px; background: #fdf1d6; color: #7a5200; font-weight: 700; line-height: 1.5; }
+
 .shelter-summary.is-error {
   border-color: #d8aaa6;
   background: #fff2f0;
