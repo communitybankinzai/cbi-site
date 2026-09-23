@@ -3295,6 +3295,29 @@ body.embed-mode .cbi-home-link {
 .river-stale { color: #b3261e; }
 .river-note.is-error { color: #b3261e; }
 .river-note { font-size: 11px; color: #5a6675; margin-top: 6px; line-height: 1.6; }
+/* 沼に入ってくる川（上流）と、沼から水を出す先。沼のカードより控えめに出す（2026-09-24） */
+.river-flow { padding: 8px 10px; border: 1px dashed #cfd8e3; border-radius: 10px; background: #f7fafc; }
+.river-flow.is-inflow { margin-bottom: 8px; }
+.river-flow.is-outflow { margin-top: 8px; }
+.river-flow-title { font-size: 12px; font-weight: 700; color: #16324f; margin-bottom: 4px; }
+.river-flow-row { display: grid; grid-template-columns: minmax(90px, 1fr) auto auto; gap: 2px 8px; align-items: baseline; padding: 6px 0 5px; border-top: 1px solid #e3eaf1; }
+.river-flow-row:first-of-type { border-top: 0; }
+.river-flow-name { font-size: 13px; font-weight: 700; color: #16324f; }
+.river-flow-name small { display: block; font-size: 10.5px; font-weight: 400; color: #5a6675; }
+.river-flow-value { font-size: 17px; font-weight: 800; color: #16324f; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.river-flow-value > span { font-size: 11px; font-weight: 600; color: #5a6675; margin-left: 1px; }
+.river-flow-trend { display: block; font-size: 10.5px; font-weight: 700; color: #5a6675; }
+.river-flow-trend.is-up { color: #c0392b; }
+.river-flow-trend.is-down { color: #1e6fb8; }
+.river-flow-state { text-align: right; white-space: nowrap; }
+.river-flow-state small { display: block; font-size: 10.5px; color: #5a6675; margin-top: 3px; }
+.river-flow-note { grid-column: 1 / -1; font-size: 11px; color: #5a6675; line-height: 1.6; }
+.river-flow-row.is-standby .river-badge { background: #e6c46d; color: #3b2d00; }
+.river-flow-row.is-caution .river-badge { background: #e08a3c; color: #fff; }
+.river-flow-row.is-danger .river-badge { background: #c0392b; color: #fff; }
+.river-flow-row.is-caution .river-flow-value,
+.river-flow-row.is-danger .river-flow-value { color: #a3261b; }
+.river-flow .river-note { margin-top: 4px; }
 .river-tone { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #d5dbe4; }
 .river-tone-title { font-size: 12px; font-weight: 700; color: #16324f; margin-bottom: 4px; }
 .river-flood { margin-bottom: 6px; }

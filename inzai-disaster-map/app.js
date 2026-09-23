@@ -5726,6 +5726,8 @@ const RIVER_STAGE = {
   caution: { label: "はんらん注意水位を超えています", short: "注意", cls: "is-caution" },
   standby: { label: "水防団待機水位を超えています", short: "待機", cls: "is-standby" },
   normal: { label: "平常", short: "平常", cls: "" },
+  // 大和田機場の内水位・外水位には基準（待機・注意・危険）が決められていない。「平常」と言い切らない
+  nostd: { label: "基準が決められていない観測所です", short: "基準なし", cls: "" },
   unknown: { label: "水位を取得できません", short: "不明", cls: "" }
 };
 // 観測から この時間を過ぎたら「古い」と添える（県のページの更新が止まったとき用）
@@ -5829,9 +5831,33 @@ function riverStationView(st) {
   return { html, warning, at, stale };
 }
 
+// 沼へ入ってくる川（高崎川・鹿島川）と、沼から水を出す先（長門川・大和田機場）の行。
+// 沼のカードより小さく、1行で「川の名前・いまの水位・向き・基準との関係」が読めるようにする（2026-09-24）
+function riverFlowRow(st) {
+  const stage = RIVER_STAGE[st.stage] || RIVER_STAGE.unknown;
+  const at = new Date(st.latest.time);
+  const ageMin = Math.round((Date.now() - at.getTime()) / 60000);
+  const stale = ageMin > RIVER_STALE_MINUTES;
+  const hhmm = `${at.getHours()}:${String(at.getMinutes()).padStart(2, "0")}`;
+  const arrow = st.trend === "up" ? "▲上がっている" : st.trend === "down" ? "▼下がっている" : "±横ばい";
+  const arrowCls = st.trend === "up" ? "is-up" : st.trend === "down" ? "is-down" : "";
+  const caution = typeof st.levels?.caution === "number" ? `注意水位 ${st.levels.caution.toFixed(2)}m` : "";
+  const html = `
+    <div class="river-flow-row ${stage.cls}">
+      <div class="river-flow-name">${escapeHtml(st.river || st.name)}<small>${escapeHtml(st.name)}</small></div>
+      <div class="river-flow-value">${escapeHtml(st.latest.level.toFixed(2))}<span>m</span><b class="river-flow-trend ${arrowCls}">${escapeHtml(arrow)}</b></div>
+      <div class="river-flow-state"><b class="river-badge">${escapeHtml(stage.short)}</b>${caution ? `<small>${escapeHtml(caution)}</small>` : ""}</div>
+      <div class="river-flow-note">${escapeHtml(st.note || "")}${st.note ? "・" : ""}${escapeHtml(hhmm)}観測${stale ? `<span class="river-stale">（${ageMin}分前の値）</span>` : ""}・${escapeHtml(st.manager || "")}・<a href="${escapeHtml(st.sourceUrl || TEGANUMA_PAGE)}" target="_blank" rel="noreferrer">県のグラフ ↗</a></div>
+    </div>`;
+  return { html, at, stale };
+}
+
 // 手賀沼・西印旛沼・北印旛沼の欄を描き、警告の配列（危険を先に）を返す
 function renderLakes(node, status, data) {
-  const list = (data.stations || []).filter(st => st?.latest);
+  const all = (data.stations || []).filter(st => st?.latest);
+  const list = all.filter(st => (st.role || "lake") === "lake");
+  const inflow = all.filter(st => st.role === "inflow");
+  const outflow = all.filter(st => st.role === "outflow");
   if (!list.length) {
     node.innerHTML = `<div class="detail-empty">沼の水位を取得できませんでした。千葉県のページで確認してください。<br><a href="http://suibo.bousai.pref.chiba.lg.jp/" target="_blank" rel="noreferrer">千葉県 雨量・水位情報 ↗</a></div>`;
     if (status) {
@@ -5845,14 +5871,26 @@ function renderLakes(node, status, data) {
   const nameOrder = ["西印旛沼", "手賀沼", "北印旛沼"];
   list.sort((a, b) => (stageRank[a.stage] ?? 4) - (stageRank[b.stage] ?? 4) || nameOrder.indexOf(a.name) - nameOrder.indexOf(b.name));
   const views = list.map(riverStationView);
+  const inflowViews = inflow.map(riverFlowRow);
+  const outflowViews = outflow.map(riverFlowRow);
   const failed = (data.errors || []).filter(e => !/^利根川/.test(e));
   node.innerHTML = `
+    ${inflowViews.length ? `<div class="river-flow is-inflow">
+      <div class="river-flow-title">⬇ 沼に入ってくる川（上流）</div>
+      ${inflowViews.map(v => v.html).join("")}
+    </div>` : ""}
     <div class="river-list">${views.map(v => v.html).join("")}</div>
+    ${outflowViews.length ? `<div class="river-flow is-outflow">
+      <div class="river-flow-title">⬆ 沼から水を出す先</div>
+      ${outflowViews.map(v => v.html).join("")}
+      <div class="river-note">長門川は利根川の水位が高いと流せなくなり、大和田機場は東京湾が満潮だと出しにくくなります。排水機場のポンプが何台動いているかは公表されていないため、ここには出せません。</div>
+    </div>` : ""}
     ${failed.length ? `<div class="river-note is-error">取得できなかった観測所：${escapeHtml(failed.map(e => e.split(":")[0]).join("・"))}</div>` : ""}
     <div class="river-note">出典：<a href="${escapeHtml(data.source?.url || "http://suibo.bousai.pref.chiba.lg.jp/")}" target="_blank" rel="noreferrer">${escapeHtml(data.source?.name || "千葉県 水防情報")} ↗</a>（CBIが読み取って表示・0.00と欠測は除外）。印旛沼の「危険」はCBIの目安です。避難の判断は印西市の避難情報に従ってください。</div>
   `;
-  const latestAt = views.reduce((m, v) => (v.at > m ? v.at : m), views[0].at);
-  const anyStale = views.some(v => v.stale);
+  const allViews = [...views, ...inflowViews, ...outflowViews];
+  const latestAt = allViews.reduce((m, v) => (v.at > m ? v.at : m), views[0].at);
+  const anyStale = allViews.some(v => v.stale);
   if (status) {
     status.textContent = `${formatDateTime(toDateTimeLocal(latestAt.toISOString()))}観測${anyStale ? "（一部の観測所の更新が止まっている可能性）" : ""}`;
     status.classList.toggle("is-error", anyStale);

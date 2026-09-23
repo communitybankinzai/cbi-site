@@ -18,6 +18,35 @@
       "actuals": [
         {
           "date": "2026-09-24",
+          "title": "水位APIに印旛沼の入口・出口5局を追加し、防災MAPの水位欄を入口→沼→出口の並びに 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao src/app/api/disaster/river-level/route.ts（EXTRA_STATIONS・parseAreaMap・loadAreaStations）",
+            "cidao src/lib/__tests__/disaster-river-area-map.test.ts（6件）",
+            "site/inzai-disaster-map/app.js（riverFlowRow・renderLakes・RIVER_STAGE nostd）",
+            "site/inzai-disaster-map/styles.css（.river-flow 一式）",
+            "site/inzai-disaster-map/index.html（版 20260924d）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": true,
+          "note": "事業主から、印旛沼の排水飽和を論じたThreads投稿（排水機場の稼働状況まで一元化した報が必要）を示され「防災マップで役立てられることはあるか」。取得可否を実測し、入口＝高崎川（鏑木橋68）・鹿島川（馬渡63）、出口＝長門川（安食内水8）・大和田内水位117／外水位116 が千葉県の水位状況図1ページから取れることを確認（排水機場のポンプ稼働台数は公開先が見つからず・確信度中）。担当の切り分けを示して3択で提示し、事業主はB（このセッションで実装）を選択。追加5局は状況図 map_3_0.html 1ページから読むため県への取得は5分に1ページ増だけ。大和田は基準が無いため stage=nostd（基準なし）を新設し「平常」と言い切らないようにした。本番APIで8局・errors 0、ローカル375×812で入口2行・出口3行の表示崩れなしを確認。⚠ 同じroute.tsを 0c1e0cb2 が同時編集していたため、先方の水位履歴保存分とmigrationを同梱して 6686a6f でコミット（先方了承済み）。session 累計4.5時間から先行分3.2時間を除いた1.3時間のうち0.5時間。\nsession: 297bc2e9-ca4e-4883-a1e8-5c69c0c8a15d / output: 450,190 / cost: $226.79"
+        },
+        {
+          "date": "2026-09-24",
+          "title": "鉄道の運休をA案（承認なしで自動反映・期限撤廃・取り込みの見張り）へ切り替え 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "cidao src/lib/disaster-rail-watch.ts（handleCityTransitChange の自動反映・checkCityPageHealth・stationPairs）",
+            "cidao src/lib/disaster-rail-status.ts（市発表由来は時間で消さない・isCitySourced）",
+            "cidao src/app/api/disaster/rail-status/approve/（承認ページを削除）",
+            "cidao src/lib/__tests__/disaster-rail-watch.test.ts / disaster-rail-status.test.ts（計29件）"
+          ],
+          "hours": 0.8,
+          "partnerApproved": true,
+          "note": "事業主の「定期的に確認しないんですか？平時も使う機能なので確実な反映方法を」への対応でA案を選択。(1) 鉄道もバスと同じく市の発表から自動反映（ワンタップ承認を廃止・承認ページごと削除）、(2) 市発表由来は12時間で消さず市の本文から記述が消えたときだけ解除（9/22・23に運休中の区間が地図から落ちた実害への対応）、(3) 6時間取り込めない状態が続いたら【要対応・更新漏れ警告】メール（1日1通）。あわせて9/23の市の書き方「【我孫子駅から新木駅・木下駅から成田駅】間では本数を減らして運転」を読めるよう、1文2区間の切り出し（stationPairs）と減便語彙、路線名の引き継ぎを追加。テスト29件合格・tsc/eslint 0。本番で地図の鉄道を空にして巡回させ、木下〜新木 suspended／我孫子〜新木 delayed／木下〜成田 delayed が自動復元されることを実証。session 累計4.5時間から先行分3.2時間を除いた1.3時間のうち0.8時間。\nsession: 297bc2e9-ca4e-4883-a1e8-5c69c0c8a15d / output: 450,190 / cost: $226.79"
+        },
+        {
+          "date": "2026-09-24",
           "title": "県議公表の排水量データの評価と、水位10分値の履歴保存（流入量の逆算用） 0.4時間",
           "category": "実装",
           "outputs": [
