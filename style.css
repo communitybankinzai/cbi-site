@@ -338,6 +338,29 @@ h1, h2, h3 {
   font-weight: 700;
   color: var(--c-navy);
 }
+/* カードの下に添える補助リンク（カード全体がリンクなので中に入れられない） */
+.project-cell {
+  display: flex;
+  flex-direction: column;
+}
+.project-cell > .card {
+  flex: 1 1 auto;
+}
+.project-sub {
+  margin: 10px 2px 0;
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: center;
+}
+.project-sub a {
+  font-weight: 700;
+  color: var(--c-navy);
+}
+.project-sub span {
+  display: block;
+  color: var(--c-text-muted, #5d6b74);
+  font-size: 12.5px;
+}
 
 .section-eyebrow {
   font-size: 12px;

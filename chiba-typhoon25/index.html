@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>千葉県 台風第25号 被害マップ（市町村別）｜Community Bank INZAI</title>
-<meta name="description" content="千葉県の災害対策本部資料（被害情報）の数値を、市町村ごとに地図で見られるようにしたものです。停電・浸水・住家被害・人的被害を切り替えて表示します。">
+<title>千葉県 災害被害マップ（市町村別・8月千葉豪雨／台風第25号）｜Community Bank INZAI</title>
+<meta name="description" content="千葉県の災害対策本部資料（被害情報）の数値を、市町村ごとに地図で見られるようにしたものです。2026年8月千葉豪雨と台風第25号を切り替えて、停電・浸水・住家被害・人的被害を表示します。">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root { --bg:#f4f7f9; --fg:#1d2b33; --muted:#5d6b74; --border:#d5dee4; --accent:#2365a8; --warn:#b8322c; }
@@ -32,6 +32,13 @@
   .warn { background:#fdeceb; border:1px solid #e6a9a5; border-radius:8px; padding:8px 10px; font-size:12.5px; }
   .lbl { background:rgba(255,255,255,.92); border:1px solid #7a4a00; border-radius:4px; padding:0 4px;
     font-size:11px; font-weight:700; color:#5a3500; white-space:nowrap; }
+  .eventtabs button { font-size:14px; padding:8px 16px; }
+  .eventtabs button[aria-pressed="true"] { background:#1d2b33; border-color:#1d2b33; }
+  .compare { margin:10px 0; }
+  .compare h2 { margin:0 0 6px; font-size:15px; }
+  .compare td, .compare th { text-align:right; }
+  .compare td:first-child, .compare th:first-child { text-align:left; }
+  .compare .big { font-weight:700; }
   .pop b { font-size:14px; }
   .pop table { font-size:12px; }
   .inzai { color:var(--warn); font-weight:700; }
@@ -39,7 +46,7 @@
 </head>
 <body>
 <header>
-  <h1>千葉県 台風第25号 被害マップ（市町村別）</h1>
+  <h1>千葉県 災害被害マップ（市町村別）</h1>
   <p id="src">読み込み中…</p>
 </header>
 
@@ -49,6 +56,10 @@
     数値は県の資料のとおりで、加工していません。<strong>暫定値・概数を含み、最新の状況とは異なることがあります。</strong>
     避難や安全の判断は、<a href="https://www.bousai.pref.chiba.lg.jp" target="_blank" rel="noreferrer">千葉県防災ポータル</a>と市町村の発表でご確認ください。
   </div>
+
+  <div class="tabs eventtabs" id="eventTabs"></div>
+
+  <div class="card compare" id="compare"></div>
 
   <div class="tabs" id="tabs"></div>
 
@@ -87,7 +98,7 @@
   L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png",
     { attribution: "地理院タイル", maxZoom: 16 }).addTo(map);
   const layer = L.layerGroup().addTo(map);
-  let data = null, metric = METRICS[0];
+  let data = null, ev = null, metric = METRICS[0];
 
   const val = (c, m) => m.sum ? m.sum.reduce((a, k) => a + (c[k] || 0), 0) : (c[m.key] || 0);
   const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
@@ -105,12 +116,30 @@
       <div style="color:#5d6b74;font-size:11px;margin-top:4px">出典：${esc(data.source)}</div></div>`;
   }
 
+  function drawCompare() {
+    const box = document.getElementById("compare");
+    const cell = (e, k) => {
+      const c = e.cities.find(x => x.name === "印西市");
+      const v = c && c[k];
+      return v === undefined ? "―" : `${v.toLocaleString()}${UNITS[k] || "棟"}`;
+    };
+    const rows = DETAIL.map(k => {
+      const cells = data.events.map(e => `<td>${cell(e, k)}</td>`).join("");
+      const any = data.events.some(e => { const c = e.cities.find(x => x.name === "印西市"); return c && c[k] !== undefined; });
+      return any ? `<tr><td>${k}</td>${cells}</tr>` : "";
+    }).join("");
+    const heads = data.events.map(e => `<th>${esc(e.label)}</th>`).join("");
+    box.innerHTML = `<h2>印西市の被害（2つの災害の比較）</h2>
+      <table><thead><tr><th>項目</th>${heads}</tr></thead><tbody>${rows}</tbody></table>
+      <p class="note">県の資料に印西市の記載がある項目だけを並べています。「―」は、その災害の資料に印西市の記載がないことを表します（被害が無かったとは限りません）。</p>`;
+  }
+
   function draw() {
     layer.clearLayers();
-    const vals = data.cities.map(c => val(c, metric));
+    const vals = ev.cities.map(c => val(c, metric));
     const max = Math.max(...vals, 1);
     let shown = 0;
-    data.cities.forEach(c => {
+    ev.cities.forEach(c => {
       const n = val(c, metric);
       if (!n) return;
       shown++;
@@ -124,12 +153,12 @@
     });
     const total = vals.reduce((a, b) => a + b, 0);
     document.getElementById("metricNote").textContent =
-      `${metric.label.replace(/^\S+\s/, "")}：${shown}市町村・合計 ${total.toLocaleString()}${metric.unit}（円の大きさは市町村ごとの数。円の位置は市役所・役場の場所で、被害のあった場所そのものではありません）`;
+      `${esc(ev.label)}／${metric.label.replace(/^\S+\s/, "")}：${shown}市町村・合計 ${total.toLocaleString()}${metric.unit}（円の大きさは市町村ごとの数。円の位置は市役所・役場の場所で、被害のあった場所そのものではありません）`;
     document.getElementById("legend").innerHTML =
-      `<b>${esc(metric.label)}</b><br>円の大きさ＝${metric.unit}数<br>
+      `<b>${esc(ev.label)}</b><br><b>${esc(metric.label)}</b><br>円の大きさ＝${metric.unit}数<br>
        いちばん大きい円：${max.toLocaleString()}${metric.unit}<br>
        <span style="color:#5d6b74">数のない市町村は円を出していません（被害なしとは限りません）。</span>`;
-    const rows = data.cities.map(c => [c.name, val(c, metric)]).filter(r => r[1] > 0).sort((a, b) => b[1] - a[1]);
+    const rows = ev.cities.map(c => [c.name, val(c, metric)]).filter(r => r[1] > 0).sort((a, b) => b[1] - a[1]);
     document.getElementById("rankUnit").textContent = metric.unit + "数";
     document.getElementById("rankBody").innerHTML = rows.map(([n, v]) =>
       `<tr><td class="${n === "印西市" ? "inzai" : ""}">${esc(n)}</td><td>${v.toLocaleString()}</td></tr>`).join("")
@@ -138,6 +167,7 @@
 
   function buildTabs() {
     const box = document.getElementById("tabs");
+    box.innerHTML = "";
     METRICS.forEach(m => {
       const b = document.createElement("button");
       b.textContent = m.label;
@@ -147,19 +177,49 @@
     });
   }
 
-  fetch("./data.json?v=" + Date.now()).then(r => r.json()).then(d => {
-    data = d;
+  function showSource() {
     document.getElementById("src").innerHTML =
-      `出典：${esc(d.source)}「${esc(d.title)}」${esc(d.sourceNote)}
-       <a href="${esc(d.sourceUrl)}" target="_blank" rel="noreferrer">千葉県防災ポータル ↗</a>`;
+      `出典：${esc(data.source)}「${esc(ev.title)}」${esc(ev.sourceNote)}
+       <a href="${esc(ev.sourceUrl)}" target="_blank" rel="noreferrer">千葉県の公表ページ ↗</a>`;
+    const power = ev.powerTotal
+      ? `停電の合計は県の資料で「約${esc(ev.powerTotal)}軒」とされており、市町村ごとの数（いずれも概数）を足した値とは数十軒の差が出ます。`
+      : `この災害の資料には、市町村ごとの停電軒数の記載がありません（停電の表示は出ません）。`;
     document.getElementById("footnote").innerHTML =
-      `県の資料は文章と表で書かれています。このページは、そこに書かれた市町村名と数をそのまま地図に置いたものです。
-       停電の合計は県の資料で「約${esc(d.powerTotal)}軒」とされており、市町村ごとの数（いずれも概数）を足した値とは数十軒の差が出ます。
+      `県の資料は文章と表で書かれています。このページは、そこに書かれた市町村名と数をそのまま地図に置いたものです。${power}
        「10軒未満」と書かれた市町村は0として扱い、内訳に注記しています。
        このページは Community Bank INZAI が作成したもので、千葉県・印西市の公式サイトではありません。
-       データ作成：${esc(d.generatedAt)}`;
+       データ作成：${esc(data.generatedAt)}`;
+  }
+
+  function selectEvent(e, box) {
+    ev = e;
+    if (box) [...box.children].forEach(x => x.setAttribute("aria-pressed", String(x.dataset.id === e.id)));
+    // その災害に記載のない指標（8月豪雨の停電など）を選んだままにしない
+    const has = m => ev.cities.some(c => val(c, m) > 0);
+    if (!has(metric)) metric = METRICS.find(has) || METRICS[0];
+    showSource();
     buildTabs();
     draw();
+  }
+
+  function buildEventTabs() {
+    const box = document.getElementById("eventTabs");
+    data.events.forEach(e => {
+      const b = document.createElement("button");
+      b.textContent = e.label;
+      b.dataset.id = e.id;
+      b.onclick = () => selectEvent(e, box);
+      box.appendChild(b);
+    });
+    return box;
+  }
+
+  fetch("./data.json?v=" + Date.now()).then(r => r.json()).then(d => {
+    data = d;
+    ev = d.events[0];
+    const box = buildEventTabs();
+    drawCompare();
+    selectEvent(ev, box);
   }).catch(e => {
     document.getElementById("src").textContent = "データを読み込めませんでした。";
     console.error(e);

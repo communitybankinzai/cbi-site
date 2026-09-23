@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-23",
+          "title": "被害マップを2災害（8月豪雨・台風25号）対応にし、印西市の比較表とトップからの導線を追加 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "site/chiba-typhoon25/index.html",
+            "site/chiba-typhoon25/data.json（events 形式に変更）",
+            "scripts/build_chiba_higai.py（会議資料の被害状況ページを自動判別・8月豪雨の取得）",
+            "site/index.html・site/style.css（.project-cell / .project-sub）"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "8月豪雨の数値は県の第8回災対本部会議資料（9/3 17:30・第23報）から取得。死者13・半壊2183・床上1052で県の合計と一致。会議資料は前に議事次第が入るため、被害状況のページを探して読む処理を追加（ページ末で終わる報は終端を補う）。8月豪雨の資料には市町村別の停電の記載がない。\nsession: e93e26f4-222b-44cf-be09-ef5e3343b046"
+        },
+        {
+          "date": "2026-09-23",
           "title": "防災MAPに「場所をさがす」を実装（地名・お店・記録のメモ）＋SNS告知3媒体 0.7時間",
           "category": "実装",
           "outputs": [
