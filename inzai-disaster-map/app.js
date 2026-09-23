@@ -4910,7 +4910,8 @@ function renderLeveeSim() {
     box.innerHTML = levels.map(l =>
       `<button type="button" class="levee-sim-btn${l.h === leveeSimH ? " is-on" : ""}" data-levee-sim-h="${escapeAttribute(String(l.h))}">${escapeHtml(l.h.toFixed(1))}m</button>`
     ).join("") +
-      `<p class="levee-sim-note">標高（T.P.）何mまで水が入ったかを選びます。${escapeHtml(leveeSimData?.officialMatch || "")}。</p>`;
+      `<p class="levee-sim-note">標高（T.P.）何mまで水が入ったかを選びます。${escapeHtml(leveeSimData?.officialMatch || "")}。` +
+      (leveeSimData?.lakeNote ? `<br>${escapeHtml(leveeSimData.lakeNote)}` : "") + `</p>`;
     box.hidden = false;
   }
   leveeSimLayer.clearLayers();
