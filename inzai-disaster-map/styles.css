@@ -1381,6 +1381,17 @@ details.layer-group .layer-group-body {
   line-height: 1;
 }
 
+/* 堤防の決壊地点（公式の浸水状況図と同じ、地のない赤い×。通行止めの丸い×と見分ける） */
+.levee-breach-mark {
+  display: grid;
+  place-items: center;
+  color: #d40000;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 5px #fff;
+}
+
 .risk-point {
   width: 22px;
   height: 22px;

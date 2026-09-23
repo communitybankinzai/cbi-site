@@ -1526,6 +1526,9 @@ map.getPane("maskPane").style.pointerEvents = "none";
 // 冠水した道路（みんつく・実績）は事実なので、通れた道（GPS記録）と重なる場所では赤を上に描く
 map.createPane("passedRoadsPane");
 map.getPane("passedRoadsPane").style.zIndex = 440;
+// 堤防の決壊地点と浸水範囲（公式の推定）。面が広いので、市民記録の線（440・450）より下に置く
+map.createPane("leveeBreachPane");
+map.getPane("leveeBreachPane").style.zIndex = 435;
 map.createPane("kansuiPane");
 map.getPane("kansuiPane").style.zIndex = 450;
 
@@ -4812,6 +4815,65 @@ function renderPastFloodMarkers() {
   });
 }
 
+// 💥 堤防の決壊地点と浸水範囲（公式の推定）（2026-09-23追加）
+// 県・水資源機構が公表した浸水状況図（PDF）の線と×印を、運営が緯度経度へ読み取ったもの（levee-breaches.json）。
+// CBI の試算は載せない（公式の推定だけを出す＝2026-09-23 事業主決定A）。対象日フィルタは掛けない。
+const leveeBreachLayer = L.layerGroup();
+const leveeBreachRenderer = L.svg({ pane: "leveeBreachPane" });
+let leveeBreachLoaded = false;
+async function ensureLeveeBreachLayer() {
+  if (leveeBreachLoaded) return;
+  leveeBreachLoaded = true;
+  try {
+    const res = await fetch("levee-breaches.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`levee-breaches.json HTTP ${res.status}`);
+    renderLeveeBreaches(await res.json());
+  } catch (error) {
+    leveeBreachLoaded = false;
+    console.error("決壊・浸水範囲データの読み込みに失敗:", error);
+  }
+}
+
+function renderLeveeBreaches(data) {
+  leveeBreachLayer.clearLayers();
+  (data.events || []).forEach(ev => {
+    const asOf = roadClosureTime(ev.asOf, true);
+    const sourceHtml =
+      (ev.source?.url ? `出典: <a href="${escapeAttribute(ev.source.url)}" target="_blank" rel="noreferrer">${escapeHtml(ev.source.name)}</a><br>` : "") +
+      (ev.mapSource?.url ? `図: <a href="${escapeAttribute(ev.mapSource.url)}" target="_blank" rel="noreferrer">${escapeHtml(ev.mapSource.name)}</a><br>` : "");
+    const note = `<span style="font-size:11px;">公表された図の線を運営が地図に写したもので、数十mずれることがあります。最新の状況は出典で確認してください。</span>`;
+    (ev.floodAreas || []).forEach(area => {
+      if (!Array.isArray(area.path) || area.path.length < 3) return;
+      L.polygon(area.path, {
+        pane: "leveeBreachPane",
+        renderer: leveeBreachRenderer,
+        color: "#1f3346",
+        weight: 2,
+        fillColor: "#7fa3c4",
+        fillOpacity: 0.35
+      }).bindPopup(
+        `<strong>🌊 ${escapeHtml(area.name || "浸水範囲（推定）")}</strong><br>` +
+        `${escapeHtml(ev.title || "")}${asOf ? `（${escapeHtml(asOf)} 時点）` : ""}<br>` +
+        (ev.mapSource?.estimatedBy ? `${escapeHtml(ev.mapSource.estimatedBy)}<br>` : "") +
+        sourceHtml + note
+      ).addTo(leveeBreachLayer);
+    });
+    (ev.breaches || []).forEach(b => {
+      if (!Number.isFinite(b.lat) || !Number.isFinite(b.lon)) return;
+      L.marker([b.lat, b.lon], {
+        pane: "leveeBreachPane",
+        icon: L.divIcon({ className: "levee-breach-mark", html: "✕", iconSize: [28, 28], iconAnchor: [14, 14] }),
+        title: `決壊地点：${b.name || ""}`
+      }).bindPopup(
+        `<strong>💥 決壊地点：${escapeHtml(b.name || "")}</strong><br>` +
+        (b.detail ? `${escapeHtml(b.detail)}<br>` : "") +
+        `${escapeHtml(ev.title || "")}<br>` +
+        sourceHtml + note
+      ).addTo(leveeBreachLayer);
+    });
+  });
+}
+
 // 🚃 鉄道の運休・遅れ区間（2026-09-21追加）
 // 市「災害時の公共交通のご案内」は「成田駅～我孫子駅間」のように駅名で来るため、
 // 区間の形（rail-segments.json・OpenStreetMap 由来／pipeline/build_rail_segments.py で生成）と
@@ -5233,6 +5295,11 @@ function toggleOverlay(name, checked) {
   if (name === "kominkan") {
     if (checked) { ensureKominkanLayer(); kominkanLayer.addTo(map); }
     else map.removeLayer(kominkanLayer);
+    return;
+  }
+  if (name === "leveeBreach") {
+    if (checked) { ensureLeveeBreachLayer(); leveeBreachLayer.addTo(map); }
+    else map.removeLayer(leveeBreachLayer);
     return;
   }
   if (name === "pastFlood") {
