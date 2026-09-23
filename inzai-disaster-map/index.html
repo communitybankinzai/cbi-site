@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260923q">
+    <link rel="stylesheet" href="./styles.css?v=20260923r">
   </head>
   <body>
     <div class="app-shell">
@@ -782,6 +782,20 @@
             </div>
             <div class="meta-note" id="river-status">水位を確認中です</div>
             <div id="river-content" class="river-content">最新の水位を取得中です。</div>
+            <!-- 2026-09-23: 利根川が増水していないのに印旛沼があふれる理由（入る水と出せる水）。数字は水資源機構の運転データと県の発表だけ -->
+            <details class="river-tone river-why">
+              <summary class="river-tone-title">💧 なぜ印旛沼の水位が上がるのか（入る水と出せる水）</summary>
+              <p>印旛沼は、水門とポンプ（排水機場）で水位を管理している沼です。周りの広い範囲から雨水が集まり、それを<strong>印旛機場</strong>（長門川を通して利根川へ）と<strong>大和田機場</strong>（花見川を通して東京湾へ）のポンプで外へ出しています。<strong>雨が一気に降ると、出せる量より入ってくる量が多くなり、沼の水位が上がります。</strong>利根川が増水していなくても、沼があふれることがあります。</p>
+              <table class="river-why-table">
+                <tr><th></th><th>2026年8月13〜17日の大雨</th></tr>
+                <tr><td>雨の量（流域の平均）</td><td>326mm</td></tr>
+                <tr><td>外へ出した水</td><td>約6,545万m³（印旛機場 約2,905万＋大和田機場 約3,640万）<br>＝沼の水位でおよそ5.6m分</td></tr>
+                <tr><td>ポンプで出した量（それぞれの最大）</td><td>毎秒 印旛機場106m³・大和田機場145m³</td></tr>
+                <tr><td>それでも上がった沼の水位</td><td>4.33m（Y.P.）</td></tr>
+              </table>
+              <p>2026年9月22日の台風25号では、沼の水位が5.04m（4:30・管理を始めた1968年以来の最高）まで上がり、北印旛沼の堤防 約100mと角川の堤防の一部が決壊しました。</p>
+              <p class="river-note">出典：水資源機構 千葉用水総合管理所「印旛機場・大和田機場運転データ」（8月の数値・水位はY.P.表示）、千葉県「北印旛沼の堤防決壊について」（9/23）、報道（5.04m）。「水位でおよそ5.6m分」は運転データの備考（約250cm＋約310cm）を足したもの。9月22日の運転データはまだ公表されていません。</p>
+            </details>
             <div class="river-tone">
               <div class="river-tone-title">利根川（国の観測所・いまの水位はリンク先で確認）</div>
               <div id="river-flood" class="river-flood">利根川の洪水予報を確認中です。</div>
@@ -1772,7 +1786,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260923q"></script>
+    <script src="./app.js?v=20260923r"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>
