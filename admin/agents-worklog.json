@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-24",
+          "title": "県議公表の排水量データの評価と、水位10分値の履歴保存（流入量の逆算用） 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "cidao supabase/migrations/20260924000000_disaster_river_levels.sql（本番適用済み）",
+            "cidao src/app/api/disaster/river-level/route.ts（saveHistory・historyResponse・serviceClient）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md"
+          ],
+          "hours": 0.4,
+          "partnerApproved": true,
+          "note": "事業主から県議Instagram（@yuka_odaka・9/23の排水量 13時346.7／18時262.2 m³/s）の利用可否を問われ、印旛沼面積11.55km²で水収支を試算して回答（346.7m³/sは流入ゼロなら10.8cm/h低下、実測3cm/h低下なら流入166m³/s）。突き合わせる水位履歴が残っていないと判明したため、A案で保存を開始。新しい定期実行は作らず、既存GETのついでにupsert（Vercel呼び出し増を避ける）。本番で32件保存・3回取得しても重複なしを確認。⚠ 同じroute.tsを297bc2e9が同時編集していたため自分の分だけの切り出しは断念し、先方が6686a6fで同梱コミット。転載可否は別問題（個人投稿のため一次情報を当たる必要あり）と事業主へ伝達済み。前件（output 144,653）との差分 38,594 → 0.4時間\nsession: d338459c-e5b8-4513-ae80-ce489b3369cc / output: 183,247 / cost: $79.13"
+        },
+        {
+          "date": "2026-09-24",
           "title": "雨量と冠水の時間差分析＋記録を雨量でしぼり込む機能（版20260924c） 0.4時間",
           "category": "実装",
           "outputs": [
