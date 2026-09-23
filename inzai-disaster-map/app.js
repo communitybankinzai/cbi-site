@@ -5051,7 +5051,7 @@ function renderRoadClosures() {
       `<span style="color:#b8322c;font-weight:700;">通行止め</span>${item.reason ? `（${escapeHtml(item.reason)}）` : ""}<br>` +
       (item.publishedAt ? `発表: ${escapeHtml(roadClosureTime(item.publishedAt))}〜解除の発表まで<br>` : "") +
       (item.url ? `出典: <a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(roadClosureSourceName(item.sourceLabel))}</a><br>` : "") +
-      `<span style="font-size:11px;">線の位置は運営が発表をもとに確かめたものです。最新は出典で確認してください。</span>`;
+      `<span style="font-size:11px;">${item.pathSource === "city" ? "線は役所が公開した位置です。" : "線の位置は運営が発表をもとに確かめたものです。"}最新は出典で確認してください。</span>`;
     L.polyline(item.path, {
       pane: "roadClosuresPane",
       renderer: roadClosuresRenderer,
@@ -5066,7 +5066,7 @@ function renderRoadClosures() {
 
   if (statusEl) {
     statusEl.textContent = active.length
-      ? `通行止め ${active.length}件${drawn ? `（うち地図に線 ${drawn}件）` : ""}`
+      ? `通行止め ${active.length}件${drawn ? `（うち地図に線 ${drawn}件）` : "（地図の線なし）"}`
       : "役所が発表中の通行止めはありません";
   }
 
@@ -5075,7 +5075,9 @@ function renderRoadClosures() {
     const until = item.periodEnd ? `${roadClosureTime(item.periodEnd)}（予定）` : "解除の発表まで";
     const period = item.publishedAt ? `${roadClosureTime(item.publishedAt)}〜${until}` : `発表日不明〜${until}`;
     // 線は引かない運用（2026-09-22 事業主決定C）。場所は役所の位置図か出典で見てもらう
-    const onMap = Array.isArray(item.path) && item.path.length >= 2 ? "地図に線あり" : item.mapUrl ? "場所は位置図で確認" : "場所は出典で確認";
+    const onMap = Array.isArray(item.path) && item.path.length >= 2
+      ? (item.pathSource === "city" ? "地図に線あり（役所の位置）" : "地図に線あり（運営が確認）")
+      : item.mapUrl ? "場所は位置図で確認" : "場所は出典で確認";
     return `<li><strong>${escapeHtml(roadClosureName(item))}</strong>` +
       `<span class="road-closure-meta">${item.reason ? `${escapeHtml(item.reason)}・` : ""}${escapeHtml(period)}・${onMap}</span>` +
       (item.url ? `<a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典：${escapeHtml(roadClosureSourceName(item.sourceLabel))} ↗</a>` : "") +
