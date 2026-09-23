@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-24",
+          "title": "被害マップの自動更新が止まっていた原因の特定と復旧（第9・10報を反映）0.5時間",
+          "category": "保守",
+          "outputs": [
+            "scripts/update-chiba-higai.ps1（python の場所・読み込み先・実行ログの置き場を修正）",
+            "scripts/build_chiba_higai.py（停電の読み取り・読めない報の除外）",
+            "scripts/_pylibs/（pypdf をここへ）",
+            "site/chiba-typhoon25/data.json",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "⚠ 一番の学び：Claude から見える AppData とタスクが使う AppData は別物（MSIX の仮想化）。pypdf は見えていたのに実環境には無く、PYTHONPATH に APPDATA を渡しても解決しなかった。OneDrive 配下の scripts/_pylibs に置いて解決。⚠ PowerShell から外部プログラムの 2>&1 や *> をパイプへ流すと1行目で打ち切られるため cmd /c で記録する。⚠ %TEMP% も同様に見え方が違うのでログは OneDrive 側へ。タスクが Running のまま残ると 0x800710E0 で起動を拒否される（Stop-ScheduledTask で解除）。\nsession: e93e26f4-222b-44cf-be09-ef5e3343b046"
+        },
+        {
+          "date": "2026-09-24",
           "title": "水位APIに印旛沼の入口・出口5局を追加し、防災MAPの水位欄を入口→沼→出口の並びに 0.5時間",
           "category": "実装",
           "outputs": [
