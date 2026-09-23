@@ -400,6 +400,7 @@ score = 100 × [ 0.25·clip(−相対標高/5m) + 0.35·clip(窪地深さ/2m)
 - **保存先**：Supabase `disaster_river_levels`（migration `20260924000000`・**本番適用済み**・RLS有効・service_role のみ・主キー `station_id + observed_at` で重複を弾く）。
 - **書き込み**：`/api/disaster/river-level` の GET が取得したついでに `saveHistory`（upsert・`ignoreDuplicates`）。**新しい定期実行は作っていない**（Vercel の呼び出し回数が上限に近いため）。**MAP が開かれた分しか貯まらない＝誰も見ていない時間は穴が空く**。
 - **取り出し**：`GET /api/disaster/river-level?history=1&hours=48&station=kita-inbanuma`（新しい順・最大5000件・14日まで）。
+- **画面**（2026-09-24・56c6ead0）：水位欄の `details#river-history`「📈 沼の水位 48時間の推移」。**index.html には無く、app.js の `initRiverHistory` が #river-content の直後に差し込む**（#river-content は innerHTML で描き直されるので中に入れない）。開いたときだけ `?history=1&hours=48` を読み（5分以内の再読込はしない）、沼3局を SVG の線で描く（`renderRiverHistory`）。40分以上あいた点の間は線を切る。基準線は `RIVER_HISTORY_REFS`（印旛沼 計画高水位4.25・手賀沼 危険2.80）。
 - **検証（2026-09-24）**：本番で32件（手賀沼・西/北印旛沼の直近9点＋入口出口5局の最新1点）を保存、3回取得しても32件のまま（重複なし）。
 - ⚠ 同じ route.ts を 297bc2e9 が同時に編集していた（印旛沼の入口・出口5局の追加）。**コミットは先方が 6686a6f でまとめて実施**（こちらの履歴保存＋migration も同梱）。同じファイルを触るときは相手に確認すること。
 
