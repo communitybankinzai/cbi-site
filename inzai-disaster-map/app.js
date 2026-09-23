@@ -6780,19 +6780,26 @@ function startCitizenRoadDrawing(kind) {
   document.getElementById("map-pane").classList.add("is-citizen-drawing");
   document.body.classList.add("citizen-road-editing");
   map.invalidateSize({ pan: false });
-  if (map.getZoom() < MAP_RECORD_MIN_ZOOM) map.setZoom(16);
   citizenRoadDraftLayer.addTo(map);
   citizenRoadMessage("道の始まりをタップ → 曲がり角 → 終わりの順にタップしてください。");
   drawCitizenRoadPreview();
   document.getElementById("citizen-road-cancel").focus({ preventScroll: true });
   scheduleMapResize();
+  // ⚠ 拡大は画面の作り直し（全画面化・invalidateSize）より後に、アニメーション無しで行う。
+  // 先に setZoom すると、直後のサイズ変更で元のズームへ戻り、タップしても点が入らない
+  // （2026-09-24 中司さんの「浸水領域の道が追加できない」。広域のまま押すと無反応に見えていた）
+  setTimeout(() => {
+    if (citizenRoadDraft.active && map.getZoom() < MAP_RECORD_MIN_ZOOM) map.setZoom(16, { animate: false });
+  }, 300);
 }
 
 function addCitizenRoadPoint(latlng) {
   const draft = citizenRoadDraft;
   if (!draft.active || draft.busy) return;
   if (map.getZoom() < MAP_RECORD_MIN_ZOOM) {
-    citizenRoadMessage("道路が見分けられる大きさまで地図を拡大してください。", true);
+    // 断るだけでは行き止まりになるので、タップした場所を拡大して続けられるようにする（2026-09-24）
+    map.setView(latlng, 16, { animate: false });
+    citizenRoadMessage("道路が見分けられる大きさまで拡大しました。もう一度、道をタップしてください。", true);
     return;
   }
   if (draft.points.length >= 2000) { citizenRoadMessage("点が多すぎます。ここまでを完了してください。", true); return; }
@@ -8370,8 +8377,11 @@ function fitToInzai(force = false) {
   if (!bounds || !bounds.isValid()) return;
   inzaiFitDone = true;
   const pad = inzaiFitPadding();
+  // 上下の余白をそろえる（2026-09-24 中司さんの指摘「開くと茨城県が映る」）。
+  // 上だけ帯の分を空けると、その分だけ市が下へ押し下げられ、画面の中心が北（利根川の向こう）へ寄っていた。
+  const vertical = Math.max(pad.top, pad.bottom);
   fittingInzai = true;
-  map.fitBounds(bounds, { paddingTopLeft: [12, pad.top], paddingBottomRight: [12, pad.bottom], animate: false });
+  map.fitBounds(bounds, { paddingTopLeft: [12, vertical], paddingBottomRight: [12, vertical], animate: false });
   fittingInzai = false;
 }
 
