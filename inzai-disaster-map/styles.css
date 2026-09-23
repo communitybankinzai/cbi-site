@@ -1075,6 +1075,9 @@ details.layer-group .layer-group-body {
 .range-actions { display: flex; gap: 6px; margin-top: 8px; }
 .range-actions #range-apply { flex: 1; background: #16324f; border-color: #16324f; color: #fff; font-weight: 700; }
 .is-citizen-drawing .range-panel { display: none; }
+/* 通行止めが続いている長さ（2026-09-23） */
+.closure-continued { color: #b8322c; font-weight: 700; }
+.road-closure-meta.closure-continued { display: block; font-size: 11.5px; }
 /* 🔍 場所をさがす（2026-09-23） */
 /* 地図の＋−ボタン（Leaflet の control は z-index 1000）より上に出す。
    下にすると入力欄の左端が隠れて、打った文字が読めなくなる */

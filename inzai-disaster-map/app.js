@@ -5005,6 +5005,30 @@ const ROAD_CLOSURE_REFRESH_MS = 10 * 60 * 1000;
 let roadClosuresData = null;
 let roadClosuresTimer = null;
 
+// 通行止めが「いつから続いているか」。役所が発表日時を出していればそれ、無ければ
+// CBIの巡回が初めて確認した時刻（firstSeenAt）を起点にする。どちらも継続の長さを見るための
+// 目安で、実際に通行止めになった時刻とは限らない（2026-09-23 事業主指示）。
+function roadClosureStart(item) {
+  return item?.publishedAt || item?.firstSeenAt || "";
+}
+
+function roadClosureDuration(fromIso, toIso) {
+  const from = Date.parse(fromIso || "");
+  const to = toIso ? Date.parse(toIso) : Date.now();
+  if (!Number.isFinite(from) || !Number.isFinite(to) || to < from) return "";
+  const minutes = Math.floor((to - from) / 60000);
+  if (minutes < 60) return `${minutes}分`;
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  return days ? `${days}日${hours}時間` : `${hours}時間`;
+}
+
+function roadClosureContinuedText(item) {
+  const text = roadClosureDuration(roadClosureStart(item));
+  if (!text) return "";
+  return item.publishedAt ? `${text} 継続中` : `${text} 継続中（確認できた時刻から）`;
+}
+
 function roadClosureTime(iso, withTime = false) {
   const time = Date.parse(iso || "");
   if (!Number.isFinite(time)) return "";
@@ -5067,6 +5091,7 @@ function renderRoadClosures() {
       `<strong>🚧 ${escapeHtml(roadClosureName(item))}</strong><br>` +
       `<span style="color:#b8322c;font-weight:700;">通行止め</span>${item.reason ? `（${escapeHtml(item.reason)}）` : ""}<br>` +
       (item.publishedAt ? `発表: ${escapeHtml(roadClosureTime(item.publishedAt))}〜解除の発表まで<br>` : "") +
+      (roadClosureContinuedText(item) ? `<span class="closure-continued">⏳ ${escapeHtml(roadClosureContinuedText(item))}</span><br>` : "") +
       (item.url ? `出典: <a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(roadClosureSourceName(item.sourceLabel))}</a><br>` : "") +
       `<span style="font-size:11px;">${item.pathSource === "city" ? "線は役所が公開した位置です。" : "線の位置は運営が発表をもとに確かめたものです。"}最新は出典で確認してください。</span>`;
     L.polyline(item.path, {
@@ -5097,6 +5122,7 @@ function renderRoadClosures() {
       : item.mapUrl ? "場所は位置図で確認" : "場所は出典で確認";
     return `<li><strong>${escapeHtml(roadClosureName(item))}</strong>` +
       `<span class="road-closure-meta">${item.reason ? `${escapeHtml(item.reason)}・` : ""}${escapeHtml(period)}・${onMap}</span>` +
+      (roadClosureContinuedText(item) ? `<span class="road-closure-meta closure-continued">⏳ ${escapeHtml(roadClosureContinuedText(item))}</span>` : "") +
       (item.url ? `<a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典：${escapeHtml(roadClosureSourceName(item.sourceLabel))} ↗</a>` : "") +
       // 線の無い件は、役所の位置図（区間を赤線で描いた地図）で場所を見てもらう
       (item.mapUrl ? `<br><a href="${escapeAttribute(item.mapUrl)}" target="_blank" rel="noreferrer">📍 位置図（${escapeHtml(roadClosureSourceName(item.sourceLabel))}のPDF） ↗</a>` : "") +
@@ -5115,6 +5141,7 @@ function renderRoadClosures() {
   );
   const clearedRows = cleared.map(item =>
     `<li>${escapeHtml(roadClosureName(item))}：${escapeHtml(roadClosureTime(item.clearedAt, true))}に${item.clearReason === "announced" ? "解除の発表" : item.clearReason === "operator" ? "運営が解除" : "掲載終了で解除"}` +
+    (roadClosureDuration(roadClosureStart(item), item.clearedAt) ? `（${escapeHtml(roadClosureDuration(roadClosureStart(item), item.clearedAt))}で解除）` : "") +
     (item.url ? ` <a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典 ↗</a>` : "") + `</li>`
   );
   const failed = sources.filter(s => s.lastStatus === "failed");
