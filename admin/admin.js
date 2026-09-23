@@ -5309,6 +5309,17 @@ const UNREAD_POLL_MS = 30000;
     { key: 'MemberList', label: '団体の名簿（個人情報は隠してよい）' },
   ];
   const ORG_FIELDS = ['orgName', 'foundedDate', 'fiscalStartMonth', 'address', 'representative', 'treasurer', 'auditor'];
+  // 活動報告書「主な活動（テーマ別）」の振り分け。更新履歴の target と title を上から順に照らし、最初に当たったテーマに入れる
+  const ORG_THEMES = [
+    { name: '防災MAP（印西市 災害状況整合MAP）', desc: '避難所・ハザード・気象・通行止め・市民の冠水と「通れた道」の記録を1つの地図で確かめられる仕組み', re: /防災MAP|災害|disaster|冠水|被害マップ|通れた道|避難|水位|通行止め|内水/i },
+    { name: '3Dワールド（メタバース印西）', desc: '印西市の街並みを3Dで飛び回り、市の文化財50件を学べる仕組み', re: /メタバース|３D|3D|metaverse|文化財|夜景|鳶|白鳥|タイムトライアル|bunkazai|冒険|ずかん/i },
+    { name: '卒業論文（印西市民アカデミー）', desc: '', re: /卒論|卒業論文|thesis|アカデミー|academy/i },
+    { name: 'CiDAO（市民の提案・投票・人材バンク）', desc: '市民が地域の課題を提案し、投票し、担い手とつながる仕組み', re: /CiDAO|FreeFree|人材バンク|提案|投票|団体一覧|イベントカレンダー/i },
+    { name: 'イベントへの参加・出展', desc: '', re: /イルミライ|武蔵屋|だんご|マルシェ|出展/ },
+    { name: '広報・SNS発信', desc: '', re: /SNS|Threads|Instagram|告知|ポスター|広報|note/i },
+    { name: '公式サイト', desc: '', re: /site|トップページ|uniqueness|サイト|privacy|参加方法/i },
+    { name: '団体運営（管理画面）', desc: '会計・書類・予定の管理', re: /管理画面|admin|agents|エージェント|収支|予算|団体書類|GAS/i },
+  ];
 
   // 書類に載せる団体情報（未入力は既定値）
   function orgInfo() {
@@ -5580,6 +5591,25 @@ const UNREAD_POLL_MS = 30000;
     const CL_TYPE = { feature: '機能の追加', fix: '不具合の修正', content: '内容の更新', docs: '資料の作成・更新', deploy: '公開作業' };
     const clByTarget = {};
     cl.forEach(e => { const k = CL_TYPE[e.type] || 'その他'; clByTarget[k] = (clByTarget[k] || 0) + 1; });
+    // 活動は各セッションで進めていて「活動の記録」に入っていないことが多いので、
+    // 更新履歴をテーマ別に振り分けて主な活動として出す（2026-09-24 事業主決定・案3）
+    const themes = ORG_THEMES.map(t => ({ ...t, list: [] }));
+    const other = { name: 'その他', desc: '', list: [] };
+    cl.forEach(e => {
+      const text = `${e.target || ''} ${e.title || ''}`;
+      (themes.find(t => t.re.test(text)) || other).list.push(e);
+    });
+    const themeRows = [...themes, other].filter(t => t.list.length).map(t => {
+      const dates = t.list.map(e => e.date).sort();
+      const feats = t.list.filter(e => e.type === 'feature').sort((a, b) => a.date.localeCompare(b.date));
+      // 主な追加機能は、期間の中から均等に3件選ぶ（最初と最後を含む）
+      const pick = feats.length <= 3 ? feats : [feats[0], feats[Math.floor(feats.length / 2)], feats[feats.length - 1]];
+      const clean = s => String(s || '').replace(/^[^\p{L}\p{N}「『（(]+/u, '').slice(0, 70);
+      return `<tr><td><strong>${escapeHtml(t.name)}</strong>${t.desc ? `<br><span class="muted">${escapeHtml(t.desc)}</span>` : ''}</td>` +
+        `<td class="nowrap">${escapeHtml(dates[0])}<br>〜${escapeHtml(dates[dates.length - 1])}</td>` +
+        `<td class="num">${t.list.length}件<br><span class="muted">うち機能の追加 ${feats.length}件</span></td>` +
+        `<td>${pick.map(e => `・${escapeHtml(clean(e.title))}（${escapeHtml(e.date.slice(5).replace('-', '/'))}）`).join('<br>') || '—'}</td></tr>`;
+    }).join('');
     const rows = list.map(a => `<tr><td class="nowrap">${escapeHtml(ledgerDateStr(a.date))}</td><td><strong>${escapeHtml(a.title)}</strong>${a.place ? `<br><span class="muted">${escapeHtml(a.place)}</span>` : ''}</td>` +
       `<td class="num">${escapeHtml(a.participants === '' || a.participants == null ? '' : String(a.participants))}</td>` +
       `<td>${escapeHtml(a.body || '')}${a.result ? `<br><span class="muted">成果：${escapeHtml(a.result)}</span>` : ''}</td></tr>`).join('');
@@ -5615,10 +5645,14 @@ ${org.address ? `<tr><th>所在地</th><td>${escapeHtml(org.address)}</td></tr>`
 <tr><th>参加人数の合計（のべ）</th><td class="num">${people.toLocaleString()}人</td></tr>
 ${Object.keys(byProj).map(k => `<tr><th>${escapeHtml(k)}</th><td class="num">${byProj[k]}件</td></tr>`).join('')}
 </table>
-<h2>Ⅲ 活動の内容</h2>
+${themeRows ? `<h2>Ⅲ 主な活動（テーマ別）</h2>
+<table><tr><th>活動</th><th>期間</th><th class="num">更新</th><th>主な追加機能</th></tr>
+${themeRows}</table>
+<p class="note">※ 各担当の作業で公開した仕組み・サイトの更新履歴（${cl.length}件）を、テーマごとに自動で振り分けて集計したもの（言葉で振り分けているため、分類がずれることがあります）。</p>` : ''}
+<h2>${themeRows ? 'Ⅳ' : 'Ⅲ'} 日付のある活動（会合・出展・発表など）</h2>
 <table><tr><th>日付</th><th>活動名・場所</th><th class="num">人数</th><th>内容・成果</th></tr>
 ${rows || '<tr><td colspan="4">（記録なし）</td></tr>'}</table>
-${cl.length ? `<h2>Ⅳ ウェブサイト・システムの更新</h2>
+${cl.length ? `<h2>${themeRows ? 'Ⅴ' : 'Ⅳ'} ウェブサイト・システムの更新（種類別）</h2>
 <table><tr><th>更新の種類</th><th class="num">件数</th></tr>
 ${Object.keys(clByTarget).sort((x, y) => clByTarget[y] - clByTarget[x]).map(k => `<tr><td>${escapeHtml(k)}</td><td class="num">${clByTarget[k]}件</td></tr>`).join('')}
 <tr><td><strong>合計</strong></td><td class="num"><strong>${cl.length}件</strong></td></tr></table>` : ''}
