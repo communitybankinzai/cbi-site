@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-09-23",
+          "title": "防災MAP 北印旛沼の堤防決壊地点・浸水範囲（公式推定）レイヤー追加＋標高による浸水試算 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/levee-breaches.json",
+            "site/inzai-disaster-map/app.js",
+            "site/inzai-disaster-map/index.html",
+            "site/inzai-disaster-map/styles.css",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json",
+            "scripts/levee-breach/",
+            "cidao/2026-09-23_北印旛沼決壊_浸水範囲の読み取りと試算.md"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "県PDFの図形を水面マスクのECCで地理院地図に位置合わせ（相関0.95）。試算はT.P.3.0〜3.5mでIoU0.87（内部資料）。本番で表示・ON/OFF確認。session: 56c6ead0-bad4-4b74-ae1b-35ae32f92fdb / output: 40,713 / cost: $11.06"
+        },
+        {
+          "date": "2026-09-23",
           "title": "防災MAPの現況確認と、避難指示の理由に川名を出す修正（版20260923i） 0.2時間",
           "category": "保守",
           "outputs": [
@@ -6982,6 +7000,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "💥 北印旛沼の浸水範囲：県・水資源機構が新しい推定図を出したら levee-breaches.json を差し替える（引き水・範囲の変化）",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "県または水資源機構が9/22 16時より新しい浸水状況図を公表すること",
+          "note": "手順は cidao/2026-09-23_北印旛沼決壊_浸水範囲の読み取りと試算.md と scripts/levee-breach/。沼の水位 5.04m が Y.P. か T.P. かも未確認"
+        },
         {
           "due": "未定",
           "title": "🔁 次の災害のときに防災MAPの取得間隔を元に戻す（CIDAO_POLL_SLOWDOWN を 1 へ）",
