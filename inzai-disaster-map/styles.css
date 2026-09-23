@@ -3709,3 +3709,12 @@ body.citizen-road-editing { overflow: hidden; }
 .river-why-table th, .river-why-table td { border: 1px solid #d5dbe4; padding: 4px 6px; text-align: left; vertical-align: top; }
 .river-why-table th { background: #eef3f8; }
 .river-why-table td:first-child { color: #16324f; width: 38%; }
+
+/* 📈 沼の水位の推移（2026-09-24） */
+.river-history summary { cursor: pointer; }
+.river-history-body { font-size: 12px; }
+.river-history-chart { width: 100%; height: auto; display: block; margin: 6px 0 4px; }
+.river-history-legend { list-style: none; padding: 0; margin: 0 0 4px; }
+.river-history-legend li { margin: 2px 0; }
+.river-history-swatch { display: inline-block; width: 14px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.river-history-diff { color: #64748b; margin-left: 6px; font-size: 11px; }

@@ -5960,6 +5960,107 @@ async function refreshRiverLevel(manual) {
 }
 
 // ============================================================
+// 📈 沼の水位 48時間の推移（2026-09-24・56c6ead0）
+// 記録は CiDAO の disaster_river_levels（MAP が開かれたときだけ貯まる＝抜けがある）。
+// 無料枠の呼び出し回数を増やさないよう、折りたたみを開いたときだけ読む。index.html は触らず、
+// #river-content の直後に差し込む（#river-content は innerHTML で描き直されるので、その外に置く）
+// ============================================================
+const RIVER_HISTORY_LINES = [
+  { id: "nishi-inbanuma", name: "西印旛沼", color: "#1d4ed8" },
+  { id: "kita-inbanuma", name: "北印旛沼", color: "#c2410c" },
+  { id: "teganuma", name: "手賀沼", color: "#2f855a" }
+];
+// 基準線（画面の水位欄と同じ値。印旛沼は計画高水位、手賀沼ははん濫危険水位）
+const RIVER_HISTORY_REFS = [
+  { level: 4.25, label: "印旛沼 計画高水位 4.25m", color: "#b91c1c" },
+  { level: 2.80, label: "手賀沼 危険 2.80m", color: "#15803d" }
+];
+const RIVER_HISTORY_HOURS = 48;
+let riverHistoryLoadedAt = 0;
+
+function initRiverHistory() {
+  const content = document.getElementById("river-content");
+  if (!content || document.getElementById("river-history")) return;
+  const box = document.createElement("details");
+  box.id = "river-history";
+  box.className = "river-tone river-history";
+  box.innerHTML = `<summary class="river-tone-title">📈 沼の水位 ${RIVER_HISTORY_HOURS}時間の推移</summary><div id="river-history-body" class="river-history-body">開くと読み込みます。</div>`;
+  content.insertAdjacentElement("afterend", box);
+  box.addEventListener("toggle", () => {
+    if (box.open && Date.now() - riverHistoryLoadedAt > 5 * 60 * 1000) loadRiverHistory();
+  });
+}
+
+async function loadRiverHistory() {
+  const body = document.getElementById("river-history-body");
+  const endpoint = APP_CONFIG.riverLevelEndpoint;
+  if (!body || !endpoint) return;
+  body.textContent = "読み込み中…";
+  try {
+    const res = await fetch(`${endpoint}?history=1&hours=${RIVER_HISTORY_HOURS}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    riverHistoryLoadedAt = Date.now();
+    body.innerHTML = renderRiverHistory(data.readings || []);
+  } catch (error) {
+    body.innerHTML = `<div class="detail-empty">推移を読み込めませんでした（${escapeHtml(error?.message || "接続エラー")}）。</div>`;
+  }
+}
+
+function renderRiverHistory(readings) {
+  const now = Date.now();
+  const from = now - RIVER_HISTORY_HOURS * 3600 * 1000;
+  const series = RIVER_HISTORY_LINES.map(line => ({
+    ...line,
+    points: readings
+      .filter(r => r.station_id === line.id && Number.isFinite(r.level) && r.level > 0)
+      .map(r => ({ t: Date.parse(r.observed_at), v: r.level }))
+      .filter(p => p.t >= from)
+      .sort((a, b) => a.t - b.t)
+  })).filter(s => s.points.length);
+  if (!series.length) return '<div class="detail-empty">まだ記録がありません（2026年9月24日から貯め始めました）。</div>';
+  const all = series.flatMap(s => s.points);
+  let lo = Math.min(...all.map(p => p.v));
+  let hi = Math.max(...all.map(p => p.v));
+  // 近い基準線は目盛りに入れる（0.6m以内）
+  RIVER_HISTORY_REFS.forEach(r => { if (r.level > hi && r.level - hi < 0.6) hi = r.level; if (r.level < lo && lo - r.level < 0.6) lo = r.level; });
+  const pad = Math.max(0.1, (hi - lo) * 0.08);
+  lo -= pad; hi += pad;
+  const W = 320, H = 190, L = 34, R = 8, T = 8, B = 22;
+  const x = t => L + (t - from) / (now - from) * (W - L - R);
+  const y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const GAP = 40 * 60 * 1000; // 40分以上あいたら線を切る（誰も見ていない時間は記録が無い）
+  const path = pts => pts.map((p, i) => `${i && p.t - pts[i - 1].t <= GAP ? "L" : "M"}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join("");
+  const step = hi - lo > 2 ? 0.5 : hi - lo > 1 ? 0.25 : 0.1;
+  const yTicks = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) yTicks.push(v);
+  const xTicks = [];
+  const d0 = new Date(from); d0.setMinutes(0, 0, 0);
+  for (let t = d0.getTime() + 3600 * 1000; t < now; t += 3600 * 1000) if (new Date(t).getHours() % 12 === 0) xTicks.push(t);
+  const refs = RIVER_HISTORY_REFS.filter(r => r.level >= lo && r.level <= hi);
+  const svg = `<svg class="river-history-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="沼の水位の推移">
+    ${yTicks.map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#e2e8f0"/><text x="${L - 4}" y="${(y(v) + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#64748b">${v.toFixed(step < 0.25 ? 1 : 2)}</text>`).join("")}
+    ${xTicks.map(t => { const d = new Date(t); return `<line x1="${x(t).toFixed(1)}" x2="${x(t).toFixed(1)}" y1="${T}" y2="${H - B}" stroke="#e2e8f0"/><text x="${x(t).toFixed(1)}" y="${H - 8}" text-anchor="middle" font-size="9" fill="#64748b">${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}時</text>`; }).join("")}
+    ${refs.map(r => `<line x1="${L}" x2="${W - R}" y1="${y(r.level).toFixed(1)}" y2="${y(r.level).toFixed(1)}" stroke="${r.color}" stroke-dasharray="4 3"/><text x="${W - R}" y="${(y(r.level) - 3).toFixed(1)}" text-anchor="end" font-size="9" fill="${r.color}">${escapeHtml(r.label)}</text>`).join("")}
+    ${series.map(s => `<path d="${path(s.points)}" fill="none" stroke="${s.color}" stroke-width="2"/>`).join("")}
+  </svg>`;
+  const legend = series.map(s => {
+    const last = s.points[s.points.length - 1];
+    const first = s.points[0];
+    const diff = last.v - first.v;
+    const d = new Date(last.t);
+    return `<li><span class="river-history-swatch" style="background:${s.color}"></span>${escapeHtml(s.name)} <b>${last.v.toFixed(2)}m</b>（${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}）` +
+      `<span class="river-history-diff">期間中 ${diff >= 0 ? "▲" : "▼"}${Math.abs(diff).toFixed(2)}m</span></li>`;
+  }).join("");
+  const firstAt = new Date(Math.min(...all.map(p => p.t)));
+  return `${svg}<ul class="river-history-legend">${legend}</ul>
+    <p class="river-note">記録は、この地図が開かれたときに10分ごとの値を貯めたものです。誰も開いていない時間は抜けるので、線が途切れます（最初の記録：${firstAt.getMonth() + 1}/${firstAt.getDate()} ${firstAt.getHours()}:${String(firstAt.getMinutes()).padStart(2, "0")}）。出典は千葉県 水防情報。0.00と欠測は除いています。</p>`;
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initRiverHistory);
+else initRiverHistory();
+
+// ============================================================
 // 地図の上の警告帯（2026-09-21）
 // 帯を増やすと地図が見えなくなるので、市の避難情報と水位を1本にまとめる。
 // 1行＝1項目で、はみ出す分は「…」。市の避難情報は押すと全文と出典を開く。
