@@ -7002,6 +7002,15 @@
       "plans": [
         {
           "due": "未定",
+          "title": "💥 決壊・浸水範囲レイヤーの既定ONを、北印旛沼の浸水が解消したらOFFへ戻す（index.html の checked・PRESETS.kansui・PRESETS.reset の3か所）",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "県・水資源機構が北印旛沼周辺の浸水解消（または避難指示の解除）を発表すること",
+          "note": "2026-09-23 事業主指示で既定ONにした。戻す判断は事業主に確認してから"
+        },
+        {
+          "due": "未定",
           "title": "💥 北印旛沼の浸水範囲：県・水資源機構が新しい推定図を出したら levee-breaches.json を差し替える（引き水・範囲の変化）",
           "category": "保守",
           "priority": "中",

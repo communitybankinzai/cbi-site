@@ -1,6 +1,6 @@
 ## 2026-09-23 💥 堤防の決壊地点・浸水範囲（公式の推定）
 
-- レイヤー `leveeBreach`（index.html「🏫 避難所・防災拠点」内・**既定OFF**）。データは `levee-breaches.json`（`events[]` に `breaches`（✕）と `floodAreas`（[lat,lon] の外周））。app.js の `ensureLeveeBreachLayer`／`renderLeveeBreaches`、面は `leveeBreachPane`（zIndex 435・SVG。市民記録の線より下）。
+- レイヤー `leveeBreach`（index.html「🏫 避難所・防災拠点」内・通行止めの上）。**北印旛沼の対応中は既定ON**（2026-09-23 事業主指示。index.html の checked／`PRESETS.kansui`／`PRESETS.reset` の3か所に入れてある。戻すときも3か所）。データは `levee-breaches.json`（`events[]` に `breaches`（✕）と `floodAreas`（[lat,lon] の外周））。app.js の `ensureLeveeBreachLayer`／`renderLeveeBreaches`、面は `leveeBreachPane`（zIndex 435・SVG。市民記録の線より下）。
 - いまは台風25号 北印旛沼（成田市船形干拓・下方）の1件。出典は千葉県の発表 kitainba.html と別紙2 PDF（9/22 16時時点・水資源機構がドローンで推定）。
 - **座標の作り方（次の災害でも使える）**：県のPDFは浸水範囲の線と✕が**図形（ベクター）**、背景地図は画像。背景画像の水面（青）と地理院地図 std の水面 (190,210,255) のマスクを `cv2.findTransformECC`（アフィン）で重ね（相関0.95）、PDFの座標→背景画像→地理院のピクセル→緯度経度と変換した。駅を目で拾う方法は誤差60〜450mで使えなかった。スクリプトはセッションの scratchpad（reg.py／ecc.py／conv.py）で、手順は保管庫ノートに残す。
 - **CBIの試算（5m標高で決壊点から水位別に広がりを計算）は載せない**（事業主決定A＝公式の推定だけ公開、試算は内部資料）。
