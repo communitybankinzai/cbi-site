@@ -5770,11 +5770,17 @@ function evacAlertHead(alert) {
 // 何による避難情報かを放送の本文から読む（2026-09-22：気象庁の「警戒レベル相当」と混同されたため）
 function evacAlertCause(alert) {
   const text = String(alert.message || "");
-  if (/印旛沼/.test(text)) return "印旛沼の水位による";
-  if (/手賀沼/.test(text)) return "手賀沼の水位による";
-  if (/利根川/.test(text)) return "利根川の増水による";
   if (/土砂/.test(text)) return "土砂災害のおそれによる";
-  if (/浸水|洪水|氾濫/.test(text)) return "浸水のおそれによる";
+  // 川・沼の名前は決め打ちにしない（2026-09-22 の放送は長門川・旧長門川・将監川だった）。
+  // 本文から拾って先頭2つまで並べる。「印旛沼の水位上昇」「将監川の一部越水」など言い回しも変わる
+  const waters = Array.from(new Set(text.match(/[^\s、。「」（）]{1,6}[川沼]/g) || []))
+    .filter(name => !/^(この|その)/.test(name))
+    .slice(0, 2);
+  if (waters.length) {
+    const how = /越水|氾濫|溢水/.test(text) ? "の越水による" : /水位|増水/.test(text) ? "の水位による" : "による";
+    return `${waters.join("・")}${how}`;
+  }
+  if (/浸水|洪水/.test(text)) return "浸水のおそれによる";
   return "";
 }
 
