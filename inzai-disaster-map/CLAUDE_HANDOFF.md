@@ -1,3 +1,9 @@
+## 2026-09-23 🚇 アンダーパスの位置（国土交通省）
+
+- レイヤー `underpassMlit`（「🚗 地形・道路の冠水リスク」内・roadFlood の下・既定OFF）。データ `underpass-mlit.json`（40か所）は国交省「全国のアンダーパス箇所マップ」（https://www.mlit.go.jp/road/saigai/underpass/map/map.html）が読む `json/83knt.geojson`（関東966か所・座標つき）から北緯35.66〜35.95・東経139.95〜140.40を取り出したもの。作り直しは `scripts/levee-breach/` ではなくセッションの up_export.py の要領（範囲で絞って name/路線名/管理者/座標だけ残す）。
+- 利用条件は国交省サイトの公共データ利用規約1.0。**「〜を加工して作成」の出典を消さないこと**。点は `underpassMlitPane`（455・SVG）。
+- **印西市が管理するアンダーパスはこのデータに0件**（本当に無いのか未報告かは不明）。既存の roadFlood（千葉国道事務所PDF・住所から推定）とは別資料。
+
 ## 2026-09-23 💥 堤防の決壊地点・浸水範囲（公式の推定）
 
 - レイヤー `leveeBreach`（index.html「🏫 避難所・防災拠点」内・通行止めの上）。**北印旛沼の対応中は既定ON**（2026-09-23 事業主指示。index.html の checked／`PRESETS.kansui`／`PRESETS.reset` の3か所に入れてある。戻すときも3か所）。データは `levee-breaches.json`（`events[]` に `breaches`（✕）と `floodAreas`（[lat,lon] の外周））。app.js の `ensureLeveeBreachLayer`／`renderLeveeBreaches`、面は `leveeBreachPane`（zIndex 435・SVG。市民記録の線より下）。

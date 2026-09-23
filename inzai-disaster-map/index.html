@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260923o">
+    <link rel="stylesheet" href="./styles.css?v=20260923p">
   </head>
   <body>
     <div class="app-shell">
@@ -196,6 +196,7 @@
                   <!-- 2026-09-21: このトグルは画面から失われていた（app.js 側の処理だけ生きていた）。
                        白井市の冠水実績（住民のSNS投稿から読み取り）を載せるにあたり復活させた -->
                   <label class="has-tip"><input type="checkbox" data-overlay="roadFlood"> <span class="layer-name">🚇 冠水に注意するアンダーパス等（千葉国道事務所）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>国土交通省 千葉国道事務所が公表している「千葉県内におけるアンダーパス部等の道路冠水注意箇所」（令和8年6月30日更新・95か所）です。大雨のときに冠水しやすい場所で、<strong>いま冠水しているという意味ではありません。</strong></p><p>位置は住所から割り出したもので、濃い印は番地まで、薄い印は町名・丁目までしか分からないもの（実際の場所から大きくずれることがある）です。住所の書かれていない15か所は載せていません。</p><p><a href="https://www.ktr.mlit.go.jp/chiba/chiba_index030.html" target="_blank" rel="noreferrer">千葉国道事務所の元の地図（PDF）</a></p><p>ここに載っていないアンダーパスもあります。全国のアンダーパスの位置は<a href="https://www.mlit.go.jp/road/road_fr4_000208.html" target="_blank" rel="noreferrer">国土交通省「道路の冠水対策」</a>で確認できます。<strong>冠水したアンダーパスには近づかないでください。</strong></p></span></span></label>
+                  <label class="has-tip"><input type="checkbox" data-overlay="underpassMlit"> <span class="layer-name">🚇 アンダーパスの位置（国土交通省）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>国土交通省が公開している<a href="https://www.mlit.go.jp/road/saigai/underpass/index.html" target="_blank" rel="noreferrer">全国のアンダーパス箇所マップ</a>から、印西市とその周りの40か所を紫の点で出します。国道のほか、県や市町が管理するものも入っています。<strong>いま冠水しているかどうかは示していません。</strong>大雨のときはアンダーパスに近づかないでください。</p><p>このデータに、印西市が管理するアンダーパスは入っていません（ないのか、載っていないだけなのかは分かりません）。</p><p>出典：国土交通省「全国のアンダーパス箇所マップ」を加工して作成（公共データ利用規約1.0）</p></span></span></label>
                   <label class="has-tip"><input type="checkbox" data-overlay="pastFlood"> <span class="layer-name">🌊 過去の冠水実績（運営が記録した地点）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>過去に冠水したと<strong>確認できた地点</strong>を、運営が1件ずつ記録したものです（県の災害対策本部会議資料、住民の投稿など）。出典と確認日をポップアップに書いています。</p><p><strong>対象日のしぼり込みは掛かりません。</strong>いつの対象日を選んでいても、記録のある地点をすべて表示します。長く残す実績だからです。</p><p>ハザード想定でも、いまの冠水状況でもありません。</p></span></span></label>
 
                   <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="passedRoads" checked> <span class="layer-name">🔵 通れた道（GPS記録）<span id="passed-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>この地図を見ている人が、スマホの位置情報で<strong>実際に通れた道</strong>を記録したものです。赤（冠水した道路）と見比べて、通れる道を探す参考にしてください。</p><p>色の濃さは記録の新しさです。<strong>6時間以上前の記録は「冠水時に通れた実績」として薄い青で残します。</strong>より強い雨では冠水することがあり、安全を保証するものではありません。</p><p>「通れない」には記録時刻の最寄りアメダス（我孫子・佐倉・成田・船橋）の雨量を添え、<strong>☔ 雨あり＝冠水の可能性／🌤 雨なし＝工事・事故など別の理由の可能性</strong>の目安を出します（確定ではありません）。</p><p>記録は匿名です（端末の乱数IDと軌跡だけが送られ、名前や電話番号は送られません）。</p></span></span></label>
@@ -1771,7 +1772,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260923o"></script>
+    <script src="./app.js?v=20260923p"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

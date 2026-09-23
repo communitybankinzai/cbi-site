@@ -4940,6 +4940,42 @@ document.addEventListener("click", event => {
   renderLeveeSim();
 });
 
+// 🚇 アンダーパスの位置（国土交通省）（2026-09-23追加・既定OFF）
+// 国交省「全国のアンダーパス箇所マップ」の関東分から、印西市とその周りを取り出した underpass-mlit.json。
+// 公共データ利用規約1.0。出典は「加工して作成」と書く（国が作ったように見せない）。
+const underpassMlitLayer = L.layerGroup();
+// 点は冠水の線（450）より上に置き、SVG で描く（canvas だと上の層にクリックを吸われる）
+map.createPane("underpassMlitPane");
+map.getPane("underpassMlitPane").style.zIndex = 455;
+const underpassMlitRenderer = L.svg({ pane: "underpassMlitPane" });
+let underpassMlitLoaded = false;
+async function ensureUnderpassMlitLayer() {
+  if (underpassMlitLoaded) return;
+  underpassMlitLoaded = true;
+  try {
+    const res = await fetch("underpass-mlit.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`underpass-mlit.json HTTP ${res.status}`);
+    const data = await res.json();
+    const src = data.source || {};
+    (data.points || []).forEach(p => {
+      if (!Number.isFinite(p.lat) || !Number.isFinite(p.lon)) return;
+      L.circleMarker([p.lat, p.lon], {
+        pane: "underpassMlitPane", renderer: underpassMlitRenderer,
+        radius: 7, color: "#ffffff", weight: 2, fillColor: "#6d28d9", fillOpacity: 0.9
+      }).bindPopup(
+        `<strong>🚇 ${escapeHtml(p.name || "アンダーパス")}</strong><br>` +
+        (p.road ? `路線: ${escapeHtml(p.road)}<br>` : "") +
+        (p.manager ? `管理者: ${escapeHtml(p.manager)}<br>` : "") +
+        `<strong>大雨のときは近づかないでください。</strong>いま冠水しているかどうかは示していません。<br>` +
+        `<span style="font-size:11px;">${escapeHtml(src.credit || "出典：国土交通省")}（<a href="${escapeAttribute(src.url || "")}" target="_blank" rel="noreferrer">元の地図</a>・${escapeHtml(data.fetchedAt || "")}取得）</span>`
+      ).addTo(underpassMlitLayer);
+    });
+  } catch (error) {
+    underpassMlitLoaded = false;
+    console.error("アンダーパス（国土交通省）の読み込みに失敗:", error);
+  }
+}
+
 // 🚃 鉄道の運休・遅れ区間（2026-09-21追加）
 // 市「災害時の公共交通のご案内」は「成田駅～我孫子駅間」のように駅名で来るため、
 // 区間の形（rail-segments.json・OpenStreetMap 由来／pipeline/build_rail_segments.py で生成）と
@@ -5361,6 +5397,11 @@ function toggleOverlay(name, checked) {
   if (name === "kominkan") {
     if (checked) { ensureKominkanLayer(); kominkanLayer.addTo(map); }
     else map.removeLayer(kominkanLayer);
+    return;
+  }
+  if (name === "underpassMlit") {
+    if (checked) { ensureUnderpassMlitLayer(); underpassMlitLayer.addTo(map); }
+    else map.removeLayer(underpassMlitLayer);
     return;
   }
   if (name === "leveeSim") {
