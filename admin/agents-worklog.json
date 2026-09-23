@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-23",
+          "title": "千葉県被害マップ：続報の自動取り込み・第7報反映・SNS告知 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "scripts/build_chiba_higai.py（--auto 追加）",
+            "scripts/update-chiba-higai.ps1（新規）",
+            "Windowsタスク CBI-ChibaHigai（毎時05分）",
+            "site/chiba-typhoon25/data.json",
+            "site/assets/sns/2026-09-23_chiba_higai/（画像2枚・投稿文）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "9/23 8:00 の第7報で印西市の死者1名が発表されたため、先に予約した告知（『図にすると見える世界が変わる』趣旨）を投稿前に取り消し、お悔やみを入れた落ち着いた文面へ書き換えて予約し直した（q1790123369710）。臨時報は人的被害だけの1ページで、停電・浸水は第5報が最新。PDFのURLは fileid が報ごとに変わるが鍵（key）は共通。前件（output 179,139）との差分 → 0.5時間\nsession: e93e26f4-222b-44cf-be09-ef5e3343b046"
+        },
+        {
+          "date": "2026-09-23",
           "title": "千葉県の台風25号 被害情報PDFを市町村別の地図ページにする（新規 /chiba-typhoon25/）0.6時間",
           "category": "実装",
           "outputs": [
@@ -6911,6 +6926,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🛑 台風25号が収束したら被害マップの自動更新を止める（タスク CBI-ChibaHigai）",
+          "category": "保守",
+          "priority": "中",
+          "note": "止め方：管理者PowerShell で `Disable-ScheduledTask -TaskName CBI-ChibaHigai`（消すなら Unregister）。ページ /chiba-typhoon25/ をどう畳むか（残す・過去の記録として注記・削除）も決める。次の災害で使い回すなら、台風名やPDF名の条件（『被害情報』を含む）を引数にする改修が必要。ログは scripts/_chiba_higai.log。"
+        },
         {
           "due": "未定",
           "title": "🗺 千葉県の被害情報マップを次の報（第6報以降）で更新するか決める",
