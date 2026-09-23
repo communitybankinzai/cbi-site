@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-23",
+          "title": "Vercel無料枠の警告メール対応（在席確認の間隔見直し・CiDAO取得の一時的な間引き）0.4時間",
+          "category": "保守",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/metaverse-presence/route.ts（ACTIVE_SEC 90→300）",
+            "site/inzai-disaster-map/app.js（在席150秒＋非表示中は送らない／CIDAO_POLL_SLOWDOWN=2）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "⚠ 最初の診断（CDNキャッシュが効いていない）は誤り。1回だけのアクセスで X-Vercel-Cache: MISS を見たのが原因で、2回叩くと全て HIT だった。実測し直して在席確認（40秒ごと・キャッシュ不可）が主因と特定。次の災害では app.js の CIDAO_POLL_SLOWDOWN を 1 に戻す。Vercel の使用量APIはこのトークンでは cidao チームにアクセスできず403（使用量の確認は中司さんの管理画面が必要）。\nsession: e93e26f4-222b-44cf-be09-ef5e3343b046"
+        },
+        {
+          "date": "2026-09-23",
           "title": "被害マップを2災害（8月豪雨・台風25号）対応にし、印西市の比較表とトップからの導線を追加 0.6時間",
           "category": "実装",
           "outputs": [
@@ -6956,6 +6969,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🔁 次の災害のときに防災MAPの取得間隔を元に戻す（CIDAO_POLL_SLOWDOWN を 1 へ）",
+          "category": "保守",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "次に印西市周辺で災害（大雨・台風・地震）が起きること。2026-09-23 に Vercel の無料枠対策として CiDAO から取る情報の取り直しを2倍の間隔にしているため、災害時は app.js 冒頭の CIDAO_POLL_SLOWDOWN を 1 にして push する（気象庁由来の雨雲・キキクル・警報は対象外）。",
+          "note": "あわせて当月の Vercel 使用量（関数呼び出し）を確認する。100万回/月を超えるとプロジェクトが自動停止し、MAPの避難所・公式発表・通行止め・水位と3Dワールドの受付が止まる。使用量はClaudeのトークンでは読めない（403）ので管理画面で見る。"
+        },
         {
           "due": "未定",
           "title": "🔍 場所さがしの結果を近隣だけに絞るか決める（いまは全国の同名地名も出る）",
