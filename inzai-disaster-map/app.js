@@ -1860,6 +1860,7 @@ initMapStatusAutoHide();
 initPlaceSearch();
 initRecordEvents();
 initColorGuide();
+initRainPanel();
 initModeration();
 scheduleMapResize();
 
@@ -6436,6 +6437,7 @@ function renderPassedRoadsList() {
   const filter = document.getElementById("passed-roads-filter")?.value || "all";
   const rows = passedRoadsData
     .filter(road => filter === "all" || road.kind === filter)
+    .filter(passesRainFilter)
     .sort((a, b) => {
       const ta = new Date(a.endedAt).getTime() || 0;
       const tb = new Date(b.endedAt).getTime() || 0;
@@ -7039,6 +7041,133 @@ function rainVerdictOf(road) {
   return RAIN_VERDICTS[road?.rain?.verdict] || RAIN_VERDICTS.unknown;
 }
 
+// ☔ 記録した時刻の雨量でしぼり込む（2026-09-23 中司さんの要望）。
+// 3つとも押された状態（既定）はしぼり込みなし＝雨量を取れなかった記録も出す。
+// 1つでも外すと、選んだ判定の記録だけを出す（雨量なし・取得失敗は外れる）。
+// みんつくの投稿（kansui）は雨量を持たないため対象外（注記を凡例に出す）。
+var rainVerdictFilter = { flood_likely: true, light_rain: true, no_rain: true };
+// 💧 積算雨量のしぼり込み（2026-09-23 追加指示）。window は r1h／r3h／r24h、min は mm（null＝未指定）
+var rainAmountFilter = { window: "r24h", min: null };
+const RAIN_WINDOW_LABELS = { r1h: "1時間", r3h: "3時間", r24h: "24時間" };
+
+function rainFilterActive() {
+  return Object.values(rainVerdictFilter).some(on => !on) || rainAmountFilter.min !== null;
+}
+
+function passesRainFilter(road) {
+  if (!rainFilterActive()) return true;
+  const rain = road?.rain;
+  if (!rain) return false; // 雨量を持たない記録は、しぼり込み中は出さない
+  if (Object.values(rainVerdictFilter).some(on => !on)) {
+    if (!rain.verdict || !rainVerdictFilter[rain.verdict]) return false;
+  }
+  if (rainAmountFilter.min !== null) {
+    const value = rain[rainAmountFilter.window];
+    if (typeof value !== "number" || value < rainAmountFilter.min) return false;
+  }
+  return true;
+}
+
+// しぼり込みの中身は凡例のボタン1つに畳んである（行が増えると地図が下がるため）。
+// 何で絞っているかはボタンの文字で示す（例：💧 ☔🌦 ／ 24時間30mm以上）
+function syncRainFilterNote() {
+  const chip = document.getElementById("legend-rain-amount");
+  const active = rainFilterActive();
+  document.querySelectorAll("#rain-panel [data-rain]").forEach(button => {
+    button.setAttribute("aria-pressed", String(Boolean(rainVerdictFilter[button.dataset.rain])));
+  });
+  if (!chip) return;
+  const parts = [];
+  if (Object.values(rainVerdictFilter).some(on => !on)) {
+    parts.push(Object.keys(rainVerdictFilter).filter(key => rainVerdictFilter[key]).map(key => RAIN_VERDICTS[key].icon).join("") || "該当なし");
+  }
+  if (rainAmountFilter.min !== null) parts.push(`${RAIN_WINDOW_LABELS[rainAmountFilter.window]}${rainAmountFilter.min}mm以上`);
+  chip.textContent = active ? `💧 ${parts.join(" ／ ")}` : "💧 雨量";
+  chip.setAttribute("aria-pressed", String(active));
+  chip.title = active
+    ? "記録した時刻の雨量でしぼり込み中（みんつくの投稿は雨量が無いため対象外）。押すと変更・解除"
+    : "記録した時刻の雨量でしぼり込む（雨の有無・積算雨量）";
+}
+
+function applyRainFilter() {
+  syncRainFilterNote();
+  renderPassedRoadsLayer();
+  renderPassedRoadsList();
+}
+
+function resetRainFilter() {
+  Object.keys(rainVerdictFilter).forEach(key => { rainVerdictFilter[key] = true; });
+  rainAmountFilter.min = null;
+  const input = document.getElementById("rain-min-input");
+  if (input) input.value = "";
+  applyRainFilter();
+}
+
+// 💧 雨量のパネル。期間・色の見方と同じ場所に出すので、開いたら他方を閉じる
+function initRainPanel() {
+  const panel = document.getElementById("rain-panel");
+  const chip = document.getElementById("legend-rain-amount");
+  if (!panel || !chip) return;
+  const input = () => document.getElementById("rain-min-input");
+  // ⚠ この初期化はファイル前半から呼ばれ、rainAmountFilter の代入（後方）はまだ走っていない。
+  // var の巻き上げで宣言だけがあり値は undefined なので、既定値で読む（2026-09-23 に踏んだ）
+  const state = () => (typeof rainAmountFilter !== "undefined" && rainAmountFilter) || { window: "r24h", min: null };
+  const syncWindowButtons = () => {
+    panel.querySelectorAll("[data-rain-window]").forEach(button => {
+      button.setAttribute("aria-pressed", String(button.dataset.rainWindow === state().window));
+    });
+  };
+  chip.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) {
+      document.getElementById("range-panel")?.setAttribute("hidden", "");
+      document.getElementById("color-guide")?.setAttribute("hidden", "");
+      syncWindowButtons();
+      if (input() && rainAmountFilter.min !== null) input().value = String(rainAmountFilter.min);
+    }
+    syncRainFilterNote();
+  });
+  panel.addEventListener("click", event => {
+    const verdict = event.target.closest("[data-rain]");
+    if (verdict) {
+      rainVerdictFilter[verdict.dataset.rain] = verdict.getAttribute("aria-pressed") !== "true";
+      applyRainFilter();
+      return;
+    }
+    const win = event.target.closest("[data-rain-window]");
+    if (win) {
+      rainAmountFilter.window = win.dataset.rainWindow;
+      syncWindowButtons();
+      if (rainAmountFilter.min !== null) applyRainFilter();
+      return;
+    }
+    const preset = event.target.closest("[data-rain-min]");
+    if (preset) {
+      rainAmountFilter.min = Number(preset.dataset.rainMin);
+      if (input()) input().value = preset.dataset.rainMin;
+      applyRainFilter();
+      return;
+    }
+    if (event.target.closest("#rain-apply")) {
+      const value = Number(input()?.value);
+      rainAmountFilter.min = Number.isFinite(value) && value > 0 ? value : null;
+      applyRainFilter();
+      panel.hidden = true;
+      return;
+    }
+    if (event.target.closest("#rain-clear")) {
+      resetRainFilter();
+      panel.hidden = true;
+    }
+  });
+  document.addEventListener("click", event => {
+    if (panel.hidden) return;
+    if (event.target.closest("#rain-panel") || event.target.closest("#legend-rain-amount")) return;
+    panel.hidden = true;
+  });
+  syncWindowButtons();
+}
+
 function rainVerdictHtml(road) {
   const rain = road?.rain;
   if (!rain) return "";
@@ -7193,7 +7322,10 @@ function initColorGuide() {
   chip.addEventListener("click", () => {
     panel.hidden = !panel.hidden;
     chip.setAttribute("aria-pressed", String(!panel.hidden));
-    if (!panel.hidden) document.getElementById("range-panel")?.setAttribute("hidden", "");
+    if (!panel.hidden) {
+      document.getElementById("range-panel")?.setAttribute("hidden", "");
+      document.getElementById("rain-panel")?.setAttribute("hidden", "");
+    }
   });
   document.getElementById("legend-range")?.addEventListener("click", () => {
     panel.hidden = true;
@@ -7515,6 +7647,7 @@ function renderPassedRoadsLayer() {
   passedRoadsData.slice().reverse().forEach(road => {
     if (!passesWhenFilter(road.endedAt)) return;
     if (!passedKindFilter[passedRoadKindOf(road)]) return;
+    if (!passesRainFilter(road)) return;
     const shape = passedRoadShape(road).addTo(passedRoadsLayer);
     passedRoadShapes.set(road.id, shape);
   });
