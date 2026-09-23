@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-24",
+          "title": "雨量と冠水の時間差分析＋記録を雨量でしぼり込む機能（版20260924c） 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（rainVerdictFilter・rainAmountFilter・passesRainFilter・initRainPanel）",
+            "site/inzai-disaster-map/index.html（💧 雨量ボタンと #rain-panel・版 20260923r→20260924c）",
+            "site/inzai-disaster-map/styles.css",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": true,
+          "note": "事業主の問い『短期的な雨量は時間差で冠水する傾向はあるか』に対し、印西市周辺のみんつく投稿97件とアメダス3地点平均の1時間雨量で相関を実測（同時刻 r=+0.53／昼のみ+0.61、1時間後+0.40、2時間後+0.10、3時間後−0.03、積算24h+0.23）＝時間差はほぼ無く、その時間の雨が効くと回答。続けて指示A＋追加指示で、記録を雨量でしぼり込む機能を実装（雨の有無3種＋積算雨量1/3/24時間×しきい値）。凡例の行が増えて地図が下がらないよう1つのボタンに畳んだ。件数は本番画面とPythonの突合で一致（24h30mm以上140件・1h5mm以上18件）。⚠ 途中2件の不具合を自分で踏んで修正：(1) initRainPanel が var の代入前に rainAmountFilter を読み初期化が全停止、(2) CSS が後続の .range-panel に負けてパネルがズームボタンに重なった（実機画面で発見）。前件（output 101,335）との差分 43,318 → 0.4時間\nsession: d338459c-e5b8-4513-ae80-ce489b3369cc / output: 144,653 / cost: $63.57"
+        },
+        {
+          "date": "2026-09-24",
           "title": "管理画面「団体書類」タブ新設（GAS OrgDocs.gs＋収支報告書拡張・活動報告書）＋防災MAP アンダーパス(国交省)・水位解説・Y.P.注記＋SNS投稿3本 1.3時間",
           "category": "実装",
           "outputs": [
