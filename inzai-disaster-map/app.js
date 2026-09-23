@@ -1529,9 +1529,13 @@ map.getPane("passedRoadsPane").style.zIndex = 440;
 // 堤防の決壊地点と浸水範囲（公式の推定）。面が広いので、市民記録の線（440・450）より下に置く
 map.createPane("leveeBreachPane");
 map.getPane("leveeBreachPane").style.zIndex = 435;
-// CBI の浸水の試算（公式の推定より下）
+// CBI の浸水の試算。公式の推定（435）の上・市民記録の線（440）の下。
+// 下に置くと 3.0〜3.5m では公式の灰色に隠れて見えなかったので、上に置いて塗りを薄くした（2026-09-23）
 map.createPane("leveeSimPane");
-map.getPane("leveeSimPane").style.zIndex = 432;
+map.getPane("leveeSimPane").style.zIndex = 437;
+// 決壊地点の✕は試算の面より上（面の下だと押せない）
+map.createPane("leveeBreachMarkPane");
+map.getPane("leveeBreachMarkPane").style.zIndex = 438;
 map.createPane("kansuiPane");
 map.getPane("kansuiPane").style.zIndex = 450;
 
@@ -4864,7 +4868,7 @@ function renderLeveeBreaches(data) {
     (ev.breaches || []).forEach(b => {
       if (!Number.isFinite(b.lat) || !Number.isFinite(b.lon)) return;
       L.marker([b.lat, b.lon], {
-        pane: "leveeBreachPane",
+        pane: "leveeBreachMarkPane",
         icon: L.divIcon({ className: "levee-breach-mark", html: "✕", iconSize: [28, 28], iconAnchor: [14, 14] }),
         title: `決壊地点：${b.name || ""}`
       }).bindPopup(
@@ -4879,7 +4883,7 @@ function renderLeveeBreaches(data) {
 
 // 🧪 決壊地点からの浸水の試算（CBI・公式ではない）（2026-09-23追加・事業主決定＝一般公開・既定OFF）
 // levee-sim.json は 5m標高で「決壊地点につながる、この高さ以下の陸地」を塗ったもの（scripts/levee-breach/）。
-// 水位はボタンで切り替える。公式の推定（leveeBreach）より下の面に描く。
+// 水位はボタンで切り替える。公式の推定（leveeBreach）の上に、薄い塗り＋太い点線で描く。
 const leveeSimLayer = L.layerGroup();
 const leveeSimRenderer = L.svg({ pane: "leveeSimPane" });
 let leveeSimData = null;
@@ -4920,11 +4924,11 @@ function renderLeveeSim() {
     L.polygon(rings, {
       pane: "leveeSimPane",
       renderer: leveeSimRenderer,
-      color: "#c2410c",
-      weight: 1.5,
-      dashArray: "4 4",
+      color: "#ea580c",
+      weight: 3,
+      dashArray: "6 5",
       fillColor: "#f97316",
-      fillOpacity: 0.28
+      fillOpacity: 0.16
     }).bindPopup(popup).addTo(leveeSimLayer);
   });
 }
