@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260924f">
+    <link rel="stylesheet" href="./styles.css?v=20260924g">
   </head>
   <body>
     <div class="app-shell">
@@ -27,6 +27,8 @@
             <input id="incident-date" type="date">
           </label>
           <button class="tool-button" id="help-button" type="button">使い方</button>
+          <!-- 2026-09-24: 「個人情報が抜かれるのでは」という不安で使われないため、何を送っていないか／送っているかを常時開けるようにした -->
+          <a class="tool-button" href="./data.html" target="_blank" rel="noreferrer" title="このMAPが送るもの・送らないもの（氏名や連絡先は集めていません）">🔒 データの扱い</a>
           <button class="tool-button official-button" id="official-links-button" type="button">公式情報</button>
           <button class="tool-button operator-toggle" id="operator-tools-toggle" type="button" aria-expanded="false" aria-controls="operator-tools" title="記録の登録・CSV出力など、運営・検証用の操作を出します">⚙ 運営用</button>
           <!-- 運営・検証用の操作。ふだんの利用者には見せない（⚙ 運営用 で開閉・端末に記憶・?ops=1 でも開く）。id と動作は変えていない -->
@@ -1638,7 +1640,7 @@
           <li><b>回答後にピン設定</b><span>分かった場所を地図上でクリックします。</span></li>
           <li><b>内容を確認して保存</b><span>分類、重要度、写真状態を確認します。</span></li>
         </ol>
-        <div class="help-note">CBIが自主的に試作している画面です（印西市の公式情報ではありません）。SNS投稿の登録や被害候補などの入力データは、このブラウザ内だけに保存され、印西市や運営者には送信されません。「通れない道を追加」「通れた道を追加」で記録した道だけは、匿名の位置が地図に送られ、ほかの人にも見えます。操作を試し、地域で役立ちそうか、心配な点は何か、どのような参加なら協力できそうかをご検討ください。</div>
+        <div class="help-note">CBIが自主的に試作している画面です（印西市の公式情報ではありません）。SNS投稿の登録や被害候補などの入力データは、このブラウザ内だけに保存され、印西市や運営者には送信されません。「通れない道を追加」「通れた道を追加」で記録した道だけは、匿名の位置が地図に送られ、ほかの人にも見えます。氏名・住所・電話・メールは集めていません（<a href="./data.html" target="_blank" rel="noreferrer">このMAPが送るもの・送らないもの</a>）。操作を試し、地域で役立ちそうか、心配な点は何か、どのような参加なら協力できそうかをご検討ください。</div>
         <div class="modal-actions">
           <span></span><span></span>
           <button class="tool-button" type="button" data-close-dialog>閉じる</button>
@@ -1822,7 +1824,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260924f"></script>
+    <script src="./app.js?v=20260924g"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

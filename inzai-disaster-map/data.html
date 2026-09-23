@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>このMAPが送るもの・送らないもの｜印西市 災害状況整合MAP</title>
+<meta name="description" content="印西市 災害状況整合MAP（Community Bank INZAI が自主的に試作）で、利用者の情報が何も送られないところと、送られるところを、実装のとおりに説明するページです。">
+<style>
+body{font:16px/1.85 system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;max-width:900px;margin:32px auto;padding:0 20px;color:#243546}
+h1{font-size:26px;margin-bottom:4px}
+.lead{color:#5a6675;font-size:14px;margin-top:0}
+h2{font-size:20px;margin-top:38px;padding-bottom:6px;border-bottom:2px solid #d7dee4}
+h3{font-size:16px;margin-top:26px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:14px 0}
+td,th{border:1px solid #bdc9d0;padding:10px;text-align:left;vertical-align:top}
+th{background:#f2f5f7}
+.table{overflow-x:auto}
+.ok{padding:16px 18px;background:#eef6ef;border-left:5px solid #3d8b4a;border-radius:0 5px 5px 0;margin:18px 0}
+.warn{padding:16px 18px;background:#fdf0ea;border-left:5px solid #d35400;border-radius:0 5px 5px 0;margin:18px 0}
+.warn h3,.ok h3{margin-top:0}
+a{color:#245b91}
+.meta{font-size:13px;color:#5a6675}
+ul{padding-left:1.3em}
+li{margin:5px 0}
+.back{display:inline-block;margin-top:32px;padding:10px 16px;border:1px solid #bdc9d0;border-radius:8px;text-decoration:none;color:#16324f;background:#f7f9fa}
+</style>
+</head>
+<body>
+
+<h1>このMAPが送るもの・送らないもの</h1>
+<p class="lead">印西市 災害状況整合MAP（Community Bank INZAI が自主的に試作している画面。印西市の公式情報ではありません）／2026年9月24日 現在</p>
+
+<div class="ok">
+<h3>いちばん大事なこと</h3>
+<ul>
+  <li><strong>氏名・住所・電話番号・メールアドレスは、一度も送っていません。</strong>この地図には会員登録もログインもありません。入力する欄そのものがありません。</li>
+  <li><strong>広告や外部のアクセス解析（Googleアナリティクス等）は入っていません。</strong>他社へ情報を渡す仕組みがありません。</li>
+  <li>ただし<strong>「道を記録する」ボタンを押したときだけ</strong>、その道の場所が地図に公開されます。ここだけは、ご自身で場所を選んでください（下の「気をつけていただきたいこと」）。</li>
+</ul>
+</div>
+
+<h2>送っていないもの（ブラウザの中だけに残ります）</h2>
+<div class="table">
+<table>
+  <tr><th>操作</th><th>どこに残るか</th></tr>
+  <tr><td>被害・確認候補の登録、SNS投稿の登録、スクリーンショットの貼り付け、CSVの読み込み</td><td>お使いのブラウザの中だけ。運営も見られません</td></tr>
+  <tr><td>レイヤーの開閉、対象日や絞り込みの設定、案内を閉じた記録</td><td>同上</td></tr>
+  <tr><td>地図を動かす・拡大する・線を押して詳細を見る</td><td>どこにも送りません</td></tr>
+</table>
+</div>
+
+<h2>送っているもの</h2>
+<div class="table">
+<table>
+  <tr><th>いつ</th><th>送る内容</th><th>何のため</th><th>保存期間</th></tr>
+  <tr>
+    <td>ページを開いたとき</td>
+    <td>ブラウザの中で作った<strong>乱数のID</strong>と、「防災MAPを見た」という記録だけ</td>
+    <td>何人が使っているかを数えるため（市や企業へ活動を説明するときに使います）</td>
+    <td><strong>90日で自動削除</strong></td>
+  </tr>
+  <tr>
+    <td>開いている間（数十秒ごと）</td>
+    <td>同じく<strong>乱数のID</strong></td>
+    <td>いま同時に何人が見ているかを数えるため</td>
+    <td>90秒で消えます</td>
+  </tr>
+  <tr>
+    <td><strong>「通れない道を追加」「通れた道を追加」で記録したとき</strong></td>
+    <td>なぞった道の座標・時刻・メモ（書いた場合）・端末の乱数ID・<strong>IPアドレスを戻せない形に変換した文字列</strong>（生のIPアドレスは保存しません。同じ人の連続投稿を防ぐためだけに使います）</td>
+    <td>地図に出して、ほかの人が通れる道を探せるようにするため</td>
+    <td><strong>消しません</strong>（次の大雨で「前はここが通れた」と役立てるため）</td>
+  </tr>
+  <tr>
+    <td>「GPSで記録する」を押したとき</td>
+    <td>そのときの位置</td>
+    <td>現在地を道の記録にするため</td>
+    <td>上と同じ</td>
+  </tr>
+</table>
+</div>
+<p class="meta">送り先は、CBIが運営するサーバー（CiDAO）です。そこから他社へ渡すことはありません。</p>
+
+<div class="warn">
+<h3>気をつけていただきたいこと</h3>
+<ul>
+  <li><strong>記録した道の場所は、誰でも見られます。</strong>名前は出ませんが、場所は出ます。自宅の前だけを記録すると、そこに住んでいることが推測できてしまいます。<strong>自宅や職場のすぐ前だけを記録するのは避けてください。</strong></li>
+  <li>記録は<strong>10分以内なら、ご自身で「↩ 取り消す」から消せます</strong>（地図から見えなくなります）。</li>
+  <li>10分を過ぎた場合や、間違えて公開してしまった場合は、<a href="mailto:communitybankinzai@gmail.com">communitybankinzai@gmail.com</a> へご連絡ください。運営が地図から伏せます。</li>
+  <li>ほかの人の記録でも、いたずらや誤りを見つけたら同じ窓口へご連絡ください。</li>
+</ul>
+</div>
+
+<h2>よくあるご心配</h2>
+<div class="table">
+<table>
+  <tr><th>ご心配</th><th>事実</th></tr>
+  <tr><td>名前や連絡先が抜かれるのでは</td><td>入力欄がありません。集めていないので、渡すこともできません</td></tr>
+  <tr><td>スマホの中を見られるのでは</td><td>見られません。この地図はふつうのWebページで、アプリではありません。連絡先・写真・通話履歴などにアクセスする仕組みはありません</td></tr>
+  <tr><td>いつも位置を追われるのでは</td><td>追っていません。位置を使うのは「GPSで記録する」を押したときだけです。押さなければ位置は取得しません</td></tr>
+  <tr><td>誰が使ったか分かるのでは</td><td>分かりません。記録しているのは端末ごとの乱数で、そこから個人をたどる手段を持っていません</td></tr>
+  <tr><td>広告に使われるのでは</td><td>広告の仕組みは入っていません。集めた数は、活動の報告と改善にだけ使います</td></tr>
+  <tr><td>開くだけでも何か送られるのでは</td><td>乱数のIDと「見た」という記録だけ送られます（90日で消します）。これを止めたい場合は、ブラウザの「サイトデータを削除」で乱数IDごと消せます</td></tr>
+</table>
+</div>
+
+<h2>この地図が外から取り寄せている情報</h2>
+<p>下記は「こちらから取りに行っている」情報で、利用者の情報を先方へ送るものではありません。</p>
+<ul>
+  <li>気象庁（警報・注意報、雨雲、雨量、地震、洪水予報）</li>
+  <li>国土地理院（地図・標高・住所検索）</li>
+  <li>ハザードマップポータル（浸水想定・土砂災害警戒区域）</li>
+  <li>千葉県（水位、通行止め、避難情報のまとめ）／印西市（防災速報、通行止め、公共交通）</li>
+  <li>みんなでつくる千葉豪雨冠水道路マップ（市民の投稿。CBIのサーバーが受けてからお渡ししています）</li>
+</ul>
+
+<h2>お問い合わせ</h2>
+<p>Community Bank INZAI（印西市 市民活動団体 登録番号 ０８－００１）<br>
+<a href="mailto:communitybankinzai@gmail.com">communitybankinzai@gmail.com</a></p>
+<p class="meta">この説明は、実際に動いているプログラムを読んで書いています。仕組みを変えたときは、このページも同じ日に直します。</p>
+
+<a class="back" href="./">← 地図へもどる</a>
+
+</body>
+</html>
