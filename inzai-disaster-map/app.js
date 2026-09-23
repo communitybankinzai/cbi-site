@@ -5791,7 +5791,8 @@ function evacAlertSummary(evacs) {
   // 「周辺の低い土地」と「印旛沼周辺の低い土地」のように、ほかに含まれる地域名は省く
   const areas = Array.from(new Set(evacs.map(a => a.area).filter(Boolean)))
     .filter((area, _, all) => !all.some(other => other !== area && other.includes(area)));
-  const parts = [causes.join("／"), areas.join("／")].filter(Boolean).join("・");
+  // 川の名前が「長門川・旧長門川」と並ぶので、理由と地域の区切りは中黒を使わない
+  const parts = [causes.join("／"), areas.join("／")].filter(Boolean).join(" ／ ");
   return `印西市の${top.label}（警戒レベル${top.level}）${parts ? `：${parts}` : ""}${evacs.length > 1 ? ` 計${evacs.length}件` : ""}`;
 }
 
@@ -5817,7 +5818,7 @@ function updateEvacCardNote() {
   if (node.firstChild !== note) node.prepend(note);
   const top = evacs.reduce((a, b) => (b.level > a.level ? b : a));
   const cause = Array.from(new Set(evacs.map(evacAlertCause).filter(Boolean))).join("／");
-  const what = `市の${top.label}（警戒レベル${top.level}${cause ? `・${cause}` : ""}）`;
+  const what = `市の${top.label}（警戒レベル${top.level}${cause ? `／${cause}` : ""}）`;
   note.textContent = weatherAlertLevelNow < top.level
     ? `📢 気象の危険度は下がっていますが、${what}は続いています。地図の上の赤い帯を見る →`
     : `📢 気象庁の警報とは別に、${what}が出ています。地図の上の赤い帯を見る →`;
