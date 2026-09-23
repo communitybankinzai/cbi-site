@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-24",
+          "title": "防災MAPの鮮度点検と4件の修正＋データの扱いページ公開＋SNS告知 1.2時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/data.html（新規・このMAPが送るもの・送らないもの）",
+            "site/inzai-disaster-map/app.js・index.html・styles.css（版20260924e〜g）",
+            "cidao src/app/api/disaster/evac-alert/route.ts・inzai-shelters/route.ts（放送0件時の stale 保持）",
+            "cidao supabase/migrations/20260924010000_cbi_content_views_retention.sql（本番適用・90日削除）",
+            "site/assets/sns/2026-09-24_data/data-page.jpg",
+            "site/admin/changelog.json（4件）"
+          ],
+          "hours": 1.2,
+          "partnerApproved": true,
+          "note": "事業主の『MAP情報に古いものはないか』から点検し、市の防災速報が0件になると避難所の開設・避難指示が消える問題を発見（県の発表では開設継続中）。直前の判定を app_settings に保持し stale 表示に。9/24 7:56 の県LINE（和泉会館閉鎖・印旛/本埜継続）と表示一致を確認。ほかに、開いたとき印西市が中央に来るよう上下の余白をそろえる修正（茨城県側が大きく映る指摘）、広域表示のままでも道を引けるよう自動拡大の順序を修正（浸水範囲の道が追加できない指摘）、個人情報の不安で使われない件への対応として data.html を新設しヘッダーに常時導線、保存期間未定だった閲覧記録に90日削除のpg_cronを追加。SNS3媒体へ告知を予約（q1790207118961・画像JPEG）。⚠ 記録した道は恒久保存する方針を事業主が明言しページにも明記。前件（output 183,247）との差分 81,884 → 1.2時間\nsession: d338459c-e5b8-4513-ae80-ce489b3369cc / output: 265,131 / cost: $132.50"
+        },
+        {
+          "date": "2026-09-24",
           "title": "防災MAPの渋滞表示の可否調査＋Googleマップ渋滞リンク追加 0.12時間",
           "category": "調査",
           "outputs": [
