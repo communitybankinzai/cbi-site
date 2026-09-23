@@ -2,24 +2,35 @@
  "note": "印西市の発表を書き写したものです。運行の可否を保証するものではありません。最新は各事業者の運行情報で確認してください。",
  "buses": [],
  "source": {
-  "url": "https://www.city.inzai.lg.jp/0000022520.html",
-  "label": "印西市 災害時の公共交通のご案内"
+  "label": "印西市 災害時の公共交通のご案内",
+  "url": "https://www.city.inzai.lg.jp/0000022520.html"
  },
  "railways": [
   {
    "line": "jr-narita-abiko",
-   "from": "我孫子",
-   "to": "成田",
+   "from": "新木",
+   "to": "木下",
    "state": "suspended",
-   "detail": "布佐〜新木駅間での線路支障の影響で、成田〜我孫子駅間の上下線は【終日】運転を見合わせます。代行輸送はなし、振替輸送あり（JR東日本の発表・22日10時12分時点）。",
-   "announcedAt": "2026-09-22T10:12:00+09:00",
-   "expiresAt": "2026-09-23T00:30:00+09:00",
-   "sourceType": "operator",
-   "sourceLabel": "JR東日本 運行情報",
-   "sourceUrl": "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=1&lineid=naritaline",
-   "lineLabel": "JR成田線（我孫子支線）"
+   "detail": "台風25号に伴い、新木駅から木下駅の間の上下線で終日運転を見合わせています（印西市の案内・23日11時現在）。",
+   "announcedAt": "2026-09-23T11:00:00+09:00"
+  },
+  {
+   "line": "jr-narita-abiko",
+   "from": "我孫子",
+   "to": "新木",
+   "state": "delayed",
+   "detail": "本数を減らして運転しています。常磐線快速電車への直通運転は終日中止（印西市の案内・23日11時現在）。",
+   "announcedAt": "2026-09-23T11:00:00+09:00"
+  },
+  {
+   "line": "jr-narita-abiko",
+   "from": "木下",
+   "to": "成田",
+   "state": "delayed",
+   "detail": "本数を減らして運転しています（印西市の案内・23日11時現在）。",
+   "announcedAt": "2026-09-23T11:00:00+09:00"
   }
  ],
- "checkedAt": "2026-09-21T21:10:02.576Z",
- "updatedAt": "2026-09-21T21:00:00.000Z"
+ "checkedAt": "2026-09-23T11:50:00+09:00",
+ "updatedAt": "2026-09-23T11:00:00+09:00"
 }
