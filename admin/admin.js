@@ -5601,7 +5601,7 @@ const UNREAD_POLL_MS = 30000;
 </style></head><body>
 <button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
 <h1>活動報告書</h1>
-<p class="sub">${escapeHtml(org.name)}<br>${fy}年度（令和${reiwa}年度）：${org.periodLabel(fy)}<br>作成日: ${new Date().toISOString().slice(0, 10)}</p>
+<p class="sub">${escapeHtml(org.name)}<br>${fy}年度（令和${reiwa}年度）：${org.periodLabel(fy)}<br>作成日: ${new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)}</p>
 <h2>Ⅰ 団体の概要</h2>
 <table>
 <tr><th>団体名</th><td>${escapeHtml(org.name)}</td></tr>
@@ -5723,7 +5723,7 @@ ${Object.keys(clByTarget).sort((x, y) => clByTarget[y] - clByTarget[x]).map(k =>
 </style></head><body>
 <button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
 <h1>収支報告書</h1>
-<p class="sub">${escapeHtml(org.name)}<br>${fy}年度（令和${reiwa}年度）：${org.periodLabel(fy)}<br>作成日: ${new Date().toISOString().slice(0, 10)}</p>
+<p class="sub">${escapeHtml(org.name)}<br>${fy}年度（令和${reiwa}年度）：${org.periodLabel(fy)}<br>作成日: ${new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)}</p>
 <h2>Ⅰ 収入の部</h2>
 <table><tr><th>科目</th><th class="num">金額</th></tr>
 ${accRows(m.accounts.income, incByAcc) || '<tr><td colspan="2">（収入なし）</td></tr>'}
