@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-09-23",
+          "title": "防災MAP 浸水の試算レイヤー公開（水位切替）＋決壊地点・浸水範囲のSNS投稿（3媒体） 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/levee-sim.json",
+            "site/inzai-disaster-map/app.js",
+            "site/inzai-disaster-map/index.html",
+            "site/inzai-disaster-map/styles.css",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json",
+            "site/assets/sns/2026-09-23_kekkai/map.jpg",
+            "scripts/levee-breach/simexport.py"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "前回記録(71,961)からの差分23,308を工数化。SNSキュー q1790161748744・q1790161970452 とも成功。session: 56c6ead0-bad4-4b74-ae1b-35ae32f92fdb / output: 95,269 / cost: $28.61"
+        },
+        {
+          "date": "2026-09-23",
           "title": "防災MAP 決壊レイヤー既定ON・ラベル崩れ修正・Threads投稿の県道4号通行止めを運営記録 0.3時間",
           "category": "保守",
           "outputs": [
