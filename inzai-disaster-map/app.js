@@ -3394,7 +3394,7 @@ async function setEvacAlertOff(off, publishedAt) {
 function initModeration() {
   const modal = document.getElementById("moderate-modal");
   if (!modal) return;
-  const open = () => { modal.hidden = false; loadEvacModeration(); loadModerationList().then(loadKansuiModerationList); };
+  const open = () => { modal.hidden = false; loadEvacModeration(); loadModerationList().then(loadKansuiModerationList).then(loadSnsModerationList); };
   document.getElementById("moderate-button")?.addEventListener("click", open);
   document.getElementById("moderate-close")?.addEventListener("click", () => { modal.hidden = true; });
   document.getElementById("moderate-reload")?.addEventListener("click", loadModerationList);
@@ -3419,6 +3419,8 @@ function initModeration() {
     }
     const focusId = event.target.closest?.("[data-moderate-focus]")?.dataset.moderateFocus;
     if (focusId) { modal.hidden = true; focusPassedRoad(focusId); return; }
+    const snsFocusId = event.target.closest?.("[data-sns-focus]")?.dataset.snsFocus;
+    if (snsFocusId) { modal.hidden = true; focusSnsRoad(snsFocusId); return; }
     const button = event.target.closest?.("[data-moderate-id]");
     if (!button) return;
     const hide = button.dataset.moderateHide === "1";
@@ -6617,6 +6619,7 @@ async function ensureSnsRoadsLayer(force) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     snsRoadsData = Array.isArray(payload.reports) ? payload.reports : [];
+    await snapSnsRoadPoints();
     renderSnsRoads();
     if (status) status.textContent = `${snsRoadsData.filter(r => !r.hidden).length}件（AI読み取り・未確認）`;
     clearInterval(snsRoadsTimer);
@@ -6628,8 +6631,38 @@ async function ensureSnsRoadsLayer(force) {
   }
 }
 
+// 地名の代表点（駅・町名の中心など）は道の上に乗らないので、150m以内に道路があれば最寄りの道路上へ寄せる（2026-09-25 事業主指摘）。
+// 道から遠い点（沼の中心など）は寄せない。道路データは「なぞった線を道なりに直す」と同じ road_risk.json を使う
+const SNS_ROAD_SNAP_MAX_M = 150;
+const snsRoadShapes = new Map();   // id → marker（一覧から飛ぶため）
+async function snapSnsRoadPoints() {
+  const segments = await ensureRoadSnapData().catch(() => null);
+  if (!segments) return;
+  snsRoadsData.forEach(report => {
+    if (report.snapped || !Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
+    const pad = 0.003; // 約300m四方だけ切り出す（全域を繋ぐと重い）
+    const graph = buildLocalGraph(segments, { s: report.lat - pad, n: report.lat + pad, w: report.lng - pad, e: report.lng + pad });
+    if (!graph.pos.size) { report.snapped = "none"; return; }
+    const near = nearestGraphNode(graph, [report.lat, report.lng]);
+    if (!near.key || near.distance > SNS_ROAD_SNAP_MAX_M) { report.snapped = "none"; return; }
+    const p = graph.pos.get(near.key);
+    report.rawLat = report.lat; report.rawLng = report.lng;
+    report.lat = p[0]; report.lng = p[1];
+    report.snapped = Math.round(near.distance);
+  });
+}
+
+function focusSnsRoad(id) {
+  const marker = snsRoadShapes.get(String(id));
+  if (!marker) return;
+  if (!map.hasLayer(snsRoadsLayer)) { snsRoadsLayer.addTo(map); const box = document.querySelector('[data-overlay="snsRoads"]'); if (box) box.checked = true; }
+  map.setView(marker.getLatLng(), Math.max(map.getZoom(), 15));
+  marker.openPopup();
+}
+
 function renderSnsRoads() {
   snsRoadsLayer.clearLayers();
+  snsRoadShapes.clear();
   const isModerator = Boolean(moderationKey());
   snsRoadsData.forEach(report => {
     if (report.hidden && !isModerator) return;
@@ -6638,6 +6671,7 @@ function renderSnsRoads() {
     const when = report.observedAt || report.postedAt;
     const timeLabel = report.observedAt ? "見た時刻" : "投稿時刻";
     const sourceUrl = /^https:\/\//.test(String(report.sourceUrl || "")) ? report.sourceUrl : "";
+    const snapNote = Number.isFinite(report.snapped) ? `・約${report.snapped}m先の道路へ寄せた` : "";
     const marker = L.marker([report.lat, report.lng], {
       icon: L.divIcon({ className: "", html: `<div class="sns-road-marker is-${kind}${report.hidden ? " is-old" : ""}">${snsRoadGlyph(kind)}</div>`, iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -12] }),
       title: `SNS：${report.locationName || ""} ${snsRoadKindLabel(kind)}（未確認）`,
@@ -6648,7 +6682,7 @@ function renderSnsRoads() {
       `<span class="sns-road-unverified">AIが投稿を読み取ったもの・CBIや市の確認はありません</span><br>` +
       (report.summary ? `${escapeHtml(report.summary)}<br>` : "") +
       `場所：${escapeHtml(report.locationName || "不明")}` +
-      (report.locationBasis ? `<span style="font-size:11px;color:#53677b;">（${escapeHtml(report.locationBasis)}）</span>` : "") + `<br>` +
+      (report.locationBasis || snapNote ? `<span style="font-size:11px;color:#53677b;">（${escapeHtml(report.locationBasis || "")}${escapeHtml(snapNote)}）</span>` : "") + `<br>` +
       `${timeLabel} ${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "不明")}（${escapeHtml(formatAgo(when))}）` +
       (report.quote ? `<span class="sns-road-quote">「${escapeHtml(report.quote)}」</span>` : "<br>") +
       (sourceUrl ? `出典：<a href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(snsRoadPlatformLabel(report.platform))}の投稿を開く ↗</a>` : "") +
@@ -6661,7 +6695,39 @@ function renderSnsRoads() {
       { maxWidth: 320 }
     );
     marker.addTo(snsRoadsLayer);
+    snsRoadShapes.set(String(report.id), marker);
   });
+}
+
+// 「🗑 市民記録の管理」の中の SNS の節（運営）。確度と伏せ状態が分かり、地図で見る／元の投稿／伏せる・戻す ができる
+async function loadSnsModerationList() {
+  const box = document.getElementById("moderate-sns-list");
+  const endpoint = String(APP_CONFIG.snsRoadReportsEndpoint || "").trim();
+  const key = moderationKey();
+  if (!box) return;
+  if (!endpoint || !key) { box.innerHTML = "<p>合言葉が入力されていないため表示できません。</p>"; return; }
+  box.innerHTML = "<p>読み込み中…</p>";
+  try {
+    await ensureSnsRoadsLayer(true);
+    if (!snsRoadsData.length) { box.innerHTML = "<p>SNS由来の通行情報はまだありません。</p>"; return; }
+    const confLabel = c => c === "high" ? "確度 高（公開中）" : c === "medium" ? "確度 中（運営のみ）" : "確度 低（運営のみ）";
+    box.innerHTML = snsRoadsData.map(report => {
+      const kind = ["passed", "blocked", "cleared"].includes(report.kind) ? report.kind : "blocked";
+      const when = report.observedAt || report.postedAt;
+      const sourceUrl = /^https:\/\//.test(String(report.sourceUrl || "")) ? report.sourceUrl : "";
+      return `<div class="moderate-row ${report.hidden ? "is-hidden-row" : ""}">` +
+        `<div><strong>${snsRoadGlyph(kind)} ${escapeHtml(snsRoadKindLabel(kind))}（SNS）</strong> ${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "時刻不明")}` +
+        `<span class="moderate-meta">${escapeHtml(report.locationName || "場所不明")}・${escapeHtml(snsRoadPlatformLabel(report.platform))}・${escapeHtml(confLabel(report.confidence))}` +
+        `${report.summary ? "・" + escapeHtml(report.summary) : ""}${report.hidden ? "・<em>伏せ済み</em>" : ""}</span></div>` +
+        `<div class="moderate-row-buttons">` +
+        `<button type="button" data-sns-focus="${escapeAttribute(String(report.id))}">地図で見る</button>` +
+        (sourceUrl ? `<a class="moderate-link" href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noopener noreferrer">元の投稿 ↗</a>` : "") +
+        `<button type="button" class="${report.hidden ? "" : "is-danger"}" data-sns-road-hide="${escapeAttribute(String(report.id))}" data-sns-road-hidden="${report.hidden ? "1" : "0"}" data-sns-from-list="1">${report.hidden ? "戻す" : "伏せる"}</button>` +
+        `</div></div>`;
+    }).join("");
+  } catch (error) {
+    box.innerHTML = `<p class="is-error">取得できません（${escapeHtml(error?.message || "接続エラー")}）</p>`;
+  }
 }
 
 // 運営：SNSの通行情報を伏せる／戻す（行は消さない）
@@ -6690,6 +6756,7 @@ document.addEventListener("click", async event => {
     if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
     map.closePopup();
     await ensureSnsRoadsLayer(true);
+    if (button.dataset.snsFromList) loadSnsModerationList();
   } catch (error) {
     alert(`${hide ? "伏せられ" : "戻せ"}ませんでした（${error?.message || "接続エラー"}）`);
     button.disabled = false;
