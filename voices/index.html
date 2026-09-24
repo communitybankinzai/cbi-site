@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>市民の声 1,206件を見る｜Community Bank INZAI</title>
+<meta name="description" content="印西市の市民満足度・重要度調査（令和7年度）の自由意見1,206件を、分野・話題・地区・年代で整理しました。CBIによる整理で、市の公式ではありません。">
+<link rel="icon" type="image/png" href="../assets/cbi-logo.png">
+<style>
+  :root { --ink:#1b1f24; --sub:#56606b; --line:#d5dbe1; --bg:#ffffff; --soft:#f3f6f9; --accent:#0b5cad; --bar:#3b82c4; --bar2:#9cc3e6; --warn-bg:#fff6d6; --warn-line:#e0b400; }
+  @media (prefers-color-scheme: dark) { :root { --ink:#e8ecf0; --sub:#a9b3bd; --line:#39424c; --bg:#15191e; --soft:#1f252c; --accent:#6fb0f0; --bar:#5a9fdc; --bar2:#34597d; --warn-bg:#3a3317; --warn-line:#c9a227; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic",Meiryo,sans-serif; font-size:17px; line-height:1.75; }
+  main { max-width:860px; margin:0 auto; padding:20px 16px 56px; }
+  h1 { font-size:1.55rem; line-height:1.4; margin:8px 0 6px; }
+  h2 { font-size:1.2rem; margin:40px 0 10px; padding-bottom:6px; border-bottom:2px solid var(--line); }
+  h3 { font-size:1.05rem; margin:0 0 6px; }
+  a { color:var(--accent); }
+  .lead { color:var(--sub); margin:0 0 14px; }
+  .notice { background:var(--warn-bg); border-left:6px solid var(--warn-line); padding:10px 14px; border-radius:6px; font-size:.93rem; }
+  .kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:18px 0 6px; }
+  .kpi { background:var(--soft); border-radius:10px; padding:12px; text-align:center; }
+  .kpi b { display:block; font-size:1.7rem; line-height:1.2; }
+  .kpi span { font-size:.85rem; color:var(--sub); }
+  .bars { display:grid; gap:6px; }
+  .bar { display:grid; grid-template-columns: minmax(9em, 15em) 1fr 3.2em; gap:10px; align-items:center; font-size:.93rem; }
+  .bar .track { background:var(--soft); border-radius:4px; height:18px; overflow:hidden; }
+  .bar .fill { background:var(--bar); height:100%; border-radius:4px; }
+  .bar .n { text-align:right; font-variant-numeric:tabular-nums; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:6px 0 12px; }
+  .controls label { font-size:.9rem; color:var(--sub); }
+  select { font:inherit; font-size:.95rem; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); }
+  .cat { border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:12px 0; }
+  .cat .head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px; align-items:baseline; }
+  .cat .count { color:var(--sub); font-size:.9rem; }
+  .cat ul { margin:8px 0 6px; padding-left:1.2em; }
+  .cat li { margin:4px 0; }
+  .cat .src { font-size:.9rem; }
+  table { border-collapse:collapse; width:100%; font-size:.9rem; }
+  th, td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; }
+  td.n, th.n { text-align:right; font-variant-numeric:tabular-nums; }
+  .scroll { overflow-x:auto; }
+  details { margin:10px 0; }
+  details summary { cursor:pointer; color:var(--accent); }
+  .muted { color:var(--sub); font-size:.9rem; }
+  footer { margin-top:44px; padding-top:12px; border-top:1px solid var(--line); font-size:.88rem; color:var(--sub); }
+  @media (max-width:560px) { .kpis { grid-template-columns:1fr 1fr 1fr; } .kpi b { font-size:1.3rem; } .bar { grid-template-columns: 8.5em 1fr 2.6em; font-size:.85rem; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>市民の声 1,206件を見る</h1>
+  <p class="lead">印西市が行った「市民満足度・重要度調査（令和7年度）」で、市民が自由に書いた意見を、分野・話題・地区・年代で整理しました。</p>
+  <p class="notice">
+    <strong>Community Bank INZAI（CBI）による整理で、印西市の公式ではありません。</strong>
+    元の意見の文章は、このページには載せていません（市の著作物のため）。原文は、各分野の「市の報告書で原文を読む」から市のPDFでご覧ください。
+    要約はCBIがAIを使って作成しました。数字は言葉の一致で数えた目安です（<a href="#method">数え方</a>）。
+  </p>
+
+  <div class="kpis">
+    <div class="kpi"><b id="k-resp">829</b><span>書いた人数</span></div>
+    <div class="kpi"><b id="k-total">1,206</b><span>意見の件数</span></div>
+    <div class="kpi"><b>6</b><span>分野</span></div>
+  </div>
+  <p class="muted" id="k-src"></p>
+
+  <h2>分野ごとの件数</h2>
+  <div class="bars" id="cat-bars"></div>
+
+  <h2>よく出てくる話題</h2>
+  <p class="muted">1件の意見が複数の話題に入ることがあります。年代・地域で絞り込めます。</p>
+  <div class="controls">
+    <label for="filter">絞り込み</label>
+    <select id="filter" aria-label="話題の絞り込み"></select>
+    <span class="muted" id="filter-n"></span>
+  </div>
+  <div class="bars" id="topic-bars"></div>
+
+  <h2>分野ごとの主な声（CBIの要約）</h2>
+  <div id="summaries"></div>
+
+  <h2>地区・年代ごとの件数</h2>
+  <div class="scroll"><table id="t-age"></table></div>
+  <details>
+    <summary>地区ごとの件数（市の地区区分1〜16）</summary>
+    <div class="scroll"><table id="t-district"></table></div>
+    <p class="muted">地区の区分と町名は、市の報告書の「地域区分」の表（PDF 157ページ）をご覧ください。ニュータウン地域は地区5・7・9・13・16です（市の区分）。</p>
+  </details>
+
+  <h2 id="method">数え方とこのページの限界</h2>
+  <ul>
+    <li>件数は、市の報告書に載っている自由意見（問13）を1件ずつ数えたものです。分野ごとの件数は、報告書の見出しの数と一致することを確かめています。</li>
+    <li>「話題」は、意見の文章に決まった言葉が含まれているかどうかで数えています。言い換えや遠回しな書き方は数えられず、関係のない文脈で言葉が出た意見も数えることがあります。目安としてご覧ください。</li>
+    <li>市の報告書は「なるべく原文のまま、一部は表現を変えて掲載」としています。このページはそれをもとにしています。</li>
+    <li>自由意見を書いたのは回答者の一部（829人）です。市民全体の割合を表すものではありません。</li>
+  </ul>
+  <details>
+    <summary>話題ごとに数えた言葉の一覧</summary>
+    <div class="scroll"><table id="t-patterns"></table></div>
+  </details>
+
+  <footer>
+    <p>出典：<a id="src-link" href="https://www.city.inzai.lg.jp/cmsfiles/contents/0000021/21238/R7manzokudo.pdf" target="_blank" rel="noopener">印西市「令和7年度 印西市市民満足度・重要度調査 報告書」（令和8年1月）</a>（印西市ホームページへのリンク）</p>
+    <p>作成：Community Bank INZAI（2026年9月）。ご意見は <a href="mailto:communitybankinzai@gmail.com">communitybankinzai@gmail.com</a> まで。</p>
+    <p><a href="../">Community Bank INZAI トップへ</a></p>
+  </footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  // 分野ごとの要約（CBIが原文を読んで自分の言葉で書いたもの。原文の引用はしない）
+  var SUMMARIES = {
+    "安全・安心・健康福祉": [
+      "<b>病院</b>：人口の増加に病院の数が追いついていない、夜間・休日に市内で診てもらえず市外へ行った、皮膚科・眼科・産婦人科が少ない、という声が多くあります。",
+      "<b>夜道の暗さ</b>：街灯が少ない、街路樹で暗い、という声が駅周辺・住宅街の両方から出ています。",
+      "<b>交通安全</b>：抜け道を速い車が通る、信号のない横断歩道で止まらない車、草で見通しの悪い交差点など、通学路を心配する声が目立ちます。",
+      "<b>防犯</b>：防犯カメラの増設やパトロールの要望、車の盗難や不審者情報への不安。外国人住民の増加と治安を結びつけて不安を書く人もいます。",
+      "<b>高齢者・福祉</b>：免許を返したあとの通院、一人暮らしや老老介護への支援、高齢者向けの支援が子育てに比べて手薄だという受け止め。温水センターのプールを残してほしいという声も複数あります。"
+    ],
+    "子育て・教育・文化": [
+      "<b>学校の混み具合と偏り</b>：児童の多い学校と少ない学校の差、近くの学校に通えない学区、校舎の古さを心配する声があります。",
+      "<b>暑さ</b>：体育館や特別教室にエアコンを付けてほしいという要望がくり返し出ています。",
+      "<b>預け先</b>：学童の定員や4年生以降の居場所、保育園の待機、病児保育や一時預かりの拡充。",
+      "<b>居場所と学ぶ場所</b>：暑くて外で遊べないため屋内で遊べる場所、中高生が勉強できる場所、図書館の本の数や開館時間の拡充が求められています。",
+      "<b>文化施設・進学</b>：新しいホールの予約受付の時期が発表会の準備に合わないという具体的な声、市内の高校の選択肢が少ないという声があります。医療費・保育料の無償化や不妊治療への補助の要望もあります。"
+    ],
+    "産業・交流": [
+      "<b>駅前のにぎわい</b>：飲食店やカフェ、個人の店が少ない、駅前の空き地や空き店舗を生かしてほしい、という声が中心です。",
+      "<b>地元で働く場</b>：収入の良い仕事、子育て中の人の働き口、起業の支援を求める声があります。",
+      "<b>イベント</b>：花火大会の再開や祭りなど、市民がつながる催しを望む声が多くあります。",
+      "<b>農業</b>：休耕地の活用、地元の農産物を地元で食べる取り組み、道の駅。",
+      "<b>外国人住民</b>：マナーや増加への懸念が多く寄せられています。交流や相互理解を進めようという提案は少数です。"
+    ],
+    "まちづくり・生活環境": [
+      "<b>鉄道とバス</b>：北総線の運賃が高い（北総線に触れた意見は全体で73件）、印西牧の原駅にアクセス特急を停めてほしい、成田線の本数、ふれあいバスの本数・ルート・終バスの時刻。免許を返したあとの移動の不安と結びついています。",
+      "<b>データセンター</b>：千葉ニュータウン中央駅前の計画に反対・見直しを求める声が多い一方、税収の面から誘致を支持する声もあります（データセンターに触れた意見は全体で106件）。",
+      "<b>草と道路</b>：歩道や中央分離帯の雑草で見通しが悪い、白線が消えている、路面が傷んでいる、国道464号周辺の渋滞と信号の時間。",
+      "<b>地域による差</b>：上下水道が通っていない地区の井戸水の不安、農村部の道路・バス・イノシシ、旧市街地が取り残されているという受け止め。",
+      "<b>自然と景観</b>：里山や緑が減っている、倉庫や太陽光パネルが増えることへの懸念、道路沿いのごみの不法投棄。"
+    ],
+    "住民自治・協働・行財政": [
+      "<b>市役所の場所</b>：本庁が遠い、出張所でできる手続き（マイナンバーカードの更新など）を増やしてほしい、北総線沿いへ移してほしい、という声が多くあります。",
+      "<b>負担と還元</b>：住民税や固定資産税が高い、データセンターの税収を目に見える形で還元してほしい、物価高への市独自の対策。",
+      "<b>支援の届き方</b>：制度が分かりにくい、申請しないと受けられない、このアンケートで初めて高齢者支援を知った、という声があります。",
+      "<b>自治会</b>：役員の高齢化と負担、加入率の低下、回覧板の電子化。",
+      "<b>市政への評価</b>：新しい市長への期待と「まだ変化が見えない」という声の両方、窓口の対応への感謝と不満の両方があります。"
+    ],
+    "その他（全般的な意見を含む）": [
+      "<b>世代の公平</b>：子育て世帯以外（単身・子どものいない世帯・高齢者）にも目を向けてほしいという声があります。",
+      "<b>このアンケートについて</b>：設問が多くて長い、専門的で答えにくい、結果がどう使われるか知りたい、という意見があります。",
+      "<b>感謝と愛着</b>：住みやすさへの感謝や、市の職員へのねぎらいの言葉も多く寄せられています。",
+      "<b>ほしい施設</b>：高校・大学の誘致、市民プール、文化施設など。"
+    ]
+  };
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+  function fmt(n) { return Number(n).toLocaleString("ja-JP"); }
+  function bars(el, rows, max) {
+    el.innerHTML = rows.map(function (r) {
+      var w = max ? Math.round(r.n / max * 1000) / 10 : 0;
+      return '<div class="bar"><div>' + esc(r.label) + '</div><div class="track"><div class="fill" style="width:' + w + '%"></div></div><div class="n">' + fmt(r.n) + '</div></div>';
+    }).join("");
+  }
+  function table(el, head, rows) {
+    el.innerHTML = '<thead><tr>' + head.map(function (h, i) { return '<th' + (i ? ' class="n"' : '') + '>' + esc(h) + '</th>'; }).join("") + '</tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr>' + r.map(function (c, i) { return '<td' + (i ? ' class="n"' : '') + '>' + (i ? fmt(c) : esc(c)) + '</td>'; }).join("") + '</tr>'; }).join("") + '</tbody>';
+  }
+
+  function render(s) {
+    $("k-resp").textContent = fmt(s.source.respondents);
+    $("k-total").textContent = fmt(s.source.total);
+    $("k-src").textContent = "対象：" + s.source.question + "／" + s.source.title;
+    var catMax = Math.max.apply(null, s.cats.map(function (c) { return c.count; }));
+    bars($("cat-bars"), s.cats.map(function (c) { return { label: c.name, n: c.count }; }), catMax);
+
+    // 絞り込み
+    var opts = [["all", "全体"]];
+    Object.keys(s.byAge).forEach(function (a) { if (a !== "年齢無回答") opts.push(["age:" + a, "年代：" + a]); });
+    ["ニュータウン地域", "ニュータウン地域外"].forEach(function (n) { opts.push(["nt:" + n, "地域：" + n]); });
+    $("filter").innerHTML = opts.map(function (o) { return '<option value="' + esc(o[0]) + '">' + esc(o[1]) + '</option>'; }).join("");
+    function drawTopics() {
+      var v = $("filter").value, kind = v.split(":")[0], key = v.slice(kind.length + 1);
+      var rows = s.topics.map(function (t) {
+        var n = kind === "all" ? t.count : s.cross[t.key][kind][key];
+        return { label: t.label, n: n };
+      }).sort(function (a, b) { return b.n - a.n; });
+      var base = kind === "all" ? s.source.total : (kind === "age" ? s.byAge[key] : s.byNt[key]);
+      $("filter-n").textContent = "（この条件の意見 " + fmt(base) + "件）";
+      bars($("topic-bars"), rows, rows[0].n);
+    }
+    $("filter").addEventListener("change", drawTopics);
+    drawTopics();
+
+    // 分野ごとの要約
+    $("summaries").innerHTML = s.cats.map(function (c) {
+      var items = SUMMARIES[c.name] || [];
+      var url = s.source.url + "#page=" + c.pages[0];
+      return '<section class="cat"><div class="head"><h3>' + esc(c.name) + '</h3><span class="count">' + fmt(c.count) + '件</span></div>' +
+        '<ul>' + items.map(function (i) { return '<li>' + i + '</li>'; }).join("") + '</ul>' +
+        '<div class="src"><a href="' + esc(url) + '" target="_blank" rel="noopener">市の報告書で原文を読む（PDF ' + c.pages[0] + '〜' + c.pages[1] + 'ページ）</a></div></section>';
+    }).join("");
+
+    table($("t-age"), ["年代", "件数"], Object.keys(s.byAge).map(function (a) { return [a, s.byAge[a]]; }));
+    table($("t-district"), ["地区", "件数"], Object.keys(s.byDistrict).map(function (d) { return [d === "無回答" ? "無回答" : "地区" + d, s.byDistrict[d]]; }));
+    $("t-patterns").innerHTML = '<thead><tr><th>話題</th><th>数えた言葉</th></tr></thead><tbody>' +
+      s.topics.map(function (t) { return '<tr><td>' + esc(t.label) + '</td><td>' + esc(t.pattern.replace(/\|/g, "・").replace(/[()?]/g, "")) + '</td></tr>'; }).join("") + '</tbody>';
+  }
+
+  fetch("voices-stats.json").then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(render)
+    .catch(function () { $("summaries").innerHTML = '<p>集計データを読み込めませんでした。時間をおいて開き直してください。</p>'; });
+})();
+</script>
+</body>
+</html>
