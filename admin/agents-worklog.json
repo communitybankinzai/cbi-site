@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "アメダス10分値の保存（印旛地区周辺8か所）と8月豪雨の1時間値の補完 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao supabase/migrations/20260925120000_disaster_amedas_10min.sql（本番適用済み）",
+            "scripts/amedas-backup.py（毎時・10分値）",
+            "scripts/amedas-backup.bat",
+            "scripts/amedas-hourly-backfill.py（過去の1時間値）",
+            "Windowsタスク「CBI_アメダス10分値の控え」（毎時7分）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "気象庁の10分値は約1週間で消えるため、過去の災害の記録に雨量を付けられなくなる問題への対処（事業主決定A）。印旛地区周辺で雨量を測る8か所を対象に、9/18以降の10分値8,384行を確保（台風25号の期間を完全に含む）。8月豪雨は10分値が既に消えていたため1時間値で補完し、千葉の8/13日降水量351.0mmが気象庁の公表値と完全一致することを確認。タスクからは %APPDATA%\\Python の psycopg が読めなかったため、標準ライブラリ＋Supabase REST に書き換えた（記憶どおりの罠）。.bat をheredocで書いてバックスラッシュが落ちる罠も踏んだ（Writeツールで書き直し）。"
+        },{
+          "date": "2026-09-25",
           "title": "過去の災害の冠水を後から登録できるようにする（台風25号の再募集の受け口）0.4時間",
           "category": "実装",
           "outputs": [
@@ -7363,6 +7377,12 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "☔ 記録の雨量を、貯めたアメダスの控えから引けるようにする",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-25。控え（disaster_amedas_10min）は貯まり始めたが、passed-roads の rainAt はまだ気象庁を直接見ている。1週間より前の災害を選んで登録すると雨量が付かない。控えを先に見て、無ければ気象庁へ、の順にする。"
+        },{
           "due": "未定",
           "title": "🚧 千葉県の通行止めページで中身を読めないとき、空の行を作らないようにする",
           "category": "実装",
