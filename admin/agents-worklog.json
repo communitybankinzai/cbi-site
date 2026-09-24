@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-24",
+          "title": "TOYOTA通れた道マップとの棲み分け調査・方針Aの文書化 0.1時間",
+          "category": "調査",
+          "outputs": [
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（見送り表に1行）",
+            "site/inzai-disaster-map/README.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "TOYOTAの新機能（渋滞・規制の同一画面、冠水推定・ワイパー試験版）を確認。事業主決定A＝車の走行データに頼る機能は作らずリンクで補い、印西固有の情報に絞る。雨量による優位性を検討。session: 8abb7ad3-ac48-476a-b632-1b730b4b586c / output: 7,388 / cost: $2.72"
+        },
+        {
+          "date": "2026-09-24",
           "title": "防災MAPの鮮度点検と4件の修正＋データの扱いページ公開＋SNS告知 1.2時間",
           "category": "実装",
           "outputs": [
@@ -7156,6 +7169,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📊 防災MAPの大雨中（9/21〜9/23）のアクセス数を集計し、TOYOTAとの棲み分け方針Aの効果を確かめる",
+          "category": "分析",
+          "priority": "中",
+          "note": "2026-09-24 セッション8abb7ad3で提案。方針A（車の走行データ系は作らない）を続けるか判断する材料。"
+        },
         {
           "due": "未定",
           "title": "🧭 防災MAPに「通れない道を避けるルート」を出すか決める",
