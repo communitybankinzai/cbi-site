@@ -5375,6 +5375,11 @@ function toggleOverlay(name, checked) {
     else map.removeLayer(passedRoadsLayer);
     return;
   }
+  if (name === "snsRoads") {
+    if (checked) { ensureSnsRoadsLayer(); snsRoadsLayer.addTo(map); }
+    else map.removeLayer(snsRoadsLayer);
+    return;
+  }
   if (name === "rainForecast") {
     if (checked) { refreshRainForecast(true); rainForecastLayer.addTo(map); }
     else map.removeLayer(rainForecastLayer);
@@ -6582,6 +6587,116 @@ let passedRoadsLoaded = false;
 let passedRoadsData = [];              // 読み込んだ記録（一覧の元）
 const passedRoadShapes = new Map();    // id → 地図上の線・印（一覧から飛ぶため）
 
+// 📡 SNSの通行情報（AI読み取り・未確認）（2026-09-25 事業主決定A）
+// Threads・Instagram・Bluesky の巡回候補を CiDAO 側の AI が読み、「通れた／通れない／解除」と場所を取り出したもの。
+// 一般向けの配信は確度 high・伏せていないものだけ。運営（合言葉あり）は ?all=1 で中・低・伏せた分も受け取り、確度を添えて表示する。
+// 市民の記録（実線）と混ざらないよう、破線の輪＋絵文字の点で出す。
+const snsRoadsLayer = L.layerGroup();
+let snsRoadsLoaded = false;
+let snsRoadsTimer = null;
+let snsRoadsData = [];
+
+function snsRoadKindLabel(kind) { return kind === "passed" ? "通れた" : kind === "blocked" ? "通れない" : "通行止め解除"; }
+function snsRoadGlyph(kind) { return kind === "passed" ? "🔵" : kind === "blocked" ? "🚫" : "✅"; }
+function snsRoadPlatformLabel(platform) {
+  return platform === "threads" ? "Threads" : platform === "instagram" ? "Instagram" : platform === "bluesky" ? "Bluesky" : "SNS";
+}
+
+async function ensureSnsRoadsLayer(force) {
+  const endpoint = String(APP_CONFIG.snsRoadReportsEndpoint || "").trim();
+  const status = document.getElementById("sns-roads-status");
+  if (!endpoint) { if (status) status.textContent = "配信先が設定されていません"; return; }
+  if (snsRoadsLoaded && !force) return;
+  snsRoadsLoaded = true;
+  if (status) status.textContent = "読み込み中…";
+  try {
+    const key = moderationKey();
+    let response = await fetch(key ? `${endpoint}?all=1` : endpoint, { cache: "no-store", headers: key ? { "x-moderation-key": key } : {} });
+    // 合言葉が古いときは一般向けに切り替えて表示は止めない
+    if (response.status === 403 && key) response = await fetch(endpoint, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    snsRoadsData = Array.isArray(payload.reports) ? payload.reports : [];
+    renderSnsRoads();
+    if (status) status.textContent = `${snsRoadsData.filter(r => !r.hidden).length}件（AI読み取り・未確認）`;
+    clearInterval(snsRoadsTimer);
+    snsRoadsTimer = setInterval(() => { if (map.hasLayer(snsRoadsLayer)) ensureSnsRoadsLayer(true); }, 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
+  } catch (error) {
+    snsRoadsLoaded = false;
+    if (status) status.textContent = "読み込めませんでした";
+    console.error("SNS通行情報の読み込みに失敗:", error);
+  }
+}
+
+function renderSnsRoads() {
+  snsRoadsLayer.clearLayers();
+  const isModerator = Boolean(moderationKey());
+  snsRoadsData.forEach(report => {
+    if (report.hidden && !isModerator) return;
+    if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
+    const kind = ["passed", "blocked", "cleared"].includes(report.kind) ? report.kind : "blocked";
+    const when = report.observedAt || report.postedAt;
+    const timeLabel = report.observedAt ? "見た時刻" : "投稿時刻";
+    const sourceUrl = /^https:\/\//.test(String(report.sourceUrl || "")) ? report.sourceUrl : "";
+    const marker = L.marker([report.lat, report.lng], {
+      icon: L.divIcon({ className: "", html: `<div class="sns-road-marker is-${kind}${report.hidden ? " is-old" : ""}">${snsRoadGlyph(kind)}</div>`, iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -12] }),
+      title: `SNS：${report.locationName || ""} ${snsRoadKindLabel(kind)}（未確認）`,
+      zIndexOffset: 300
+    });
+    marker.bindPopup(
+      `<strong>📡 SNSの投稿：${snsRoadKindLabel(kind)}</strong><br>` +
+      `<span class="sns-road-unverified">AIが投稿を読み取ったもの・CBIや市の確認はありません</span><br>` +
+      (report.summary ? `${escapeHtml(report.summary)}<br>` : "") +
+      `場所：${escapeHtml(report.locationName || "不明")}` +
+      (report.locationBasis ? `<span style="font-size:11px;color:#53677b;">（${escapeHtml(report.locationBasis)}）</span>` : "") + `<br>` +
+      `${timeLabel} ${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "不明")}（${escapeHtml(formatAgo(when))}）` +
+      (report.quote ? `<span class="sns-road-quote">「${escapeHtml(report.quote)}」</span>` : "<br>") +
+      (sourceUrl ? `出典：<a href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(snsRoadPlatformLabel(report.platform))}の投稿を開く ↗</a>` : "") +
+      (isModerator && report.confidence !== "high" ? `<br><span class="sns-road-unverified">確度：${report.confidence === "medium" ? "中" : "低"}（運営だけに表示・一般には出ていません）</span>` : "") +
+      (isModerator && report.hidden ? `<br><span class="sns-road-unverified">伏せています（一般には出ていません）</span>` : "") +
+      (isModerator
+        ? `<br><button type="button" class="kansui-hide-btn" data-sns-road-hide="${escapeAttribute(String(report.id))}" data-sns-road-hidden="${report.hidden ? "1" : "0"}">${report.hidden ? "↩ 地図に戻す（運営）" : "🗑 この投稿を地図から伏せる（運営）"}</button>`
+        : "") +
+      `<br><span style="font-size:11px;">点は投稿が指す場所の目安です。いま通れるかどうかを保証するものではありません。元の投稿で確かめてください。</span>`,
+      { maxWidth: 320 }
+    );
+    marker.addTo(snsRoadsLayer);
+  });
+}
+
+// 運営：SNSの通行情報を伏せる／戻す（行は消さない）
+document.addEventListener("click", async event => {
+  const button = event.target.closest?.("[data-sns-road-hide]");
+  if (!button) return;
+  const hide = button.dataset.snsRoadHidden !== "1";
+  if (hide && !confirm("このSNSの通行情報を地図から伏せます。よろしいですか？（元の投稿は消えません。運営はあとから戻せます）")) return;
+  const endpoint = String(APP_CONFIG.snsRoadReportsEndpoint || "").trim();
+  let key = moderationKey();
+  if (!endpoint || !key) return;
+  button.disabled = true;
+  button.textContent = hide ? "伏せています…" : "戻しています…";
+  const send = k => fetch(`${endpoint}?id=${encodeURIComponent(button.dataset.snsRoadHide)}`, {
+    method: "PATCH", headers: { "Content-Type": "application/json", "x-moderation-key": k }, body: JSON.stringify({ hidden: hide })
+  });
+  try {
+    let response = await send(key);
+    if (response.status === 403) {
+      try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+      key = askModerationKey();
+      if (!key) throw new Error("合言葉が違います");
+      response = await send(key);
+    }
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+    map.closePopup();
+    await ensureSnsRoadsLayer(true);
+  } catch (error) {
+    alert(`${hide ? "伏せられ" : "戻せ"}ませんでした（${error?.message || "接続エラー"}）`);
+    button.disabled = false;
+    button.textContent = hide ? "🗑 この投稿を地図から伏せる（運営）" : "↩ 地図に戻す（運営）";
+  }
+});
+
 // 📋 記録の一覧（時間順）。並び順と種類で絞り、押すとその場所へ移動してポップアップを開く
 function renderPassedRoadsList() {
   const list = document.getElementById("passed-roads-list");
@@ -6981,6 +7096,10 @@ async function finishCitizenRoadDrawing() {
     setPassedRoadRecordStatus(
       `記録しました。${kind === "blocked" ? "赤" : "青"}い線で表示しています。間違えた場合は下の「取り消す」で戻せます。`
       + (pastEvent ? `　この${pastEvent.label}の記録は「過去の実績」で見られます。` : ""), "");
+    const photoNote = await attachCitizenPhoto(result.payload && result.payload.id);
+    if (photoNote) setPassedRoadRecordStatus(`記録しました。${photoNote}間違えた場合は下の「取り消す」で戻せます。`, "");
+    // 写真は記録のあとに付くので、線を読み直してポップアップに写真が出るようにする
+    if (photoNote === "写真も付けました。") await ensurePassedRoadsLayer(true);
     const mintsuku = document.getElementById("passed-road-mintsuku");
     if (mintsuku && pastEvent && kind === "blocked") mintsuku.hidden = false;
     document.getElementById("map-pane").scrollIntoView({ block: "center" });
@@ -7282,6 +7401,70 @@ async function snapPathToRoads(path) {
     return cleaned.length >= 2 ? cleaned : path;
   } catch (error) {
     return path; // 直せなくても記録は必ず送る
+  }
+}
+
+
+// 📷 記録に写真を1枚つける（2026-09-25）
+// 台風25号の冠水地点の再募集で、写真があると場所と深さが伝わるため。
+// サーバー側は「その記録を送った端末から・30分以内・1枚まで」しか受けない。
+// ⚠ すぐ公開されるので、注意書き（顔・ナンバー・表札）は index.html に赤字で出してある。
+const CITIZEN_PHOTO_MAX_PX = 1600;   // 長辺。これより大きい写真は縮めてから送る
+const CITIZEN_PHOTO_QUALITY = 0.82;
+
+// 写真を縮めて JPEG にする（通信量を減らし、位置情報などのExifも落ちる）
+function shrinkPhoto(file) {
+  return new Promise((resolve, reject) => {
+    if (!/^image\//.test(file.type)) { reject(new Error("画像を選んでください")); return; }
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("写真を読めませんでした"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("写真を読めませんでした"));
+      img.onload = () => {
+        const scale = Math.min(1, CITIZEN_PHOTO_MAX_PX / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => (blob ? resolve(blob) : reject(new Error("写真を変換できませんでした"))),
+          "image/jpeg", CITIZEN_PHOTO_QUALITY);
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/** 送信した記録に写真をつける。失敗しても記録は残るので、知らせるだけにする */
+async function attachCitizenPhoto(roadId) {
+  const input = document.getElementById("citizen-road-photo");
+  const file = input && input.files && input.files[0];
+  if (!file || !roadId) return "";
+  const endpoint = String(APP_CONFIG.passedRoadsEndpoint || "").trim();
+  if (!endpoint) return "";
+  try {
+    const blob = await shrinkPhoto(file);
+    const form = new FormData();
+    form.append("roadId", String(roadId));
+    form.append("deviceId", passedRoadDeviceId());
+    form.append("image", blob, "photo.jpg");
+    const response = await fetch(`${endpoint}/image`, { method: "POST", body: form });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const reasons = {
+        image_too_large: "写真が大きすぎました",
+        too_late: "写真を付けられる時間（30分）を過ぎていました",
+        too_many_images: "写真はすでに1枚付いています",
+        forbidden: "この記録に写真を付けられませんでした"
+      };
+      return `（写真は付けられませんでした：${reasons[payload.error] || payload.error || response.status}）`;
+    }
+    return "写真も付けました。";
+  } catch (error) {
+    return `（写真は付けられませんでした：${(error && error.message) || "不明"}）`;
+  } finally {
+    if (input) input.value = "";
   }
 }
 

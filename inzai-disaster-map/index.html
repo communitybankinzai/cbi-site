@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260925d">
+    <link rel="stylesheet" href="./styles.css?v=20260925e">
   </head>
   <body>
     <div class="app-shell">
@@ -233,6 +233,12 @@
                     <p class="passed-road-undo" id="passed-road-undo" hidden></p>
                     <div id="passed-road-geo-guide" hidden></div>
                     <p class="passed-road-mintsuku" id="passed-road-mintsuku" hidden>みんつく千葉冠水マップにも同じ場所を投稿すると、県全体の地図にも残ります：<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつくを開いて投稿する ↗</a></p>
+                  </div>
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="snsRoads" checked> <span class="layer-name">📡 SNSの通行情報（AI読み取り・未確認）<span id="sns-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>Threads・Instagram・Bluesky の公開投稿を5分ごとに巡回し、<strong>「通れた」「通れない」「通行止めが解除された」と場所が書かれた投稿をAIが読み取って</strong>地図に置いたものです。台風25号（9月20日）以降の投稿が対象で、過去の投稿もさかのぼって拾っています。</p><p>点は投稿が指す場所の<strong>目安</strong>で、投稿者の見聞きした内容そのままです。<strong>CBIや市が確認したものではなく、いま通れるかどうかを保証しません。</strong>吹き出しの出典リンクから元の投稿を確かめてください。</p><p>読み取りに自信がない投稿は地図に出しません。誤りに気づいたら運営が伏せられます。</p></span></span></label>
+                  <div class="jshis-layer-note road-risk-legend sns-roads-legend">
+                    <span><span class="sns-road-swatch is-passed"></span>通れた（SNS）</span>
+                    <span><span class="sns-road-swatch is-blocked"></span>通れない（SNS）</span>
+                    <span><span class="sns-road-swatch is-cleared"></span>通行止め解除（SNS）</span>
                   </div>
                 </div>
               </details>
@@ -771,6 +777,8 @@
             <details id="citizen-road-options"><summary>時刻・メモ（任意）</summary>
               <label>いつの状況？ <select id="citizen-road-when"><option value="0">いま</option><option value="30">30分前</option><option value="60">1時間前</option><option value="120">2時間前</option><option value="180">3時間前</option><option value="360">6時間前</option><option value="720">12時間前</option><option value="event:typhoon25">🌀 台風25号のとき（9/20〜9/24）</option><option value="event:aug2026">☔ 8月の豪雨のとき（8/13〜8/16）</option></select></label>
               <label>メモ <input id="citizen-road-note" type="text" maxlength="200" placeholder="例：タイヤ半分まで冠水"></label>
+              <label>📷 写真（任意・1枚） <input id="citizen-road-photo" type="file" accept="image/*"></label>
+              <p class="citizen-photo-warn">⚠ <strong>人の顔・車のナンバー・表札が写らないように</strong>してください。他人の敷地には入らないでください。写真はすぐ公開され、あとから差し替えはできません（間違えたら記録ごと取り消してください）。</p>
             </details>
             <p class="citizen-road-notice">完了すると匿名の記録として公開されます。間違えた記録は10分以内なら取り消せます。</p>
           </section>
@@ -1840,9 +1848,9 @@
       })();
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
-    <script src="./config.js?v=20260922rc1"></script>
-    <script src="./road-record-editor.js?v=20260925d"></script>
-    <script src="./app.js?v=20260925d"></script>
+    <script src="./config.js?v=20260925e"></script>
+    <script src="./road-record-editor.js?v=20260925e"></script>
+    <script src="./app.js?v=20260925e"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>
