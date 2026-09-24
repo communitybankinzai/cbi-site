@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "記録に市民が写真を1枚つけられるようにする 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/disaster/passed-roads/image/route.ts（7c5130c）",
+            "site/inzai-disaster-map/index.html（#citizen-road-photo・注意書き・版20260925e）",
+            "site/inzai-disaster-map/app.js（shrinkPhoto／attachCitizenPhoto）",
+            "site/inzai-disaster-map/styles.css（.citizen-photo-warn）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "台風25号の再募集で写真を集めるため（事業主決定A・すぐ公開）。合言葉なしでも deviceId 一致＋30分以内＋1枚までで受け、その場で image_urls に入れる。本番APIで本人＝attached:true、別端末＝403を実測し確認用の記録は削除。同じファイルを触る fd1558e8 へは事前に共有ボードで申し送り済み。sourceUrls は既存なので、SNS自動プロットができれば線→写真→SNSの導線がそろう。"
+        },{
+          "date": "2026-09-25",
           "title": "アメダス10分値の保存（印旛地区周辺8か所）と8月豪雨の1時間値の補完 0.5時間",
           "category": "実装",
           "outputs": [
