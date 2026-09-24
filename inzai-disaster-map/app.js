@@ -3261,44 +3261,14 @@ document.addEventListener("click", async event => {
   const id = button.dataset.passedEdit;
   const road = passedRoadsData.find(r => String(r.id) === id);
   if (!road) return;
-  const current = (toDateTimeLocal(road.endedAt) || "").replace("T", " ").slice(0, 16);
-  const timeInput = prompt("記録の時刻（例：2026-09-22 05:30）。変えない場合はそのまま OK", current);
-  if (timeInput === null) return;
-  const noteInput = prompt("メモ（200字まで）。変えない場合はそのまま OK", road.note || "");
-  if (noteInput === null) return;
-  const payload = {};
-  const timeText = timeInput.trim().replace(/\//g, "-");
-  if (timeText && timeText !== current) {
-    const m = timeText.match(/^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{2})$/);
-    if (!m) { alert("時刻は「2026-09-22 05:30」の形で入れてください。"); return; }
-    payload.endedAt = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).toISOString();
-  }
-  if (noteInput !== (road.note || "")) payload.note = noteInput;
-  if (!Object.keys(payload).length) return;
   const endpoint = moderationEndpoint();
-  let key = moderationKey();
+  const key = moderationKey();
   if (!endpoint || !key) return;
-  map.closePopup();
-  const send = k => fetch(`${endpoint}?id=${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", "x-moderation-key": k },
-    body: JSON.stringify(payload)
+  window.RoadRecordEditor.open({
+    road, endpoint, key,
+    getKey: () => { try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {} return askModerationKey(); },
+    onSaved: async () => { map.closePopup(); await ensurePassedRoadsLayer(true); focusPassedRoad(road.id); }
   });
-  try {
-    let response = await send(key);
-    if (response.status === 403) {
-      try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
-      key = askModerationKey();
-      if (!key) throw new Error("合言葉が違います");
-      response = await send(key);
-    }
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
-    await ensurePassedRoadsLayer(true);
-    focusPassedRoad(road.id);
-  } catch (error) {
-    alert(`直せませんでした（${error?.message || "接続エラー"}）`);
-  }
 });
 
 // 地図のポップアップの「🗑 この記録を地図から伏せる」（通れた道・通れない道）
@@ -7392,6 +7362,7 @@ function blockedPointShape(road) {
     `記録時刻 ${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "不明")}（${escapeHtml(formatAgo(road.endedAt))}）` +
     `・${escapeHtml(passedRoadSourceLabel(road))}` +
     (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
+    window.RoadRecordEditor.render(road) +
     `<br><span style="font-size:11px;">${isOld
       ? "対象日より前の記録です。すでに通れるようになっている可能性があります。"
       : "この地図を見ている人が通れなかった場所を記録したものです。公式の通行止めではありません。"}</span>` +
@@ -7574,6 +7545,7 @@ function passedRoadShape(road) {
     (road.path.length === 1 ? "地点の記録" : `距離 約${Math.round(road.lengthM || 0)}m`) +
     `・${escapeHtml(passedRoadSourceLabel(road))}` +
     (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
+    window.RoadRecordEditor.render(road) +
     `<br><span style="font-size:11px;">${isOld
       ? "今回の大雨より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
       : "この地図を見ている人が通れた道を記録したものです。現在の安全や通行可否を保証するものではありません。"}</span>` +

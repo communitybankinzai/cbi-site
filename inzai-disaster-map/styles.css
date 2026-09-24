@@ -3624,7 +3624,31 @@ body.citizen-road-editing { overflow: hidden; }
 .when-badge { display: inline-block; margin: 3px 0; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: 700; }
 .when-badge.is-today { background: #b8322c; color: #fff; }
 .when-badge.is-past { background: #eef1f5; color: #5a6675; border: 1px solid #d5dbe4; font-weight: 400; }
-.is-citizen-drawing .leaflet-interactive { pointer-events: none; }
+.map-pane.is-citizen-drawing .leaflet-interactive { pointer-events: none; }
+
+/* 道路記録の画像・クリックできる出典リンク */
+.road-evidence { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.road-evidence img { width: 86px; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid #cad5df; }
+.road-evidence-link { display: block; width: 100%; overflow-wrap: anywhere; }
+.road-edit-dialog { width: min(560px, calc(100vw - 24px)); max-height: 90dvh; padding: 20px; border: 1px solid #b9c4d3; border-radius: 14px; color: #16324f; background: white; box-sizing: border-box; }
+.road-edit-dialog::backdrop { background: #14283d99; }
+.road-edit-dialog h2 { margin: 0 0 16px; font-size: 19px; }
+.road-edit-dialog label { display: block; margin: 10px 0; font-size: 14px; }
+.road-edit-dialog input:not([type="file"]), .road-edit-dialog textarea { display: block; box-sizing: border-box; width: 100%; min-height: 42px; padding: 8px; margin-top: 5px; font-size: 16px; border: 1px solid #b9c4d3; border-radius: 6px; }
+.road-edit-dialog input[type="file"] { display: block; max-width: 100%; margin-top: 6px; }
+.road-edit-dialog fieldset { margin: 12px 0; padding: 10px; border: 1px solid #cbd5df; border-radius: 8px; }
+.road-edit-dialog fieldset p, .road-edit-notice { font-size: 12px; line-height: 1.5; color: #53677b; }
+#road-edit-images { display: flex; flex-wrap: wrap; gap: 8px; }
+.road-edit-image { width: 130px; max-width: 100%; }
+.road-edit-image img { display: block; width: 100%; height: 90px; object-fit: contain; background: #f1f5f8; }
+.road-edit-dialog button { min-height: 40px; padding: 8px 12px; border: 1px solid #b9c4d3; border-radius: 6px; background: #f3f7fa; color: #16324f; font: inherit; cursor: pointer; }
+.road-image-url-row { display: flex; gap: 8px; align-items: center; }
+.road-image-url-row input { min-width: 0; flex: 1; }
+.road-image-url-row button { flex: 0 0 auto; font-size: 12px; }
+.road-edit-actions { display: flex; justify-content: flex-end; gap: 10px; }
+#road-edit-save { background: #1565c0; color: white; border-color: #1565c0; }
+#road-edit-status { font-size: 13px; line-height: 1.5; color: #a8322c; }
+.road-edit-dialog button:disabled { opacity: .55; cursor: wait; }
 .citizen-road-editor { position: absolute; z-index: 1000; bottom: calc(12px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(500px, calc(100% - 24px)); max-height: 48dvh; overflow-y: auto; padding: 14px; border-radius: 14px; border: 1px solid #bac9d5; background: #fff; box-shadow: 0 4px 24px #16324f33; font-size: 14px; }
 .citizen-road-editor[hidden] { display: none; }
 .citizen-road-heading { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
@@ -3777,3 +3801,11 @@ body.citizen-road-editing { overflow: hidden; }
 /* 「いま通れる道はTOYOTAへ」の案内（2026-09-24）。CBIの記録は実績、いまの通行可否は他所、と分けて書く */
 .tip-away, .cg-away { padding: 6px 8px; border-left: 3px solid #1565c0; background: #f2f7fd; }
 .cg-away { margin-top: 6px; }
+
+/* 左の「レイヤー」欄は grid のため、中の行が最小幅で押し広げられ、枠から横へはみ出していた。
+   2026-09-25 の実機指摘：「🔵 通れた道を追加」が panel の外に出て押せなかった（47pxはみ出し）。
+   grid の子は既定で min-width:auto なので縮まない。0 にして枠の中で折り返させる。 */
+.layer-group-body > * { min-width: 0; }
+.passed-road-recorder { min-width: 0; max-width: 100%; }
+.passed-road-btn-row { min-width: 0; }
+.passed-road-btn { max-width: 100%; }
