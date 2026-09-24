@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260924g">
+    <link rel="stylesheet" href="./styles.css?v=20260924h">
   </head>
   <body>
     <div class="app-shell">
@@ -664,6 +664,8 @@
             <button type="button" class="legend-chip is-range" id="legend-colors" aria-pressed="false" aria-controls="color-guide" title="線や点の色の濃さが何を表しているか">ⓘ 色の見方</button>
             <button type="button" class="legend-chip is-range" id="legend-place" aria-pressed="false" aria-controls="place-panel" title="地名や施設名で地図を動かす。記録のメモもさがせる">🔍 場所をさがす</button>
           </div>
+          <!-- 2026-09-24: 凡例は横に長く、右側のボタン（雨量・期間・色の見方・場所をさがす）が画面の外に隠れていた。押すと右へ送る -->
+          <button type="button" class="legend-more" id="legend-more" title="凡例の続きを見る（雨量・期間・色の見方・場所をさがす）" aria-label="凡例の続きを見る" hidden>›</button>
 
           <!-- 🔍 場所をさがす（2026-09-23）。「報告のあった冠水場所を探すのが大変」（中司さん）への対応。
                地名は国土地理院の住所検索、記録はこの画面が持っているデータから探す -->
@@ -1824,7 +1826,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260924g"></script>
+    <script src="./app.js?v=20260924h"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

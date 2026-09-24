@@ -995,6 +995,25 @@ details.layer-group .layer-group-body {
 
 .map-legend::-webkit-scrollbar { display: none; }
 
+/* 2026-09-24: 「雨量ボタンの右が見えない」（中司さん）。横スクロールなのに、続きがあると分からなかった。
+   右端に次へ送るボタンを出し、押すと1画面分スクロールする。いちばん右まで出したら消える */
+.legend-more {
+  position: absolute;
+  top: 0; right: 0;
+  z-index: 622;
+  height: 100%;
+  width: 44px;
+  border: 0;
+  padding: 0 0 0 14px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, .96) 45%);
+  color: #16324f;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.legend-more[hidden] { display: none; }
+
 .legend-chip {
   flex: 0 0 auto;
   display: inline-flex;

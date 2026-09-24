@@ -3491,6 +3491,24 @@ function initMapLegend() {
   if (typeof ResizeObserver === "function") new ResizeObserver(syncLegendHeight).observe(legend);
   syncLegendHeight();
 
+  // 凡例の続き（右に隠れているボタン）へ送る（2026-09-24「雨量ボタンの右が見えない」）
+  const more = document.getElementById("legend-more");
+  if (more) {
+    const syncMore = () => {
+      const rest = legend.scrollWidth - legend.clientWidth - legend.scrollLeft;
+      more.hidden = rest < 8;
+    };
+    more.addEventListener("click", () => {
+      // なめらか移動（behavior:"smooth"）が効かない環境があるので、値を直接入れる
+      legend.scrollLeft = Math.min(legend.scrollWidth - legend.clientWidth, legend.scrollLeft + Math.round(legend.clientWidth * 0.8));
+      syncMore();
+    });
+    legend.addEventListener("scroll", syncMore);
+    window.addEventListener("resize", syncMore);
+    if (typeof ResizeObserver === "function") new ResizeObserver(syncMore).observe(legend);
+    syncMore();
+  }
+
   // ポップアップが、地図の上に重ねている帯（凡例・手賀沼の警告・運休の表示）の裏に隠れないようにする。
   // Leaflet のポップアップは地図の面の中（z-index 400 の重なり）にあるため、外に重ねた帯より上には出せない。
   // 2026-09-21 夕：スマホで線を押すと、時刻の行がちょうど警告帯の裏に来て「押しても時間がわからない」状態だった。
