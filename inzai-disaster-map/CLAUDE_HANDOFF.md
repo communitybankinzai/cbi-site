@@ -5,7 +5,7 @@
 - **API** `/api/disaster/sns-road-reports`：GET は **確度 high・伏せていないものだけ**（120秒キャッシュ）。`?all=1`＋合言葉で中・低・伏せた分も。POST（合言葉か `Authorization: Bearer CRON_SECRET`）で判定を実行、`?limit=`。PATCH `?id=` `{hidden}` で伏せる／戻す。**巡回 POST `/api/disaster/sns-monitor` の末尾で毎回4件ずつ判定**するので、5分ごとに新しい投稿が拾われる。
 - **MAP**：レイヤー「📡 SNSの通行情報（AI読み取り・未確認）」（`data-overlay="snsRoads"`・既定ON）。破線の輪＋絵文字（🔵🚫✅）で市民の記録（実線）と区別。吹き出しに要約・場所と根拠・見た時刻／投稿時刻・本文の引用・出典リンク。運営は確度と伏せるボタンが出る。`ensureSnsRoadsLayer`／`renderSnsRoads`。
 - **実測（台風25号 9/20〜9/24 の過去分・手元から `scripts/backfill-sns-road-reports.ts` で一括）**：候補389件 → 通行語あり164件を AI に → 通行情報42件（うち **一般公開の high 7件**：舟戸大橋の通行止め→解除、北須賀、鹿島川）／場所が決まらず29件／通行情報でない93件。費用 **約0.63ドル**（入力50万・出力2.7万トークン）。
-- ⚠ **Anthropic API は 2026-09 からワークスペース未指定のキーを 400 で拒否する**。組織「N's factory」にワークスペース **cidao（`wrkspc_01Draz5nuRYPiaBxzHMbh5Gu`）** を管理APIで作り、`ANTHROPIC_WORKSPACE_ID` をヘッダーで送る。**Vercel の環境変数に入れないと本番の判定は動かない**（既存の AI ルート `classify-proposal` 等も同じ理由で止まっている可能性が高い・未確認）。
+- ⚠ **Anthropic のキーは2種類ある（2026-09-25 実測）**。手元 `.env.local` のキー（cidao-local-v3）は「`anthropic-workspace-id` ヘッダーが必須」と 400 を返す。**本番（Vercel）のキーはヘッダー無しで通り、逆にヘッダーを付けると `Workspace not found` 404**（キーの組織が違う）。そのためコードは**既定でヘッダーを送らず、「指定必須」と言われたときだけ付けてやり直す**（`needsWorkspaceHeader`）。ヘッダー用の ID は組織「N's factory」に作ったワークスペース **cidao（`wrkspc_01Draz5nuRYPiaBxzHMbh5Gu`）** で、コードに既定値あり。Vercel の `ANTHROPIC_WORKSPACE_ID` は不要（入っていても `wrkspc_` で始まらない値は無視）。⛔ 本番の AI ルート全部にワークスペースのヘッダーを付ける改修をしてはいけない（404 で全部止まる）。
 - ⚠ 「印旛沼」「手賀沼」のような広い場所名は沼の中心に置かれる（確度は中・低になるので一般には出ない）。中平橋・順大前は地名検索に無く場所が決まらない。橋を足すなら `disaster-sns-road-places.json` に座標つきで追記する。
 - ⚠ 通行情報の **「解除」は自動で「通れない」記録を消さない**（事業主判断待ち・既定は地図に✅で出すだけ）。
 
