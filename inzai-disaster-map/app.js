@@ -6948,21 +6948,19 @@ async function finishCitizenRoadDrawing() {
     showElevationProfile(path, "なぞった道");
     return;
   }
-  // 「もっと前」を選んだときは送らない（2026-09-25）。
-  // この地図の記録は「いまの状況」で、12時間より前は受け付けない作りになっている。
-  // 9/25 朝、雨が24時間降っていないのに3か所を1分おきに「通れない」と記録した例があり、
-  // 台風25号のときの冠水を、選べる範囲が無いために「いま」で送ったものとみられた。
-  // 過去の冠水を集めているのは みんつく千葉冠水マップで、そこへの投稿はこの地図にも赤い線で出る。
+  // 過去の災害を選んだときは、その災害の代表の時刻で送る（2026-09-25）。
+  // 台風25号の冠水を集め直すため、API 側も PAST_EVENTS の期間だけ後から受けるようにした。
+  // ⚠ 期間と代表の時刻は cidao の passed-roads/route.ts の PAST_EVENTS と揃えること。
+  // 代表の時刻は「その災害でいちばん冠水していた時間帯」で、本人の申告ではない。メモにその旨を残す。
+  const PAST_EVENT_TIMES = {
+    "event:typhoon25": { label: "台風25号", at: "2026-09-21T18:00:00+09:00" },
+    "event:aug2026": { label: "8月の豪雨", at: "2026-08-13T12:00:00+09:00" }
+  };
   const whenValue = document.getElementById("citizen-road-when").value;
-  if (whenValue === "past") {
-    citizenRoadMessage(
-      "この地図は<strong>いまの状況</strong>を記録するものなので、12時間より前は送れません。" +
-      "<strong>過去に冠水した道は、みんつく千葉冠水マップ</strong>が集めています（" +
-      '<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつくを開いて投稿する ↗</a>）。' +
-      "そこへ投稿すると、<strong>この地図にも赤い線で出ます</strong>。なぞった線は消していません。", true, true);
-    return;
-  }
-  const endedAt = new Date(Date.now() - Number(whenValue) * 60000).toISOString();
+  const pastEvent = PAST_EVENT_TIMES[whenValue] || null;
+  const endedAt = pastEvent
+    ? new Date(pastEvent.at).toISOString()
+    : new Date(Date.now() - Number(whenValue) * 60000).toISOString();
   draft.busy = true;
   updateCitizenRoadControls();
   citizenRoadMessage("道路に合わせています…");
@@ -6971,13 +6969,20 @@ async function finishCitizenRoadDrawing() {
   citizenRoadMessage("送信しています…");
   const result = await submitPassedRoadRecord({
     kind: draft.kind, source: "map", path: snapped,
-    startedAt: endedAt, endedAt, note: document.getElementById("citizen-road-note").value.trim().slice(0, 200)
+    startedAt: endedAt, endedAt,
+    note: (pastEvent ? `［${pastEvent.label}のとき・時刻は運営が当てた代表値］ ` : "")
+      + document.getElementById("citizen-road-note").value.trim().slice(0, 160)
   });
   draft.busy = false;
   if (result.ok) {
     const kind = draft.kind;
     closeCitizenRoadDrawing();
-    setPassedRoadRecordStatus(`記録しました。${kind === "blocked" ? "赤" : "青"}い線で表示しています。間違えた場合は下の「取り消す」で戻せます。`, "");
+    // 過去の災害の記録は、県全体を集めているみんつくにも残してもらう（2026-09-25 C案）
+    setPassedRoadRecordStatus(
+      `記録しました。${kind === "blocked" ? "赤" : "青"}い線で表示しています。間違えた場合は下の「取り消す」で戻せます。`
+      + (pastEvent ? `　この${pastEvent.label}の記録は「過去の実績」で見られます。` : ""), "");
+    const mintsuku = document.getElementById("passed-road-mintsuku");
+    if (mintsuku && pastEvent && kind === "blocked") mintsuku.hidden = false;
     document.getElementById("map-pane").scrollIntoView({ block: "center" });
     return;
   }

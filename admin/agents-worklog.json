@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "過去の災害の冠水を後から登録できるようにする（台風25号の再募集の受け口）0.4時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/disaster/passed-roads/route.ts（7a2e2dc・PAST_EVENTS）",
+            "site/inzai-disaster-map/index.html（いつの状況？に災害2つ・版20260925d）",
+            "site/inzai-disaster-map/app.js（PAST_EVENT_TIMES・みんつく案内）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "事業主決定C（CBIで受け、みんつくへも案内）。本番APIで期間内201・期間外stale_timeを実測し、雨量が自動で付く（我孫子1h30.5/3h98.5/24h272.5・flood_likely）ことも確認して確認用の記録は削除。期間と代表時刻はcidaoとMAPの2か所にあるため、変更時は両方そろえること。アメダス10分値は約1週間で消えるので、8月の豪雨はもう雨量が付かない。"
+        },{
+          "date": "2026-09-25",
           "title": "はみ出して押せないボタン2件の修正・通行止めの不良行3件の整理 0.3時間",
           "category": "保守",
           "outputs": [
