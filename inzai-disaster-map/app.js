@@ -181,6 +181,19 @@ const alignmentLabels = {
 // 町名・丁目までのものは「町丁目の代表点」で、実際のアンダーパスから大きくずれることがある。
 // 住所の書かれていない15か所（施設名だけのもの）は位置を決められず載せていない：No.22 松戸市 指向アンダーパス／No.23 松戸市 忠仲アンダーパス／No.24 松戸市 新松戸アンダーパス／No.25 松戸市 幸谷アンダーパス(じゃんけん道路)／No.26 松戸市 宮前アンダーパス／No.27 野田市 川間ガード下／No.51 鴨川市 太海地下道／No.64 松戸市 矢切トンネル／No.69 我孫子市 布佐アンダー／No.70 袖ケ浦市 袖ケ浦アンダーパス／No.71 松戸市 新松戸1丁目アンダーパス／No.75 我孫子市 JR常磐線(久寺家ガード)／No.76 市川市 二俣アンダーパス／No.78 松戸市 上矢切トンネル／No.95 流山市 木地区(つくばエクスプレスガード下)
 const ROAD_FLOOD_SOURCE_URL = "https://www.ktr.mlit.go.jp/chiba/chiba_index030.html";
+// 🚗 アンダーパスの警告（2026-09-24）
+// 内閣府の調査では、立退き避難の手段の75.5%が自動車で、台風19号の屋外の死者50名のうち54%が車で移動中だった。
+// 2026年8月の千葉豪雨では、水没した車に閉じ込められて3名が亡くなっている。
+// ⚠ ここに書いてよいのは出典のある事実だけ。CBIの判断（通れる・危ない等の断定）は足さないこと。
+const UNDERPASS_WARNING_HTML = `
+  <div class="underpass-warn">
+    <strong>大雨のときは近づかないでください。</strong>
+    <ul>
+      <li>水深60cmになると、車のドアは水圧でほぼ開かなくなります（<a href="https://jaf.or.jp/common/safety-drive/car-learning/user-test/disaster/door" target="_blank" rel="noreferrer">JAFの実験</a>）。水深30cmでも走ったあとに動かなくなることがあります。</li>
+      <li>アンダーパスの<strong>排水ポンプは停電で止まります</strong>（2026年8月の千葉市の事故で報じられた点。<a href="https://www.nikkei.com/article/DGXZQOUD151PB0V10C26A8000000/" target="_blank" rel="noreferrer">日本経済新聞</a>）。</li>
+    </ul>
+  </div>
+`;
 const roadFloodSites = [
   {
     "id": "road-1",
@@ -1861,6 +1874,7 @@ initPlaceSearch();
 initRecordEvents();
 initColorGuide();
 initRainPanel();
+initHazardCheck();
 initModeration();
 scheduleMapResize();
 
@@ -4987,7 +5001,8 @@ async function ensureUnderpassMlitLayer() {
         `<strong>🚇 ${escapeHtml(p.name || "アンダーパス")}</strong><br>` +
         (p.road ? `路線: ${escapeHtml(p.road)}<br>` : "") +
         (p.manager ? `管理者: ${escapeHtml(p.manager)}<br>` : "") +
-        `<strong>大雨のときは近づかないでください。</strong>いま冠水しているかどうかは示していません。<br>` +
+        UNDERPASS_WARNING_HTML +
+        `<span class="reference-warning">いま冠水しているかどうかは示していません</span><br>` +
         `<span style="font-size:11px;">${escapeHtml(src.credit || "出典：国土交通省")}（<a href="${escapeAttribute(src.url || "")}" target="_blank" rel="noreferrer">元の地図</a>・${escapeHtml(data.fetchedAt || "")}取得）</span>`
       ).addTo(underpassMlitLayer);
     });
@@ -8518,6 +8533,7 @@ function renderRoadFloodSites() {
     marker.bindPopup(`
       <div class="popup-title">🚇 冠水に注意するアンダーパス等 No.${site.no}</div>
       <div class="reference-warning">いま冠水しているという意味ではありません</div>
+      ${UNDERPASS_WARNING_HTML}
       <div>${escapeHtml(site.city)}　${escapeHtml(site.name)}</div>
       <div class="detail-meta">${escapeHtml(site.roadType)}　${escapeHtml(site.route)}<br>位置：${escapeHtml(site.accuracy)}</div>
       <a href="${escapeAttribute(ROAD_FLOOD_SOURCE_URL)}" target="_blank" rel="noreferrer">出典：千葉国道事務所「道路冠水注意箇所マップ」（令和8年6月30日更新）</a>
@@ -10677,6 +10693,191 @@ if (teidenMode) {
   teidenLayer.addTo(map);
   refreshTeidenLayer();
   if (teidenMode === "live") setInterval(refreshTeidenLayer, 10 * 60 * 1000);
+}
+
+// ============================================================
+// 🏠 この場所は想定区域に入っているか（2026-09-24）
+// 調査（保管庫 cidao/2026-09-24_冠水MAPの改善_住民ニーズと先行事例の調査.md）でいちばん効くと分かった機能。
+// 内閣府の調査では、自宅がリスク区域内だと認識していた人の避難率は4割強、認識していない人は1〜2割。
+// 一方で「自宅が区域に入っているか知らなかった」人が52%いる（国土交通省の資料）。
+// ⚠ 判定は公式ハザードのタイルの色を読んでいるだけで、CBIの独自判断は足していない。
+// ⚠ 色が付いていない＝安全ではない（2026年8月の千葉豪雨では浸水報告の55.7%が想定区域の外だった）。
+// ============================================================
+const HAZARD_CHECK_LAYERS = [
+  {
+    key: "flood", label: "洪水（想定最大規模）", z: 16,
+    url: "https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin_data/{z}/{x}/{y}.png",
+    // 国交省の統一凡例（浸水深）。実際のタイルから採った色で照合する
+    colors: [
+      { rgb: [247, 245, 169], text: "0.5m未満（床下まで）" },
+      { rgb: [255, 216, 192], text: "0.5〜3m（1階が浸かる高さ）" },
+      { rgb: [255, 183, 183], text: "3〜5m（2階が浸かる高さ）" },
+      { rgb: [255, 145, 145], text: "5〜10m（3階以上まで）" },
+      { rgb: [242, 133, 201], text: "10〜20m" },
+      { rgb: [220, 122, 220], text: "20m以上" }
+    ]
+  },
+  {
+    key: "inland", label: "内水（雨水が流れきらない浸水）", z: 16,
+    url: "https://disaportaldata.gsi.go.jp/raster/02_naisui_data/{z}/{x}/{y}.png",
+    colors: [
+      { rgb: [247, 245, 169], text: "0.5m未満" },
+      { rgb: [255, 216, 192], text: "0.5〜3m" },
+      { rgb: [255, 183, 183], text: "3〜5m" },
+      { rgb: [255, 145, 145], text: "5m以上" }
+    ]
+  },
+  {
+    key: "kaoku", label: "家屋倒壊等氾濫想定区域（氾濫流）", z: 16,
+    url: "https://disaportaldata.gsi.go.jp/raster/01_flood_l2_kaokutoukai_hanran_data/{z}/{x}/{y}.png",
+    colors: [{ rgb: [255, 153, 0], text: "区域内（木造家屋が倒れるおそれ）" }]
+  },
+  {
+    key: "dosha", label: "土砂災害（急傾斜地の崩壊）", z: 16,
+    url: "https://disaportaldata.gsi.go.jp/raster/05_kyukeishakeikaikuiki/{z}/{x}/{y}.png",
+    colors: [
+      { rgb: [250, 230, 0], text: "警戒区域（イエロー）" },
+      { rgb: [250, 40, 0], text: "特別警戒区域（レッド）" }
+    ]
+  }
+];
+
+const hazardTileCache = new Map();
+let hazardPickMarker = null;
+let hazardPickMode = false;
+
+function hazardTile(url, z, x, y) {
+  const key = url + "/" + z + "/" + x + "/" + y;
+  if (!hazardTileCache.has(key)) {
+    hazardTileCache.set(key, new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = 256; canvas.height = 256;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          ctx.drawImage(img, 0, 0);
+          resolve(ctx.getImageData(0, 0, 256, 256).data);
+        } catch { resolve(null); }
+      };
+      img.onerror = () => resolve(null); // そこに想定が無ければタイル自体が無い（404）
+      img.src = url.replace("{z}", z).replace("{x}", x).replace("{y}", y);
+    }));
+  }
+  return hazardTileCache.get(key);
+}
+
+// 1地点の色を読み、いちばん近い凡例の色に当てる（色が無ければ null）
+async function hazardAtPoint(layer, lat, lon) {
+  const n = 2 ** layer.z;
+  const fx = (lon + 180) / 360 * n;
+  const rad = lat * Math.PI / 180;
+  const fy = (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * n;
+  const data = await hazardTile(layer.url, layer.z, Math.floor(fx), Math.floor(fy));
+  if (!data) return null;
+  const px = Math.min(255, Math.max(0, Math.floor((fx % 1) * 256)));
+  const py = Math.min(255, Math.max(0, Math.floor((fy % 1) * 256)));
+  const i = (py * 256 + px) * 4;
+  const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+  if (a < 40) return null; // 透明＝区域の外
+  let best = null;
+  layer.colors.forEach(c => {
+    const d = Math.abs(c.rgb[0] - r) + Math.abs(c.rgb[1] - g) + Math.abs(c.rgb[2] - b);
+    if (!best || d < best.d) best = { d: d, text: c.text };
+  });
+  return best && best.d <= 120 ? best.text : "区域内（色の区分は判別できませんでした）";
+}
+
+async function hazardCheckAt(lat, lon) {
+  return Promise.all(HAZARD_CHECK_LAYERS.map(async layer => ({
+    label: layer.label,
+    hit: await hazardAtPoint(layer, lat, lon)
+  })));
+}
+
+function setHazardResult(html) {
+  const node = document.getElementById("hazard-result");
+  if (node) node.innerHTML = html;
+}
+
+function setHazardPickMode(on) {
+  hazardPickMode = on;
+  document.getElementById("legend-hazard")?.setAttribute("aria-pressed", String(on));
+  const panel = document.getElementById("hazard-panel");
+  if (panel) panel.hidden = !on;
+  if (on) {
+    document.getElementById("range-panel")?.setAttribute("hidden", "");
+    document.getElementById("rain-panel")?.setAttribute("hidden", "");
+    document.getElementById("place-panel")?.setAttribute("hidden", "");
+    setHazardResult('<p class="hazard-hint">調べたい場所を地図でタップしてください（自宅・職場・通り道など）。住所でも探せます。</p>');
+  }
+}
+
+function hazardPinIcon() {
+  return L.divIcon({ className: "", html: '<div class="hazard-pin" aria-hidden="true">🏠</div>', iconSize: [28, 28], iconAnchor: [14, 26] });
+}
+
+async function showHazardCheck(lat, lon, placeLabel) {
+  setHazardResult('<p class="hazard-hint">公式の想定を確認しています…</p>');
+  const where = placeLabel ? escapeHtml(placeLabel) : "緯度 " + lat.toFixed(5) + "／経度 " + lon.toFixed(5);
+  try {
+    const results = await hazardCheckAt(lat, lon);
+    const hits = results.filter(r => r.hit);
+    const rows = results.map(r =>
+      '<li class="' + (r.hit ? "is-hit" : "is-none") + '"><strong>' + escapeHtml(r.label) + "</strong>：" +
+      (r.hit ? escapeHtml(r.hit) : "この地点に色は付いていません") + "</li>").join("");
+    const head = hits.length
+      ? '<p class="hazard-verdict is-hit">この場所は <strong>' + hits.length + "件の想定区域に入っています</strong></p>"
+      : '<p class="hazard-verdict is-none">この場所には、公式の想定の色が付いていません</p>';
+    setHazardResult(
+      head +
+      '<p class="hazard-where">' + where + "</p>" +
+      '<ul class="hazard-list">' + rows + "</ul>" +
+      '<p class="hazard-note">⚠ <strong>色が付いていない＝安全ではありません。</strong>2026年8月の千葉豪雨では、浸水の報告の55.7%が想定区域の外でした（ウェザーニュース調べ）。雨水が流れきらずに道路や低い土地が浸かることがあります。</p>' +
+      '<p class="hazard-note">出典：ハザードマップポータル（国土地理院・国土交通省）の公開データを、この画面が読み取って判定しています。避難の判断は市の避難情報に従ってください。</p>'
+    );
+  } catch (error) {
+    setHazardResult('<p class="hazard-hint is-error">確認できませんでした（' + escapeHtml((error && error.message) || "接続エラー") + "）。時間をおいて試してください。</p>");
+  }
+}
+
+function initHazardCheck() {
+  const chip = document.getElementById("legend-hazard");
+  if (!chip) return;
+  chip.addEventListener("click", () => setHazardPickMode(!hazardPickMode));
+  document.getElementById("hazard-close")?.addEventListener("click", () => setHazardPickMode(false));
+  // 地図のタップで判定（記録の入力中・地点指定中は邪魔しない）
+  map.on("click", event => {
+    if (!hazardPickMode) return;
+    if ((typeof citizenRoadDraft !== "undefined" && citizenRoadDraft && citizenRoadDraft.active) || roadDrawingMode || locationPickRecordId) return;
+    if (hazardPickMarker) map.removeLayer(hazardPickMarker);
+    hazardPickMarker = L.marker(event.latlng, { icon: hazardPinIcon() }).addTo(map);
+    showHazardCheck(event.latlng.lat, event.latlng.lng, "");
+  });
+  document.getElementById("hazard-search-form")?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const q = String(document.getElementById("hazard-search-input")?.value || "").trim();
+    if (!q) return;
+    setHazardResult('<p class="hazard-hint">住所を探しています…</p>');
+    try {
+      const response = await fetch(PLACE_SEARCH_URL + encodeURIComponent(q));
+      const rows = await response.json();
+      const hit = Array.isArray(rows) ? rows[0] : null;
+      const point = hit && hit.geometry && hit.geometry.coordinates;
+      if (!point) {
+        setHazardResult('<p class="hazard-hint is-error">その住所は見つかりませんでした。地図をタップしても調べられます。</p>');
+        return;
+      }
+      const lon = Number(point[0]), lat = Number(point[1]);
+      map.setView([lat, lon], Math.max(map.getZoom(), 16), { animate: false });
+      if (hazardPickMarker) map.removeLayer(hazardPickMarker);
+      hazardPickMarker = L.marker([lat, lon], { icon: hazardPinIcon() }).addTo(map);
+      showHazardCheck(lat, lon, (hit.properties && hit.properties.title) || q);
+    } catch (error) {
+      setHazardResult('<p class="hazard-hint is-error">住所を探せませんでした（' + escapeHtml((error && error.message) || "接続エラー") + "）</p>");
+    }
+  });
 }
 
 // 最初の画面は冠水の情報だけにする（2026-09-21 中司さんの実機指摘）。開いた直後に

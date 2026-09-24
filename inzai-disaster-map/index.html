@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260924h">
+    <link rel="stylesheet" href="./styles.css?v=20260924j">
   </head>
   <body>
     <div class="app-shell">
@@ -663,6 +663,8 @@
             <button type="button" class="legend-chip is-range" id="legend-range" aria-pressed="false" title="記録を好きな期間でしぼり込む">⏱ 期間</button>
             <button type="button" class="legend-chip is-range" id="legend-colors" aria-pressed="false" aria-controls="color-guide" title="線や点の色の濃さが何を表しているか">ⓘ 色の見方</button>
             <button type="button" class="legend-chip is-range" id="legend-place" aria-pressed="false" aria-controls="place-panel" title="地名や施設名で地図を動かす。記録のメモもさがせる">🔍 場所をさがす</button>
+            <!-- 2026-09-24: 「自宅が想定区域に入っているか」を1行で返す。避難率が2倍以上変わる（内閣府の調査） -->
+            <button type="button" class="legend-chip is-range" id="legend-hazard" aria-pressed="false" aria-controls="hazard-panel" title="自宅や職場が、公式の浸水・土砂の想定区域に入っているかを調べる">🏠 ここは想定区域？</button>
           </div>
           <!-- 2026-09-24: 凡例は横に長く、右側のボタン（雨量・期間・色の見方・場所をさがす）が画面の外に隠れていた。押すと右へ送る -->
           <button type="button" class="legend-more" id="legend-more" title="凡例の続きを見る（雨量・期間・色の見方・場所をさがす）" aria-label="凡例の続きを見る" hidden>›</button>
@@ -702,6 +704,19 @@
               <button type="button" id="range-clear">解除</button>
             </div>
           </div>
+          <!-- 🏠 この場所は想定区域に入っているか（2026-09-24）。判定は公式ハザードのタイルの色を読むだけ -->
+          <div class="range-panel hazard-panel" id="hazard-panel" hidden>
+            <div class="hazard-head">
+              <strong>🏠 この場所は想定区域に入っていますか</strong>
+              <button type="button" id="hazard-close" aria-label="閉じる">✕</button>
+            </div>
+            <form id="hazard-search-form" class="hazard-form">
+              <input type="search" id="hazard-search-input" placeholder="住所（例：印西市大森2364）" autocomplete="off" enterkeyhint="search" aria-label="住所で調べる">
+              <button type="submit">調べる</button>
+            </form>
+            <div id="hazard-result" class="hazard-result"></div>
+          </div>
+
           <!-- 💧 積算雨量でしぼり込む（2026-09-23）。雨量は記録した時刻に最寄りアメダスから付けた値 -->
           <div class="range-panel rain-panel" id="rain-panel" hidden>
             <div class="rain-verdicts" role="group" aria-label="記録した時刻に雨が降っていたか">
@@ -1826,7 +1841,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260924h"></script>
+    <script src="./app.js?v=20260924j"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

@@ -1094,6 +1094,36 @@ details.layer-group .layer-group-body {
 .rain-window button[aria-pressed="true"] { background: #16324f; border-color: #16324f; color: #fff; font-weight: 700; }
 .range-actions #rain-apply { flex: 1; background: #16324f; border-color: #16324f; color: #fff; font-weight: 700; }
 
+/* 🏠 この場所は想定区域に入っているか（2026-09-24） */
+/* ⚠ .range-panel より前に書いてあるので、位置と幅はクラス2つで優先度を上げる（雨量パネルと同じ理由） */
+.range-panel.hazard-panel {
+  left: 58px; width: min(340px, calc(100% - 66px));
+  /* 凡例の下から、地図の下の記録バーに掛からない高さまで（スマホだと結果が長く、地図からはみ出していた） */
+  max-height: calc(100% - var(--legend-h, 38px) - 72px);
+  overflow-y: auto;
+}
+.hazard-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.hazard-head strong { font-size: 13px; color: #16324f; }
+.range-panel.hazard-panel .hazard-head button { min-height: 26px; padding: 2px 8px; }
+.hazard-form { display: flex; gap: 6px; }
+.hazard-form input { flex: 1; min-width: 0; padding: 6px; border: 1px solid #bac9d5; border-radius: 6px; font-size: 15px; }
+.hazard-result { margin-top: 8px; }
+.hazard-result p { margin: 0 0 6px; }
+.hazard-verdict { font-weight: 700; font-size: 13px; }
+.hazard-verdict.is-hit { color: #b8322c; }
+.hazard-verdict.is-none { color: #1b6b3a; }
+.hazard-where { color: #49566a; font-size: 11.5px; }
+.hazard-list { margin: 6px 0; padding-left: 0; list-style: none; }
+.hazard-list li { padding: 4px 0; border-top: 1px solid #e3e9f0; font-size: 12px; line-height: 1.5; }
+.hazard-list li.is-hit { color: #16324f; }
+.hazard-list li.is-hit strong { color: #b8322c; }
+.hazard-list li.is-none { color: #7b879a; }
+.hazard-note { color: #49566a; font-size: 11px; line-height: 1.55; }
+.hazard-hint { color: #49566a; font-size: 12px; }
+.hazard-hint.is-error { color: #b8322c; }
+.hazard-pin { font-size: 22px; line-height: 1; text-shadow: 0 0 3px #fff, 0 0 6px #fff; }
+.is-citizen-drawing .hazard-panel { display: none; }
+
 /* ⏱ 期間のしぼり込みパネル（凡例の下に出す） */
 .range-panel {
   position: absolute;
@@ -3737,3 +3767,9 @@ body.citizen-road-editing { overflow: hidden; }
 .river-history-legend li { margin: 2px 0; }
 .river-history-swatch { display: inline-block; width: 14px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
 .river-history-diff { color: #64748b; margin-left: 6px; font-size: 11px; }
+
+/* 🚗 アンダーパスのポップアップに出す根拠つきの警告（2026-09-24） */
+.underpass-warn { margin: 6px 0; padding: 6px 8px; border-left: 3px solid #b8322c; background: #fdf3f2; font-size: 11.5px; line-height: 1.55; }
+.underpass-warn strong { color: #b8322c; }
+.underpass-warn ul { margin: 4px 0 0; padding-left: 1.1em; }
+.underpass-warn li { margin-bottom: 3px; }
