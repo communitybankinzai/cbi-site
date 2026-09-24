@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP SNS投稿をAIで読み取り「通れた／通れない／解除」を未確認レイヤーで自動プロット（台風25号の過去分も） 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "cidao src/lib/disaster-sns-road-ai.ts（Claude Haiku 4.5で読み取り・座標化は橋辞書→Nominatim→国土地理院→AI推定）",
+            "cidao src/app/api/disaster/sns-road-reports/route.ts（GET/POST/PATCH）・sns-monitor/route.ts（巡回末尾で4件ずつ判定）",
+            "cidao supabase/migrations/20260925020000_disaster_sns_road_reports.sql（本番適用済み）・scripts/backfill-sns-road-reports.ts・テスト8件",
+            "site/inzai-disaster-map/app.js・index.html・styles.css・config.js（レイヤー「📡 SNSの通行情報（AI読み取り・未確認）」）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（仕組み・実測・注意点を記載）",
+            "Anthropic ワークスペース cidao を管理APIで作成（ワークスペース必須化への対応）"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "Codexの規則ベース判定は台風25号の実データ389件で場所0件・解除を誤判定のため不採用（事業主決定A）。過去分164件をAIに掛け通行情報42件（一般公開の確度高7件：舟戸大橋の通行止め→解除・北須賀・鹿島川）、費用約0.63ドル。ローカル画面で7件の点と吹き出し（要約・引用・出典リンク）を実測、cidao 85eb938・MAP 7b87833 をpush。Anthropic APIがワークスペース未指定キーを400で拒否するため組織N's factoryにワークスペースcidaoを作成し.env.localへ追加。Vercelの ANTHROPIC_WORKSPACE_ID は事業主が追加予定（未設定の間、本番の新規判定は止まる）。session: fd1558e8-a8d7-43c6-bc6c-20ba753ec8d9 / output: 108,836 / cost: $52.13"
+        },
+        {
+          "date": "2026-09-25",
           "title": "記録に市民が写真を1枚つけられるようにする 0.4時間",
           "category": "実装",
           "outputs": [
@@ -31,7 +47,8 @@
           "hours": 0.4,
           "partnerApproved": false,
           "note": "台風25号の再募集で写真を集めるため（事業主決定A・すぐ公開）。合言葉なしでも deviceId 一致＋30分以内＋1枚までで受け、その場で image_urls に入れる。本番APIで本人＝attached:true、別端末＝403を実測し確認用の記録は削除。同じファイルを触る fd1558e8 へは事前に共有ボードで申し送り済み。sourceUrls は既存なので、SNS自動プロットができれば線→写真→SNSの導線がそろう。"
-        },{
+        },
+        {
           "date": "2026-09-25",
           "title": "アメダス10分値の保存（印旛地区周辺8か所）と8月豪雨の1時間値の補完 0.5時間",
           "category": "実装",
@@ -45,7 +62,8 @@
           "hours": 0.5,
           "partnerApproved": false,
           "note": "気象庁の10分値は約1週間で消えるため、過去の災害の記録に雨量を付けられなくなる問題への対処（事業主決定A）。印旛地区周辺で雨量を測る8か所を対象に、9/18以降の10分値8,384行を確保（台風25号の期間を完全に含む）。8月豪雨は10分値が既に消えていたため1時間値で補完し、千葉の8/13日降水量351.0mmが気象庁の公表値と完全一致することを確認。タスクからは %APPDATA%\\Python の psycopg が読めなかったため、標準ライブラリ＋Supabase REST に書き換えた（記憶どおりの罠）。.bat をheredocで書いてバックスラッシュが落ちる罠も踏んだ（Writeツールで書き直し）。"
-        },{
+        },
+        {
           "date": "2026-09-25",
           "title": "過去の災害の冠水を後から登録できるようにする（台風25号の再募集の受け口）0.4時間",
           "category": "実装",
@@ -59,7 +77,8 @@
           "hours": 0.4,
           "partnerApproved": false,
           "note": "事業主決定C（CBIで受け、みんつくへも案内）。本番APIで期間内201・期間外stale_timeを実測し、雨量が自動で付く（我孫子1h30.5/3h98.5/24h272.5・flood_likely）ことも確認して確認用の記録は削除。期間と代表時刻はcidaoとMAPの2か所にあるため、変更時は両方そろえること。アメダス10分値は約1週間で消えるので、8月の豪雨はもう雨量が付かない。"
-        },{
+        },
+        {
           "date": "2026-09-25",
           "title": "はみ出して押せないボタン2件の修正・通行止めの不良行3件の整理 0.3時間",
           "category": "保守",
@@ -72,7 +91,8 @@
           "hours": 0.3,
           "partnerApproved": false,
           "note": "事業主の実機スクショで判明。左パネルは grid の子が min-width:auto で縮まず47pxはみ出し、凡例は幅1600以下で最大634pxはみ出していた。puppeteerで4通りの幅を測り、修正後はいずれも0を確認。あわせて情報源の鮮度一覧で見つかった828日前の通行止め（路線・場所・市町村がすべて空、鴨川/市原方面の県ページ由来）など3件を clear_reason='operator' で解除済みにし、いちばん古い発表は2026/01/07になった。取り込み側（千葉県のページで中身を読めないと空の行ができる）の直しは未着手。"
-        },{
+        },
+        {
           "date": "2026-09-25",
           "title": "防災MAP 道路記録の画像・出典リンク編集（Codex書きかけの引き継ぎ・DB反映・公開） 0.3時間",
           "category": "実装",
@@ -7397,13 +7417,15 @@
           "category": "実装",
           "priority": "中",
           "note": "2026-09-25。控え（disaster_amedas_10min）は貯まり始めたが、passed-roads の rainAt はまだ気象庁を直接見ている。1週間より前の災害を選んで登録すると雨量が付かない。控えを先に見て、無ければ気象庁へ、の順にする。"
-        },{
+        },
+        {
           "due": "未定",
           "title": "🚧 千葉県の通行止めページで中身を読めないとき、空の行を作らないようにする",
           "category": "実装",
           "priority": "中",
           "note": "2026-09-25、路線名・場所・市町村がすべて空の行が3件できていた（うち1件は2024-06-18の発表が828日間残存）。今回はデータ側を解除済みにしただけで、disaster-road-closures.ts の取り込みは直していない。"
-        },{
+        },
+        {
           "due": "未定",
           "title": "📣 防災MAPの新機能をSNSで告知（注意喚起＋鮮度一覧＋道なり補正＋写真添付）",
           "category": "広報",
