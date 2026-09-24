@@ -1101,6 +1101,17 @@ if (location.protocol === 'file:') {
       </section>
     </div>
     <div class="tab-panel" id="tab-metaverse" role="tabpanel" hidden>
+      <!-- 情報源の鮮度（2026-09-25）。古いデータが古いと気づかれないまま使われる事故が9/24に2件続いたため -->
+      <section class="panel" id="source-health">
+        <div class="panel-head-row">
+          <h2 class="panel-title">🩺 防災MAP 情報源の鮮度</h2>
+          <span class="meta-note" id="sh-updated"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="sh-refresh" aria-label="鮮度を更新" title="更新">↻</button>
+        </div>
+        <p class="panel-desc">「経過」は最後に新しくなってからの時間、「判断の古さ」は<strong>いま地図に出している判断が何時間前のものか</strong>です。止まっているだけでなく、古い判断が生き続けていないかも見ます。黄＝目安より遅い、赤＝目安の3倍を超えた（または避難情報が発令から24時間超）。</p>
+        <p id="sh-status" class="meta-note" role="status">読み込み待ち</p>
+        <div id="sh-list"></div>
+      </section>
       <section class="panel" id="cbi-content-analytics">
         <div class="panel-head-row">
           <h2 class="panel-title">CBIコンテンツ PV・VV</h2>

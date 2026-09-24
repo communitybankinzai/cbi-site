@@ -1,0 +1,16 @@
+
+/* 🩺 防災MAP 情報源の鮮度（2026-09-25） */
+.sh-group { margin: 14px 0 6px; font-size: .85rem; color: var(--c-ink-sub); }
+.sh-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.sh-table th, .sh-table td { padding: 6px 8px; border-bottom: 1px solid var(--c-line); text-align: left; vertical-align: top; }
+.sh-table th { font-weight: 600; color: var(--c-ink-sub); font-size: .75rem; }
+.sh-name { font-weight: 600; }
+.sh-sub { color: var(--c-ink-sub); font-size: .7rem; }
+.sh-detail { color: var(--c-ink-sub); }
+.sh-badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .72rem; font-weight: 700; background: #e8f0e8; color: #1b6b3a; }
+.sh-late .sh-badge { background: #fdf3d8; color: #8a6100; }
+.sh-danger .sh-badge { background: #fdecea; color: #b8322c; }
+.sh-unknown .sh-badge { background: #eef1f5; color: #5a6675; }
+.sh-late td { background: #fffdf5; }
+.sh-danger td { background: #fff7f6; }
+.meta-note.is-warn { color: #b8322c; font-weight: 600; }

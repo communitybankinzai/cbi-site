@@ -2139,6 +2139,9 @@ const UNREAD_POLL_MS = 30000;
 
   function openMetaverseTab() {
     mvBindSseSave();
+    loadSourceHealth();
+    const shBtn = $('sh-refresh');
+    if (shBtn && !shBtn.dataset.bound) { shBtn.dataset.bound = '1'; shBtn.addEventListener('click', loadSourceHealth); }
     loadMetaverseUsage();
     if (!mvDailyLoaded) loadMetaverseDaily(mvDays);
     if (!mvFixesLoaded) loadPositionFixes();
@@ -2211,6 +2214,71 @@ const UNREAD_POLL_MS = 30000;
         btn.disabled = false;
       }
     });
+  }
+
+
+  // ---- 🩺 防災MAP 情報源の鮮度（2026-09-25） --------------------------------
+  // 2026-09-24 に、古いデータが古いと気づかれないまま使われる事故が2件続いた
+  // （みんつくの取り込みが3日停止／市の避難指示の解除の取りこぼし）。
+  // 「止まっている」だけでなく「古い判断が生き続けている」かも見るための一覧。
+  const SOURCE_HEALTH_API = 'https://cidao.vercel.app/api/disaster/source-health';
+  const SH_LEVEL = {
+    ok:      { label: '正常',   cls: 'sh-ok' },
+    late:    { label: '遅れ',   cls: 'sh-late' },
+    danger:  { label: '要確認', cls: 'sh-danger' },
+    unknown: { label: '測れず', cls: 'sh-unknown' },
+  };
+
+  function shAge(minutes) {
+    if (minutes === null || minutes === undefined) return '—';
+    if (minutes < 1) return 'たった今';
+    if (minutes < 60) return minutes + '分前';
+    if (minutes < 60 * 48) return Math.floor(minutes / 60) + '時間前';
+    return Math.floor(minutes / 1440) + '日前';
+  }
+
+  async function loadSourceHealth() {
+    const list = $('sh-list');
+    const status = $('sh-status');
+    if (!list) return;
+    status.textContent = '読み込み中…';
+    try {
+      const r = await fetch(SOURCE_HEALTH_API, { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const data = await r.json();
+      const rows = Array.isArray(data.sources) ? data.sources : [];
+      if (!rows.length) { list.innerHTML = '<p class="meta-note">情報がありません</p>'; status.textContent = ''; return; }
+      const groups = [];
+      rows.forEach(row => {
+        let g = groups.find(x => x.name === row.group);
+        if (!g) { g = { name: row.group, items: [] }; groups.push(g); }
+        g.items.push(row);
+      });
+      list.innerHTML = groups.map(g => `
+        <h3 class="sh-group">${esc(g.name)}</h3>
+        <table class="sh-table">
+          <thead><tr><th>情報源</th><th>状態</th><th>経過</th><th>判断の古さ</th><th>備考</th></tr></thead>
+          <tbody>${g.items.map(row => {
+            const lv = SH_LEVEL[row.level] || SH_LEVEL.unknown;
+            const expect = row.expectMinutes ? `目安 ${shAge(row.expectMinutes).replace('前', '')}おき` : '目安なし';
+            return `<tr class="${lv.cls}">
+              <td class="sh-name">${esc(row.label)}</td>
+              <td><span class="sh-badge">${esc(lv.label)}</span></td>
+              <td>${esc(shAge(row.ageMinutes))}<br><span class="sh-sub">${esc(expect)}</span></td>
+              <td>${esc(row.judgedAgeText || '—')}</td>
+              <td class="sh-detail">${esc(row.detail || '')}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>`).join('');
+      const worst = { ok: 'すべて正常です', late: '遅れている情報源があります', danger: '止まっている疑いの情報源があります' }[data.worst] || '';
+      $('sh-updated').textContent = data.checkedAt ? new Date(data.checkedAt).toLocaleString('ja-JP') + ' 時点' : '';
+      status.textContent = worst;
+      status.className = 'meta-note' + (data.worst === 'ok' ? '' : ' is-warn');
+    } catch (err) {
+      list.innerHTML = '';
+      status.textContent = '取得できませんでした：' + esc(err.message);
+      status.className = 'meta-note is-warn';
+    }
   }
 
   async function loadMetaverseUsage() {

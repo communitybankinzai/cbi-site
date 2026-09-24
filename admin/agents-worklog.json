@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "情報源の鮮度一覧（API＋管理画面）の実装 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/disaster/source-health/route.ts（6d0baf7 ほか）",
+            "site/admin/index.html（#source-health）",
+            "site/admin/admin.js（loadSourceHealth）",
+            "site/admin/style.css（.sh-*）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "9/24の2件の事故（みんつく3日停止・避難指示の解除取りこぼし）を受けて作成。Supabaseを読むだけで定期実行は増やさず、みんつくの生成時刻はkansuiと同じ10分の鍵でキャッシュを共有。実物の値の形を確認して shelter_last_open が openNames であることを反映。発令なしのときに誤って赤くなる不具合も本番で見つけて修正。管理画面にログインして表3つ・8行・遅れ1件を実測。03:00の予約タスクは最初のPowerShellで許可待ちになり19秒で停止していたため、このセッションで実施。session: d338459c-e5b8-4513-ae80-ce489b3369cc"
+        },{
+          "date": "2026-09-25",
           "title": "台風被害マップの最新性確認と「（訂正）」報の読み順の修正 0.2時間",
           "category": "保守",
           "outputs": [
