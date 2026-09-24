@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-24",
+          "title": "冠水データ3日停止の発見と修正＋TOYOTAとの役割分担の言い換え 0.4時間",
+          "category": "保守",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/disaster/kansui/route.ts（88b13f6）",
+            "site/inzai-disaster-map/index.html（版20260924l）",
+            "site/inzai-disaster-map/styles.css",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（見送り表1行）",
+            "site/admin/changelog.json（3件）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "みんつくの取り込みが9/21 07:20生成のまま3日止まり、台風25号後半の2,652件が未表示だったのを発見・修正（6,483→8,450件、うち9/21以降2,311件が復活）。みんつくへの雨量付与は、本家に冠水日時が無く8/24〜26に3,416件が後追い投稿されている実測から見送り（決定A）。通れた道は削除せず「実績の記録」と言い換えTOYOTAへ導線（DBで9/20〜24にのべ220台・449件の利用を確認）。session: d338459c-e5b8-4513-ae80-ce489b3369cc / output: 399,589 / cost: $196.60"
+        },
+        {
+          "date": "2026-09-24",
           "title": "冠水MAP改善のWeb調査（8件の検討事項）＋ハザード区域判定・アンダーパス警告の実装 3.6時間",
           "category": "実装",
           "outputs": [
@@ -7186,6 +7201,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📨 みんつく運営へ「冠水した日時」の項目があるか確認し、あれば雨量での絞り込みに対応する",
+          "category": "調査",
+          "priority": "中",
+          "note": "2026-09-24 決定A。いまのデータは id/geometry/status/created_at のみで、投稿日時しか分からない。9/18の提供打診の返答とあわせて聞く。",
+          "status": "待ち",
+          "blockedBy": "みんつく運営への次の連絡"
+        },
+        {
+          "due": "未定",
+          "title": "🔎 外部から取り込むデータが古いまま止まっていないか、まとめて見張る仕組みを作る",
+          "category": "実装",
+          "priority": "高",
+          "note": "2026-09-24、みんつくの取り込みが3日間気づかれずに止まっていた（next.revalidate のキャッシュが居座った）。kansui には generatedAgeMinutes を足したが、水位・通行止め・タイムラインにも同種の穴がありうる。管理画面に「各情報源の最終更新からの経過」を一覧で出すのが候補。"
+        },
         {
           "due": "未定",
           "title": "🗺 冠水MAP：「想定区域の外でも浸水は起きる」ことを画面で明記し、過去の冠水の蓄積を前面に出す",
