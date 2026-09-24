@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "記録の雨量をアメダスの控えから引くようにする 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/lib/disaster-amedas-rain.ts（d9f1af5・rainFromBackup）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "再募集で「8月の豪雨のとき」を選べるのに雨量が付かない状態を解消。控え（disaster_amedas_10min）を先に見て、1時間値で補った行は3時間・24時間を足し合わせる。本番で8/13 15:00＝41.0/77.5/81.5、9/21 18:00＝30.5/98.5/272.5 を実測し、確認用の記録は削除。テスト135件すべて成功。"
+        },{
+          "date": "2026-09-25",
           "title": "記録にSNSの投稿URLを添えられるようにする（手動プロット）0.3時間",
           "category": "実装",
           "outputs": [
