@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "はみ出して押せないボタン2件の修正・通行止めの不良行3件の整理 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/styles.css（.layer-group-body > * の min-width:0／.map-legend の折り返し）",
+            "site/inzai-disaster-map/index.html（版20260925c）",
+            "Supabase disaster_road_closures（中身が空の3件を解除済みに）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主の実機スクショで判明。左パネルは grid の子が min-width:auto で縮まず47pxはみ出し、凡例は幅1600以下で最大634pxはみ出していた。puppeteerで4通りの幅を測り、修正後はいずれも0を確認。あわせて情報源の鮮度一覧で見つかった828日前の通行止め（路線・場所・市町村がすべて空、鴨川/市原方面の県ページ由来）など3件を clear_reason='operator' で解除済みにし、いちばん古い発表は2026/01/07になった。取り込み側（千葉県のページで中身を読めないと空の行ができる）の直しは未着手。"
+        },{
+          "date": "2026-09-25",
           "title": "防災MAP 道路記録の画像・出典リンク編集（Codex書きかけの引き継ぎ・DB反映・公開） 0.3時間",
           "category": "実装",
           "outputs": [
@@ -7336,6 +7349,12 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "🚧 千葉県の通行止めページで中身を読めないとき、空の行を作らないようにする",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-25、路線名・場所・市町村がすべて空の行が3件できていた（うち1件は2024-06-18の発表が828日間残存）。今回はデータ側を解除済みにしただけで、disaster-road-closures.ts の取り込みは直していない。"
+        },{
           "due": "未定",
           "title": "📣 防災MAPの新機能をSNSで告知（注意喚起＋鮮度一覧＋道なり補正＋写真添付）",
           "category": "広報",

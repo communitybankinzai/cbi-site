@@ -3809,3 +3809,9 @@ body.citizen-road-editing { overflow: hidden; }
 .passed-road-recorder { min-width: 0; max-width: 100%; }
 .passed-road-btn-row { min-width: 0; }
 .passed-road-btn { max-width: 100%; }
+
+/* 2026-09-25 実機指摘：幅1600以下で凡例が最大634pxはみ出し、右端のボタン（🏠 ここは想定区域？など）が
+   画面の外に出て押せなかった。9/24 に足した「›」（送りボタン）は出ていたが気づかれなかった。
+   凡例は地図の上に重ねる作りで、折り返しても地図は下がらない（高さは app.js が --legend-h に入れ直す）。
+   スマホ（≤820px）は既に折り返しているので、PCでも同じにする。 */
+.map-legend { flex-wrap: wrap; row-gap: 4px; }
