@@ -10981,6 +10981,12 @@ function setHazardPickMode(on) {
     document.getElementById("rain-panel")?.setAttribute("hidden", "");
     document.getElementById("place-panel")?.setAttribute("hidden", "");
     setHazardResult('<p class="hazard-hint">調べたい場所を地図でタップしてください（自宅・職場・通り道など）。住所でも探せます。</p>');
+  } else {
+    // 閉じたら 🏠 の印も消す（2026-09-24：印だけ地図に残って消せないという指摘）
+    if (hazardPickMarker) { map.removeLayer(hazardPickMarker); hazardPickMarker = null; }
+    setHazardResult("");
+    const input = document.getElementById("hazard-search-input");
+    if (input) input.value = "";
   }
 }
 
