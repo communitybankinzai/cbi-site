@@ -7085,6 +7085,11 @@ async function finishCitizenRoadDrawing() {
   const result = await submitPassedRoadRecord({
     kind: draft.kind, source: "map", path: snapped,
     startedAt: endedAt, endedAt,
+    // もとになったSNSの投稿URL（任意・1つ）。AIの自動読み取りが取りこぼした投稿を手で足せるように（2026-09-25）
+    sourceUrls: (() => {
+      const raw = String(document.getElementById("citizen-road-source")?.value || "").trim();
+      return /^https?:\/\//i.test(raw) ? [raw] : [];
+    })(),
     note: (pastEvent ? `［${pastEvent.label}のとき・時刻は運営が当てた代表値］ ` : "")
       + document.getElementById("citizen-road-note").value.trim().slice(0, 160)
   });
@@ -7096,6 +7101,7 @@ async function finishCitizenRoadDrawing() {
     setPassedRoadRecordStatus(
       `記録しました。${kind === "blocked" ? "赤" : "青"}い線で表示しています。間違えた場合は下の「取り消す」で戻せます。`
       + (pastEvent ? `　この${pastEvent.label}の記録は「過去の実績」で見られます。` : ""), "");
+    const src = document.getElementById("citizen-road-source"); if (src) src.value = "";
     const photoNote = await attachCitizenPhoto(result.payload && result.payload.id);
     if (photoNote) setPassedRoadRecordStatus(`記録しました。${photoNote}間違えた場合は下の「取り消す」で戻せます。`, "");
     // 写真は記録のあとに付くので、線を読み直してポップアップに写真が出るようにする
@@ -7485,7 +7491,8 @@ async function submitPassedRoadRecord(record) {
         outside_inzai: "印西市の周辺ではないため受け付けられません",
         too_short: "記録が短すぎます（50m以上必要です）",
         too_long: "記録が長すぎます（30km以内で区切ってください）",
-        stale_time: "24時間より前の時刻は記録できません"
+        stale_time: "24時間より前の時刻は記録できません",
+        invalid_source_url: "SNSの投稿URLが正しくありません（https:// で始まるアドレスを1つだけ）"
       };
       return { ok: false, error: reasons[payload.error] || payload.error || `HTTP ${response.status}`,
         retryAfterSeconds: payload.error === "too_frequent" ? (Number.isFinite(Number(payload.retryAfterSeconds)) && Number(payload.retryAfterSeconds) > 0 ? Math.ceil(Number(payload.retryAfterSeconds)) : 120) : 0 };

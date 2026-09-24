@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "記録にSNSの投稿URLを添えられるようにする（手動プロット）0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/disaster/passed-roads/route.ts（0c7e528）",
+            "site/inzai-disaster-map/index.html（#citizen-road-source・版20260925f）",
+            "site/inzai-disaster-map/app.js（sourceUrls の送信・エラー文）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主の指摘で「AIが取りこぼした投稿を市民が手で足せる」と誤認されていたことが判明（実際は運営のみ・保存も端末内）。決定Aで市民の経路を追加。POSTでsourceUrlsを1つまで受け、運営の編集と同じnormalizeRoadMediaUrlsで検査。本番でInstagramのURLが保存されること・でたらめな文字列が400（invalid_source_url）になることを実測し、確認用の記録は削除。"
+        },{
+          "date": "2026-09-25",
           "title": "防災MAP SNS投稿をAIで読み取り「通れた／通れない／解除」を未確認レイヤーで自動プロット（台風25号の過去分も） 0.8時間",
           "category": "実装",
           "outputs": [

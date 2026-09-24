@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260925e">
+    <link rel="stylesheet" href="./styles.css?v=20260925f">
   </head>
   <body>
     <div class="app-shell">
@@ -778,6 +778,7 @@
               <label>いつの状況？ <select id="citizen-road-when"><option value="0">いま</option><option value="30">30分前</option><option value="60">1時間前</option><option value="120">2時間前</option><option value="180">3時間前</option><option value="360">6時間前</option><option value="720">12時間前</option><option value="event:typhoon25">🌀 台風25号のとき（9/20〜9/24）</option><option value="event:aug2026">☔ 8月の豪雨のとき（8/13〜8/16）</option></select></label>
               <label>メモ <input id="citizen-road-note" type="text" maxlength="200" placeholder="例：タイヤ半分まで冠水"></label>
               <label>📷 写真（任意・1枚） <input id="citizen-road-photo" type="file" accept="image/*"></label>
+              <label>🔗 SNSの投稿URL（任意） <input id="citizen-road-source" type="url" inputmode="url" maxlength="2048" placeholder="https://www.instagram.com/p/..."></label>
               <p class="citizen-photo-warn">⚠ <strong>人の顔・車のナンバー・表札が写らないように</strong>してください。他人の敷地には入らないでください。写真はすぐ公開され、あとから差し替えはできません（間違えたら記録ごと取り消してください）。</p>
             </details>
             <p class="citizen-road-notice">完了すると匿名の記録として公開されます。間違えた記録は10分以内なら取り消せます。</p>
@@ -1848,9 +1849,9 @@
       })();
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
-    <script src="./config.js?v=20260925e"></script>
-    <script src="./road-record-editor.js?v=20260925e"></script>
-    <script src="./app.js?v=20260925e"></script>
+    <script src="./config.js?v=20260925f"></script>
+    <script src="./road-record-editor.js?v=20260925f"></script>
+    <script src="./app.js?v=20260925f"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>
