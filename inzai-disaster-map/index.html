@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260924k">
+    <link rel="stylesheet" href="./styles.css?v=20260924l">
   </head>
   <body>
     <div class="app-shell">
@@ -201,7 +201,7 @@
                   <label class="has-tip"><input type="checkbox" data-overlay="underpassMlit"> <span class="layer-name">🚇 アンダーパスの位置（国土交通省）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>国土交通省が公開している<a href="https://www.mlit.go.jp/road/saigai/underpass/index.html" target="_blank" rel="noreferrer">全国のアンダーパス箇所マップ</a>から、印西市とその周りの40か所を紫の点で出します。国道のほか、県や市町が管理するものも入っています。<strong>いま冠水しているかどうかは示していません。</strong>大雨のときはアンダーパスに近づかないでください。</p><p>このデータに、印西市が管理するアンダーパスは入っていません（ないのか、載っていないだけなのかは分かりません）。</p><p>出典：国土交通省「全国のアンダーパス箇所マップ」を加工して作成（公共データ利用規約1.0）</p></span></span></label>
                   <label class="has-tip"><input type="checkbox" data-overlay="pastFlood"> <span class="layer-name">🌊 過去の冠水実績（運営が記録した地点）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>過去に冠水したと<strong>確認できた地点</strong>を、運営が1件ずつ記録したものです（県の災害対策本部会議資料、住民の投稿など）。出典と確認日をポップアップに書いています。</p><p><strong>対象日のしぼり込みは掛かりません。</strong>いつの対象日を選んでいても、記録のある地点をすべて表示します。長く残す実績だからです。</p><p>ハザード想定でも、いまの冠水状況でもありません。</p></span></span></label>
 
-                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="passedRoads" checked> <span class="layer-name">🔵 通れた道（GPS記録）<span id="passed-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>この地図を見ている人が、スマホの位置情報で<strong>実際に通れた道</strong>を記録したものです。赤（冠水した道路）と見比べて、通れる道を探す参考にしてください。</p><p>色の濃さは記録の新しさです。<strong>6時間以上前の記録は「冠水時に通れた実績」として薄い青で残します。</strong>より強い雨では冠水することがあり、安全を保証するものではありません。</p><p>「通れない」には記録時刻の最寄りアメダス（我孫子・佐倉・成田・船橋）の雨量を添え、<strong>☔ 雨あり＝冠水の可能性／🌤 雨なし＝工事・事故など別の理由の可能性</strong>の目安を出します（確定ではありません）。</p><p>記録は匿名です（端末の乱数IDと軌跡だけが送られ、名前や電話番号は送られません）。</p></span></span></label>
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="passedRoads" checked> <span class="layer-name">🔵 通れた道（GPS記録）<span id="passed-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>この地図を見ている人が、<strong>いつ・どのくらいの雨のときに通れたか</strong>を記録したものです。「いま通れる」という意味ではありません。<strong>同じくらいの雨のときにどうだったか</strong>を見るためのものです。</p><p class="tip-away"><strong>いま通れる道を探すなら</strong>、トヨタ車の走行データを使った<a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">TOYOTA 通れた道マップ ↗</a>のほうが向いています（直近3時間・24時間の通行実績。ただし過去の日にちは選べません）。</p><p>色の濃さは記録の新しさです。<strong>6時間以上前の記録は「冠水時に通れた実績」として薄い青で残します。</strong>より強い雨では冠水することがあり、安全を保証するものではありません。</p><p>「通れない」には記録時刻の最寄りアメダス（我孫子・佐倉・成田・船橋）の雨量を添え、<strong>☔ 雨あり＝冠水の可能性／🌤 雨なし＝工事・事故など別の理由の可能性</strong>の目安を出します（確定ではありません）。</p><p>記録は匿名です（端末の乱数IDと軌跡だけが送られ、名前や電話番号は送られません）。</p></span></span></label>
                   <div class="jshis-layer-note road-risk-legend passed-roads-legend">
                     <span><span class="legend-line" style="background:#1565c0"></span>通れた道（今回の大雨）</span>
                     <span><span class="legend-line" style="background:#1565c0;opacity:.4"></span>通れた道（それより前の実績）</span>
@@ -219,7 +219,7 @@
                       <button type="button" class="passed-road-btn" id="passed-road-record-btn">📍 通れた道を記録する（GPS）</button>
                     </div>
                     <input type="text" id="passed-road-note" class="passed-road-note" maxlength="200" placeholder="一言メモ（任意・例：浅い水たまりあり／タイヤ半分まで）">
-                    <p class="passed-road-status">「通れない」は現在地を記録します。「通れた道」は開始・停止で歩いた軌跡を送ります（50m以上・画面消灯中は記録が止まります）。</p>
+                    <p class="passed-road-status">「通れない」は現在地を記録します。「通れた道」は開始・停止で歩いた軌跡を送ります（50m以上・画面消灯中は記録が止まります）。</p><p class="passed-road-status">記録には<strong>そのときの雨量が自動で付きます</strong>。あとから「この雨のときは通れた／通れなかった」と見返せます。いま通れる道を探すなら<a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">TOYOTA 通れた道マップ ↗</a>へ。</p>
                     </details>
                     <p class="passed-road-status" id="passed-road-record-status" role="status"></p>
                     <div class="passed-roads-list-wrap" id="passed-roads-list-wrap">
@@ -605,7 +605,7 @@
               <a href="https://www.google.com/maps/@35.8325,140.1455,13z/data=!5m1!1e1" target="_blank" rel="noreferrer">Googleマップ 渋滞状況（印西市周辺・別窓）</a>
               <a href="https://www.jartic.or.jp/service/opendata/" target="_blank" rel="noreferrer">JARTIC 交通規制オープンデータ（月次）</a>
               <a href="https://www.pref.chiba.lg.jp/cate/baa/lifeline/kendou/index.html" target="_blank" rel="noreferrer">千葉県 県管理道路通行規制</a>
-              <a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">参考: TOYOTA 通れた道マップ</a>
+              <a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">いま通れる道: TOYOTA 通れた道マップ（トヨタ車の走行データ・直近3/24時間）</a>
             </div>
           </details>
         </aside>
@@ -679,7 +679,7 @@
 
           <!-- ⓘ 色の見方（2026-09-22）。色の濃さが「新しさ」を表していることが利用者に伝わらないため -->
           <div class="range-panel color-guide" id="color-guide" hidden>
-            <p class="cg-lead"><strong>赤＝通れない道、青＝通れた道</strong>です。薄いものは、以前に記録された実績です。</p>
+            <p class="cg-lead"><strong>赤＝通れない道、青＝通れた道</strong>です。薄いものは、以前に記録された実績です。どちらも<strong>記録された時点の実績</strong>で、いまの通行可否ではありません。</p><p class="cg-lead cg-away">いま通れる道を探すなら<a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">TOYOTA 通れた道マップ ↗</a>へ。この地図は<strong>日にち・期間と、そのときの雨量</strong>でさかのぼって見るためのものです。</p>
             <div class="cg-row"><span class="cg-sw" style="background:#b8322c"></span><span class="cg-sw is-faded" style="background:#b8322c"></span><span><b>通れない道</b>（赤。みんつく千葉冠水マップへの投稿と、この地図での記録）：濃い＝対象日の記録、薄い＝それより前の実績</span></div>
             <div class="cg-row"><span class="cg-sw" style="background:#1565c0"></span><span class="cg-sw is-faded" style="background:#1565c0"></span><span><b>通れた道</b>（青）：濃い＝今回の大雨（<span data-event-start-label>9/21 0:00</span> から後）の記録、薄い＝それより前の実績</span></div>
             <div class="cg-row"><span class="cg-sw" style="background:#2f8ba3"></span><span class="cg-sw" style="background:#e8b23a"></span><span class="cg-sw" style="background:#df7038"></span><span class="cg-sw" style="background:#8e44ad"></span><span><b>地形の推定</b>：左から 冠水しにくい→しやすい（地形だけから推定。実際の冠水の記録ではありません）</span></div>
@@ -1841,7 +1841,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260924k"></script>
+    <script src="./app.js?v=20260924l"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

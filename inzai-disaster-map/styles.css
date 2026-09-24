@@ -3773,3 +3773,7 @@ body.citizen-road-editing { overflow: hidden; }
 .underpass-warn strong { color: #b8322c; }
 .underpass-warn ul { margin: 4px 0 0; padding-left: 1.1em; }
 .underpass-warn li { margin-bottom: 3px; }
+
+/* 「いま通れる道はTOYOTAへ」の案内（2026-09-24）。CBIの記録は実績、いまの通行可否は他所、と分けて書く */
+.tip-away, .cg-away { padding: 6px 8px; border-left: 3px solid #1565c0; background: #f2f7fd; }
+.cg-away { margin-top: 6px; }
