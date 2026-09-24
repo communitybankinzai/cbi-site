@@ -66,16 +66,18 @@
         },
         {
           "date": "2026-09-24",
-          "title": "TOYOTA通れた道マップとの棲み分け調査・方針Aの文書化 0.1時間",
+          "title": "TOYOTA通れた道マップとの棲み分け調査・方針Aの文書化＋防災の空白5案のWeb調査 0.2時間",
           "category": "調査",
           "outputs": [
             "site/inzai-disaster-map/CLAUDE_HANDOFF.md（見送り表に1行）",
             "site/inzai-disaster-map/README.md",
-            "site/admin/changelog.json"
+            "site/admin/changelog.json",
+            "cidao/2026-09-24_CBI防災の空白地帯_まだ誰もやっていない5案.md（新規）",
+            "MOC_CiDAO.md"
           ],
-          "hours": 0.1,
+          "hours": 0.2,
           "partnerApproved": false,
-          "note": "TOYOTAの新機能（渋滞・規制の同一画面、冠水推定・ワイパー試験版）を確認。事業主決定A＝車の走行データに頼る機能は作らずリンクで補い、印西固有の情報に絞る。雨量による優位性を検討。session: 8abb7ad3-ac48-476a-b632-1b730b4b586c / output: 7,388 / cost: $2.72"
+          "note": "TOYOTAの新機能（渋滞・規制の同一画面、冠水推定・ワイパー試験版）を確認。事業主決定A＝車の走行データに頼る機能は作らずリンクで補い、印西固有の情報に絞る。雨量による優位性を検討。続けて、まだ誰もやっていない防災の5案を調査・ノート化。session: 8abb7ad3-ac48-476a-b632-1b730b4b586c / output: 23,468 / cost: $6.91"
         },
         {
           "date": "2026-09-24",
@@ -7297,6 +7299,20 @@
           "category": "調査",
           "priority": "低",
           "note": "2026-09-24の調査（検討事項2の残り）。いま市内は六軒ガード下の1件のみ。国交省の全国マップ（40か所ぶん取り込み済み）とは別資料。"
+        },
+        {
+          "due": "未定",
+          "title": "💡 防災の空白5案（車の避難先・市民版冠水履歴図・印旛沼の収支・区域外の冠水・決壊の記憶アーカイブ）から着手するものを選ぶ",
+          "category": "その他",
+          "priority": "中",
+          "note": "保管庫 cidao/2026-09-24_CBI防災の空白地帯_まだ誰もやっていない5案.md。2026-09-24 セッション8abb7ad3。"
+        },
+        {
+          "due": "未定",
+          "title": "🔍 水資源機構『印旛沼ポンプ排水運転状況』ページの中身を確かめ、防災MAP引き継ぎの『ポンプ稼働は公開先なし』を直す",
+          "category": "調査",
+          "priority": "中",
+          "note": "https://www.water.go.jp/kanto/chiba/frame/kanri/kijo_backnumber.htm（WebFetchでは文字化け）と X @jwa_chibasou。2026-09-24 セッション8abb7ad3で発見。"
         },
         {
           "due": "未定",
