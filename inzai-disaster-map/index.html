@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260924j">
+    <link rel="stylesheet" href="./styles.css?v=20260924k">
   </head>
   <body>
     <div class="app-shell">
@@ -738,7 +738,7 @@
               <button type="button" data-rain-min="50">50mm以上</button>
             </div>
             <label>この値以上 <input type="number" id="rain-min-input" min="0" max="500" step="1" inputmode="numeric"> mm</label>
-            <p class="range-note" id="rain-note">記録した時刻までの積算雨量（アメダス我孫子・佐倉・成田・船橋のうち最寄り1地点）で記録をしぼり込みます。印西市内に観測点がないため、実際の雨量とは差があります。</p>
+            <p class="range-note" id="rain-note">記録した時刻までの積算雨量（アメダス我孫子・佐倉・成田・船橋のうち最寄り1地点）で記録をしぼり込みます。印西市内に観測点がないため、実際の雨量とは差があります。<br><strong>みんつく千葉冠水マップの投稿は対象外です。</strong>本家のデータに「いつ冠水したか」が入っておらず、投稿された日時しか分からないためです（8月13日の豪雨の冠水が、雨の降らなかった8月24〜26日に3,416件まとめて投稿されています）。</p>
             <div class="range-actions">
               <button type="button" id="rain-apply">この雨量で見る</button>
               <button type="button" id="rain-clear">解除</button>
@@ -1841,7 +1841,7 @@
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260922rc1"></script>
-    <script src="./app.js?v=20260924j"></script>
+    <script src="./app.js?v=20260924k"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>
