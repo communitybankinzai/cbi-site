@@ -6856,9 +6856,10 @@ function profileButtonHtml(type, road) {
 const citizenRoadDraft = { active: false, kind: "blocked", points: [], busy: false, retryAt: 0, timer: null, doubleClickZoom: true };
 const citizenRoadDraftLayer = L.layerGroup();
 
-function citizenRoadMessage(text, error = false) {
+function citizenRoadMessage(text, error = false, html = false) {
   const node = document.getElementById("citizen-road-status");
-  node.textContent = text;
+  // html=true を渡すのは、この中で組み立てた文だけ（利用者の入力は入れない）
+  if (html) node.innerHTML = text; else node.textContent = text;
   node.classList.toggle("is-error", error);
 }
 
@@ -6977,7 +6978,21 @@ async function finishCitizenRoadDrawing() {
     showElevationProfile(path, "なぞった道");
     return;
   }
-  const endedAt = new Date(Date.now() - Number(document.getElementById("citizen-road-when").value) * 60000).toISOString();
+  // 「もっと前」を選んだときは送らない（2026-09-25）。
+  // この地図の記録は「いまの状況」で、12時間より前は受け付けない作りになっている。
+  // 9/25 朝、雨が24時間降っていないのに3か所を1分おきに「通れない」と記録した例があり、
+  // 台風25号のときの冠水を、選べる範囲が無いために「いま」で送ったものとみられた。
+  // 過去の冠水を集めているのは みんつく千葉冠水マップで、そこへの投稿はこの地図にも赤い線で出る。
+  const whenValue = document.getElementById("citizen-road-when").value;
+  if (whenValue === "past") {
+    citizenRoadMessage(
+      "この地図は<strong>いまの状況</strong>を記録するものなので、12時間より前は送れません。" +
+      "<strong>過去に冠水した道は、みんつく千葉冠水マップ</strong>が集めています（" +
+      '<a href="https://mintsuku-chiba-kansuimap.com/" target="_blank" rel="noreferrer">みんつくを開いて投稿する ↗</a>）。' +
+      "そこへ投稿すると、<strong>この地図にも赤い線で出ます</strong>。なぞった線は消していません。", true, true);
+    return;
+  }
+  const endedAt = new Date(Date.now() - Number(whenValue) * 60000).toISOString();
   draft.busy = true;
   updateCitizenRoadControls();
   citizenRoadMessage("道路に合わせています…");
