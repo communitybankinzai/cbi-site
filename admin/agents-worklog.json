@@ -17,6 +17,19 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-25",
+          "title": "道なり補正の作り直し（区間ごとに独立）と再適用 282件 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "scripts/route_snap.py（区間ごとの処理・上限6km・離れの許容を可変に）",
+            "Supabase disaster_passed_roads（通れない73件・通れた209件）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主の実機スクショ（成田湯川駅・玉造）で数kmの直線が斜めに残っていた。真因は点の間隔（1点あたり360〜820m）と、1区間の失敗で記録ごと打ち切る実装。区間ごとに直すよう変更し再適用。線上20m間隔の実測で道路からの距離 中央値3.9→0.3m、30m超 9%→7%。ローカルで当該エリアの線が道に沿うことを目視確認。"
+        },{
           "date": "2026-09-24",
           "title": "通れた道314件の道なり補正（114件を差し替え）0.2時間",
           "category": "保守",
