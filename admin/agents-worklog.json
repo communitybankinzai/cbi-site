@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-24",
+          "title": "通れた道314件の道なり補正（114件を差し替え）0.2時間",
+          "category": "保守",
+          "outputs": [
+            "Supabase disaster_passed_roads（kind=passed の114件・path_original に元座標を保存）",
+            "scripts/route_snap.py（scratchpadから移設・--passed オプション追加）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主の実機スクショ（下総松崎・大竹付近）で青い線が道から外れているとの指摘。通れない道と同じA*経路探索で114件を差し替え、ローカルで道に沿うことを目視確認。2点だけの記録は通れた67件・通れない36件が残る（農道・堤防の上などOSM車道に無い場所）。session: d338459c-e5b8-4513-ae80-ce489b3369cc / output: 496,242 / cost: $221.38（前回計測値）"
+        },{
+          "date": "2026-09-24",
           "title": "通れない道の道なり補正（既存60件＋入力時の自動補正）・凡例の改名 1.0時間",
           "category": "実装",
           "outputs": [
