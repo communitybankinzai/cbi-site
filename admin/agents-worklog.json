@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-24",
+          "title": "通れない道の道なり補正（既存60件＋入力時の自動補正）・凡例の改名 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao supabase/migrations/20260924200000_passed_roads_snap.sql（a190cf1・本番適用済み）",
+            "site/inzai-disaster-map/app.js（snapPathToRoads ほか）",
+            "site/inzai-disaster-map/index.html（凡例の改名・版20260924n）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json（2件）",
+            "scratchpad/route_snap.py（既存記録の一括補正スクリプト）"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "当初『道路から中央値15.5mずれている』と報告したが誤り（頂点までを測っていた）。線への投影では1.4mで、真因は144件中73件が2点だけの直線だったこと。OSMの車道で経路網を作りA*でたどって60件を差し替え、2点記録73→36件・道路までの距離1.4→0.4mを実測。ブラウザ側の実装はサーバー側の結果と点数が完全一致（7/31/8）。元座標はpath_originalに保存し復元可。session: d338459c-e5b8-4513-ae80-ce489b3369cc / output: 496,242 / cost: $221.38"
+        },
+        {
+          "date": "2026-09-24",
           "title": "冠水データ3日停止の発見と修正＋TOYOTAとの役割分担の言い換え 0.4時間",
           "category": "保守",
           "outputs": [
@@ -7201,6 +7217,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🔵 通れた道（青）にも道なり補正をかけるか決める",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-24の指示は「通れない道」のみだった。通れた道は305件あり同じ性質のずれがある。かけるなら route_snap.py の kind を変えるだけ。"
+        },
+        {
+          "due": "未定",
+          "title": "🛣 道なり補正で触れなかった63件（端点の近くに車道がない24件ほか）の扱いを決める",
+          "category": "調査",
+          "priority": "低",
+          "note": "2026-09-24。OSMの車道データは歩道・農道・敷地内通路を除いているため、農道や堤防の上の記録は直せない。農道込みのデータを別に用意するか、そのまま残すか。"
+        },
         {
           "due": "未定",
           "title": "📨 みんつく運営へ「冠水した日時」の項目があるか確認し、あれば雨量での絞り込みに対応する",

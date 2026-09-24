@@ -6886,6 +6886,8 @@ function drawCitizenRoadPreview() {
 }
 
 function startCitizenRoadDrawing(kind) {
+  // 道路データを先に読み始める。読めていれば、送るときに道なりへ直せる（待たせない）
+  if (kind !== "profile") { try { ensureRoadSnapData(); } catch (error) { /* 読めなくても記録はできる */ } }
   if (citizenRoadDraft.active || blockedPointBusy) return;
   if (passedRoadRecorder.watchId !== null) {
     setPassedRoadRecordStatus("GPSで記録中です。先にGPSの記録を終えてください。", "error");
@@ -6978,9 +6980,12 @@ async function finishCitizenRoadDrawing() {
   const endedAt = new Date(Date.now() - Number(document.getElementById("citizen-road-when").value) * 60000).toISOString();
   draft.busy = true;
   updateCitizenRoadControls();
+  citizenRoadMessage("道路に合わせています…");
+  // なぞった線を道なりに直してから送る（直せなければ元のまま送る。2026-09-24）
+  const snapped = await snapPathToRoads(draft.points.map(point => [...point]));
   citizenRoadMessage("送信しています…");
   const result = await submitPassedRoadRecord({
-    kind: draft.kind, source: "map", path: draft.points.map(point => [...point]),
+    kind: draft.kind, source: "map", path: snapped,
     startedAt: endedAt, endedAt, note: document.getElementById("citizen-road-note").value.trim().slice(0, 200)
   });
   draft.busy = false;
@@ -7125,6 +7130,171 @@ function setUndoLink(id) {
 }
 
 // 記録を1件送る共通処理（GPSの現在地・軌跡・地図の長押しのいずれも同じ）
+// ============================================================
+// 🛣 記録した道を、道路に沿わせる（2026-09-24）
+// 地図をタップしてなぞる方式では、始点と終点の2点だけで送られることが多く（実測で半数）、
+// 曲がった道が直線で結ばれて畑や沼を突っ切って見えていた（途中のずれは中央値14m）。
+// 送る直前に、OpenStreetMap の車道（simulation-data/road_risk.json・ODbL 1.0）で
+// 点と点のあいだを道なりにたどって折れ線にする。
+// ⚠ 迷ったら直さない。次のときは元のまま送る：
+//    ・道路データがまだ読めていない（災害中に入力を待たせない）
+//    ・端点の近く（30m）に車道がない（農道・堤防の上など）
+//    ・道なりが直線の2.5倍を超える／元の線から100m以上離れる（別の道をたどった疑い）
+// ============================================================
+const SNAP_MAX_M = 30;         // 端点をここまで道路へ寄せる
+const SNAP_DETOUR_MAX = 2.5;   // 直線距離の何倍までを同じ道とみなすか
+const SNAP_DEVIATION_M = 100;  // 元の線からこれ以上離れたら使わない
+const SNAP_MIN_LEG_M = 25;     // これより短い区間はそのまま
+const SNAP_LEG_MAX_M = 3000;   // 1区間でたどる上限
+
+let roadSnapSegments = null;   // [[lat,lon],[lat,lon]] の配列
+let roadSnapLoading = null;
+
+// 道路データを読む（凡例の「地形から見た冠水しやすさ」と同じファイル。1回だけ）
+function ensureRoadSnapData() {
+  if (roadSnapSegments) return Promise.resolve(roadSnapSegments);
+  if (roadSnapLoading) return roadSnapLoading;
+  roadSnapLoading = fetch("./simulation-data/road_risk.json", { headers: { Accept: "application/json" } })
+    .then(r => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+    .then(payload => {
+      const q = payload.quantize || 100000;
+      const segs = [];
+      (payload.lines || []).forEach(entry => {
+        let lat = entry[1], lon = entry[2];
+        let prev = [lat / q, lon / q];
+        for (let i = 3; i < entry.length; i += 2) {
+          lat += entry[i]; lon += entry[i + 1];
+          const next = [lat / q, lon / q];
+          segs.push([prev, next]);
+          prev = next;
+        }
+      });
+      roadSnapSegments = segs;
+      return segs;
+    })
+    .catch(() => { roadSnapLoading = null; return null; });
+  return roadSnapLoading;
+}
+
+function snapMeters(a, b) {
+  const my = 111320, mx = 111320 * Math.cos(a[0] * Math.PI / 180);
+  return Math.hypot((b[0] - a[0]) * my, (b[1] - a[1]) * mx);
+}
+
+// なぞった線の周りだけを切り出して、小さな経路網を作る（全県ぶんを繋ぐと重い）
+function buildLocalGraph(segments, bounds) {
+  const adj = new Map();
+  const key = p => `${p[0].toFixed(5)},${p[1].toFixed(5)}`;
+  const pos = new Map();
+  const link = (a, b) => {
+    const ka = key(a), kb = key(b), w = snapMeters(a, b);
+    if (!pos.has(ka)) pos.set(ka, a);
+    if (!pos.has(kb)) pos.set(kb, b);
+    if (!adj.has(ka)) adj.set(ka, []);
+    if (!adj.has(kb)) adj.set(kb, []);
+    adj.get(ka).push([kb, w]);
+    adj.get(kb).push([ka, w]);
+  };
+  segments.forEach(([a, b]) => {
+    if (a[0] < bounds.s || a[0] > bounds.n || a[1] < bounds.w || a[1] > bounds.e) return;
+    const L = snapMeters(a, b);
+    if (L <= 25) { link(a, b); return; }
+    const n = Math.floor(L / 25) + 1;      // 長い直線にも寄せられるよう途中に点を足す
+    let prev = a;
+    for (let k = 1; k < n; k++) {
+      const t = k / n;
+      const mid = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+      link(prev, mid); prev = mid;
+    }
+    link(prev, b);
+  });
+  return { adj, pos };
+}
+
+function nearestGraphNode(graph, point) {
+  let best = null, bd = Infinity;
+  graph.pos.forEach((p, k) => {
+    const d = snapMeters(point, p);
+    if (d < bd) { bd = d; best = k; }
+  });
+  return { key: best, distance: bd };
+}
+
+// A*（限度を超えたら諦める）
+function routeOnGraph(graph, startKey, goalKey, limitM) {
+  const goal = graph.pos.get(goalKey);
+  const g = new Map([[startKey, 0]]);
+  const prev = new Map();
+  const open = [[snapMeters(graph.pos.get(startKey), goal), startKey]];
+  let guard = 0;
+  while (open.length) {
+    open.sort((x, y) => x[0] - y[0]);
+    const [, k] = open.shift();
+    if (k === goalKey) {
+      const out = [k];
+      let cur = k;
+      while (prev.has(cur)) { cur = prev.get(cur); out.push(cur); }
+      return out.reverse().map(x => graph.pos.get(x));
+    }
+    if (++guard > 20000) return null;
+    const base = g.get(k) ?? Infinity;
+    for (const [m, w] of (graph.adj.get(k) || [])) {
+      const ng = base + w;
+      if (ng > limitM) continue;
+      if (ng < (g.get(m) ?? Infinity)) {
+        g.set(m, ng); prev.set(m, k);
+        open.push([ng + snapMeters(graph.pos.get(m), goal), m]);
+      }
+    }
+  }
+  return null;
+}
+
+/** なぞった線を道なりに直す。直せないときは元の線をそのまま返す */
+async function snapPathToRoads(path) {
+  try {
+    if (!Array.isArray(path) || path.length < 2) return path;
+    const segments = await ensureRoadSnapData();
+    if (!segments) return path;
+    const lats = path.map(p => p[0]), lons = path.map(p => p[1]);
+    const pad = 0.012; // 約1.3km。遠回りの道も含めて切り出す
+    const graph = buildLocalGraph(segments, {
+      s: Math.min(...lats) - pad, n: Math.max(...lats) + pad,
+      w: Math.min(...lons) - pad, e: Math.max(...lons) + pad
+    });
+    if (!graph.pos.size) return path;
+    const out = [[path[0][0], path[0][1]]];
+    for (let i = 0; i + 1 < path.length; i++) {
+      const A = [Number(path[i][0]), Number(path[i][1])];
+      const B = [Number(path[i + 1][0]), Number(path[i + 1][1])];
+      const straight = snapMeters(A, B);
+      if (straight < SNAP_MIN_LEG_M) { out.push([B[0], B[1]]); continue; }
+      const na = nearestGraphNode(graph, A), nb = nearestGraphNode(graph, B);
+      if (!na.key || !nb.key || na.distance > SNAP_MAX_M || nb.distance > SNAP_MAX_M) return path;
+      const line = routeOnGraph(graph, na.key, nb.key, Math.min(SNAP_LEG_MAX_M, straight * SNAP_DETOUR_MAX));
+      if (!line) return path;
+      // 元の線から離れすぎていないか（別の道をたどった疑い）
+      const my = 111320, mx = 111320 * Math.cos(A[0] * Math.PI / 180);
+      const vy = (B[0] - A[0]) * my, vx = (B[1] - A[1]) * mx;
+      const L2 = vy * vy + vx * vx;
+      let far = 0;
+      for (const k of line) {
+        const wy = (k[0] - A[0]) * my, wx = (k[1] - A[1]) * mx;
+        const t = L2 === 0 ? 0 : Math.max(0, Math.min(1, (wy * vy + wx * vx) / L2));
+        far = Math.max(far, Math.hypot(wy - t * vy, wx - t * vx));
+      }
+      if (far > SNAP_DEVIATION_M) return path;
+      for (let k = 1; k < line.length; k++) out.push([Number(line[k][0].toFixed(6)), Number(line[k][1].toFixed(6))]);
+      out[out.length - 1] = [B[0], B[1]];
+    }
+    const cleaned = [out[0]];
+    for (let i = 1; i < out.length; i++) if (snapMeters(cleaned[cleaned.length - 1], out[i]) > 0.5) cleaned.push(out[i]);
+    return cleaned.length >= 2 ? cleaned : path;
+  } catch (error) {
+    return path; // 直せなくても記録は必ず送る
+  }
+}
+
 async function submitPassedRoadRecord(record) {
   const endpoint = String(APP_CONFIG.passedRoadsEndpoint || "").trim();
   if (!endpoint) return { ok: false, error: "送信先が設定されていません" };
