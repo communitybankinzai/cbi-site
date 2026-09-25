@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "県の道路規制状況図：CiDAO毎時巡回から取り込みを即時起動する仕組み＋本番で端から端まで確認 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao src/lib/pref-road-kisei-watch.ts（新規：県ページと公開中JSONを比べ、違えば repository_dispatch）",
+            "cidao src/lib/__tests__/pref-road-kisei-watch.test.ts（9件）",
+            "cidao src/app/api/disaster/road-closures/route.ts（POSTで通行止め巡回と同時に実行・44ba72e）",
+            "site/.github/workflows/pref-road-kisei.yml（repository_dispatch 追加）",
+            "site/inzai-disaster-map/pipeline/build_pref_road_kisei.py（県ページの時点の文字 pageStamp を控える）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "事業主選択『確実に毎時確認する』。本番で控えを空にして POST → dispatched:true(stamp_changed) → Actions（repository_dispatch）成功 → 自動コミット 8cc43d9 で控えが戻ることを確認。session: 680d4e8d-5c43-4ced-b2a3-e34da55abc96 / output: 62,034 / cost: $12.83"
+        },
+        {
+          "date": "2026-09-25",
           "title": "防災MAP SNS通行情報「区間にする」（運営が始点・終点指定→464号道なりの線・地名学習）＋北須賀ローソン投稿の状況調査 0.4時間",
           "category": "実装",
           "outputs": [
@@ -7659,13 +7675,6 @@
           "note": "2026-09-25 追加の prefKisei 層。初期オンにするなら index.html の checked と PRESETS（kansui・reset）の3か所をそろえる。9/21 の『最初の画面は冠水の情報だけ』方針との兼ね合いで事業主判断が要る。",
           "status": "保留",
           "blockedBy": "事業主が初期表示に含めるかを決めること"
-        },
-        {
-          "due": "未定",
-          "title": "🚧 県の規制状況図の取り込みを CiDAO の毎時巡回から起動する（Actions の定期実行の間引き対策）",
-          "category": "実装",
-          "priority": "中",
-          "note": "GitHub Actions の schedule は最長12時間空くため、図の差し替え・掲載終了の反映が遅れうる。CiDAO の disaster-road-closures 巡回で県ページのPDFリンクの変化を見て repository_dispatch を投げれば即時にできる。まず数日の実際の遅れを見て要否を判断。"
         },
         {
           "due": "未定",
