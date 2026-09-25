@@ -11,6 +11,11 @@ on:
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
+    inputs:
+      force:
+        description: "前回と同じPDFでも作り直す"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -34,7 +39,7 @@ jobs:
         run: pip install --quiet pymupdf opencv-python-headless numpy requests
 
       - name: 県のページを確かめて線を作る
-        run: python inzai-disaster-map/pipeline/build_pref_road_kisei.py
+        run: python inzai-disaster-map/pipeline/build_pref_road_kisei.py ${{ inputs.force && '--force' || '' }}
 
       - name: 変わっていればコミット
         run: |
