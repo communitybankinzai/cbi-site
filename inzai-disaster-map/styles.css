@@ -3662,6 +3662,13 @@ body.citizen-road-editing { overflow: hidden; }
 .sns-road-swatch.is-blocked { border-color: #b8322c; }
 .sns-road-swatch.is-cleared { border-color: #2e7d32; }
 .sns-road-quote { display: block; margin: 6px 0; padding: 6px 8px; border-left: 3px solid #cad5df; color: #3d4f60; font-size: 12px; line-height: 1.5; }
+.sns-road-image-note { display: block; margin: 4px 0; color: #3d4f60; font-size: 12px; line-height: 1.5; }
+/* 元の投稿の公式埋め込み（Instagram・Bluesky）。吹き出しの中で縦に長くなりすぎないよう高さを抑え、中でスクロールさせる */
+.sns-road-embed { display: block; width: 100%; max-width: 320px; margin: 6px 0; border: 1px solid #dbe3ea; border-radius: 8px; background: #fff; }
+.sns-road-embed.is-instagram { height: 420px; }
+.sns-road-embed.is-bluesky { height: 360px; }
+@media (max-width: 640px) { .sns-road-embed.is-instagram { height: 340px; } .sns-road-embed.is-bluesky { height: 300px; } }
+.sns-cleared-near { margin-top: 6px; padding: 6px 8px; border-radius: 6px; background: #eef8f0; border: 1px solid #b9dcc2; font-size: 12px; line-height: 1.5; }
 .sns-road-unverified { display: inline-block; margin: 4px 0; padding: 1px 6px; border-radius: 4px; background: #fff3e0; color: #8a4b00; font-size: 11px; }
 .citizen-road-editor { position: absolute; z-index: 1000; bottom: calc(12px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(500px, calc(100% - 24px)); max-height: 48dvh; overflow-y: auto; padding: 14px; border-radius: 14px; border: 1px solid #bac9d5; background: #fff; box-shadow: 0 4px 24px #16324f33; font-size: 14px; }
 .citizen-road-editor[hidden] { display: none; }

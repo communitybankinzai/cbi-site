@@ -6683,6 +6683,62 @@ async function snapSnsRoadPoints() {
   });
 }
 
+// 「通行止め解除」のSNS投稿が、市民の「通れない」記録の近くにあり記録より後なら、その記録の吹き出しに添える（2026-09-25 事業主決定）。
+// AIの読み間違いで冠水した道が「通れる」に見えないよう、記録は消さず終了扱いにもしない。消すかどうかは運営が決める
+const SNS_CLEARED_NEAR_M = 300;
+function snsClearedNear(road) {
+  const path = Array.isArray(road?.path) ? road.path : [];
+  const since = Date.parse(road?.endedAt || "");
+  if (!path.length || !snsRoadsData.length) return [];
+  const isModerator = Boolean(moderationKey());
+  const distToPath = (lat, lng) => {
+    const k = 111320, c = Math.cos((lat * Math.PI) / 180);
+    const xy = p => [(Number(p[1]) - lng) * k * c, (Number(p[0]) - lat) * k];
+    let best = Infinity;
+    for (let i = 0; i < path.length; i += 1) {
+      const a = xy(path[i]);
+      const b = xy(path[Math.min(i + 1, path.length - 1)]);
+      const dx = b[0] - a[0], dy = b[1] - a[1];
+      const len2 = dx * dx + dy * dy;
+      const t = len2 ? Math.max(0, Math.min(1, -(a[0] * dx + a[1] * dy) / len2)) : 0;
+      best = Math.min(best, Math.hypot(a[0] + t * dx, a[1] + t * dy));
+    }
+    return best;
+  };
+  return snsRoadsData.filter(report => {
+    if (report.kind !== "cleared" || report.unlocated || (report.hidden && !isModerator)) return false;
+    if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return false;
+    const at = Date.parse(report.observedAt || report.postedAt || "");
+    if (Number.isFinite(since) && !(at > since)) return false;
+    return distToPath(report.lat, report.lng) <= SNS_CLEARED_NEAR_M;
+  }).sort((a, b) => Date.parse(b.observedAt || b.postedAt || "") - Date.parse(a.observedAt || a.postedAt || "")).slice(0, 3);
+}
+
+function snsClearedNearHtml(road) {
+  const hits = snsClearedNear(road);
+  if (!hits.length) return "";
+  const rows = hits.map(report => {
+    const when = report.observedAt || report.postedAt;
+    const sourceUrl = /^https:\/\//.test(String(report.sourceUrl || "")) ? report.sourceUrl : "";
+    const conf = report.confidence && report.confidence !== "high" ? `・確度${report.confidence === "medium" ? "中" : "低"}（運営のみ）` : "";
+    return `<br>・${escapeHtml(report.locationName || "場所不明")}　${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "時刻不明")}（${escapeHtml(formatAgo(when))}）${escapeHtml(conf)}` +
+      (sourceUrl ? ` <a href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noopener noreferrer">元の投稿 ↗</a>` : "");
+  }).join("");
+  return `<div class="sns-cleared-near"><strong>✅ この近くで「通行止め解除」のSNS投稿があります（未確認）</strong>${rows}` +
+    `<br><span style="font-size:11px;">AIが投稿を読み取ったもので、CBIや市の確認はありません。この記録は消していません。通る前に元の投稿や公式の情報で確かめてください。</span></div>`;
+}
+
+// 元の投稿を公式の埋め込みで見せる（2026-09-25 事業主決定：写真は転載せず、投稿者が消せば地図からも消える）。
+// 許可するのは Instagram と Bluesky の埋め込み用アドレスだけ。吹き出しを開いたときに初めて読み込まれる
+function snsRoadEmbedHtml(report) {
+  const src = String(report.embedUrl || "");
+  const isInstagram = /^https:\/\/www\.instagram\.com\/(p|reel|tv)\/[A-Za-z0-9_-]+\/embed\/$/.test(src);
+  const isBluesky = /^https:\/\/embed\.bsky\.app\/embed\/did:[a-z0-9:._-]+\/app\.bsky\.feed\.post\/[A-Za-z0-9]+$/i.test(src);
+  if (!isInstagram && !isBluesky) return "";
+  return `<iframe class="sns-road-embed${isInstagram ? " is-instagram" : " is-bluesky"}" src="${escapeAttribute(src)}" loading="lazy" ` +
+    `title="${escapeAttribute(snsRoadPlatformLabel(report.platform))}の元の投稿" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+}
+
 function focusSnsRoad(id) {
   const marker = snsRoadShapes.get(String(id));
   if (!marker) return;
@@ -6697,6 +6753,8 @@ function renderSnsRoads() {
   const isModerator = Boolean(moderationKey());
   snsRoadsData.forEach(report => {
     if (report.hidden && !isModerator) return;
+    // 場所を決められず自動で伏せた点は、運営の地図にも出さない（座標が当てにならないため。一覧には残る）
+    if (report.unlocated) return;
     if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
     const kind = ["passed", "blocked", "cleared"].includes(report.kind) ? report.kind : "blocked";
     const when = report.observedAt || report.postedAt;
@@ -6716,6 +6774,8 @@ function renderSnsRoads() {
       (report.locationBasis || snapNote ? `<span style="font-size:11px;color:#53677b;">（${escapeHtml(report.locationBasis || "")}${escapeHtml(snapNote)}）</span>` : "") + `<br>` +
       `${timeLabel} ${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "不明")}（${escapeHtml(formatAgo(when))}）` +
       (report.quote ? `<span class="sns-road-quote">「${escapeHtml(report.quote)}」</span>` : "<br>") +
+      (report.imageNote ? `<span class="sns-road-image-note">📷 写真から読み取った手掛かり：${escapeHtml(report.imageNote)}</span>` : "") +
+      snsRoadEmbedHtml(report) +
       (sourceUrl ? `出典：<a href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(snsRoadPlatformLabel(report.platform))}の投稿を開く ↗</a>` : "") +
       (isModerator && report.confidence !== "high" ? `<br><span class="sns-road-unverified">確度：${report.confidence === "medium" ? "中" : "低"}（運営だけに表示・一般には出ていません）</span>` : "") +
       (isModerator && report.hidden ? `<br><span class="sns-road-unverified">伏せています（一般には出ていません）</span>` : "") +
@@ -6723,7 +6783,7 @@ function renderSnsRoads() {
         ? `<br><button type="button" class="kansui-hide-btn" data-sns-road-hide="${escapeAttribute(String(report.id))}" data-sns-road-hidden="${report.hidden ? "1" : "0"}">${report.hidden ? "↩ 地図に戻す（運営）" : "🗑 この投稿を地図から伏せる（運営）"}</button>`
         : "") +
       `<br><span style="font-size:11px;">点は投稿が指す場所の目安です。いま通れるかどうかを保証するものではありません。元の投稿で確かめてください。</span>`,
-      { maxWidth: 320 }
+      { maxWidth: 340 }
     );
     marker.addTo(snsRoadsLayer);
     snsRoadShapes.set(String(report.id), marker);
@@ -6749,9 +6809,9 @@ async function loadSnsModerationList() {
       return `<div class="moderate-row ${report.hidden ? "is-hidden-row" : ""}">` +
         `<div><strong>${snsRoadGlyph(kind)} ${escapeHtml(snsRoadKindLabel(kind))}（SNS）</strong> ${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "時刻不明")}` +
         `<span class="moderate-meta">${escapeHtml(report.locationName || "場所不明")}・${escapeHtml(snsRoadPlatformLabel(report.platform))}・${escapeHtml(confLabel(report.confidence))}` +
-        `${report.summary ? "・" + escapeHtml(report.summary) : ""}${report.hidden ? "・<em>伏せ済み</em>" : ""}</span></div>` +
+        `${report.summary ? "・" + escapeHtml(report.summary) : ""}${report.unlocated ? "・<em>場所を特定できず（地図に出ません）</em>" : report.hidden ? "・<em>伏せ済み</em>" : ""}</span></div>` +
         `<div class="moderate-row-buttons">` +
-        `<button type="button" data-sns-focus="${escapeAttribute(String(report.id))}">地図で見る</button>` +
+        (report.unlocated ? "" : `<button type="button" data-sns-focus="${escapeAttribute(String(report.id))}">地図で見る</button>`) +
         (sourceUrl ? `<a class="moderate-link" href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noopener noreferrer">元の投稿 ↗</a>` : "") +
         `<button type="button" class="${report.hidden ? "" : "is-danger"}" data-sns-road-hide="${escapeAttribute(String(report.id))}" data-sns-road-hidden="${report.hidden ? "1" : "0"}" data-sns-from-list="1">${report.hidden ? "戻す" : "伏せる"}</button>` +
         `</div></div>`;
@@ -7753,7 +7813,8 @@ function blockedPointShape(road) {
     pane: "passedRoadsPane", renderer: passedRoadsRenderer, radius: isOld ? 5 : 7, color: "#ffffff", weight: 2,
     fillColor: KANSUI_COLOR, fillOpacity: isOld ? .55 : .95
   });
-  marker.bindPopup(
+  // SNSの通行情報は後から読み込まれるので、吹き出しは開くたびに組み立てる（解除の投稿を添えるため）
+  marker.bindPopup(() =>
     `<strong>🚫 ${road.path.length > 1 ? "通れない道" : "通れない地点"}（市民の記録）</strong><br>` +
     `記録時刻 ${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "不明")}（${escapeHtml(formatAgo(road.endedAt))}）` +
     `・${escapeHtml(passedRoadSourceLabel(road))}` +
@@ -7763,6 +7824,7 @@ function blockedPointShape(road) {
       ? "対象日より前の記録です。すでに通れるようになっている可能性があります。"
       : "この地図を見ている人が通れなかった場所を記録したものです。公式の通行止めではありません。"}</span>` +
     rainVerdictHtml(road) +
+    snsClearedNearHtml(road) +
     `<br><a href="${MINTSUKU_URL}" target="_blank" rel="noreferrer">みんつく千葉冠水マップにも投稿する ↗</a>` +
     profileButtonHtml("passed", road) +
     passedRoadHideButtonHtml(road)
