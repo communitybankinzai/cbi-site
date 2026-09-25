@@ -31,9 +31,13 @@ import requests
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "pref-road-kisei.json")
 PAGE_URL = "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html"
-PDF_RE = re.compile(r'href="([^"]*documents/kisei[^"]*\.pdf)"', re.I)
+# PDF はファイル名（今は kisei<日付>.pdf）に頼らず、リンクの文字で見つける（2026-09-26 事業主指示）。
+# 「規制」か「状況図」を含むリンクを先に、無ければ元のファイル名の形、それも無ければ掲載なし
+PDF_LINK_RE = re.compile(r'<a\b[^>]*href="([^"]+\.pdf)"[^>]*>(.*?)</a>', re.I | re.S)
+PDF_TEXT_RE = re.compile(r"規制|状況図")
+PDF_NAME_RE = re.compile(r"documents/kisei[^\"]*\.pdf$", re.I)
 # 県ページ本文の「（令和8年9月25日（金曜日）午後2時 時点）」。同じファイル名のまま差し替えられても気づけるよう控える。
-# CiDAO の毎時巡回（src/lib/pref-road-kisei-watch.ts）が同じ規則で読み、この値と比べて取り込みを起動する
+# CiDAO の30分ごとの見張り（src/lib/pref-road-kisei-watch.ts）が同じ規則で読み、この値と比べて取り込みを起動する
 STAMP_RE = re.compile(r"令和[^<>]{0,40}?時\s*時点")
 UA = {"User-Agent": "CBI-inzai-disaster-map/1.0 (+https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/)"}
 
@@ -74,6 +78,12 @@ def page_stamp(html):
     return re.sub(r"\s+", "", m.group(0)) if m else ""
 
 
+def find_pdf_link(html):
+    links = [(href, re.sub(r"<[^>]*>", "", text)) for href, text in PDF_LINK_RE.findall(html)]
+    hit = next((h for h, t in links if PDF_TEXT_RE.search(t)), None) or next((h for h, _ in links if PDF_NAME_RE.search(h)), None)
+    return urllib.parse.urljoin(PAGE_URL, hit) if hit else None
+
+
 def find_pdf_url():
     """県のページから状況図PDFのURLと時点の文字を探す。ページが無い・リンクが無いときは (None, "")"""
     r = requests.get(PAGE_URL, headers=UA, timeout=30)
@@ -81,10 +91,8 @@ def find_pdf_url():
         return None, ""
     r.raise_for_status()
     r.encoding = r.apparent_encoding or "utf-8"
-    m = PDF_RE.search(r.text)
-    if not m:
-        return None, ""
-    return urllib.parse.urljoin(PAGE_URL, m.group(1)), page_stamp(r.text)
+    url = find_pdf_link(r.text)
+    return (url, page_stamp(r.text)) if url else (None, "")
 
 
 # ---------------------------------------------------------------- 地理院タイル

@@ -5,7 +5,7 @@ name: 防災MAP 県の道路規制状況図を取り込む
 # 中身は inzai-disaster-map/pipeline/build_pref_road_kisei.py（2026-09-25 導入）。
 #
 # 起動のしかたは3つ：
-#   - CiDAO の毎時巡回（pg_cron cidao_road_closures → POST /api/disaster/road-closures）が県ページを見て、
+#   - CiDAO の30分ごとの見張り（pg_cron cidao_pref_road_kisei → POST /api/disaster/pref-road-kisei）が県ページを見て、
 #     PDF のリンク・時点の文字が pref-road-kisei.json と違うときだけ repository_dispatch で呼ぶ（本命・遅れない）
 #     実装は cidao src/lib/pref-road-kisei-watch.ts
 #   - 定期実行（予備。GitHub が間引くので最長12時間ほど空く。disaster-shot.yml 参照）

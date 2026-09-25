@@ -1891,6 +1891,7 @@ function bindEvents() {
     input.addEventListener("change", () => {
       toggleOverlay(input.dataset.overlay, input.checked);
       syncMapLegend();
+      syncTogglePresets();
     });
   });
 
@@ -3064,9 +3065,11 @@ const PRESETS = {
     focus: "layer-panel"
   },
   // 役所が発表した通行止め。場所の文章しかないので、左の一覧まで移動して見せる（2026-09-22 事業主指示）
+  // 通行止めは入れ替えずに「足す」切り替え（2026-09-26 事業主指示：冠水した道と一緒に見られるように）。
+  // toggle に挙げた層をまとめて ON／OFF し、ほかの層（冠水・通れた道など）はそのまま残す
   closures: {
     label: "通行止め",
-    on: ["boundary", "roadClosures"],
+    toggle: ["roadClosures", "prefKisei"],
     openGroups: ["🏫"],
     focus: "#road-closures-list"
   },
@@ -3085,9 +3088,43 @@ const PRESETS = {
   }
 };
 
+// 「足す」切り替えのボタン（PRESETS の toggle）は、挙げた層がすべて ON のときだけ濃く表示する
+function syncTogglePresets() {
+  Object.entries(PRESETS).forEach(([name, preset]) => {
+    if (!preset.toggle) return;
+    const boxes = preset.toggle.map(key => document.querySelector(`[data-overlay="${key}"]`)).filter(Boolean);
+    const allOn = boxes.length > 0 && boxes.every(box => box.checked);
+    const button = document.querySelector(`.preset-btn[data-preset="${name}"]`);
+    button?.classList.toggle("is-current", allOn);
+    button?.setAttribute("aria-pressed", String(allOn));
+  });
+}
+
+function applyTogglePreset(name, preset) {
+  const boxes = preset.toggle.map(key => document.querySelector(`[data-overlay="${key}"]`)).filter(Boolean);
+  // 1つでも OFF なら全部 ON に、全部 ON なら全部 OFF に
+  const turnOn = boxes.some(box => !box.checked);
+  boxes.forEach(box => { if (box.checked !== turnOn) box.click(); });
+  if (turnOn) {
+    document.querySelectorAll("details.layer-group").forEach(group => {
+      const head = group.querySelector("summary")?.textContent || "";
+      if ((preset.openGroups || []).some(mark => head.includes(mark))) group.open = true;
+    });
+    if (preset.focus?.startsWith("#")) {
+      setTimeout(() => {
+        const el = document.querySelector(preset.focus);
+        (el?.hidden ? el.previousElementSibling : el)?.scrollIntoView({ block: "nearest" });
+      }, 600);
+    }
+  }
+  syncTogglePresets();
+  syncMapLegend();
+}
+
 function applyPreset(name) {
   const preset = PRESETS[name];
   if (!preset) return;
+  if (preset.toggle) { applyTogglePreset(name, preset); return; }
   const wanted = new Set(preset.on || []);
   // チェックを入れ替える。change イベントを起こすため click() を使う
   document.querySelectorAll("[data-overlay]").forEach(box => {
@@ -3105,6 +3142,7 @@ function applyPreset(name) {
   });
   // 押したボタンを目立たせる
   document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("is-current", b.dataset.preset === name));
+  syncTogglePresets();
   document.querySelector(`.preset-btn[data-preset="${name}"]`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
   syncMapLegend();
 
