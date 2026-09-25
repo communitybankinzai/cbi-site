@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP 重なったSNS印の輪配置＋候補記録の場所確定時にレイヤー自動オン（「ピンが見つからない」「SNSのマークはどこ」対応） 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（renderSnsRoads の重なり展開・applyLocationCandidate／completeLocationPick で ensureRecordsOverlayOn・recordMarkerShapeLabel・版 20260925y・d8a5866）",
+            "site/inzai-disaster-map/index.html（版番号）",
+            "site/admin/changelog.json（2件）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "本番で北須賀交差点の4件（解除1・通行止め3）が別々の位置に描かれることを確認（distinct 4）。session: ab9618db-0ef7-4097-8346-ec4787ac2482 / output: 172,237 / cost: $67.46"
+        },
+        {
+          "date": "2026-09-25",
           "title": "県の道路規制状況図：CiDAO毎時巡回から取り込みを即時起動する仕組み＋本番で端から端まで確認 0.2時間",
           "category": "実装",
           "outputs": [
