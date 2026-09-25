@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP 同じ内容のSNS投稿を1つの印にまとめる（船戸大橋の解除3件が固まって見えた件） 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（renderSnsRoads：kind＋本文＋座標で代表1件に集約・吹き出しに他N件のリンク・版 20260925za・faeb9bb）",
+            "site/inzai-disaster-map/index.html（版番号）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": true,
+          "note": "本番DBで確認：neal-sch.bsky.social が同文を9/23・9/24・9/25に3回投稿（別 permalink・別 candidate）。重複登録ではない。本番で3件→印1つ・吹き出しに『同じ内容の投稿が他に2件』を確認。注意：他セッション（Opus 5.5・a6fc223）が同じ作業ツリーで版 z を先に使ったため za を採番。session: ab9618db-0ef7-4097-8346-ec4787ac2482 / output: 182,825 / cost: $72.47"
+        },
+        {
+          "date": "2026-09-25",
           "title": "防災MAP 地形の冠水しやすさ層の初期OFF化＋ローカル確認 0.1時間",
           "category": "保守",
           "outputs": [
@@ -7693,6 +7706,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📡 SNS通行情報：同じ人の同文の再投稿を AI 判定の前に間引く（Haiku 呼び出しと重複記録の節約）",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-09-25 船戸大橋の解除が同文3件。地図側は1つの印にまとめ済み（版 za）。処理側（cidao processSnsRoadCandidates）で、直近7日に同じ本文（正規化）の報告があれば scan だけ記録して AI に掛けない案。実装は30分程度。"
+        },
         {
           "due": "未定",
           "title": "🚧 県の道路規制状況図の層を、開いたときから表示するか決める（いまは初期オフ）",
