@@ -6751,6 +6751,15 @@ function snsRoadPopupOptions() {
   };
 }
 
+// SNSの吹き出しを開いている間は、画面下の「通れない道／通れた道を追加」の帯を隠す（閉じれば戻る）。
+// 帯は地図の上に重なっているため、吹き出しの下半分（元の投稿の写真）が隠れていた（2026-09-25 事業主指摘・2回目）
+map.on("popupopen", event => {
+  if (snsRoadsLayer.hasLayer(event.popup?._source)) document.body.classList.add("sns-popup-open");
+});
+map.on("popupclose", event => {
+  if (snsRoadsLayer.hasLayer(event.popup?._source)) document.body.classList.remove("sns-popup-open");
+});
+
 function focusSnsRoad(id) {
   const marker = snsRoadShapes.get(String(id));
   if (!marker) return;

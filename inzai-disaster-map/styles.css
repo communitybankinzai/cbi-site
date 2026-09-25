@@ -3668,6 +3668,8 @@ body.citizen-road-editing { overflow: hidden; }
 .sns-road-embed.is-instagram { height: 420px; }
 .sns-road-embed.is-bluesky { height: 360px; }
 @media (max-width: 640px) { .sns-road-embed.is-instagram { height: 340px; } .sns-road-embed.is-bluesky { height: 300px; } }
+/* SNSの吹き出しを開いている間は、下の記録ボタンの帯を隠して写真を見せる（app.js の popupopen/popupclose） */
+body.sns-popup-open #quick-record-bar { display: none; }
 /* 運営：SNS投稿の位置を地図で指定する小窓（地図の下側に重ねる） */
 .sns-move-panel { position: absolute; z-index: 1001; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(420px, calc(100% - 24px)); padding: 12px 14px; border-radius: 12px; border: 1px solid #bac9d5; background: #fff; box-shadow: 0 4px 24px #16324f33; font-size: 13px; line-height: 1.5; }
 .sns-move-panel p { margin: 4px 0; }
