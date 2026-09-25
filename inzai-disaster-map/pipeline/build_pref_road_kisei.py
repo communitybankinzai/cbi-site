@@ -32,6 +32,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "pref-road-kisei.json")
 PAGE_URL = "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html"
 PDF_RE = re.compile(r'href="([^"]*documents/kisei[^"]*\.pdf)"', re.I)
+# 県ページ本文の「（令和8年9月25日（金曜日）午後2時 時点）」。同じファイル名のまま差し替えられても気づけるよう控える。
+# CiDAO の毎時巡回（src/lib/pref-road-kisei-watch.ts）が同じ規則で読み、この値と比べて取り込みを起動する
+STAMP_RE = re.compile(r"令和[^<>]{0,40}?時\s*時点")
 UA = {"User-Agent": "CBI-inzai-disaster-map/1.0 (+https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/)"}
 
 # 照合に使う地理院タイル（標準地図）。分割図1/3が収まる範囲より少し広く取る
@@ -66,15 +69,22 @@ def now_iso():
     return dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).isoformat(timespec="seconds")
 
 
+def page_stamp(html):
+    m = STAMP_RE.search(html)
+    return re.sub(r"\s+", "", m.group(0)) if m else ""
+
+
 def find_pdf_url():
-    """県のページから状況図PDFのURLを探す。ページが無い・リンクが無いときは None"""
+    """県のページから状況図PDFのURLと時点の文字を探す。ページが無い・リンクが無いときは (None, "")"""
     r = requests.get(PAGE_URL, headers=UA, timeout=30)
     if r.status_code == 404:
-        return None
+        return None, ""
     r.raise_for_status()
     r.encoding = r.apparent_encoding or "utf-8"
     m = PDF_RE.search(r.text)
-    return urllib.parse.urljoin(PAGE_URL, m.group(1)) if m else None
+    if not m:
+        return None, ""
+    return urllib.parse.urljoin(PAGE_URL, m.group(1)), page_stamp(r.text)
 
 
 # ---------------------------------------------------------------- 地理院タイル
@@ -294,11 +304,12 @@ def main():
         "note": "県の状況図（PDF）の赤線＝規制中（被災）区間を、CBIが地図に写したもの。数十m〜100m程度ずれることがある。主に国道・県道で、市町村道は含まない。",
     }
 
+    stamp = ""
     if args.pdf:
         pdf_url = "file:" + os.path.basename(args.pdf)
         pdf_bytes = open(args.pdf, "rb").read()
     else:
-        pdf_url = find_pdf_url()
+        pdf_url, stamp = find_pdf_url()
         if not pdf_url:
             if prev.get("published") is False:
                 log("県のページにPDFなし（前回も掲載なし）。変更なし")
@@ -313,12 +324,17 @@ def main():
 
     sha = hashlib.sha256(pdf_bytes).hexdigest()
     if not args.force and prev.get("published") and prev.get("pdfSha256") == sha:
-        log("前回と同じPDF。変更なし")
+        if stamp and prev.get("pageStamp") != stamp:
+            # PDFは同じで時点の文字だけ変わった。控えを直さないと CiDAO が毎時起動し続ける
+            write({**prev, "pageStamp": stamp})
+            log("前回と同じPDF。時点の控えだけ更新")
+        else:
+            log("前回と同じPDF。変更なし")
         return
 
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     as_of, as_of_iso = parse_as_of(doc[0].get_text())
-    out = {**base, "published": True, "pdfUrl": pdf_url, "pdfSha256": sha,
+    out = {**base, "published": True, "pdfUrl": pdf_url, "pageStamp": stamp, "pdfSha256": sha,
            "asOf": as_of, "asOfIso": as_of_iso, "checkedAt": now_iso(), "lines": []}
 
     page = pick_page(doc)

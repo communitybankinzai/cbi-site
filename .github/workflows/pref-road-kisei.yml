@@ -4,10 +4,16 @@ name: 防災MAP 県の道路規制状況図を取り込む
 # 県のページから図が消えたら pref-road-kisei.json を「掲載なし」にして、地図からも消す。
 # 中身は inzai-disaster-map/pipeline/build_pref_road_kisei.py（2026-09-25 導入）。
 #
-# ⚠ GitHub Actions の定期実行は間引かれる（実測で1日7回・最長12.4時間の空白。disaster-shot.yml 参照）。
-#   県の図の差し替え・掲載終了の反映は数時間遅れることがある。急ぐときは Actions 画面から手動で実行する。
+# 起動のしかたは3つ：
+#   - CiDAO の毎時巡回（pg_cron cidao_road_closures → POST /api/disaster/road-closures）が県ページを見て、
+#     PDF のリンク・時点の文字が pref-road-kisei.json と違うときだけ repository_dispatch で呼ぶ（本命・遅れない）
+#     実装は cidao src/lib/pref-road-kisei-watch.ts
+#   - 定期実行（予備。GitHub が間引くので最長12時間ほど空く。disaster-shot.yml 参照）
+#   - Actions 画面からの手動実行
 
 on:
+  repository_dispatch:
+    types: [pref-road-kisei]
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
