@@ -3026,7 +3026,7 @@ const PRESETS = {
   // SNS 由来の被害候補ピンまで出すと地図が読めないため（中司さんの実機指摘）
   kansui: {
     label: "冠水した道・通れた道",
-    on: ["boundary", "kansui", "passedRoads", "roadRisk", "leveeBreach"],
+    on: ["boundary", "kansui", "passedRoads", "leveeBreach"],
     openGroups: ["🚗"],
     focus: "layer-panel"
   },
@@ -3079,7 +3079,7 @@ const PRESETS = {
   // 読み込み直後と同じ状態へ戻す（index.html の checked と、初期化の toggleOverlay と揃える）
   reset: {
     label: "最初の表示",
-    on: ["boundary", "kansui", "passedRoads", "roadRisk", "leveeBreach"],
+    on: ["boundary", "kansui", "passedRoads", "leveeBreach"],
     openGroups: ["🚗"],
     focus: null
   }
