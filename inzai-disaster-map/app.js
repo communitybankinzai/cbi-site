@@ -1909,6 +1909,7 @@ function bindEvents() {
     // 「本日（＝対象日）」の判定が変わるので、冠水の色分けも描き直す
     renderKansuiLayer();
     renderPassedRoadsLayer();
+    if (snsRoadsLoaded) renderSnsRoads();
   });
   document.getElementById("timeline-days").addEventListener("change", () => refreshTimeline(false));
   document.getElementById("refresh-timeline-button").addEventListener("click", () => refreshTimeline(true));
@@ -3496,6 +3497,7 @@ function initMapLegend() {
     renderKansuiLayer();
     renderPassedRoadsLayer();
     if (roadClosuresData) renderRoadClosures();
+    if (snsRoadsLoaded) renderSnsRoads();
   });
   syncMapLegend();
   // 凡例は画面幅や期間のラベルで2〜3行に伸び縮みする。高さが変わるたびに、下に置く
@@ -6776,6 +6778,8 @@ function renderSnsRoads() {
     if (report.hidden && !isModerator) return;
     // 場所を決められず自動で伏せた点は、運営の地図にも出さない（座標が当てにならないため。一覧には残る）
     if (report.unlocated) return;
+    // 「本日／過去の実績」「期間」のしぼり込みを市民の記録と同じく効かせる（見た時刻、無ければ投稿時刻で判定。2026-09-25 事業主指摘）
+    if (!passesWhenFilter(report.observedAt || report.postedAt)) return;
     if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
     const kind = ["passed", "blocked", "cleared"].includes(report.kind) ? report.kind : "blocked";
     const when = report.observedAt || report.postedAt;
@@ -8247,6 +8251,7 @@ function applyRecordRange(from, to, label) {
   if (typeof syncEventChips === "function") syncEventChips();
   renderKansuiLayer();
   renderPassedRoadsLayer();
+  if (snsRoadsLoaded) renderSnsRoads();
 }
 
 function toLocalInputValue(ms) {
