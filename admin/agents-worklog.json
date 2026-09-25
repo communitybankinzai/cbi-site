@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP 千葉県の道路規制状況図（PDF画像）を画像照合で線に直す取り込み＋重ね合わせ層＋毎時Actions 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/pipeline/build_pref_road_kisei.py（新規：地理院z12タイルと照合・赤線抽出・細線化・掲載終了検知）",
+            "site/inzai-disaster-map/pref-road-kisei.json（新規：9/25 14時時点・19本・一致度0.774）",
+            "site/.github/workflows/pref-road-kisei.yml（新規：毎時・手動の作り直しあり）",
+            "site/inzai-disaster-map/app.js（prefKisei 層）／index.html（チェックボックス・版 20260925w）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": true,
+          "note": "事業主選択：自動・県北部（分割図1/3）・赤のみ。位置は地理院地図と重ねて確認し、ずれは最大80m程度（印西・神尾橋付近）。Actions 手動実行で Ubuntu でも同結果を確認。session: 680d4e8d-5c43-4ced-b2a3-e34da55abc96 / output: 39,313 / cost: $6.78"
+        },
+        {
+          "date": "2026-09-25",
           "title": "防災MAP SNS巡回「未確認候補へ」の挙動説明＋登録時に地名から自動仮置き（点線ピン・レイヤー自動オン） 0.3時間",
           "category": "実装",
           "outputs": [
@@ -7622,6 +7637,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🚧 県の道路規制状況図の層を、開いたときから表示するか決める（いまは初期オフ）",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-25 追加の prefKisei 層。初期オンにするなら index.html の checked と PRESETS（kansui・reset）の3か所をそろえる。9/21 の『最初の画面は冠水の情報だけ』方針との兼ね合いで事業主判断が要る。",
+          "status": "保留",
+          "blockedBy": "事業主が初期表示に含めるかを決めること"
+        },
+        {
+          "due": "未定",
+          "title": "🚧 県の規制状況図の取り込みを CiDAO の毎時巡回から起動する（Actions の定期実行の間引き対策）",
+          "category": "実装",
+          "priority": "中",
+          "note": "GitHub Actions の schedule は最長12時間空くため、図の差し替え・掲載終了の反映が遅れうる。CiDAO の disaster-road-closures 巡回で県ページのPDFリンクの変化を見て repository_dispatch を投げれば即時にできる。まず数日の実際の遅れを見て要否を判断。"
+        },
         {
           "due": "未定",
           "title": "みんつく運営者（てみた氏）の返答を受けて、市境をまたぐ道路を市境で切るか決める",
