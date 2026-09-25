@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-26",
+          "title": "県の道路規制状況図：県の発表時点と最終確認の時刻を3か所に表示（CiDAOで確認時刻を記録・GET追加） 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao src/app/api/disaster/pref-road-kisei/route.ts（app_settings pref_road_kisei_last_check に記録・GET・CORS・14d2072）",
+            "cidao src/lib/pref-road-kisei-watch.ts（結果に stamp）",
+            "site/inzai-disaster-map/app.js（prefKiseiTimes・showPrefKiseiBadge・吹き出しを開くたびに組み立て）／config.js（prefKiseiCheckEndpoint）／styles.css（.pref-kisei-badge）／index.html（版）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "事業主選択『両方』。ローカル 1280x800・375x812 で札が記録バー・注意書き・出典表示と重ならないことを座標で確認（スマホは Leaflet の CSS に余白指定が負けていたので指定を強めた）。本番で3か所の表示と OFF で札が消えることを確認。session: 680d4e8d-5c43-4ced-b2a3-e34da55abc96 / output: 132,380 / cost: $34.96"
+        },
+        {
+          "date": "2026-09-26",
           "title": "防災MAP「見たいもの」ボタンの組み合わせ対応＋初期表示が茨城県にずれる不具合の修正 0.2時間",
           "category": "保守",
           "outputs": [
