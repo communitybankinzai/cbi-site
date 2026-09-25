@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP 運営の「線を直す」を押した場所中心で開き、補正なしで保存・即時反映（事業主の指摘2件） 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（startCitizenRoadEdit の中心保持・編集時は snapPathToRoads を掛けない・保存後に passedRoadsData を書き換えて描き直す）",
+            "site/inzai-disaster-map/index.html（版 20260925i）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md"
+          ],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "指摘「線全体が表示され場所が分からない」「直しても反映されない」。原因は fitBounds と、完了時の道なり補正が動かした点を元の道路へ戻していたこと＋配信キャッシュ15秒。ローカルで中心のずれ0m・ズーム16を実測。事業主が本番で保存を試し OK（09:20）。push 75df457。session: fd1558e8-a8d7-43c6-bc6c-20ba753ec8d9 / output: 185,345 / cost: $110.83"
+        },
+        {
+          "date": "2026-09-25",
           "title": "防災MAP なぞった点の移動・経過点追加（本人）＋運営が送信済みの線を直す＋SNS点の道路寄せ・管理一覧にSNS節 0.6時間",
           "category": "実装",
           "outputs": [
