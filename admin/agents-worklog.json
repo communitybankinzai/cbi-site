@@ -17,6 +17,22 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-26",
+          "title": "県の道路規制状況図：30分ごとの見張り（専用入口＋pg_cron）・ファイル名に頼らないPDF検出・「🚧 通行止め」を足す切り替えに 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao src/app/api/disaster/pref-road-kisei/route.ts（新規・788008b）",
+            "cidao src/lib/pref-road-kisei-watch.ts（リンクの文字でPDFを探す）／__tests__（12件）／road-closures/route.ts（見張りを外す）",
+            "Supabase pg_cron cidao_pref_road_kisei（12,42 * * * *）",
+            "site/inzai-disaster-map/app.js（PRESETS.closures を toggle 化・syncTogglePresets）／index.html（説明・版 20260926a）",
+            "site/inzai-disaster-map/pipeline/build_pref_road_kisei.py（find_pdf_link）／.github/workflows/pref-road-kisei.yml（説明）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "事業主指示（30分ごと・ファイル名変更に対応・解除で削除・一括ON/OFF）。本番で冠水が消える原因＝見たいもののボタンが入れ替え式だったことを実測。ローカルで冠水を残したまま2層がまとめて出入りすることを確認、本番入口は unchanged を返す。session: 680d4e8d-5c43-4ced-b2a3-e34da55abc96 / output: 89,177 / cost: $23.29"
+        },
+        {
           "date": "2026-09-25",
           "title": "防災MAP 同じ内容のSNS投稿を1つの印にまとめる（船戸大橋の解除3件が固まって見えた件） 0.1時間",
           "category": "保守",
