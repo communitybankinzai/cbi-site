@@ -4742,11 +4742,19 @@ function applyLocationCandidate(candidate) {
     record.assignedTo = "位置・内容確認待ち";
     persistRecords();
     selectedId = record.id;
-    map.setView([candidate.lat, candidate.lng], 15);
+    ensureRecordsOverlayOn();   // レイヤーが初期オフのままだと「設定した」のに地図に何も出ない（2026-09-25 事業主指摘）
+    map.setView([candidate.lat, candidate.lng], Math.max(map.getZoom(), 15));
     renderAll();
   }
   document.getElementById("location-search-dialog").close();
-  document.getElementById("map-status").textContent = `${candidate.title}の緯度経度でピンを設定しました。公開前に位置と根拠を確認してください。`;
+  const placed = records.find(item => item.id === locationSearchContext.recordId);
+  document.getElementById("map-status").textContent = `${candidate.title}の緯度経度でピンを設定しました（地図では${recordMarkerShapeLabel(placed)}）。公開前に位置と根拠を確認してください。`;
+}
+
+// 記録が地図でどう見えるか（本文に「通行止め」などがあると赤い×、それ以外は色付きのピン）
+function recordMarkerShapeLabel(record) {
+  const passability = record ? getPassability(record) : "none";
+  return passability === "closed" || passability === "impassable" ? "赤い×印" : "色付きのピン";
 }
 
 function locationCandidateAuditFields(candidate, checkedAt = nowLocalInput()) {
@@ -6920,7 +6928,14 @@ function renderSnsRoads() {
   snsRoadsLayer.clearLayers();
   snsRoadShapes.clear();
   const isModerator = Boolean(moderationKey());
-  snsRoadsData.forEach(report => {
+  // 同じ地点（覚えた地点など）に複数の投稿が置かれると重なって下の印が見えない（北須賀交差点に4件重なり、
+  // 「解除」の印が通行止めの印の下に隠れた。2026-09-25 事業主指摘）。同じ座標の印は小さな輪に並べ、新しい投稿を上に描く
+  const stackKey = r => `${Number(r.lat).toFixed(5)},${Number(r.lng).toFixed(5)}`;
+  const stacks = new Map();
+  snsRoadsData.forEach(r => { if (Number.isFinite(r.lat) && Number.isFinite(r.lng)) stacks.set(stackKey(r), (stacks.get(stackKey(r)) || 0) + 1); });
+  const stackSeen = new Map();
+  const ordered = snsRoadsData.slice().sort((a, b) => String(a.observedAt || a.postedAt || "").localeCompare(String(b.observedAt || b.postedAt || "")));
+  ordered.forEach(report => {
     if (report.hidden && !isModerator) return;
     // 場所を決められず自動で伏せた点は、運営の地図にも出さない（座標が当てにならないため。一覧には残る）
     if (report.unlocated) return;
@@ -6934,8 +6949,16 @@ function renderSnsRoads() {
     const timeLabel = report.observedAt ? "見た時刻" : "投稿時刻";
     const sourceUrl = /^https:\/\//.test(String(report.sourceUrl || "")) ? report.sourceUrl : "";
     const snapNote = Number.isFinite(report.snapped) ? `・約${report.snapped}m先の道路へ寄せた` : "";
+    // 重なりの解消：同じ座標の n 件目を、半径 22px の輪の上に等間隔で並べる（1件だけならそのまま）
+    const key = stackKey(report);
+    const total = stacks.get(key) || 1;
+    const order = stackSeen.get(key) || 0;
+    stackSeen.set(key, order + 1);
+    const angle = total > 1 ? (Math.PI * 2 * order) / total - Math.PI / 2 : 0;
+    const offset = total > 1 ? [Math.round(Math.cos(angle) * 22), Math.round(Math.sin(angle) * 22)] : [0, 0];
+    const stackNote = total > 1 ? `<br><span style="font-size:11px;color:#53677b;">同じ地点に${total}件の投稿があるため、印を少しずらして並べています。</span>` : "";
     const marker = L.marker([report.lat, report.lng], {
-      icon: L.divIcon({ className: "", html: `<div class="sns-road-marker is-${kind}${report.hidden ? " is-old" : ""}">${snsRoadGlyph(kind)}</div>`, iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -12] }),
+      icon: L.divIcon({ className: "", html: `<div class="sns-road-marker is-${kind}${report.hidden ? " is-old" : ""}">${snsRoadGlyph(kind)}</div>`, iconSize: [26, 26], iconAnchor: [13 - offset[0], 13 - offset[1]], popupAnchor: [offset[0], offset[1] - 12] }),
       title: `SNS：${report.locationName || ""} ${snsRoadKindLabel(kind)}（未確認）`,
       zIndexOffset: 300
     });
@@ -6948,7 +6971,7 @@ function renderSnsRoads() {
       snsRoadEmbedHtml(report) +
       (hasPath ? `区間：${escapeHtml(report.sectionLabel || "")}（破線・区間は投稿の地名から）<br>` : "") +
       `場所：${escapeHtml(report.locationName || "不明")}` +
-      (report.locationBasis || snapNote ? `<span style="font-size:11px;color:#53677b;">（${escapeHtml(report.locationBasis || "")}${escapeHtml(snapNote)}）</span>` : "") + `<br>` +
+      (report.locationBasis || snapNote ? `<span style="font-size:11px;color:#53677b;">（${escapeHtml(report.locationBasis || "")}${escapeHtml(snapNote)}）</span>` : "") + stackNote + `<br>` +
       `${timeLabel} ${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "不明")}（${escapeHtml(formatAgo(when))}）` +
       (report.quote ? `<span class="sns-road-quote">「${escapeHtml(report.quote)}」</span>` : "<br>") +
       (report.imageNote ? `<span class="sns-road-image-note">📷 写真から読み取った手掛かり：${escapeHtml(report.imageNote)}</span>` : "") +
@@ -10208,8 +10231,10 @@ function completeLocationPick(latlng) {
   document.querySelector(".map-pane").classList.remove("is-location-pick");
   selectedId = record.id;
   persistRecords();
+  ensureRecordsOverlayOn();   // 置いたピンがレイヤーオフで見えないのを防ぐ（2026-09-25）
   map.setView([record.lat, record.lng], Math.max(map.getZoom(), 15));
   renderAll();
+  document.getElementById("map-status").textContent = `ピンを置きました（地図では${recordMarkerShapeLabel(record)}）。`;
   openRecordDialog({ id: record.id });
 }
 
