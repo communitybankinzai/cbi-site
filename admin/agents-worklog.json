@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-26",
+          "title": "防災MAP「見たいもの」ボタンの組み合わせ対応＋初期表示が茨城県にずれる不具合の修正 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（applyTogglePreset を全ボタンへ・links は開くだけ・syncMapBoxSize＋ResizeObserver・fa9f5b6）",
+            "site/inzai-disaster-map/index.html（版 20260926b）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "ローカルで枠を伸ばして中心が印西市へ戻ること・動かした後は戻さないこと、ボタン6通りの組み合わせを確認。本番でも版 20260926b で組み合わせを確認。裏タブでは ResizeObserver が動かないため1秒・3秒後にも確認する。session: 680d4e8d-5c43-4ced-b2a3-e34da55abc96 / output: 109,436 / cost: $28.87"
+        },
+        {
+          "date": "2026-09-26",
           "title": "県の道路規制状況図：30分ごとの見張り（専用入口＋pg_cron）・ファイル名に頼らないPDF検出・「🚧 通行止め」を足す切り替えに 0.3時間",
           "category": "実装",
           "outputs": [
