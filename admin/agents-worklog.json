@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "SNS通行情報 Haiku／Sonnet 5 の15件比較＋72件の読み直し＋同名町・バス停の置き違い修正・本番でBluesky埋め込み確認 0.3時間",
+          "category": "分析",
+          "outputs": [
+            "C:/Repos/cidao scripts/compare-sns-road-models.ts（2モデル比較・DBに書かない）",
+            "C:/Repos/cidao src/lib/disaster-sns-road-ai.ts（extractRoadReport に model/effort 引数・国土地理院の同名町の曖昧さ・OSMのバス停除外）",
+            "C:/Repos/cidao scripts/rescan-sns-road-reports.ts（--relocate：AIなしで座標だけ決め直す）",
+            "本番DB disaster_sns_road_reports（72件読み直し・置き直し 動かす2／伏せる1）",
+            "site/admin/agents-worklog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "比較（約0.32ドル）：置き場所は15件中13件同じ、分かれた2件もどちらも本文にある場所。Sonnet 5 は写真の文字をより細かく読むが置き場所は変わらず、費用2.5倍→事業主決定 Haiku 継続。講座録画の終了を待って72件を読み直し（約0.39ドル・エラー0）。松崎（印西西部に誤一致）と阿蘇橋（バス停）を修正し、本番の一般公開は7件（舟戸大橋・鹿島川付近）。本番の地図で Bluesky の公式埋め込み表示を確認。push cidao 12a5e7c/c21add3。session: 2299e205-4937-4bef-81fd-72e2e574c7d0 / output: 89,388 / cost: $23.14（前の0.6hの記録を含むセッション累計）"
+        },
+        {
+          "date": "2026-09-25",
           "title": "SNS通行情報の場所決めを見直し（AI座標廃止・広域は置かない）＋写真をAIに渡す＋公式埋め込み表示＋解除投稿の添え書き・5件で試行 0.6時間",
           "category": "実装",
           "outputs": [
@@ -7482,22 +7497,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-09-26",
-          "title": "📡 SNS通行情報の残り約66件を新しい決まり（写真あり・AI座標なし）で読み直す",
-          "category": "保守",
-          "priority": "高",
-          "note": "2026-09-25 に5件で試行済み（約0.03ドル）。全件は約0.3〜0.5ドル。`cd C:/Repos/cidao; npx tsx scripts/rescan-sns-road-reports.ts`（先に --dry で件数確認）。本番の5分巡回と同じ投稿を同時に処理することがあるので、終わったら成田湯川駅・手賀大橋・印旛沼の行を DB で確認する。",
-          "status": "待ち",
-          "blockedBy": "講座 第19弾の録画（ad4077e0・CPUを使う）が終わること。事業主は Haiku のままでの実行を承認済み（2026-09-25・Sonnet 5 と15件比較のうえ。対象72件・約0.4ドル）"
-        },
-        {
-          "due": "未定",
-          "title": "📡 SNS通行情報：Bluesky の公式埋め込みを本番の地図で表示確認する",
-          "category": "保守",
-          "priority": "中",
-          "note": "2026-09-25 に Instagram の埋め込みはローカルで実表示を確認。Bluesky は embed_url が入るのが読み直し後なので未確認（embed.bsky.app/embed/<did>/app.bsky.feed.post/<rkey>）。"
-        },
         {
           "due": "未定",
           "title": "📡 SNS通行情報：Instagram の動画（リール）はサムネイル画像を取り、AIの場所判定に使う",
