@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP なぞった点の移動・経過点追加（本人）＋運営が送信済みの線を直す＋SNS点の道路寄せ・管理一覧にSNS節 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（drawCitizenRoadPreview のドラッグハンドル・＋で経過点挿入・startCitizenRoadEdit・snapSnsRoadPoints・loadSnsModerationList）",
+            "site/inzai-disaster-map/styles.css（作図中でもハンドルだけ触れる規則・SNS節のリンク）・index.html（管理パネルにSNS節・版 20260925h）",
+            "cidao src/app/api/disaster/passed-roads/route.ts（PATCH path・point_count/length_m 更新）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（A/B・寄せ・注意点）"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "事業主指摘「精度が悪い・一覧でSNS由来が識別できない」→SNS点を150m以内の道路へ寄せ（公開7件すべて2〜76m移動）、管理一覧に📡SNSの節を追加。事業主指示「なぞった線の経過点を後からずらす・追加」→A（本人・送信前）とB（運営・送信後）を実装。ローカル実クリックで＋ドラッグにより3点化・頂点ドラッグで座標変化・余計な点なし、編集モードは7点で頂点7＋＋6・取消で復帰を確認。PATCH保存は運営合言葉が手元に無く未実施（型・Lint通過）。push: MAP e9266ea/bc7403f/0d2d3f5・cidao cef1f61。session: fd1558e8-a8d7-43c6-bc6c-20ba753ec8d9 / output: 173,402 / cost: $101.52"
+        },
+        {
+          "date": "2026-09-25",
           "title": "記録の雨量をアメダスの控えから引くようにする 0.3時間",
           "category": "実装",
           "outputs": [
@@ -27,7 +41,8 @@
           "hours": 0.3,
           "partnerApproved": false,
           "note": "再募集で「8月の豪雨のとき」を選べるのに雨量が付かない状態を解消。控え（disaster_amedas_10min）を先に見て、1時間値で補った行は3時間・24時間を足し合わせる。本番で8/13 15:00＝41.0/77.5/81.5、9/21 18:00＝30.5/98.5/272.5 を実測し、確認用の記録は削除。テスト135件すべて成功。"
-        },{
+        },
+        {
           "date": "2026-09-25",
           "title": "記録にSNSの投稿URLを添えられるようにする（手動プロット）0.3時間",
           "category": "実装",
@@ -40,7 +55,8 @@
           "hours": 0.3,
           "partnerApproved": false,
           "note": "事業主の指摘で「AIが取りこぼした投稿を市民が手で足せる」と誤認されていたことが判明（実際は運営のみ・保存も端末内）。決定Aで市民の経路を追加。POSTでsourceUrlsを1つまで受け、運営の編集と同じnormalizeRoadMediaUrlsで検査。本番でInstagramのURLが保存されること・でたらめな文字列が400（invalid_source_url）になることを実測し、確認用の記録は削除。"
-        },{
+        },
+        {
           "date": "2026-09-25",
           "title": "防災MAP SNS投稿をAIで読み取り「通れた／通れない／解除」を未確認レイヤーで自動プロット（台風25号の過去分も） 0.8時間",
           "category": "実装",
