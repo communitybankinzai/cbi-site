@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP 地形の冠水しやすさ層の初期OFF化＋ローカル確認 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/index.html",
+            "site/inzai-disaster-map/app.js",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主指示。index.html の checked／凡例の初期状態と PRESETS.kansui・reset から roadRisk を外し版 20260925z。他セッションの app.js 未コミット分は除外してコミット（a6fc223）。\nsession: de23cf40-bec4-48d1-8bac-1d8286fc7afe / output: 6,357 / cost: $3.23"
+        },
+        {
+          "date": "2026-09-25",
           "title": "防災MAP 重なったSNS印の輪配置＋候補記録の場所確定時にレイヤー自動オン（「ピンが見つからない」「SNSのマークはどこ」対応） 0.2時間",
           "category": "保守",
           "outputs": [
