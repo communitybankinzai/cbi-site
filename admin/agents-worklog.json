@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "SNS通行情報に学習機能（覚えた地点・判断例）＋国道464号の区間の破線＋運営の位置直し画面 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao supabase/migrations/20260925130000_sns_road_learning.sql（disaster_sns_places・disaster_sns_road_feedback・path/section_label。本番適用済み）",
+            "C:/Repos/cidao src/lib/disaster-sns-road-464.json（OSMの国道464号の形・ODbL）",
+            "C:/Repos/cidao src/lib/disaster-sns-road-ai.ts（fromLearned・path464・locateSection・examplesFor・ひらがな断片の除外）",
+            "C:/Repos/cidao src/app/api/disaster/sns-road-reports/route.ts（PATCH move／hide の理由・判断例の記録・同じ地名の置き直し）",
+            "C:/Repos/cidao scripts/rescan-sns-road-reports.ts（--match）",
+            "site/inzai-disaster-map/app.js・styles.css・index.html（位置直しの小窓・区間の破線・伏せる理由。版 20260925l）",
+            "site/admin/changelog.json・inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "agents/a1-core/credentials.md（合言葉の注意書きのみ更新・値は変更なし）"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "事業主決定B（地点の学習＋判断例の学習）。464号沿い31か所をOSMから初期登録。464号の14件を読み直し（約0.1ドル）、北須賀交差点・成田湯川駅に6件。台方・松崎インターはOSMに無く運営の登録待ちのため、実データの区間は0件。本番APIで move/hide を試し元に戻した。push cidao f11364b/27b9c6f・site 3356c8c。session: 2299e205-4937-4bef-81fd-72e2e574c7d0 / output: 151,773 / cost: $36.69（セッション累計・既記録0.9hを含む）"
+        },
+        {
+          "date": "2026-09-25",
           "title": "SNS通行情報 Haiku／Sonnet 5 の15件比較＋72件の読み直し＋同名町・バス停の置き違い修正・本番でBluesky埋め込み確認 0.3時間",
           "category": "分析",
           "outputs": [
@@ -7497,6 +7515,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📍 SNS通行情報：台方・松崎インター・北須賀ローソンを運営が地図で置いて覚えさせる（464号の区間の線を出すため）",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-09-25 学習機能を入れた。OSM に無い地名なので、防災MAPの運営画面（🗑 市民記録の管理 → SNS の節 → 📍 位置を直す／地図に置く）で1回ずつ置けば、次の読み直し（npx tsx scripts/rescan-sns-road-reports.ts --match 464）から「台方〜北須賀」「松崎インター〜北須賀交差点」が破線の区間になる。「深草交差点」は OSM の「草深交差点」と同じ場所か要確認。",
+          "status": "待ち",
+          "blockedBy": "事業主（運営）が地図上で台方・松崎インターの位置を指定すること"
+        },
+        {
+          "due": "未定",
+          "title": "🧠 SNS通行情報の学習の効き目を測る（運営が直した投稿を正解集にして正答率を出す）",
+          "category": "分析",
+          "priority": "中",
+          "note": "2026-09-25。判断例（disaster_sns_road_feedback）が20件ほど貯まったら、scripts/compare-sns-road-models.ts を正解集の読み直しに広げ、例を添えた場合と添えない場合の正答率を比べる。"
+        },
         {
           "due": "未定",
           "title": "📡 SNS通行情報：Instagram の動画（リール）はサムネイル画像を取り、AIの場所判定に使う",
