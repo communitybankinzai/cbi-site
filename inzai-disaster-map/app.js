@@ -3279,7 +3279,7 @@ document.addEventListener("click", event => {
   const button = event.target.closest?.("[data-passed-reshape]");
   if (!button) return;
   const road = passedRoadsData.find(r => String(r.id) === button.dataset.passedReshape);
-  if (!road || !Array.isArray(road.path) || road.path.length < 2) return;
+  if (!road || !Array.isArray(road.path) || road.path.length < 1) return;
   if (!moderationEndpoint() || !moderationKey()) return;
   // 押した吹き出しの場所を中心に開く（線全体へズームアウトすると、どこを直すのか分からなくなる。2026-09-25 事業主指摘）
   const center = map._popup?.getLatLng?.() || map.getCenter();
@@ -3292,12 +3292,16 @@ function startCitizenRoadEdit(road, center) {
   if (!citizenRoadDraft.active) return;
   const draft = citizenRoadDraft;
   draft.editId = String(road.id);
+  draft.editPoint = road.path.length === 1;   // 地点1点の記録：点を動かすだけ（地図をタップしても点は増やさない。2026-09-25 事業主指示B）
   draft.points = road.path.map(p => [Number(p[0]), Number(p[1])]);
-  document.getElementById("citizen-road-title").textContent = "📐 線を直す（運営）";
+  document.getElementById("citizen-road-title").textContent = draft.editPoint ? "📍 位置を直す（運営）" : "📐 線を直す（運営）";
   const options = document.getElementById("citizen-road-options");
   if (options) options.hidden = true;   // 時刻・メモ・写真は「✏ 時刻・メモを直す」で。ここでは線だけ
   drawCitizenRoadPreview();
-  citizenRoadMessage("点を指で動かす／点の間の「＋」で経過点を足す → 「完了」で保存します（動かした位置のまま保存・道なりの補正はしません）。取消で元のままです。");
+  if (draft.editPoint) map.setView(draft.points[0], Math.max(map.getZoom(), 17), { animate: false });
+  citizenRoadMessage(draft.editPoint
+    ? "青い点を指で道路の上まで動かす → 「完了」で保存します（動かした位置のまま保存・道なりの補正はしません）。取消で元のままです。"
+    : "点を指で動かす／点の間の「＋」で経過点を足す → 「完了」で保存します（動かした位置のまま保存・道なりの補正はしません）。取消で元のままです。");
   // 全画面化（invalidateSize）のあとに、押した場所を中心に置く。ズームは今のまま（16未満なら16）
   const target = center ? L.latLng(center) : L.latLng(draft.points[Math.floor(draft.points.length / 2)]);
   setTimeout(() => { if (draft.active) map.setView(target, Math.max(map.getZoom(), 16), { animate: false }); }, 350);
@@ -7251,11 +7255,11 @@ function updateCitizenRoadControls() {
   const draft = citizenRoadDraft;
   const remaining = Math.max(0, Math.ceil((draft.retryAt - Date.now()) / 1000));
   document.getElementById("citizen-road-count").textContent = `${draft.points.length}点・約${Math.round(passedRoadPathLengthM(draft.points))}m`;
-  document.getElementById("citizen-road-back").disabled = draft.busy || !draft.points.length;
+  document.getElementById("citizen-road-back").disabled = draft.busy || !draft.points.length || Boolean(draft.editPoint);   // 地点の位置直しでは唯一の点を消させない
   document.getElementById("citizen-road-cancel").disabled = draft.busy;
   const finish = document.getElementById("citizen-road-finish");
-  finish.disabled = draft.busy || draft.points.length < 2 || remaining > 0;
-  finish.textContent = draft.kind === "profile" ? "完了（断面図を見る）" : draft.busy ? (draft.editId ? "保存中…" : "送信中…") : remaining ? `あと${remaining}秒` : draft.editId ? "完了（線を保存・運営）" : `完了（${draft.kind === "blocked" ? "赤" : "青"}く塗る）`;
+  finish.disabled = draft.busy || draft.points.length < (draft.editPoint ? 1 : 2) || remaining > 0;
+  finish.textContent = draft.kind === "profile" ? "完了（断面図を見る）" : draft.busy ? (draft.editId ? "保存中…" : "送信中…") : remaining ? `あと${remaining}秒` : draft.editId ? (draft.editPoint ? "完了（位置を保存・運営）" : "完了（線を保存・運営）") : `完了（${draft.kind === "blocked" ? "赤" : "青"}く塗る）`;
   document.querySelectorAll("#citizen-road-editor input, #citizen-road-editor select").forEach(node => { node.disabled = draft.busy; });
 }
 
@@ -7374,6 +7378,7 @@ function startCitizenRoadDrawing(kind) {
 function addCitizenRoadPoint(latlng) {
   const draft = citizenRoadDraft;
   if (!draft.active || draft.busy) return;
+  if (draft.editPoint) { citizenRoadMessage("地点の記録は点を1つだけ持ちます。青い点を指で動かしてください。", true); return; }
   if (map.getZoom() < MAP_RECORD_MIN_ZOOM) {
     // 断るだけでは行き止まりになるので、タップした場所を拡大して続けられるようにする（2026-09-24）
     map.setView(latlng, 16, { animate: false });
@@ -7398,6 +7403,7 @@ function closeCitizenRoadDrawing() {
   citizenRoadDraft.active = false;
   citizenRoadDraft.points = [];
   citizenRoadDraft.editId = null;
+  citizenRoadDraft.editPoint = false;
   const options = document.getElementById("citizen-road-options");
   if (options) options.hidden = false;
   clearInterval(citizenRoadDraft.timer);
@@ -7414,7 +7420,7 @@ function closeCitizenRoadDrawing() {
 
 async function finishCitizenRoadDrawing() {
   const draft = citizenRoadDraft;
-  if (!draft.active || draft.busy || draft.points.length < 2 || draft.retryAt > Date.now()) return;
+  if (!draft.active || draft.busy || draft.points.length < (draft.editPoint ? 1 : 2) || draft.retryAt > Date.now()) return;
   if (draft.kind === "profile") {
     // 断面図は記録を送らない。線を残して断面図を開く
     const path = draft.points.map(point => [...point]);
@@ -8163,7 +8169,7 @@ function passedRoadShape(road) {
 function passedRoadHideButtonHtml(road) {
   return moderationKey() && road?.id != null
     ? `<br><button type="button" class="kansui-hide-btn" data-passed-edit="${escapeAttribute(String(road.id))}">✏ 時刻・メモを直す（運営）</button>` +
-      (road.path.length > 1 ? `<br><button type="button" class="kansui-hide-btn" data-passed-reshape="${escapeAttribute(String(road.id))}">📐 線を直す（点を動かす・運営）</button>` : "") +
+      `<br><button type="button" class="kansui-hide-btn" data-passed-reshape="${escapeAttribute(String(road.id))}">${road.path.length > 1 ? "📐 線を直す（点を動かす・運営）" : "📍 位置を直す（点を動かす・運営）"}</button>` +
       `<br><button type="button" class="kansui-hide-btn" data-passed-hide="${escapeAttribute(String(road.id))}">🗑 この記録を地図から伏せる（運営）</button>`
     : "";
 }

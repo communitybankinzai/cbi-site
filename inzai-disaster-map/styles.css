@@ -1128,7 +1128,7 @@ details.layer-group .layer-group-body {
 .range-panel {
   position: absolute;
   top: calc(var(--legend-h, 38px) + 6px); left: 8px; /* 凡例のすぐ下（高さは app.js が --legend-h に入れる） */
-  z-index: 640;
+  z-index: 950; /* 記録バー（#quick-record-bar・900）より上。640 だと「この雨量で見る」「解除」がバーの裏に隠れて押せなかった（2026-09-25） */
   width: min(330px, calc(100% - 16px));
   padding: 10px;
   border: 1px solid #bac9d5;
