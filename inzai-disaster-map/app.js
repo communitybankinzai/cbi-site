@@ -3280,11 +3280,13 @@ document.addEventListener("click", event => {
   const road = passedRoadsData.find(r => String(r.id) === button.dataset.passedReshape);
   if (!road || !Array.isArray(road.path) || road.path.length < 2) return;
   if (!moderationEndpoint() || !moderationKey()) return;
+  // 押した吹き出しの場所を中心に開く（線全体へズームアウトすると、どこを直すのか分からなくなる。2026-09-25 事業主指摘）
+  const center = map._popup?.getLatLng?.() || map.getCenter();
   map.closePopup();
-  startCitizenRoadEdit(road);
+  startCitizenRoadEdit(road, center);
 });
 
-function startCitizenRoadEdit(road) {
+function startCitizenRoadEdit(road, center) {
   startCitizenRoadDrawing(road.kind === "blocked" ? "blocked" : "passed");
   if (!citizenRoadDraft.active) return;
   const draft = citizenRoadDraft;
@@ -3294,8 +3296,10 @@ function startCitizenRoadEdit(road) {
   const options = document.getElementById("citizen-road-options");
   if (options) options.hidden = true;   // 時刻・メモ・写真は「✏ 時刻・メモを直す」で。ここでは線だけ
   drawCitizenRoadPreview();
-  citizenRoadMessage("点を指で動かす／点の間の「＋」で経過点を足す → 「完了」で保存します。取消で元のままです。");
-  try { map.fitBounds(L.latLngBounds(draft.points), { padding: [40, 40], maxZoom: 17, animate: false }); } catch {}
+  citizenRoadMessage("点を指で動かす／点の間の「＋」で経過点を足す → 「完了」で保存します（動かした位置のまま保存・道なりの補正はしません）。取消で元のままです。");
+  // 全画面化（invalidateSize）のあとに、押した場所を中心に置く。ズームは今のまま（16未満なら16）
+  const target = center ? L.latLng(center) : L.latLng(draft.points[Math.floor(draft.points.length / 2)]);
+  setTimeout(() => { if (draft.active) map.setView(target, Math.max(map.getZoom(), 16), { animate: false }); }, 350);
 }
 
 // 地図のポップアップの「🗑 この記録を地図から伏せる」（通れた道・通れない道）
@@ -7222,13 +7226,13 @@ async function finishCitizenRoadDrawing() {
     const id = draft.editId;
     draft.busy = true;
     updateCitizenRoadControls();
-    citizenRoadMessage("道路に合わせています…");
-    const snapped = await snapPathToRoads(draft.points.map(point => [...point]));
     citizenRoadMessage("保存しています…");
+    // 運営が置いた位置をそのまま送る。道なりの補正（snapPathToRoads）は、動かした点を元の道路へ戻してしまい「反映されない」ように見えたので掛けない（2026-09-25）
+    const path = draft.points.map(point => [Number(point[0]), Number(point[1])]);
     const endpoint = moderationEndpoint();
     let key = moderationKey();
     const send = k => fetch(`${endpoint}?id=${encodeURIComponent(id)}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json", "x-moderation-key": k }, body: JSON.stringify({ path: snapped })
+      method: "PATCH", headers: { "Content-Type": "application/json", "x-moderation-key": k }, body: JSON.stringify({ path })
     });
     try {
       let response = await send(key);
@@ -7242,8 +7246,17 @@ async function finishCitizenRoadDrawing() {
       if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
       draft.busy = false;
       closeCitizenRoadDrawing();
-      await ensurePassedRoadsLayer(true);
+      // 配信側の短いキャッシュで古い線が返ることがあるので、保存した線をその場で画面に入れてから描き直す
+      const road = passedRoadsData.find(r => String(r.id) === id);
+      if (road) {
+        road.path = path;
+        road.pointCount = Number(result.pointCount) || path.length;
+        road.lengthM = Number(result.lengthM) || passedRoadPathLengthM(path);
+        renderPassedRoadsLayer();
+        renderPassedRoadsList();
+      }
       focusPassedRoad(id);
+      setPassedRoadRecordStatus("線を保存しました（運営）。", "");
     } catch (error) {
       draft.busy = false;
       citizenRoadMessage(`保存できませんでした（${error?.message || "接続エラー"}）。線は残っています。`, true);
