@@ -7947,7 +7947,10 @@ const MINTSUKU_URL = "https://mintsuku-chiba-kansuimap.com/";
 // 通れない道は、みんつくへの投稿（renderKansuiLayer）と見た目をそろえる（2026-09-22）：
 // 同じ赤・濃い＝対象日の記録／薄い＝それより前・1地点は白ふちの赤い丸
 function blockedPointShape(road) {
-  const isOld = !isTargetDayRecord(road.endedAt);
+  // 雨量でしぼり込み中は「その雨量で通れなかった記録」を日付をまたいで見比べるので、
+  // 対象日より前でも薄くしない（2026-09-25 事業主指示：通れない・通れた道とも濃い色に）
+  const isBefore = !isTargetDayRecord(road.endedAt);
+  const isOld = isBefore && !rainFilterActive(); // 色だけ。吹き出しの文は isBefore で判定
   const marker = road.path.length > 1 ? L.polyline(road.path, {
     pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: KANSUI_COLOR, weight: isOld ? 4 : 6, opacity: isOld ? .5 : .95
   }) : L.circleMarker(road.path[0], {
@@ -7961,7 +7964,7 @@ function blockedPointShape(road) {
     `・${escapeHtml(passedRoadSourceLabel(road))}` +
     (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
     window.RoadRecordEditor.render(road) +
-    `<br><span style="font-size:11px;">${isOld
+    `<br><span style="font-size:11px;">${isBefore
       ? "対象日より前の記録です。すでに通れるようになっている可能性があります。"
       : "この地図を見ている人が通れなかった場所を記録したものです。公式の通行止めではありません。"}</span>` +
     rainVerdictHtml(road) +
@@ -8131,7 +8134,8 @@ function passedRoadSourceLabel(road) {
 function passedRoadShape(road) {
   if (road.kind === "blocked") return blockedPointShape(road);
   const tier = passedRoadTier(road.endedAt);
-  const isOld = isBeforeEvent(road.endedAt);
+  const isBefore = isBeforeEvent(road.endedAt);
+  const isOld = isBefore && !rainFilterActive(); // 雨量しぼり込み中は薄くしない（色だけ。吹き出しの文は isBefore で判定）
   const line = road.path.length === 1
     ? L.marker(road.path[0], {
         pane: "passedRoadsPane", renderer: passedRoadsRenderer,
@@ -8145,7 +8149,7 @@ function passedRoadShape(road) {
     `・${escapeHtml(passedRoadSourceLabel(road))}` +
     (road.note ? `<br>メモ: ${escapeHtml(road.note)}` : "") +
     window.RoadRecordEditor.render(road) +
-    `<br><span style="font-size:11px;">${isOld
+    `<br><span style="font-size:11px;">${isBefore
       ? "今回の大雨より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
       : "この地図を見ている人が通れた道を記録したものです。現在の安全や通行可否を保証するものではありません。"}</span>` +
     rainAmountHtml(road) +
