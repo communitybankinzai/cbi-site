@@ -6739,6 +6739,18 @@ function snsRoadEmbedHtml(report) {
     `title="${escapeAttribute(snsRoadPlatformLabel(report.platform))}の元の投稿" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
 }
 
+// SNSの吹き出しは埋め込み（写真）で縦に長いので、地図の高さに合わせて抑えて中でスクロールさせる。
+// 画面下の「通れない道を追加」の帯（約110px）に隠れないよう、自動で地図を動かすときの余白を下に広く取る
+function snsRoadPopupOptions() {
+  const h = map.getSize().y || 600;
+  return {
+    maxWidth: 340,
+    maxHeight: Math.max(260, h - 200),
+    autoPanPaddingTopLeft: L.point(20, 70),
+    autoPanPaddingBottomRight: L.point(20, 130)
+  };
+}
+
 function focusSnsRoad(id) {
   const marker = snsRoadShapes.get(String(id));
   if (!marker) return;
@@ -6771,13 +6783,14 @@ function renderSnsRoads() {
       `<strong>📡 SNSの投稿：${snsRoadKindLabel(kind)}</strong><br>` +
       `<span class="sns-road-unverified">AIが投稿を読み取ったもの・CBIや市の確認はありません</span><br>` +
       (report.summary ? `${escapeHtml(report.summary)}<br>` : "") +
+      // 元の投稿（写真）は上の方に置く。下に置くと吹き出しが地図の下へはみ出し、画面下の「通れない道を追加」の帯に隠れた（2026-09-25 事業主指摘）
+      snsRoadEmbedHtml(report) +
       (hasPath ? `区間：${escapeHtml(report.sectionLabel || "")}（破線・区間は投稿の地名から）<br>` : "") +
       `場所：${escapeHtml(report.locationName || "不明")}` +
       (report.locationBasis || snapNote ? `<span style="font-size:11px;color:#53677b;">（${escapeHtml(report.locationBasis || "")}${escapeHtml(snapNote)}）</span>` : "") + `<br>` +
       `${timeLabel} ${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "不明")}（${escapeHtml(formatAgo(when))}）` +
       (report.quote ? `<span class="sns-road-quote">「${escapeHtml(report.quote)}」</span>` : "<br>") +
       (report.imageNote ? `<span class="sns-road-image-note">📷 写真から読み取った手掛かり：${escapeHtml(report.imageNote)}</span>` : "") +
-      snsRoadEmbedHtml(report) +
       (sourceUrl ? `出典：<a href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(snsRoadPlatformLabel(report.platform))}の投稿を開く ↗</a>` : "") +
       (isModerator && report.confidence !== "high" ? `<br><span class="sns-road-unverified">確度：${report.confidence === "medium" ? "中" : "低"}（運営だけに表示・一般には出ていません）</span>` : "") +
       (isModerator && report.hidden ? `<br><span class="sns-road-unverified">伏せています（一般には出ていません）</span>` : "") +
@@ -6786,13 +6799,13 @@ function renderSnsRoads() {
           `<br><button type="button" class="kansui-hide-btn" data-sns-road-hide="${escapeAttribute(String(report.id))}" data-sns-road-hidden="${report.hidden ? "1" : "0"}">${report.hidden ? "↩ 地図に戻す（運営）" : "🗑 この投稿を地図から伏せる（運営）"}</button>`
         : "") +
       `<br><span style="font-size:11px;">点は投稿が指す場所の目安です。いま通れるかどうかを保証するものではありません。元の投稿で確かめてください。</span>`;
-    marker.bindPopup(popupHtml, { maxWidth: 340 });
+    marker.bindPopup(popupHtml, snsRoadPopupOptions());
     // 「A〜B」の区間は、国道464号の道路の形に沿った破線でも出す（市民の記録＝実線と区別）
     if (hasPath) {
       L.polyline(report.path, {
         color: kind === "passed" ? "#1f6fd1" : kind === "cleared" ? "#2e8b57" : "#c62828",
         weight: 5, opacity: report.hidden ? 0.35 : 0.8, dashArray: "8 8"
-      }).bindPopup(popupHtml, { maxWidth: 340 }).addTo(snsRoadsLayer);
+      }).bindPopup(popupHtml, snsRoadPopupOptions()).addTo(snsRoadsLayer);
     }
     marker.addTo(snsRoadsLayer);
     snsRoadShapes.set(String(report.id), marker);
