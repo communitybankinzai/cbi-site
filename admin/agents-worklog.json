@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP 雨量パネルのボタンが記録バーの裏に隠れる不具合修正＋地点1点の記録を運営が動かして直す機能（cidao PATCH 1点対応） 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/styles.css（.range-panel z-index 640→950・8e7c60c）",
+            "site/inzai-disaster-map/app.js（passedRoadHideButtonHtml／startCitizenRoadEdit／updateCitizenRoadControls／addCitizenRoadPoint／finishCitizenRoadDrawing：editPoint 対応・版 20260925r）",
+            "site/inzai-disaster-map/index.html（版番号）",
+            "cidao src/app/api/disaster/passed-roads/route.ts（PATCH path を1点から受付・6a60ba0・Vercel反映済み）",
+            "site/admin/changelog.json（2件）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "事業主「雨量フィルタが効いていない」→実測で原因特定：パネル(z 640)が記録バー(z 900)の下で「この雨量で見る」「解除」の中心が quick-record-status に当たっていた（elementFromPoint で確認）。修正後、実クリックで 24時間100mm以上→121件に絞れることを確認。点の位置直しは事業主が B案（吹き出しから運営が動かす）を選択。本番で編集モード（タイトル・完了ボタン有効・戻る無効・ハンドル1個）を確認、PATCH は本番APIで pointCount 1 / 200 を確認（座標は同値送信でデータ不変）。session: ab9618db-0ef7-4097-8346-ec4787ac2482 / output: 70,099 / cost: $20.79"
+        },
+        {
+          "date": "2026-09-25",
           "title": "cidao 避難所API：施設名なしの一斉閉鎖放送を認識＋速報0件後も閉鎖を据え置き（応急DB書換＋恒久修正・Vercel反映） 0.2時間",
           "category": "保守",
           "outputs": [
