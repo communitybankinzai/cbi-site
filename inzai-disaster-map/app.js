@@ -6957,6 +6957,7 @@ function renderSnsRoads() {
       (isModerator && report.hidden ? `<br><span class="sns-road-unverified">伏せています（一般には出ていません）</span>` : "") +
       (isModerator
         ? `<br><button type="button" class="kansui-hide-btn" data-sns-road-move="${escapeAttribute(String(report.id))}">📍 位置を直す（運営・地名を覚えさせる）</button>` +
+          `<br><button type="button" class="kansui-hide-btn" data-sns-road-section="${escapeAttribute(String(report.id))}">📐 区間にする（運営・始点と終点を地図で指定）</button>` +
           `<br><button type="button" class="kansui-hide-btn" data-sns-road-hide="${escapeAttribute(String(report.id))}" data-sns-road-hidden="${report.hidden ? "1" : "0"}">${report.hidden ? "↩ 地図に戻す（運営）" : "🗑 この投稿を地図から伏せる（運営）"}</button>`
         : "") +
       `<br><span style="font-size:11px;">点は投稿が指す場所の目安です。いま通れるかどうかを保証するものではありません。元の投稿で確かめてください。</span>`;
@@ -7094,6 +7095,126 @@ async function saveSnsRoadMove() {
     await ensureSnsRoadsLayer(true);
     const extra = result.relocated ? `\n同じ地名の投稿を${result.relocated}件、あわせて地図に置きました。` : "";
     alert(`位置を保存しました。${result.learned ? `「${placeName}」を覚えました。` : ""}${extra}`);
+    focusSnsRoad(report.id);
+  } catch (error) {
+    alert(`保存できませんでした（${error?.message || "接続エラー"}）`);
+    button.disabled = false; button.textContent = "保存";
+  }
+}
+
+// 運営：SNSの通行情報を「区間」（国道464号の道なりの線）にする（2026-09-25 事業主指示C）。
+// 始点→終点の順に地図を2回タップ。地名を入れて「覚える」にすると、次から「A〜B」「AからB」の投稿は AI が自動で線にする
+document.addEventListener("click", event => {
+  const button = event.target.closest?.("[data-sns-road-section]");
+  if (!button) return;
+  if (!moderationKey()) return;
+  startSnsRoadSection(button.dataset.snsRoadSection);
+});
+
+let snsSectionState = null;
+function startSnsRoadSection(id) {
+  const report = snsRoadsData.find(r => String(r.id) === String(id));
+  if (!report) return;
+  cancelSnsRoadMove();
+  cancelSnsRoadSection();
+  map.closePopup();
+  const modal = document.getElementById("moderate-modal");
+  if (modal) modal.hidden = true;
+  // 地名の初期値：「A〜B」「AからB」なら A と B を入れる
+  const core = String(report.locationName || "").replace(/^(国道\d+号線?|北千葉道路|旧道?\d*号線?|県道\d+号線?)\s*/u, "");
+  const m = core.match(/^([^～〜~、,]+?)(?:[～〜~]|から)([^～〜~、,]+?)(?:まで|方面|区間)?$/u);
+  const clean = v => String(v || "").replace(/(付近|周辺|あたり|方面)$/u, "").trim();
+  const guessFrom = clean(m ? m[1] : core.split(/[～〜~、,]|から/u)[0]);
+  const guessTo = clean(m ? m[2] : "");
+  const panel = document.createElement("div");
+  panel.className = "sns-move-panel";
+  panel.innerHTML =
+    `<strong>📐 SNS投稿を区間にする（運営）</strong>` +
+    `<p class="sns-move-summary">${escapeHtml(report.summary || report.locationName || "")}</p>` +
+    `<p class="sns-move-hint" id="sns-section-hint">地図を2回タップ：まず<strong>始点</strong>、次に<strong>終点</strong>。点はドラッグで動かせます。線は国道464号（北千葉道路・宗吾街道・旧道）の道なりに引かれます。</p>` +
+    `<label>始点の地名 <input type="text" id="sns-section-from" maxlength="40" value="${escapeAttribute(guessFrom)}" placeholder="例：北須賀ローソン"></label>` +
+    `<label>終点の地名 <input type="text" id="sns-section-to" maxlength="40" value="${escapeAttribute(guessTo)}" placeholder="例：吉高交差点"></label>` +
+    `<label class="sns-move-check"><input type="checkbox" id="sns-section-learn" checked> この2つの地名を覚える（次から同じ言い回しの投稿を自動で線にする）</label>` +
+    `<label class="sns-move-check"><input type="checkbox" id="sns-section-publish" checked> 一般にも出す（運営が区間を確かめたので確度を「高」にする）</label>` +
+    `<div class="sns-move-buttons"><button type="button" id="sns-section-save" disabled>保存</button><button type="button" id="sns-section-cancel">取消</button></div>`;
+  document.querySelector(".map-pane")?.appendChild(panel) || document.body.appendChild(panel);
+  snsSectionState = { report, panel, markers: [], line: null };
+  const onMapClick = e => placeSnsSectionMarker(e.latlng);
+  snsSectionState.onMapClick = onMapClick;
+  map.on("click", onMapClick);
+  panel.querySelector("#sns-section-cancel").addEventListener("click", cancelSnsRoadSection);
+  panel.querySelector("#sns-section-save").addEventListener("click", saveSnsRoadSection);
+}
+
+function placeSnsSectionMarker(latlng) {
+  const st = snsSectionState;
+  if (!st) return;
+  if (st.markers.length >= 2) return;
+  const index = st.markers.length;
+  const marker = L.marker(latlng, { draggable: true, zIndexOffset: 1000, title: index === 0 ? "始点" : "終点",
+    icon: L.divIcon({ className: "", html: `<div class="citizen-road-point citizen-road-handle"><span>${index === 0 ? "始" : "終"}</span></div>`, iconSize: [28, 28], iconAnchor: [14, 14] }) }).addTo(map);
+  marker.on("drag dragend", drawSnsSectionPreview);
+  st.markers.push(marker);
+  drawSnsSectionPreview();
+  const hint = st.panel.querySelector("#sns-section-hint");
+  if (st.markers.length === 1) hint.textContent = "次に終点をタップしてください。";
+  else { hint.textContent = "始点と終点を置きました。点はドラッグで直せます。「保存」で道なりの線にします。"; st.panel.querySelector("#sns-section-save").disabled = false; }
+}
+
+function drawSnsSectionPreview() {
+  const st = snsSectionState;
+  if (!st) return;
+  if (st.line) { map.removeLayer(st.line); st.line = null; }
+  if (st.markers.length === 2) {
+    st.line = L.polyline(st.markers.map(m => m.getLatLng()), { color: "#1565c0", weight: 4, opacity: .7, dashArray: "6 8", interactive: false }).addTo(map);
+  }
+}
+
+function cancelSnsRoadSection() {
+  const st = snsSectionState;
+  if (!st) return;
+  map.off("click", st.onMapClick);
+  st.markers.forEach(m => map.removeLayer(m));
+  if (st.line) map.removeLayer(st.line);
+  st.panel.remove();
+  snsSectionState = null;
+}
+
+async function saveSnsRoadSection() {
+  const st = snsSectionState;
+  if (!st || st.markers.length < 2) return;
+  const endpoint = String(APP_CONFIG.snsRoadReportsEndpoint || "").trim();
+  let key = moderationKey();
+  if (!endpoint || !key) return;
+  const { report, panel } = st;
+  const [a, b] = st.markers.map(m => m.getLatLng());
+  const fromName = panel.querySelector("#sns-section-from").value.trim();
+  const toName = panel.querySelector("#sns-section-to").value.trim();
+  const learn = panel.querySelector("#sns-section-learn").checked;
+  const publish = panel.querySelector("#sns-section-publish").checked;
+  if (learn && (fromName.length < 2 || toName.length < 2)) { alert("覚えさせるときは、始点と終点の地名を2文字以上ずつ入れてください"); return; }
+  const button = panel.querySelector("#sns-section-save");
+  button.disabled = true; button.textContent = "保存しています…";
+  const send = k => fetch(`${endpoint}?id=${encodeURIComponent(report.id)}`, {
+    method: "PATCH", headers: { "Content-Type": "application/json", "x-moderation-key": k },
+    body: JSON.stringify({ section: { from: { lat: a.lat, lng: a.lng, name: fromName }, to: { lat: b.lat, lng: b.lng, name: toName }, learn, publish } })
+  });
+  try {
+    let response = await send(key);
+    if (response.status === 403) {
+      try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+      key = askModerationKey();
+      if (!key) throw new Error("合言葉が違います");
+      response = await send(key);
+    }
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const messages = { out_of_area: "地図の範囲の外です", no_route: result.hint || "2点を国道464号の道なりにつなげませんでした" };
+      throw new Error(messages[result.error] || result.error || `HTTP ${response.status}`);
+    }
+    cancelSnsRoadSection();
+    await ensureSnsRoadsLayer(true);
+    alert(`区間「${result.section || ""}」として保存しました（${result.points || 0}点の線）。${result.learned ? `地名を${result.learned}件覚えました。` : ""}`);
     focusSnsRoad(report.id);
   } catch (error) {
     alert(`保存できませんでした（${error?.message || "接続エラー"}）`);
