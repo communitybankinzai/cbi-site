@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "cidao 避難所API：施設名なしの一斉閉鎖放送を認識＋速報0件後も閉鎖を据え置き（応急DB書換＋恒久修正・Vercel反映） 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "cidao src/app/api/disaster/inzai-shelters/route.ts（BLANKET_CLOSURE に『開設していた避難所を閉鎖』追加・STILL_OPEN 除外・LastOpen.blanketClosure 保存と据え置き返却・090cfd4）",
+            "cidao 本番DB app_settings.shelter_last_open（応急：openNames [] ＋ 9/24 18:50 の閉鎖放送を blanketClosure に）",
+            "memory: inzai-shelter-closure-broadcast-wording.md"
+          ],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "事業主が3択で C（応急＋恒久）を選択。応急後の本番API：開設中0。恒久修正後の本番API：blanketClosure（9/24 18:50）を返すことを確認。過去放送4件（9/07 16:00・9/22 07:00・9/22 16:50・9/24 18:50）で判定を試し、一部閉鎖は一斉閉鎖にならないことを確認。tsc --noEmit exit 0。session: ab9618db-0ef7-4097-8346-ec4787ac2482 / output: 38,163 / cost: $11.18"
+        },
+        {
+          "date": "2026-09-25",
           "title": "防災MAP 雨量しぼり込み中の道路を濃色表示＋避難所「開設中」表示の最新情報確認（12施設の原因調査） 0.2時間",
           "category": "実装",
           "outputs": [
@@ -27,7 +40,7 @@
           ],
           "hours": 0.2,
           "partnerApproved": false,
-          "note": "雨量しぼり込み：本番で確認（しぼり込み前 opacity0.5 が100件→しぼり込み後 0件、.is-old の点も0件）。避難所：市の防災行政無線 9/24 18:50『避難指示を解除し、開設していた避難所を閉鎖しました』を cidao の一斉閉鎖判定（BLANKET_CLOSURE：『すべての避難所を閉鎖』型のみ）が拾えず、印旛公民館・本埜公民館が『開設中』のまま。速報0件後は48時間の据え置きで残る（9/27 06:48 まで）。12施設は公式2＋手動入力10（9/21の土砂災害避難所10か所を貼り付けたものが LocalStorage に残存）と推定（確信度：中）。対処案は事業主に3択提示中。session: ab9618db-0ef7-4097-8346-ec4787ac2482 / output: 19,581 / cost: $7.04"
+          "note": "雨量しぼり込み：本番で確認（しぼり込み前 opacity0.5 が100件→しぼり込み後 0件、.is-old の点も0件）。避難所：市の防災行政無線 9/24 18:50『避難指示を解除し、開設していた避難所を閉鎖しました』を cidao の一斉閉鎖判定（BLANKET_CLOSURE：『すべての避難所を閉鎖』型のみ）が拾えず、印旛公民館・本埜公民館が『開設中』のまま。速報0件後は48時間の据え置きで残る（9/27 06:48 まで）。12施設は公式2＋手動入力10（9/21の土砂災害避難所10か所を貼り付けたものが LocalStorage に残存）と推定（確信度：中）。対処は事業主が C（応急＋恒久）を選び同セッションで完了（別の実績に記録）。session: ab9618db-0ef7-4097-8346-ec4787ac2482 / output: 19,581 / cost: $7.04"
         },
         {
           "date": "2026-09-25",
@@ -7567,15 +7580,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-09-27",
-          "title": "🏫 避難所の一斉閉鎖放送（施設名なし『開設していた避難所を閉鎖しました』）を cidao で閉鎖と認識させ、据え置き（stale）中も閉鎖を優先する",
-          "category": "保守",
-          "priority": "高",
-          "note": "2026-09-25 発覚。9/24 18:50 の放送が BLANKET_CLOSURE（『すべての避難所を閉鎖』型のみ）に一致せず、印旛公民館・本埜公民館が『開設中』表示のまま。速報が0件になると shelter_last_open の openNames を48時間据え置くため閉鎖が反映されない。修正案：(1) 正規表現に『開設していた避難所を閉鎖』『避難所を閉鎖しました』を追加 (2) 一斉閉鎖が最新放送なら openNames=[] と blanketClosure を保存し、stale 中も返す（MAP側の手動入力も閉鎖に倒れる） (3) 応急：app_settings.shelter_last_open の openNames を空にする。対象：cidao src/app/api/disaster/inzai-shelters/route.ts",
-          "status": "保留",
-          "blockedBy": "事業主が対処案（応急のみ／恒久修正／両方）を選ぶこと"
-        },
         {
           "due": "未定",
           "title": "みんつく運営者（てみた氏）の返答を受けて、市境をまたぐ道路を市境で切るか決める",
