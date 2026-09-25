@@ -2039,6 +2039,8 @@ function bindEvents() {
   map.on("zoomend", refreshVisibleOpenDataLayers);
   map.on("click", event => {
     if (citizenRoadDraft.active) {
+      // 点や「＋」を触った直後の地図クリック（ドラッグ終わりの取りこぼし）は点を足さない
+      if (Date.now() - citizenRoadHandleTouchedAt < 400) return;
       addCitizenRoadPoint(event.latlng);
       return;
     }
@@ -7027,14 +7029,71 @@ function updateCitizenRoadControls() {
   document.querySelectorAll("#citizen-road-editor input, #citizen-road-editor select").forEach(node => { node.disabled = draft.busy; });
 }
 
+// なぞった点は指（マウス）で動かせる。点と点の間の「＋」を動かす／押すと、そこに経過点が入る（2026-09-25 事業主指示）。
+// ドラッグ中は線だけ追従させ、離したときに全体を描き直す（ハンドルを作り直すとドラッグが切れるため）。
+let citizenRoadHandleTouchedAt = 0;   // ハンドルを触った直後の地図クリックで点を足さないため
+function citizenRoadHandleIcon(kind, label, isMid) {
+  const color = kind === "blocked" ? KANSUI_COLOR : kind === "profile" ? "#6d4c41" : "#1565c0";
+  return L.divIcon({
+    className: `citizen-road-point citizen-road-handle${isMid ? " is-mid" : ""}`,
+    html: `<span style="${isMid ? `border-color:${color};color:${color}` : `background:${color}`}">${label}</span>`,
+    iconSize: isMid ? [22, 22] : [28, 28], iconAnchor: isMid ? [11, 11] : [14, 14]
+  });
+}
 function drawCitizenRoadPreview() {
   citizenRoadDraftLayer.clearLayers();
   const { points, kind } = citizenRoadDraft;
   const color = kind === "blocked" ? KANSUI_COLOR : kind === "profile" ? "#6d4c41" : "#1565c0";
-  if (points.length > 1) L.polyline(points, { color, weight: 7, opacity: .9, dashArray: "8 6", interactive: false }).addTo(citizenRoadDraftLayer);
+  const line = points.length > 1 ? L.polyline(points, { color, weight: 7, opacity: .9, dashArray: "8 6", interactive: false }).addTo(citizenRoadDraftLayer) : null;
+  const touched = () => { citizenRoadHandleTouchedAt = Date.now(); };
+  const toPoint = latlng => [Number(latlng.lat.toFixed(6)), Number(latlng.lng.toFixed(6))];
+  // 既存の点：動かせる
   points.forEach((point, index) => {
-    L.marker(point, { interactive: false, icon: L.divIcon({ className: "citizen-road-point", html: `<span style="background:${color}">${index + 1}</span>`, iconSize: [26, 26], iconAnchor: [13, 13] }) }).addTo(citizenRoadDraftLayer);
+    const marker = L.marker(point, { draggable: !citizenRoadDraft.busy, keyboard: false, icon: citizenRoadHandleIcon(kind, index + 1, false), zIndexOffset: 1000 })
+      .addTo(citizenRoadDraftLayer);
+    marker.on("mousedown touchstart click dragstart", touched);
+    marker.on("drag", event => {
+      points[index] = toPoint(event.target.getLatLng());
+      if (line) line.setLatLngs(points);
+    });
+    marker.on("dragend", () => {
+      touched();
+      drawCitizenRoadPreview();
+      citizenRoadMessage(`${index + 1}番の点を動かしました。線の位置を確認して「完了」を押してください。`);
+    });
   });
+  // 点と点の間の「＋」：動かす／押すと、そこに経過点が入る
+  for (let i = 0; i + 1 < points.length; i++) {
+    const a = points[i], b = points[i + 1];
+    const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    const marker = L.marker(mid, { draggable: !citizenRoadDraft.busy, keyboard: false, icon: citizenRoadHandleIcon(kind, "＋", true), zIndexOffset: 900 })
+      .addTo(citizenRoadDraftLayer);
+    let insertedAt = -1;
+    marker.on("mousedown touchstart", touched);
+    marker.on("dragstart", () => {
+      touched();
+      insertedAt = i + 1;
+      points.splice(insertedAt, 0, [...mid]);
+    });
+    marker.on("drag", event => {
+      if (insertedAt < 0) return;
+      points[insertedAt] = toPoint(event.target.getLatLng());
+      if (line) line.setLatLngs(points);
+    });
+    marker.on("dragend", () => {
+      touched();
+      drawCitizenRoadPreview();
+      citizenRoadMessage(`${i + 1}番と${i + 3}番の間に経過点を足しました。動かして道に合わせられます。`);
+    });
+    marker.on("click", event => {
+      L.DomEvent.stopPropagation(event);
+      touched();
+      if (insertedAt >= 0) return; // ドラッグ直後の click は無視
+      points.splice(i + 1, 0, [...mid]);
+      drawCitizenRoadPreview();
+      citizenRoadMessage(`${i + 1}番と${i + 3}番の間に経過点を足しました。動かして道に合わせられます。`);
+    });
+  }
   updateCitizenRoadControls();
 }
 
@@ -7101,7 +7160,7 @@ function addCitizenRoadPoint(latlng) {
   }
   draft.points.push(point);
   drawCitizenRoadPreview();
-  citizenRoadMessage(draft.points.length < 2 ? "次に、道の終わりか曲がり角をタップしてください。" : "曲がり角を追加できます。線の位置を確認して「完了」を押してください。");
+  citizenRoadMessage(draft.points.length < 2 ? "次に、道の終わりか曲がり角をタップしてください。" : "曲がり角を追加できます。点は指で動かせ、点の間の「＋」で経過点を足せます。線の位置を確認して「完了」を押してください。");
 }
 
 function closeCitizenRoadDrawing() {

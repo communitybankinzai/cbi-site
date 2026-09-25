@@ -3682,6 +3682,11 @@ body.citizen-road-editing { overflow: hidden; }
 #citizen-road-options input, #citizen-road-options select { min-width: 0; flex: 1; padding: 8px; border: 1px solid #bac9d5; border-radius: 6px; font-size: 16px; }
 .citizen-road-notice { font-size: 11px; color: #526477; line-height: 1.5; margin: 8px 0 0; }
 .citizen-road-point span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 2px solid white; color: white; font-size: 12px; font-weight: bold; box-shadow: 0 1px 5px #0005; }
+/* なぞった点のハンドル。作図中は面のタップを遮る規則（.leaflet-interactive に pointer-events:none）より強くして、点だけは触れるようにする */
+.map-pane.is-citizen-drawing .citizen-road-handle.leaflet-interactive, .map-pane.is-citizen-drawing .citizen-road-handle.leaflet-marker-draggable { pointer-events: auto; cursor: grab; }
+.citizen-road-handle span { width: 28px; height: 28px; touch-action: none; }
+.citizen-road-handle.is-mid span { width: 22px; height: 22px; background: rgba(255,255,255,.92); border: 2px dashed currentColor; font-size: 15px; line-height: 1; box-shadow: 0 1px 3px #0004; }
+.leaflet-marker-dragging.citizen-road-handle span { transform: scale(1.15); box-shadow: 0 2px 8px #0006; }
 @media (max-width: 820px) {
   .quick-record-bar {
     display: block;
