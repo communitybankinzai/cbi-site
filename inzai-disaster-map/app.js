@@ -4252,7 +4252,48 @@ function addApiResultAsRecord(item, options = {}) {
   if (!options.keepOpen) document.getElementById("sns-collector-dialog").close();
   document.getElementById("map-status").textContent = apiHasLocation
     ? "投稿の場所候補を取得しました。地図上でピン位置を確認してください。"
-    : "投稿を登録しました。場所が不明な場合は投稿者へ確認できます。";
+    : "投稿を登録しました。本文の地名から場所を探しています…";
+  ensureRecordsOverlayOn();
+  if (!apiHasLocation) autoLocateRecordFromText(record.id, item);
+}
+
+// 「被害・確認候補」レイヤーは既定オフなので、登録した記録が見えるようにオンにする（2026-09-25 事業主指示B）
+function ensureRecordsOverlayOn() {
+  const overlayBox = document.querySelector('[data-overlay="records"]');
+  if (overlayBox && !overlayBox.checked) { overlayBox.checked = true; toggleOverlay("records", true); }
+}
+
+// 登録した投稿の本文から地名を探し、見つかれば「場所判明・ピン未設定」として仮に置く（2026-09-25 事業主指示B）。
+// 検索は「場所候補を探す」ダイアログと同じ地理院の地名検索。確定は運営が一覧の「場所候補を地図で確認してピン」で行う。
+async function autoLocateRecordFromText(recordId, item) {
+  const status = document.getElementById("map-status");
+  let candidates = [];
+  try {
+    candidates = await findFreeLocationCandidates({ postText: item?.text || "", commentsText: item?.commentsText || "", hint: item?.locationName || "" });
+  } catch {}
+  const record = records.find(r => r.id === recordId);
+  if (!record || hasCoordinates(record) || getLocationStatus(record) !== "unknown") return;
+  const best = candidates.find(c => !c.outsideInzai) || null;
+  if (!best) {
+    if (status) status.textContent = "投稿を登録しました。本文から場所を特定できませんでした。一覧から場所を探すか、投稿者へ確認してください。";
+    return;
+  }
+  Object.assign(record, {
+    lat: best.lat,
+    lng: best.lng,
+    locationName: best.title,
+    locationStatus: "identified",
+    assignedTo: "仮置きの場所を運営が確認",
+    locationCandidateSource: best.source,
+    locationCandidateConfidence: best.confidence,
+    locationCandidateQuery: best.query,
+    locationCandidateReason: `${best.reason}（登録時に自動で仮置き）`,
+    locationCandidateOutsideArea: best.outsideInzai,
+    locationSearchCheckedAt: nowLocalInput()
+  });
+  persistRecords();
+  renderAll();
+  if (status) status.textContent = `本文の地名「${best.title}」に仮に置きました。地図の点線のピンです。場所を確かめて「場所候補を地図で確認してピン」で確定してください。`;
 }
 
 function findExactDuplicate(item) {
@@ -9336,7 +9377,9 @@ function renderRecords() {
   getFilteredRecords().forEach(record => {
     const roadGeometry = getDisplayRoadGeometry(record);
     const displayCoordinates = getDisplayCoordinates(record) || roadGeometryCenter(roadGeometry);
-    if (!displayCoordinates || getLocationStatus(record) !== "pinned") return;
+    const locationStatus = getLocationStatus(record);
+    if (!displayCoordinates || (locationStatus !== "pinned" && locationStatus !== "identified")) return;
+    const isCandidatePin = locationStatus === "identified";   // 本文の地名から仮に置いた（運営の確認待ち）
     const alignment = deriveAlignment(record);
     const passability = getPassability(record);
     const platform = getRecordPlatform(record);
@@ -9345,6 +9388,7 @@ function renderRecords() {
     const popupPhoto = getPopupPhoto(record);
     const popupContent = `
       <div class="popup-title">${escapeHtml(record.title)}</div>
+      ${isCandidatePin ? `<div class="popup-contact-note">📍 本文の地名「${escapeHtml(record.locationName || "")}」から仮に置いた場所です（未確認）。一覧の「場所候補を地図で確認してピン」で確定できます。</div>` : ""}
       ${popupPhoto ? `<div class="popup-photo-wrap ${popupPhoto.blurred ? "is-blurred" : ""}"><img src="${escapeAttribute(popupPhoto.src)}" alt="登録されたSNS投稿の証跡写真" loading="lazy" referrerpolicy="no-referrer"></div>` : ""}
       <div>${escapeHtml(categoryLabels[record.category] || record.category)} / ${escapeHtml(statusLabels[record.status] || record.status)}</div>
       <div class="detail-meta">情報源: ${escapeHtml(sourceLabels[record.sourceType] || record.sourceType)}</div>
@@ -9393,7 +9437,7 @@ function renderRecords() {
         className: "",
         html: isPointClosure
           ? '<div class="closure-cross" aria-label="通行止め地点">×</div>'
-          : `<div class="marker-pin" style="background:${markerColor(record, alignment)}"><span></span></div>`,
+          : `<div class="marker-pin${isCandidatePin ? " is-candidate" : ""}" style="background:${markerColor(record, alignment)}"><span></span></div>`,
         iconSize: [28, 28],
         iconAnchor: [14, isPointClosure ? 14 : 28]
       })

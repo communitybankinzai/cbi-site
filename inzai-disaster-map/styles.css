@@ -1432,6 +1432,9 @@ details.layer-group .layer-group-body {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.32);
 }
 
+/* 本文の地名から仮に置いたピン（運営の確認待ち）。点線のふち・薄め（2026-09-25） */
+.marker-pin.is-candidate { border: 2px dashed #fff; opacity: .75; outline: 2px dashed rgba(0,0,0,.45); outline-offset: 1px; }
+
 .marker-pin span {
   display: block;
   width: 8px;
