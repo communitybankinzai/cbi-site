@@ -4257,6 +4257,36 @@ function addApiResultAsRecord(item, options = {}) {
   if (!apiHasLocation) autoLocateRecordFromText(record.id, item);
 }
 
+// 本文から目印語（駅・橋・交差点・学校・公民館…）を拾い、その語だけで地理院の地名検索に掛ける。
+// 結果の名前に目印語が含まれるものだけ採り、市域の周辺（±0.15度）に無いものは捨てる
+const LANDMARK_TERM = /[一-龯々ヶケぁ-んァ-ヶーA-Za-z0-9]{2,20}(?:駅|大橋|橋|交差点|インター|公園|小学校|中学校|高校|学校|公民館|会館|病院|センター|神社|郵便局|モール|工業団地|団地)/g;
+async function findLandmarkCandidates(text) {
+  const source = String(text || "").normalize("NFKC");
+  const terms = [...new Set((source.match(LANDMARK_TERM) || []).map(t => t.replace(/^(?:の|は|が|で|を|に|へ|と|も|から|まで)+/, "")).filter(t => t.length >= 3))].slice(0, 4);
+  const around = INZAI_BOUNDS.pad(0.5);
+  const out = [];
+  for (const term of terms) {
+    try {
+      const response = await fetch(`https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(term)}`);
+      if (!response.ok) continue;
+      const results = await response.json();
+      if (!Array.isArray(results)) continue;
+      for (const result of results.slice(0, 5)) {
+        const title = String(result?.properties?.title || "");
+        const coordinates = result?.geometry?.coordinates;
+        if (!title.includes(term) || !Array.isArray(coordinates) || coordinates.length < 2) continue;
+        const lat = Number(coordinates[1]), lng = Number(coordinates[0]);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng) || !around.contains([lat, lng])) continue;
+        out.push({ title, address: title, lat, lng, query: term, source: "gsi-landmark", confidence: 0.7,
+          reason: `本文の目印「${term}」を地理院の地名検索で探しました`, sourceUrl: "https://maps.gsi.go.jp/",
+          outsideInzai: !INZAI_BOUNDS.contains([lat, lng]), autoPin: false });
+        break;
+      }
+    } catch {}
+  }
+  return out.sort((a, b) => (a.outsideInzai === b.outsideInzai ? 0 : a.outsideInzai ? 1 : -1));
+}
+
 // 「被害・確認候補」レイヤーは既定オフなので、登録した記録が見えるようにオンにする（2026-09-25 事業主指示B）
 function ensureRecordsOverlayOn() {
   const overlayBox = document.querySelector('[data-overlay="records"]');
@@ -4269,7 +4299,11 @@ async function autoLocateRecordFromText(recordId, item) {
   const status = document.getElementById("map-status");
   let candidates = [];
   try {
-    candidates = await findFreeLocationCandidates({ postText: item?.text || "", commentsText: item?.commentsText || "", hint: item?.locationName || "" });
+    // 目印語（駅・橋・交差点・学校…）はそのまま検索する。「千葉県印西市印西牧の原駅」のように市名を前に付けると
+    // 地理院の検索が「千葉県印西市」という広すぎる結果を返して捨てられ、候補が0件になった（2026-09-25 本番で確認）
+    const landmark = await findLandmarkCandidates(`${item?.text || ""}\n${item?.commentsText || ""}`);
+    const free = await findFreeLocationCandidates({ postText: item?.text || "", commentsText: item?.commentsText || "", hint: item?.locationName || "" });
+    candidates = [...landmark, ...free];
   } catch {}
   const record = records.find(r => r.id === recordId);
   if (!record || hasCoordinates(record) || getLocationStatus(record) !== "unknown") return;
