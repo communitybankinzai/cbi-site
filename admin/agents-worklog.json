@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP みんつく冠水データの参照範囲を千葉県全域→印西市内のみへ戻す（運営者DM是正要請対応）＋返信案作成 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "cidao src/lib/inzai-city-boundary.ts（新規・市域ポリゴン＋点内判定）",
+            "cidao src/app/api/disaster/kansui/route.ts（bbox→市域判定・169569a・Vercel反映済み）",
+            "site/inzai-disaster-map/LICENSE.md・index.html（出典表記を印西市内のみへ）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（範囲拡大禁止の記録）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "みんつく運営者（てみた氏）から Instagram DM で「印西市周辺のみの約束が県全域になっている」と是正要請。9/22 の台風25号対応での拡大が原因。本番 API 実測：8,472本→144本、全144本が市域内に点を持つ（境界をまたぐ道路の市外側の点7点は残る）。CBI 自前の通れた道／通れない道は県全域のまま。返信案を提示済み・送信は中司さん。session: 84e7b262-1267-4a49-bc88-754cc59988fd / output: 14,205 / cost: $5.20"
+        },
+        {
+          "date": "2026-09-25",
           "title": "防災MAP SNSの点：吹き出しの写真が下の帯に隠れる不具合（2回）・本日／期間・通れない／通れたのしぼり込みを効かせる 0.3時間",
           "category": "保守",
           "outputs": [
@@ -7528,6 +7543,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-26",
+          "title": "📩 みんつく運営者（てみた氏）へ Instagram DM で「印西市内のみへ戻した」完了報告を送る",
+          "category": "事務",
+          "priority": "高",
+          "note": "2026-09-25 是正要請への対応は同日完了（cidao 169569a・本番反映確認済み）。返信案は 84e7b262 セッションで作成済み。送信は中司さん。あわせて『境界をまたぐ道路（市外側の点が7点）は市内の道路として表示している』ことを伝え、線を市境で切る必要があるか先方の意向を確認する。"
+        },
         {
           "due": "未定",
           "title": "📍 SNS通行情報：台方・松崎インター・北須賀ローソンを運営が地図で置いて覚えさせる（464号の区間の線を出すため）",
