@@ -7290,8 +7290,10 @@ function drawCitizenRoadPreview() {
       points[index] = toPoint(event.target.getLatLng());
       if (line) line.setLatLngs(points);
     });
-    marker.on("dragend", () => {
+    marker.on("dragend", event => {
       touched();
+      // 速いドラッグでは「離した」が「動かした」より先に届き、点が元の位置に戻ることがあった（2026-09-25 事業主報告）。離した位置を必ず取り込む
+      points[index] = toPoint(event.target.getLatLng());
       drawCitizenRoadPreview();
       citizenRoadMessage(`${index + 1}番の点を動かしました。線の位置を確認して「完了」を押してください。`);
     });
