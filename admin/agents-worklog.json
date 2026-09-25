@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP SNSの点：吹き出しの写真が下の帯に隠れる不具合（2回）・本日／期間・通れない／通れたのしぼり込みを効かせる 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（埋め込みを上へ・snsRoadPopupOptions・sns-popup-open・passesWhenFilter と passedKindFilter を SNS にも）",
+            "site/inzai-disaster-map/styles.css・index.html（版 20260925m〜p）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主の実画面スクショ3件の指摘。写真隠れは1回目（上へ移動・高さ制限）で直らず、2回目でSNSの吹き出しを開いている間だけ #quick-record-bar を隠して解消（数値で確認・画面キャプチャはペイン非表示で撮れず）。しぼり込みは対象日9/25で 本日1件（9/25 8:16 の464号開通）／過去10件、種類ボタンも切替どおり。push site 2bf8d13/8403963/4f0db23/04e9ecb。session: 2299e205-4937-4bef-81fd-72e2e574c7d0 / output: 177,762 / cost: $52.48（セッション累計・既記録1.5hを含む）"
+        },
+        {
+          "date": "2026-09-25",
           "title": "SNS通行情報に学習機能（覚えた地点・判断例）＋国道464号の区間の破線＋運営の位置直し画面 0.6時間",
           "category": "実装",
           "outputs": [
