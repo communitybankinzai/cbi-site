@@ -6931,11 +6931,28 @@ function renderSnsRoads() {
   // 同じ地点（覚えた地点など）に複数の投稿が置かれると重なって下の印が見えない（北須賀交差点に4件重なり、
   // 「解除」の印が通行止めの印の下に隠れた。2026-09-25 事業主指摘）。同じ座標の印は小さな輪に並べ、新しい投稿を上に描く
   const stackKey = r => `${Number(r.lat).toFixed(5)},${Number(r.lng).toFixed(5)}`;
-  const stacks = new Map();
-  snsRoadsData.forEach(r => { if (Number.isFinite(r.lat) && Number.isFinite(r.lng)) stacks.set(stackKey(r), (stacks.get(stackKey(r)) || 0) + 1); });
-  const stackSeen = new Map();
   const ordered = snsRoadsData.slice().sort((a, b) => String(a.observedAt || a.postedAt || "").localeCompare(String(b.observedAt || b.postedAt || "")));
+  // 同じ内容の投稿（同じ人が同じ文を何度も投稿したもの。船戸大橋の解除が3件並んだ。2026-09-25 事業主指摘）は
+  // 1つの印にまとめ、いちばん早い投稿を代表にする。他は吹き出しに「同じ内容の投稿が他にN件」として添える
+  const sameKey = r => `${r.kind}|${String(r.quote || r.summary || "").replace(/\s+/g, "")}|${stackKey(r)}|${r.hidden ? "h" : "v"}`;
+  const groups = new Map();
+  ordered.forEach(r => {
+    if (!Number.isFinite(r.lat) || !Number.isFinite(r.lng)) return;
+    const k = sameKey(r);
+    if (!groups.has(k)) groups.set(k, { rep: r, others: [] }); else groups.get(k).others.push(r);
+  });
+  const stacks = new Map();
+  groups.forEach(g => { stacks.set(stackKey(g.rep), (stacks.get(stackKey(g.rep)) || 0) + 1); });
+  const stackSeen = new Map();
   ordered.forEach(report => {
+    const group = groups.get(sameKey(report));
+    if (group && group.rep !== report) {
+      // 代表の印に相乗り（一覧から飛んだときは代表の吹き出しを開く）
+      const repMarker = snsRoadShapes.get(String(group.rep.id));
+      if (repMarker) snsRoadShapes.set(String(report.id), repMarker);
+      return;
+    }
+    const sameOthers = group ? group.others : [];
     if (report.hidden && !isModerator) return;
     // 場所を決められず自動で伏せた点は、運営の地図にも出さない（座標が当てにならないため。一覧には残る）
     if (report.unlocated) return;
@@ -6956,7 +6973,8 @@ function renderSnsRoads() {
     stackSeen.set(key, order + 1);
     const angle = total > 1 ? (Math.PI * 2 * order) / total - Math.PI / 2 : 0;
     const offset = total > 1 ? [Math.round(Math.cos(angle) * 22), Math.round(Math.sin(angle) * 22)] : [0, 0];
-    const stackNote = total > 1 ? `<br><span style="font-size:11px;color:#53677b;">同じ地点に${total}件の投稿があるため、印を少しずらして並べています。</span>` : "";
+    const stackNote = (total > 1 ? `<br><span style="font-size:11px;color:#53677b;">同じ地点に${total}件の投稿があるため、印を少しずらして並べています。</span>` : "") +
+      (sameOthers.length ? `<br><span style="font-size:11px;color:#53677b;">同じ内容の投稿が他に${sameOthers.length}件あります（1つの印にまとめています）：${sameOthers.map(o => `<a href="${escapeAttribute(o.sourceUrl || "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(formatDateTime(toDateTimeLocal(o.observedAt || o.postedAt)) || "")}</a>`).join("、")}</span>` : "");
     const marker = L.marker([report.lat, report.lng], {
       icon: L.divIcon({ className: "", html: `<div class="sns-road-marker is-${kind}${report.hidden ? " is-old" : ""}">${snsRoadGlyph(kind)}</div>`, iconSize: [26, 26], iconAnchor: [13 - offset[0], 13 - offset[1]], popupAnchor: [offset[0], offset[1] - 12] }),
       title: `SNS：${report.locationName || ""} ${snsRoadKindLabel(kind)}（未確認）`,
