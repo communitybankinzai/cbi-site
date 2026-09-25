@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "SNS通行情報の場所決めを見直し（AI座標廃止・広域は置かない）＋写真をAIに渡す＋公式埋め込み表示＋解除投稿の添え書き・5件で試行 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/lib/disaster-sns-road-ai.ts（locateRoadReport 見直し・isWideArea・写真をbase64でAIへ・image_note/embed_url 保存・場所不明は自動で伏せる）",
+            "C:/Repos/cidao src/app/api/disaster/sns-road-reports/route.ts（image_note・embed_url を返す）",
+            "C:/Repos/cidao supabase/migrations/20260925090000_sns_road_reports_images.sql（本番適用済み）",
+            "C:/Repos/cidao scripts/rescan-sns-road-reports.ts（--sample・--include・--dry）",
+            "site/inzai-disaster-map/app.js（snsRoadEmbedHtml・unlocated を出さない・snsClearedNear／snsClearedNearHtml）",
+            "site/inzai-disaster-map/styles.css・index.html（版 20260925j）",
+            "site/admin/changelog.json",
+            "CBI/.claude/launch.json（cbi-site-4173 を追加：8766 の常駐サーバーが応答しないため）"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "事業主指摘『成田湯川駅の投稿が全然違う場所』。本番42件を実測：AI推定座標2・沼/広域の中心19・道路名だけ7・辞書の誤一致1。事業主決定：解除は消さずに添える／確度中は非公開のまま／場所不明は伏せる／写真は公式埋め込みで出す。ローカル4173で埋め込みと解除の添え書きを実表示で確認。5件の試行（約0.03ドル）で手賀大橋（柏市）が範囲外と正しく外れ、成田湯川駅の投稿は駅の位置へ。残り約66件の読み直しは事業主判断待ち。push cidao 6b86b97/7c4ba5c・site 431a499。session: 2299e205-4937-4bef-81fd-72e2e574c7d0 / output: 64,440 / cost: $16.42"
+        },
+        {
+          "date": "2026-09-25",
           "title": "防災MAP 運営の「線を直す」を押した場所中心で開き、補正なしで保存・即時反映（事業主の指摘2件） 0.2時間",
           "category": "保守",
           "outputs": [
@@ -7464,6 +7482,29 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-09-26",
+          "title": "📡 SNS通行情報の残り約66件を新しい決まり（写真あり・AI座標なし）で読み直す",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-09-25 に5件で試行済み（約0.03ドル）。全件は約0.3〜0.5ドル。`cd C:/Repos/cidao; npx tsx scripts/rescan-sns-road-reports.ts`（先に --dry で件数確認）。本番の5分巡回と同じ投稿を同時に処理することがあるので、終わったら成田湯川駅・手賀大橋・印旛沼の行を DB で確認する。",
+          "status": "保留",
+          "blockedBy": "事業主が全件の読み直し（AI費用 約0.3〜0.5ドル）を承認すること"
+        },
+        {
+          "due": "未定",
+          "title": "📡 SNS通行情報：Bluesky の公式埋め込みを本番の地図で表示確認する",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-25 に Instagram の埋め込みはローカルで実表示を確認。Bluesky は embed_url が入るのが読み直し後なので未確認（embed.bsky.app/embed/<did>/app.bsky.feed.post/<rkey>）。"
+        },
+        {
+          "due": "未定",
+          "title": "📡 SNS通行情報：Instagram の動画（リール）はサムネイル画像を取り、AIの場所判定に使う",
+          "category": "実装",
+          "priority": "低",
+          "note": "2026-09-25 時点、通行情報42件のうち Instagram 動画が10件あり、media_url が動画なので写真判定に使えていない。巡回の取得項目に thumbnail_url を足せば使える見込み（未検証）。"
+        },
         {
           "due": "未定",
           "title": "☔ 記録の雨量を、貯めたアメダスの控えから引けるようにする",
