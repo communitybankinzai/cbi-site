@@ -6766,10 +6766,12 @@ function renderSnsRoads() {
       title: `SNS：${report.locationName || ""} ${snsRoadKindLabel(kind)}（未確認）`,
       zIndexOffset: 300
     });
-    marker.bindPopup(
+    const hasPath = Array.isArray(report.path) && report.path.length >= 2;
+    const popupHtml =
       `<strong>📡 SNSの投稿：${snsRoadKindLabel(kind)}</strong><br>` +
       `<span class="sns-road-unverified">AIが投稿を読み取ったもの・CBIや市の確認はありません</span><br>` +
       (report.summary ? `${escapeHtml(report.summary)}<br>` : "") +
+      (hasPath ? `区間：${escapeHtml(report.sectionLabel || "")}（破線・区間は投稿の地名から）<br>` : "") +
       `場所：${escapeHtml(report.locationName || "不明")}` +
       (report.locationBasis || snapNote ? `<span style="font-size:11px;color:#53677b;">（${escapeHtml(report.locationBasis || "")}${escapeHtml(snapNote)}）</span>` : "") + `<br>` +
       `${timeLabel} ${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "不明")}（${escapeHtml(formatAgo(when))}）` +
@@ -6780,11 +6782,18 @@ function renderSnsRoads() {
       (isModerator && report.confidence !== "high" ? `<br><span class="sns-road-unverified">確度：${report.confidence === "medium" ? "中" : "低"}（運営だけに表示・一般には出ていません）</span>` : "") +
       (isModerator && report.hidden ? `<br><span class="sns-road-unverified">伏せています（一般には出ていません）</span>` : "") +
       (isModerator
-        ? `<br><button type="button" class="kansui-hide-btn" data-sns-road-hide="${escapeAttribute(String(report.id))}" data-sns-road-hidden="${report.hidden ? "1" : "0"}">${report.hidden ? "↩ 地図に戻す（運営）" : "🗑 この投稿を地図から伏せる（運営）"}</button>`
+        ? `<br><button type="button" class="kansui-hide-btn" data-sns-road-move="${escapeAttribute(String(report.id))}">📍 位置を直す（運営・地名を覚えさせる）</button>` +
+          `<br><button type="button" class="kansui-hide-btn" data-sns-road-hide="${escapeAttribute(String(report.id))}" data-sns-road-hidden="${report.hidden ? "1" : "0"}">${report.hidden ? "↩ 地図に戻す（運営）" : "🗑 この投稿を地図から伏せる（運営）"}</button>`
         : "") +
-      `<br><span style="font-size:11px;">点は投稿が指す場所の目安です。いま通れるかどうかを保証するものではありません。元の投稿で確かめてください。</span>`,
-      { maxWidth: 340 }
-    );
+      `<br><span style="font-size:11px;">点は投稿が指す場所の目安です。いま通れるかどうかを保証するものではありません。元の投稿で確かめてください。</span>`;
+    marker.bindPopup(popupHtml, { maxWidth: 340 });
+    // 「A〜B」の区間は、国道464号の道路の形に沿った破線でも出す（市民の記録＝実線と区別）
+    if (hasPath) {
+      L.polyline(report.path, {
+        color: kind === "passed" ? "#1f6fd1" : kind === "cleared" ? "#2e8b57" : "#c62828",
+        weight: 5, opacity: report.hidden ? 0.35 : 0.8, dashArray: "8 8"
+      }).bindPopup(popupHtml, { maxWidth: 340 }).addTo(snsRoadsLayer);
+    }
     marker.addTo(snsRoadsLayer);
     snsRoadShapes.set(String(report.id), marker);
   });
@@ -6812,6 +6821,7 @@ async function loadSnsModerationList() {
         `${report.summary ? "・" + escapeHtml(report.summary) : ""}${report.unlocated ? "・<em>場所を特定できず（地図に出ません）</em>" : report.hidden ? "・<em>伏せ済み</em>" : ""}</span></div>` +
         `<div class="moderate-row-buttons">` +
         (report.unlocated ? "" : `<button type="button" data-sns-focus="${escapeAttribute(String(report.id))}">地図で見る</button>`) +
+        `<button type="button" data-sns-road-move="${escapeAttribute(String(report.id))}">${report.unlocated ? "📍 地図に置く" : "📍 位置を直す"}</button>` +
         (sourceUrl ? `<a class="moderate-link" href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noopener noreferrer">元の投稿 ↗</a>` : "") +
         `<button type="button" class="${report.hidden ? "" : "is-danger"}" data-sns-road-hide="${escapeAttribute(String(report.id))}" data-sns-road-hidden="${report.hidden ? "1" : "0"}" data-sns-from-list="1">${report.hidden ? "戻す" : "伏せる"}</button>` +
         `</div></div>`;
@@ -6821,19 +6831,121 @@ async function loadSnsModerationList() {
   }
 }
 
+// 運営：SNSの通行情報の位置を地図で直す／場所不明の投稿を地図に置く（2026-09-25 学習機能）。
+// 地図をタップ（点はドラッグでも動く）→ 地名を入れて保存。「地名を覚える」なら次から同じ地名の投稿はそこに置かれ、
+// 同じ地名で場所が決まらず伏せていた投稿も置き直される。「一般にも出す」なら確度を高にして公開する
+let snsMoveState = null;
+document.addEventListener("click", event => {
+  const button = event.target.closest?.("[data-sns-road-move]");
+  if (!button) return;
+  startSnsRoadMove(button.dataset.snsRoadMove);
+});
+
+function startSnsRoadMove(id) {
+  const report = snsRoadsData.find(r => String(r.id) === String(id));
+  if (!report) return;
+  cancelSnsRoadMove();
+  map.closePopup();
+  const modal = document.getElementById("moderate-modal");
+  if (modal) modal.hidden = true;
+  // 地名の初期値：道路名と「付近」を外し、区間（A〜B・AからB）なら始まりの地点だけにする（区間名を1地点として覚えさせない）
+  const guess = String(report.locationName || "").replace(/^(国道\d+号線?|北千葉道路|県道\d+号線?)\s*/u, "")
+    .split(/[～〜~、,]|から/u)[0].replace(/(付近|周辺|あたり)$/u, "").trim();
+  const panel = document.createElement("div");
+  panel.className = "sns-move-panel";
+  panel.innerHTML =
+    `<strong>📍 SNS投稿の位置を指定（運営）</strong>` +
+    `<p class="sns-move-summary">${escapeHtml(report.summary || report.locationName || "")}</p>` +
+    `<p class="sns-move-hint">地図をタップして位置を選んでください（点はドラッグで動かせます）。</p>` +
+    `<label>地名 <input type="text" id="sns-move-name" maxlength="40" value="${escapeAttribute(guess)}" placeholder="例：台方、松崎インター"></label>` +
+    `<label class="sns-move-check"><input type="checkbox" id="sns-move-learn" checked> この地名を覚える（次から同じ地名の投稿をここに置く）</label>` +
+    `<label class="sns-move-check"><input type="checkbox" id="sns-move-publish" checked> 一般にも出す（運営が場所を確かめたので確度を「高」にする）</label>` +
+    `<div class="sns-move-buttons"><button type="button" id="sns-move-save" disabled>保存</button><button type="button" id="sns-move-cancel">取消</button></div>`;
+  document.querySelector(".map-pane")?.appendChild(panel) || document.body.appendChild(panel);
+  snsMoveState = { report, panel, marker: null };
+  const onMapClick = e => placeSnsMoveMarker(e.latlng);
+  snsMoveState.onMapClick = onMapClick;
+  map.on("click", onMapClick);
+  if (!report.unlocated && Number.isFinite(report.lat)) placeSnsMoveMarker(L.latLng(report.lat, report.lng));
+  panel.querySelector("#sns-move-cancel").addEventListener("click", cancelSnsRoadMove);
+  panel.querySelector("#sns-move-save").addEventListener("click", saveSnsRoadMove);
+}
+
+function placeSnsMoveMarker(latlng) {
+  if (!snsMoveState) return;
+  if (!snsMoveState.marker) {
+    snsMoveState.marker = L.marker(latlng, { draggable: true, zIndexOffset: 1000 }).addTo(map);
+  } else {
+    snsMoveState.marker.setLatLng(latlng);
+  }
+  snsMoveState.panel.querySelector("#sns-move-save").disabled = false;
+}
+
+function cancelSnsRoadMove() {
+  if (!snsMoveState) return;
+  map.off("click", snsMoveState.onMapClick);
+  if (snsMoveState.marker) map.removeLayer(snsMoveState.marker);
+  snsMoveState.panel.remove();
+  snsMoveState = null;
+}
+
+async function saveSnsRoadMove() {
+  if (!snsMoveState?.marker) return;
+  const endpoint = String(APP_CONFIG.snsRoadReportsEndpoint || "").trim();
+  let key = moderationKey();
+  if (!endpoint || !key) return;
+  const { report, panel, marker } = snsMoveState;
+  const p = marker.getLatLng();
+  const placeName = panel.querySelector("#sns-move-name").value.trim();
+  const learn = panel.querySelector("#sns-move-learn").checked;
+  const publish = panel.querySelector("#sns-move-publish").checked;
+  if (learn && placeName.length < 2) { alert("覚えさせるときは地名を2文字以上入れてください"); return; }
+  const button = panel.querySelector("#sns-move-save");
+  button.disabled = true; button.textContent = "保存しています…";
+  const send = k => fetch(`${endpoint}?id=${encodeURIComponent(report.id)}`, {
+    method: "PATCH", headers: { "Content-Type": "application/json", "x-moderation-key": k },
+    body: JSON.stringify({ move: { lat: p.lat, lng: p.lng, placeName, learn, publish } })
+  });
+  try {
+    let response = await send(key);
+    if (response.status === 403) {
+      try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+      key = askModerationKey();
+      if (!key) throw new Error("合言葉が違います");
+      response = await send(key);
+    }
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error === "out_of_area" ? "地図の範囲の外です" : result.error || `HTTP ${response.status}`);
+    cancelSnsRoadMove();
+    await ensureSnsRoadsLayer(true);
+    const extra = result.relocated ? `\n同じ地名の投稿を${result.relocated}件、あわせて地図に置きました。` : "";
+    alert(`位置を保存しました。${result.learned ? `「${placeName}」を覚えました。` : ""}${extra}`);
+    focusSnsRoad(report.id);
+  } catch (error) {
+    alert(`保存できませんでした（${error?.message || "接続エラー"}）`);
+    button.disabled = false; button.textContent = "保存";
+  }
+}
+
 // 運営：SNSの通行情報を伏せる／戻す（行は消さない）
 document.addEventListener("click", async event => {
   const button = event.target.closest?.("[data-sns-road-hide]");
   if (!button) return;
   const hide = button.dataset.snsRoadHidden !== "1";
-  if (hide && !confirm("このSNSの通行情報を地図から伏せます。よろしいですか？（元の投稿は消えません。運営はあとから戻せます）")) return;
+  // 伏せる理由は、似た投稿を AI が判定するときの「過去の判断例」になる（2026-09-25 学習機能）
+  let reason = "";
+  if (hide) {
+    const answer = prompt("このSNSの通行情報を地図から伏せます（元の投稿は消えません。あとから戻せます）。\n理由の番号を入れてください。\n1：通行情報ではない\n2：場所が違う\n3：古い・重複\n4：その他", "1");
+    if (answer === null) return;
+    reason = { "1": "not_road", "2": "wrong_place", "3": "stale", "4": "other" }[String(answer).trim().normalize("NFKC")] || "other";
+  }
   const endpoint = String(APP_CONFIG.snsRoadReportsEndpoint || "").trim();
   let key = moderationKey();
   if (!endpoint || !key) return;
   button.disabled = true;
   button.textContent = hide ? "伏せています…" : "戻しています…";
   const send = k => fetch(`${endpoint}?id=${encodeURIComponent(button.dataset.snsRoadHide)}`, {
-    method: "PATCH", headers: { "Content-Type": "application/json", "x-moderation-key": k }, body: JSON.stringify({ hidden: hide })
+    method: "PATCH", headers: { "Content-Type": "application/json", "x-moderation-key": k }, body: JSON.stringify({ hidden: hide, reason })
   });
   try {
     let response = await send(key);
