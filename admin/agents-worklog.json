@@ -18,6 +18,33 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP SNS巡回「未確認候補へ」の挙動説明＋登録時に地名から自動仮置き（点線ピン・レイヤー自動オン） 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（autoLocateRecordFromText／findLandmarkCandidates／ensureRecordsOverlayOn・renderRecords で identified を描画・版 20260925v・7ba47c7/08cce1f）",
+            "site/inzai-disaster-map/styles.css（.marker-pin.is-candidate）",
+            "site/inzai-disaster-map/index.html（版番号）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "事業主が3択で B（登録時に地名を読んで仮置き）を選択。本番で模擬投稿「印西牧の原駅前の道路が冠水」を登録→identified・印西牧の原駅（gsi-landmark）・点線ピン1件・レイヤー自動オンを確認しテスト記録は削除。初版は既存の buildLocationQueries が『千葉県印西市＋駅名』で検索し地理院が『千葉県印西市』を返して0件だったため、目印語をそのまま検索する処理を追加。session: ab9618db-0ef7-4097-8346-ec4787ac2482 / output: 108,674 / cost: $36.20"
+        },
+        {
+          "date": "2026-09-25",
+          "title": "防災MAP「📍 位置を直す」が動かないとの報告対応：離した位置を取り込む修正＋本番検証（古い版のキャッシュが原因で再読み込みで解消） 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（点ハンドルの dragend で位置を取り込む・版 20260925t）",
+            "site/inzai-disaster-map/index.html（版番号 s→t。s は app.js 未反映のまま push した誤り）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "本番で模擬マウス操作により点が動くことを確認。ブラウザ操作ツールの left_click_drag は mousemove を挟まず Leaflet が反応しないため再現には使えない。事業主は再読み込み後に OK。教訓：heredoc 内の \r が落ちて置換が空振りし版番号だけ上げた（正規表現・制御文字入りの Python は Write ツールで書く）。session: ab9618db-0ef7-4097-8346-ec4787ac2482 / output: 108,674 / cost: $36.20"
+        },
+        {
+          "date": "2026-09-25",
           "title": "防災MAP 雨量パネルのボタンが記録バーの裏に隠れる不具合修正＋地点1点の記録を運営が動かして直す機能（cidao PATCH 1点対応） 0.3時間",
           "category": "実装",
           "outputs": [
