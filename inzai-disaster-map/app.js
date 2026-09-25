@@ -3484,6 +3484,7 @@ function initMapLegend() {
         if (kansuiBox && kansuiBox.checked !== turnOn) kansuiBox.click();
       }
       renderPassedRoadsLayer();
+      if (snsRoadsLoaded) renderSnsRoads();
       syncMapLegend();
       return;
     }
@@ -6780,6 +6781,8 @@ function renderSnsRoads() {
     if (report.unlocated) return;
     // 「本日／過去の実績」「期間」のしぼり込みを市民の記録と同じく効かせる（見た時刻、無ければ投稿時刻で判定。2026-09-25 事業主指摘）
     if (!passesWhenFilter(report.observedAt || report.postedAt)) return;
+    // 凡例の「通れない道」「通れた道」ボタンも効かせる。解除（通れるようになった）は「通れた道」に合わせる（2026-09-25 事業主指示）
+    if (!passedKindFilter[report.kind === "blocked" ? "blocked" : "passed"]) return;
     if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
     const kind = ["passed", "blocked", "cleared"].includes(report.kind) ? report.kind : "blocked";
     const when = report.observedAt || report.postedAt;
