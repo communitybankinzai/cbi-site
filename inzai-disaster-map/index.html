@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260925v">
+    <link rel="stylesheet" href="./styles.css?v=20260925w">
   </head>
   <body>
     <div class="app-shell">
@@ -167,6 +167,7 @@
                   <div id="levee-sim-levels" class="levee-sim-levels" hidden></div>
                   <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="roadClosures"> <span class="layer-name">🚧 通行止め（役所の発表）<span id="road-closures-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>千葉国道事務所・千葉県（印旛土木事務所を含む）・印西市・佐倉市の公式ページと栄町の情報メールを1時間ごとに確認し、<strong>印西市とその周辺でいま通行止めになっている道</strong>を一覧で出します。役所が解除を発表するか、ページから消えると自動で外れます。</p><p><strong>役所が座標付きで公開している区間（佐倉市の地図など）は、赤い破線で地図に重ねます。</strong>座標のない発表（路線名と場所の文章だけのもの）は線を引かないので、一覧の「📍 位置図」か出典のページで場所を確認してください。</p><p>発表の反映には最大1時間ほどかかります。最新は出典のページで確認してください。発表されていない通行止めもあります。</p></span></span></label>
                   <div id="road-closures-list" class="road-closures-list" hidden></div>
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="prefKisei"> <span class="layer-name">🚧 県の道路規制状況図（規制中の区間）<span id="pref-kisei-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>千葉県の<a href="https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html" target="_blank" rel="noreferrer">県管理道路の通行規制情報</a>に載っている状況図のうち、<strong>県北部（印西・佐倉・成田・八街など）の赤線＝規制中（被災）区間</strong>を地図に重ねます。</p><p>県の図は座標のない画像なので、CBIが地理院地図と照らし合わせて線に写しています。<strong>数十m〜100mほどずれることがあり、区間の端も正確ではありません。</strong>主に国道・県道で、市町村道は入っていません。</p><p>1時間ごとに県のページを確かめ、新しい図が出たら描き直し、<strong>県のページから図が消えたら地図からも消えます</strong>（反映に数時間かかることがあります）。規制が解除されていても通れない場合があると県は注意しています。最新は県のページで確認してください。</p></span></span></label>
                 </div>
               </details>
 
@@ -1853,9 +1854,9 @@
       })();
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
-    <script src="./config.js?v=20260925v"></script>
-    <script src="./road-record-editor.js?v=20260925v"></script>
-    <script src="./app.js?v=20260925v"></script>
+    <script src="./config.js?v=20260925w"></script>
+    <script src="./road-record-editor.js?v=20260925w"></script>
+    <script src="./app.js?v=20260925w"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

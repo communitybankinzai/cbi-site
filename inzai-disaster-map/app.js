@@ -1566,6 +1566,9 @@ map.createPane("railStatusPane");
 map.getPane("railStatusPane").style.zIndex = 460;
 map.createPane("roadClosuresPane");
 map.getPane("roadClosuresPane").style.zIndex = 462;
+// 県の規制状況図から写した規制中の区間。役所の発表の線（462）のすぐ下
+map.createPane("prefKiseiPane");
+map.getPane("prefKiseiPane").style.zIndex = 461;
 // 停電の円（2026-09-22・東電の許可待ち）。冠水の線より上、運休の線と同じ高さ
 map.createPane("teidenPane");
 map.getPane("teidenPane").style.zIndex = 465;
@@ -5279,6 +5282,55 @@ function clearRailStatusNote() {
 }
 
 // ---------------------------------------------------------------------------
+// 🚧 県の規制状況図（規制中の区間）
+// ---------------------------------------------------------------------------
+// 千葉県「県管理道路の通行規制情報」のPDF（国交省の地図画面に赤線を引いた図）の分割図1/3を、
+// GitHub Actions が地理院地図と照合して線に直している（pipeline/build_pref_road_kisei.py）。
+// 県のページからPDFが消えると published=false になり、線も消える（2026-09-25 事業主指示）。
+const prefKiseiLayer = L.layerGroup();
+const prefKiseiRenderer = L.svg({ pane: "prefKiseiPane" });
+let prefKiseiTimer = null;
+
+async function refreshPrefKisei() {
+  const statusEl = document.getElementById("pref-kisei-status");
+  try {
+    const res = await fetch("pref-road-kisei.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    renderPrefKisei(await res.json());
+  } catch (error) {
+    console.error("県の規制状況図の読み込みに失敗:", error);
+    if (statusEl) statusEl.textContent = "読み込めませんでした";
+  }
+}
+
+function renderPrefKisei(data) {
+  const statusEl = document.getElementById("pref-kisei-status");
+  prefKiseiLayer.clearLayers();
+  const lines = data?.published && Array.isArray(data.lines) ? data.lines : [];
+  const page = data?.source?.pageUrl || "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html";
+  const popup =
+    `<strong>🚧 規制中（被災）区間</strong><br>` +
+    `千葉県の道路規制状況図（${escapeHtml(data?.asOf || "時点不明")}）<br>` +
+    `<span style="font-size:11px;">県の図の赤線をCBIが地図に写したもので、<strong>数十m〜100mほどずれる</strong>ことがあります。区間の端も正確ではありません。主に国道・県道で、市町村道は入っていません。</span><br>` +
+    `出典: <a href="${escapeAttribute(page)}" target="_blank" rel="noreferrer">千葉県 県管理道路の通行規制情報</a>`;
+  lines.forEach(line => {
+    if (!Array.isArray(line.path) || line.path.length < 2) return;
+    L.polyline(line.path, {
+      pane: "prefKiseiPane",
+      renderer: prefKiseiRenderer,
+      color: "#e0161e",
+      weight: 6,
+      opacity: 0.85,
+      lineCap: "round"
+    }).bindPopup(popup).addTo(prefKiseiLayer);
+  });
+  if (!statusEl) return;
+  if (!data?.published) statusEl.textContent = "いま県の掲載はありません";
+  else if (data.message) statusEl.textContent = `${data.asOf || ""} ${data.message}`.trim();
+  else statusEl.textContent = `${data.asOf || ""}・線 ${lines.length}本`;
+}
+
+// ---------------------------------------------------------------------------
 // 🚧 通行止め（役所の発表）
 // ---------------------------------------------------------------------------
 // CiDAO の巡回が千葉国道事務所・千葉県・印西市のページを毎時読み、解除も自動で外す（src/lib/disaster-road-closures.ts）。
@@ -5446,6 +5498,20 @@ function renderRoadClosures() {
 }
 
 function toggleOverlay(name, checked) {
+  if (name === "prefKisei") {
+    clearInterval(prefKiseiTimer);
+    prefKiseiTimer = null;
+    if (checked) {
+      prefKiseiLayer.addTo(map);
+      refreshPrefKisei();
+      prefKiseiTimer = setInterval(refreshPrefKisei, 10 * 60 * 1000);
+    } else {
+      map.removeLayer(prefKiseiLayer);
+      const statusEl = document.getElementById("pref-kisei-status");
+      if (statusEl) statusEl.textContent = "ONにすると読み込みます";
+    }
+    return;
+  }
   if (name === "roadClosures") {
     const listEl = document.getElementById("road-closures-list");
     if (checked) {
