@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-25",
+          "title": "防災MAP SNS通行情報「区間にする」（運営が始点・終点指定→464号道なりの線・地名学習）＋北須賀ローソン投稿の状況調査 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "cidao src/app/api/disaster/sns-road-reports/route.ts（PATCH section 操作・569aa11・Vercel反映済み）",
+            "site/inzai-disaster-map/app.js（startSnsRoadSection／placeSnsSectionMarker／saveSnsRoadSection・吹き出しボタン・版 20260925x・2ac7063）",
+            "site/inzai-disaster-map/index.html（版番号）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": true,
+          "note": "事業主質問『AIで地点予測できないか』→本番DBで当該投稿はAIが解除として北須賀交差点に配置済みと確認（北須賀ローソンは未学習・OSMでは宗吾街道のローソン・スリーエフ 35.7870,140.2553）。『文脈どおりに通れる道路をプロット』は3択で C（運営が両端指定）を選択。検証：本番UIでパネル・2点・プレビュー線・保存有効を確認、本番APIは464号から遠い2点で no_route 400（データ不変）。session: ab9618db-0ef7-4097-8346-ec4787ac2482 / output: 138,636 / cost: $52.88"
+        },
+        {
+          "date": "2026-09-25",
           "title": "防災MAP 千葉県の道路規制状況図（PDF画像）を画像照合で線に直す取り込み＋重ね合わせ層＋毎時Actions 0.4時間",
           "category": "実装",
           "outputs": [
