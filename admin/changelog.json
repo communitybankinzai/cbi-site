@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-25",
+      "type": "content",
+      "target": "assets/sns",
+      "title": "「なぜCBIが防災MAPを？」の告知画像を追加し、SNSで市民の質問に答えられるようにした",
+      "detail": "市民から寄せられた「なぜCBIが防災MAPを整備しているのか」という疑問に答える投稿用の画像（1080×1350 JPEG）と本文を assets/sns/2026-09-25_why-cbi-bousai/ に置いた。想定区域外の冠水が約56%（ウェザーニュース）、市内にアメダスが無いこと、台風25号の4日間で447件の市民記録という3つの数字を示し、この地図がCiDAOに出された提案から生まれたことと、CiDAOで提案・投票できることを案内する。9/25 18:00 に Threads・Instagram・Facebook へ予約。",
+      "author": "Claude"
+    },
+    {
+      "date": "2026-09-25",
       "type": "feature",
       "target": "inzai-disaster-map",
       "title": "SNSの通行情報が運営の直しから学ぶようになり、国道464号の区間を破線で出せるようになった",
