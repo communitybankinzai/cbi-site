@@ -3866,3 +3866,9 @@ body.sns-popup-open #quick-record-bar { display: none; }
 
 /* 📡 色の見方に並べる、SNS由来の点の印（2026-09-25）。地図の印と同じ見た目にする */
 .cg-mark-sns { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-right: 6px; border-radius: 50%; background: #fff; border: 2px solid #b8322c; font-size: 10px; line-height: 1; flex: none; }
+/* 🚧 県の道路規制状況図：層を ON にしている間、地図の左下に県の発表時点と最終確認を出す（2026-09-26） */
+.leaflet-bottom .leaflet-control.pref-kisei-badge { margin: 0 0 10px 10px; }
+.pref-kisei-badge { padding: 5px 9px; border: 1px solid #e0a7a4; border-left: 4px solid #e0161e; border-radius: 8px; background: rgba(255,255,255,.95); box-shadow: 0 1px 6px rgba(0,0,0,.18); font-size: 12px; line-height: 1.45; color: #3d2320; max-width: 260px; }
+.pref-kisei-badge span { color: #5a6675; font-size: 11px; }
+/* スマホでは地図の下端に注意書きと出典表示が並ぶので、その上に出す */
+@media (max-width: 820px) { .leaflet-bottom .leaflet-control.pref-kisei-badge { margin-bottom: 50px; max-width: 220px; } }

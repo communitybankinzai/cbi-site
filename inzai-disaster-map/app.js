@@ -5372,17 +5372,66 @@ function clearRailStatusNote() {
 const prefKiseiLayer = L.layerGroup();
 const prefKiseiRenderer = L.svg({ pane: "prefKiseiPane" });
 let prefKiseiTimer = null;
+let prefKiseiData = null;
+// CBI が最後に県のページを確かめた時刻（CiDAO が30分ごとに記録。取れなければ null）
+let prefKiseiCheck = null;
+let prefKiseiBadge = null;
 
 async function refreshPrefKisei() {
   const statusEl = document.getElementById("pref-kisei-status");
-  try {
-    const res = await fetch("pref-road-kisei.json", { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    renderPrefKisei(await res.json());
-  } catch (error) {
-    console.error("県の規制状況図の読み込みに失敗:", error);
+  const checkUrl = String(APP_CONFIG.prefKiseiCheckEndpoint || "").trim();
+  const [dataRes, checkRes] = await Promise.allSettled([
+    fetch("pref-road-kisei.json", { cache: "no-store" }).then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }),
+    checkUrl
+      ? fetch(checkUrl, { headers: { Accept: "application/json" }, cache: "no-store" }).then(res => (res.ok ? res.json() : null))
+      : Promise.resolve(null)
+  ]);
+  if (checkRes.status === "fulfilled" && checkRes.value?.lastCheck) prefKiseiCheck = checkRes.value.lastCheck;
+  if (dataRes.status === "fulfilled") {
+    prefKiseiData = dataRes.value;
+    renderPrefKisei(prefKiseiData);
+  } else {
+    console.error("県の規制状況図の読み込みに失敗:", dataRes.reason);
     if (statusEl) statusEl.textContent = "読み込めませんでした";
   }
+}
+
+// 「県の発表：9月25日14時時点／最終確認：9/26 08:42（30分ごと）」
+function prefKiseiTimes(data) {
+  const asOf = data?.published ? (data.asOf || "時点不明") : "掲載なし";
+  const checked = prefKiseiCheck?.checkedAt ? roadClosureTime(prefKiseiCheck.checkedAt, true) : "";
+  const failed = prefKiseiCheck && !prefKiseiCheck.ok;
+  return {
+    asOf,
+    checked: checked ? `${checked}${failed ? "（県のページを読めませんでした）" : ""}` : "",
+    text: `県の発表：${asOf}${checked ? `／最終確認：${checked}${failed ? "（読めず）" : ""}（30分ごと）` : ""}`
+  };
+}
+
+// 層を ON にしている間だけ、地図の左下に県の図の時点と最終確認を出す（2026-09-26 事業主指示）
+function showPrefKiseiBadge(show) {
+  if (!show) {
+    if (prefKiseiBadge) map.removeControl(prefKiseiBadge);
+    return;
+  }
+  if (!prefKiseiBadge) {
+    prefKiseiBadge = L.control({ position: "bottomleft" });
+    prefKiseiBadge.onAdd = () => {
+      const el = L.DomUtil.create("div", "pref-kisei-badge");
+      L.DomEvent.disableClickPropagation(el);
+      return el;
+    };
+  }
+  if (!prefKiseiBadge._map) prefKiseiBadge.addTo(map);
+  const el = prefKiseiBadge.getContainer();
+  if (!el) return;
+  const times = prefKiseiTimes(prefKiseiData);
+  el.innerHTML =
+    `<strong>🚧 県の規制状況図</strong> ${escapeHtml(times.asOf)}` +
+    (times.checked ? `<br><span>最終確認 ${escapeHtml(times.checked)}（30分ごと）</span>` : "");
 }
 
 function renderPrefKisei(data) {
@@ -5390,11 +5439,16 @@ function renderPrefKisei(data) {
   prefKiseiLayer.clearLayers();
   const lines = data?.published && Array.isArray(data.lines) ? data.lines : [];
   const page = data?.source?.pageUrl || "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html";
-  const popup =
-    `<strong>🚧 規制中（被災）区間</strong><br>` +
-    `千葉県の道路規制状況図（${escapeHtml(data?.asOf || "時点不明")}）<br>` +
-    `<span style="font-size:11px;">県の図の赤線をCBIが地図に写したもので、<strong>数十m〜100mほどずれる</strong>ことがあります。区間の端も正確ではありません。主に国道・県道で、市町村道は入っていません。</span><br>` +
-    `出典: <a href="${escapeAttribute(page)}" target="_blank" rel="noreferrer">千葉県 県管理道路の通行規制情報</a>`;
+  // 開くたびに組み立てる（最終確認の時刻が線を描いた後に変わるため）
+  const popup = () => {
+    const times = prefKiseiTimes(prefKiseiData);
+    return `<strong>🚧 規制中（被災）区間</strong><br>` +
+      `千葉県の道路規制状況図（県の発表：${escapeHtml(times.asOf)}）<br>` +
+      (times.checked ? `最終確認：${escapeHtml(times.checked)}（CBIが30分ごとに確認）<br>` : "") +
+      `<span style="font-size:11px;">県の図の赤線をCBIが地図に写したもので、<strong>数十m〜100mほどずれる</strong>ことがあります。区間の端も正確ではありません。主に国道・県道で、市町村道は入っていません。</span><br>` +
+      `出典: <a href="${escapeAttribute(page)}" target="_blank" rel="noreferrer">千葉県 県管理道路の通行規制情報</a>`;
+  };
+  if (map.hasLayer(prefKiseiLayer)) showPrefKiseiBadge(true);
   lines.forEach(line => {
     if (!Array.isArray(line.path) || line.path.length < 2) return;
     L.polyline(line.path, {
@@ -5407,9 +5461,11 @@ function renderPrefKisei(data) {
     }).bindPopup(popup).addTo(prefKiseiLayer);
   });
   if (!statusEl) return;
-  if (!data?.published) statusEl.textContent = "いま県の掲載はありません";
-  else if (data.message) statusEl.textContent = `${data.asOf || ""} ${data.message}`.trim();
-  else statusEl.textContent = `${data.asOf || ""}・線 ${lines.length}本`;
+  const times = prefKiseiTimes(data);
+  const checkedPart = times.checked ? `／最終確認 ${times.checked}` : "";
+  if (!data?.published) statusEl.textContent = `いま県の掲載はありません${checkedPart}`;
+  else if (data.message) statusEl.textContent = `${data.asOf || ""} ${data.message}${checkedPart}`.trim();
+  else statusEl.textContent = `県の発表 ${data.asOf || ""}・線 ${lines.length}本${checkedPart}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -5589,6 +5645,7 @@ function toggleOverlay(name, checked) {
       prefKiseiTimer = setInterval(refreshPrefKisei, 10 * 60 * 1000);
     } else {
       map.removeLayer(prefKiseiLayer);
+      showPrefKiseiBadge(false);
       const statusEl = document.getElementById("pref-kisei-status");
       if (statusEl) statusEl.textContent = "ONにすると読み込みます";
     }
