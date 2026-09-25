@@ -4,6 +4,13 @@
   "entries": [
     {
       "date": "2026-09-25",
+      "type": "content",
+      "target": "inzai-disaster-map",
+      "title": "「色の見方」に、SNSから読み取った点の説明を足した",
+      "detail": "地図にSNS由来の点が出るようになったが、押すまでどれがSNSのものか分からなかった。凡例の「ⓘ 色の見方」に1行足し、白い丸の中の印がInstagramやBlueskyの投稿をAIが読み取った点であること、CBIや市が確かめたものではないこと、押すと元の投稿へ飛べること、レイヤーで消せることを書いた。",
+      "author": "Claude"
+    },{
+      "date": "2026-09-25",
       "type": "fix",
       "target": "inzai-disaster-map",
       "title": "8月の豪雨を選んで登録した記録にも、雨量が付くようになった",
