@@ -3084,7 +3084,8 @@ const PRESETS = {
   // 読み込み直後と同じ状態へ戻す（index.html の checked と、初期化の toggleOverlay と揃える）
   reset: {
     label: "最初の表示",
-    on: ["boundary", "kansui", "passedRoads", "leveeBreach"],
+    // snsRoads は index.html で初期 ON なのに入っておらず、押すと消えていた（2026-09-26 事業主指示で追加）
+    on: ["boundary", "kansui", "passedRoads", "leveeBreach", "snsRoads"],
     openGroups: ["🚗"],
     focus: null
   }
