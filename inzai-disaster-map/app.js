@@ -3033,8 +3033,9 @@ const PRESETS = {
   },
   links: {
     label: "公式リンク集",
-    on: ["boundary", "records"],
-    // レイヤーではなく左パネルの2つのアコーディオンを開いて見せる
+    // レイヤーではなく左パネルの2つのアコーディオンを開いて見せる。
+    // 層は切り替えない（足す切り替えにしたとき、被害・確認候補が他のボタンで ON になるだけで濃く見えたため）
+    toggle: [],
     openAcc: ["🚫", "📄"],
     focus: "acc"
   },
@@ -3088,11 +3089,23 @@ const PRESETS = {
   }
 };
 
-// 「足す」切り替えのボタン（PRESETS の toggle）は、挙げた層がすべて ON のときだけ濃く表示する
+// 「見たいもの」のボタンは「↺ 最初の表示」以外すべて、足す／外すの切り替え（2026-09-26 事業主指示：
+// 「それぞれのボタンの組み合わせ表示ができない」）。押すとそのボタンの層を足し、もう一度押すと外す。
+// ほかのボタンで出している層はそのまま残す。印西市境界（boundary）はどのボタンでも外さない。
+// ボタンの層は toggle（明示）か on から boundary を除いたもの。
+function presetLayers(preset) {
+  return (preset.toggle || preset.on || []).filter(key => key !== "boundary");
+}
+
+function presetBoxes(preset) {
+  return presetLayers(preset).map(key => document.querySelector(`[data-overlay="${key}"]`)).filter(Boolean);
+}
+
+// 層がすべて ON のボタンだけ濃く表示する（チェックボックスを直接触ったときも呼ぶ）
 function syncTogglePresets() {
   Object.entries(PRESETS).forEach(([name, preset]) => {
-    if (!preset.toggle) return;
-    const boxes = preset.toggle.map(key => document.querySelector(`[data-overlay="${key}"]`)).filter(Boolean);
+    if (name === "reset") return;
+    const boxes = presetBoxes(preset);
     const allOn = boxes.length > 0 && boxes.every(box => box.checked);
     const button = document.querySelector(`.preset-btn[data-preset="${name}"]`);
     button?.classList.toggle("is-current", allOn);
@@ -3101,16 +3114,37 @@ function syncTogglePresets() {
 }
 
 function applyTogglePreset(name, preset) {
-  const boxes = preset.toggle.map(key => document.querySelector(`[data-overlay="${key}"]`)).filter(Boolean);
-  // 1つでも OFF なら全部 ON に、全部 ON なら全部 OFF に
-  const turnOn = boxes.some(box => !box.checked);
-  boxes.forEach(box => { if (box.checked !== turnOn) box.click(); });
+  const boxes = presetBoxes(preset);
+  // 1つでも OFF なら全部 ON に、全部 ON なら外す。層を持たないボタン（公式リンク集）は開くだけ
+  const turnOn = !boxes.length || boxes.some(box => !box.checked);
   if (turnOn) {
+    boxes.forEach(box => { if (!box.checked) box.click(); });
+  } else {
+    // 外すときは、ほかに ON のままのボタンが使っている層（被害・確認候補など）は残す
+    const keep = new Set();
+    Object.entries(PRESETS).forEach(([other, p]) => {
+      if (other === name || other === "reset") return;
+      const otherBoxes = presetBoxes(p);
+      if (otherBoxes.length && otherBoxes.every(box => box.checked)) presetLayers(p).forEach(key => keep.add(key));
+    });
+    boxes.forEach(box => { if (box.checked && !keep.has(box.dataset.overlay)) box.click(); });
+  }
+  if (turnOn) {
+    // 関係するグループを開く（ほかのグループは閉じない）
     document.querySelectorAll("details.layer-group").forEach(group => {
       const head = group.querySelector("summary")?.textContent || "";
       if ((preset.openGroups || []).some(mark => head.includes(mark))) group.open = true;
     });
-    if (preset.focus?.startsWith("#")) {
+    document.querySelectorAll(".left-panel > details.acc").forEach(acc => {
+      const head = acc.querySelector("summary")?.textContent || "";
+      if ((preset.openAcc || []).some(mark => head.includes(mark))) acc.open = true;
+    });
+    const panel = document.querySelector(".left-panel");
+    if (preset.focus === "acc" && panel) {
+      const target = [...document.querySelectorAll(".left-panel > details.acc[open]")]
+        .find(acc => (preset.openAcc || []).some(mark => (acc.querySelector("summary")?.textContent || "").includes(mark)));
+      if (target) panel.scrollTop = target.offsetTop - panel.offsetTop - 8;
+    } else if (preset.focus?.startsWith("#")) {
       setTimeout(() => {
         const el = document.querySelector(preset.focus);
         (el?.hidden ? el.previousElementSibling : el)?.scrollIntoView({ block: "nearest" });
@@ -3124,7 +3158,8 @@ function applyTogglePreset(name, preset) {
 function applyPreset(name) {
   const preset = PRESETS[name];
   if (!preset) return;
-  if (preset.toggle) { applyTogglePreset(name, preset); return; }
+  if (name !== "reset") { applyTogglePreset(name, preset); return; }
+  // ↺ 最初の表示だけは、従来どおり既定の状態へ入れ替える
   const wanted = new Set(preset.on || []);
   // チェックを入れ替える。change イベントを起こすため click() を使う
   document.querySelectorAll("[data-overlay]").forEach(box => {
@@ -3140,8 +3175,8 @@ function applyPreset(name) {
     const head = acc.querySelector("summary")?.textContent || "";
     acc.open = (preset.openAcc || []).some(mark => head.includes(mark));
   });
-  // 押したボタンを目立たせる
-  document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("is-current", b.dataset.preset === name));
+  // 既定の状態に含まれるボタン（🚗 冠水した道・通れた道）が濃くなる
+  document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("is-current"));
   syncTogglePresets();
   document.querySelector(`.preset-btn[data-preset="${name}"]`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
   syncMapLegend();
@@ -9630,6 +9665,25 @@ function fitToInzai(force = false) {
   fittingInzai = false;
 }
 
+// 地図の枠の大きさが、開いたあとに変わったとき（2026-09-26 事業主指摘「全画面だと中心に来るが、それ以外だと茨城県になる」）。
+// Leaflet は窓の大きさの変化しか見ていないので、画面の組み立て（帯・左の一覧・凡例の高さ）で地図の枠だけが
+// 変わると、古い大きさのまま左上を基準に描かれ、中心が北西（利根川の向こう）へずれていた。
+// 枠の大きさを見張って測り直し、利用者がまだ地図を動かしていなければ印西市へ合わせ直す。
+// 見張りは裏に隠れたタブでは動かないので、開いてから1秒後・3秒後にも1回ずつ確かめる。
+function syncMapBoxSize() {
+  const el = map.getContainer();
+  if (!el.clientWidth || !el.clientHeight) return;
+  const now = map.getSize();
+  if (now.x === el.clientWidth && now.y === el.clientHeight) return;
+  fittingInzai = true;
+  map.invalidateSize({ animate: false, pan: false });
+  fittingInzai = false;
+  if (inzaiFitDone && !userMovedMap) fitToInzai(true);
+}
+if (typeof ResizeObserver === "function") new ResizeObserver(syncMapBoxSize).observe(map.getContainer());
+setTimeout(syncMapBoxSize, 1000);
+setTimeout(syncMapBoxSize, 3000);
+
 function renderRoadFloodSites() {
   roadFloodLayer.clearLayers();
   roadFloodSites.forEach(site => {
@@ -12022,7 +12076,7 @@ function initHazardCheck() {
   // 「見たいもの」の最初のボタンを押した状態で開く。いま何が出ているのかを分かるようにする
   // （2026-09-21 中司さんの指示）。applyPreset は呼ばない（チェックは上で入れ終えており、
   // 左パネルの開閉とスクロールまで動かす必要がないため）
-  document.querySelector('.preset-btn[data-preset="kansui"]')?.classList.add("is-current");
+  syncTogglePresets();
   // 「見たいもの」は横スクロールの行なので、選んでいるボタンが画面外から始まらないようにする
   // （2026-09-21 実機で、右端の「いまの雨・土砂災害」だけが見えている状態になっていた）
   document.querySelector(".preset-items")?.scrollTo?.({ left: 0 });
