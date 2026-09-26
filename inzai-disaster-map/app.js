@@ -3377,9 +3377,12 @@ function startCitizenRoadEdit(road, center) {
   if (options) options.hidden = true;   // 時刻・メモ・写真は「✏ 時刻・メモを直す」で。ここでは線だけ
   drawCitizenRoadPreview();
   if (draft.editPoint) map.setView(draft.points[0], Math.max(map.getZoom(), 17), { animate: false });
+  const gaps = draft.editPoint ? [] : citizenRoadGaps(draft.points);
   citizenRoadMessage(draft.editPoint
     ? "青い点を指で道路の上まで動かす → 「完了」で保存します（動かした位置のまま保存・道なりの補正はしません）。取消で元のままです。"
-    : "点を指で動かす／点の間の「＋」で経過点を足す → 「完了」で保存します（動かした位置のまま保存・道なりの補正はしません）。取消で元のままです。");
+    : (gaps.length
+      ? `⚠ 1km超 飛んでいる区間が${gaps.length}か所あります（${gaps.slice(0, 3).map(g => `${g.index + 1}→${g.index + 2}番 約${(g.meters / 1000).toFixed(1)}km`).join("・")}${gaps.length > 3 ? " ほか" : ""}）。その区間の「✂」を押すと線を2本に切れます。`
+      : "点を指で動かす／点の間の「＋」で経過点を足す → 「完了」で保存します（動かした位置のまま保存・道なりの補正はしません）。取消で元のままです。"));
   // 全画面化（invalidateSize）のあとに、押した場所を中心に置く。ズームは今のまま（16未満なら16）
   const target = center ? L.latLng(center) : L.latLng(draft.points[Math.floor(draft.points.length / 2)]);
   setTimeout(() => { if (draft.active) map.setView(target, Math.max(map.getZoom(), 16), { animate: false }); }, 350);
@@ -7701,13 +7704,84 @@ function updateCitizenRoadControls() {
 // なぞった点は指（マウス）で動かせる。点と点の間の「＋」を動かす／押すと、そこに経過点が入る（2026-09-25 事業主指示）。
 // ドラッグ中は線だけ追従させ、離したときに全体を描き直す（ハンドルを作り直すとドラッグが切れるため）。
 let citizenRoadHandleTouchedAt = 0;   // ハンドルを触った直後の地図クリックで点を足さないため
-function citizenRoadHandleIcon(kind, label, isMid) {
-  const color = kind === "blocked" ? KANSUI_COLOR : kind === "profile" ? "#6d4c41" : "#1565c0";
+function citizenRoadHandleIcon(kind, label, isMid, isCut = false) {
+  const color = isCut ? "#e65100" : kind === "blocked" ? KANSUI_COLOR : kind === "profile" ? "#6d4c41" : "#1565c0";
   return L.divIcon({
-    className: `citizen-road-point citizen-road-handle${isMid ? " is-mid" : ""}`,
+    className: `citizen-road-point citizen-road-handle${isMid ? " is-mid" : ""}${isCut ? " is-cut" : ""}`,
     html: `<span style="${isMid ? `border-color:${color};color:${color}` : `background:${color}`}">${label}</span>`,
     iconSize: isMid ? [22, 22] : [28, 28], iconAnchor: isMid ? [11, 11] : [14, 14]
   });
+}
+
+// 線の途中で飛んでいる区間（この距離を超える直線）。運営の線直しで「✂」を出す判定と、開いたときの案内に使う
+const CITIZEN_ROAD_GAP_M = 1000;
+function citizenRoadGaps(points) {
+  const gaps = [];
+  for (let i = 0; i + 1 < points.length; i++) {
+    const m = passedRoadDistanceM(points[i], points[i + 1]);
+    if (m > CITIZEN_ROAD_GAP_M) gaps.push({ index: i, meters: m });
+  }
+  return gaps;
+}
+
+// 運営：線を splitAt 番目の点の手前で2本に切る（前半は元の記録を更新、後半は同じ時刻・メモの新しい記録）。
+// サーバー側は cidao passed-roads/route.ts の PATCH ?splitAt=（2026-09-26）
+async function splitCitizenRoad(splitAt, gapM) {
+  const draft = citizenRoadDraft;
+  if (!draft.active || draft.busy || !draft.editId) return;
+  if (splitAt < 2 || splitAt > draft.points.length - 2) { citizenRoadMessage("前後とも2点以上になる場所でしか切れません。", true); return; }
+  const km = (gapM / 1000).toFixed(1);
+  if (!window.confirm(`${splitAt}番と${splitAt + 1}番の間（約${km}km 飛んでいる区間）で線を2本に切ります。\n前半はこの記録のまま、後半は同じ時刻・メモを引き継いだ別の記録として保存します。よろしいですか？`)) return;
+  const id = draft.editId;
+  const path = draft.points.map(point => [Number(point[0]), Number(point[1])]);
+  const endpoint = moderationEndpoint();
+  let key = moderationKey();
+  draft.busy = true;
+  updateCitizenRoadControls();
+  citizenRoadMessage("線を切っています…");
+  const send = k => fetch(`${endpoint}?id=${encodeURIComponent(id)}&splitAt=${splitAt}`, {
+    method: "PATCH", headers: { "Content-Type": "application/json", "x-moderation-key": k }, body: JSON.stringify({ path })
+  });
+  try {
+    let response = await send(key);
+    if (response.status === 403) {
+      try { localStorage.removeItem(MODERATION_KEY_STORAGE); } catch {}
+      key = askModerationKey();
+      if (!key) throw new Error("合言葉が違います");
+      response = await send(key);
+    }
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+    const first = path.slice(0, splitAt), second = path.slice(splitAt);
+    // 配信側の短いキャッシュを待たず、画面の記録をその場で書き換える（前半＝元の記録、後半＝新しい記録）
+    const road = passedRoadsData.find(r => String(r.id) === id);
+    if (road) {
+      road.path = first;
+      road.pointCount = Number(result.pointCount) || first.length;
+      road.lengthM = Number(result.lengthM) || passedRoadPathLengthM(first);
+      if (result.second && result.second.id) {
+        passedRoadsData.unshift({
+          ...road, id: String(result.second.id), path: second, imageUrls: [],
+          pointCount: Number(result.second.pointCount) || second.length,
+          lengthM: Number(result.second.lengthM) || passedRoadPathLengthM(second),
+          createdAt: result.second.createdAt || new Date().toISOString()
+        });
+      }
+      renderPassedRoadsLayer();
+      renderPassedRoadsList();
+    }
+    draft.busy = false;
+    draft.points = first;
+    drawCitizenRoadPreview();
+    const rest = citizenRoadGaps(first).length;
+    citizenRoadMessage(`切りました。前半（${first.length}点）はこの画面で続けて直せます。後半（${second.length}点）は別の記録として保存しました（線を押すと直せます）。`
+      + (rest ? `　⚠ 前半にまだ${rest}か所、1km超の区間があります。` : ""));
+  } catch (error) {
+    draft.busy = false;
+    updateCitizenRoadControls();
+    drawCitizenRoadPreview();
+    citizenRoadMessage(`切れませんでした（${error?.message || "接続エラー"}）。線は残っています。`, true);
+  }
 }
 function drawCitizenRoadPreview() {
   citizenRoadDraftLayer.clearLayers();
@@ -7734,9 +7808,26 @@ function drawCitizenRoadPreview() {
     });
   });
   // 点と点の間の「＋」：動かす／押すと、そこに経過点が入る
+  // 運営の線直しで、1km超（CITIZEN_ROAD_GAP_M）飛んでいる区間は「＋」の代わりに「✂」を出し、そこで線を2本に切れる（2026-09-26）。
+  // なぞりで離れた2点をそのまま結んだ直線は、点を動かしても消せないため
+  const canSplit = Boolean(citizenRoadDraft.editId) && !citizenRoadDraft.editPoint;
   for (let i = 0; i + 1 < points.length; i++) {
     const a = points[i], b = points[i + 1];
     const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    const gapM = canSplit ? passedRoadDistanceM(a, b) : 0;
+    if (gapM > CITIZEN_ROAD_GAP_M) {
+      L.polyline([a, b], { color: "#e65100", weight: 4, opacity: .95, dashArray: "2 10", interactive: false }).addTo(citizenRoadDraftLayer);
+      const cut = L.marker(mid, { draggable: false, keyboard: false, icon: citizenRoadHandleIcon(kind, "✂", true, true), zIndexOffset: 950 })
+        .addTo(citizenRoadDraftLayer);
+      cut.bindTooltip(`⚠ ${i + 1}番→${i + 2}番が約${(gapM / 1000).toFixed(1)}km 飛んでいます。押すとここで線を2本に切ります`, { direction: "top", offset: [0, -12] });
+      cut.on("mousedown touchstart", touched);
+      cut.on("click", event => {
+        L.DomEvent.stopPropagation(event);
+        touched();
+        splitCitizenRoad(i + 1, gapM);
+      });
+      continue;
+    }
     const marker = L.marker(mid, { draggable: !citizenRoadDraft.busy, keyboard: false, icon: citizenRoadHandleIcon(kind, "＋", true), zIndexOffset: 900 })
       .addTo(citizenRoadDraftLayer);
     let insertedAt = -1;
@@ -8419,12 +8510,13 @@ function blockedPointShape(road) {
   return marker;
 }
 
-// ☔ 記録時刻の雨量（最寄りアメダス）から「冠水による通れない」か「工事・事故など別の理由」かの目安を出す。
+// ☔ 記録時刻の前後の雨（周辺4か所のアメダスの平均・2026-09-26 から。しくみは rain-logic.html）から「冠水による通れない」か「工事・事故など別の理由」かの目安を出す。
 // 判定はサーバー（CiDAO）が保存時に行い、ここは表示だけ。確定ではないので言い切らない
 const RAIN_VERDICTS = {
-  flood_likely: { icon: "☔", label: "雨あり → 冠水の可能性が高い" },
-  light_rain: { icon: "🌦", label: "少雨 → 冠水か別の理由かは判断保留" },
-  no_rain: { icon: "🌤", label: "雨なし → 工事・事故など冠水以外の理由の可能性" },
+  // 判定のしくみは rain-logic.html（2026-09-26 作り直し：周辺4か所の平均・排水を超えた雨・降り続いた雨）
+  flood_likely: { icon: "☔", label: "冠水のおそれ（雨による冠水と考えて矛盾しない）" },
+  light_rain: { icon: "🌦", label: "小雨 → 冠水か別の理由かは判断保留" },
+  no_rain: { icon: "🌤", label: "雨なし（3日間）→ 工事・事故など冠水以外の理由の可能性" },
   unknown: { icon: "❓", label: "雨量を取得できませんでした" }
 };
 
@@ -8564,10 +8656,15 @@ function rainVerdictHtml(road) {
   if (!rain) return "";
   const v = rainVerdictOf(road);
   const mm = x => (x === null || x === undefined ? "−" : `${x}mm`);
+  // 2026-09-26 からの判定は理由（雨の強さ／降り続いた雨）と、割り引いた雨の合計も出す
+  const basis = rain.basis === "intensity" ? "理由：排水の想定（1時間50mm）を超える雨が記録の前3時間にあった"
+    : rain.basis === "aftermath" ? `理由：ここ数日に降り続いた雨の量が多い（割り引いた合計 ${mm(rain.api)}）。降っている間から、止んで水が引くまでの間にあたる`
+    : "";
   const detail = rain.verdict === "unknown"
     ? ""
-    : `<br><span style="font-size:11px;">記録時の雨量（アメダス${escapeHtml(rain.station || "")}・${escapeHtml(formatDateTime(toDateTimeLocal(rain.at)) || "")}）1時間 ${mm(rain.r1h)}／3時間 ${mm(rain.r3h)}／24時間 ${mm(rain.r24h)}</span>`;
-  return `<br><strong>${v.icon} ${escapeHtml(v.label)}</strong>${detail}`;
+    : `<br><span style="font-size:11px;">${basis ? `${escapeHtml(basis)}<br>` : ""}記録時の雨量（アメダス${escapeHtml(rain.station || "")}・${escapeHtml(formatDateTime(toDateTimeLocal(rain.at)) || "")}）1時間 ${mm(rain.r1h)}／3時間 ${mm(rain.r3h)}／24時間 ${mm(rain.r24h)}${rain.r72h !== null && rain.r72h !== undefined ? `／72時間 ${mm(rain.r72h)}` : ""}</span>`;
+  return `<br><strong>${v.icon} ${escapeHtml(v.label)}</strong>${detail}` +
+    `<br><a href="./rain-logic.html" target="_blank" rel="noopener" style="font-size:11px;">この判定の考え方・数値を変えて試す ↗</a>`;
 }
 
 function passedRoadSourceLabel(road) {
@@ -8611,7 +8708,7 @@ function passedRoadHideButtonHtml(road) {
     : "";
 }
 
-// 通れた道：どのくらいの雨で通れたかの参考に、記録時刻の雨量（最寄りアメダス）だけを添える（2026-09-22）。
+// 通れた道：どのくらいの雨で通れたかの参考に、記録時刻の雨量（周辺4か所の平均）だけを添える（2026-09-22）。
 // 「冠水の可能性」の判定は通れない記録のためのものなので、ここには出さない
 function rainAmountHtml(road) {
   const rain = road?.rain;

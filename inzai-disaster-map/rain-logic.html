@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>雨の判定のしくみ｜印西市 災害状況整合MAP</title>
+<meta name="description" content="防災MAPの「通れない」「通れた」の記録に付けている雨の判定（冠水のおそれ・小雨・雨なし）の考え方・既定値の根拠・台風25号での当たり具合。数値を変えて誰でも試せます。">
+<style>
+body{font:16px/1.85 system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;max-width:960px;margin:32px auto;padding:0 20px;color:#243546;background:#fff}
+h1{font-size:26px;margin-bottom:4px}
+.lead{color:#5a6675;font-size:14px;margin-top:0}
+h2{font-size:20px;margin-top:38px;padding-bottom:6px;border-bottom:2px solid #d7dee4}
+h3{font-size:16px;margin-top:26px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:14px 0}
+td,th{border:1px solid #bdc9d0;padding:9px;text-align:left;vertical-align:top}
+th{background:#f2f5f7}
+.table{overflow-x:auto}
+code{background:#f0f3f5;padding:1px 5px;border-radius:3px;font-size:13.5px}
+.formula{background:#f7f9fa;border:1px solid #d7dee4;border-radius:6px;padding:12px 16px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;line-height:1.9;overflow-x:auto}
+.warn{padding:14px 18px;background:#fdf0ea;border-left:5px solid #d35400;border-radius:0 5px 5px 0;margin:18px 0}
+.notice{padding:14px 18px;background:#eef4fa;border-left:5px solid #245b91;border-radius:0 5px 5px 0;margin:18px 0}
+a{color:#245b91}
+.meta{font-size:13px;color:#5a6675}
+ul{padding-left:1.3em}
+li{margin:5px 0}
+.sim{border:1px solid #bdc9d0;border-radius:10px;padding:16px 18px;background:#fbfcfd}
+.params{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 18px}
+.params label{display:block;font-size:14px;font-weight:600}
+.params small{display:block;font-weight:400;color:#5a6675;font-size:12px;line-height:1.5}
+.params input[type=number]{width:90px;font-size:15px;padding:4px 6px;border:1px solid #9fb0bc;border-radius:5px}
+.params input[type=range]{width:100%}
+.sim-buttons{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.sim-buttons button{font-size:14px;padding:6px 12px;border:1px solid #245b91;background:#fff;color:#245b91;border-radius:6px;cursor:pointer}
+.sim-buttons button.primary{background:#245b91;color:#fff}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.chart{width:100%;height:auto;display:block;margin-top:10px}
+.legend{font-size:12.5px;color:#3d4f60;display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px}
+.legend i{display:inline-block;width:14px;height:10px;margin-right:4px;vertical-align:middle}
+.changed{background:#fff7d6}
+@media (max-width:640px){body{margin:16px auto;padding:0 16px}h1{font-size:22px}}
+</style>
+</head>
+<body>
+
+<p class="meta"><a href="./">← 防災MAPへ</a> ／ <a href="./data.html">データの扱い</a></p>
+
+<h1>雨の判定のしくみ</h1>
+<p class="lead">「通れない」「通れた」の記録に付けている「☔ 冠水のおそれ／🌦 小雨／🌤 雨なし」の決め方です。判定の版 <code>v2-2026-09-26</code>。作成：Community Bank INZAI（非営利・無償公開）</p>
+
+<div class="notice">
+  <strong>このページでわかること</strong><br>
+  記録した時刻の前後にどれだけ雨が降ったかから、その「通れない」が<strong>雨による冠水と考えられるか</strong>、それとも工事・事故など<strong>別の理由の可能性があるか</strong>の目安を付けています。
+  下の<a href="#sim">計算のコーナー</a>で、数値を変えると台風25号の記録がどう分かれるかを、その場で試せます。
+</div>
+
+<div class="warn">
+  <strong>目安であり、通れるかどうかは保証しません。</strong>「冠水のおそれ」は「雨による冠水と考えて矛盾しない」という意味です。
+  判定に使う雨量は周辺の観測点の値で、その道の上に降った雨そのものではありません。避難や通行の判断は、市・県の発表と現地の状況に従ってください。
+</div>
+
+<h2>1. 考え方</h2>
+<p>以前は「記録した瞬間の、いちばん近いアメダス1か所の1時間・3時間・24時間の雨量」で判定していました。しかし、次の2つを説明できませんでした。</p>
+<ul>
+  <li><strong>降り始め</strong>は、雨が強くても排水が追いつき、まだ冠水しない。</li>
+  <li><strong>大雨が止んだ後も</strong>、沼や川の水位が高い・低い土地に水が残るなどで、しばらく通れない。台風25号では、雨が止んだ翌日（9月22日）の「通れない」記録がいちばん多く（59件）、2日後まで続いていました。</li>
+</ul>
+<p>そこで、次の2つのどちらかに当てはまれば「冠水のおそれ」とします。</p>
+
+<h3>(A) 排水が追いつかない雨 ─ バケツで考える</h3>
+<p>道路に降った雨をバケツにため、1時間あたり <strong>D mm</strong> ずつ排水で抜けると考えます。雨が D より弱ければバケツはたまらず、強い雨が続くとあふれ始めます。記録の前3時間に、あふれた量が <strong>しきい値</strong>以上になっていれば「大雨の最中・直後」とします。</p>
+<div class="formula">10分ごとに：水位 = max(0, 前の水位 ＋ その10分の雨量 − D ÷ 6)<br>判定：記録の前3時間の水位の最大 ≧ あふれのしきい値（既定 1mm）</div>
+
+<h3>(B) 降り続いた雨と、水が引くまでの時間 ─ 割り引いた雨の合計</h3>
+<p>ここ数日の雨を、時間がたつほど小さく数えて足し合わせます（先行降雨と呼ばれる考え方）。<strong>半分になるまでの時間 H</strong> を決め、H 時間前の雨は半分、2H 時間前の雨は4分の1として数えます。合計が <strong>しきい値</strong>以上なら「降り続いた雨の量が多い」とします。雨が降り続いている間から、止んで水が引くまでの間が当てはまります。</p>
+<div class="formula">10分ごとに：合計 = 前の合計 × 0.5^(10分 ÷ H) ＋ その10分の雨量<br>判定：記録した時刻の合計 ≧ 割り引いた雨のしきい値（既定 150mm）</div>
+
+<h3>雨量はどこの値か</h3>
+<p>印西市の中にはアメダス（気象庁の観測点）がありません。記録の場所から<strong>近い4か所（30km以内）の10分雨量を、距離の2乗に反比例する重みで平均</strong>した値を使います。印西市の中心なら、我孫子・佐倉・船橋・成田の4か所です。使う期間は、記録した時刻までの7日間です。</p>
+<p>どちらにも当てはまらず、ここ3日間（72時間）に0.5mm 以上降っていれば「🌦 小雨」、降っていなければ「🌤 雨なし（工事・事故など別の理由の可能性）」です。</p>
+
+<h2>2. 既定値と根拠</h2>
+<div class="table"><table>
+<thead><tr><th>数値</th><th>既定値</th><th>根拠</th></tr></thead>
+<tbody>
+<tr><th>D：排水が追いつく雨の強さ</th><td class="num">50 mm/時</td><td>一般的な値として、下水道の雨水の計画に使う雨の強さを採りました。国の手引きは、計画に使う雨を「5年に1回〜10年に1回程度の雨（1/5〜1/10）」を基本としています（<a href="https://www.mlit.go.jp/mizukokudo/sewerage/content/001728942.pdf" target="_blank" rel="noopener">国土交通省 雨水管理総合計画策定ガイドライン（案）令和3年11月</a> p.47）。千葉県内の例では、千葉市が5年に1回の雨として<strong>1時間50mm</strong>で整備してきました（平成16年に10年に1回の53.4mm、重点地区は65.1mm へ引き上げ・<a href="https://www.city.chiba.jp/kensetsu/gesuidokikaku/chisui/documents/zyuutennchiku.pdf" target="_blank" rel="noopener">千葉市雨水対策重点地区整備基本方針</a>）。<br><strong>印西市の値はわかりません</strong>（公開資料で見つけられませんでした）。また、下水道の無い道路・農道・低い土地では、実際にはもっと弱い雨でも水がたまります。</td></tr>
+<tr><th>あふれのしきい値</th><td class="num">1 mm</td><td>「排水の想定を少しでも超えた」ことを表す最小の値として置きました。実データで決めた値ではありません。</td></tr>
+<tr><th>H：半分になるまでの時間</th><td class="num">48 時間</td><td rowspan="2">台風25号の「通れない」記録（110件）と、同じ期間の雨で当てはめました。「通れない」記録をいちばん多く拾い、それ以外の時間をなるべく拾わない組み合わせです（下の計算のコーナーで確かめられます）。<strong>1回の大雨だけで決めた値</strong>なので、次の大雨の記録で見直します。</td></tr>
+<tr><th>割り引いた雨のしきい値</th><td class="num">150 mm</td></tr>
+</tbody></table></div>
+
+<h2 id="sim">3. 数値を変えて試す（台風25号の記録）</h2>
+<div class="sim">
+  <div class="params">
+    <div><label for="p-drain">D：排水が追いつく雨の強さ<small>1時間あたり（mm）。小さいほど弱い雨でもあふれる</small></label><input id="p-drain" type="number" min="1" max="120" step="1"> mm/時<input id="r-drain" type="range" min="1" max="120" step="1" aria-label="D"></div>
+    <div><label for="p-bucket">あふれのしきい値<small>前3時間にあふれた量の最大（mm）</small></label><input id="p-bucket" type="number" min="0.1" max="50" step="0.1"> mm<input id="r-bucket" type="range" min="0.1" max="50" step="0.1" aria-label="あふれのしきい値"></div>
+    <div><label for="p-half">H：半分になるまでの時間<small>長いほど、大雨の影響が長く残る</small></label><input id="p-half" type="number" min="1" max="168" step="1"> 時間<input id="r-half" type="range" min="1" max="168" step="1" aria-label="H"></div>
+    <div><label for="p-api">割り引いた雨のしきい値<small>これ以上なら「降り続いた雨の量が多い」</small></label><input id="p-api" type="number" min="1" max="500" step="1"> mm<input id="r-api" type="range" min="1" max="500" step="1" aria-label="割り引いた雨のしきい値"></div>
+  </div>
+  <div class="sim-buttons"><button type="button" id="reset" class="primary">既定値に戻す</button><button type="button" id="preset-old">以前の判定に近い見方（D=0・H=12時間）</button></div>
+
+  <div class="table"><table id="result">
+    <thead><tr><th></th><th class="num">通れない（<span id="n-b">−</span>件）</th><th class="num">通れた（<span id="n-p">−</span>件）</th><th class="num">期間中の時間（印西市の中心）</th></tr></thead>
+    <tbody>
+      <tr><th>☔ 冠水のおそれ（合計）</th><td class="num" id="b-f"></td><td class="num" id="p-f"></td><td class="num" id="t-f"></td></tr>
+      <tr><td>　うち (A) 雨の強さ</td><td class="num" id="b-a"></td><td class="num" id="p-a"></td><td class="num" id="t-a"></td></tr>
+      <tr><td>　うち (B) 降り続いた雨・その後</td><td class="num" id="b-b"></td><td class="num" id="p-b"></td><td class="num" id="t-b"></td></tr>
+      <tr><th>🌦 小雨</th><td class="num" id="b-l"></td><td class="num" id="p-l"></td><td class="num" id="t-l"></td></tr>
+      <tr><th>🌤 雨なし</th><td class="num" id="b-n"></td><td class="num" id="p-n"></td><td class="num" id="t-n"></td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:13px;color:#5a6675;margin:4px 0 0">見方：「通れない」の多くが「冠水のおそれ」に入り、「期間中の時間」に占める割合が小さいほど、雨の影響をよく見分けられている設定です。「通れた」は雨の中でも通れた道なので、どちらに入っても構いません。</p>
+
+  <svg id="chart" class="chart" viewBox="0 0 900 300" role="img" aria-label="印西市の中心の雨量と判定の推移"></svg>
+  <div class="legend">
+    <span><i style="background:#7fa7cf"></i>1時間の雨量（印西市の中心・左の目盛り）</span>
+    <span><i style="background:#d9822b;height:3px"></i>割り引いた雨の合計（右の目盛り）</span>
+    <span><i style="background:none;border-top:2px dashed #d9822b;height:0"></i>そのしきい値</span>
+    <span><i style="background:rgba(200,40,40,.18)"></i>(A) 排水を超えた時間</span>
+    <span><i style="background:#b8322c;width:3px"></i>通れない記録</span>
+    <span><i style="background:#1565c0;width:3px"></i>通れた記録</span>
+  </div>
+  <p id="sim-status" style="font-size:13px;color:#5a6675">データを読み込み中…</p>
+</div>
+
+<h2>4. わかっていること・限界</h2>
+<ul>
+  <li><strong>台風25号の1回だけ</strong>で当てはめています。8月の豪雨は、同じ期間の10分雨量の控えが無いため使えていません。</li>
+  <li>既定値（D=50mm/時）では、台風25号の1時間の雨（周辺4か所の平均で最大40mm前後）は<strong>排水の想定を一度も超えていません</strong>。台風25号の「通れない」は、1時間の雨の強さではなく「降り続いた雨の量と、その後に水が引かなかったこと」で説明されます（北印旛沼の堤防の決壊・印旛沼の水位の高止まりがあったため、と考えています）。</li>
+  <li>「期間中の時間」は台風の5日間しか比べていないため、晴れの日にどれだけ誤って「冠水のおそれ」になるかは、まだ確かめられていません。</li>
+  <li>記録は、地図を使った人が自分で登録したもので、場所や時刻に誤りがあることがあります。後から登録した記録には、運営が当てた代表の時刻が入っているものがあります。</li>
+  <li>沼や川の水位は判定に入れていません（水位の記録を貯め始めたのが9月24日のため）。</li>
+</ul>
+
+<h2>5. 出典</h2>
+<ul>
+  <li>雨量：気象庁 アメダス（10分値）。CBI が控えとして保存したもの。</li>
+  <li>記録：印西市 災害状況整合MAP の「通れない」「通れた」の記録（場所は約100m単位に丸めています）。</li>
+  <li>国土交通省「雨水管理総合計画策定ガイドライン（案）」令和3年11月。</li>
+  <li>千葉市「雨水対策重点地区整備基本方針」。</li>
+</ul>
+<p class="meta">このページでは記録の場所を約100m単位に丸めているため、地図の判定とずれることがあります（台風25号の「通れない」記録では1件）。</p>
+<p class="meta">計算の中身は、防災MAPの記録に付けている判定と同じ式です（CiDAO <code>src/lib/disaster-rain-logic.ts</code>）。数値の誤りや改善点のご指摘は、防災MAPの「データの扱い」ページの連絡先までお願いします。</p>
+
+<script>
+(function () {
+  "use strict";
+  var DEFAULTS = { drain: 50, bucket: 1, half: 48, api: 150 };
+  var OLD = { drain: 0, bucket: 5, half: 12, api: 30 };
+  var WINDOW = 1008; // 7日（判定と同じ）
+  var INZAI = [35.8325, 140.1456];
+  var data = null;
+  var locCache = {};
+  var ids = { drain: "drain", bucket: "bucket", half: "half", api: "api" };
+
+  function dist(a, b) {
+    var R = 6371000, r = Math.PI / 180;
+    var dLat = (b[0] - a[0]) * r, dLon = (b[1] - a[1]) * r;
+    var x = Math.pow(Math.sin(dLat / 2), 2) + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.pow(Math.sin(dLon / 2), 2);
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+  // 近い4か所（30km以内）を距離の2乗の逆数で重み付けした10分雨量（全期間）
+  function seriesAt(pt) {
+    var key = pt[0].toFixed(3) + "," + pt[1].toFixed(3);
+    if (locCache[key]) return locCache[key];
+    var near = data.stations.map(function (s) { return { s: s, d: dist(pt, [s.lat, s.lon]) }; })
+      .sort(function (a, b) { return a.d - b.d; });
+    var use = near.filter(function (x) { return x.d <= 30000; }).slice(0, 4);
+    if (!use.length) use = near.slice(0, 1);
+    var w = use.map(function (x) { return { s: x.s, w: 1 / Math.pow(Math.max(x.d / 1000, 1), 2) }; });
+    var out = new Array(data.slots);
+    for (var i = 0; i < data.slots; i++) {
+      var sum = 0, ws = 0;
+      for (var j = 0; j < w.length; j++) {
+        var v = w[j].s.r10[i];
+        if (v !== null && v !== undefined) { sum += v * w[j].w; ws += w[j].w; }
+      }
+      out[i] = ws > 0 ? sum / ws : null;
+    }
+    locCache[key] = out;
+    return out;
+  }
+  // 時刻 t（ms）の記録に使う最後のコマ（t を10分に切り下げた時刻までの雨）
+  function lastIndex(ms) {
+    var start = Date.parse(data.start);
+    return Math.floor((Math.floor(ms / 600000) * 600000 - start) / 600000) - 1;
+  }
+  // cidao の rainContext と同じ式
+  function judge(series, end, p) {
+    var from = end - WINDOW + 1;
+    var k = Math.pow(0.5, 1 / (6 * p.half)), drain = p.drain / 6;
+    var bucket = 0, api = 0, bmax = 0, r72 = 0, missing = 0;
+    for (var i = from; i <= end; i++) {
+      var raw = i >= 0 ? series[i] : null;
+      if (i > end - 144 && (raw === null || raw === undefined)) missing++;
+      var v = raw || 0;
+      bucket = Math.max(0, bucket + v - drain);
+      api = api * k + v;
+      if (i > end - 18) bmax = Math.max(bmax, bucket);
+      if (i > end - 432) r72 += v;
+    }
+    if (missing > 144 * 0.3) return "u";
+    if (bmax >= p.bucket) return "a";
+    if (api >= p.api) return "b";
+    return r72 >= 0.5 ? "l" : "n";
+  }
+  function params() {
+    return {
+      drain: Number(document.getElementById("p-drain").value) || DEFAULTS.drain,
+      bucket: Number(document.getElementById("p-bucket").value) || DEFAULTS.bucket,
+      half: Number(document.getElementById("p-half").value) || DEFAULTS.half,
+      api: Number(document.getElementById("p-api").value) || DEFAULTS.api
+    };
+  }
+  function setParams(p) {
+    Object.keys(ids).forEach(function (k) {
+      document.getElementById("p-" + k).value = p[k];
+      document.getElementById("r-" + k).value = p[k];
+    });
+    run();
+  }
+  function pct(n, total) { return total ? Math.round(n * 100 / total) + "%（" + n + "件）" : "−"; }
+  function pctT(n, total) { return total ? Math.round(n * 100 / total) + "%" : "−"; }
+
+  function run() {
+    if (!data) return;
+    var p = params();
+    var c = { b: { a: 0, b: 0, l: 0, n: 0, u: 0, t: 0 }, p: { a: 0, b: 0, l: 0, n: 0, u: 0, t: 0 }, t: { a: 0, b: 0, l: 0, n: 0, u: 0, t: 0 } };
+    data.records.forEach(function (r) {
+      var end = lastIndex(Date.parse(r[1].replace("Z", ":00Z")));
+      var v = judge(seriesAt([r[2], r[3]]), end, p);
+      c[r[0]][v]++; c[r[0]].t++;
+    });
+    var base = seriesAt(INZAI);
+    var e0 = lastIndex(Date.parse(data.event.from)) + 1, e1 = lastIndex(Date.parse(data.event.to));
+    for (var i = e0; i <= e1; i++) { var v = judge(base, i, p); c.t[v]++; c.t.t++; }
+    ["b", "p"].forEach(function (g) {
+      var t = c[g].t - c[g].u;
+      document.getElementById("n-" + g).textContent = c[g].t;
+      document.getElementById(g + "-f").textContent = pct(c[g].a + c[g].b, t);
+      document.getElementById(g + "-a").textContent = pct(c[g].a, t);
+      document.getElementById(g + "-b").textContent = pct(c[g].b, t);
+      document.getElementById(g + "-l").textContent = pct(c[g].l, t);
+      document.getElementById(g + "-n").textContent = pct(c[g].n, t);
+    });
+    var tt = c.t.t - c.t.u;
+    document.getElementById("t-f").textContent = pctT(c.t.a + c.t.b, tt);
+    document.getElementById("t-a").textContent = pctT(c.t.a, tt);
+    document.getElementById("t-b").textContent = pctT(c.t.b, tt);
+    document.getElementById("t-l").textContent = pctT(c.t.l, tt);
+    document.getElementById("t-n").textContent = pctT(c.t.n, tt);
+    var changed = Object.keys(DEFAULTS).some(function (k) { return p[k] !== DEFAULTS[k]; });
+    document.getElementById("result").classList.toggle("changed", changed);
+    document.getElementById("sim-status").textContent = (changed ? "数値を変えた結果です（地図の判定は既定値のまま）。" : "既定値（地図の判定と同じ）の結果です。") +
+      " データ：" + data.generatedAt.slice(0, 16).replace("T", " ") + " 作成・台風25号の記録 " + data.records.length + "件。";
+    drawChart(base, p);
+  }
+
+  function drawChart(base, p) {
+    var svg = document.getElementById("chart");
+    var start = Date.parse(data.start);
+    var from = lastIndex(Date.parse("2026-09-19T15:00:00Z")) + 1;
+    var to = Math.min(data.slots - 1, lastIndex(Date.parse("2026-09-25T15:00:00Z")));
+    var W = 900, H = 300, L = 44, R = 50, T = 28, B = 44;
+    var hours = Math.floor((to - from + 1) / 6);
+    var x = function (h) { return L + (W - L - R) * h / hours; };
+    var rainH = [], apiH = [], overH = [];
+    var k = Math.pow(0.5, 1 / (6 * p.half)), drain = p.drain / 6, api = 0, bucket = 0;
+    for (var i = Math.max(0, from - WINDOW); i < from; i++) { var v0 = base[i] || 0; api = api * k + v0; bucket = Math.max(0, bucket + v0 - drain); }
+    for (var h = 0; h < hours; h++) {
+      var sum = 0, over = false;
+      for (var j = 0; j < 6; j++) {
+        var v = base[from + h * 6 + j] || 0;
+        sum += v; api = api * k + v; bucket = Math.max(0, bucket + v - drain);
+        if (bucket >= p.bucket) over = true;
+      }
+      rainH.push(sum); apiH.push(api); overH.push(over);
+    }
+    var maxRain = Math.max(10, Math.ceil(Math.max.apply(null, rainH) / 10) * 10);
+    var maxApi = Math.max(p.api * 1.3, Math.ceil(Math.max.apply(null, apiH) / 50) * 50);
+    var yR = function (v) { return T + (H - T - B) * (1 - v / maxRain); };
+    var yA = function (v) { return T + (H - T - B) * (1 - v / maxApi); };
+    var s = [];
+    for (var h2 = 0; h2 < hours; h2++) if (overH[h2]) s.push('<rect x="' + x(h2) + '" y="' + T + '" width="' + (x(1) - x(0)) + '" height="' + (H - T - B) + '" fill="rgba(200,40,40,.18)"/>');
+    for (var h3 = 0; h3 < hours; h3++) s.push('<rect x="' + (x(h3) + 0.5) + '" y="' + yR(rainH[h3]) + '" width="' + Math.max(1, x(1) - x(0) - 1) + '" height="' + (H - B - yR(rainH[h3])) + '" fill="#7fa7cf"/>');
+    s.push('<polyline fill="none" stroke="#d9822b" stroke-width="2" points="' + apiH.map(function (v, h) { return x(h + 0.5) + "," + yA(v); }).join(" ") + '"/>');
+    s.push('<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yA(p.api) + '" y2="' + yA(p.api) + '" stroke="#d9822b" stroke-dasharray="5 4"/>');
+    // 記録
+    data.records.forEach(function (r) {
+      var t = Date.parse(r[1].replace("Z", ":00Z"));
+      var hh = (t - (start + from * 600000)) / 3600000;
+      if (hh < 0 || hh > hours) return;
+      var y0 = r[0] === "b" ? H - B + 6 : H - B + 18;
+      s.push('<line x1="' + x(hh) + '" x2="' + x(hh) + '" y1="' + y0 + '" y2="' + (y0 + 9) + '" stroke="' + (r[0] === "b" ? "#b8322c" : "#1565c0") + '" stroke-opacity=".7"/>');
+    });
+    // 目盛り
+    s.push('<line x1="' + L + '" x2="' + (W - R) + '" y1="' + (H - B) + '" y2="' + (H - B) + '" stroke="#9fb0bc"/>');
+    [0, maxRain / 2, maxRain].forEach(function (v) { s.push('<text x="' + (L - 6) + '" y="' + (yR(v) + 4) + '" font-size="11" text-anchor="end" fill="#3d4f60">' + v + '</text>'); });
+    [0, Math.round(maxApi / 2), Math.round(maxApi)].forEach(function (v) { s.push('<text x="' + (W - R + 6) + '" y="' + (yA(v) + 4) + '" font-size="11" fill="#9a5a14">' + v + '</text>'); });
+    s.push('<text x="' + (L - 6) + '" y="12" font-size="11" text-anchor="end" fill="#3d4f60">mm/時</text>');
+    s.push('<text x="' + (W - R + 6) + '" y="12" font-size="11" fill="#9a5a14">mm</text>');
+    for (var d = 0; d <= hours; d += 24) {
+      var dt = new Date(start + from * 600000 + d * 3600000 + 9 * 3600000);
+      s.push('<line x1="' + x(d) + '" x2="' + x(d) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="#e3e8ec"/>');
+      if (d < hours) s.push('<text x="' + (x(d) + 4) + '" y="' + (H - 4) + '" font-size="11" fill="#3d4f60">' + (dt.getUTCMonth() + 1) + '/' + dt.getUTCDate() + '</text>');
+    }
+    s.push('<text x="' + (W - R) + '" y="' + (H - B + 14) + '" font-size="10" text-anchor="end" fill="#b8322c">通れない</text>');
+    s.push('<text x="' + (W - R) + '" y="' + (H - B + 27) + '" font-size="10" text-anchor="end" fill="#1565c0">通れた</text>');
+    svg.innerHTML = s.join("");
+  }
+
+  Object.keys(ids).forEach(function (k) {
+    var num = document.getElementById("p-" + k), range = document.getElementById("r-" + k);
+    num.addEventListener("input", function () { range.value = num.value; run(); });
+    range.addEventListener("input", function () { num.value = range.value; run(); });
+  });
+  document.getElementById("reset").addEventListener("click", function () { setParams(DEFAULTS); });
+  document.getElementById("preset-old").addEventListener("click", function () { setParams(OLD); });
+  setParams(DEFAULTS);
+  fetch("rain-logic-data.json", { cache: "no-cache" }).then(function (r) {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }).then(function (d) { data = d; run(); }).catch(function (e) {
+    document.getElementById("sim-status").textContent = "データを読み込めませんでした（" + e.message + "）。";
+  });
+})();
+</script>
+</body>
+</html>

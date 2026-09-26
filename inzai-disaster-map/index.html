@@ -202,7 +202,7 @@
                   <label class="has-tip"><input type="checkbox" data-overlay="underpassMlit"> <span class="layer-name">🚇 アンダーパスの位置（国土交通省）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>国土交通省が公開している<a href="https://www.mlit.go.jp/road/saigai/underpass/index.html" target="_blank" rel="noreferrer">全国のアンダーパス箇所マップ</a>から、印西市とその周りの40か所を紫の点で出します。国道のほか、県や市町が管理するものも入っています。<strong>いま冠水しているかどうかは示していません。</strong>大雨のときはアンダーパスに近づかないでください。</p><p>このデータに、印西市が管理するアンダーパスは入っていません（ないのか、載っていないだけなのかは分かりません）。</p><p>出典：国土交通省「全国のアンダーパス箇所マップ」を加工して作成（公共データ利用規約1.0）</p></span></span></label>
                   <label class="has-tip"><input type="checkbox" data-overlay="pastFlood"> <span class="layer-name">🌊 過去の冠水実績（運営が記録した地点）</span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>過去に冠水したと<strong>確認できた地点</strong>を、運営が1件ずつ記録したものです（県の災害対策本部会議資料、住民の投稿など）。出典と確認日をポップアップに書いています。</p><p><strong>対象日のしぼり込みは掛かりません。</strong>いつの対象日を選んでいても、記録のある地点をすべて表示します。長く残す実績だからです。</p><p>ハザード想定でも、いまの冠水状況でもありません。</p></span></span></label>
 
-                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="passedRoads" checked> <span class="layer-name">🔵 通れた道（GPS記録）<span id="passed-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>この地図を見ている人が、<strong>いつ・どのくらいの雨のときに通れたか</strong>を記録したものです。「いま通れる」という意味ではありません。<strong>同じくらいの雨のときにどうだったか</strong>を見るためのものです。</p><p class="tip-away"><strong>いま通れる道を探すなら</strong>、トヨタ車の走行データを使った<a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">TOYOTA 通れた道マップ ↗</a>のほうが向いています（直近3時間・24時間の通行実績。ただし過去の日にちは選べません）。</p><p>色の濃さは記録の新しさです。<strong>6時間以上前の記録は「冠水時に通れた実績」として薄い青で残します。</strong>より強い雨では冠水することがあり、安全を保証するものではありません。</p><p>「通れない」には記録時刻の最寄りアメダス（我孫子・佐倉・成田・船橋）の雨量を添え、<strong>☔ 雨あり＝冠水の可能性／🌤 雨なし＝工事・事故など別の理由の可能性</strong>の目安を出します（確定ではありません）。</p><p>記録は匿名です（端末の乱数IDと軌跡だけが送られ、名前や電話番号は送られません）。</p></span></span></label>
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="passedRoads" checked> <span class="layer-name">🔵 通れた道（GPS記録）<span id="passed-roads-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>この地図を見ている人が、<strong>いつ・どのくらいの雨のときに通れたか</strong>を記録したものです。「いま通れる」という意味ではありません。<strong>同じくらいの雨のときにどうだったか</strong>を見るためのものです。</p><p class="tip-away"><strong>いま通れる道を探すなら</strong>、トヨタ車の走行データを使った<a href="https://www.toyota.co.jp/jpn/auto/passable_route/map/" target="_blank" rel="noreferrer">TOYOTA 通れた道マップ ↗</a>のほうが向いています（直近3時間・24時間の通行実績。ただし過去の日にちは選べません）。</p><p>色の濃さは記録の新しさです。<strong>6時間以上前の記録は「冠水時に通れた実績」として薄い青で残します。</strong>より強い雨では冠水することがあり、安全を保証するものではありません。</p><p>「通れない」には記録時刻の前後の雨（周辺4か所のアメダスの平均・<a href="./rain-logic.html" target="_blank" rel="noopener">判定の考え方</a>）を添え、<strong>☔ 雨あり＝冠水の可能性／🌤 雨なし＝工事・事故など別の理由の可能性</strong>の目安を出します（確定ではありません）。</p><p>記録は匿名です（端末の乱数IDと軌跡だけが送られ、名前や電話番号は送られません）。</p></span></span></label>
                   <div class="jshis-layer-note road-risk-legend passed-roads-legend">
                     <span><span class="legend-line" style="background:#1565c0"></span>通れた道（今回の大雨）</span>
                     <span><span class="legend-line" style="background:#1565c0;opacity:.4"></span>通れた道（それより前の実績）</span>
@@ -728,12 +728,12 @@
             <div id="hazard-result" class="hazard-result"></div>
           </div>
 
-          <!-- 💧 積算雨量でしぼり込む（2026-09-23）。雨量は記録した時刻に最寄りアメダスから付けた値 -->
+          <!-- 💧 積算雨量でしぼり込む（2026-09-23）。雨量は記録した時刻に周辺4か所のアメダスの重み付け平均で付けた値（2026-09-26 から・rain-logic.html） -->
           <div class="range-panel rain-panel" id="rain-panel" hidden>
             <div class="rain-verdicts" role="group" aria-label="記録した時刻に雨が降っていたか">
-              <button type="button" data-rain="flood_likely" aria-pressed="true" title="1時間5mm・3時間10mm・24時間30mmのいずれか以上。冠水の可能性が高い">☔ 雨あり</button>
-              <button type="button" data-rain="light_rain" aria-pressed="true" title="少しだけ降っていた。冠水か別の理由かは判断保留">🌦 少し</button>
-              <button type="button" data-rain="no_rain" aria-pressed="true" title="降っていなかった。工事・事故など冠水以外の理由の可能性">🌤 雨なし</button>
+              <button type="button" data-rain="flood_likely" aria-pressed="true" title="排水の想定（1時間50mm）を超える雨があった、またはここ数日に降り続いた雨の量が多い（止んだ後も水が引くまでを含む）。雨による冠水と考えて矛盾しない">☔ 冠水のおそれ</button>
+              <button type="button" data-rain="light_rain" aria-pressed="true" title="3日以内に雨はあったが、冠水のおそれの条件には届かない。冠水か別の理由かは判断保留">🌦 小雨</button>
+              <button type="button" data-rain="no_rain" aria-pressed="true" title="3日間降っていなかった。工事・事故など冠水以外の理由の可能性">🌤 雨なし</button>
             </div>
             <p class="rain-sub">積算雨量でしぼり込む</p>
             <div class="rain-window" role="group" aria-label="どの時間の雨量で見るか">
@@ -749,7 +749,7 @@
               <button type="button" data-rain-min="50">50mm以上</button>
             </div>
             <label>この値以上 <input type="number" id="rain-min-input" min="0" max="500" step="1" inputmode="numeric"> mm</label>
-            <p class="range-note" id="rain-note">記録した時刻までの積算雨量（アメダス我孫子・佐倉・成田・船橋のうち最寄り1地点）で記録をしぼり込みます。印西市内に観測点がないため、実際の雨量とは差があります。<br><strong>みんつく千葉冠水マップの投稿は対象外です。</strong>本家のデータに「いつ冠水したか」が入っておらず、投稿された日時しか分からないためです（8月13日の豪雨の冠水が、雨の降らなかった8月24〜26日に3,416件まとめて投稿されています）。</p>
+            <p class="range-note" id="rain-note">上の3つは、記録した時刻の前後の雨から付けた目安です（周辺4か所のアメダスの平均。<a href="./rain-logic.html" target="_blank" rel="noopener">考え方・数値を変えて試す ↗</a>）。下は、記録した時刻までの積算雨量（同じ平均）でしぼり込みます。印西市内に観測点がないため、実際の雨量とは差があります。<br><strong>みんつく千葉冠水マップの投稿は対象外です。</strong>本家のデータに「いつ冠水したか」が入っておらず、投稿された日時しか分からないためです（8月13日の豪雨の冠水が、雨の降らなかった8月24〜26日に3,416件まとめて投稿されています）。</p>
             <div class="range-actions">
               <button type="button" id="rain-apply">この雨量で見る</button>
               <button type="button" id="rain-clear">解除</button>
@@ -1856,7 +1856,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260926c"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20260926h"></script>
+    <script src="./app.js?v=20260926i"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>
