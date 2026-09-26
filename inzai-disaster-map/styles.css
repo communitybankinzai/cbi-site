@@ -3711,6 +3711,8 @@ body.sns-popup-open #quick-record-bar { display: none; }
 .citizen-road-handle span { width: 28px; height: 28px; touch-action: none; }
 .citizen-road-handle.is-mid span { width: 22px; height: 22px; background: rgba(255,255,255,.92); border: 2px dashed currentColor; font-size: 15px; line-height: 1; box-shadow: 0 1px 3px #0004; }
 .leaflet-marker-dragging.citizen-road-handle span { transform: scale(1.15); box-shadow: 0 2px 8px #0006; }
+/* 運営の線直し：1km超 飛んでいる区間の「✂」（押すとそこで線を2本に切る・2026-09-26） */
+.citizen-road-handle.is-cut span { background: #fff8e1; border: 2px solid #e65100; color: #e65100; font-size: 14px; cursor: pointer; box-shadow: 0 0 0 3px rgba(230,81,0,.25), 0 1px 3px #0004; }
 @media (max-width: 820px) {
   .quick-record-bar {
     display: block;
