@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px}
+body.cover,body.cover html{height:1000px}
+body{font-family:"BIZ UDPGothic","BIZ UDGothic","Yu Gothic","Meiryo",sans-serif;background:#10283f;color:#fff;position:relative;overflow:hidden}
+.slide{display:none;position:absolute;inset:0;padding:64px 64px 0}
+.slide.on{display:block}
+.pg{position:absolute;right:64px;top:64px;font-size:26px;font-weight:700;opacity:.6}
+.kicker{display:inline-block;background:#c4843a;color:#fff;font-weight:700;font-size:28px;padding:8px 18px;border-radius:8px}
+h2{font-size:58px;line-height:1.25;font-weight:800;margin-top:20px}
+h2 .y{color:#ffd23f}
+.lead{font-size:30px;line-height:1.6;margin-top:22px;font-weight:700}
+.lead small{display:block;font-size:22px;opacity:.75;font-weight:400;margin-top:4px}
+.card{background:#fff;color:#10283f;border-radius:22px;padding:30px 36px;margin-top:28px}
+.card h3{font-size:30px;color:#8a5a22;margin-bottom:10px}
+.card p{font-size:34px;line-height:1.55;font-weight:800}
+.card p .r{color:#b8492f}
+.card p .b{color:#1d6fa5}
+.chart{width:100%;height:auto;display:block;margin-top:14px}
+.verdict{margin-top:34px;border-radius:18px;padding:22px 28px;font-size:34px;font-weight:800;line-height:1.45;text-align:center}
+.ok{background:#2f7d5b}
+.warn{background:#b8492f}
+.note{font-size:22px;line-height:1.6;opacity:.85;margin-top:18px}
+.note b{color:#ffd23f}
+.big{font-size:38px;font-weight:800;line-height:1.5}
+.box2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+.box2 div{background:rgba(255,255,255,.1);border-radius:16px;padding:26px 26px;font-size:28px;font-weight:700;line-height:1.5}
+.box2 b{color:#ffd23f;display:block;font-size:32px;margin-bottom:8px}
+.box2 .num{font-size:44px;font-weight:800;color:#fff;display:block;margin-top:6px}
+.foot{position:absolute;left:64px;right:64px;bottom:34px;display:flex;gap:24px;justify-content:space-between;align-items:flex-end;font-size:18px;line-height:1.6}
+.foot .src{flex:1 1 auto;opacity:.75;white-space:normal;font-size:16px;max-width:760px}
+.foot .org{flex:0 0 auto;white-space:nowrap;font-size:22px;font-weight:700}
+.limits{margin-top:26px;font-size:23px;line-height:1.6;opacity:.85}
+.limits li{margin-left:1.2em;margin-top:4px}
+.buckets{width:100%;height:auto;display:block;margin-top:10px}
+</style></head><body>
+
+<!-- 1 表紙（見出し帯は sns_headline.py で上に付ける） -->
+<section class="slide" data-s="1">
+  <span class="kicker">防災MAP 検証</span>
+  <p class="lead" style="margin-top:20px">台風25号で防災MAPに寄せられた「通れない」109件を、<br>周辺の雨量データと突き合わせました。</p>
+  <div class="card">
+    <h3>結論</h3>
+    <p>冠水の原因は<span class="b">「一度に降る強さ」</span>ではなく、<br><span class="r">「引く速さを上回って降り続いた量」</span></p>
+  </div>
+  <div class="box2">
+    <div><b>① 雨の強さ</b>排水の想定（50mm/時）を<br>一度も超えず<span class="num">最大 38mm/時</span></div>
+    <div><b>② 残った水</b>2日で約340mm降り、<br>やんでも約2日引かず<span class="num">109件中 105件</span>がこれで説明</div>
+  </div>
+</section>
+
+<!-- 2 雨の強さ -->
+<section class="slide" data-s="2">
+  <div class="pg">2 / 4</div>
+  <span class="kicker">① 雨の強さ</span>
+  <h2>排水の想定を<br><span class="y">一度も超えていない</span></h2>
+  <p class="lead">1時間あたりの雨<small>印西市役所付近・周辺4か所のアメダスの平均（9/20〜9/24）</small></p>
+  <svg class="chart" viewBox="0 0 952 370" xmlns="http://www.w3.org/2000/svg">
+<line x1="70" y1="320.0" x2="932" y2="320.0" stroke="#ffffff" stroke-opacity=".18"/>
+<text x="60" y="328.0" fill="#fff" font-size="20" text-anchor="end">0</text>
+<line x1="70" y1="220.0" x2="932" y2="220.0" stroke="#ffffff" stroke-opacity=".18"/>
+<text x="60" y="228.0" fill="#fff" font-size="20" text-anchor="end">20</text>
+<line x1="70" y1="120.0" x2="932" y2="120.0" stroke="#ffffff" stroke-opacity=".18"/>
+<text x="60" y="128.0" fill="#fff" font-size="20" text-anchor="end">40</text>
+<line x1="70" y1="20.0" x2="932" y2="20.0" stroke="#ffffff" stroke-opacity=".18"/>
+<text x="60" y="28.0" fill="#fff" font-size="20" text-anchor="end">60</text>
+<rect x="70.5" y="318.0" width="6.2" height="2.0" fill="#4aa3d8"/>
+<rect x="113.6" y="319.5" width="6.2" height="0.5" fill="#4aa3d8"/>
+<rect x="120.8" y="319.0" width="6.2" height="1.0" fill="#4aa3d8"/>
+<rect x="128.0" y="309.5" width="6.2" height="10.5" fill="#4aa3d8"/>
+<rect x="135.2" y="297.5" width="6.2" height="22.5" fill="#4aa3d8"/>
+<rect x="142.3" y="305.0" width="6.2" height="15.0" fill="#4aa3d8"/>
+<rect x="149.5" y="306.0" width="6.2" height="14.0" fill="#4aa3d8"/>
+<rect x="156.7" y="307.0" width="6.2" height="13.0" fill="#4aa3d8"/>
+<rect x="163.9" y="319.5" width="6.2" height="0.5" fill="#4aa3d8"/>
+<rect x="171.1" y="313.5" width="6.2" height="6.5" fill="#4aa3d8"/>
+<rect x="178.2" y="305.5" width="6.2" height="14.5" fill="#4aa3d8"/>
+<rect x="185.4" y="313.5" width="6.2" height="6.5" fill="#4aa3d8"/>
+<rect x="192.6" y="307.5" width="6.2" height="12.5" fill="#4aa3d8"/>
+<rect x="199.8" y="310.0" width="6.2" height="10.0" fill="#4aa3d8"/>
+<rect x="207.0" y="311.0" width="6.2" height="9.0" fill="#4aa3d8"/>
+<rect x="214.2" y="282.5" width="6.2" height="37.5" fill="#4aa3d8"/>
+<rect x="221.3" y="265.5" width="6.2" height="54.5" fill="#4aa3d8"/>
+<rect x="228.5" y="252.0" width="6.2" height="68.0" fill="#4aa3d8"/>
+<rect x="235.7" y="248.0" width="6.2" height="72.0" fill="#4aa3d8"/>
+<rect x="242.9" y="229.5" width="6.2" height="90.5" fill="#4aa3d8"/>
+<rect x="250.1" y="215.0" width="6.2" height="105.0" fill="#4aa3d8"/>
+<rect x="257.3" y="178.0" width="6.2" height="142.0" fill="#4aa3d8"/>
+<rect x="264.5" y="254.0" width="6.2" height="66.0" fill="#4aa3d8"/>
+<rect x="271.6" y="293.0" width="6.2" height="27.0" fill="#4aa3d8"/>
+<rect x="278.8" y="302.5" width="6.2" height="17.5" fill="#4aa3d8"/>
+<rect x="286.0" y="286.5" width="6.2" height="33.5" fill="#4aa3d8"/>
+<rect x="293.2" y="274.0" width="6.2" height="46.0" fill="#4aa3d8"/>
+<rect x="300.4" y="292.0" width="6.2" height="28.0" fill="#4aa3d8"/>
+<rect x="307.6" y="307.5" width="6.2" height="12.5" fill="#4aa3d8"/>
+<rect x="314.7" y="316.5" width="6.2" height="3.5" fill="#4aa3d8"/>
+<rect x="321.9" y="311.0" width="6.2" height="9.0" fill="#4aa3d8"/>
+<rect x="336.3" y="317.0" width="6.2" height="3.0" fill="#4aa3d8"/>
+<rect x="343.5" y="304.0" width="6.2" height="16.0" fill="#4aa3d8"/>
+<rect x="350.7" y="261.0" width="6.2" height="59.0" fill="#4aa3d8"/>
+<rect x="357.8" y="181.5" width="6.2" height="138.5" fill="#4aa3d8"/>
+<rect x="365.0" y="130.5" width="6.2" height="189.5" fill="#4aa3d8"/>
+<rect x="372.2" y="172.5" width="6.2" height="147.5" fill="#4aa3d8"/>
+<rect x="379.4" y="219.0" width="6.2" height="101.0" fill="#4aa3d8"/>
+<rect x="386.6" y="261.0" width="6.2" height="59.0" fill="#4aa3d8"/>
+<rect x="393.8" y="303.0" width="6.2" height="17.0" fill="#4aa3d8"/>
+<rect x="400.9" y="312.5" width="6.2" height="7.5" fill="#4aa3d8"/>
+<rect x="408.1" y="319.5" width="6.2" height="0.5" fill="#4aa3d8"/>
+<rect x="688.3" y="319.5" width="6.2" height="0.5" fill="#4aa3d8"/>
+<rect x="695.5" y="318.0" width="6.2" height="2.0" fill="#4aa3d8"/>
+<rect x="702.6" y="319.5" width="6.2" height="0.5" fill="#4aa3d8"/>
+<rect x="717.0" y="318.0" width="6.2" height="2.0" fill="#4aa3d8"/>
+<rect x="731.4" y="318.0" width="6.2" height="2.0" fill="#4aa3d8"/>
+<rect x="738.6" y="318.0" width="6.2" height="2.0" fill="#4aa3d8"/>
+<rect x="767.3" y="319.5" width="6.2" height="0.5" fill="#4aa3d8"/>
+<rect x="774.5" y="310.0" width="6.2" height="10.0" fill="#4aa3d8"/>
+<rect x="781.6" y="310.5" width="6.2" height="9.5" fill="#4aa3d8"/>
+<line x1="70" y1="70.0" x2="932" y2="70.0" stroke="#ff7a5c" stroke-width="4" stroke-dasharray="14 8"/>
+<text x="932" y="58.0" fill="#ff7a5c" font-size="24" font-weight="800" text-anchor="end">排水の想定 50mm/時</text>
+<text x="368.1" y="116.5" fill="#ffd23f" font-size="24" font-weight="800" text-anchor="middle">最大 38mm</text>
+<line x1="70.0" y1="20" x2="70.0" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="156.2" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/20</text>
+<line x1="242.4" y1="20" x2="242.4" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="328.6" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/21</text>
+<line x1="414.8" y1="20" x2="414.8" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="501.0" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/22</text>
+<line x1="587.2" y1="20" x2="587.2" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="673.4" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/23</text>
+<line x1="759.6" y1="20" x2="759.6" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="845.8" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/24</text>
+<line x1="932.0" y1="20" x2="932.0" y2="326" stroke="#fff" stroke-opacity=".35"/>
+</svg>
+  <p class="note"><b>50mm/時</b>は、下水道の雨水計画で使われる「5年に1回程度の雨」の強さ（千葉市の例。印西市の値は公開資料で見つかりませんでした）。この強さまでなら排水が追いつく、という想定です。<br>台風25号は最大でも38mm/時。道路に降った雨そのものは、想定の範囲内でした。</p>
+  <div class="verdict warn">「雨の強さ」では、冠水を説明できない</div>
+</section>
+
+<!-- 3 残った水 -->
+<section class="slide" data-s="3">
+  <div class="pg">3 / 4</div>
+  <span class="kicker">② 残った水</span>
+  <h2>雨がやんでも<br><span class="y">約2日、水が残った</span></h2>
+  <p class="lead">残っている水の量<small>降った雨を足し、48時間で半分引くとして差し引いた値（mm）</small></p>
+  <svg class="chart" viewBox="0 0 952 462" xmlns="http://www.w3.org/2000/svg">
+<line x1="70" y1="320.0" x2="932" y2="320.0" stroke="#ffffff" stroke-opacity=".18"/>
+<text x="60" y="328.0" fill="#fff" font-size="20" text-anchor="end">0</text>
+<line x1="70" y1="220.0" x2="932" y2="220.0" stroke="#ffffff" stroke-opacity=".18"/>
+<text x="60" y="228.0" fill="#fff" font-size="20" text-anchor="end">100</text>
+<line x1="70" y1="120.0" x2="932" y2="120.0" stroke="#ffffff" stroke-opacity=".18"/>
+<text x="60" y="128.0" fill="#fff" font-size="20" text-anchor="end">200</text>
+<line x1="70" y1="20.0" x2="932" y2="20.0" stroke="#ffffff" stroke-opacity=".18"/>
+<text x="60" y="28.0" fill="#fff" font-size="20" text-anchor="end">300</text>
+<rect x="285.5" y="20" width="423.8" height="300" fill="#b8492f" fill-opacity=".28"/>
+<polyline points="73.6,318.5 80.8,318.5 88.0,318.5 95.1,318.6 102.3,318.6 109.5,318.6 116.7,318.6 123.9,318.4 131.1,316.3 138.2,311.8 145.4,308.9 152.6,306.3 159.8,303.9 167.0,304.0 174.2,302.9 181.3,300.3 188.5,299.3 195.7,297.1 202.9,295.4 210.1,293.9 217.3,286.8 224.4,276.5 231.6,263.6 238.8,250.1 246.0,233.1 253.2,213.5 260.4,186.9 267.5,175.7 274.7,172.4 281.9,171.1 289.1,166.6 296.3,159.7 303.5,156.4 310.6,156.2 317.8,157.9 325.0,158.4 332.2,160.7 339.4,162.4 346.6,161.5 353.7,152.0 360.9,126.9 368.1,92.1 375.3,66.1 382.5,49.7 389.7,41.8 396.8,42.4 404.0,44.9 411.2,48.7 418.4,52.6 425.6,56.4 432.8,60.2 439.9,63.9 447.1,67.6 454.3,71.2 461.5,74.8 468.7,78.3 475.9,81.8 483.0,85.2 490.2,88.6 497.4,91.9 504.6,95.2 511.8,98.4 519.0,101.6 526.1,104.7 533.3,107.8 540.5,110.8 547.7,113.8 554.9,116.8 562.1,119.7 569.2,122.6 576.4,125.4 583.6,128.2 590.8,130.9 598.0,133.6 605.2,136.3 612.3,138.9 619.5,141.5 626.7,144.1 633.9,146.6 641.1,149.1 648.3,151.6 655.4,154.0 662.6,156.4 669.8,158.7 677.0,161.0 684.2,163.3 691.4,165.4 698.5,167.3 705.7,169.4 712.9,171.5 720.1,173.2 727.3,175.3 734.5,177.0 741.6,178.6 748.8,180.6 756.0,182.6 763.2,184.6 770.4,186.4 777.6,186.3 784.7,186.4 791.9,188.3 799.1,190.2 806.3,192.0 813.5,193.9 820.7,195.7 827.8,197.5 835.0,199.2 842.2,201.0 849.4,202.7 856.6,204.3 863.8,206.0 870.9,207.6 878.1,209.2 885.3,210.8 892.5,212.4 899.7,213.9 906.9,215.5 914.0,217.0 921.2,218.4 928.4,219.9" fill="none" stroke="#ffd23f" stroke-width="5" stroke-linejoin="round"/>
+<line x1="70" y1="170.0" x2="932" y2="170.0" stroke="#ff7a5c" stroke-width="4" stroke-dasharray="14 8"/>
+<text x="932" y="200.0" fill="#ff7a5c" font-size="24" font-weight="800" text-anchor="end">冠水のおそれの線 150mm</text>
+<text x="377.7" y="27.8" fill="#ffd23f" font-size="24" font-weight="800" text-anchor="end">最大 278mm</text>
+<line x1="407.6" y1="20" x2="407.6" y2="320" stroke="#4aa3d8" stroke-width="3"/>
+<text x="417.6" y="112" fill="#9fd4f5" font-size="22" font-weight="700" text-anchor="start">雨がやむ</text>
+<text x="717.3" y="50" fill="#ffb4a0" font-size="22" font-weight="700" text-anchor="start">ここまで約2日</text>
+<line x1="70.0" y1="20" x2="70.0" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="156.2" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/20</text>
+<line x1="242.4" y1="20" x2="242.4" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="328.6" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/21</text>
+<line x1="414.8" y1="20" x2="414.8" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="501.0" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/22</text>
+<line x1="587.2" y1="20" x2="587.2" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="673.4" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/23</text>
+<line x1="759.6" y1="20" x2="759.6" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="845.8" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/24</text>
+<line x1="932.0" y1="20" x2="932.0" y2="326" stroke="#fff" stroke-opacity=".35"/>
+<text x="70" y="390" fill="#fff" font-size="21" font-weight="700" text-anchor="start">「通れない」の記録（日ごとの件数）</text>
+<rect x="74.0" y="400" width="164.4" height="50" rx="10" fill="#ffffff" fill-opacity="0.08"/>
+<text x="156.2" y="437" fill="#fff" font-size="30" font-weight="800" text-anchor="middle">0件</text>
+<rect x="246.4" y="400" width="164.4" height="50" rx="10" fill="#ffffff" fill-opacity="0.18"/>
+<text x="328.6" y="437" fill="#fff" font-size="30" font-weight="800" text-anchor="middle">23件</text>
+<rect x="418.8" y="400" width="164.4" height="50" rx="10" fill="#ffffff" fill-opacity="0.18"/>
+<text x="501.0" y="437" fill="#ffd23f" font-size="30" font-weight="800" text-anchor="middle">59件</text>
+<rect x="591.2" y="400" width="164.4" height="50" rx="10" fill="#ffffff" fill-opacity="0.18"/>
+<text x="673.4" y="437" fill="#fff" font-size="30" font-weight="800" text-anchor="middle">23件</text>
+<rect x="763.6" y="400" width="164.4" height="50" rx="10" fill="#ffffff" fill-opacity="0.18"/>
+<text x="845.8" y="437" fill="#fff" font-size="30" font-weight="800" text-anchor="middle">4件</text>
+</svg>
+  <p class="note">9/20〜21の2日間で約340mm。残り水は最大278mmに達し、雨がやんだ後も<b>9/23の夕方まで150mmを超えたまま</b>でした。「通れない」の記録は、雨がやんだ翌日の<b>9/22が最多（59件）</b>です。</p>
+  <div class="verdict ok">109件のうち105件（96%）が「残った水」で説明できる</div>
+</section>
+
+<!-- 4 まとめ -->
+<section class="slide" data-s="4">
+  <div class="pg">4 / 4</div>
+  <span class="kicker">まとめ</span>
+  <h2>バケツは<span class="y">2つ</span>ある</h2>
+  <svg class="buckets" viewBox="0 0 952 330" xmlns="http://www.w3.org/2000/svg">
+    <!-- 小さく速いバケツ -->
+    <g transform="translate(40,20)">
+      <path d="M40 40 L200 40 L180 220 L60 220 Z" fill="none" stroke="#9fd4f5" stroke-width="6"/>
+      <path d="M58 150 L182 150 L179 178 L61 178 Z" fill="#4aa3d8" opacity=".9"/>
+      <path d="M62 190 L178 190 L180 218 L60 218 Z" fill="#4aa3d8" opacity=".9"/>
+      <path d="M180 200 L250 200" stroke="#4aa3d8" stroke-width="10" stroke-linecap="round"/>
+      <path d="M235 185 L262 200 L235 215 Z" fill="#4aa3d8"/>
+      <text x="120" y="18" fill="#fff" font-size="26" font-weight="800" text-anchor="middle">側溝・下水道</text>
+      <text x="120" y="262" fill="#9fd4f5" font-size="24" font-weight="700" text-anchor="middle">小さいが、速い</text>
+      <text x="120" y="296" fill="#fff" font-size="24" text-anchor="middle">50mm/時 まで抜ける</text>
+    </g>
+    <!-- 大きく遅いバケツ -->
+    <g transform="translate(470,20)">
+      <path d="M20 40 L440 40 L410 220 L50 220 Z" fill="none" stroke="#ffd23f" stroke-width="6"/>
+      <path d="M36 90 L424 90 L410 218 L50 218 Z" fill="#b8492f" opacity=".75"/>
+      <path d="M412 200 L446 200" stroke="#b8492f" stroke-width="5" stroke-linecap="round"/>
+      <path d="M440 191 L458 200 L440 209 Z" fill="#b8492f"/>
+      <text x="230" y="18" fill="#fff" font-size="26" font-weight="800" text-anchor="middle">沼・川・低い土地</text>
+      <text x="230" y="170" fill="#fff" font-size="30" font-weight="800" text-anchor="middle">台風25号はこちらがあふれた</text>
+      <text x="230" y="262" fill="#ffd23f" font-size="24" font-weight="700" text-anchor="middle">大きいが、遅い</text>
+      <text x="230" y="296" fill="#fff" font-size="24" text-anchor="middle">半分引くのに 48時間</text>
+    </g>
+  </svg>
+  <p class="big" style="margin-top:26px">「雨がやんだ」は「水が引いた」ではありません。<br>台風25号では、やんでから約2日、<br>通れない道が残りました。</p>
+  <p class="note" style="margin-top:22px">防災MAPでは、この2つの見方で「冠水のおそれ」の時間帯を判定し、記録に添えています。</p>
+  <ul class="limits">
+    <li>1回の台風で当てはめた値です。次の大雨の記録で見直します。</li>
+    <li>印西市内に雨量観測点がないため、周辺4か所の平均を使っています。</li>
+    <li>時間帯の目安であり、場所ごとの差までは分かりません（同じ時間帯に「通れた」記録も多数あります）。</li>
+  </ul>
+</section>
+
+<div class="foot">
+  <div class="src">データ：気象庁アメダス10分値（我孫子・佐倉・成田・船橋ほか・CBI加工）／防災MAPの「通れない」記録（市民投稿・2026年9月20〜24日）<br>判定の式・既定値：CiDAO disaster-rain-logic v2（2026-09-26）　2026年9月 CBI集計</div>
+  <div class="org">Community Bank INZAI</div>
+</div>
+<script>
+const s = new URLSearchParams(location.search).get('s') || '1';
+document.querySelector(`.slide[data-s="${s}"]`).classList.add('on');
+if (s === '1') document.body.classList.add('cover');
+</script>
+</body></html>
