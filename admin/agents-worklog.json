@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-26",
+          "title": "防災MAP 初期表示が茨城県になる不具合の再修正＋最初の表示にSNS層＋佐倉市・印西市の通行止め巡回を30分化 0.4時間",
+          "category": "保守",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（syncMapBoxSize を前回の枠と比較・fitToInzai で測り直し＋余白3割上限・PRESETS.reset に snsRoads・8de2966 ほか）",
+            "site/inzai-disaster-map/index.html（通行止めの説明・版 20260926h）",
+            "Supabase pg_cron cidao_road_closures 5 * → 5,35 *／disaster_info_sources 佐倉市・印西市 config.minIntervalMinutes=25",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": true,
+          "note": "事業主の画面（つくば・石岡が表示）から逆算し、枠3300px→733pxの縮みで39.6kmずれることを再現、修正後0kmを本番でも確認。佐倉市（地図43件）・印西市（まとめ3件）とCBIのデータは一致、印西市の空の1件はリンクの読み違い（未修正）。県広報Xの道路情報マップ投稿は取り込み済みの県ページと同じと回答。session: 680d4e8d-5c43-4ced-b2a3-e34da55abc96 / output: 165,804 / cost: $45.96"
+        },
+        {
+          "date": "2026-09-26",
           "title": "県の道路規制状況図：県の発表時点と最終確認の時刻を3か所に表示（CiDAOで確認時刻を記録・GET追加） 0.2時間",
           "category": "実装",
           "outputs": [
