@@ -9718,9 +9718,13 @@ function fitToInzai(force = false) {
   const pad = inzaiFitPadding();
   // 上下の余白をそろえる（2026-09-24 中司さんの指摘「開くと茨城県が映る」）。
   // 上だけ帯の分を空けると、その分だけ市が下へ押し下げられ、画面の中心が北（利根川の向こう）へ寄っていた。
-  const vertical = Math.max(pad.top, pad.bottom);
   fittingInzai = true;
-  map.fitBounds(bounds, { paddingTopLeft: [12, vertical], paddingBottomRight: [12, vertical], animate: false });
+  // 合わせる直前に枠の大きさを測り直す（古い大きさのまま合わせると中心がずれる）
+  map.invalidateSize({ animate: false, pan: false });
+  // 余白は地図の高さの3割まで。帯や記録バーの位置から測るので、枠が縦に長い・短いときに余白が枠より
+  // 大きくなると、Leaflet が最大まで拡大して市が画面に入らなくなる（2026-09-26 再現で確認）
+  const vertical = Math.min(Math.max(pad.top, pad.bottom), Math.floor(map.getSize().y * 0.3));
+  map.fitBounds(bounds,{ paddingTopLeft: [12, vertical], paddingBottomRight: [12, vertical], animate: false });
   fittingInzai = false;
 }
 
@@ -9729,11 +9733,16 @@ function fitToInzai(force = false) {
 // 変わると、古い大きさのまま左上を基準に描かれ、中心が北西（利根川の向こう）へずれていた。
 // 枠の大きさを見張って測り直し、利用者がまだ地図を動かしていなければ印西市へ合わせ直す。
 // 見張りは裏に隠れたタブでは動かないので、開いてから1秒後・3秒後にも1回ずつ確かめる。
+// ⚠ 比べる相手は「前回見た枠の大きさ」。Leaflet が覚えている大きさ（map.getSize）と比べると、
+// scheduleMapResize() が先に大きさだけ覚え直させた場合に「食い違いなし」となり、合わせ直しが走らなかった
+// （2026-09-26 事業主の画面で、開くと印西市の約43km北＝茨城県が出たまま。合わせた瞬間は枠が縦に長かったとみられる）。
+let lastMapBoxSize = "";
 function syncMapBoxSize() {
   const el = map.getContainer();
   if (!el.clientWidth || !el.clientHeight) return;
-  const now = map.getSize();
-  if (now.x === el.clientWidth && now.y === el.clientHeight) return;
+  const size = `${el.clientWidth}x${el.clientHeight}`;
+  if (size === lastMapBoxSize) return;
+  lastMapBoxSize = size;
   fittingInzai = true;
   map.invalidateSize({ animate: false, pan: false });
   fittingInzai = false;
