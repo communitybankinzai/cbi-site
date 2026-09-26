@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-09-26",
+          "title": "防災MAP「線を直す」に『✂ ここで切る』（1km超の区間で線を2本に分割）＋cidao PATCH ?splitAt= 実装・本番検証 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/disaster/passed-roads/route.ts（PATCH ?splitAt=・SPLIT_COPY_COLUMNS・b4228c8）",
+            "site/inzai-disaster-map/app.js（CITIZEN_ROAD_GAP_M・citizenRoadGaps・splitCitizenRoad・✂ハンドル。c8fd88b に混入）",
+            "site/inzai-disaster-map/styles.css（.is-cut）・index.html（版 20260926j）・admin/changelog.json（1c9a786）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（節を追加）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "事業主が3案からA（切る操作）を選択。tsc 通過。本番APIで試験記録（4点・2km飛び）を作り splitAt=x/1/3→400 invalid_split、splitAt=2→200（前半2点99.8m・後半2点112.1m・メモ・雨量が両方に写る）を確認後、試験行2件を DATABASE_URL で削除。ローカル4173で fetch 差し替えにより ✂→confirm→PATCH ?splitAt=3→前半3点/後半3点を確認（スクショ）。本番の実データはまだ切っていない。⚠ app.js の未コミット変更が別セッションの c8fd88b に混入して先に公開された（ボードに申し送り済み）。session: dbdd70d6-7f17-4c00-af66-fb8412a6d276 / output: 53,975 / cost: $16.39（前回0.2hとの差分）"
+        },
+        {
+          "date": "2026-09-26",
           "title": "防災MAP 長距離プロットが途中で飛ぶ要因の調査と分割方法の3案検討（実装なし）0.2時間",
           "category": "調査",
           "outputs": [
@@ -7777,10 +7791,10 @@
       "plans": [
         {
           "due": "未定",
-          "title": "📐 防災MAP 長距離の線が途中で飛ぶ問題：「線を直す」に『✂ この点で切る』（運営）と、なぞり入力の遠いタップ警告を入れる",
+          "title": "📐 防災MAP なぞり入力で前の点から1km超のタップに『別の線にしますか』と聞く＋GPS記録の途切れ（60秒/300m）で自動分割（案B）／既存7件の飛び記録を運営が✂で切る",
           "category": "実装",
           "priority": "中",
-          "note": "2026-09-26 検討済み。現物は記録 864aa0e2（通れない道・524点・20.8km）の270→271番が直線5.3km。原因は (a) なぞりが前の点からの距離を見ずに1本につなぐ (b) 道なり補正が1区間3km（ブラウザ）/6km（route_snap.py）超・迂回2.5倍超・離れ100m超の区間を直線のまま残す (c) 1記録=1本のLineStringで途切れを表せない。案A（推奨）：cidao passed-roads に運営用 split（前半は元記録を更新・後半は時刻/メモ/雨量/path_original を引き継いで複製）＋編集画面で1km超の区間を点線＋⚠表示し「切る」ボタン。案B：addCitizenRoadPoint で前の点から500m超なら『別の線にしますか』→今の線を完了して新しい線を開始。GPS記録も60秒/300mの途切れで自動分割。案C（応急）：描画だけ1km超の区間を描かない（L.polyline の複線）。現状1km超の内部直線がある記録は7件（864aa0e2, b5dc3d89, 1555ddba, dfe5ff81, 84e51078, a47859e3, 24636c6a）。しきい値（500m/1km）と既存7件を手で切るか一括かは事業主判断。"
+          "note": "2026-09-26 案A（✂ ここで切る）は実装・公開済み。残りは予防の案B。既存の1km超の飛びがある記録7件（864aa0e2, b5dc3d89, 1555ddba, dfe5ff81, 84e51078, a47859e3, 24636c6a）は運営が「線を直す」の✂で手で切る（864aa0e2 は印西東端〜鎌ケ谷方面20kmで1本の道だったか不明・伏せる選択もあり事業主判断）。"
         },
         {
           "due": "未定",
