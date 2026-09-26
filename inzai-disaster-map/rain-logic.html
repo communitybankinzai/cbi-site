@@ -45,7 +45,7 @@ li{margin:5px 0}
 <p class="meta"><a href="./">← 防災MAPへ</a> ／ <a href="./data.html">データの扱い</a></p>
 
 <h1>雨の判定のしくみ</h1>
-<p class="lead">「通れない」「通れた」の記録に付けている「☔ 冠水のおそれ／🌦 小雨／🌤 雨なし」の決め方です。判定の版 <code>v2-2026-09-26</code>。作成：Community Bank INZAI（非営利・無償公開）</p>
+<p class="lead">「通れない」「通れた」の記録に付けている「☔ 冠水のおそれ／🌦 小雨／🌤 雨なし」の決め方です。判定の版 <code>v2.1-2026-09-26</code>。作成：Community Bank INZAI（非営利・無償公開）</p>
 
 <div class="notice">
   <strong>このページでわかること</strong><br>
@@ -82,11 +82,25 @@ li{margin:5px 0}
 <div class="table"><table>
 <thead><tr><th>数値</th><th>既定値</th><th>根拠</th></tr></thead>
 <tbody>
-<tr><th>D：排水が追いつく雨の強さ</th><td class="num">50 mm/時</td><td>一般的な値として、下水道の雨水の計画に使う雨の強さを採りました。国の手引きは、計画に使う雨を「5年に1回〜10年に1回程度の雨（1/5〜1/10）」を基本としています（<a href="https://www.mlit.go.jp/mizukokudo/sewerage/content/001728942.pdf" target="_blank" rel="noopener">国土交通省 雨水管理総合計画策定ガイドライン（案）令和3年11月</a> p.47）。千葉県内の例では、千葉市が5年に1回の雨として<strong>1時間50mm</strong>で整備してきました（平成16年に10年に1回の53.4mm、重点地区は65.1mm へ引き上げ・<a href="https://www.city.chiba.jp/kensetsu/gesuidokikaku/chisui/documents/zyuutennchiku.pdf" target="_blank" rel="noopener">千葉市雨水対策重点地区整備基本方針</a>）。<br><strong>印西市の値はわかりません</strong>（公開資料で見つけられませんでした）。また、下水道の無い道路・農道・低い土地では、実際にはもっと弱い雨でも水がたまります。</td></tr>
+<tr><th>D：排水が追いつく雨の強さ</th><td class="num">20 mm/時</td><td><strong>台風25号の記録から逆算した値です</strong>（下の「Dの逆算」）。比べる相手として、一般的な値（下水道の基準）も示します。下水道の雨水の計画に使う雨の強さは国の手引きは、計画に使う雨を「5年に1回〜10年に1回程度の雨（1/5〜1/10）」を基本としています（<a href="https://www.mlit.go.jp/mizukokudo/sewerage/content/001728942.pdf" target="_blank" rel="noopener">国土交通省 雨水管理総合計画策定ガイドライン（案）令和3年11月</a> p.47）。千葉県内の例では、千葉市が5年に1回の雨として<strong>1時間50mm</strong>で整備してきました（平成16年に10年に1回の53.4mm、重点地区は65.1mm へ引き上げ・<a href="https://www.city.chiba.jp/kensetsu/gesuidokikaku/chisui/documents/zyuutennchiku.pdf" target="_blank" rel="noopener">千葉市雨水対策重点地区整備基本方針</a>）。<br><strong>印西市の値はわかりません</strong>（公開資料で見つけられませんでした）。<br>記録から逆算した20mm/時は、この50mm/時よりずっと小さい値です。印西市の冠水は、下水道の雨水管のない農道・低い土地・沼沿いの道で多く起きているため、と考えています（推測）。「下水道の基準で見る」ボタンで比べられます。</td></tr>
 <tr><th>あふれのしきい値</th><td class="num">1 mm</td><td>「排水の想定を少しでも超えた」ことを表す最小の値として置きました。実データで決めた値ではありません。</td></tr>
 <tr><th>H：半分になるまでの時間</th><td class="num">48 時間</td><td rowspan="2">台風25号の「通れない」記録（110件）と、同じ期間の雨で当てはめました。「通れない」記録をいちばん多く拾い、それ以外の時間をなるべく拾わない組み合わせです（下の計算のコーナーで確かめられます）。<strong>1回の大雨だけで決めた値</strong>なので、次の大雨の記録で見直します。</td></tr>
 <tr><th>割り引いた雨のしきい値</th><td class="num">150 mm</td></tr>
 </tbody></table></div>
+
+<h3 id="fit-d">D の逆算（台風25号・降っている最中の記録）</h3>
+<p>D は「降っている最中に、どのくらいの強さの雨で水があふれ始めるか」を表す値です。そこで、雨が降っていた9月21日0時〜22日3時に記録された「通れない」26件が、バケツがあふれている時間にどれだけ入るかを、D を変えながら数えました。</p>
+<div class="table"><table>
+<thead><tr><th class="num">D（mm/時）</th><th class="num">「通れない」があふれている時間に入る割合</th><th class="num">降っていた時間のうち、あふれている時間の割合</th></tr></thead>
+<tbody>
+<tr><td class="num">10</td><td class="num">100%</td><td class="num">98%</td></tr>
+<tr><td class="num">15</td><td class="num">96%</td><td class="num">73%</td></tr>
+<tr style="background:#eef6ef"><td class="num"><strong>20</strong></td><td class="num"><strong>88%（26件中23件）</strong></td><td class="num"><strong>54%</strong></td></tr>
+<tr><td class="num">25</td><td class="num">69%</td><td class="num">43%</td></tr>
+<tr><td class="num">30</td><td class="num">54%</td><td class="num">34%</td></tr>
+<tr><td class="num">50（下水道の基準）</td><td class="num">0%</td><td class="num">0%</td></tr>
+</tbody></table></div>
+<p>「通れない」をたくさん拾いつつ、降っていた時間の全部を「あふれている」とはしない、その差がいちばん大きいのが20mm/時前後でした。<strong>記録が26件・大雨1回分だけ</strong>で、記録の時刻は冠水が始まった時刻ではなく記録した時刻なので、確かさは低めです。次の大雨の記録で見直します。</p>
 
 <h2 id="sim">3. 数値を変えて試す（台風25号の記録）</h2>
 <div class="sim">
@@ -96,7 +110,7 @@ li{margin:5px 0}
     <div><label for="p-half">H：半分になるまでの時間<small>長いほど、大雨の影響が長く残る</small></label><input id="p-half" type="number" min="1" max="168" step="1"> 時間<input id="r-half" type="range" min="1" max="168" step="1" aria-label="H"></div>
     <div><label for="p-api">割り引いた雨のしきい値<small>これ以上なら「降り続いた雨の量が多い」</small></label><input id="p-api" type="number" min="1" max="500" step="1"> mm<input id="r-api" type="range" min="1" max="500" step="1" aria-label="割り引いた雨のしきい値"></div>
   </div>
-  <div class="sim-buttons"><button type="button" id="reset" class="primary">既定値に戻す</button><button type="button" id="preset-old">以前の判定に近い見方（D=0・H=12時間）</button></div>
+  <div class="sim-buttons"><button type="button" id="reset" class="primary">既定値に戻す</button><button type="button" id="preset-sewer">下水道の基準で見る（D=50）</button><button type="button" id="preset-old">以前の判定に近い見方（D=0・H=12時間）</button></div>
 
   <div class="table"><table id="result">
     <thead><tr><th></th><th class="num">通れない（<span id="n-b">−</span>件）</th><th class="num">通れた（<span id="n-p">−</span>件）</th><th class="num">期間中の時間（印西市の中心）</th></tr></thead>
@@ -125,7 +139,7 @@ li{margin:5px 0}
 <h2>4. わかっていること・限界</h2>
 <ul>
   <li><strong>台風25号の1回だけ</strong>で当てはめています。8月の豪雨は、同じ期間の10分雨量の控えが無いため使えていません。</li>
-  <li>既定値（D=50mm/時）では、台風25号の1時間の雨（周辺4か所の平均で最大40mm前後）は<strong>排水の想定を一度も超えていません</strong>。台風25号の「通れない」は、1時間の雨の強さではなく「降り続いた雨の量と、その後に水が引かなかったこと」で説明されます（北印旛沼の堤防の決壊・印旛沼の水位の高止まりがあったため、と考えています）。</li>
+  <li>台風25号の「通れない」記録の多くは、雨が止んだ後のものでした。これは1時間の雨の強さではなく「降り続いた雨の量と、その後に水が引かなかったこと」で説明されます（北印旛沼の堤防の決壊・印旛沼の水位の高止まりがあったため、と考えています）。下水道の基準（D=50mm/時）で見ると、台風25号の1時間の雨（周辺4か所の平均で最大40mm前後）は一度も排水の想定を超えていません。</li>
   <li>「期間中の時間」は台風の5日間しか比べていないため、晴れの日にどれだけ誤って「冠水のおそれ」になるかは、まだ確かめられていません。</li>
   <li>記録は、地図を使った人が自分で登録したもので、場所や時刻に誤りがあることがあります。後から登録した記録には、運営が当てた代表の時刻が入っているものがあります。</li>
   <li>沼や川の水位は判定に入れていません（水位の記録を貯め始めたのが9月24日のため）。</li>
@@ -144,7 +158,8 @@ li{margin:5px 0}
 <script>
 (function () {
   "use strict";
-  var DEFAULTS = { drain: 50, bucket: 1, half: 48, api: 150 };
+  var DEFAULTS = { drain: 20, bucket: 1, half: 48, api: 150 };
+  var SEWER = { drain: 50, bucket: 1, half: 48, api: 150 };
   var OLD = { drain: 0, bucket: 5, half: 12, api: 30 };
   var WINDOW = 1008; // 7日（判定と同じ）
   var INZAI = [35.8325, 140.1456];
@@ -315,6 +330,7 @@ li{margin:5px 0}
   });
   document.getElementById("reset").addEventListener("click", function () { setParams(DEFAULTS); });
   document.getElementById("preset-old").addEventListener("click", function () { setParams(OLD); });
+  document.getElementById("preset-sewer").addEventListener("click", function () { setParams(SEWER); });
   setParams(DEFAULTS);
   fetch("rain-logic-data.json", { cache: "no-cache" }).then(function (r) {
     if (!r.ok) throw new Error("HTTP " + r.status);

@@ -731,7 +731,7 @@
           <!-- 💧 積算雨量でしぼり込む（2026-09-23）。雨量は記録した時刻に周辺4か所のアメダスの重み付け平均で付けた値（2026-09-26 から・rain-logic.html） -->
           <div class="range-panel rain-panel" id="rain-panel" hidden>
             <div class="rain-verdicts" role="group" aria-label="記録した時刻に雨が降っていたか">
-              <button type="button" data-rain="flood_likely" aria-pressed="true" title="排水の想定（1時間50mm）を超える雨があった、またはここ数日に降り続いた雨の量が多い（止んだ後も水が引くまでを含む）。雨による冠水と考えて矛盾しない">☔ 冠水のおそれ</button>
+              <button type="button" data-rain="flood_likely" aria-pressed="true" title="排水が追いつく強さ（1時間20mm・台風25号の記録から逆算）を超える雨があった、またはここ数日に降り続いた雨の量が多い（止んだ後も水が引くまでを含む）。雨による冠水と考えて矛盾しない">☔ 冠水のおそれ</button>
               <button type="button" data-rain="light_rain" aria-pressed="true" title="3日以内に雨はあったが、冠水のおそれの条件には届かない。冠水か別の理由かは判断保留">🌦 小雨</button>
               <button type="button" data-rain="no_rain" aria-pressed="true" title="3日間降っていなかった。工事・事故など冠水以外の理由の可能性">🌤 雨なし</button>
             </div>
@@ -1856,7 +1856,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260926c"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20260926j"></script>
+    <script src="./app.js?v=20260926k"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

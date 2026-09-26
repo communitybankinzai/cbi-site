@@ -8657,7 +8657,7 @@ function rainVerdictHtml(road) {
   const v = rainVerdictOf(road);
   const mm = x => (x === null || x === undefined ? "−" : `${x}mm`);
   // 2026-09-26 からの判定は理由（雨の強さ／降り続いた雨）と、割り引いた雨の合計も出す
-  const basis = rain.basis === "intensity" ? "理由：排水の想定（1時間50mm）を超える雨が記録の前3時間にあった"
+  const basis = rain.basis === "intensity" ? "理由：排水が追いつく強さ（1時間20mm・台風25号の記録から逆算）を超える雨が、記録の前3時間にあった"
     : rain.basis === "aftermath" ? `理由：ここ数日に降り続いた雨の量が多い（割り引いた合計 ${mm(rain.api)}）。降っている間から、止んで水が引くまでの間にあたる`
     : "";
   const detail = rain.verdict === "unknown"
