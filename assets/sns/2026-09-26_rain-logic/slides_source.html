@@ -43,11 +43,11 @@ h2 .y{color:#ffd23f}
   <p class="lead" style="margin-top:20px">台風25号で防災MAPに寄せられた「通れない」109件を、<br>周辺の雨量データと突き合わせました。</p>
   <div class="card">
     <h3>結論</h3>
-    <p>冠水の原因は<span class="b">「一度に降る強さ」</span>ではなく、<br><span class="r">「引く速さを上回って降り続いた量」</span></p>
+    <p>冠水の主な原因は<span class="b">「一度に降る強さ」</span>より、<br><span class="r">「引く速さを上回って降り続いた量」</span></p>
   </div>
   <div class="box2">
-    <div><b>① 雨の強さ</b>排水の想定（50mm/時）を<br>一度も超えず<span class="num">最大 38mm/時</span></div>
-    <div><b>② 残った水</b>2日で約340mm降り、<br>やんでも約2日引かず<span class="num">109件中 105件</span>がこれで説明</div>
+    <div><b>① 雨の強さ</b>下水道の基準（50mm/時）は超えず。記録から逆算した排水（20mm/時）を超えたのは<span class="num">109件中 23件</span></div>
+    <div><b>② 残った水</b>2日で約340mm降り、<br>やんでも約2日引かず<span class="num">109件中 82件</span>がこれで説明（合計96%）</div>
   </div>
 </section>
 
@@ -55,7 +55,7 @@ h2 .y{color:#ffd23f}
 <section class="slide" data-s="2">
   <div class="pg">2 / 4</div>
   <span class="kicker">① 雨の強さ</span>
-  <h2>排水の想定を<br><span class="y">一度も超えていない</span></h2>
+  <h2>下水道の基準は超えず、<br><span class="y">実際は20mm/時であふれた</span></h2>
   <p class="lead">1時間あたりの雨<small>印西市役所付近・周辺4か所のアメダスの平均（9/20〜9/24）</small></p>
   <svg class="chart" viewBox="0 0 952 370" xmlns="http://www.w3.org/2000/svg">
 <line x1="70" y1="320.0" x2="932" y2="320.0" stroke="#ffffff" stroke-opacity=".18"/>
@@ -117,8 +117,13 @@ h2 .y{color:#ffd23f}
 <rect x="767.3" y="319.5" width="6.2" height="0.5" fill="#4aa3d8"/>
 <rect x="774.5" y="310.0" width="6.2" height="10.0" fill="#4aa3d8"/>
 <rect x="781.6" y="310.5" width="6.2" height="9.5" fill="#4aa3d8"/>
-<line x1="70" y1="70.0" x2="932" y2="70.0" stroke="#ff7a5c" stroke-width="4" stroke-dasharray="14 8"/>
-<text x="932" y="58.0" fill="#ff7a5c" font-size="24" font-weight="800" text-anchor="end">排水の想定 50mm/時</text>
+<rect x="235.2" y="20" width="35.9" height="300" fill="#b8492f" fill-opacity=".28"/>
+<rect x="350.2" y="20" width="50.3" height="300" fill="#b8492f" fill-opacity=".28"/>
+<line x1="70" y1="70.0" x2="932" y2="70.0" stroke="#9fd4f5" stroke-width="3" stroke-dasharray="10 8"/>
+<text x="932" y="58.0" fill="#9fd4f5" font-size="23" font-weight="700" text-anchor="end">下水道の基準 50mm/時（千葉市の例）</text>
+<line x1="70" y1="220.0" x2="932" y2="220.0" stroke="#ff7a5c" stroke-width="4" stroke-dasharray="14 8"/>
+<text x="932" y="208.0" fill="#ff7a5c" font-size="24" font-weight="800" text-anchor="end">記録から逆算した排水 20mm/時</text>
+<text x="227.2" y="50" fill="#ffb4a0" font-size="22" font-weight="700" text-anchor="end">あふれていた時間</text>
 <text x="368.1" y="116.5" fill="#ffd23f" font-size="24" font-weight="800" text-anchor="middle">最大 38mm</text>
 <line x1="70.0" y1="20" x2="70.0" y2="326" stroke="#fff" stroke-opacity=".35"/>
 <text x="156.2" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/20</text>
@@ -132,8 +137,8 @@ h2 .y{color:#ffd23f}
 <text x="845.8" y="354" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">9/24</text>
 <line x1="932.0" y1="20" x2="932.0" y2="326" stroke="#fff" stroke-opacity=".35"/>
 </svg>
-  <p class="note"><b>50mm/時</b>は、下水道の雨水計画で使われる「5年に1回程度の雨」の強さ（千葉市の例。印西市の値は公開資料で見つかりませんでした）。この強さまでなら排水が追いつく、という想定です。<br>台風25号は最大でも38mm/時。道路に降った雨そのものは、想定の範囲内でした。</p>
-  <div class="verdict warn">「雨の強さ」では、冠水を説明できない</div>
+  <p class="note"><b>50mm/時</b>は下水道の雨水計画で使う「5年に1回程度の雨」の強さ（千葉市の例。印西市の値は公開資料になし）。台風25号は最大38mm/時で、この基準は一度も超えていません。<br>ところが「通れない」の記録から逆算すると、<b>20mm/時であふれ始めて</b>いました。下水道の雨水管がない農道・低い土地・沼沿いの道で冠水が多いためと考えられます（推測）。</p>
+  <div class="verdict warn">「雨の強さ」で説明できるのは 109件中 23件（2割）</div>
 </section>
 
 <!-- 3 残った水 -->
@@ -183,7 +188,7 @@ h2 .y{color:#ffd23f}
 <text x="845.8" y="437" fill="#fff" font-size="30" font-weight="800" text-anchor="middle">4件</text>
 </svg>
   <p class="note">9/20〜21の2日間で約340mm。残り水は最大278mmに達し、雨がやんだ後も<b>9/23の夕方まで150mmを超えたまま</b>でした。「通れない」の記録は、雨がやんだ翌日の<b>9/22が最多（59件）</b>です。</p>
-  <div class="verdict ok">109件のうち105件（96%）が「残った水」で説明できる</div>
+  <div class="verdict ok">82件（75%）が「残った水」。①と合わせて 105件（96%）</div>
 </section>
 
 <!-- 4 まとめ -->
@@ -191,7 +196,7 @@ h2 .y{color:#ffd23f}
   <div class="pg">4 / 4</div>
   <span class="kicker">まとめ</span>
   <h2>バケツは<span class="y">2つ</span>ある</h2>
-  <svg class="buckets" viewBox="0 0 952 330" xmlns="http://www.w3.org/2000/svg">
+  <svg class="buckets" viewBox="0 0 952 350" xmlns="http://www.w3.org/2000/svg">
     <!-- 小さく速いバケツ -->
     <g transform="translate(40,20)">
       <path d="M40 40 L200 40 L180 220 L60 220 Z" fill="none" stroke="#9fd4f5" stroke-width="6"/>
@@ -201,7 +206,7 @@ h2 .y{color:#ffd23f}
       <path d="M235 185 L262 200 L235 215 Z" fill="#4aa3d8"/>
       <text x="120" y="18" fill="#fff" font-size="26" font-weight="800" text-anchor="middle">側溝・下水道</text>
       <text x="120" y="262" fill="#9fd4f5" font-size="24" font-weight="700" text-anchor="middle">小さいが、速い</text>
-      <text x="120" y="296" fill="#fff" font-size="24" text-anchor="middle">50mm/時 まで抜ける</text>
+      <text x="120" y="292" fill="#fff" font-size="24" text-anchor="middle">20mm/時ほどで</text><text x="120" y="322" fill="#fff" font-size="24" text-anchor="middle">あふれる（記録から逆算）</text>
     </g>
     <!-- 大きく遅いバケツ -->
     <g transform="translate(470,20)">
@@ -212,20 +217,20 @@ h2 .y{color:#ffd23f}
       <text x="230" y="18" fill="#fff" font-size="26" font-weight="800" text-anchor="middle">沼・川・低い土地</text>
       <text x="230" y="170" fill="#fff" font-size="30" font-weight="800" text-anchor="middle">台風25号はこちらがあふれた</text>
       <text x="230" y="262" fill="#ffd23f" font-size="24" font-weight="700" text-anchor="middle">大きいが、遅い</text>
-      <text x="230" y="296" fill="#fff" font-size="24" text-anchor="middle">半分引くのに 48時間</text>
+      <text x="230" y="292" fill="#fff" font-size="24" text-anchor="middle">半分引くのに 48時間</text><text x="230" y="322" fill="#fff" font-size="24" text-anchor="middle">（記録から当てはめ）</text>
     </g>
   </svg>
   <p class="big" style="margin-top:26px">「雨がやんだ」は「水が引いた」ではありません。<br>台風25号では、やんでから約2日、<br>通れない道が残りました。</p>
   <p class="note" style="margin-top:22px">防災MAPでは、この2つの見方で「冠水のおそれ」の時間帯を判定し、記録に添えています。</p>
   <ul class="limits">
-    <li>1回の台風で当てはめた値です。次の大雨の記録で見直します。</li>
+    <li>1回の台風で当てはめた値です（20mm/時は降っている最中の記録26件から逆算・確かさ低め）。次の大雨の記録で見直します。</li>
     <li>印西市内に雨量観測点がないため、周辺4か所の平均を使っています。</li>
     <li>時間帯の目安であり、場所ごとの差までは分かりません（同じ時間帯に「通れた」記録も多数あります）。</li>
   </ul>
 </section>
 
 <div class="foot">
-  <div class="src">データ：気象庁アメダス10分値（我孫子・佐倉・成田・船橋ほか・CBI加工）／防災MAPの「通れない」記録（市民投稿・2026年9月20〜24日）<br>判定の式・既定値：CiDAO disaster-rain-logic v2（2026-09-26）　2026年9月 CBI集計</div>
+  <div class="src">データ：気象庁アメダス10分値（我孫子・佐倉・成田・船橋ほか・CBI加工）／防災MAPの「通れない」記録（市民投稿・2026年9月20〜24日）<br>判定の式・既定値：CiDAO disaster-rain-logic v2.1（2026-09-26）　2026年9月 CBI集計</div>
   <div class="org">Community Bank INZAI</div>
 </div>
 <script>
