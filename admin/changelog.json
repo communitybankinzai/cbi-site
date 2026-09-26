@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-09-25T22:58:00+09:00",
+  "updatedAt": "2026-09-26T14:20:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-09-26",
+      "type": "content",
+      "target": "SNS",
+      "title": "台風25号の冠水の原因（一度に降る強さより、引く速さを上回って降り続いた量）を伝えるSNS用の図解4枚と本文を追加し、9/27 7:30 に3媒体へ予約した",
+      "detail": "防災MAPの「通れない」109件を雨の判定 v2.1（排水20mm/時・半減期48時間・150mm）で数え直し、雨の強さで説明できる23件と残った水で説明できる82件（合計105件・96%）を、1時間雨量と残り水の推移グラフ・日ごとの件数・2つのバケツの図で示す。1枚目は見出し帯つき（sns_headline.py）。HTML→JPEGはChromeヘッドレス（site/assets/sns/2026-09-26_rain-logic/slides_source.html）。予約キュー q1790399605516（Threads 461字）／q1790399607925（Instagram＋Facebook 全文・画像4枚）。",
+      "author": "Claude Code (A1 Core)"
+    },
     {
       "date": "2026-09-26",
       "type": "feature",
