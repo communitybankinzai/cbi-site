@@ -5472,7 +5472,7 @@ function renderPrefKisei(data) {
 // ---------------------------------------------------------------------------
 // 🚧 通行止め（役所の発表）
 // ---------------------------------------------------------------------------
-// CiDAO の巡回が千葉国道事務所・千葉県・印西市のページを毎時読み、解除も自動で外す（src/lib/disaster-road-closures.ts）。
+// CiDAO の巡回が千葉国道事務所・千葉県・印西市のページを読み（pg_cron 5分・35分。佐倉市・印西市は30分ごと、ほかは minIntervalMinutes 50 で毎時）、解除も自動で外す（src/lib/disaster-road-closures.ts）。
 // 役所の発表には座標がないので、線を引くのは運営が位置を確かめた件（path あり）だけ。それ以外は一覧に文字で出す
 // （2026-09-22 事業主決定：情報源は役所のみ・まず印西市周辺・線は運営が確かめたものだけ）。
 const roadClosuresLayer = L.layerGroup();
@@ -5632,7 +5632,7 @@ function renderRoadClosures() {
     (hiddenByWhen ? `<p class="road-closure-warn">⏱ 期間の指定で ${hiddenByWhen}件を隠しています（発表が古い通行止めも、解除されるまでは通れません）。凡例の「⏱ 期間」で「すべて」にすると出ます。</p>` : "") +
     (failed.length ? `<p class="road-closure-warn">⚠ 前回 ${failed.map(s => escapeHtml(s.label)).join("・")} を読めませんでした。出典のページで確認してください。</p>` : "") +
     `<p class="road-closure-note">確認先：${sources.map(s => s.url ? `<a href="${escapeAttribute(s.url)}" target="_blank" rel="noreferrer">${escapeHtml(roadClosureSourceName(s.label))}</a>` : escapeHtml(s.label)).join("／") || "―"}` +
-    `${lastFetched ? `<br>最終確認：${escapeHtml(roadClosureTime(lastFetched, true))}（1時間ごと）` : ""}</p>`;
+    `${lastFetched ? `<br>最終確認：${escapeHtml(roadClosureTime(lastFetched, true))}（佐倉市・印西市は30分ごと、ほかは1時間ごと）` : ""}</p>`;
   listEl.hidden = false;
 }
 
