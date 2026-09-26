@@ -7903,7 +7903,7 @@ function startCitizenRoadDrawing(kind) {
   }, 300);
 }
 
-function addCitizenRoadPoint(latlng) {
+async function addCitizenRoadPoint(latlng) {
   const draft = citizenRoadDraft;
   if (!draft.active || draft.busy) return;
   if (draft.editPoint) { citizenRoadMessage("地点の記録は点を1つだけ持ちます。青い点を指で動かしてください。", true); return; }
@@ -7917,6 +7917,36 @@ function addCitizenRoadPoint(latlng) {
   const point = [Number(latlng.lat.toFixed(6)), Number(latlng.lng.toFixed(6))];
   const last = draft.points[draft.points.length - 1];
   if (last && passedRoadDistanceM(last, point) < 1) return;
+  // 前の点から 1km（CITIZEN_ROAD_GAP_M）超のタップは、そのままつなぐと飛んだ直線になる（2026-09-26・案B）。
+  // 点が1つだけなら置き直し、2つ以上なら「ここまでを送って新しい線を始める」か「この点は足さない」かを聞く
+  if (last && passedRoadDistanceM(last, point) > CITIZEN_ROAD_GAP_M) {
+    const km = (passedRoadDistanceM(last, point) / 1000).toFixed(1);
+    if (draft.editId) { citizenRoadMessage(`前の点から約${km}km離れているため足しませんでした。別の道は「完了」で保存してから、新しく記録してください。`, true); return; }
+    if (draft.kind === "profile") { citizenRoadMessage(`前の点から約${km}km離れているため足しませんでした。断面図は1本の道でなぞってください。`, true); return; }
+    if (draft.points.length < 2) {
+      draft.points = [point];
+      drawCitizenRoadPreview();
+      citizenRoadMessage(`前の点から約${km}km離れていたので、最初の点を置き直しました。次に、道の終わりか曲がり角をタップしてください。`);
+      return;
+    }
+    if (!window.confirm(`前の点から約${km}km離れています。そのままつなぐと、道ではない場所に直線が引かれます。\n\nOK＝ここまでの線を送り、この点から新しい線を始める\nキャンセル＝この点は足さない`)) {
+      citizenRoadMessage(`前の点から約${km}km離れているため足しませんでした。`, true);
+      return;
+    }
+    const kind = draft.kind;
+    const when = document.getElementById("citizen-road-when").value;
+    const note = document.getElementById("citizen-road-note").value;
+    await finishCitizenRoadDrawing();
+    if (citizenRoadDraft.active) return;   // 送れなかった（線と案内はそのまま残っている）
+    startCitizenRoadDrawing(kind);
+    if (!citizenRoadDraft.active) return;
+    document.getElementById("citizen-road-when").value = when;
+    document.getElementById("citizen-road-note").value = note;
+    citizenRoadDraft.points.push(point);
+    drawCitizenRoadPreview();
+    citizenRoadMessage("前の線は送りました。ここから新しい線です。次に、道の終わりか曲がり角をタップしてください。");
+    return;
+  }
   if (passedRoadPathLengthM([...draft.points, point]) > 30000) {
     citizenRoadMessage("1回に記録できるのは30kmまでです。ここまでを完了してください。", true);
     return;
@@ -9174,7 +9204,24 @@ async function ensurePassedRoadsLayer(force) {
 
 // 記録ボタン。1回目で watchPosition を開始し、2回目で送信する。
 // 精度の悪い点（50m超）と、前の点から5m未満しか動いていない点は捨てる。
-const passedRoadRecorder = { watchId: null, points: [], startedAt: null, line: null };
+// 測位が途切れたら（前の点から60秒超・300m超）区間を分け、停止時に区間ごとの記録として1回で送る（2026-09-26・案B）。
+// 端末のスリープやトンネルのあとの1点を直線でつなぐと、道ではない場所に線が引かれるため
+const GPS_GAP_SEC = 60;
+const GPS_GAP_M = 300;
+const passedRoadRecorder = { watchId: null, points: [], startedAt: null, line: null, segments: [], segStartedAt: null, lastFixAt: 0, dropped: 0 };
+
+// いま溜めている点を1区間として確定する（3点・50m以上のものだけ残す）
+function closeGpsSegment() {
+  const rec = passedRoadRecorder;
+  const points = rec.points;
+  if (points.length >= 3 && passedRoadPathLengthM(points) >= 50) {
+    rec.segments.push({ path: points, startedAt: rec.segStartedAt || rec.startedAt, endedAt: new Date(rec.lastFixAt || Date.now()).toISOString() });
+  } else if (points.length) {
+    rec.dropped += 1;
+  }
+  rec.points = [];
+  rec.segStartedAt = null;
+}
 
 // 📵 位置情報が拒否されたときの案内。Webページから端末の設定画面は開けない（iOS・Android ともAPIが無い）ので、
 // 機種ごとの手順をその場に出し、GPS なしで記録できる「地図の長押し」へ誘導する。
@@ -9348,6 +9395,10 @@ function startPassedRoadRecording() {
   showMintsukuHint(false);
   setUndoLink(null);
   passedRoadRecorder.points = [];
+  passedRoadRecorder.segments = [];
+  passedRoadRecorder.segStartedAt = null;
+  passedRoadRecorder.lastFixAt = 0;
+  passedRoadRecorder.dropped = 0;
   passedRoadRecorder.startedAt = new Date().toISOString();
   passedRoadRecorder.line = L.polyline([], { pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: "#1565c0", weight: 5, opacity: 0.9, dashArray: "6 8" }).addTo(passedRoadDraftLayer);
   passedRoadDraftLayer.addTo(map);
@@ -9365,12 +9416,25 @@ function startPassedRoadRecording() {
         return;
       }
       const point = [latitude, longitude];
-      const last = passedRoadRecorder.points[passedRoadRecorder.points.length - 1];
-      if (last && passedRoadDistanceM(last, point) < 5) return;
-      passedRoadRecorder.points.push(point);
-      passedRoadRecorder.line.addLatLng(point);
-      const length = Math.round(passedRoadPathLengthM(passedRoadRecorder.points));
-      setPassedRoadRecordStatus(`記録中 ${passedRoadRecorder.points.length}点・約${length}m（もう一度押すと送ります）`, "live");
+      const rec = passedRoadRecorder;
+      const fixAt = Number.isFinite(position.timestamp) && position.timestamp > 0 ? position.timestamp : Date.now();
+      const last = rec.points[rec.points.length - 1];
+      if (last && passedRoadDistanceM(last, point) < 5) { rec.lastFixAt = fixAt; return; }
+      // 前の点から時間か距離が空きすぎていたら、そこで区間を分ける（つないで直線にしない）
+      let split = false;
+      if (last && (fixAt - rec.lastFixAt > GPS_GAP_SEC * 1000 || passedRoadDistanceM(last, point) > GPS_GAP_M)) {
+        closeGpsSegment();
+        rec.line = L.polyline([], { pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: "#1565c0", weight: 5, opacity: 0.9, dashArray: "6 8" }).addTo(passedRoadDraftLayer);
+        split = true;
+      }
+      if (!rec.points.length) rec.segStartedAt = new Date(fixAt).toISOString();
+      rec.points.push(point);
+      rec.line.addLatLng(point);
+      rec.lastFixAt = fixAt;
+      const length = Math.round(passedRoadPathLengthM(rec.points) + rec.segments.reduce((sum, s) => sum + passedRoadPathLengthM(s.path), 0));
+      const count = rec.points.length + rec.segments.reduce((sum, s) => sum + s.path.length, 0);
+      const parts = rec.segments.length + 1;
+      setPassedRoadRecordStatus(`記録中 ${count}点・約${length}m${parts > 1 ? `・${parts}区間` : ""}（もう一度押すと送ります）${split ? "　⚠ 測位が途切れたので、ここから別の区間として記録します" : ""}`, "live");
     },
     error => {
       const messages = { 1: "位置情報が許可されていません（下の手順を見てください）", 2: "現在地を取得できません。", 3: "位置情報の取得がタイムアウトしました。" };
@@ -9387,15 +9451,20 @@ async function stopPassedRoadRecording() {
   passedRoadRecorder.watchId = null;
   setPassedRoadButtons(false, false);
 
-  const points = passedRoadRecorder.points;
-  const lengthM = passedRoadPathLengthM(points);
-  const reset = () => { passedRoadDraftLayer.clearLayers(); passedRoadRecorder.points = []; passedRoadRecorder.line = null; };
-  if (points.length < 3 || lengthM < 50) {
+  const rec = passedRoadRecorder;
+  const livePoints = rec.points.length;
+  const liveLengthM = passedRoadPathLengthM(rec.points);
+  closeGpsSegment();   // 最後の区間を確定（途切れで分けた区間は segments に入っている）
+  const segments = rec.segments;
+  const lengthM = segments.reduce((sum, s) => sum + passedRoadPathLengthM(s.path), 0);
+  const reset = () => { passedRoadDraftLayer.clearLayers(); rec.points = []; rec.segments = []; rec.segStartedAt = null; rec.line = null; };
+  if (!segments.length) {
     reset();
-    setPassedRoadRecordStatus(`記録が短すぎるため送りませんでした（${points.length}点・約${Math.round(lengthM)}m。50m以上必要です）。`, "error");
+    setPassedRoadRecordStatus(`記録が短すぎるため送りませんでした（${livePoints}点・約${Math.round(liveLengthM)}m。50m以上必要です）。`, "error");
     return;
   }
-  if (!window.confirm(`約${Math.round(lengthM)}m の軌跡を「通れた道」として地図に送ります。\n端末の匿名IDと軌跡だけが送られ、名前や電話番号は送られません。よろしいですか？`)) {
+  const partsNote = segments.length > 1 ? `（測位が途切れたため${segments.length}本の線に分けて送ります）` : "";
+  if (!window.confirm(`約${Math.round(lengthM)}m の軌跡を「通れた道」として地図に送ります${partsNote}。\n端末の匿名IDと軌跡だけが送られ、名前や電話番号は送られません。よろしいですか？`)) {
     reset();
     setPassedRoadRecordStatus("送信をやめました。", "");
     return;
@@ -9403,18 +9472,20 @@ async function stopPassedRoadRecording() {
   setPassedRoadButtons(false, true);
   setPassedRoadRecordStatus("送信中…", "live");
   try {
-    const result = await submitPassedRoadRecord({
-      kind: "passed",
-      source: "gps",
-      path: points,
-      startedAt: passedRoadRecorder.startedAt,
-      endedAt: new Date().toISOString(),
-      note: noteInput ? noteInput.value.trim().slice(0, 200) : ""
-    });
+    const note = noteInput ? noteInput.value.trim().slice(0, 200) : "";
+    // 1区間なら従来どおり path で、2区間以上なら segments で1回で送る（1件ずつ送ると同じ端末の連投制限に当たるため）
+    const result = await submitPassedRoadRecord(segments.length === 1
+      ? { kind: "passed", source: "gps", path: segments[0].path, startedAt: segments[0].startedAt, endedAt: segments[0].endedAt, note }
+      : { kind: "passed", source: "gps", segments, note });
     if (!result.ok) throw new Error(result.error);
+    const records = Array.isArray(result.payload.records) ? result.payload.records : [];
+    records.forEach(r => { if (r && r.id) rememberOwnPassedRoad(String(r.id), r.createdAt || new Date().toISOString()); });
+    const skippedN = Array.isArray(result.payload.skipped) ? result.payload.skipped.length : 0;
     reset();
     if (noteInput) noteInput.value = "";
-    setPassedRoadRecordStatus(`送りました（約${result.payload.lengthM || Math.round(lengthM)}m）。地図の青い線に反映されました。`, "");
+    const sentN = records.length || 1;
+    setPassedRoadRecordStatus(`送りました（約${Math.round(lengthM)}m${sentN > 1 ? `・${sentN}本の線` : ""}）。地図の青い線に反映されました。`
+      + (skippedN || rec.dropped ? `　短すぎた${skippedN + rec.dropped}区間（途切れの前後の数点）は送っていません。` : ""), "");
   } catch (error) {
     reset();
     setPassedRoadRecordStatus(`送れませんでした（${error?.message || "接続エラー"}）`, "error");

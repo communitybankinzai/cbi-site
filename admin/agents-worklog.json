@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-26",
+          "title": "防災MAP 案B：なぞり入力の1km超タップ確認＋GPS途切れの自動分割（cidao POST segments）実装・検証 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/app/api/disaster/passed-roads/route.ts（POST body.segments・MAX_SEGMENTS・skipped・739c3f2）",
+            "site/inzai-disaster-map/app.js（addCitizenRoadPoint の確認分岐・GPS_GAP_SEC/GPS_GAP_M・closeGpsSegment・stopPassedRoadRecording の区間送信）",
+            "site/inzai-disaster-map/index.html（版 20260926l）・admin/changelog.json・CLAUDE_HANDOFF.md"
+          ],
+          "hours": 0.4,
+          "partnerApproved": true,
+          "note": "事業主指示で案Bを実装。ローカルサーバー起動は却下されたため、本番API（4区間→201 records2 skipped2／従来path 201／全部短い 400／11区間 400、試験行3件は DB で削除）と node vm の単体試験15件で検証。実機GPSは未確認。session: dbdd70d6-7f17-4c00-af66-fb8412a6d276 / output: 89,444 / cost: $25.15（前回53,975との差分）"
+        },
+        {
+          "date": "2026-09-26",
           "title": "防災MAP「線を直す」に『✂ ここで切る』（1km超の区間で線を2本に分割）＋cidao PATCH ?splitAt= 実装・本番検証 0.3時間",
           "category": "実装",
           "outputs": [
@@ -7791,10 +7804,10 @@
       "plans": [
         {
           "due": "未定",
-          "title": "📐 防災MAP なぞり入力で前の点から1km超のタップに『別の線にしますか』と聞く＋GPS記録の途切れ（60秒/300m）で自動分割（案B）／既存7件の飛び記録を運営が✂で切る",
+          "title": "📐 防災MAP 1km超の飛びがある既存7件の記録を運営が「線を直す」の✂で切る（864aa0e2 は伏せる選択も）",
           "category": "実装",
           "priority": "中",
-          "note": "2026-09-26 案A（✂ ここで切る）は実装・公開済み。残りは予防の案B。既存の1km超の飛びがある記録7件（864aa0e2, b5dc3d89, 1555ddba, dfe5ff81, 84e51078, a47859e3, 24636c6a）は運営が「線を直す」の✂で手で切る（864aa0e2 は印西東端〜鎌ケ谷方面20kmで1本の道だったか不明・伏せる選択もあり事業主判断）。"
+          "note": "2026-09-26 案A（✂）・案B（入力時の確認・GPSの途切れ分割）とも実装・公開済み。残りは既存データの手当て。対象 864aa0e2, b5dc3d89, 1555ddba, dfe5ff81, 84e51078, a47859e3, 24636c6a（864aa0e2 は印西東端〜鎌ケ谷方面20kmで1本の道だったか不明・事業主判断）。"
         },
         {
           "due": "未定",
