@@ -18,7 +18,7 @@
       "actuals": [
         {
           "date": "2026-09-26",
-          "title": "防災MAP 雨の判定の作り直し（逆算D=20・全件再判定・試せるページ）＋印西市の路線一覧の読み取り修正＋市民向け読み物ページ 1.3時間",
+          "title": "防災MAP 雨の判定の作り直し（逆算D=20・全件再判定・試せるページ）＋印西市の路線一覧の読み取り修正＋市民向け読み物ページ 1.2時間",
           "category": "実装",
           "outputs": [
             "cidao src/lib/disaster-rain-logic.ts（新規）／disaster-amedas-rain.ts／passed-roads/route.ts／migration 20260926100000（本番適用）／scripts/backfill-rain-logic.ts（6d87fbf・6085ab4）",
@@ -28,7 +28,7 @@
             "site/inzai-disaster-map/app.js・index.html（判定名・理由・入口・版 20260926k）",
             "site/admin/changelog.json（3件）"
           ],
-          "hours": 1.3,
+          "hours": 1.2,
           "partnerApproved": true,
           "note": "台風25号の記録と周辺アメダス10分値で、半減期48h・150mm（通れない96%）と D≈20mm/h（降っている最中26件中23件）を当てはめ。ページの計算と本番DBの判定を突き合わせ（1件差は位置の丸め）。app.js に別セッション（dbdd70d6）の未コミット変更を c8fd88b で巻き込んだ（先方の cidao 側は公開済みで動作上問題なし）。以後は hunk 単位で追加。session: 680d4e8d-5c43-4ced-b2a3-e34da55abc96 / output: 290,261 / cost: $80.53"
         },
