@@ -11385,7 +11385,7 @@
           "title": "🖥 体験PCを実際に組み、手順書の写真枠12か所を当日の写真で埋める",
           "category": "実装",
           "priority": "高",
-          "note": "撮る写真：02-screws／03-board／04-cpu-mark／05-cooler／06-memory／06-m2／07-case／08-power／09-frontpanel／10-firstboot／11-wifi／12-saved。会場PC/写真/ にこの名前で置いて build_assembly_guide.py を再実行するとHTML・PDFの両方に入る。組んだ結果で「確信度：中」の項目（電源の奥行き140mmがドライブケージを外さずに収まるか、T3 PLUSの前面端子、クーラーがクリップ式かネジ式か）も確定させる"
+          "note": "撮る写真：02-screws／03-board／04-cpu-mark／05-cooler／06-memory／06-m2／07-case／08-power／09-frontpanel／10-firstboot／11-wifi／12-saved。会場PC/写真/ にこの名前で置いて build_assembly_guide.py を再実行するとHTML・PDFの両方に入る。組んだ結果で「確信度：中」の項目（電源の奥行き140mmがドライブケージを外さずに収まるか、T3 PLUSの前面端子、クーラーがクリップ式かネジ式か）も確定させる。【2026-09-27】事業主決定：体験PCは予定どおり自作機で進める"
         },
         {
           "due": "未定",
