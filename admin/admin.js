@@ -4590,6 +4590,24 @@ const UNREAD_POLL_MS = 30000;
   const LEDGER_FEE_ACCOUNT = '会費収入';
   const LEDGER_FEE_FROM = '2026-06'; // 会費徴収開始月（これより前は対象外）
 
+  // 経費のAI判定（GAS judgeLedgerExpense_）と会計の承認
+  const LEDGER_AI_LABEL = { ok: '🤖 妥当', check: '🤖 要確認', ng: '🤖 不適切の疑い', error: '🤖 判定できず' };
+  const LEDGER_APPROVAL_LABEL = { approved: '✅ 承認済み', rejected: '↩ 差し戻し', '': '⏳ 未承認' };
+  const sameName = (a, b) => String(a || '').replace(/\s/g, '') === String(b || '').replace(/\s/g, '') && String(a || '').trim() !== '';
+  function ledgerApprover() { return orgInfo().treasurer || '中司 祐樹'; }
+  function ledgerAuditor() { return orgInfo().auditor || '須田 翔'; }
+  // 承認が要る記録＝有効な支出
+  const ledgerNeedsApproval = e => e.status === 'active' && e.type === 'expense';
+  // 本人の立替を本人が承認したもの（監事の確認を勧める）
+  const ledgerSelfApproved = e => e.approval === 'approved' && sameName(e.paidBy, e.approvedBy);
+  function ledgerApprovalCell(e) {
+    if (e.type !== 'expense') return '';
+    const ai = e.aiVerdict ? `<span class="ledger-ai ledger-ai-${escapeAttr(e.aiVerdict)}" title="${escapeAttr(e.aiReason || '')}">${LEDGER_AI_LABEL[e.aiVerdict] || escapeHtml(e.aiVerdict)}</span>` : '<span class="ledger-ai">🤖 未判定</span>';
+    const ap = `<span class="ledger-approval ledger-approval-${escapeAttr(e.approval || 'none')}">${LEDGER_APPROVAL_LABEL[e.approval || ''] || escapeHtml(e.approval)}</span>`;
+    const audit = ledgerSelfApproved(e) ? (e.auditBy ? ' <span class="ledger-audit" title="監事の確認済み">👁</span>' : ' <span class="ledger-audit is-todo" title="本人の立替を本人が承認。監事の確認待ち">👁?</span>') : '';
+    return `${ai}<br>${ap}${audit}`;
+  }
+
   // GAS不通時のフォールバック（正は cbi-admin-gas/Ledger.gs の LEDGER_CONST。変更時は両方更新）
   const LEDGER_FALLBACK_META = {
     accounts: {
@@ -4659,10 +4677,11 @@ const UNREAD_POLL_MS = 30000;
     $('ledger-note-form').addEventListener('submit', onLedgerNoteSubmit);
     $('ledger-note-show-done').addEventListener('change', renderLedgerNotes);
     ['ledger-search', 'ledger-filter-from', 'ledger-filter-to', 'ledger-filter-type',
-     'ledger-filter-account', 'ledger-filter-project', 'ledger-filter-paidby', 'ledger-show-void'].forEach(id => {
+     'ledger-filter-account', 'ledger-filter-project', 'ledger-filter-paidby', 'ledger-filter-approval', 'ledger-show-void'].forEach(id => {
       $(id).addEventListener('input', renderLedgerList);
       $(id).addEventListener('change', renderLedgerList);
     });
+    $('ledger-judge-pending').addEventListener('click', judgePendingLedger);
   }
 
   function buildLedgerSelects() {
@@ -4844,9 +4863,17 @@ const UNREAD_POLL_MS = 30000;
     const account = $('ledger-filter-account').value;
     const project = $('ledger-filter-project').value;
     const paidBy = $('ledger-filter-paidby').value;
+    const approval = $('ledger-filter-approval').value;
     const showVoid = $('ledger-show-void').checked;
     return state.ledger.entries.filter(e => {
       if (!showVoid && e.status !== 'active') return false;
+      if (approval) {
+        if (e.type !== 'expense') return false;
+        if (approval === 'pending' && e.approval) return false;
+        if (approval === 'attention' && (e.approval || !['check', 'ng', 'error'].includes(e.aiVerdict))) return false;
+        if (approval === 'rejected' && e.approval !== 'rejected') return false;
+        if (approval === 'audit' && !(ledgerSelfApproved(e) && !e.auditBy)) return false;
+      }
       if (from && ledgerDateStr(e.date) < from) return false;
       if (to && ledgerDateStr(e.date) > to) return false;
       if (type && e.type !== type) return false;
@@ -4861,12 +4888,51 @@ const UNREAD_POLL_MS = 30000;
     }).sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt)));
   }
 
+  // 承認待ちの件数と、AIで判定していない支出の判定ボタン
+  function renderLedgerApprovalSummary() {
+    const exp = state.ledger.entries.filter(ledgerNeedsApproval);
+    const pending = exp.filter(e => !e.approval);
+    const attention = pending.filter(e => ['check', 'ng', 'error'].includes(e.aiVerdict));
+    const rejected = exp.filter(e => e.approval === 'rejected');
+    const auditTodo = exp.filter(e => ledgerSelfApproved(e) && !e.auditBy);
+    const unjudged = exp.filter(e => !e.aiVerdict || e.aiVerdict === 'error');
+    $('ledger-approval-summary').innerHTML = exp.length === 0 ? '' :
+      `経費の承認：未承認 <strong>${pending.length}件</strong>（うちAIが要確認 ${attention.length}件）／差し戻し ${rejected.length}件／監事の確認待ち ${auditTodo.length}件` +
+      `<span class="meta-note">　承認するのは会計（${escapeHtml(ledgerApprover())}）です。一覧の「承認」の絞り込みで対象だけ表示できます</span>`;
+    const btn = $('ledger-judge-pending');
+    btn.hidden = unjudged.length === 0;
+    btn.textContent = `🤖 AIで判定していない支出 ${unjudged.length}件を判定する`;
+  }
+
+  async function judgePendingLedger() {
+    const ids = state.ledger.entries.filter(e => ledgerNeedsApproval(e) && (!e.aiVerdict || e.aiVerdict === 'error')).map(e => e.id);
+    if (!ids.length) return;
+    const btn = $('ledger-judge-pending');
+    btn.disabled = true;
+    try {
+      // GASの実行時間の上限があるので10件ずつ送る
+      for (let i = 0; i < ids.length; i += 10) {
+        btn.textContent = `🤖 判定中…（${Math.min(i + 10, ids.length)} / ${ids.length}）`;
+        const res = await ledgerCall({ action: 'ledgerJudge', password: state.password, ids: ids.slice(i, i + 10), actor: state.me });
+        if (!res.ok) throw new Error(res.error);
+      }
+      toast(`${ids.length}件をAIで判定しました。承認は会計が一覧から行ってください`, 'ok');
+      await reloadLedger();
+    } catch (e) {
+      toast('AI判定に失敗: ' + e.message, 'err');
+    } finally {
+      btn.disabled = false;
+      renderLedgerApprovalSummary();
+    }
+  }
+
   function renderLedgerList() {
+    renderLedgerApprovalSummary();
     const rows = ledgerFilteredEntries();
     $('ledger-count').textContent = rows.length + '件';
     const tbody = $('ledger-tbody');
     if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="10" class="empty">該当する記録がありません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="empty">該当する記録がありません</td></tr>';
       return;
     }
     tbody.innerHTML = rows.map(e => {
@@ -4886,12 +4952,13 @@ const UNREAD_POLL_MS = 30000;
         <td class="ledger-td-desc">${escapeHtml(e.description)}</td>
         <td>${escapeHtml(e.project)}</td>
         <td>${evCell}</td>
+        <td class="ledger-td-approval">${voided ? '' : ledgerApprovalCell(e)}</td>
         <td class="ledger-td-actions">
           <button type="button" class="btn-link" data-ledger-act="detail" data-id="${escapeAttr(e.id)}">詳細</button>
           <button type="button" class="btn-link" data-ledger-act="edit" data-id="${escapeAttr(e.id)}" ${voided ? 'disabled' : ''}>訂正</button>
         </td>
       </tr>
-      <tr class="ledger-detail-row" data-detail-for="${escapeAttr(e.id)}" hidden><td colspan="10"></td></tr>`;
+      <tr class="ledger-detail-row" data-detail-for="${escapeAttr(e.id)}" hidden><td colspan="11"></td></tr>`;
     }).join('');
     tbody.querySelectorAll('[data-ledger-act]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -4939,8 +5006,8 @@ const UNREAD_POLL_MS = 30000;
       ? '<ul class="ledger-history-list">' + history.slice().reverse().map(h => {
           let changes = [];
           try { changes = JSON.parse(h.changes || '[]'); } catch (_) {}
-          const fieldLabel = { date: '取引日', type: '収支', account: '科目', amount: '金額', counterparty: '取引先', description: '摘要', project: '事業区分', paymentMethod: '支払方法', paidBy: '立替者', feeMember: '会費対象者', feeMonths: '会費対象月', status: '状態', evidence: '証憑' };
-          const actLabel = { create: '登録', update: '訂正', void: '無効化', restore: '復元', evidence_add: '証憑追加', evidence_remove: '証憑解除', settle: '立替精算', unsettle: '精算取消' };
+          const fieldLabel = { date: '取引日', type: '収支', account: '科目', amount: '金額', counterparty: '取引先', description: '摘要', project: '事業区分', paymentMethod: '支払方法', paidBy: '立替者', feeMember: '会費対象者', feeMonths: '会費対象月', status: '状態', evidence: '証憑', approval: '承認', auditBy: '監事の確認' };
+          const actLabel = { create: '登録', update: '訂正', void: '無効化', restore: '復元', evidence_add: '証憑追加', evidence_remove: '証憑解除', settle: '立替精算', unsettle: '精算取消', approve: '承認', reject: '差し戻し', unapprove: '承認の取り消し', approval_reset: '承認の取り消し（訂正のため）', audit: '監事の確認', unaudit: '監事の確認の取り消し' };
           const detail = changes.map(c => `${fieldLabel[c.field] || c.field}: ${escapeHtml(String(c.before))} → ${escapeHtml(String(c.after))}`).join('、');
           return `<li><span class="ledger-history-time">${escapeHtml(String(h.createdAt).replace('T', ' ').slice(0, 16))}</span>
             <strong>${actLabel[h.action] || escapeHtml(h.action)}</strong>（${escapeHtml(h.operator || '不明')}）
@@ -4966,10 +5033,50 @@ const UNREAD_POLL_MS = 30000;
       infoRows.map(([k, v]) => `<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(String(v))}</td></tr>`).join('') +
       '</table>';
 
+    // 経費のAI判定と承認（支出のみ）
+    let approvalHtml = '';
+    if (e.type === 'expense' && !voided) {
+      const approver = ledgerApprover();
+      const auditor = ledgerAuditor();
+      const isApprover = sameName(state.me, approver);
+      const isAuditor = sameName(state.me, auditor);
+      const at = v => String(v || '').replace('T', ' ').slice(0, 16);
+      const aiLine = e.aiVerdict
+        ? `<p><span class="ledger-ai ledger-ai-${escapeAttr(e.aiVerdict)}">${LEDGER_AI_LABEL[e.aiVerdict] || escapeHtml(e.aiVerdict)}</span>　${escapeHtml(e.aiReason || '')}<span class="meta-note">（${escapeHtml(at(e.aiCheckedAt))}）</span></p>`
+        : '<p class="meta-note">AIの判定はまだありません。</p>';
+      let apLine;
+      if (e.approval === 'approved') apLine = `<p><span class="ledger-approval ledger-approval-approved">✅ 承認済み</span>　${escapeHtml(e.approvedBy)}（${escapeHtml(at(e.approvedAt))}）${e.approvalNote ? '｜' + escapeHtml(e.approvalNote) : ''}</p>`;
+      else if (e.approval === 'rejected') apLine = `<p><span class="ledger-approval ledger-approval-rejected">↩ 差し戻し</span>　${escapeHtml(e.approvedBy)}（${escapeHtml(at(e.approvedAt))}）｜理由: ${escapeHtml(e.approvalNote)}</p><p class="meta-note">内容を「訂正」すると、AIが判定し直し、承認待ちに戻ります。</p>`;
+      else apLine = `<p><span class="ledger-approval ledger-approval-none">⏳ 未承認</span>　会計（${escapeHtml(approver)}）の承認待ち</p>`;
+      let auditLine = '';
+      if (ledgerSelfApproved(e)) {
+        auditLine = e.auditBy
+          ? `<p>👁 監事の確認：${escapeHtml(e.auditBy)}（${escapeHtml(at(e.auditAt))}）</p>`
+          : `<p class="ledger-audit-todo">👁 立替えた本人が承認しています。監事（${escapeHtml(auditor)}）の確認をおすすめします</p>`;
+      }
+      const btns = [];
+      if (isApprover) {
+        if (e.approval !== 'approved') btns.push(`<button type="button" class="btn btn-primary btn-sm" data-ledger-approve="approved">✅ 経費として承認する</button>`);
+        if (e.approval !== 'rejected') btns.push(`<button type="button" class="btn btn-ghost btn-sm" data-ledger-approve="rejected">↩ 差し戻す</button>`);
+        if (e.approval) btns.push(`<button type="button" class="btn btn-ghost btn-sm" data-ledger-approve="">承認を取り消す</button>`);
+      }
+      if (isAuditor && e.approval === 'approved') {
+        btns.push(e.auditBy
+          ? `<button type="button" class="btn btn-ghost btn-sm" data-ledger-audit="0">監事の確認を取り消す</button>`
+          : `<button type="button" class="btn btn-primary btn-sm" data-ledger-audit="1">👁 監事として確認した</button>`);
+      }
+      btns.push(`<button type="button" class="btn btn-ghost btn-sm" data-ledger-rejudge>🤖 AIで判定し直す</button>`);
+      const who = isApprover || isAuditor ? '' : `<span class="meta-note">承認は会計（${escapeHtml(approver)}）、確認は監事（${escapeHtml(auditor)}）が、右上の名前を自分にして行います</span>`;
+      approvalHtml = `<h4>経費の判定と承認</h4>${aiLine}${apLine}${auditLine}
+        <p class="meta-note">AIの判定は参考です。証憑（領収書）があるかは上の「証憑」で確かめてください。</p>
+        <div class="ledger-detail-actions">${btns.join('')}${who}</div>`;
+    }
+
     cell.innerHTML = `
       <div class="ledger-detail">
         <h4>取引内容</h4>${infoHtml}
         <h4>証憑</h4>${evHtml}
+        ${approvalHtml}
         <h4>訂正・変更履歴</h4>${historyHtml}
         <div class="ledger-detail-actions">
           ${!voided && e.paidBy && e.type === 'expense' ? (String(e.settledDate || '')
@@ -4994,6 +5101,69 @@ const UNREAD_POLL_MS = 30000;
     if (unsettleBtn) unsettleBtn.addEventListener('click', () => settleLedgerEntry(id, false));
     const deleteBtn = cell.querySelector('[data-ledger-delete]');
     if (deleteBtn) deleteBtn.addEventListener('click', () => deleteLedgerEntry(id));
+    cell.querySelectorAll('[data-ledger-approve]').forEach(b => b.addEventListener('click', () => approveLedgerEntry(id, b.dataset.ledgerApprove)));
+    cell.querySelectorAll('[data-ledger-audit]').forEach(b => b.addEventListener('click', () => auditLedgerEntry(id, b.dataset.ledgerAudit === '1')));
+    const rejudgeBtn = cell.querySelector('[data-ledger-rejudge]');
+    if (rejudgeBtn) rejudgeBtn.addEventListener('click', () => rejudgeLedgerEntry(id, rejudgeBtn));
+  }
+
+  async function approveLedgerEntry(id, decision) {
+    const e = state.ledger.entries.find(x => String(x.id) === String(id));
+    if (!e) return;
+    let note = '';
+    if (decision === 'rejected') {
+      const r = prompt('差し戻す理由を入力してください（必須・履歴に残ります）\n例: 摘要に用途を書いてください／私的な支出のため団体の経費にできません');
+      if (r === null) return;
+      if (!r.trim()) { toast('差し戻しは理由が必須です', 'err'); return; }
+      note = r.trim();
+    } else if (decision === 'approved') {
+      if (['check', 'ng'].includes(e.aiVerdict) && !confirm(`AIの判定は「${LEDGER_AI_LABEL[e.aiVerdict]}」です。\n${e.aiReason || ''}\n\n確認したうえで承認しますか？`)) return;
+      const r = prompt('承認のメモ（任意・履歴に残ります）', '');
+      if (r === null) return;
+      note = r.trim();
+    } else {
+      const r = prompt('承認を取り消します。理由を入力してください（履歴に残ります）');
+      if (r === null) return;
+      note = r.trim();
+    }
+    try {
+      const res = await ledgerCall({ action: 'ledgerApprove', password: state.password, id, decision, note, actor: state.me });
+      if (!res.ok) throw new Error(res.error);
+      delete state.ledger.historyCache[id];
+      toast({ approved: '承認しました', rejected: '差し戻しました', '': '承認を取り消しました' }[decision], 'ok');
+      await reloadLedger();
+    } catch (err) {
+      toast('操作に失敗: ' + err.message, 'err');
+    }
+  }
+
+  async function auditLedgerEntry(id, checked) {
+    try {
+      const res = await ledgerCall({ action: 'ledgerAudit', password: state.password, id, checked, actor: state.me });
+      if (!res.ok) throw new Error(res.error);
+      delete state.ledger.historyCache[id];
+      toast(checked ? '監事の確認を記録しました' : '監事の確認を取り消しました', 'ok');
+      await reloadLedger();
+    } catch (err) {
+      toast('操作に失敗: ' + err.message, 'err');
+    }
+  }
+
+  async function rejudgeLedgerEntry(id, btn) {
+    btn.disabled = true;
+    btn.textContent = '🤖 判定中…';
+    try {
+      const res = await ledgerCall({ action: 'ledgerJudge', password: state.password, ids: [id], actor: state.me });
+      if (!res.ok) throw new Error(res.error);
+      const r = (res.results || [])[0] || {};
+      if (r.error) throw new Error(r.error);
+      toast(`AIの判定：${LEDGER_AI_LABEL[r.aiVerdict] || r.aiVerdict}`, 'ok');
+      await reloadLedger();
+    } catch (err) {
+      toast('AI判定に失敗: ' + err.message, 'err');
+      btn.disabled = false;
+      btn.textContent = '🤖 AIで判定し直す';
+    }
   }
 
   function editLedgerEntry(id) {
@@ -5134,20 +5304,23 @@ const UNREAD_POLL_MS = 30000;
     if (isFee && !entry.feeMonths) { toast('会費収入は「対象月」を入力してください', 'err'); return; }
 
     btn.disabled = true;
+    let judged = null; // 支出はGASが登録・訂正と同時にAIで判定する
     try {
       let entryId = state.ledger.editingId;
       if (entryId) {
         entry.id = entryId;
-        btn.textContent = '訂正を保存中…';
+        btn.textContent = entry.type === 'expense' ? '訂正を保存中…（AIが経費を判定します）' : '訂正を保存中…';
         const res = await ledgerCall({ action: 'ledgerUpdate', password: state.password, entry, actor: state.me });
         if (!res.ok) throw new Error(res.error);
+        judged = res.judgement || null;
         delete state.ledger.historyCache[entryId];
       } else {
-        btn.textContent = '登録中…';
+        btn.textContent = entry.type === 'expense' ? '登録中…（AIが経費を判定します）' : '登録中…';
         entry.id = ledgerNewId('L'); // クライアント採番＝リトライしても二重登録されない
         const res = await ledgerCall({ action: 'ledgerAdd', password: state.password, entry, actor: state.me });
         if (!res.ok) throw new Error(res.error);
         entryId = (res.entry && res.entry.id) || entry.id;
+        judged = res.entry && res.entry.aiVerdict ? res.entry : null;
       }
       // 証憑を1ファイルずつアップロード
       for (let i = 0; i < files.length; i++) {
@@ -5159,7 +5332,13 @@ const UNREAD_POLL_MS = 30000;
         });
         if (!res.ok) throw new Error(`証憑 ${files[i].name} の保存失敗: ${res.error}`);
       }
-      toast(state.ledger.editingId ? '訂正を保存しました' : '登録しました', 'ok');
+      const saved = state.ledger.editingId ? '訂正を保存しました' : '登録しました';
+      if (judged && judged.aiVerdict) {
+        toast(`${saved}。AIの判定：${LEDGER_AI_LABEL[judged.aiVerdict] || judged.aiVerdict}（${judged.aiReason || ''}）。会計の承認待ちです`,
+          judged.aiVerdict === 'ok' ? 'ok' : 'err', 9000);
+      } else {
+        toast(saved, 'ok');
+      }
       resetLedgerForm();
       await reloadLedger();
     } catch (e) {
@@ -5659,6 +5838,15 @@ const UNREAD_POLL_MS = 30000;
       [fyLedger.some(e => e.type === 'income'), `${fy}年度の収入の記録（会費など）`],
       [fyLedger.some(e => e.type === 'expense'), `${fy}年度の支出の記録`],
       [unsettled.length === 0, unsettled.length ? `未精算の立替が${unsettled.length}件あります（報告書には「未払金」として載ります）` : '未精算の立替なし'],
+      ...(() => {
+        const fyExp = fyLedger.filter(e => e.type === 'expense');
+        const notApproved = fyExp.filter(e => e.approval !== 'approved');
+        const auditTodo = fyExp.filter(e => ledgerSelfApproved(e) && !e.auditBy);
+        return [
+          [notApproved.length === 0, notApproved.length ? `${fy}年度の支出で、会計が承認していないものが${notApproved.length}件あります（報告書に「未承認」として載ります）` : `${fy}年度の支出はすべて会計が承認済み`],
+          [auditTodo.length === 0, auditTodo.length ? `立替えた本人が承認した支出が${auditTodo.length}件、監事の確認待ちです` : '本人承認の支出は監事の確認済み（または該当なし）'],
+        ];
+      })(),
       [orgActivitiesOf(fy).length > 0, `${fy}年度の活動の記録`],
       [Object.keys(orgInfo().yearData('budget', fy).income || {}).length + Object.keys(orgInfo().yearData('budget', fy).expense || {}).length > 0, `${fy}年度の収支予算`],
       [(orgInfo().yearData('plan', fy).items || []).length > 0, `${fy}年度の活動計画`],
@@ -6106,6 +6294,23 @@ ${Object.keys(advRows).map(n => `<tr><td>${escapeHtml(n)}</td><td class="num">${
 <table><tr><td>次期繰越金（上記Ⅲ）</td><td class="num">${yen(carryOver + incTotal - expTotal)}</td></tr>
 <tr><td>＋ 未精算の立替金（メンバーが支払い、団体の手元から出ていないお金）</td><td class="num">${yen(advUnsettled)}</td></tr>
 <tr class="grand"><td>団体の手元にあるはずのお金（現金・預金）</td><td class="num">${yen(carryOver + incTotal - expTotal + advUnsettled)}</td></tr></table>
+${(() => {
+  const st = k => expenses.filter(e => (e.approval || '') === k);
+  const sum = list => list.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const ap = st('approved'), rj = st('rejected'), pd = st('');
+  const selfAp = ap.filter(ledgerSelfApproved);
+  const audited = selfAp.filter(e => e.auditBy);
+  const pendingList = [...rj, ...pd].sort((a, b) => ledgerDateStr(a.date).localeCompare(ledgerDateStr(b.date)));
+  return `<h2>Ⅵ 経費の承認の状況</h2>
+<table><tr><th>状態</th><th class="num">件数</th><th class="num">金額</th></tr>
+<tr><td>会計が承認済み</td><td class="num">${ap.length}件</td><td class="num">${yen(sum(ap))}</td></tr>
+<tr><td>　うち立替えた本人が承認（監事の確認済み ${audited.length}件）</td><td class="num">${selfAp.length}件</td><td class="num">${yen(sum(selfAp))}</td></tr>
+<tr><td>差し戻し</td><td class="num">${rj.length}件</td><td class="num">${yen(sum(rj))}</td></tr>
+<tr${pd.length ? ' class="total"' : ''}><td>未承認</td><td class="num">${pd.length}件</td><td class="num">${yen(sum(pd))}</td></tr></table>
+${pendingList.length ? `<p class="note">▼ 承認されていない支出（上の支出の部には含めています）</p>
+<table><tr><th>取引日</th><th>科目</th><th>取引先</th><th class="num">金額</th><th>状態</th></tr>
+${pendingList.map(e => `<tr><td>${escapeHtml(ledgerDateStr(e.date))}</td><td>${escapeHtml(e.account)}</td><td>${escapeHtml(e.counterparty)}</td><td class="num">${yen(Number(e.amount) || 0)}</td><td>${e.approval === 'rejected' ? '差し戻し' : '未承認'}</td></tr>`).join('')}</table>` : ''}`;
+})()}
 <p class="note">※ 本資料は収支管理台帳（証憑・訂正履歴つき）から自動生成。対象は有効な記録のみ（無効化された記録は含まない）。前期繰越金は${org.carryover(fy) != null ? '団体書類タブで入力した値' : `台帳上の${fy}年3月31日以前の収支累計`}。金額単位: 円。</p>
 `;
     if (opts.bodyOnly) return sections;
@@ -6157,7 +6362,7 @@ ${sections}<div class="sign">
 
   function exportLedgerCsv() {
     const rows = ledgerFilteredEntries();
-    const header = ['取引日', '収支', '勘定科目', '金額', '取引先', '立替者', '摘要', '事業区分', '支払方法', '会費対象者', '会費対象月', '証憑数', '状態', '登録者', 'ID'];
+    const header = ['取引日', '収支', '勘定科目', '金額', '取引先', '立替者', '摘要', '事業区分', '支払方法', '会費対象者', '会費対象月', '証憑数', '状態', '登録者', 'AI判定', 'AI判定の理由', '承認', '承認者', '承認日時', '承認メモ', '監事の確認', 'ID'];
     const csvEscape = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
     const lines = [header.map(csvEscape).join(',')];
     rows.forEach(e => {
@@ -6166,7 +6371,11 @@ ${sections}<div class="sign">
         e.counterparty, e.paidBy, e.description, e.project, e.paymentMethod,
         e.feeMember, e.feeMonths,
         ledgerEvidencesOf(e.id).length, e.status === 'active' ? '有効' : '無効',
-        e.registeredBy, e.id,
+        e.registeredBy,
+        e.type === 'expense' ? (LEDGER_AI_LABEL[e.aiVerdict] || '').replace('🤖 ', '') : '', e.aiReason || '',
+        e.type === 'expense' ? (LEDGER_APPROVAL_LABEL[e.approval || ''] || '').replace(/^\S+ /, '') : '',
+        e.approvedBy || '', String(e.approvedAt || '').replace('T', ' ').slice(0, 16), e.approvalNote || '', e.auditBy || '',
+        e.id,
       ].map(csvEscape).join(','));
     });
     // BOM付きUTF-8（Excelで文字化けさせない）

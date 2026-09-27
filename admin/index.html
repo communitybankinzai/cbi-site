@@ -960,6 +960,13 @@ if (location.protocol === 'file:') {
           <select id="ledger-filter-account"><option value="">科目：すべて</option></select>
           <select id="ledger-filter-project"><option value="">事業区分：すべて</option></select>
           <select id="ledger-filter-paidby"><option value="">立替者：すべて</option></select>
+          <select id="ledger-filter-approval">
+            <option value="">承認：すべて</option>
+            <option value="pending">未承認の支出</option>
+            <option value="attention">未承認でAIが要確認</option>
+            <option value="rejected">差し戻し</option>
+            <option value="audit">監事の確認待ち</option>
+          </select>
           <label class="field-check ledger-void-check"><input type="checkbox" id="ledger-show-void"><span>無効分も表示</span></label>
           <span class="filter-count" id="ledger-count">0件</span>
         </div>
@@ -971,16 +978,20 @@ if (location.protocol === 'file:') {
           収支台帳
           <button type="button" class="btn btn-ghost btn-sm" id="ledger-csv">CSV出力</button>
         </h2>
+        <div class="ledger-approval-bar">
+          <p id="ledger-approval-summary"></p>
+          <button type="button" class="btn btn-ghost btn-sm" id="ledger-judge-pending" hidden>🤖 AIで判定していない支出を判定する</button>
+        </div>
         <div class="ledger-table-wrap">
           <table class="ledger-table">
             <thead>
               <tr>
                 <th>取引日</th><th>収支</th><th>科目</th><th class="ledger-th-amount">金額</th>
-                <th>取引先</th><th>立替者</th><th>摘要</th><th>事業区分</th><th>証憑</th><th></th>
+                <th>取引先</th><th>立替者</th><th>摘要</th><th>事業区分</th><th>証憑</th><th>承認</th><th></th>
               </tr>
             </thead>
             <tbody id="ledger-tbody">
-              <tr><td colspan="10" class="empty">読み込み中…</td></tr>
+              <tr><td colspan="11" class="empty">読み込み中…</td></tr>
             </tbody>
           </table>
         </div>

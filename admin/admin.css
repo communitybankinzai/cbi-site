@@ -2518,6 +2518,21 @@ body.mail-splitting { cursor: col-resize; user-select: none; }
 
 .ledger-open-amount { color: var(--c-danger); }
 
+/* 経費のAI判定と会計の承認 */
+.ledger-approval-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0 0 10px; font-size: 0.85rem; }
+.ledger-approval-bar p { margin: 0; }
+.ledger-td-approval { white-space: nowrap; font-size: 0.75rem; line-height: 1.7; }
+.ledger-ai { display: inline-block; border-radius: 999px; padding: 0 6px; border: 1px solid var(--c-line); color: var(--c-ink-sub); white-space: nowrap; }
+.ledger-ai-ok { border-color: var(--c-green); color: var(--c-green); }
+.ledger-ai-check { border-color: #a8761f; color: #8a5f12; background: #fdf6e6; }
+.ledger-ai-ng, .ledger-ai-error { border-color: var(--c-danger); color: var(--c-danger); background: #fbeeee; }
+.ledger-approval { display: inline-block; font-weight: 700; white-space: nowrap; }
+.ledger-approval-approved { color: var(--c-green); }
+.ledger-approval-rejected { color: var(--c-danger); }
+.ledger-approval-none { color: #8a5f12; }
+.ledger-audit { color: var(--c-green); }
+.ledger-audit.is-todo, .ledger-audit-todo { color: #8a5f12; }
+
 .ledger-report-btn { margin-left: auto; }
 .panel-title .ledger-report-btn + .ledger-fy-select { margin-left: 8px; }
 
