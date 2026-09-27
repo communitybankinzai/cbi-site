@@ -10469,6 +10469,23 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "支出のAI経費判定＋会計の承認・差し戻し＋監事の確認を実装（GAS clasp push・管理画面 push）0.6時間",
+          "category": "実装",
+          "outputs": [
+            "cbi-admin-gas/Code.gs",
+            "cbi-admin-gas/Ledger.gs",
+            "site/admin/admin.js",
+            "site/admin/index.html",
+            "site/admin/admin.css",
+            "site/admin/changelog.json",
+            "site/admin/agents-worklog.json"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "中司さん指示（判定基準＝団体の経費として妥当か・登録時に自動・未承認は報告書に載せて目立たせる）。検証：Ledger.gs をメモリ上の表で動かす node 試験16項目すべてOK（登録で列追加とAI判定・収入は判定しない・AI失敗でも登録成功・差し戻しは理由必須・収入は承認不可・監事確認は承認済みのみ・訂正で承認と監事確認が消え再判定・履歴）。管理画面はローカルでGAS応答を差し替え、未判定の一括判定→承認→監事確認→差し戻し（空理由は拒否）→新規登録のAI判定表示→訂正で承認待ちに戻る→収支計算書Ⅵ→絞り込みを確認しスクショ取得。GASはクラウドと手元の変更前が7ファイル一致を確かめて clasp push（HEAD・ed6fc15）。本物のGeminiでの判定は未確認（本番の再デプロイ後）。hours は累計111,418から前回記録分49,568を引いた61,850（0.6）\nsession: dd49830c-b5e4-47c6-96ac-4275bae6792e / output: 111,418 / cost: $28.82"
+        },
+        {
+          "date": "2026-09-28",
           "title": "管理画面 団体書類に収支予算書・活動計画書・総会議案書と副会長の欄を実装＋GAS（OrgDocs.gs）push 0.6時間",
           "category": "実装",
           "outputs": [
@@ -10698,6 +10715,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-10-03",
+          "title": "🤖 GASを再デプロイし、支出のAI経費判定と承認を本番で1件試す（既存の支出は「AIで判定していない支出を判定する」で判定）",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-28 実装・clasp push 済み（ed6fc15）。本番のWebAppへの反映は中司さんがGASエディタで「デプロイを管理」→既存デプロイを新バージョンで更新（clasp deploy は公開設定をリセットするので使わない）。反映後、【動作テスト】の支出を1件登録し、Geminiの判定と理由が出ること・承認・差し戻しが保存されることを確かめ、テスト行は deleteLedgerTestRows で消す。判定の傾向（要確認が多すぎないか）もここで見る"
+        },
         {
           "due": "2026-11-10",
           "title": "💴 口座開設後の会費の遡及徴収と、中司の立替金の返し方を決めて総会の議案に入れる",
