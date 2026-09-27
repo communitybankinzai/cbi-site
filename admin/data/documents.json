@@ -3,6 +3,15 @@
   "note": "資料コメントタブで管理する内部資料の一覧。HTMLを追加したらこのリストに登録する。id はファイルパスから独立した安定識別子（comments.targetId と一致）。",
   "documents": [
     {
+      "id": "machizukuri-fund-overview",
+      "title": "公益信託 印西市まちづくりファンドの概要｜しくみ・助成額・スケジュール",
+      "path": "proposals/machizukuri-fund-overview-v1.html",
+      "category": "勉強資料・プレゼンスライド",
+      "description": "2027年1月の応募に向けた勉強資料。11枚構成のHTMLスライド。制度のしくみ、3コースの助成額、1年のスケジュール、審査の基準、CBIにあてはめた見込み。出典は第20回（2026年度）の応募の手引き。",
+      "createdAt": "2026-09-28",
+      "updatedAt": "2026-09-28"
+    },
+    {
       "id": "cidao-feature-intro",
       "title": "CiDAO機能紹介スライド｜一般向け・20枚（実画面キャプチャ入り）",
       "path": "proposals/cidao-feature-intro-v1.html",
