@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-28",
+          "title": "防災MAP SNS通行情報を既定で対象日のみ・台風25号等の選択で過去分を表示 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（passesSnsWhenFilter 追加・renderSnsRoads で件数表示）",
+            "site/inzai-disaster-map/index.html（SNSレイヤーの説明・app.js の版 20260928a）",
+            "site/admin/changelog.json",
+            "cbi-site 61995a4"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "中司さん『SNSの投稿がずっと残るのはよくない。日付のソートに含めて切り替えたい。台風25号を選択で表示できるのが望ましい』。SNSは既に本日／過去の実績の絞り込みを受けていたが、過去の実績が既定ONのため9/20以降が残り続けていた。SNSだけ過去の実績から外し、期間（台風25号・8月豪雨・⏱期間）指定時はその期間を出す。運営の管理一覧は全件のまま。検証：CiDAO の SNS API は CORS が本番オリジンのみのため、本番データ13件をローカルに置いて読ませ、既定＝0件（対象日9/28）、台風25号＝11件、解除で0件、対象日9/25＝1件を確認、画面でも北須賀付近に点が出ることを確認。本番の index.html が app.js?v=20260928a を読み、新しい関数が入っていることを確認。前回記録(29,471)以降の差分で算出。session: e4863296-46a1-4300-a931-52b49665e4d1 / output: 46,315 / cost: $13.81"
+        },
+        {
           "date": "2026-09-27",
           "title": "防災MAP 通行止め：印西市の路線一覧を読めないときの警告と時刻表記の揺れ対応 0.2時間",
           "category": "実装",
