@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-27",
+          "title": "卒論の作業環境を新PCへ引き継ぐ準備（変換の道具の切り出し・手順書） 0.2時間",
+          "category": "保守",
+          "outputs": "academy/_新PC引き継ぎ/README.md（新規・準備と作り方の手順書）、academy/_新PC引き継ぎ/slides-h2p/（C:\\Repos\\slides-h2p のコードを node_modules 抜きで複製・1.3MB）、HOME.md（よく使うノートへ登録）",
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "中司さん『続きを新PCで実施したい』。卒論の原稿・スライドは OneDrive の中なので同期で届くが、HTML→PowerPoint 変換の道具 C:\\Repos\\slides-h2p は OneDrive の外で届かないため、コード（convert.js・html2pptx.js・package.json・package-lock.json・img・test＝1.3MB）を引き継ぎフォルダへ複製した。node_modules（46MB）と work（18MB）は複製せず、新PCで npm install する形にした。⚠ html2pptx.js は 2026-09-17 に直した版（<br>と太字が混ざったときの余計な改行）なので、GitHub から取り直すと修正が入らない。実測で確かめた前提：依存は pptxgenjs・playwright・sharp の3つ、chromium.launch は darwin のときだけ channel:chrome なので Windows では playwright の Chromium が必要（npx playwright install chromium）、Python の部品は docx・pptx・markdown・edge_tts、口述原稿の PDF は C:\\Program Files\\Google\\Chrome の chrome.exe（Word COM は3回ハングしたため使わない）、C:\\Repos\\slides-h2p を直接参照しているのは build_h2p.py・fit_loop.py・build_two_pptx.ps1 の3本。新PC側の導入状況は旧PCで動いているこのセッションからは確認できないため、確認コマンドを手順書に列挙した。前回記録(1,857,092)以降の差分で算出。session: 8f104510-74de-47bf-8249-672356aedc78 / output: 1,878,495 / cost: $608.28"
+        },
+        {
           "date": "2026-09-26",
           "title": "防災MAP 雨の判定の作り直し（逆算D=20・全件再判定・試せるページ）＋印西市の路線一覧の読み取り修正＋市民向け読み物ページ 1.2時間",
           "category": "実装",
@@ -7832,6 +7841,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-10-05",
+          "title": "🎓 新PCで卒論の作業環境を立ち上げ、スライドを1回作り直して通ることを確かめる",
+          "category": "保守",
+          "priority": "高",
+          "note": "手順は academy/_新PC引き継ぎ/README.md。(1) academy/_新PC引き継ぎ/slides-h2p を C:\\Repos\\slides-h2p へ置く (2) npm install と npx playwright install chromium（ブラウザの実体は node_modules ではなく %LOCALAPPDATA%\\ms-playwright に入るので省くと変換が動かない） (3) python の docx・pptx・markdown・edge_tts と Chrome・PowerPoint を確認 (4) build_h2p.py → fit_loop.py → build_two_pptx.ps1 が通り、発表用17枚・クリック50・音声版17枚になることを確かめる。通ったら引き継ぎフォルダは消してよい。⚠ 日本語入りの .ps1 は BOM付き UTF-8 で保存する。⚠ PowerPoint の加工は OneDrive の外（C:\\Repos\\slides-h2p\\work）で行う。"
+        },
+        {
+          "due": "未定",
+          "title": "🎓 卒論スライド3枚目の説明文が表の右端をわずかにはみ出すのを直す",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-09-17 時点で未対応。スライドの外には出ておらず、PowerPoint の書き出し画像で表の右枠を数pt超える程度。build_h2p.py の表の組み方（<div>と<p>で組んでいる）か、説明の枠の幅の取り方を見る。次に 06_発表 を触るときに合わせて直す。"
+        },
         {
           "due": "未定",
           "title": "☔ 次の大雨の記録で、雨の判定の数値（D=20mm/h・半減期48h・150mm）を当てはめ直す",
