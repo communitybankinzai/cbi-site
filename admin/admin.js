@@ -4593,6 +4593,12 @@ const UNREAD_POLL_MS = 30000;
   // 経費のAI判定（GAS judgeLedgerExpense_）と会計の承認
   const LEDGER_AI_LABEL = { ok: '🤖 妥当', check: '🤖 要確認', ng: '🤖 不適切の疑い', error: '🤖 判定できず' };
   const LEDGER_APPROVAL_LABEL = { approved: '✅ 承認済み', rejected: '↩ 差し戻し', '': '⏳ 未承認' };
+  // GASは世界標準時のISO文字列で保存するので、日本時間の「YYYY-MM-DD HH:MM」にして出す
+  const ledgerJst = v => {
+    const d = new Date(v);
+    if (!v || isNaN(d)) return String(v || '');
+    return new Date(d.getTime() + 9 * 3600 * 1000).toISOString().replace('T', ' ').slice(0, 16);
+  };
   const sameName = (a, b) => String(a || '').replace(/\s/g, '') === String(b || '').replace(/\s/g, '') && String(a || '').trim() !== '';
   function ledgerApprover() { return orgInfo().treasurer || '中司 祐樹'; }
   function ledgerAuditor() { return orgInfo().auditor || '須田 翔'; }
@@ -5040,7 +5046,7 @@ const UNREAD_POLL_MS = 30000;
       const auditor = ledgerAuditor();
       const isApprover = sameName(state.me, approver);
       const isAuditor = sameName(state.me, auditor);
-      const at = v => String(v || '').replace('T', ' ').slice(0, 16);
+      const at = ledgerJst;
       const aiLine = e.aiVerdict
         ? `<p><span class="ledger-ai ledger-ai-${escapeAttr(e.aiVerdict)}">${LEDGER_AI_LABEL[e.aiVerdict] || escapeHtml(e.aiVerdict)}</span>　${escapeHtml(e.aiReason || '')}<span class="meta-note">（${escapeHtml(at(e.aiCheckedAt))}）</span></p>`
         : '<p class="meta-note">AIの判定はまだありません。</p>';
@@ -6374,7 +6380,7 @@ ${sections}<div class="sign">
         e.registeredBy,
         e.type === 'expense' ? (LEDGER_AI_LABEL[e.aiVerdict] || '').replace('🤖 ', '') : '', e.aiReason || '',
         e.type === 'expense' ? (LEDGER_APPROVAL_LABEL[e.approval || ''] || '').replace(/^\S+ /, '') : '',
-        e.approvedBy || '', String(e.approvedAt || '').replace('T', ' ').slice(0, 16), e.approvalNote || '', e.auditBy || '',
+        e.approvedBy || '', ledgerJst(e.approvedAt), e.approvalNote || '', e.auditBy || '',
         e.id,
       ].map(csvEscape).join(','));
     });
