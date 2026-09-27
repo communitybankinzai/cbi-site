@@ -6942,8 +6942,7 @@ async function ensureSnsRoadsLayer(force) {
     const payload = await response.json();
     snsRoadsData = Array.isArray(payload.reports) ? payload.reports : [];
     await snapSnsRoadPoints();
-    renderSnsRoads();
-    if (status) status.textContent = `${snsRoadsData.filter(r => !r.hidden).length}件（AI読み取り・未確認）`;
+    renderSnsRoads(); // 件数の表示も renderSnsRoads が書く
     clearInterval(snsRoadsTimer);
     snsRoadsTimer = setInterval(() => { if (map.hasLayer(snsRoadsLayer)) ensureSnsRoadsLayer(true); }, 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
   } catch (error) {
@@ -7079,6 +7078,7 @@ function renderSnsRoads() {
   const stacks = new Map();
   groups.forEach(g => { stacks.set(stackKey(g.rep), (stacks.get(stackKey(g.rep)) || 0) + 1); });
   const stackSeen = new Map();
+  let shown = 0;
   ordered.forEach(report => {
     const group = groups.get(sameKey(report));
     if (group && group.rep !== report) {
@@ -7091,8 +7091,9 @@ function renderSnsRoads() {
     if (report.hidden && !isModerator) return;
     // 場所を決められず自動で伏せた点は、運営の地図にも出さない（座標が当てにならないため。一覧には残る）
     if (report.unlocated) return;
-    // 「本日／過去の実績」「期間」のしぼり込みを市民の記録と同じく効かせる（見た時刻、無ければ投稿時刻で判定。2026-09-25 事業主指摘）
-    if (!passesWhenFilter(report.observedAt || report.postedAt)) return;
+    // 「本日」「期間」のしぼり込みを効かせる（見た時刻、無ければ投稿時刻で判定。2026-09-25 事業主指摘）。
+    // SNSは「過去の実績」では出さない（2026-09-28 事業主指示：古い投稿が残り続けるのはよくない。台風25号などを選べば出る）
+    if (!passesSnsWhenFilter(report.observedAt || report.postedAt)) return;
     // 凡例の「通れない道」「通れた道」ボタンも効かせる。解除（通れるようになった）は「通れた道」に合わせる（2026-09-25 事業主指示）
     if (!passedKindFilter[report.kind === "blocked" ? "blocked" : "passed"]) return;
     if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
@@ -7147,7 +7148,15 @@ function renderSnsRoads() {
     }
     marker.addTo(snsRoadsLayer);
     snsRoadShapes.set(String(report.id), marker);
+    shown += 1;
   });
+  // 件数は「いま地図に出ている数／全体」。SNSは既定で対象日の投稿だけなので、全体の数だけだと出ていない理由が分からない
+  const status = document.getElementById("sns-roads-status");
+  if (status) {
+    const total = snsRoadsData.filter(r => !r.hidden).length;
+    const scope = recordWhenFilter.label || (recordWhenFilter.from !== null || recordWhenFilter.to !== null ? "期間内" : "対象日");
+    status.textContent = `${scope} ${shown}件／全${total}件（AI読み取り・未確認）`;
+  }
 }
 
 // 「🗑 市民記録の管理」の中の SNS の節（運営）。確度と伏せ状態が分かり、地図で見る／元の投稿／伏せる・戻す ができる
@@ -8768,6 +8777,13 @@ function passesWhenFilter(iso) {
     return true;
   }
   return isTargetDayRecord(iso) ? recordWhenFilter.today : recordWhenFilter.past;
+}
+
+// SNSの投稿用：期間（台風25号・8月豪雨・⏱ 期間）を選んでいるときはその期間で、選んでいないときは対象日の投稿だけ。
+// 「過去の実績」は市民の記録の実績を見るためのもので、SNSの古い投稿はそこに含めない（2026-09-28 事業主指示）
+function passesSnsWhenFilter(iso) {
+  if (recordWhenFilter.from !== null || recordWhenFilter.to !== null) return passesWhenFilter(iso);
+  return recordWhenFilter.today && isTargetDayRecord(iso);
 }
 
 // ⏱ 期間の絞り込み。災害中は「直近3時間」をすぐ押せることが大事なので、
