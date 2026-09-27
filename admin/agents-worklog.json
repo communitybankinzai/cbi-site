@@ -10890,6 +10890,15 @@
     "A9": {
       "actuals": [
         {
+          "date": "2026-09-28",
+          "title": "武蔵屋マルシェの準備：体験PCの自作確定の記録、当日の役割分担案、会場Wi-Fiの転記、告知のすみわけ決定、SNS告知2回分（3媒体）の作成と予約 0.5時間",
+          "category": "広報",
+          "outputs": "events/2026-11-03_武蔵屋/当日スタッフ役割分担.md（新規）・告知のすみわけ.md（新規）・aebe wifi pass.txt（新規・git外）・体験PC_購入リスト.md（決定の記録）、agents/a4-voice-out/knowledge/sns-drafts/2026-09-28_武蔵屋_白鳥体験の告知.md（新規）、site/assets/sns/2026-09-28_musashiya-taiken/（画像4枚・JPEG）、MOC_行政調整.md、site/admin/agents-worklog.json（A9 plans 2件）、CBI 予約投稿キュー6行（10/12・11/1 19:00）",
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "中司さんの指示で順に対応。体験PCは自作機で確定（9/27）。役割分担は CBI の2階のみ・開催 10:00〜15:00（FreeFree 掲載の本文で確認）で2名案／3名案。会場 Wi-Fi はルーターのラベル写真を転記（初期値のため当日要確認・値は git と会話に出さない）。告知は全体＝FreeFree、CBI＝白鳥の体験と CiDAO 案内に分けた。SNS は紹介動画から場面を切り出し（ランキングに他人の表示名が写るゴール画面は不使用）、承認後に『無料・CiDAO 登録必須』へ直して予約。Threads 387字・312字、画像の公開URL 200 と6行の scheduled を確認。git は旧PCから移した C:\\dev\\gitdir\\cbi-site を --git-dir で使用（site/ には .git が無い）。session: 6c904595-8ee1-4361-86ca-71b38af5b3cd / output: 50,478 / cost: $19.80"
+        },
+        {
           "date": "2026-09-20",
           "title": "体験PC 組立手順書（図つき・A4 12ページ）の作成とN's factoryサイト公開、購入リストの仕様3点訂正＋組立リスク5点の追記、互換パーツ候補45件（楽天アフィリエイト）の掲載 2.6時間",
           "category": "実装",
