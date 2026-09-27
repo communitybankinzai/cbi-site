@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-27",
+          "title": "防災MAP 通行止め：印西市の路線一覧の時刻表記変更で解除を取りこぼした件の修正 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "C:\\Repos\\cidao src/lib/disaster-road-closures.ts（見出しの時刻を「8：00現在」「17時45分現在」の両方で読む）",
+            "src/lib/__tests__/disaster-road-closures.test.ts（1件追加・26件通過）",
+            "cidao d77b9c9"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "中司さんが印西市LINE（9/27 18:00現在の主要幹線道路の通行止め）を示し『防災MAPに反映済か』。照合すると中平橋（市道山田・平賀線）が解除後も通行止め表示のまま、まとめページ0000022584が空の行で出ていた。原因は市の見出しが「【令和8年9月27日 17時45分現在】」に変わり、9/26実装の一覧読み取りが「8：00現在」形式しか読めず一覧を丸ごと読み落としていたこと。修正後、市の実ページで6路線（解除4・通行止め2）を正しく読むことを確認、本番の定時巡回（21:35 JST）後のAPIで中平橋＝解除（announced）・空の行＝解除（disappeared）、師戸・江川線と吉田・岩戸線のみ通行止めを確認。session: e4863296-46a1-4300-a931-52b49665e4d1 / output: 11,520 / cost: $3.63"
+        },
+        {
+          "date": "2026-09-27",
           "title": "卒論の作業環境を新PCへ引き継ぐ準備（変換の道具の切り出し・手順書） 0.2時間",
           "category": "保守",
           "outputs": "academy/_新PC引き継ぎ/README.md（新規・準備と作り方の手順書）、academy/_新PC引き継ぎ/slides-h2p/（C:\\Repos\\slides-h2p のコードを node_modules 抜きで複製・1.3MB）、HOME.md（よく使うノートへ登録）",
