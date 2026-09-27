@@ -7072,6 +7072,8 @@ function renderSnsRoads() {
   const groups = new Map();
   ordered.forEach(r => {
     if (!Number.isFinite(r.lat) || !Number.isFinite(r.lng)) return;
+    // 期間の外の投稿は代表にしない（古い代表が期間の外で消え、期間内の同じ投稿まで出なくなっていた。2026-09-28）
+    if (!passesSnsWhenFilter(r.observedAt || r.postedAt)) return;
     const k = sameKey(r);
     if (!groups.has(k)) groups.set(k, { rep: r, others: [] }); else groups.get(k).others.push(r);
   });
@@ -7154,7 +7156,7 @@ function renderSnsRoads() {
   const status = document.getElementById("sns-roads-status");
   if (status) {
     const total = snsRoadsData.filter(r => !r.hidden).length;
-    const scope = recordWhenFilter.label || (recordWhenFilter.from !== null || recordWhenFilter.to !== null ? "期間内" : "対象日");
+    const scope = recordWhenFilter.label || (recordWhenFilter.from !== null || recordWhenFilter.to !== null ? "期間内" : snsRecentMode() ? "直近24時間" : "対象日");
     status.textContent = `${scope} ${shown}件／全${total}件（AI読み取り・未確認）`;
   }
 }
@@ -8781,9 +8783,20 @@ function passesWhenFilter(iso) {
 
 // SNSの投稿用：期間（台風25号・8月豪雨・⏱ 期間）を選んでいるときはその期間で、選んでいないときは対象日の投稿だけ。
 // 「過去の実績」は市民の記録の実績を見るためのもので、SNSの古い投稿はそこに含めない（2026-09-28 事業主指示）
+// 対象日が今日のときは直近24時間の投稿も出す（日付が変わった直後に、夜中の投稿が消えないように。2026-09-28 事業主指示）
+const SNS_RECENT_MS = 24 * 60 * 60 * 1000;
+function snsRecentMode() {
+  return recordWhenFilter.from === null && recordWhenFilter.to === null && snsTargetIsToday();
+}
+function snsTargetIsToday() {
+  return (document.getElementById("incident-date")?.value || todayJst()) === todayJst();
+}
 function passesSnsWhenFilter(iso) {
   if (recordWhenFilter.from !== null || recordWhenFilter.to !== null) return passesWhenFilter(iso);
-  return recordWhenFilter.today && isTargetDayRecord(iso);
+  if (!recordWhenFilter.today) return false;
+  if (isTargetDayRecord(iso)) return true;
+  const time = Date.parse(iso || "");
+  return snsTargetIsToday() && Number.isFinite(time) && Date.now() - time <= SNS_RECENT_MS;
 }
 
 // ⏱ 期間の絞り込み。災害中は「直近3時間」をすぐ押せることが大事なので、
