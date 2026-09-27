@@ -1008,9 +1008,12 @@ if (location.protocol === 'file:') {
         <div class="org-actions">
           <button type="button" class="btn btn-primary" id="org-report-finance">💴 収支報告書</button>
           <button type="button" class="btn btn-primary" id="org-report-activity">🗓 活動報告書</button>
+          <button type="button" class="btn btn-primary" id="org-report-budget">📊 収支予算書</button>
+          <button type="button" class="btn btn-primary" id="org-report-plan">🧭 活動計画書</button>
+          <button type="button" class="btn btn-primary" id="org-report-agenda">🗳 総会議案書</button>
         </div>
         <div id="org-check" class="org-check"></div>
-        <p class="meta-note">年度を選んで押すと、印刷用の画面が開きます（「印刷 / PDF保存」でPDFにできます）。収支は「💰 収支管理」の台帳、活動は下の「活動の記録」から作ります。</p>
+        <p class="meta-note">年度を選んで押すと、印刷用の画面が開きます（「印刷 / PDF保存」でPDFにできます）。収支は「💰 収支管理」の台帳、活動は下の「活動の記録」から作ります。予算・計画・総会議案書は下の「予算・計画・総会」に入れた内容から作ります。</p>
       </section>
 
       <section class="panel panel-form">
@@ -1025,7 +1028,10 @@ if (location.protocol === 'file:') {
           </div>
           <div class="grid-3">
             <label class="field"><span>代表</span><input type="text" id="org-representative"></label>
+            <label class="field"><span>副会長</span><input type="text" id="org-viceRepresentative"></label>
             <label class="field"><span>会計</span><input type="text" id="org-treasurer"></label>
+          </div>
+          <div class="grid-3">
             <label class="field"><span>監事（会計監査）</span><input type="text" id="org-auditor"></label>
           </div>
           <label class="field"><span>所在地（書類に載せる場合）</span><input type="text" id="org-address" placeholder="例：千葉県印西市（番地は載せなくてもよい）"></label>
@@ -1037,6 +1043,44 @@ if (location.protocol === 'file:') {
           <div class="form-actions">
             <button type="submit" class="btn btn-primary" id="org-settings-save">保存</button>
             <span class="meta-note" id="org-settings-status"></span>
+          </div>
+        </form>
+      </section>
+
+      <!-- 予算・計画・総会（年度ごと・2026-09-28 口座開設の書類のため追加） -->
+      <section class="panel panel-form">
+        <h2 class="panel-title">🧭 予算・計画・総会 <span class="meta-note" id="org-plan-fy-label"></span></h2>
+        <form id="org-plan-form" class="idea-form">
+          <h3 class="org-sub">📊 収支予算（科目ごとの金額・円）</h3>
+          <p class="meta-note">前年度の決算は「💰 収支管理」の台帳から自動で出します。使わない科目は空欄のままで構いません（書類には金額のある科目だけ載ります）。</p>
+          <div class="org-budget-grid">
+            <div><h4 class="org-sub">収入</h4><table class="org-budget-table"><thead><tr><th>科目</th><th class="num">前年度決算</th><th class="num">予算</th></tr></thead><tbody id="org-budget-income"></tbody></table></div>
+            <div><h4 class="org-sub">支出</h4><table class="org-budget-table"><thead><tr><th>科目</th><th class="num">前年度決算</th><th class="num">予算</th></tr></thead><tbody id="org-budget-expense"></tbody></table></div>
+          </div>
+          <label class="field"><span>予算の説明（任意・書類の下に載ります）</span><textarea id="org-budget-note" rows="2" maxlength="1000" placeholder="例：会費は月1,000円×会員数×月数で見込む"></textarea></label>
+
+          <h3 class="org-sub">🧭 活動計画</h3>
+          <label class="field"><span>年度の目標（任意）</span><textarea id="org-plan-goal" rows="2" maxlength="1000"></textarea></label>
+          <table class="org-plan-table">
+            <thead><tr><th>事業名</th><th>時期</th><th>内容</th><th class="num">予算の目安（円）</th><th></th></tr></thead>
+            <tbody id="org-plan-items"></tbody>
+          </table>
+          <button type="button" class="btn-link" id="org-plan-add">＋ 事業を足す</button>
+
+          <h3 class="org-sub">🗳 総会（議案書に載せる内容）</h3>
+          <div class="grid-3">
+            <label class="field"><span>総会の名前</span><input type="text" id="org-asm-title" maxlength="60" placeholder="例：第1回総会"></label>
+            <label class="field"><span>日時</span><input type="text" id="org-asm-when" maxlength="60" placeholder="例：2026年11月8日（日）10時〜"></label>
+            <label class="field"><span>場所</span><input type="text" id="org-asm-place" maxlength="100"></label>
+          </div>
+          <label class="field"><span>規約の変更（空欄なら議案にしない）</span><textarea id="org-asm-rules" rows="3" maxlength="2000" placeholder="例：第○条に設立年月日（2026年6月8日）を加える／会計の条文を加える"></textarea></label>
+          <label class="field"><span>口座の開設（空欄なら議案にしない）</span><textarea id="org-asm-bank" rows="3" maxlength="2000" placeholder="例：GMOあおぞらネット銀行に団体名義の口座を開設し、取引責任者を会計 中司祐樹とする"></textarea></label>
+          <label class="field"><span>その他の議案（任意・1行に1つ）</span><textarea id="org-asm-other" rows="2" maxlength="2000"></textarea></label>
+          <label class="org-doc-ok"><input type="checkbox" id="org-asm-officers" checked> 役員の選任を議案にする（上の基本情報の役員を載せます）</label>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="org-plan-save">保存</button>
+            <span class="meta-note" id="org-plan-status"></span>
           </div>
         </form>
       </section>

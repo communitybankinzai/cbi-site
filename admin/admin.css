@@ -2748,3 +2748,19 @@ details.aa-g-wait > summary::marker { color: var(--c-ink-sub); }
 .org-doc-ok { white-space: nowrap; font-size: 13px; padding-bottom: 12px; }
 .org-act-ops { white-space: nowrap; }
 #tab-org td.num { text-align: right; }
+/* 予算・計画・総会（2026-09-28） */
+.org-budget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.org-budget-table, .org-plan-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 8px; }
+.org-budget-table th, .org-budget-table td, .org-plan-table th, .org-plan-table td { border-bottom: 1px solid #e5dfd0; padding: 4px 6px; text-align: left; vertical-align: top; }
+.org-budget-table th.num { text-align: right; }
+.org-budget-table input { width: 110px; text-align: right; }
+.org-plan-table input, .org-plan-table textarea { width: 100%; box-sizing: border-box; }
+.org-plan-table td:nth-child(2) { width: 110px; }
+.org-plan-table td:nth-child(4) { width: 120px; }
+.org-plan-table td:nth-child(4) input { text-align: right; }
+@media (max-width: 720px) {
+  .org-budget-grid { grid-template-columns: 1fr; }
+  .org-plan-table, .org-plan-table tbody, .org-plan-table tr, .org-plan-table td { display: block; width: auto !important; }
+  .org-plan-table thead { display: none; }
+  .org-plan-table tr { border: 1px solid #e5dfd0; border-radius: 6px; padding: 6px; margin-bottom: 8px; }
+}

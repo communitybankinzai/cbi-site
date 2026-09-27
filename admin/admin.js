@@ -5376,7 +5376,7 @@ const UNREAD_POLL_MS = 30000;
     { key: 'Agenda', label: '総会の議案書' },
     { key: 'MemberList', label: '団体の名簿（個人情報は隠してよい）' },
   ];
-  const ORG_FIELDS = ['orgName', 'foundedDate', 'fiscalStartMonth', 'address', 'representative', 'treasurer', 'auditor'];
+  const ORG_FIELDS = ['orgName', 'foundedDate', 'fiscalStartMonth', 'address', 'representative', 'viceRepresentative', 'treasurer', 'auditor'];
   // 活動報告書「主な活動（テーマ別）」の振り分け。更新履歴の target と title を上から順に照らし、最初に当たったテーマに入れる
   const ORG_THEMES = [
     { name: '防災MAP（印西市 災害状況整合MAP）', desc: '避難所・ハザード・気象・通行止め・市民の冠水と「通れた道」の記録を1つの地図で確かめられる仕組み', re: /防災MAP|災害|disaster|冠水|被害マップ|通れた道|避難|水位|通行止め|内水/i },
@@ -5398,8 +5398,19 @@ const UNREAD_POLL_MS = 30000;
       founded,
       address: s.address || '',
       representative: s.representative || '',
+      viceRepresentative: s.viceRepresentative || '',
       treasurer: s.treasurer || '',
       auditor: s.auditor || '',
+      // 役員欄（副会長は入っているときだけ）
+      officersText() {
+        return [['代表', this.representative], ['副会長', this.viceRepresentative], ['会計', this.treasurer], ['監事', this.auditor]]
+          .filter(([k, v]) => v || k !== '副会長')
+          .map(([k, v]) => `${k}　${v || '（未入力）'}`).join('／');
+      },
+      // 年度ごとの予算・計画・総会（JSON で保存）
+      yearData(kind, fy) {
+        try { return JSON.parse(s[kind + ':' + fy] || '{}') || {}; } catch (e) { return {}; }
+      },
       carryover(fy) {
         const v = s['carryover:' + fy];
         return v === undefined || v === '' ? null : Number(v) || 0;
@@ -5452,6 +5463,17 @@ const UNREAD_POLL_MS = 30000;
       openLedgerReport(Number($('org-fy').value));
     });
     $('org-report-activity').addEventListener('click', () => openActivityReport(Number($('org-fy').value)));
+    $('org-report-budget').addEventListener('click', () => openBudgetReport(Number($('org-fy').value)));
+    $('org-report-plan').addEventListener('click', () => openPlanReport(Number($('org-fy').value)));
+    $('org-report-agenda').addEventListener('click', () => {
+      if (!state.ledger.loaded) { toast('収支の台帳を読み込めていません', 'err'); return; }
+      openAgendaReport(Number($('org-fy').value));
+    });
+    $('org-plan-form').addEventListener('submit', onOrgPlanSubmit);
+    $('org-plan-add').addEventListener('click', () => addOrgPlanRow());
+    $('org-plan-items').addEventListener('click', ev => {
+      if (ev.target.closest('[data-plan-del]')) ev.target.closest('tr').remove();
+    });
     $('org-act-tbody').addEventListener('click', onOrgActTableClick);
     const m = (state.ledger.meta || LEDGER_FALLBACK_META).projects;
     $('org-act-project').innerHTML = '<option value="">選択</option>' +
@@ -5482,6 +5504,7 @@ const UNREAD_POLL_MS = 30000;
       $('org-doc' + d.key + 'Url').value = s['doc' + d.key + 'Url'] || '';
       $('org-doc' + d.key + 'Ok').checked = s['doc' + d.key + 'Ok'] === '1';
     });
+    renderOrgPlan();
   }
 
   function renderOrgDocs() {
@@ -5513,7 +5536,9 @@ const UNREAD_POLL_MS = 30000;
       const r = await ledgerCall({ action: 'orgSettingsSave', password: state.password, actor: state.me || '', settings });
       if (!r.ok) throw new Error(r.error || 'save_failed');
       Object.assign(state.org.settings, settings);
-      $('org-settings-status').textContent = '保存しました';
+      // 古い GAS は副会長の欄を黙って捨てるので、件数で見分ける
+      $('org-settings-status').textContent = r.saved != null && r.saved < Object.keys(settings).length
+        ? '保存しましたが、一部の項目（副会長など）はGASの再デプロイ後に保存できます' : '保存しました';
       renderOrgCheck();
     } catch (e) {
       $('org-settings-status').textContent = '保存できませんでした：' + e.message;
@@ -5635,6 +5660,8 @@ const UNREAD_POLL_MS = 30000;
       [fyLedger.some(e => e.type === 'expense'), `${fy}年度の支出の記録`],
       [unsettled.length === 0, unsettled.length ? `未精算の立替が${unsettled.length}件あります（報告書には「未払金」として載ります）` : '未精算の立替なし'],
       [orgActivitiesOf(fy).length > 0, `${fy}年度の活動の記録`],
+      [Object.keys(orgInfo().yearData('budget', fy).income || {}).length + Object.keys(orgInfo().yearData('budget', fy).expense || {}).length > 0, `${fy}年度の収支予算`],
+      [(orgInfo().yearData('plan', fy).items || []).length > 0, `${fy}年度の活動計画`],
       ...ORG_DOCS.map(d => [s['doc' + d.key + 'Ok'] === '1', d.label]),
     ];
     if (!state.org.loaded) {
@@ -5647,7 +5674,7 @@ const UNREAD_POLL_MS = 30000;
   }
 
   // 活動報告書を印刷用ウィンドウで生成
-  function openActivityReport(fy) {
+  function openActivityReport(fy, opts = {}) {
     const org = orgInfo();
     const list = orgActivitiesOf(fy);
     const reiwa = fy - 2018;
@@ -5681,31 +5708,12 @@ const UNREAD_POLL_MS = 30000;
     const rows = list.map(a => `<tr><td class="nowrap">${escapeHtml(ledgerDateStr(a.date))}</td><td><strong>${escapeHtml(a.title)}</strong>${a.place ? `<br><span class="muted">${escapeHtml(a.place)}</span>` : ''}</td>` +
       `<td class="num">${escapeHtml(a.participants === '' || a.participants == null ? '' : String(a.participants))}</td>` +
       `<td>${escapeHtml(a.body || '')}${a.result ? `<br><span class="muted">成果：${escapeHtml(a.result)}</span>` : ''}</td></tr>`).join('');
-    const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>活動報告書 ${fy}年度（R${reiwa}）</title>
-<style>
-  body { font-family: "Noto Sans JP", "Yu Gothic", sans-serif; color: #1a2330; margin: 40px; font-size: 13px; }
-  h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
-  .sub { text-align: center; color: #4a5663; margin-bottom: 24px; }
-  h2 { font-size: 15px; border-bottom: 2px solid #1e3a5f; padding-bottom: 4px; margin: 24px 0 8px; }
-  table { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
-  th, td { border: 1px solid #999; padding: 6px 10px; text-align: left; vertical-align: top; }
-  th { background: #f1ece0; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .nowrap { white-space: nowrap; }
-  .muted { color: #4a5663; font-size: 12px; }
-  .note { color: #4a5663; font-size: 11px; margin-top: 16px; }
-  .print-btn { position: fixed; top: 10px; right: 10px; padding: 8px 16px; }
-  @media print { .print-btn { display: none; } body { margin: 10mm; } tr { break-inside: avoid; } }
-</style></head><body>
-<button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
-<h1>活動報告書</h1>
-<p class="sub">${escapeHtml(org.name)}<br>${fy}年度（令和${reiwa}年度）：${org.periodLabel(fy)}<br>作成日: ${new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)}</p>
-<h2>Ⅰ 団体の概要</h2>
+    const sections = `<h2>Ⅰ 団体の概要</h2>
 <table>
 <tr><th>団体名</th><td>${escapeHtml(org.name)}</td></tr>
 ${org.founded ? `<tr><th>設立日</th><td>${escapeHtml(org.founded)}</td></tr>` : ''}
 ${org.address ? `<tr><th>所在地</th><td>${escapeHtml(org.address)}</td></tr>` : ''}
-<tr><th>役員</th><td>代表　${escapeHtml(org.representative || '（未入力）')}／会計　${escapeHtml(org.treasurer || '（未入力）')}／監事　${escapeHtml(org.auditor || '（未入力）')}</td></tr>
+<tr><th>役員</th><td>${escapeHtml(org.officersText())}</td></tr>
 </table>
 <h2>Ⅱ 活動のまとめ</h2>
 <table>
@@ -5725,7 +5733,28 @@ ${cl.length ? `<h2>${themeRows ? 'Ⅴ' : 'Ⅳ'} ウェブサイト・システ�
 ${Object.keys(clByTarget).sort((x, y) => clByTarget[y] - clByTarget[x]).map(k => `<tr><td>${escapeHtml(k)}</td><td class="num">${clByTarget[k]}件</td></tr>`).join('')}
 <tr><td><strong>合計</strong></td><td class="num"><strong>${cl.length}件</strong></td></tr></table>` : ''}
 <p class="note">※ 本資料は管理画面の「活動の記録」${cl.length ? 'と「更新履歴」' : ''}から自動生成。参加人数は記録のある活動の合計。</p>
-<p style="margin-top:28px">上記のとおり報告します。</p>
+`;
+    if (opts.bodyOnly) return sections;
+    const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>活動報告書 ${fy}年度（R${reiwa}）</title>
+<style>
+  body { font-family: "Noto Sans JP", "Yu Gothic", sans-serif; color: #1a2330; margin: 40px; font-size: 13px; }
+  h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
+  .sub { text-align: center; color: #4a5663; margin-bottom: 24px; }
+  h2 { font-size: 15px; border-bottom: 2px solid #1e3a5f; padding-bottom: 4px; margin: 24px 0 8px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
+  th, td { border: 1px solid #999; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f1ece0; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .nowrap { white-space: nowrap; }
+  .muted { color: #4a5663; font-size: 12px; }
+  .note { color: #4a5663; font-size: 11px; margin-top: 16px; }
+  .print-btn { position: fixed; top: 10px; right: 10px; padding: 8px 16px; }
+  @media print { .print-btn { display: none; } body { margin: 10mm; } tr { break-inside: avoid; } }
+</style></head><body>
+<button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
+<h1>活動報告書</h1>
+<p class="sub">${escapeHtml(org.name)}<br>${fy}年度（令和${reiwa}年度）：${org.periodLabel(fy)}<br>作成日: ${new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)}</p>
+${sections}<p style="margin-top:28px">上記のとおり報告します。</p>
 <p>${fy + 1}年　　月　　日　　${escapeHtml(org.name)}　代表　${escapeHtml(org.representative || '　　　　　　')}　　印</p>
 </body></html>`;
     openPrintWindow(html, `CBI活動報告書_${fy}年度.html`);
@@ -5747,8 +5776,257 @@ ${Object.keys(clByTarget).sort((x, y) => clByTarget[y] - clByTarget[x]).map(k =>
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
+  // =========================================================
+  // 📊 収支予算書・🧭 活動計画書・🗳 総会議案書（2026-09-28 口座開設の書類として追加）
+  // 保存先は org_settings の budget:<年度> / plan:<年度> / assembly:<年度>（JSON 文字列・OrgDocs.gs）
+  // =========================================================
+  const ORG_DOC_CSS = `
+  body { font-family: "Noto Sans JP", "Yu Gothic", sans-serif; color: #1a2330; margin: 40px; font-size: 13px; }
+  h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
+  .sub { text-align: center; color: #4a5663; margin-bottom: 24px; }
+  h2 { font-size: 15px; border-bottom: 2px solid #1e3a5f; padding-bottom: 4px; margin: 24px 0 8px; }
+  h3.agenda { font-size: 16px; background: #1e3a5f; color: #fff; padding: 6px 10px; margin: 32px 0 8px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
+  th, td { border: 1px solid #999; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f1ece0; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .nowrap { white-space: nowrap; }
+  .muted { color: #4a5663; font-size: 12px; }
+  .total td { font-weight: 700; background: #faf8f3; }
+  .grand td { font-weight: 700; background: #e8effa; }
+  .note { color: #4a5663; font-size: 11px; margin-top: 16px; }
+  .pre { white-space: pre-wrap; }
+  .print-btn { position: fixed; top: 10px; right: 10px; padding: 8px 16px; }
+  .sign { margin-top: 28px; }
+  .sign p { margin: 10px 0; }
+  @media print { .print-btn { display: none; } body { margin: 10mm; } h2, h3 { break-after: avoid; } tr, .sign { break-inside: avoid; } .agenda-page { break-before: page; } }`;
+
+  function orgDocHtml(title, h1, subHtml, body) {
+    return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
+<style>${ORG_DOC_CSS}</style></head><body>
+<button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
+<h1>${escapeHtml(h1)}</h1>
+<p class="sub">${subHtml}</p>
+${body}</body></html>`;
+  }
+
+  function orgTodayStr() {
+    return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  }
+
+  // 台帳から年度の科目別の実績（決算）を集計
+  function ledgerActualsOf(fy) {
+    const out = { income: {}, expense: {} };
+    state.ledger.entries.filter(e => e.status === 'active' && fiscalYearOf(ledgerDateStr(e.date)) === fy).forEach(e => {
+      const side = e.type === 'income' ? out.income : out.expense;
+      const k = e.account || '（未設定）';
+      side[k] = (side[k] || 0) + (Number(e.amount) || 0);
+    });
+    return out;
+  }
+
+  // 予算表に並べる科目：台帳の科目＋保存済み予算にだけある科目＋前年度決算にだけある科目
+  function budgetAccounts(side, budget, prev) {
+    const m = (state.ledger.meta || LEDGER_FALLBACK_META).accounts[side] || [];
+    const extra = [...Object.keys((budget && budget[side]) || {}), ...Object.keys(prev[side] || {})].filter(a => !m.includes(a));
+    return [...m, ...new Set(extra)];
+  }
+
+  const yenDoc = v => (v < 0 ? '△' : '') + '¥' + Math.abs(v).toLocaleString();
+
+  function budgetSections(fy) {
+    const org = orgInfo();
+    const b = org.yearData('budget', fy);
+    const prev = ledgerActualsOf(fy - 1);
+    const firstYear = org.founded && fiscalYearOf(org.founded) === fy;
+    const showPrev = !firstYear && [...Object.values(prev.income), ...Object.values(prev.expense)].some(v => v);
+    const side = (key, label) => {
+      const accs = budgetAccounts(key, b, prev).filter(a => Number((b[key] || {})[a]) || (showPrev && prev[key][a]));
+      const total = accs.reduce((s, a) => s + (Number((b[key] || {})[a]) || 0), 0);
+      const prevTotal = accs.reduce((s, a) => s + (prev[key][a] || 0), 0);
+      const rows = accs.map(a => `<tr><td>${escapeHtml(a)}</td><td class="num">${yenDoc(Number((b[key] || {})[a]) || 0)}</td>${showPrev ? `<td class="num">${yenDoc(prev[key][a] || 0)}</td>` : ''}</tr>`).join('');
+      return {
+        total,
+        html: `<table><tr><th>科目</th><th class="num">予算額</th>${showPrev ? `<th class="num">前年度決算</th>` : ''}</tr>
+${rows || `<tr><td colspan="${showPrev ? 3 : 2}">（未入力）</td></tr>`}
+<tr class="total"><td>${label}合計</td><td class="num">${yenDoc(total)}</td>${showPrev ? `<td class="num">${yenDoc(prevTotal)}</td>` : ''}</tr></table>`,
+      };
+    };
+    const inc = side('income', '収入');
+    const exp = side('expense', '支出');
+    const carry = org.carryover(fy);
+    return `<h2>Ⅰ 収入の部</h2>${inc.html}
+<h2>Ⅱ 支出の部</h2>${exp.html}
+<h2>Ⅲ 収支の見込み</h2>
+<table>
+<tr><td>収支差額の見込み（収入合計 − 支出合計）</td><td class="num">${yenDoc(inc.total - exp.total)}</td></tr>
+${carry != null ? `<tr><td>前年度からの繰越金</td><td class="num">${yenDoc(carry)}</td></tr>
+<tr class="grand"><td>次年度への繰越金の見込み</td><td class="num">${yenDoc(carry + inc.total - exp.total)}</td></tr>` : ''}
+</table>
+${b.note ? `<p class="pre">${escapeHtml(b.note)}</p>` : ''}
+<p class="note">※ 管理画面「団体書類」で入力した予算から作成。${showPrev ? `前年度決算は収支管理台帳（${fy - 1}年度）の実績。` : firstYear ? '設立した年度のため前年度決算はありません。' : ''}金額単位: 円。</p>
+`;
+  }
+
+  function planSections(fy) {
+    const org = orgInfo();
+    const p = org.yearData('plan', fy);
+    const items = (p.items || []).filter(it => it.name || it.body);
+    const sum = items.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+    return `${p.goal ? `<h2>Ⅰ 年度の目標</h2><p class="pre">${escapeHtml(p.goal)}</p>` : ''}
+<h2>${p.goal ? 'Ⅱ' : 'Ⅰ'} 事業の計画</h2>
+<table><tr><th>事業名</th><th class="nowrap">時期</th><th>内容</th><th class="num">予算の目安</th></tr>
+${items.map(it => `<tr><td><strong>${escapeHtml(it.name || '')}</strong></td><td class="nowrap">${escapeHtml(it.when || '')}</td><td class="pre">${escapeHtml(it.body || '')}</td><td class="num">${it.amount !== '' && it.amount != null ? yenDoc(Number(it.amount) || 0) : ''}</td></tr>`).join('') || '<tr><td colspan="4">（未入力）</td></tr>'}
+${sum ? `<tr class="total"><td colspan="3">予算の目安の合計</td><td class="num">${yenDoc(sum)}</td></tr>` : ''}</table>
+<p class="note">※ 管理画面「団体書類」で入力した計画から作成。予算の目安は収支予算書の内訳と一致しないことがあります。</p>
+`;
+  }
+
+  function orgSubLine(fy) {
+    const org = orgInfo();
+    return `${escapeHtml(org.name)}<br>${fy}年度（令和${fy - 2018}年度）：${org.periodLabel(fy)}<br>作成日: ${orgTodayStr()}`;
+  }
+
+  function openBudgetReport(fy) {
+    const org = orgInfo();
+    const body = budgetSections(fy) + `<div class="sign"><p>${fy}年　　月　　日　　${escapeHtml(org.name)}　会計　${escapeHtml(org.treasurer || '　　　　　　')}　　印</p></div>`;
+    openPrintWindow(orgDocHtml(`収支予算書 ${fy}年度（R${fy - 2018}）`, '収支予算書', orgSubLine(fy), body), `CBI収支予算書_${fy}年度.html`);
+  }
+
+  function openPlanReport(fy) {
+    const org = orgInfo();
+    const body = planSections(fy) + `<div class="sign"><p>${fy}年　　月　　日　　${escapeHtml(org.name)}　代表　${escapeHtml(org.representative || '　　　　　　')}　　印</p></div>`;
+    openPrintWindow(orgDocHtml(`活動計画書 ${fy}年度（R${fy - 2018}）`, '活動計画書', orgSubLine(fy), body), `CBI活動計画書_${fy}年度.html`);
+  }
+
+  // 議案書：報告事項（活動報告・収支報告）＋議案（規約・役員・計画・予算・口座・その他）を1冊に
+  function openAgendaReport(fy) {
+    const org = orgInfo();
+    const a = org.yearData('assembly', fy);
+    const today = orgTodayStr();
+    const inYear = fiscalYearOf(today) === fy;
+    const asOf = inYear ? `（${today.replace(/-/g, '/')} 時点）` : '';
+    const title = a.title || '総会';
+    const agendas = [];
+    if (a.rules) agendas.push({ name: '規約の変更', body: `<p class="pre">${escapeHtml(a.rules)}</p>` });
+    if (a.officers !== false) {
+      agendas.push({ name: '役員の選任', body: `<table>${[['会長（代表）', org.representative], ['副会長', org.viceRepresentative], ['会計', org.treasurer], ['監事', org.auditor]]
+        .filter(([k, v]) => v || k !== '副会長').map(([k, v]) => `<tr><th>${k}</th><td>${escapeHtml(v || '（未入力）')}</td></tr>`).join('')}</table>` });
+    }
+    agendas.push({ name: `${fy}年度 活動計画（案）`, body: planSections(fy), page: true });
+    agendas.push({ name: `${fy}年度 収支予算（案）`, body: budgetSections(fy), page: true });
+    if (a.bank) agendas.push({ name: '団体の銀行口座の開設', body: `<p class="pre">${escapeHtml(a.bank)}</p>` });
+    String(a.other || '').split('\n').map(s => s.trim()).filter(Boolean).forEach(s => agendas.push({ name: s, body: '' }));
+
+    const ledgerReady = state.ledger.loaded;
+    const body = `<table>
+<tr><th>日時</th><td>${escapeHtml(a.when || '')}</td></tr>
+<tr><th>場所</th><td>${escapeHtml(a.place || '')}</td></tr>
+</table>
+<h2>次第</h2>
+<table>
+<tr><th>報告事項</th><td>1. ${fy}年度 活動報告${asOf}<br>2. ${fy}年度 収支報告${asOf}</td></tr>
+<tr><th>議案</th><td>${agendas.map((g, i) => `第${i + 1}号議案　${escapeHtml(g.name)}`).join('<br>')}</td></tr>
+</table>
+<div class="agenda-page"><h3 class="agenda">報告事項1　${fy}年度 活動報告${asOf}</h3>
+${openActivityReport(fy, { bodyOnly: true })}</div>
+<div class="agenda-page"><h3 class="agenda">報告事項2　${fy}年度 収支報告${asOf}</h3>
+${ledgerReady ? openLedgerReport(fy, { bodyOnly: true }) : '<p>（収支の台帳を読み込めていません）</p>'}</div>
+${agendas.map((g, i) => `<div${g.page || i === 0 ? ' class="agenda-page"' : ''}><h3 class="agenda">第${i + 1}号議案　${escapeHtml(g.name)}</h3>
+${g.body}</div>`).join('\n')}
+`;
+    openPrintWindow(orgDocHtml(`${title} 議案書 ${fy}年度`, `${title} 議案書`, escapeHtml(org.name) + `<br>作成日: ${today}`, body), `CBI総会議案書_${fy}年度.html`);
+  }
+
+  // 入力欄（予算・計画・総会）を年度の保存値で埋める
+  function renderOrgPlan() {
+    const fy = Number($('org-fy').value);
+    const org = orgInfo();
+    $('org-plan-fy-label').textContent = `（${fy}年度）`;
+    const b = org.yearData('budget', fy);
+    const prev = ledgerActualsOf(fy - 1);
+    ['income', 'expense'].forEach(side => {
+      $('org-budget-' + side).innerHTML = budgetAccounts(side, b, prev).map(acc => {
+        const v = (b[side] || {})[acc];
+        return `<tr><td>${escapeHtml(acc)}</td><td class="num">${prev[side][acc] ? yenDoc(prev[side][acc]) : '—'}</td>` +
+          `<td class="num"><input type="number" min="0" step="1" inputmode="numeric" data-budget-side="${side}" data-budget-acc="${escapeAttr(acc)}" value="${v == null ? '' : escapeAttr(String(v))}"></td></tr>`;
+      }).join('');
+    });
+    $('org-budget-note').value = b.note || '';
+    const p = org.yearData('plan', fy);
+    $('org-plan-goal').value = p.goal || '';
+    $('org-plan-items').innerHTML = '';
+    const items = (p.items && p.items.length) ? p.items : [{}];
+    items.forEach(addOrgPlanRow);
+    const a = org.yearData('assembly', fy);
+    $('org-asm-title').value = a.title || '';
+    $('org-asm-when').value = a.when || '';
+    $('org-asm-place').value = a.place || '';
+    $('org-asm-rules').value = a.rules || '';
+    $('org-asm-bank').value = a.bank || '';
+    $('org-asm-other').value = a.other || '';
+    $('org-asm-officers').checked = a.officers !== false;
+  }
+
+  function addOrgPlanRow(it = {}) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><input type="text" maxlength="60" data-plan="name" value="${escapeAttr(it.name || '')}"></td>` +
+      `<td><input type="text" maxlength="40" data-plan="when" placeholder="例：11月" value="${escapeAttr(it.when || '')}"></td>` +
+      `<td><textarea rows="2" maxlength="600" data-plan="body">${escapeHtml(it.body || '')}</textarea></td>` +
+      `<td class="num"><input type="number" min="0" step="1" inputmode="numeric" data-plan="amount" value="${escapeAttr(it.amount == null ? '' : String(it.amount))}"></td>` +
+      `<td><button type="button" class="btn-link" data-plan-del>消す</button></td>`;
+    $('org-plan-items').appendChild(tr);
+  }
+
+  async function onOrgPlanSubmit(ev) {
+    ev.preventDefault();
+    const fy = Number($('org-fy').value);
+    const budget = { income: {}, expense: {}, note: $('org-budget-note').value.trim() };
+    let bad = false;
+    document.querySelectorAll('#org-plan-form [data-budget-side]').forEach(inp => {
+      const v = inp.value.trim();
+      if (v === '') return;
+      if (!/^\d+$/.test(v)) { bad = true; return; }
+      budget[inp.dataset.budgetSide][inp.dataset.budgetAcc] = Number(v);
+    });
+    const items = [...$('org-plan-items').querySelectorAll('tr')].map(tr => {
+      const it = {};
+      tr.querySelectorAll('[data-plan]').forEach(el => { it[el.dataset.plan] = el.value.trim(); });
+      if (it.amount !== '' && !/^\d+$/.test(it.amount)) bad = true;
+      return it;
+    }).filter(it => it.name || it.body || it.when || it.amount);
+    if (bad) { toast('金額は0以上の整数で入力してください', 'err'); return; }
+    const plan = { goal: $('org-plan-goal').value.trim(), items };
+    const assembly = {
+      title: $('org-asm-title').value.trim(), when: $('org-asm-when').value.trim(), place: $('org-asm-place').value.trim(),
+      rules: $('org-asm-rules').value.trim(), bank: $('org-asm-bank').value.trim(), other: $('org-asm-other').value.trim(),
+      officers: $('org-asm-officers').checked,
+    };
+    const settings = {
+      ['budget:' + fy]: JSON.stringify(budget),
+      ['plan:' + fy]: JSON.stringify(plan),
+      ['assembly:' + fy]: JSON.stringify(assembly),
+    };
+    // GAS 側は 20,000 文字で切るので、壊れた JSON を保存しないよう先に止める
+    if (Object.values(settings).some(v => v.length > 20000)) { toast('内容が長すぎます。計画の内容を短くしてください', 'err'); return; }
+    $('org-plan-save').disabled = true;
+    $('org-plan-status').textContent = '保存中…';
+    try {
+      const r = await ledgerCall({ action: 'orgSettingsSave', password: state.password, actor: state.me || '', settings });
+      if (!r.ok) throw new Error(r.error || 'save_failed');
+      if (r.saved != null && r.saved < 3) throw new Error('GASが新しい項目を受け付けていません（OrgDocs.gs の再デプロイが必要）');
+      Object.assign(state.org.settings, settings);
+      $('org-plan-status').textContent = '保存しました';
+      renderOrgCheck();
+    } catch (e) {
+      $('org-plan-status').textContent = '保存できませんでした：' + e.message;
+    } finally {
+      $('org-plan-save').disabled = false;
+    }
+  }
+
   // 決算資料（収支計算書）を印刷用ウィンドウで生成
-  function openLedgerReport(fyOverride) {
+  function openLedgerReport(fyOverride, opts = {}) {
     const fySel = fyOverride != null && typeof fyOverride !== 'object' ? String(fyOverride) : $('ledger-fy').value;
     const fy = fySel ? Number(fySel) : fiscalYearOf(new Date().toISOString().slice(0, 10));
     const fyStart = `${fy}-04-01`;
@@ -5805,28 +6083,7 @@ ${Object.keys(clByTarget).sort((x, y) => clByTarget[y] - clByTarget[x]).map(k =>
     };
 
     const reiwa = fy - 2018;
-    const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>収支計算書 ${fy}年度（R${reiwa}）</title>
-<style>
-  body { font-family: "Noto Sans JP", "Yu Gothic", sans-serif; color: #1a2330; margin: 40px; font-size: 13px; }
-  h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
-  .sub { text-align: center; color: #4a5663; margin-bottom: 24px; }
-  h2 { font-size: 15px; border-bottom: 2px solid #1e3a5f; padding-bottom: 4px; margin: 24px 0 8px; }
-  table { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
-  th, td { border: 1px solid #999; padding: 6px 10px; text-align: left; }
-  th { background: #f1ece0; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .total td { font-weight: 700; background: #faf8f3; }
-  .grand td { font-weight: 700; background: #e8effa; }
-  .note { color: #4a5663; font-size: 11px; margin-top: 16px; }
-  .print-btn { position: fixed; top: 10px; right: 10px; padding: 8px 16px; }
-  .sign { margin-top: 28px; }
-  .sign p { margin: 10px 0; }
-  @media print { .print-btn { display: none; } body { margin: 10mm; } h2 { break-after: avoid; } .sign { break-inside: avoid; } }
-</style></head><body>
-<button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
-<h1>収支報告書</h1>
-<p class="sub">${escapeHtml(org.name)}<br>${fy}年度（令和${reiwa}年度）：${org.periodLabel(fy)}<br>作成日: ${new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)}</p>
-<h2>Ⅰ 収入の部</h2>
+    const sections = `<h2>Ⅰ 収入の部</h2>
 <table><tr><th>科目</th><th class="num">金額</th></tr>
 ${accRows(m.accounts.income, incByAcc) || '<tr><td colspan="2">（収入なし）</td></tr>'}
 <tr class="total"><td>収入合計</td><td class="num">${yen(incTotal)}</td></tr></table>
@@ -5850,7 +6107,30 @@ ${Object.keys(advRows).map(n => `<tr><td>${escapeHtml(n)}</td><td class="num">${
 <tr><td>＋ 未精算の立替金（メンバーが支払い、団体の手元から出ていないお金）</td><td class="num">${yen(advUnsettled)}</td></tr>
 <tr class="grand"><td>団体の手元にあるはずのお金（現金・預金）</td><td class="num">${yen(carryOver + incTotal - expTotal + advUnsettled)}</td></tr></table>
 <p class="note">※ 本資料は収支管理台帳（証憑・訂正履歴つき）から自動生成。対象は有効な記録のみ（無効化された記録は含まない）。前期繰越金は${org.carryover(fy) != null ? '団体書類タブで入力した値' : `台帳上の${fy}年3月31日以前の収支累計`}。金額単位: 円。</p>
-<div class="sign">
+`;
+    if (opts.bodyOnly) return sections;
+    const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>収支計算書 ${fy}年度（R${reiwa}）</title>
+<style>
+  body { font-family: "Noto Sans JP", "Yu Gothic", sans-serif; color: #1a2330; margin: 40px; font-size: 13px; }
+  h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
+  .sub { text-align: center; color: #4a5663; margin-bottom: 24px; }
+  h2 { font-size: 15px; border-bottom: 2px solid #1e3a5f; padding-bottom: 4px; margin: 24px 0 8px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
+  th, td { border: 1px solid #999; padding: 6px 10px; text-align: left; }
+  th { background: #f1ece0; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .total td { font-weight: 700; background: #faf8f3; }
+  .grand td { font-weight: 700; background: #e8effa; }
+  .note { color: #4a5663; font-size: 11px; margin-top: 16px; }
+  .print-btn { position: fixed; top: 10px; right: 10px; padding: 8px 16px; }
+  .sign { margin-top: 28px; }
+  .sign p { margin: 10px 0; }
+  @media print { .print-btn { display: none; } body { margin: 10mm; } h2 { break-after: avoid; } .sign { break-inside: avoid; } }
+</style></head><body>
+<button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
+<h1>収支報告書</h1>
+<p class="sub">${escapeHtml(org.name)}<br>${fy}年度（令和${reiwa}年度）：${org.periodLabel(fy)}<br>作成日: ${new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)}</p>
+${sections}<div class="sign">
 <p>上記のとおり報告します。</p>
 <p>${fy + 1}年　　月　　日　　${escapeHtml(org.name)}　会計　${escapeHtml(org.treasurer || '　　　　　　')}　　印</p>
 <h2>監査報告</h2>
