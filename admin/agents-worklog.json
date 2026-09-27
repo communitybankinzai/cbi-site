@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-27",
+          "title": "防災MAP 通行止め：印西市の路線一覧を読めないときの警告と時刻表記の揺れ対応 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao src/lib/disaster-road-closures.ts（looksLikeInzaiTrunkList・ClosureScan.warnings・時刻の揺れ）",
+            "C:/Repos/cidao src/lib/disaster-timeline.ts（runRoadClosures：warnings があれば last_status=partial）",
+            "src/lib/__tests__/disaster-road-closures.test.ts（2件追加・28件通過）",
+            "cidao 12a0885",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "中司さん『警告を出す改修も進めて』（plans 10/11 分を前倒し）。一覧らしいページ（本文に「⇒」か「現在】」）を読めなかったら空の行を作らず、一覧由来の行を前回のまま残し、情報源を「一部失敗」にして理由を管理画面（災害情報源）と点検画面に出す。公開地図には出さない。時刻は曜日・午前午後・「17時現在」・17:45 も読む。検証：通行止めテスト28件通過・tsc/eslint エラー0。lib 全体では disaster-sns-road-ai の1件が失敗するが、変更を外しても同じく失敗する既存の不具合（今回と無関係）。本番 23:05 の定時巡回で6情報源とも success、印西市は師戸・江川線と吉田・岩戸線の2件のみ通行止め。前回記録(11,520)以降の差分で算出。session: e4863296-46a1-4300-a931-52b49665e4d1 / output: 29,471 / cost: $7.15"
+        },
+        {
+          "date": "2026-09-27",
           "title": "CiDAO プッシュ通知ボタンの「処理中…」停止を調査・時間切れと案内を追加 0.1時間",
           "category": "保守",
           "outputs": [
@@ -7865,13 +7880,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-10-11",
-          "title": "🚧 防災MAP 印西市の路線一覧を読めなかったとき管理画面に警告を出す",
-          "category": "実装",
-          "priority": "中",
-          "note": "2026-09-27 市が一覧の見出しを「8：00現在」→「17時45分現在」に変えただけで parseInzaiTrunkList が null になり、中平橋の解除とまとめページ0000022584の空の行が約半日残った（cidao d77b9c9 で両形式に対応済み）。いまは一覧が読めなくても何も通知されない。案：まとめページ・一覧らしいページ（題名に「通行止めの状況」）で一覧が読めなかったら sources の lastStatus を warning にして notes に出し、管理画面の通行止め欄に表示する。「午後5時45分」「17:45」なども想定。コードは C:\\Repos\\cidao src/lib/disaster-road-closures.ts（scanInzai・parseInzaiTrunkList）"
-        },
         {
           "due": "未定",
           "title": "⛰ 防災MAPで土砂崩れ被害の市の発表（0000022614 など）を扱うか決める",
