@@ -7855,6 +7855,13 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "🔔 CiDAO プッシュ通知ボタンが「処理中…」のまま止まる対策（時間切れ＋案内表示）を入れるか決める",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-27 Edge でホームの「通知を受け取る」が処理中のまま止まった。アドレスバーのベルから許可して解決（Edge がダイアログを隠す控えめ表示）。PushToggle.tsx の Notification.requestPermission／serviceWorker.ready／pushManager.subscribe に時間切れがなく、利用者は理由が分からない。案A：各段階に時間切れ（30/10/15秒）＋『アドレスバーのベルから許可してください』の案内を出してボタンを戻す（1ファイル）。"
+        },
+        {
           "due": "2026-10-11",
           "title": "🚧 防災MAP 印西市の路線一覧を読めなかったとき管理画面に警告を出す",
           "category": "実装",
