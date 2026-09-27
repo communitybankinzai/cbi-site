@@ -32,6 +32,7 @@
 
 - **経緯**：事業主「成田湯川駅の投稿が全然違う場所」。本番42件を実測すると、AIが答えた座標をそのまま使った2件（成田湯川駅を約5km、柏市の手賀大橋を印西市内に置いた）、沼・広域の中心19件、道路名だけで道路上の遠い1点7件、辞書の逆向き部分一致1件（「国道」→北80-3地先(国道356号…)）。
 - **場所の決め方（cidao `locateRoadReport`）**：AIの座標は使わない（schema から lat/lng を削除）。`isWideArea`（道路名だけ・印旛沼・手賀沼・市町村・〜バイパス/街道/線）は置かない。丸ごとの名前で 辞書→OSM→国土地理院、だめなら断片。**断片は駅・橋など目印（`LANDMARK`）を先に、目印は辞書とOSM、それ以外は国土地理院の町名だけ**。語尾を削った形（手賀大橋→手賀）は使わない。OSM は natural/waterway/boundary/landuse と city/town/village を捨て、highway は目印の名前のときだけ採る。
+  - **テスト**（`src/lib/__tests__/disaster-sns-road-ai.test.ts`）：外部（OSM・国土地理院）で決まらなければ **null（置かない）** を期待する。「舟戸大橋→介護施設」のケースだけ旧仕様（AIの座標を目安に使う）の期待が残り、6b86b97 から 9/28 まで失敗していた（cidao 32f98c0 で修正・コードは変更なし）。**AIの座標を使う形に戻すときは、このテストも仕様変更として直すこと**。9/28 時点で cidao の全テスト 388件が通る。
 - **写真**：`mediaImageUrls`（Instagram の IMAGE/CAROUSEL の media_url・Bluesky の images の fullsize・最大2枚）を自前で取って base64 で渡す。写真の文字（看板・駅名標・橋の名板）を `image_findings` → 列 `image_note`。**写真の風景から地名を推測させない**。Instagram の動画（リール）は画像が無く本文だけ（plans）。Bluesky のリンクカードの画像は使わない。
 - **地図**：`embed_url`（列・Instagram は `/p|reel/<code>/embed/`、Bluesky は `embed.bsky.app/embed/<did>/app.bsky.feed.post/<rkey>`）を吹き出しで iframe（`snsRoadEmbedHtml`・許可するのはこの2形式だけ）。**写真は転載しない**（事業主決定：投稿者が消せば地図からも消える）。読み込みに数秒かかる。
 - **場所不明は伏せる**（事業主決定）：読み直しで決まらなかった点は `hidden=true`・`location_basis` 先頭「場所を特定できず」（`UNLOCATED_BASIS`）。API は `unlocated` を返し、MAP は運営の地図にも出さない（一覧には残る）。場所が決まり直せば自動で戻す（運営が手で伏せたものは戻さない）。
