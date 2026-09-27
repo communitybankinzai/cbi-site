@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-09-27",
+          "title": "CiDAO プッシュ通知ボタンの「処理中…」停止を調査・時間切れと案内を追加 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "C:/Repos/cidao/src/components/PushToggle.tsx（cidao 1402344）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "Edge でホームの「通知を受け取る」が処理中のまま戻らない件。原因は Edge が許可ダイアログをアドレスバーのベルに隠したこと（ベルから許可して解決）。事業主決定（案A）で、許可30秒・準備10秒・登録15秒の時間切れと段階別の案内（ベルから許可／再読み込み／Chrome で試す）を追加。tsc・eslint・next build すべて exit 0、Vercel デプロイ success、本番 JS に案内文が入ったことを確認。Edge 実機で時間切れ表示が出るかは未確認（再現にはベルを放置する必要あり）。\nsession: f5ebd80d-f4ed-40ef-b3a1-eecfb1bf0185 / output: 12,134 / cost: $4.15"
+        },
+        {
+          "date": "2026-09-27",
           "title": "防災MAP 通行止め：印西市の路線一覧の時刻表記変更で解除を取りこぼした件の修正 0.1時間",
           "category": "保守",
           "outputs": [
@@ -7854,13 +7865,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "未定",
-          "title": "🔔 CiDAO プッシュ通知ボタンが「処理中…」のまま止まる対策（時間切れ＋案内表示）を入れるか決める",
-          "category": "実装",
-          "priority": "中",
-          "note": "2026-09-27 Edge でホームの「通知を受け取る」が処理中のまま止まった。アドレスバーのベルから許可して解決（Edge がダイアログを隠す控えめ表示）。PushToggle.tsx の Notification.requestPermission／serviceWorker.ready／pushManager.subscribe に時間切れがなく、利用者は理由が分からない。案A：各段階に時間切れ（30/10/15秒）＋『アドレスバーのベルから許可してください』の案内を出してボタンを戻す（1ファイル）。"
-        },
         {
           "due": "2026-10-11",
           "title": "🚧 防災MAP 印西市の路線一覧を読めなかったとき管理画面に警告を出す",
