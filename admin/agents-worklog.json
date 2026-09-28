@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "防災MAP平時化 段階3（関連の自動表示）＋よく使う機能の計測（CiDAO＋管理画面）＋対象日の移動・規制状況図の見出し修正 0.7時間",
+          "category": "実装",
+          "outputs": ["site/inzai-disaster-map/app.js（relatedPool・relatedFor・relatedHtml・placePrefKiseiBadge・syncTargetDayChip）", "site/inzai-disaster-map/index.html・styles.css・data.html・CLAUDE_HANDOFF.md", "site/assets/cbi-feature-usage.js", "site/admin/cbi-feature-ranking.js・index.html・changelog.json", "C:/Repos/cidao src/app/api/cbi-site-features/route.ts・src/lib/cbi-site-features.ts・テスト3件", "C:/Repos/cidao supabase/migrations/20260928170000_cbi_feature_uses.sql（本番適用）"],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "事業主決定：段階3＝A（地図側で300m・前後24時間・名前一致を添える）、対象日＝A（⏱ 期間の中へ）、計測＝A（押された回数）。ローカルで関連441件を0.44秒で計算・名前一致1件・地図で見るの移動を確認。計測は実クリックで過不足なく数え、本番APIで送信→集計→403を確認し試験行を削除。site 0cee547・0bdbf64・0668ce4・37260ab・974ca16／cidao bbd4564。このセッションの累計（前の0.4時間を含む）：session: 3d3c1679-eb84-4c0f-8893-bd54dcb00275 / output: 119,192 / cost: $35.84"
+        },
+        {
+          "date": "2026-09-28",
           "title": "防災MAP：記録バーに記録の呼びかけ1行＋データの扱いページに要望の送信内容を追記 0.2時間",
           "category": "広報",
           "outputs": [
@@ -8115,6 +8124,20 @@
           "note": "2026-09-28 に375×812で実測：出典表示 y761〜778・x232〜375、ボタン y723〜777（呼びかけの1行を足す前から同じ位置）。出典は ODbL・地理院の表示義務があるので隠さない前提で、記録バーの高さぶん出典を上へ逃がすなどの案を事業主に確認してから直す"
         },
         {
+          "due": "2026-10-12",
+          "title": "📊 防災MAP「よく使う機能」の2週間分を見て、減らす機能の候補を事業主に出す",
+          "category": "分析",
+          "priority": "高",
+          "note": "2026-09-28 事業主『全体的にいらない機能が多すぎる』→計測開始（管理画面「３D・防災MAP」タブの『📊 防災MAP よく使う機能』・CiDAO /api/cbi-site-features）。2週間後に、使われた訪問の割合が低い機能・一度も使われない機能を一覧にし、消す／折りたたみへ移す／残すを3択で事業主に確認する。平時の数字なので、災害時にだけ使う機能（避難所・水位など）は割合だけで消さないこと"
+        },
+        {
+          "due": "未定",
+          "title": "🧹 防災MAPの小さな見た目の不具合2件（事業主判断待ち・提案のみ）",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-09-28 に見つけたが依頼外なので未修正：①県の規制状況図の見出しが『9月28日14時時点』と『時』が重なる（pref-road-kisei.json の asOf の作り方）、②スマホで地図右下の『Leaflet｜地理院タイル』の表示が記録の帯のボタンに重なる"
+        },
+        {
           "due": "2026-09-28",
           "title": "🚧 千葉国道の工事規制が本番の巡回で入ったか確かめる（17:05以降・成田市 国道51号の2件）",
           "category": "保守",
@@ -8127,13 +8150,6 @@
           "category": "保守",
           "priority": "低",
           "note": "市原市五井海岸（〜9/30・周辺外）が clear_reason=announced で解除されているか、木更津市若葉町（10/12〜）が 10/1 時点で行になっていないかを disaster_road_closures（raw.kisei=true）で見る。周辺外なので API には出ない。DB は pooler 経由"
-        },
-        {
-          "due": "未定",
-          "title": "🔗 防災MAP 平時化 段階3：同じ場所・時間帯の「市の発表・市民の記録・SNS」を自動でリンクする",
-          "category": "実装",
-          "priority": "中",
-          "note": "2026-09-28 事業主要望『AI判定により自動プロット、自動リンク』の自動リンク部分。いまある『通れない記録の吹き出しに近くのSNSの解除を添える』（app.js snsClearedNear・300m）を一般化し、通行止め（役所）・市民の記録・SNS を相互に添える形を想定。段階1・2の後"
         },
         {
           "due": "2026-10-05",
