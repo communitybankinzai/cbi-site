@@ -332,7 +332,9 @@ a{color:#245b91}
     if (!Array.isArray(values)) return null;
     const finite = values.filter(v => v !== null && Number.isFinite(v));
     if (!finite.length) return null;
-    let lo = Math.min(...finite), hi = Math.max(...finite);
+    // 18万件を超えるので Math.min(...finite) は引数の上限でRangeErrorになる。ループで求める。
+    let lo = Infinity, hi = -Infinity;
+    for (const v of finite) { if (v < lo) lo = v; if (v > hi) hi = v; }
     if (def.log) { lo = Math.log10(Math.max(1, lo)); hi = Math.log10(Math.max(1, hi)); }
     const span = hi - lo || 1;
 
