@@ -5448,9 +5448,23 @@ function renderRailStatus() {
     ? `<div class="rail-status-legend"><span class="rail-legend-item"><span class="rail-legend-red"></span>運休・遅れ</span>${railwayShown ? `<span class="rail-legend-item"><span class="rail-legend-gray"></span>線路の位置（平常も表示）</span>` : ""}</div>`
     : "";
   status.innerHTML = details.length
-    ? `<div class="rail-status-box"><div class="rail-status-main"><details class="rail-status-summary"><summary>${escapeHtml(head)}${stale ? " ⚠" : ""}　<span class="rail-status-more">詳しく ▾</span><span class="rail-status-less">閉じる ▴</span></summary><ul>${details.join("")}</ul></details>${legend}</div>${hide}</div>`
-    : `<div class="rail-status-box"><div class="rail-status-main"><span>${escapeHtml(head)}</span>${legend}</div>${hide}</div>`;
+    ? `<div class="rail-status-box"><div class="rail-status-main"><details class="rail-status-summary"><summary>${escapeHtml(head)}${stale ? " ⚠" : ""}　<span class="rail-status-more">詳しく ▾</span><span class="rail-status-less">閉じる ▴</span></summary><ul>${details.join("")}</ul></details>${legend}${railOperatorLinksHtml()}</div>${hide}</div>`
+    : `<div class="rail-status-box"><div class="rail-status-main"><span>${escapeHtml(head)}</span>${legend}${railOperatorLinksHtml()}</div>${hide}</div>`;
   status.querySelector("[data-rail-status-hide]")?.addEventListener("click", clearRailStatusNote);
+}
+
+// 事業者の運行情報へのリンク（2026-09-28 事業主決定A）。市の案内より早く出ることがあるので、利用者が自分で最新を確かめられるように。
+// 事業者のページは読み取らない（北総鉄道は運行情報の転載・体裁を変えた公開を禁止）。リンクだけ
+const RAIL_OPERATOR_LINKS = [
+  { label: "JR成田線", url: "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=1&lineid=naritaline" },
+  { label: "北総線", url: "https://www.hokuso-railway.co.jp/train_info/" },
+  { label: "スカイアクセス線（京成）", url: "https://www.keisei.co.jp/traininfo/index.php" }
+];
+
+function railOperatorLinksHtml() {
+  return `<div class="rail-status-links">最新の運行情報：` +
+    RAIL_OPERATOR_LINKS.map(link => `<a href="${escapeAttribute(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)} ↗</a>`).join("・") +
+    `</div>`;
 }
 
 // 表示欄が運休の文だけなら空にする（ほかの層の案内が入っていたら触らない）
