@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "停電後にOneDriveが古い版へ戻した作業フォルダ・保管庫の復旧＋手順書 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "site/ の10ファイルと pipeline/data を push 済みの最新へ戻した（git checkout）",
+            "site/inzai-disaster-map/index.html（他セッションの作業中の変更を最新へ重ね直し・未コミット）",
+            "保管庫 credentials.md・MOC_CiDAO.md・cidao の2ノートを -NSFACTORY の写しから復元",
+            "agents/a1-core/knowledge/runbooks/onedrive-rollback-recovery.md（新規）",
+            "MOC_エージェント.md"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "13:01 の停電後、新PCの OneDrive が作業ファイルを古い版に戻し、新しい版を -NSFACTORY の写しに退避していた。事業主決定A。site は変わった11ファイルを過去のコミットの中身と照合し、10ファイルは単なる巻き戻り→最新へ、index.html だけ他セッション（d85b5282）の未コミットの『要望を送る』19行があったので最新へ重ね直して残し、共有ボードで申し送り（その JS・CSS はどこにも無い）。保管庫は写しのほうが新しいことを確かめて4ファイルを戻した（MOC_CiDAO は他セッションも同時刻に復元）。戻す前の中身と写しは scratchpad に保存。本番・GitHub は無事。前回記録(185,212)以降の差分で算出。session: e4863296-46a1-4300-a931-52b49665e4d1 / output: 215,889 / cost: $81.18"
+        },
+        {
+          "date": "2026-09-28",
           "title": "防災MAP 県の道路規制状況図：根拠のPDFへのリンク＋赤線を国道・県道へ自動で寄せる 0.3時間",
           "category": "実装",
           "outputs": [
