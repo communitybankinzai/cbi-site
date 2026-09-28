@@ -3075,6 +3075,15 @@ const PRESETS = {
     openGroups: ["🏫"],
     focus: "#road-closures-list"
   },
+  // 東京電力パワーグリッドの停電情報（左パネルの「⚡ いまの停電」の枠）を開いて見せる（2026-09-28 事業主指示）。
+  // 円表示の層は公開前（config.js の teidenEndpoint が空）なので、公式リンク集と同じく層は切り替えない
+  teiden: {
+    label: "停電",
+    toggle: [],
+    openAcc: ["⚡"],
+    // "acc" は左パネルの中だけを動かすので、ページごと動くスマホでは枠まで行かない。通行止めと同じ id 指定にする
+    focus: "#teiden-acc"
+  },
   landslide: {
     label: "土砂災害",
     on: ["boundary", "records", "landslide", "landslideWarning", "landslideSpecial"],

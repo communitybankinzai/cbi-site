@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "防災MAP「見たいもの」に⚡停電ボタン追加（東電の停電枠を開く）0.1時間",
+          "category": "実装",
+          "outputs": ["site/inzai-disaster-map/app.js（PRESETS.teiden）", "site/inzai-disaster-map/index.html（ボタン・app.js の版 h）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json"],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主指示。円表示は未公開のため、公式リンク集と同じ層なしのボタンで左パネルの停電枠を開く形にした。既存の focus:\"acc\" はスマホで枠まで移動しない（ページの3,769px下のまま）ことを実測し、通行止めと同じ id 指定に変更。1280×800 で枠がパネル上端に来る・375×812 で画面上端に来る・東電の画面が読み込まれる・層は変わらないことを確認。index.html は別セッションの未コミット分を含めず2か所だけコミット。前件（output 16,715）との差分 12,644 → 0.1時間\nsession: 40e862a6-9cad-4133-be50-a6671c9ffbfa / output: 29,359 / cost: $10.92"
+        },
+        {
+          "date": "2026-09-28",
           "title": "東電PGの停電情報利用の回答を確認・条件に合わせ表示修正・事務局相談の下書き 0.2時間",
           "category": "事務",
           "outputs": ["site/inzai-disaster-map/app.js（停電の出典名・復旧見込みは掲載時のみ）", "site/inzai-disaster-map/index.html（停電カードの出典）", "site/inzai-disaster-map/teiden-demo.html", "site/inzai-disaster-map/teiden-sample.json", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json", "調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md（回答・対応・事務局への相談メール下書き）"],
