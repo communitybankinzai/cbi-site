@@ -3799,6 +3799,12 @@ body.sns-popup-open #quick-record-bar { display: none; }
 .road-closure-items strong { color: #8a1f1a; }
 .road-closure-meta { display: block; color: #57606a; }
 .road-closure-meta.road-closure-caution { color: #a35a00; font-weight: 700; } /* 工事の車線規制（通行止めではない）2026-09-28 */
+/* 🔗 同じ場所・近い時間の情報（平時化・段階3 2026-09-28） */
+.related-box { margin-top: 6px; padding: 6px 8px; border-left: 3px solid #5b6fb5; background: #f3f5fb; font-size: 12px; line-height: 1.5; }
+.related-type { margin-top: 3px; }
+.related-reason, .related-note { color: #53677b; font-size: 11px; }
+.related-note { display: block; margin-top: 3px; }
+.related-focus { font-size: 11px; padding: 0 6px; border: 1px solid #5b6fb5; border-radius: 4px; background: #fff; color: #33418a; cursor: pointer; }
 .road-closure-items a, .road-closure-note a, .road-closure-cleared a { color: #0b57d0; }
 .road-closure-empty { margin: 0; color: #333; }
 .road-closure-cleared { margin-top: 6px; color: #57606a; }

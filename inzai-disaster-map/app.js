@@ -5543,7 +5543,7 @@ function renderPrefKisei(data) {
       `出典: <a href="${escapeAttribute(page)}" target="_blank" rel="noreferrer">千葉県 県管理道路の通行規制情報</a>`;
   };
   if (map.hasLayer(prefKiseiLayer)) showPrefKiseiBadge(true);
-  lines.forEach(line => {
+  lines.forEach((line, lineIndex) => {
     if (!Array.isArray(line.path) || line.path.length < 2) return;
     L.polyline(line.path, {
       pane: "prefKiseiPane",
@@ -5552,7 +5552,7 @@ function renderPrefKisei(data) {
       weight: 6,
       opacity: 0.85,
       lineCap: "round"
-    }).bindPopup(() => popup(line)).addTo(prefKiseiLayer);
+    }).bindPopup(() => popup(line) + relatedHtmlFor(`pref:${lineIndex}`)).addTo(prefKiseiLayer);
   });
   if (!statusEl) return;
   const times = prefKiseiTimes(data);
@@ -5676,7 +5676,7 @@ function renderRoadClosures() {
       opacity: 0.9,
       dashArray: "10 8",
       lineCap: "butt"
-    }).bindPopup(popup).addTo(roadClosuresLayer);
+    }).bindPopup(() => popup + relatedHtmlFor(`closure:${item.id}`)).addTo(roadClosuresLayer);
     drawn += 1;
   });
 
@@ -5694,7 +5694,8 @@ function renderRoadClosures() {
     const until = item.periodEnd ? `${roadClosureTime(item.periodEnd)}（予定）` : "解除の発表まで";
     const period = item.publishedAt ? `${roadClosureTime(item.publishedAt)}〜${until}` : `発表日不明〜${until}`;
     // 線は引かない運用（2026-09-22 事業主決定C）。場所は役所の位置図か出典で見てもらう
-    const onMap = Array.isArray(item.path) && item.path.length >= 2
+    const onMapLine = Array.isArray(item.path) && item.path.length >= 2;
+    const onMap = onMapLine
       ? (item.pathSource === "city" ? "地図に線あり（役所の位置）" : "地図に線あり（運営が確認）")
       : item.mapUrl ? "場所は位置図で確認" : "場所は出典で確認";
     // 車線規制・片側交互通行は通れる（通行止めではない）。夜間だけの規制は細かい日時を出典で見てもらう
@@ -5706,6 +5707,8 @@ function renderRoadClosures() {
       (item.url ? `<a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典：${escapeHtml(roadClosureSourceName(item.sourceLabel))} ↗</a>` : "") +
       // 線の無い件は、役所の位置図（区間を赤線で描いた地図）で場所を見てもらう
       (item.mapUrl ? `<br><a href="${escapeAttribute(item.mapUrl)}" target="_blank" rel="noreferrer">📍 位置図（${escapeHtml(roadClosureSourceName(item.sourceLabel))}のPDF） ↗</a>` : "") +
+      // 線の無い件は吹き出しが無いので、名前の一致した市民の記録・SNSをここに添える（段階3）
+      (onMapLine ? "" : relatedHtmlFor(`closure:${item.id}`)) +
       `</li>`;
   };
   // 情報源ごとにまとめる。件数の多い情報源（佐倉市のマイマップは50件以上）は畳んで件数だけ見せる
@@ -7136,6 +7139,212 @@ function snsClearedNearHtml(road) {
     `<br><span style="font-size:11px;">AIが投稿を読み取ったもので、CBIや市の確認はありません。この記録は消していません。通る前に元の投稿や公式の情報で確かめてください。</span></div>`;
 }
 
+// ---------------------------------------------------------------------------
+// 🔗 同じ場所・近い時間の「役所の発表・市民の記録・SNS」を互いに添える（防災MAPの平時化・段階3・2026-09-28 事業主決定A）
+// ---------------------------------------------------------------------------
+// 吹き出し（と位置のない通行止めの一覧の行）を開いたときにブラウザで計算するだけ。保存もAIも使わない。
+// 位置のあるもの同士：線・点の間の距離が RELATED_NEAR_M 以内。位置のない役所の発表：橋・交差点・アンダーパスの名前か
+// 市道・県道の路線名が、SNSの場所名・要約・引用か市民の記録のメモに含まれるとき（国道の番号だけは区間が長すぎるので使わない）。
+// 時間：それぞれの「期間」（点なら1時刻）を前後 RELATED_WINDOW_MS 広げて重なるもの。同じ種類どうしは添えない。
+const RELATED_NEAR_M = 300;
+const RELATED_WINDOW_MS = 24 * 3600 * 1000;
+const RELATED_MAX_PER_TYPE = 3;
+const RELATED_TYPE_LABELS = { citizen: "市民の記録", sns: "SNSの投稿（AI読み取り・未確認）", office: "役所の発表" };
+
+function relatedNormalize(text) {
+  // 舟戸大橋と船戸大橋は同じ橋（SNSでも役所でも両方の書き方がある）
+  return String(text || "").normalize("NFKC").replace(/\s+/g, "").replace(/舟戸/g, "船戸");
+}
+
+/** 役所の発表の路線名・場所から、名前で合わせる手がかり（橋・交差点・アンダーパス・市道/県道の路線名） */
+function relatedNameTokens(text) {
+  const s = relatedNormalize(text);
+  const tokens = new Set();
+  const roadRe = /(?:市道|県道|町道)[^、。()（）|]{2,20}?線/g;
+  for (const m of s.matchAll(roadRe)) tokens.add(m[0]);
+  // 路線名・国道番号を区切りに置き換えてから、橋などの名前を取る（「平賀線中平橋」のように路線名を巻き込まない）
+  const rest = s.replace(roadRe, "|").replace(/国道\d+号(?:線|バイパス)?/g, "|");
+  for (const m of rest.matchAll(/[一-龠々ァ-ヶー]{1,8}?(?:大橋|橋|交差点|アンダーパス|ガード)/g)) {
+    if (m[0].length >= 3) tokens.add(m[0]);
+  }
+  return [...tokens];
+}
+
+function relatedTime(iso) {
+  const t = Date.parse(iso || "");
+  return Number.isFinite(t) ? t : null;
+}
+
+/** 添える候補の一覧（同じ形にそろえる）。path は [[lat,lng],…]、無ければ null（名前だけで合わせる） */
+function relatedPool() {
+  const isModerator = Boolean(moderationKey());
+  const now = Date.now();
+  const pool = [];
+  (Array.isArray(passedRoadsData) ? passedRoadsData : []).forEach(road => {
+    if ((road.hidden && !isModerator) || !Array.isArray(road.path) || !road.path.length) return;
+    const blocked = road.kind === "blocked";
+    const end = relatedTime(road.endedAt);
+    pool.push({
+      type: "citizen", key: `passed:${road.id}`, path: road.path,
+      start: relatedTime(road.startedAt) ?? end, end,
+      text: road.note || "",
+      label: `${blocked ? "🚫 通れない" : "🔵 通れた"}${road.path.length > 1 ? "道" : "地点"}`,
+      when: road.endedAt, focus: `passed:${road.id}`
+    });
+  });
+  (Array.isArray(snsRoadsData) ? snsRoadsData : []).forEach(report => {
+    if ((report.hidden && !isModerator) || report.unlocated) return;
+    if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
+    const at = relatedTime(report.observedAt || report.postedAt);
+    const kind = snsRoadKindOf(report);
+    pool.push({
+      type: "sns", key: `sns:${report.id}`,
+      path: Array.isArray(report.path) && report.path.length >= 2 ? report.path : [[report.lat, report.lng]],
+      start: at, end: at,
+      text: [report.locationName, report.summary, report.quote].filter(Boolean).join(" "),
+      label: `📡 ${snsRoadKindLabel(kind)}（${report.locationName || "場所不明"}）${report.confidence && report.confidence !== "high" ? "・確度中/低（運営のみ）" : ""}`,
+      when: report.observedAt || report.postedAt, focus: `sns:${report.id}`, url: report.sourceUrl
+    });
+  });
+  const closures = [
+    ...(Array.isArray(roadClosuresData?.active) ? roadClosuresData.active : []),
+    ...(Array.isArray(roadClosuresData?.recentlyCleared) ? roadClosuresData.recentlyCleared : [])
+  ];
+  closures.forEach(item => {
+    const path = Array.isArray(item.path) && item.path.length >= 2 ? item.path : null;
+    const names = path ? [] : relatedNameTokens(`${item.road || ""} ${item.place || ""}`);
+    if (!path && !names.length) return;
+    pool.push({
+      type: "office", key: `closure:${item.id}`, path, names,
+      start: relatedTime(item.publishedAt || item.firstSeenAt), end: relatedTime(item.clearedAt) ?? now,
+      text: `${item.road || ""} ${item.place || ""}`,
+      label: `🚧 ${item.severity === "caution" ? "車線規制" : "通行止め"}：${roadClosureName(item)}（${roadClosureSourceName(item.sourceLabel)}）${item.clearedAt ? "・解除済み" : ""}`,
+      when: item.publishedAt || item.firstSeenAt, url: item.url
+    });
+  });
+  // 県の道路規制状況図の線は「いま規制中」の区間なので、直近24時間のものとして扱う
+  const prefLines = prefKiseiData?.published && Array.isArray(prefKiseiData.lines) ? prefKiseiData.lines : [];
+  prefLines.forEach((line, i) => {
+    if (!Array.isArray(line.path) || line.path.length < 2) return;
+    pool.push({
+      type: "office", key: `pref:${i}`, path: line.path, names: [],
+      start: now - RELATED_WINDOW_MS, end: now, text: "",
+      label: `🚧 規制中の区間（千葉県の道路規制状況図・${prefKiseiData.asOf || "時点不明"}）`,
+      when: null, url: prefKiseiData.pdfUrl || prefKiseiData.source?.pageUrl
+    });
+  });
+  return pool;
+}
+
+/** 2本の線（点は1点の線）のいちばん近いところの距離（m）。長い線は間引いてから測る */
+function relatedDistanceM(a, b) {
+  const thin = p => p.length > 200 ? p.filter((_, i) => i % Math.ceil(p.length / 200) === 0 || i === p.length - 1) : p;
+  const A = thin(a), B = thin(b);
+  const lat0 = Number(A[0][0]);
+  const k = 111320, c = Math.cos((lat0 * Math.PI) / 180);
+  const xy = p => [Number(p[1]) * k * c, Number(p[0]) * k];
+  const pa = A.map(xy), pb = B.map(xy);
+  const pointToPath = (p, path) => {
+    let best = Infinity;
+    for (let i = 0; i < path.length; i += 1) {
+      const s = path[i], e = path[Math.min(i + 1, path.length - 1)];
+      const dx = e[0] - s[0], dy = e[1] - s[1];
+      const len2 = dx * dx + dy * dy;
+      const t = len2 ? Math.max(0, Math.min(1, ((p[0] - s[0]) * dx + (p[1] - s[1]) * dy) / len2)) : 0;
+      best = Math.min(best, Math.hypot(s[0] + t * dx - p[0], s[1] + t * dy - p[1]));
+    }
+    return best;
+  };
+  let best = Infinity;
+  pa.forEach(p => { best = Math.min(best, pointToPath(p, pb)); });
+  pb.forEach(p => { best = Math.min(best, pointToPath(p, pa)); });
+  return best;
+}
+
+function relatedTimesOverlap(a, b) {
+  // 時刻の分からないもの（無いはず）は時間では絞らない
+  if (a.start === null || b.start === null) return true;
+  const aEnd = a.end ?? a.start, bEnd = b.end ?? b.start;
+  return a.start - RELATED_WINDOW_MS <= bEnd && b.start - RELATED_WINDOW_MS <= aEnd;
+}
+
+/** self（relatedPool と同じ形）に関連するものを種類ごとに最大3件 */
+function relatedFor(self) {
+  const groups = { citizen: [], sns: [], office: [] };
+  relatedPool().forEach(other => {
+    if (other.type === self.type || other.key === self.key) return;
+    if (!relatedTimesOverlap(self, other)) return;
+    let reason = "";
+    if (self.path && other.path) {
+      const d = relatedDistanceM(self.path, other.path);
+      if (d > RELATED_NEAR_M) return;
+      reason = `約${Math.max(10, Math.round(d / 10) * 10)}m`;
+    } else {
+      // 片方が位置のない役所の発表：その名前が相手の文に含まれるか
+      const office = self.path ? other : self;
+      const target = self.path ? self : other;
+      if (!office.names?.length) return;
+      const hay = relatedNormalize(target.text);
+      const hit = office.names.find(n => hay.includes(n));
+      if (!hit) return;
+      reason = `「${hit}」が一致`;
+    }
+    groups[other.type].push({ ...other, reason });
+  });
+  Object.values(groups).forEach(list => list.sort((x, y) => (y.end ?? y.start ?? 0) - (x.end ?? x.start ?? 0)));
+  return groups;
+}
+
+/** 候補の一覧から key（"passed:ID" など）のものを探して関連を出す。見つからなければ空 */
+function relatedHtmlFor(key) {
+  try {
+    const self = relatedPool().find(item => item.key === key);
+    return self ? relatedHtml(self) : "";
+  } catch (error) { console.warn("[related]", error); return ""; }
+}
+
+function relatedHtml(self) {
+  let groups;
+  try { groups = relatedFor(self); } catch (error) { console.warn("[related]", error); return ""; }
+  const types = Object.keys(groups).filter(t => groups[t].length);
+  if (!types.length) return "";
+  const rows = types.map(type => {
+    const list = groups[type];
+    const items = list.slice(0, RELATED_MAX_PER_TYPE).map(item => {
+      const when = item.when ? `${formatDateTime(toDateTimeLocal(item.when)) || ""}` : "";
+      const url = /^https:\/\//.test(String(item.url || "")) ? item.url : "";
+      return `<br>・${escapeHtml(item.label)}${when ? `　${escapeHtml(when)}` : ""}<span class="related-reason">（${escapeHtml(item.reason)}）</span>` +
+        (item.focus ? ` <button type="button" class="related-focus" data-related-focus="${escapeAttribute(item.focus)}">地図で見る</button>` : "") +
+        (url ? ` <a href="${escapeAttribute(url)}" target="_blank" rel="noopener noreferrer">出典 ↗</a>` : "");
+    }).join("");
+    const more = list.length > RELATED_MAX_PER_TYPE ? `<br><span class="related-reason">ほか${list.length - RELATED_MAX_PER_TYPE}件</span>` : "";
+    return `<div class="related-type">${escapeHtml(RELATED_TYPE_LABELS[type])}${items}${more}</div>`;
+  }).join("");
+  return `<div class="related-box"><strong>🔗 同じ場所・近い時間の情報</strong>${rows}` +
+    `<span class="related-note">場所（${RELATED_NEAR_M}m以内）と時間（前後24時間）が近いもの、または橋などの名前が同じものを自動で並べています。同じ出来事とは限りません。</span></div>`;
+}
+
+/** 吹き出しの「地図で見る」：市民の記録・SNSの印へ移って吹き出しを開く */
+function focusRelated(focus) {
+  const [type, id] = String(focus).split(/:(.+)/);
+  if (type === "passed") { map.closePopup(); focusPassedRoad(passedRoadsData.find(r => String(r.id) === id)?.id ?? id); return; }
+  if (type === "sns") {
+    const report = snsRoadsData.find(r => String(r.id) === id);
+    const shape = snsRoadShapes.get(id);
+    map.closePopup();
+    if (shape) { map.setView(shape.getLatLng(), Math.max(map.getZoom(), 16)); shape.openPopup(); return; }
+    // しぼり込み（期間・凡例）で描かれていないときは場所へ移るだけ
+    if (report) map.setView([report.lat, report.lng], Math.max(map.getZoom(), 16));
+  }
+}
+
+document.addEventListener("click", event => {
+  const button = event.target.closest?.("[data-related-focus]");
+  if (!button) return;
+  event.preventDefault();
+  focusRelated(button.dataset.relatedFocus);
+});
+
 // 元の投稿を公式の埋め込みで見せる（2026-09-25 事業主決定：写真は転載せず、投稿者が消せば地図からも消える）。
 // 許可するのは Instagram と Bluesky の埋め込み用アドレスだけ。吹き出しを開いたときに初めて読み込まれる
 function snsRoadEmbedHtml(report) {
@@ -7259,13 +7468,15 @@ function renderSnsRoads() {
           `<br><button type="button" class="kansui-hide-btn" data-sns-road-hide="${escapeAttribute(String(report.id))}" data-sns-road-hidden="${report.hidden ? "1" : "0"}">${report.hidden ? "↩ 地図に戻す（運営）" : "🗑 この投稿を地図から伏せる（運営）"}</button>`
         : "") +
       `<br><span style="font-size:11px;">点は投稿が指す場所の目安です。いま通れるかどうかを保証するものではありません。元の投稿で確かめてください。</span>`;
-    marker.bindPopup(popupHtml, snsRoadPopupOptions());
+    // 関連（市民の記録・役所の発表）は後から読み込まれることがあるので、開くたびに足す
+    const snsPopup = () => popupHtml + relatedHtmlFor(`sns:${report.id}`);
+    marker.bindPopup(snsPopup, snsRoadPopupOptions());
     // 「A〜B」の区間は、国道464号の道路の形に沿った破線でも出す（市民の記録＝実線と区別）
     if (hasPath) {
       L.polyline(report.path, {
         color: kind === "passed" ? "#1f6fd1" : kind === "cleared" ? "#2e8b57" : kind === "caution" ? "#e08a00" : "#c62828",
         weight: 5, opacity: report.hidden ? 0.35 : 0.8, dashArray: "8 8"
-      }).bindPopup(popupHtml, snsRoadPopupOptions()).addTo(snsRoadsLayer);
+      }).bindPopup(snsPopup, snsRoadPopupOptions()).addTo(snsRoadsLayer);
     }
     marker.addTo(snsRoadsLayer);
     snsRoadShapes.set(String(report.id), marker);
@@ -8663,6 +8874,7 @@ function blockedPointShape(road) {
       : "この地図を見ている人が通れなかった場所を記録したものです。公式の通行止めではありません。"}</span>` +
     rainVerdictHtml(road) +
     snsClearedNearHtml(road) +
+    relatedHtmlFor(`passed:${road.id}`) +
     `<br><a href="${MINTSUKU_URL}" target="_blank" rel="noreferrer">みんつく千葉冠水マップにも投稿する ↗</a>` +
     profileButtonHtml("passed", road) +
     passedRoadHideButtonHtml(road)
@@ -8842,7 +9054,8 @@ function passedRoadShape(road) {
         icon: L.divIcon({ className: "", html: `<div class="passed-gps-point${isOld ? " is-old" : ""}" aria-label="通れた地点"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] })
       })
     : L.polyline(road.path, { pane: "passedRoadsPane", renderer: passedRoadsRenderer, color: tier.color, weight: isOld ? 4 : tier.weight, opacity: isOld ? 0.4 : 0.9 });
-  line.bindPopup(
+  // 関連（SNS・役所の発表）を添えるため、吹き出しは開くたびに組み立てる
+  line.bindPopup(() =>
     `<strong>🔵 ${escapeHtml(tier.label)}</strong><br>` +
     `通れた時刻 ${escapeHtml(formatDateTime(toDateTimeLocal(road.endedAt)) || "不明")}（${escapeHtml(formatAgo(road.endedAt))}）<br>` +
     (road.path.length === 1 ? "地点の記録" : `距離 約${Math.round(road.lengthM || 0)}m`) +
@@ -8853,6 +9066,7 @@ function passedRoadShape(road) {
       ? "今回の大雨より前の記録です。冠水時に通れた実績として残していますが、より強い雨では冠水することがあります。"
       : "この地図を見ている人が通れた道を記録したものです。現在の安全や通行可否を保証するものではありません。"}</span>` +
     rainAmountHtml(road) +
+    relatedHtmlFor(`passed:${road.id}`) +
     profileButtonHtml("passed", road) +
     passedRoadHideButtonHtml(road)
   );
