@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "未読の更新の項目をアイデアへのリンク化（原因調査＋実装＋模擬データで確認）0.1時間",
+          "category": "保守",
+          "outputs": [
+            "site/admin/admin.js",
+            "site/admin/admin.css",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "中司さんの『未読の更新の読み方がわからない』への対応（案A）。GAS通信を模擬データに差し替えてローカルで、リンク化・絞り込み解除・コメント展開・削除済みはリンクにしないことを確認。session: c6007ebe-8c87-4440-b561-0ebd64ffaf9d / output: 10,237 / cost: $7.33"
+        },
+        {
+          "date": "2026-09-28",
           "title": "防災MAP 土砂崩れ被害の発表の扱いを決定（案A）・公式リンク集へ被災者支援のまとめページを追加 0.1時間",
           "category": "実装",
           "outputs": [
