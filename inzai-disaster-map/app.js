@@ -5450,6 +5450,12 @@ function renderPrefKisei(data) {
       `千葉県の道路規制状況図（県の発表：${escapeHtml(times.asOf)}）<br>` +
       (times.checked ? `最終確認：${escapeHtml(times.checked)}（CBIが30分ごとに確認）<br>` : "") +
       `<span style="font-size:11px;">県の図の赤線をCBIが地図に写したもので、<strong>数十m〜100mほどずれる</strong>ことがあります。区間の端も正確ではありません。主に国道・県道で、市町村道は入っていません。</span><br>` +
+      // 根拠資料（線の元にした県のPDF）を直接開けるようにする（2026-09-28 事業主指示）。
+      // 県は同じ名前のPDFを差し替えたり前日分を消したりするので、線より新しい図が開くこと・開けないことがある旨を添える
+      (/^https:\/\//.test(String(prefKiseiData?.pdfUrl || ""))
+        ? `📄 根拠の図：<a href="${escapeAttribute(prefKiseiData.pdfUrl)}" target="_blank" rel="noreferrer">県の道路規制状況図（PDF・${escapeHtml(times.asOf)}）</a>` +
+          `<br><span style="font-size:11px;">県が図を差し替えると、ここより新しい図が開くことがあります。開けないときは下の出典のページから。</span><br>`
+        : "") +
       `出典: <a href="${escapeAttribute(page)}" target="_blank" rel="noreferrer">千葉県 県管理道路の通行規制情報</a>`;
   };
   if (map.hasLayer(prefKiseiLayer)) showPrefKiseiBadge(true);
