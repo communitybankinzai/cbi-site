@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "防災MAP「💬 要望を送る」：受付API・表（CiDAO）＋入力パネル・運営一覧（MAP）、OneDrive競合の複製整理 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao supabase/migrations/20260928140000_disaster_map_feedback.sql（本番適用済み）",
+            "C:/Repos/cidao src/app/api/disaster/feedback/route.ts",
+            "site/inzai-disaster-map/index.html・app.js・styles.css・config.js（版 app k／css d／config 20260928a）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "事業主決定A（Supabaseに表・MAP上のボタン）。本番APIで 送信201・1分以内の再送429・一覧200・対応済み/伏せるのPATCH 200 を確認し、試験行は削除。375幅でパネル表示と送信・連投制限の文言を実画面で確認、運営一覧はダミー応答で描画（HTMLのエスケープ・場所へ移動）を確認。途中、停電後のOneDrive巻き戻りで作業ツリーが古い版になっていたため作業を止め、事業主決定Aで -NSFACTORY の複製6件（すべて公開済みコミットと同一を照合・控えは scratchpad）を削除。cidao 1031558。session: d85b5282-39f8-4f35-9bc6-b603efdd3887 / output: 36,131 / cost: $13.01"
+        },
+        {
+          "date": "2026-09-28",
           "title": "防災MAP平時化 段階2：OSM・千葉国道のデータ調査→千葉国道の工事規制の取り込み（CiDAO＋MAP）0.4時間",
           "category": "実装",
           "outputs": ["C:/Repos/cidao src/lib/disaster-road-closures.ts（scanKokudoKisei・parseKokudoKiseiList/Detail）", "C:/Repos/cidao src/app/api/disaster/road-closures/route.ts（severity・night）", "C:/Repos/cidao src/lib/__tests__/disaster-road-closures.test.ts（3件追加）", "site/inzai-disaster-map/app.js・styles.css・index.html（版 j／c）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json", "cidao/2026-09-28_防災MAPの平時化_段階2_千葉国道の工事規制.md", "MOC_CiDAO.md"],
@@ -8078,6 +8093,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "💬 要望ボタン：「このMAPが送るもの・送らないもの」（data.html）に要望の送信内容（本文・任意の地図の中心・端末ID）を書き足すか決める",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-28 の要望ボタン追加で、送るものが1つ増えた。data.html は『氏名や連絡先は集めていません』と説明しているページなので、要望で何が送られるかを載せるかを事業主に確認してから直す（依頼範囲外のため未変更）"
+        },
+        {
+          "due": "未定",
+          "title": "📣 防災MAPの告知：「記録が増えるほど目安が正確になる（市民の記録が必要）」の言い回しと、要望ボタンの案内をどこに載せるか決める",
+          "category": "広報",
+          "priority": "中",
+          "note": "2026-09-28 事業主：『差を生む』ではなく『このやり方なので市民の多くの方のデータが必要です』という言い方がよい。文案はセッション d85b5282 で提示済み（比較・他社名なし）。載せる先（MAPの画面内／Instagram等）は未決定。SNSに出すときは事前に本文と画像を見せて承認を得る"
+        },
         {
           "due": "2026-09-28",
           "title": "🚧 千葉国道の工事規制が本番の巡回で入ったか確かめる（17:05以降・成田市 国道51号の2件）",

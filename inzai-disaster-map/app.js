@@ -1874,6 +1874,7 @@ initMapLegend();
 initRecordRange();
 initMapStatusAutoHide();
 initPlaceSearch();
+initFeedback();
 initRecordEvents();
 initColorGuide();
 initRainPanel();
@@ -3436,6 +3437,55 @@ async function loadKansuiModerationList() {
   }
 }
 
+// 💬 利用者からの要望（2026-09-28）。一般には公開しないので、合言葉があるときだけ読める。
+// 伏せたもの（いたずら・個人情報が書かれたもの）も薄く出し、戻せるようにする
+async function loadFeedbackModerationList() {
+  const endpoint = String(APP_CONFIG.feedbackEndpoint || "").trim();
+  const key = moderationKey();
+  const box = document.getElementById("moderate-feedback-list");
+  if (!box || !endpoint || !key) return;
+  box.innerHTML = "<p>読み込み中…</p>";
+  try {
+    const response = await fetch(`${endpoint}?all=1`, { headers: { "x-moderation-key": key }, cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const items = payload.items || [];
+    if (!items.length) { box.innerHTML = "<p>まだ要望は届いていません。</p>"; return; }
+    box.innerHTML = `<p class="moderate-meta">未対応 ${Number(payload.newCount) || 0}件／全${items.length}件（新しい順）</p>` + items.map(item => {
+      const id = escapeAttribute(String(item.id));
+      const state = item.hidden ? "伏せ済み" : item.status === "done" ? "対応済み" : "未対応";
+      const place = Number.isFinite(item.lat) && Number.isFinite(item.lon)
+        ? `<button type="button" data-feedback-lat="${item.lat}" data-feedback-lon="${item.lon}" data-feedback-zoom="${Number(item.zoom) || 15}">📍 送ったときの場所</button>`
+        : "";
+      const buttons = item.hidden
+        ? `<button type="button" data-feedback-id="${id}" data-feedback-action="unhide">戻す</button>`
+        : `${item.status === "done"
+            ? `<button type="button" data-feedback-id="${id}" data-feedback-action="new">未対応に戻す</button>`
+            : `<button type="button" data-feedback-id="${id}" data-feedback-action="done">対応済みにする</button>`}` +
+          `<button type="button" data-feedback-id="${id}" data-feedback-action="hide">伏せる</button>`;
+      return `<div class="moderate-row feedback-item${item.hidden ? " is-hidden" : item.status === "done" ? " is-done" : ""}"><div>` +
+        `<strong>${escapeHtml(state)}</strong> ${escapeHtml(formatDateTime(toDateTimeLocal(item.createdAt)) || "")}` +
+        `<span class="moderate-meta">端末 ${escapeHtml(item.device || "")}${item.appVersion ? `・版 ${escapeHtml(item.appVersion)}` : ""}</span>` +
+        `<p class="feedback-body">${escapeHtml(item.body || "")}</p></div>` +
+        `<div class="moderate-row-buttons">${place}${buttons}</div></div>`;
+    }).join("");
+  } catch (error) {
+    box.innerHTML = `<p class="is-error">取得できません（${escapeHtml(error?.message || "接続エラー")}）</p>`;
+  }
+}
+
+async function patchFeedback(id, change) {
+  const endpoint = String(APP_CONFIG.feedbackEndpoint || "").trim();
+  const key = moderationKey();
+  if (!endpoint || !key) throw new Error("合言葉がありません");
+  const response = await fetch(`${endpoint}?id=${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", "x-moderation-key": key },
+    body: JSON.stringify(change)
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+}
+
 async function moderateRecord(id, hide) {
   const endpoint = moderationEndpoint();
   const key = moderationKey();
@@ -3523,7 +3573,7 @@ async function setEvacAlertOff(off, publishedAt) {
 function initModeration() {
   const modal = document.getElementById("moderate-modal");
   if (!modal) return;
-  const open = () => { modal.hidden = false; loadEvacModeration(); loadModerationList().then(loadKansuiModerationList).then(loadSnsModerationList); };
+  const open = () => { modal.hidden = false; loadEvacModeration(); loadModerationList().then(loadKansuiModerationList).then(loadSnsModerationList).then(loadFeedbackModerationList); };
   document.getElementById("moderate-button")?.addEventListener("click", open);
   document.getElementById("moderate-close")?.addEventListener("click", () => { modal.hidden = true; });
   document.getElementById("moderate-reload")?.addEventListener("click", loadModerationList);
@@ -3550,6 +3600,23 @@ function initModeration() {
     if (focusId) { modal.hidden = true; focusPassedRoad(focusId); return; }
     const snsFocusId = event.target.closest?.("[data-sns-focus]")?.dataset.snsFocus;
     if (snsFocusId) { modal.hidden = true; focusSnsRoad(snsFocusId); return; }
+    // 💬 利用者からの要望：送ったときの地図の場所へ移る／対応済み・未対応・伏せる・戻す
+    const feedbackFocus = event.target.closest?.("[data-feedback-lat]");
+    if (feedbackFocus) {
+      modal.hidden = true;
+      map.setView([Number(feedbackFocus.dataset.feedbackLat), Number(feedbackFocus.dataset.feedbackLon)], Number(feedbackFocus.dataset.feedbackZoom) || 15);
+      return;
+    }
+    const feedbackButton = event.target.closest?.("[data-feedback-id]");
+    if (feedbackButton) {
+      const action = feedbackButton.dataset.feedbackAction;
+      if (action === "hide" && !confirm("この要望を一覧から伏せます。よろしいですか？（あとで戻せます）")) return;
+      const change = { done: { status: "done" }, new: { status: "new" }, hide: { hidden: true }, unhide: { hidden: false } }[action];
+      if (!change) return;
+      try { await patchFeedback(feedbackButton.dataset.feedbackId, change); } catch (error) { alert(`変更できませんでした（${error?.message || "接続エラー"}）`); }
+      loadFeedbackModerationList();
+      return;
+    }
     const button = event.target.closest?.("[data-moderate-id]");
     if (!button) return;
     const hide = button.dataset.moderateHide === "1";
@@ -9108,6 +9175,73 @@ async function runOsmSearch(query) {
     : `<p class="place-group">${failed ? `OpenStreetMap を探せませんでした（${escapeHtml(failed)}）` : "OpenStreetMap にも見つかりませんでした"}</p>`;
   if (more) more.remove();
   results.insertAdjacentHTML("beforeend", block);
+}
+
+// 💬 要望を送る（2026-09-28 事業主決定A）。使いながらその場で送れるよう、凡例の列から開く。
+// 匿名（端末の乱数IDだけ）。場所は現在地ではなく「地図の真ん中」を、チェックが入っているときだけ添える
+function initFeedback() {
+  const panel = document.getElementById("feedback-panel");
+  const chip = document.getElementById("legend-feedback");
+  const body = document.getElementById("feedback-body");
+  const count = document.getElementById("feedback-count");
+  const withPlace = document.getElementById("feedback-with-place");
+  const send = document.getElementById("feedback-send");
+  const status = document.getElementById("feedback-status");
+  if (!panel || !chip || !body || !send || !status) return;
+  const setStatus = (text, kind) => {
+    status.textContent = text;
+    status.className = `feedback-status${kind ? ` is-${kind}` : ""}`;
+  };
+  const close = () => { panel.hidden = true; chip.setAttribute("aria-pressed", "false"); };
+  chip.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    chip.setAttribute("aria-pressed", panel.hidden ? "false" : "true");
+    if (!panel.hidden) {
+      // 同じ場所に出るほかのパネルは閉じる
+      for (const id of ["place-panel", "color-guide", "range-panel", "rain-panel"]) document.getElementById(id)?.setAttribute("hidden", "");
+      document.getElementById("legend-place")?.setAttribute("aria-pressed", "false");
+      if (hazardPickMode) setHazardPickMode(false);
+      body.focus();
+    }
+  });
+  document.getElementById("feedback-close")?.addEventListener("click", close);
+  document.addEventListener("click", event => {
+    if (panel.hidden) return;
+    if (event.target.closest("#feedback-panel") || event.target.closest("#legend-feedback")) return;
+    close();
+  });
+  body.addEventListener("input", () => { if (count) count.textContent = String(body.value.length); });
+  send.addEventListener("click", async () => {
+    const text = body.value.trim();
+    if (text.length < 2) { setStatus("要望を入れてください。", "error"); body.focus(); return; }
+    const endpoint = String(APP_CONFIG.feedbackEndpoint || "").trim();
+    if (!endpoint) { setStatus("送り先が設定されていません。", "error"); return; }
+    const payload = { deviceId: passedRoadDeviceId(), body: text, appVersion: APP_CONFIG.appVersion || "" };
+    if (withPlace?.checked) {
+      const center = map.getCenter();
+      payload.lat = center.lat;
+      payload.lon = center.lng;
+      payload.zoom = map.getZoom();
+    }
+    send.disabled = true;
+    setStatus("送っています…");
+    try {
+      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const result = await response.json().catch(() => ({}));
+      if (response.status === 429) {
+        setStatus(`続けて送れるのは1分ごとです。あと${Number(result.retryAfterSeconds) || 60}秒ほど待ってから送ってください（書いた文は残してあります）。`, "error");
+        return;
+      }
+      if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+      body.value = "";
+      if (count) count.textContent = "0";
+      setStatus("送りました。ありがとうございます。いただいた声をもとに直していきます。", "ok");
+    } catch (error) {
+      setStatus(`送れませんでした（${error?.message || "接続エラー"}）。書いた文は残してあります。少し待ってからもう一度お試しください。`, "error");
+    } finally {
+      send.disabled = false;
+    }
+  });
 }
 
 async function runPlaceSearch(query) {

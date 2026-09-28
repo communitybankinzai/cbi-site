@@ -7,6 +7,8 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     wellEndpoint: "https://cidao.vercel.app/api/disaster/inzai-wells",
     kansuiEndpoint: "https://cidao.vercel.app/api/disaster/kansui",
     passedRoadsEndpoint: "https://cidao.vercel.app/api/disaster/passed-roads",
+    // 「💬 要望を送る」の送り先（匿名・一覧は運営の合言葉があるときだけ返す）
+    feedbackEndpoint: "https://cidao.vercel.app/api/disaster/feedback",
     // SNSの投稿をAIが読み取った「通れた／通れない／解除」（未確認・確度が高いものだけ配信される）
     snsRoadReportsEndpoint: "https://cidao.vercel.app/api/disaster/sns-road-reports",
     // 鉄道・バスの運休。市が再開を発表するとサーバー側で自動的に解除される。

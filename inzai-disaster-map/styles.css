@@ -1166,6 +1166,22 @@ details.layer-group .layer-group-body {
 .place-note { margin: 6px 0 4px; color: #55637a; font-size: 11.5px; }
 .place-results { display: grid; gap: 4px; max-height: 46vh; overflow-y: auto; }
 .place-results:empty { display: none; }
+/* 💬 要望を送る（2026-09-28）。場所さがしと同じく ＋− ボタンより上に出す */
+.feedback-panel { z-index: 1100; }
+.feedback-lead { margin: 0 0 6px; color: #16324f; line-height: 1.5; }
+.feedback-panel textarea { width: 100%; box-sizing: border-box; padding: 6px; border: 1px solid #bac9d5; border-radius: 6px; font: inherit; font-size: 16px; resize: vertical; }
+.feedback-count { margin: 2px 0 0; color: #55637a; font-size: 11px; text-align: right; }
+.feedback-panel label.feedback-place { align-items: flex-start; font-size: 12px; line-height: 1.4; }
+.feedback-panel label.feedback-place input { flex: none; margin-top: 2px; }
+.feedback-warn { margin: 6px 0 0; color: #55637a; font-size: 11.5px; line-height: 1.5; }
+.feedback-panel #feedback-send { flex: 1; background: #16324f; border-color: #16324f; color: #fff; font-weight: 700; }
+.feedback-panel #feedback-send:disabled { opacity: .55; cursor: default; }
+.feedback-status { margin: 6px 0 0; font-size: 12px; min-height: 1em; }
+.feedback-status.is-ok { color: #1b6e3a; font-weight: 700; }
+.feedback-status.is-error { color: #b8322c; }
+.feedback-item.is-done { opacity: .6; }
+.feedback-item.is-hidden { opacity: .45; text-decoration: line-through; }
+.feedback-body { margin: 4px 0; white-space: pre-wrap; word-break: break-word; }
 .place-hit {
   display: block; width: 100%; text-align: left; min-height: 40px;
   padding: 7px 9px; border: 1px solid #ccd6e2; border-radius: 8px;

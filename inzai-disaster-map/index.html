@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260928c">
+    <link rel="stylesheet" href="./styles.css?v=20260928d">
   </head>
   <body>
     <div class="app-shell">
@@ -652,6 +652,9 @@
           <h3 class="moderate-subhead">みんつくの投稿（CBIの地図から伏せたもの）</h3>
           <p class="moderate-note">みんつく千葉冠水マップの投稿は、<strong>地図の赤い線を押したポップアップ</strong>から伏せられます（本家からは消えません）。</p>
           <div class="moderate-list" id="moderate-kansui-list"></div>
+          <!-- 2026-09-28: 「💬 要望を送る」で届いた声。一般には公開しない -->
+          <h3 class="moderate-subhead">💬 利用者からの要望</h3>
+          <div class="moderate-list" id="moderate-feedback-list"></div>
         </div>
       </div>
 
@@ -680,6 +683,8 @@
             <button type="button" class="legend-chip is-range" id="legend-hazard" aria-pressed="false" aria-controls="hazard-panel" title="自宅や職場が、公式の浸水・土砂の想定区域に入っているかを調べる">🏠 ここは想定区域？</button>
             <!-- 2026-09-28 事業主指示：災害ボタンを押したら、その災害の市の発表へのリンクを凡例のすぐ下に出す（スマホ想定）。中身は app.js の syncEventChips -->
             <a class="legend-event-link" id="legend-event-link" href="#" target="_blank" rel="noreferrer" hidden></a>
+            <!-- 2026-09-28: 使いながら気づいたこと・ほしい機能をその場で送る（中身は #feedback-panel・送り先は CiDAO /api/disaster/feedback） -->
+            <button type="button" class="legend-chip is-range" id="legend-feedback" aria-pressed="false" aria-controls="feedback-panel" title="使っていて気づいたこと・ほしい機能を運営（CBI）へ送る">💬 要望を送る</button>
           </div>
           <!-- 2026-09-24: 凡例は横に長く、右側のボタン（雨量・期間・色の見方・場所をさがす）が画面の外に隠れていた。押すと右へ送る -->
           <button type="button" class="legend-more" id="legend-more" title="凡例の続きを見る（雨量・期間・色の見方・場所をさがす）" aria-label="凡例の続きを見る" hidden>›</button>
@@ -690,6 +695,20 @@
             <input type="search" id="place-search-input" placeholder="地名・駅・施設名（例：吉高、木下駅）" autocomplete="off" enterkeyhint="search" aria-label="場所をさがす">
             <p class="place-note" id="place-note">地名を入れるとその場所へ地図が動き、近くの記録の件数が出ます。記録のメモも一緒にさがします。</p>
             <div class="place-results" id="place-results"></div>
+          </div>
+
+          <!-- 💬 要望を送る（2026-09-28）。匿名。場所は「地図の真ん中」を、送る人が選んだときだけ添える -->
+          <div class="range-panel feedback-panel" id="feedback-panel" hidden>
+            <p class="feedback-lead"><strong>使っていて気づいたこと・ほしい機能</strong>を運営（CBI）へ送れます。いただいた声をもとに直していきます（個別のお返事はできません）。</p>
+            <textarea id="feedback-body" rows="4" maxlength="500" placeholder="例：線が細くてスマホで押しにくい／○○の情報も見たい" aria-label="要望の本文"></textarea>
+            <p class="feedback-count"><span id="feedback-count">0</span> / 500字</p>
+            <label class="feedback-place"><input type="checkbox" id="feedback-with-place" checked> いま表示している地図の場所を添える（現在地ではなく、地図の真ん中の位置です）</label>
+            <p class="feedback-warn">名前・電話番号・住所は書かないでください。<br>冠水や通れない道の報告は、地図の下の「🚫 通れない道を追加」からお願いします。</p>
+            <div class="range-actions">
+              <button type="button" id="feedback-send">送る</button>
+              <button type="button" id="feedback-close">閉じる</button>
+            </div>
+            <p class="feedback-status" id="feedback-status" role="status"></p>
           </div>
 
           <!-- ⓘ 色の見方（2026-09-22）。色の濃さが「新しさ」を表していることが利用者に伝わらないため -->
@@ -1859,9 +1878,9 @@
       })();
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
-    <script src="./config.js?v=20260926c"></script>
+    <script src="./config.js?v=20260928a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20260928j"></script>
+    <script src="./app.js?v=20260928k"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>
