@@ -10961,6 +10961,15 @@
         },
         {
           "due": "2026-10-05",
+          "title": "💴 2026年6月分のAnthropic利用額（CBIのキー $1.63＝¥291）をCBIの台帳に足すか決める",
+          "category": "事務",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "中司さんが、設立日（6/8）より前の利用を含めてCBIの経費にするか、6/8以降だけにするか、N's factory負担とするかを決めること",
+          "note": "2026-09-28 N's factory 監理のセッション f91bccbd からの申し送り：6月に cidao-production-v3 $0.92・cidao-enrichment-local $0.70、計 $1.63＝¥291（×1.1×6/30 ECB 162.44）。CBI台帳は7/1分からで未計上。1〜5月は cidao キーの利用なし。決めたら同じ按分方法（agents/a8-ledger/knowledge/accounting-rules/2026-09-28_Anthropic費用の按分と計上.md）で立替として登録し、会計承認・監事確認。N's factory 側の経費の扱い（監理部の業務日誌）とそろえること"
+        },
+        {
+          "due": "2026-10-05",
           "title": "💴 Anthropic利用額のCBI分を毎月計上する（まず9/28〜10/31分・以後毎月初）",
           "category": "事務",
           "priority": "中",
