@@ -1195,6 +1195,17 @@ if (location.protocol === 'file:') {
         <div id="cbi-analytics-charts"></div>
         <details><summary>数値で見る（PV・VV・従来のセッション数）</summary><div id="cbi-analytics-tables"></div><div id="cbi-analytics-legacy"></div></details>
       </section>
+      <!-- 2026-09-28 事業主決定A：防災MAPでよく使う機能（どの機能を残し、どれを減らすかを決めるため）。中身は cbi-feature-ranking.js -->
+      <section class="panel" id="cbi-feature-ranking">
+        <div class="panel-head-row">
+          <h2 class="panel-title">📊 防災MAP よく使う機能</h2>
+          <label>期間 <select id="cbi-features-days"><option value="7">7日</option><option value="30" selected>30日</option><option value="90">90日</option></select></label>
+          <button type="button" class="btn btn-ghost btn-sm" id="cbi-features-refresh" aria-label="よく使う機能を更新" title="更新">↻</button>
+        </div>
+        <p class="panel-desc">防災MAPのボタン・レイヤー・見たいもの・吹き出しが、何回の訪問で使われたかの一覧（使われた訪問の多い順）。利用者が実際に押したものだけを数え、2026年9月28日から計測。押した場所や入力した文字は集めていません（防災MAPの「🔒 データの扱い」に記載）。</p>
+        <p id="cbi-features-status" class="meta-note" role="status">読み込み待ち</p>
+        <div id="cbi-features-table"></div>
+      </section>
       <section class="panel">
         <div class="panel-head-row">
           <h2 class="panel-title">🌐 ３Dワールド印西 利用状況モニタ</h2>
@@ -1437,5 +1448,6 @@ if (location.protocol === 'file:') {
 
 <script src="admin.js?v=20260924org3"></script>
 <script src="cbi-content-analytics.js?v=20260910-2"></script>
+<script src="cbi-feature-ranking.js?v=20260928-1"></script>
 </body>
 </html>
