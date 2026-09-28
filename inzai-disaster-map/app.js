@@ -8830,19 +8830,35 @@ function passesSnsWhenFilter(iso) {
 // 終わりが null の災害（進行中）は「今まで」の意味になる。
 // 定数ではなく関数にしてある：初期化（ファイル前半の initRecordEvents()）から呼ぶため。
 // const で書くと、宣言より前に呼ばれて TDZ エラーになり、以降の初期化が全部止まる（2026-09-23 に踏んだ）
+// link：押したときに凡例の下に出す市の発表（2026-09-28 事業主指示）。
+// 台風25号は被害の概要の資料が回ごとに増えるので、PDFではなく本部会議のページへ。
+// 8月豪雨は市に被害状況のページが無いため、支援・手続きのページへ（2026-09-28 事業主決定）
 function recordEvents() {
   return {
-    aug2026: { label: "8月豪雨", from: "2026-08-24T00:00:00+09:00", to: "2026-08-29T00:00:00+09:00" },
-    typhoon25: { label: "台風25号", from: "2026-09-20T00:00:00+09:00", to: null },
+    aug2026: { label: "8月豪雨", from: "2026-08-24T00:00:00+09:00", to: "2026-08-29T00:00:00+09:00",
+      link: { text: "📄 8月千葉豪雨の支援・手続き（印西市）", href: "https://www.city.inzai.lg.jp/bousaiportal/0000022367.html" } },
+    typhoon25: { label: "台風25号", from: "2026-09-20T00:00:00+09:00", to: null,
+      link: { text: "📄 台風25号の被害状況（最新版・印西市）", href: "https://www.city.inzai.lg.jp/0000022615.html" } },
   };
 }
 
 function syncEventChips() {
+  let active = null;
   document.querySelectorAll("#map-legend [data-event]").forEach(button => {
     const event = recordEvents()[button.dataset.event];
     const on = Boolean(event) && recordWhenFilter.label === event.label;
     button.setAttribute("aria-pressed", on ? "true" : "false");
+    if (on) active = event;
   });
+  const link = document.getElementById("legend-event-link");
+  if (!link) return;
+  if (active && active.link) {
+    link.textContent = `${active.link.text} ↗`;
+    link.href = active.link.href;
+    link.hidden = false;
+  } else {
+    link.hidden = true;
+  }
 }
 
 function initRecordEvents() {
