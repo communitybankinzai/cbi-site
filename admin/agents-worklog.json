@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "防災MAPの要望ボタンと記録の呼びかけ：ナレッジノート作成・MOC登録 0.1時間",
+          "category": "レポート",
+          "outputs": [
+            "cidao/2026-09-28_防災MAPの要望ボタンと記録の呼びかけ.md",
+            "MOC_CiDAO.md"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "決めたこと（「差」ではなく「市民の記録が必要」・MAP上のボタン・Supabase・記録バー・data.html）と、つまずき3件（出典表示との重なり・OneDrive巻き戻り・Supabase接続先の取り違え）を残した。同セッションの前2件（0.4＋0.2時間）の続き。session: d85b5282-39f8-4f35-9bc6-b603efdd3887 / output: 67,029 / cost: $30.36"
+        },
+        {
+          "date": "2026-09-28",
           "title": "防災MAPの見守り3件（通行止め残り2件・SNS平時化の途中経過・被災者支援リンク）を実測し plans に記録 0.1時間",
           "category": "保守",
           "outputs": ["site/admin/agents-worklog.json（plans 3件の note に途中経過を追記）"],
