@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "防災MAP SNS通行情報を平時にも（段階1：工事・事故・渋滞・陥没・倒木／注意と理由）＋新PCの .env.local 復旧 0.7時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao supabase/migrations/20260928100000_sns_road_reports_everyday.sql（本番適用）",
+            "C:/Repos/cidao src/lib/disaster-sns-monitor.ts（TRAFFIC_SIGNAL）",
+            "C:/Repos/cidao src/lib/disaster-sns-road-ai.ts（caution・cause・直近14日）",
+            "C:/Repos/cidao src/lib/__tests__/disaster-sns-everyday.test.ts",
+            "cidao 34d7707",
+            "site/inzai-disaster-map/app.js・styles.css・index.html（site 9e0e705）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "中司さん『災害時だけでなく常時使えるものを。民間の情報をWEB収集しAI判定で自動プロット・自動リンク』→確認3問（載せるもの＝道路・交通の困りごと／情報源＝規約で許されるものだけ／公開＝確度高だけ自動）すべて推奨で決定→段階1〜3の案→A（段階1から）。新PCに cidao の .env.local が無く、credentials.md のDBパスワードと Supabase Personal Access Token はどちらも失効、Vercel の接続は cidao の権限なし（403）だったため、事業主にリモートデスクトップで旧PCからコピーしてもらった（途中で OneDrive へ移動→削除で一時消失、ごみ箱から復元）。検証：cidao 全テスト 395件通過、tsc・eslint エラー0、本物のAI（Haiku 4.5）で作った見本8件を読ませ7件が期待どおり（夜間通行止めを注意と読んだ1件は確度中＝非公開）・1件約0.8円、DB変更後に kind/cause の制約と既存50行を確認、本番APIに cause が出ることと本番巡回が success（5分ごと）で動くことを確認、ローカルで理由ごとの印・吹き出し・凡例チップの連動を確認。前回記録(70,581)以降の差分で算出。session: e4863296-46a1-4300-a931-52b49665e4d1 / output: 140,029 / cost: $48.57"
+        },
+        {
+          "date": "2026-09-28",
           "title": "未読の更新の改修（リンク化・初回ブラウザで古い通知を出さない・コメント通知にアイデア名）0.2時間",
           "category": "保守",
           "outputs": [
@@ -7946,6 +7964,27 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🗺 防災MAP 平時化 段階2：二次利用できる道路データ（OSMの工事中道路・千葉国道事務所）を取り込む",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-28 事業主決定（情報源は規約で許されるものだけ）。候補：OpenStreetMap の highway=construction 等（ODbL・出典表示）、千葉国道事務所の記者発表（PDL1.0・既に通行止めで取り込み中）。JARTIC の交通規制オープンデータ（月次）は利用規約が未確認なので、先に規約を読む。段階1（SNS）は cidao 34d7707・site 9e0e705。経緯は site/inzai-disaster-map/CLAUDE_HANDOFF.md の 2026-09-28 平時化の節"
+        },
+        {
+          "due": "未定",
+          "title": "🔗 防災MAP 平時化 段階3：同じ場所・時間帯の「市の発表・市民の記録・SNS」を自動でリンクする",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-28 事業主要望『AI判定により自動プロット、自動リンク』の自動リンク部分。いまある『通れない記録の吹き出しに近くのSNSの解除を添える』（app.js snsClearedNear・300m）を一般化し、通行止め（役所）・市民の記録・SNS を相互に添える形を想定。段階1・2の後"
+        },
+        {
+          "due": "2026-10-05",
+          "title": "👀 SNS通行情報の平時化の様子を1週間見る（運営用SNS候補の増え方・AIの誤読・費用）",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-28 に巡回のふるいへ工事・事故・渋滞などを足した（cidao 34d7707）。1週間後に disaster_sns_candidates の増え方、disaster_sns_road_scans の result 別件数と tokens（1件約0.8円の見込み）、公開された点（確度高）に誤りが無いかを見る。運営用の「SNS候補」一覧が平時の投稿で埋もれていないかも確認。多すぎれば TRAFFIC_SIGNAL を絞る"
+        },
         {
           "due": "未定",
           "title": "🏠 次の災害のとき、防災MAPの公式リンク集の「被災者支援・手続き（市）」を新しいまとめページに差し替える",
