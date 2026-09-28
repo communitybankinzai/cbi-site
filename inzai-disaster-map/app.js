@@ -3081,8 +3081,9 @@ const PRESETS = {
     label: "停電",
     toggle: [],
     openAcc: ["⚡"],
-    // "acc" は左パネルの中だけを動かすので、ページごと動くスマホでは枠まで行かない。通行止めと同じ id 指定にする
-    focus: "#teiden-acc"
+    // 枠の上端へ移動する（PC は左パネルの中、スマホはページごと）。id 指定（block:nearest）は、
+    // 上にある背の高い枠だと下端に合わせて上が切れた（2026-09-28）
+    focus: "acc"
   },
   landslide: {
     label: "土砂災害",
@@ -3154,7 +3155,9 @@ function applyTogglePreset(name, preset) {
     if (preset.focus === "acc" && panel) {
       const target = [...document.querySelectorAll(".left-panel > details.acc[open]")]
         .find(acc => (preset.openAcc || []).some(mark => (acc.querySelector("summary")?.textContent || "").includes(mark)));
-      if (target) panel.scrollTop = target.offsetTop - panel.offsetTop - 8;
+      // panel.scrollTop だけだと、ページごと動くスマホでは枠まで行かなかった（2026-09-28）。
+      // scrollIntoView は PC では左パネルの中、スマホではページを動かす
+      target?.scrollIntoView({ block: "start" });
     } else if (preset.focus?.startsWith("#")) {
       setTimeout(() => {
         const el = document.querySelector(preset.focus);
