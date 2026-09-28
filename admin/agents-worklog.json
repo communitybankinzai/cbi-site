@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "防災MAPの鉄道運休欄に事業者の運行情報リンク追加＋ふれあいバスGTFSの市への問い合わせ（下書き作成・送信確認）＋運行情報APIの説明修正 0.3時間",
+          "category": "実装",
+          "outputs": ["site/inzai-disaster-map/app.js・styles.css・index.html（RAIL_OPERATOR_LINKS・版 app o／css h）", "site/admin/changelog.json", "調整経緯/2026-09-28_印西市_ふれあいバスGTFSの問い合わせ文案.md", "C:/Repos/cidao src/app/api/disaster/rail-status/route.ts（説明のみ）"],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主決定：鉄道＝A（リンク）、GTFSツール＝B（手元のまま・10/12と市の回答待ち）。前回の『市の案内は手で登録』『事業者分は6時間で消える』は誤りで、実際は9/23から自動反映・既定12時間と訂正し、route.ts の古い説明を直した（cidao 542309b）。問い合わせは gas-mail-share で下書き→事業主が18:52に送信、送信済みフォルダで確認。site 6e0c5fe・18ec8c9・8728037。累計：session: 3d3c1679-eb84-4c0f-8893-bd54dcb00275 / output: 196,801 / cost: $69.59"
+        },
+        {
+          "date": "2026-09-28",
           "title": "防災MAPの要望ボタンと記録の呼びかけ：ナレッジノート作成・MOC登録 0.1時間",
           "category": "レポート",
           "outputs": [
