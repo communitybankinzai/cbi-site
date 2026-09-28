@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "活動報告書から卒業論文の更新19件を外す（テーマ削除＋除外条件） 0.05時間",
+          "category": "保守",
+          "outputs": [
+            "site/admin/admin.js（ORG_THEMES から卒論を削除・ORG_EXCLUDE を追加）",
+            "site/admin/changelog.json",
+            "site e60eff3"
+          ],
+          "hours": 0.05,
+          "partnerApproved": false,
+          "note": "事業主指摘：卒論はCBIの活動の紹介で、作成にCBIは関わっていない。案A（報告書から外す）を選択。changelog.json に同じ判定を当て、外れるのが卒論の19件だけであることを node で確認。\nsession: d2fbba32-c94b-434f-9e29-acf5607a0717 / output: 4,747 / cost: $5.86"
+        },
+        {
+          "date": "2026-09-28",
           "title": "防災MAP SNS通行情報を平時にも（段階1：工事・事故・渋滞・陥没・倒木／注意と理由）＋新PCの .env.local 復旧 0.7時間",
           "category": "実装",
           "outputs": [
