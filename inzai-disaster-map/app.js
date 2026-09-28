@@ -5444,12 +5444,17 @@ function renderPrefKisei(data) {
   const lines = data?.published && Array.isArray(data.lines) ? data.lines : [];
   const page = data?.source?.pageUrl || "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html";
   // 開くたびに組み立てる（最終確認の時刻が線を描いた後に変わるため）
-  const popup = () => {
+  const popup = (line) => {
     const times = prefKiseiTimes(prefKiseiData);
+    const snap = line?.snap || null;
     return `<strong>🚧 規制中（被災）区間</strong><br>` +
       `千葉県の道路規制状況図（県の発表：${escapeHtml(times.asOf)}）<br>` +
       (times.checked ? `最終確認：${escapeHtml(times.checked)}（CBIが30分ごとに確認）<br>` : "") +
       `<span style="font-size:11px;">県の図の赤線をCBIが地図に写したもので、<strong>数十m〜100mほどずれる</strong>ことがあります。区間の端も正確ではありません。主に国道・県道で、市町村道は入っていません。</span><br>` +
+      // 近くの国道・県道へ寄せたかどうか（2026-09-28 事業主決定A・pipeline/snap_roads.py）
+      (snap?.snapped
+        ? `<span style="font-size:11px;">📍 近くの国道・県道（© OpenStreetMap）に寄せて表示しています（平均${escapeHtml(String(snap.meanShiftM))}m動かしました）。</span><br>`
+        : snap ? `<span style="font-size:11px;">📍 近くに合う国道・県道が無いため、県の図を写したままです。</span><br>` : "") +
       // 根拠資料（線の元にした県のPDF）を直接開けるようにする（2026-09-28 事業主指示）。
       // 県は同じ名前のPDFを差し替えたり前日分を消したりするので、線より新しい図が開くこと・開けないことがある旨を添える
       (/^https:\/\//.test(String(prefKiseiData?.pdfUrl || ""))
@@ -5468,7 +5473,7 @@ function renderPrefKisei(data) {
       weight: 6,
       opacity: 0.85,
       lineCap: "round"
-    }).bindPopup(popup).addTo(prefKiseiLayer);
+    }).bindPopup(() => popup(line)).addTo(prefKiseiLayer);
   });
   if (!statusEl) return;
   const times = prefKiseiTimes(data);

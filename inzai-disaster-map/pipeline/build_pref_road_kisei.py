@@ -28,6 +28,8 @@ import fitz  # PyMuPDF
 import numpy as np
 import requests
 
+import snap_roads
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "pref-road-kisei.json")
 PAGE_URL = "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html"
@@ -371,6 +373,20 @@ def main():
             lat, lon = px2deg(ox + mx + float(u) * scale, oy + my + float(v) * scale, TILE_Z)
             path.append([round(lat, 6), round(lon, 6)])
         out["lines"].append({"path": path, "lengthM": round(meters(path))})
+    # 近くの国道・県道へ吸い付ける（2026-09-28 事業主決定A）。寄せられない線は写したままにする
+    roads = snap_roads.load_roads()
+    if roads:
+        for line in out["lines"]:
+            snapped, info = snap_roads.snap_line(line["path"], roads)
+            if info.get("snapped"):
+                line["rawPath"] = line["path"]
+                line["path"] = snapped
+            line["snap"] = info
+        n = sum(1 for l in out["lines"] if l["snap"].get("snapped"))
+        out["snap"] = {"roads": "© OpenStreetMap contributors（国道・県道）", "snapped": n, "total": len(out["lines"])}
+        log(f"道路に寄せた線 {n}/{len(out['lines'])}本")
+    else:
+        log("道路データが無いため寄せない（data/pref_roads_main.json.gz）")
     out["lines"].sort(key=lambda l: -l["lengthM"])
     write(out)
     log(f"規制中の線 {len(out['lines'])}本を書き出し（{as_of}）")
