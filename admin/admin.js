@@ -161,7 +161,12 @@ const UNREAD_POLL_MS = 30000;
     screenLogin.classList.remove('active');
     screenAdmin.classList.add('active');
     state.me = localStorage.getItem(STORAGE_KEYS.ME) || '';
-    state.lastSeen = localStorage.getItem(STORAGE_KEYS.LAST_SEEN) || '1970-01-01T00:00:00Z';
+    state.lastSeen = localStorage.getItem(STORAGE_KEYS.LAST_SEEN) || '';
+    if (!state.lastSeen) {
+      // 初めて開いたブラウザでは過去の通知を未読にしない（ここから数え始める）
+      state.lastSeen = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEYS.LAST_SEEN, state.lastSeen);
+    }
     if (!state.me) {
       openMeModal();
     } else {
@@ -3413,7 +3418,7 @@ const UNREAD_POLL_MS = 30000;
       item.appendChild(tag);
       const det = document.createElement('span');
       det.className = 'u-detail';
-      det.textContent = (ev.actor || '?') + ' : ' + (ev.detail || ev.ideaId || '');
+      det.textContent = (ev.actor || '?') + ' : ' + unreadDetailText(ev);
       item.appendChild(det);
       const meta = document.createElement('span');
       meta.className = 'u-meta';
@@ -3421,6 +3426,23 @@ const UNREAD_POLL_MS = 30000;
       item.appendChild(meta);
       list.appendChild(item);
     });
+  }
+
+  // コメントの通知は detail がコメント本文なので、どのアイデアへのコメントかを添える
+  function unreadDetailText(ev) {
+    const detail = String(ev.detail || '').replace(/\s+/g, ' ').trim();
+    if (ev.type === 'comment_added' || ev.type === 'comment_edited') {
+      const id = String(ev.ideaId || '');
+      let where = '';
+      if (id.startsWith('doc:')) {
+        where = '資料「' + id.slice(4) + '」';
+      } else {
+        const idea = state.ideas.find(i => i.id === id);
+        if (idea) where = '「' + (idea.title || '(無題)') + '」';
+      }
+      if (where) return where + ' へのコメント：' + detail;
+    }
+    return detail || ev.ideaId || '';
   }
 
   // 未読の項目から、そのアイデアを開いてコメントを見せる
