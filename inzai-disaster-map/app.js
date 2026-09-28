@@ -12144,7 +12144,8 @@ async function refreshTeidenLayer() {
     return;
   }
   const sample = Boolean(data.sample) || teidenMode === "demo";
-  const sourceName = data.source?.name || "東京電力パワーグリッド「停電情報」";
+  // 出典は「東京電力パワーグリッド株式会社」と書く（2026-09-28 東電PGの回答の条件）
+  const sourceName = data.source?.name || "東京電力パワーグリッド株式会社「停電情報」";
   const sourceUrl = data.source?.url || "https://teideninfo.tepco.co.jp/flash/12000000000.html";
   const fetchedAt = data.fetchedAt ? formatDateTime(toDateTimeLocal(new Date(data.fetchedAt).toISOString())) : "";
   const areas = Array.isArray(data.areas) ? data.areas.filter(a => Number(a.households) > 0) : [];
@@ -12163,7 +12164,7 @@ async function refreshTeidenLayer() {
       <div class="teiden-popup">
         <strong>⚡ ${escapeHtml(name)}の停電${sample ? "（見本・架空の数値）" : ""}</strong>
         <div class="teiden-popup-n">約${escapeHtml(n.toLocaleString())}軒</div>
-        <div>発生：${escapeHtml(area.occurredAt || "不明")}／復旧見込み：${escapeHtml(area.restoreEta || "調査中")}</div>
+        <div>発生：${escapeHtml(area.occurredAt || "不明")}${area.restoreEta ? `／復旧見込み：${escapeHtml(area.restoreEta)}` : ""}</div>
         <div class="teiden-popup-note">円の位置は地区の代表点で、停電の範囲そのものではありません。</div>
         <div class="teiden-popup-note">出典：<a href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(sourceName)} ↗</a>${fetchedAt ? `（${escapeHtml(fetchedAt)}取得）` : ""}${sample ? "。この表示は見本で、実際の停電ではありません。" : ""}</div>
       </div>`).addTo(teidenLayer);

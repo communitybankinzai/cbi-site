@@ -515,6 +515,8 @@ score = 100 × [ 0.25·clip(−相対標高/5m) + 0.35·clip(窪地深さ/2m)
 
 ## 2026-09-22 ⚡ 停電の円表示（東京電力の許可待ち・一般の画面には出ない）
 
+- **2026-09-28 東電PGの回答（利用を承知・条件つき）**：①出典は「東京電力パワーグリッド株式会社」と書く、②「復旧見込み」は東電の停電情報ページに掲載があるときだけ出す（無いときに「調査中」等で埋めない）。app.js の既定の出典名・吹き出し、index.html の停電カード、teiden-demo.html、teiden-sample.json を合わせた。**円表示を公開するときもこの2点を守ること**。自動配信サービスは東電PGではなく「停電情報自動配信サービス事務局」の審査（条件非公開）。経緯は保管庫 `調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md`。
+
 - **経緯**：9/21夜の台風25号で千葉県約5万2千軒が停電。事業主が案A（今は埋め込み・リンクで乗り切り、許可が出たらすぐ公開できるよう重ねる仕組みだけ先に作る）を選択。**東電のデータには一切アクセスしていない**（転載・リンクの申請は9/21提出・回答待ち。plans『⚡ 東京電力からの回答を待ち…』）。
 - **MAP**：`app.js` の「⚡ 停電の円表示」節。`teidenMode` は `?teiden=demo`→`demo`（`teiden-sample.json`＝架空の数値）、`config.js` の `teidenEndpoint` が空でなければ `live`（10分ごと再取得）、どちらでもなければ何もしない（**今の本番はこれ**）。面 `teidenPane`（zIndex 465・SVG の `teidenRenderer`。canvas にしないこと）。円の半径 `5 + √軒数 × 0.45`（teiden-demo.html と同じ）。代表点はデータの `lat`/`lon`、無ければ国土地理院の住所検索（`千葉県<市><地区>`・8秒で諦める・localStorage `cbi-disaster-teiden-points-v1`）。引けない地区は描かない。取得に失敗したら円を消す。
 - **データの形**：`{ sample, fetchedAt, source:{name,url}, areas:[{city, district, households, occurredAt, restoreEta, lat?, lon?}] }`。**許可後にやること**：CiDAO に `/api/disaster/teiden`（東電の正式な取得方法・間隔に従い、この形で返す）を作り、`teidenEndpoint` に書き、index.html にレイヤーのチェックと凡例を足す。見本・説明用ページ（teiden-demo.html）と表示を揃えてある。不可の回答なら、この節のコードと teiden-sample.json を消す。
