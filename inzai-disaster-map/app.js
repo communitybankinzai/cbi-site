@@ -5556,10 +5556,14 @@ function renderRoadClosures() {
   if (!data || !listEl) return;
   roadClosuresLayer.clearLayers();
 
-  // ⏱ 期間・本日／過去の実績のしぼり込みを、通行止めにも掛ける（2026-09-23 事業主指示A）。
-  // 基準は役所の発表日時。分からない件は初めて確認した日時を使う
+  // ⏱ 期間（台風25号・8月豪雨・⏱ 期間）を選んでいるときだけ、役所の発表日時でしぼる（2026-09-23 事業主指示A）。
+  // 期間を選んでいないときは、続いている通行止めを「本日」の情報として扱う（今日も通れないため）。
+  // 以前は発表日で「過去の実績」側に入り、本日だけにすると続いている46件がすべて隠れていた（2026-09-28 事業主決定）。
+  // 分からない件は初めて確認した日時を使う
   const allActive = Array.isArray(data.active) ? data.active : [];
-  const active = allActive.filter(item => passesWhenFilter(item.publishedAt || item.firstSeenAt));
+  const periodSelected = recordWhenFilter.from !== null || recordWhenFilter.to !== null;
+  const active = periodSelected ? allActive.filter(item => passesWhenFilter(item.publishedAt || item.firstSeenAt))
+    : recordWhenFilter.today ? allActive : [];
   const hiddenByWhen = allActive.length - active.length;
   const cleared = Array.isArray(data.recentlyCleared) ? data.recentlyCleared : [];
   const sources = Array.isArray(data.sources) ? data.sources : [];
@@ -5589,7 +5593,7 @@ function renderRoadClosures() {
   if (statusEl) {
     statusEl.textContent = active.length
       ? `通行止め ${active.length}件${drawn ? `（うち地図に線 ${drawn}件）` : "（地図の線なし）"}`
-      : hiddenByWhen ? `期間の指定で ${hiddenByWhen}件を隠しています` : "役所が発表中の通行止めはありません";
+      : hiddenByWhen ? (periodSelected ? `期間の指定で ${hiddenByWhen}件を隠しています` : `「本日」がOFFのため、続いている ${hiddenByWhen}件を隠しています`) : "役所が発表中の通行止めはありません";
   }
 
   const rowOf = item => {
@@ -5632,7 +5636,8 @@ function renderRoadClosures() {
       ? rows.join("")
       : `<p class="road-closure-empty">役所の発表で、いま通行止めになっている道はありません。<br>（発表されていない通行止めがあることもあります）</p>`) +
     (clearedRows.length ? `<details class="road-closure-cleared"><summary>24時間以内に解除 ${clearedRows.length}件</summary><ul>${clearedRows.join("")}</ul></details>` : "") +
-    (hiddenByWhen ? `<p class="road-closure-warn">⏱ 期間の指定で ${hiddenByWhen}件を隠しています（発表が古い通行止めも、解除されるまでは通れません）。凡例の「⏱ 期間」で「すべて」にすると出ます。</p>` : "") +
+    (hiddenByWhen && !periodSelected ? `<p class="road-closure-warn">「本日」がOFFのため、いま続いている通行止め ${hiddenByWhen}件を隠しています。凡例の「本日」を押すと出ます。</p>` : "") +
+    (hiddenByWhen && periodSelected ? `<p class="road-closure-warn">⏱ 期間の指定で ${hiddenByWhen}件を隠しています（発表が古い通行止めも、解除されるまでは通れません）。凡例の「⏱ 期間」で「すべて」にすると出ます。</p>` : "") +
     (failed.length ? `<p class="road-closure-warn">⚠ 前回 ${failed.map(s => escapeHtml(s.label)).join("・")} を読めませんでした。出典のページで確認してください。</p>` : "") +
     `<p class="road-closure-note">確認先：${sources.map(s => s.url ? `<a href="${escapeAttribute(s.url)}" target="_blank" rel="noreferrer">${escapeHtml(roadClosureSourceName(s.label))}</a>` : escapeHtml(s.label)).join("／") || "―"}` +
     `${lastFetched ? `<br>最終確認：${escapeHtml(roadClosureTime(lastFetched, true))}（佐倉市・印西市は30分ごと、ほかは1時間ごと）` : ""}</p>`;
