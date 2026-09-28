@@ -5614,8 +5614,11 @@ function renderRoadClosures() {
   });
 
   if (statusEl) {
+    // 工事の車線規制（千葉国道事務所・severity caution）は通行止めと分けて数える（2026-09-28 平時化・段階2）
+    const cautionCount = active.filter(item => item.severity === "caution").length;
+    const closureCount = active.length - cautionCount;
     statusEl.textContent = active.length
-      ? `通行止め ${active.length}件${drawn ? `（うち地図に線 ${drawn}件）` : "（地図の線なし）"}`
+      ? `通行止め ${closureCount}件${cautionCount ? `・工事の車線規制 ${cautionCount}件` : ""}${drawn ? `（うち地図に線 ${drawn}件）` : "（地図の線なし）"}`
       : hiddenByWhen ? (periodSelected ? `期間の指定で ${hiddenByWhen}件を隠しています` : `「本日」がOFFのため、続いている ${hiddenByWhen}件を隠しています`) : "役所が発表中の通行止めはありません";
   }
 
@@ -5627,7 +5630,10 @@ function renderRoadClosures() {
     const onMap = Array.isArray(item.path) && item.path.length >= 2
       ? (item.pathSource === "city" ? "地図に線あり（役所の位置）" : "地図に線あり（運営が確認）")
       : item.mapUrl ? "場所は位置図で確認" : "場所は出典で確認";
-    return `<li><strong>${escapeHtml(roadClosureName(item))}</strong>` +
+    // 車線規制・片側交互通行は通れる（通行止めではない）。夜間だけの規制は細かい日時を出典で見てもらう
+    const caution = item.severity === "caution"
+      ? `<span class="road-closure-meta road-closure-caution">⚠ 車線規制（通れるが支障あり）${item.night ? "・夜間に規制" : ""}・日時は出典で確認</span>` : "";
+    return `<li><strong>${escapeHtml(roadClosureName(item))}</strong>` + caution +
       `<span class="road-closure-meta">${item.reason ? `${escapeHtml(item.reason)}・` : ""}${escapeHtml(period)}・${onMap}</span>` +
       (roadClosureContinuedText(item) ? `<span class="road-closure-meta closure-continued">⏳ ${escapeHtml(roadClosureContinuedText(item))}</span>` : "") +
       (item.url ? `<a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典：${escapeHtml(roadClosureSourceName(item.sourceLabel))} ↗</a>` : "") +

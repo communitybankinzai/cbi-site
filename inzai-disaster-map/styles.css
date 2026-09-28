@@ -3780,6 +3780,7 @@ body.sns-popup-open #quick-record-bar { display: none; }
 .road-closure-items li { margin-bottom: 6px; }
 .road-closure-items strong { color: #8a1f1a; }
 .road-closure-meta { display: block; color: #57606a; }
+.road-closure-meta.road-closure-caution { color: #a35a00; font-weight: 700; } /* 工事の車線規制（通行止めではない）2026-09-28 */
 .road-closure-items a, .road-closure-note a, .road-closure-cleared a { color: #0b57d0; }
 .road-closure-empty { margin: 0; color: #333; }
 .road-closure-cleared { margin-top: 6px; color: #57606a; }
