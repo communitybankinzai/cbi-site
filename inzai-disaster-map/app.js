@@ -5515,7 +5515,23 @@ function showPrefKiseiBadge(show) {
   el.innerHTML =
     `<strong>🚧 県の規制状況図</strong> ${escapeHtml(times.asOf)}` +
     (times.checked ? `<br><span>最終確認 ${escapeHtml(times.checked)}（30分ごと）</span>` : "");
+  placePrefKiseiBadge();
 }
+
+// 画面下の記録の帯（#quick-record-bar・スマホでは画面に固定）と重なる分だけ、見出しを上へ逃がす。
+// 固定の余白（スマホ 50px）では帯の高さに足りず「通れない道を追加」に重なっていた（2026-09-28 事業主指摘）。
+// 帯は画面に固定・地図はページと一緒に動くので、スクロールと画面の大きさが変わるたびに測り直す
+function placePrefKiseiBadge() {
+  const el = prefKiseiBadge?._map ? prefKiseiBadge.getContainer() : null;
+  if (!el) return;
+  const bar = document.getElementById("quick-record-bar");
+  const mapRect = document.getElementById("map")?.getBoundingClientRect();
+  const barRect = bar && !bar.hidden && getComputedStyle(bar).display !== "none" ? bar.getBoundingClientRect() : null;
+  const overlap = mapRect && barRect && barRect.height ? mapRect.bottom - barRect.top : 0;
+  el.style.marginBottom = overlap > 0 ? `${Math.round(overlap + 8)}px` : "";
+}
+window.addEventListener("resize", () => placePrefKiseiBadge());
+window.addEventListener("scroll", () => placePrefKiseiBadge(), { passive: true });
 
 function renderPrefKisei(data) {
   const statusEl = document.getElementById("pref-kisei-status");
