@@ -1850,7 +1850,19 @@ boundaryLayer.addTo(map);
 (function initIncidentDate() {
   const input = document.getElementById("incident-date");
   if (input && !input.value) input.value = todayJst();
+  syncTargetDayChip();
 })();
+
+// 対象日は「⏱ 期間」の中へ移した（2026-09-28）ので、今日以外を選んでいるときは「本日」ボタンに日付を出して気づけるようにする
+function syncTargetDayChip() {
+  const chip = document.querySelector('#map-legend [data-when="today"]');
+  const value = document.getElementById("incident-date")?.value || "";
+  if (!chip) return;
+  const other = value && value !== todayJst();
+  const [, m, d] = value.split("-");
+  chip.textContent = other ? `${Number(m)}/${Number(d)}` : "本日";
+  chip.title = other ? `対象日（${value}）の記録だけ濃く太く描いています。今日に戻すには「⏱ 期間」の「別の日を見る」` : "対象日の記録だけ濃く太く描いています";
+}
 
 initBoundary();
 refreshRainNowcast(false);
@@ -1908,6 +1920,7 @@ function bindEvents() {
   document.getElementById("reset-view-button").addEventListener("click", () => map.fitBounds(INZAI_BOUNDS));
   document.getElementById("incident-date").addEventListener("change", () => {
     selectedId = null;
+    syncTargetDayChip();
     renderAll();
     refreshSnsMonitor(false);
     refreshTimeline(false);

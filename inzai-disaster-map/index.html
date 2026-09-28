@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20260928f">
+    <link rel="stylesheet" href="./styles.css?v=20260928g">
   </head>
   <body>
     <div class="app-shell">
@@ -22,10 +22,7 @@
           </div>
         </div>
         <div class="top-actions" aria-label="主要操作">
-          <label class="date-field">
-            <span>対象日</span>
-            <input id="incident-date" type="date">
-          </label>
+          <!-- 2026-09-28 事業主決定A：最上段の「対象日」は「⏱ 期間」の中（#range-panel の「別の日を見る」）へ移した。id は同じ -->
           <button class="tool-button" id="help-button" type="button">使い方</button>
           <!-- 2026-09-24: 「個人情報が抜かれるのでは」という不安で使われないため、何を送っていないか／送っているかを常時開けるようにした -->
           <a class="tool-button" href="./data.html" target="_blank" rel="noreferrer" title="このMAPが送るもの・送らないもの（氏名や連絡先は集めていません）">🔒 データの扱い</a>
@@ -737,6 +734,11 @@
             <div class="range-actions">
               <button type="button" id="range-apply">この期間で見る</button>
               <button type="button" id="range-clear">解除</button>
+            </div>
+            <!-- 対象日（2026-09-28 最上段から移した）。選んだ日を「本日」として、記録の濃淡・SNS巡回・公式発表を出す -->
+            <div class="range-day">
+              <label class="date-field"><span>別の日を見る</span><input id="incident-date" type="date"></label>
+              <p class="range-note">選んだ日を「本日」として表示します（SNS巡回・公式発表もその日の分）。ふだんは今日のままで構いません。</p>
             </div>
           </div>
           <!-- 🏠 この場所は想定区域に入っているか（2026-09-24）。判定は公式ハザードのタイルの色を読むだけ -->
@@ -1882,7 +1884,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260928a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20260928m"></script>
+    <script src="./app.js?v=20260928n"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
     <script src="./cbi-simulation.js?v=20260907g"></script>
   </body>

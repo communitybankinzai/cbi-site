@@ -3800,6 +3800,7 @@ body.sns-popup-open #quick-record-bar { display: none; }
 .road-closure-meta { display: block; color: #57606a; }
 .road-closure-meta.road-closure-caution { color: #a35a00; font-weight: 700; } /* 工事の車線規制（通行止めではない）2026-09-28 */
 /* 🔗 同じ場所・近い時間の情報（平時化・段階3 2026-09-28） */
+.range-day { margin-top: 10px; padding-top: 8px; border-top: 1px solid #d8dee6; } .range-day .range-note { color: #53677b; } /* ⏱ 期間の中の「別の日を見る」（対象日・2026-09-28） */
 .related-box { margin-top: 6px; padding: 6px 8px; border-left: 3px solid #5b6fb5; background: #f3f5fb; font-size: 12px; line-height: 1.5; }
 .related-type { margin-top: 3px; }
 .related-reason, .related-note { color: #53677b; font-size: 11px; }
