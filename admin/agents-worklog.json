@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "停電自動配信サービス事務局の回答確認・GASに添付取り出し機能追加・ヒアリングシート記入と提出 0.3時間",
+          "category": "事務",
+          "outputs": ["gas-mail-share/コード.gs（attachment アクション）", "gas-mail-share/README.md", "調整経緯/東電停電/（説明資料PDF・ヒアリングシート・記入案xlsx）", "調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md"],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事務局回答：利用料無料・対象は東電管内で配信する企業・審査結果は事前に不明。添付を取り出すため GAS に attachment を追加（1回目の再デプロイは別コードが貼られ全機能 auth_failed→クリップボードを入れ直して再デプロイで復旧）。資料12ページを読み、禁止事項（二次加工・留保）に触れる2点を確認点としてヒアリングシートに記入。Excel→PDFで全項目の表示を確認。既存の attachments 機能で添付付き返信下書きを作成し、中司さんが18:50に送信（送信済みで宛先・添付9,745バイトを確認）。前件（output 61,647）との差分 30,207 → 0.3時間\nsession: 40e862a6-9cad-4133-be50-a6671c9ffbfa / output: 91,854 / cost: $37.48"
+        },
+        {
+          "date": "2026-09-28",
           "title": "GTFSバス停地図ツール（千葉NT中央駅・高花）のMVP作成・実データ検証＋鉄道運行情報の取り込み可否の調査 0.5時間",
           "category": "実装",
           "outputs": ["tools/gtfs-bus-map/（main.py・config.py・busmap/ 6ファイル・requirements.txt・README.md・.env.example）", "cidao/2026-09-28_GTFSバス停地図ツール_千葉NT中央駅と高花.md", "MOC_CiDAO.md", ".claude/launch.json（gtfs-bus-map・8791）"],
@@ -8703,7 +8712,7 @@
           "category": "実装",
           "priority": "中",
           "status": "待ち",
-          "blockedBy": "東電PG（高田氏）から、印西市の XML（flash/xml/12231000000.xml）を画面と同じ認証用 Cookie を付けて取得してよいかの回答（2026-09-28 14:33 に確認メール送信済み）。または事務局から自動配信サービスの回答（利用可否・費用。2026-09-28 14:36 に相談メール送信済み）",
+          "blockedBy": "東電PG（高田氏）から、印西市の XML（flash/xml/12231000000.xml）を画面と同じ認証用 Cookie を付けて取得してよいかの回答（2026-09-28 14:33 に確認メール送信済み）。または事務局の審査結果（利用料は無料と回答済み。2026-09-28 18:50 にヒアリングシート提出済み）",
           "note": "東電PGは利用を承知済み（2026-09-28）。条件＝出典「東京電力パワーグリッド株式会社」・復旧見込みは東電の掲載があるときだけ（表示側は site 0c2bdc6 で対応済み）。残りは CiDAO の /api/disaster/teiden、config.js の teidenEndpoint、index.html のレイヤーのチェックと凡例。CLAUDE_HANDOFF.md「⚡ 停電の円表示」。"
         },
         {
