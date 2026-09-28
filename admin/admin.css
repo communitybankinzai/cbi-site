@@ -954,6 +954,14 @@ button { font-family: inherit; cursor: pointer; }
   align-items: center;
   font-size: 13px;
 }
+.unread-item.is-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.unread-item.is-link:hover { background: var(--c-bg-alt); }
+.unread-item.is-link .u-detail { text-decoration: underline; color: var(--c-navy); }
+.idea-card.is-flash { outline: 3px solid #c9a55c; outline-offset: 2px; }
 .unread-item .u-tag {
   font-size: 10px;
   font-weight: 700;

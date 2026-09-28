@@ -2654,6 +2654,7 @@ const UNREAD_POLL_MS = 30000;
   function renderCard(idea) {
     const card = document.createElement('article');
     card.className = 'idea-card is-status-' + (idea.status || '検討中');
+    card.dataset.ideaId = idea.id || '';
     if (state.openIdeas.has(idea.id)) card.classList.add('is-open');
 
     // ヘッダー
@@ -3395,8 +3396,17 @@ const UNREAD_POLL_MS = 30000;
       return;
     }
     state.unreadEvents.slice().reverse().forEach(ev => {
-      const item = document.createElement('div');
-      item.className = 'unread-item';
+      const canOpen = !!ev.ideaId && ev.type !== 'idea_deleted' && state.ideas.some(i => i.id === ev.ideaId);
+      const item = document.createElement(canOpen ? 'a' : 'div');
+      item.className = 'unread-item' + (canOpen ? ' is-link' : '');
+      if (canOpen) {
+        item.href = '#idea-' + encodeURIComponent(ev.ideaId);
+        item.title = 'このアイデアを開く';
+        item.addEventListener('click', e => {
+          e.preventDefault();
+          openIdeaFromUnread(ev.ideaId);
+        });
+      }
       const tag = document.createElement('span');
       tag.className = 'u-tag t-' + (ev.type || '');
       tag.textContent = labelForEvent(ev.type);
@@ -3411,6 +3421,24 @@ const UNREAD_POLL_MS = 30000;
       item.appendChild(meta);
       list.appendChild(item);
     });
+  }
+
+  // 未読の項目から、そのアイデアを開いてコメントを見せる
+  function openIdeaFromUnread(ideaId) {
+    closeUnreadPanel();
+    switchTab('ideas');
+    // 絞り込みで隠れていると開けないので解除する
+    $('search-keyword').value = '';
+    $('filter-category').value = '';
+    $('filter-status').value = '';
+    state.openIdeas.add(ideaId);
+    renderList();
+    const card = Array.from(document.querySelectorAll('.idea-card'))
+      .find(c => c.dataset.ideaId === ideaId);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    card.classList.add('is-flash');
+    setTimeout(() => card.classList.remove('is-flash'), 2000);
   }
 
   function labelForEvent(type) {
