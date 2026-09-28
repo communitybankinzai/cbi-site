@@ -1,3 +1,14 @@
+## 2026-09-28 📊 よく使う機能を数える／対象日を「⏱ 期間」へ／県の規制状況図の見出しの位置
+
+- **経緯**：事業主「全体的にいらない機能が多すぎる。どの機能をよく使うかカウントして一覧にできるか」「最上段の対象日は必要か」「県の規制状況の見出しがボタンとかぶる」（スマホの画面写し）。3件とも事業主決定A。
+- **よく使う機能**：送る側 `site/assets/cbi-feature-usage.js`（index.html で app.js の後に defer）。利用者が**実際に押したもの**だけを数える（`isTrusted`。チェックボックスは直前に押したそのもの・そのラベルの変化だけ＝「見たいもの」が中で `el.click()` したレイヤーは数えない。Chrome ではそれも isTrusted になるため）。名前の決め方は `keyOf`：`layer:<overlay>:on|off`・`preset:`・`legend:kind=…`・`range:`・`rain:`・`draw:`・`#id`・`open:<折りたたみ>`・`[data-x]`（乱数IDの値は捨てる）・`page:`／`link:<host>`、吹き出しは `map.on('popupopen')` で見出しの「：」「（」より前（`popup:🚫 通れない道`）。表示名はレイヤーなら `.layer-name` 直下の文字だけ。端末でまとめ、`visibilitychange`（hidden）と `pagehide` で `sendBeacon`（text/plain＝事前確認なし）。何も押さなくても1回は送る（割合の分母）。本番（github.io）以外・`?notiles`・`?cinema` では動かない。**手元の確認は `?trackdebug=1`**（送らず `window.__featureUsage`／`__featureUsageLastBody` に入る）。
+  - CiDAO `POST/GET /api/cbi-site-features`（検査は `src/lib/cbi-site-features.ts`・テスト3件・cidao bbd4564）、表 `cbi_feature_uses`（1訪問1行・view_id で上書き・migration 20260928170000・**本番適用済み**・pg_cron `cbi_feature_uses_cleanup` で90日削除）、集計は RPC `cbi_feature_ranking`。GET は集計だけ（乱数IDは返さない）。
+  - 管理画面「３D・防災MAP」タブの `#cbi-feature-ranking`（`admin/cbi-feature-ranking.js`）：順位・機能・種類・使った訪問・割合・押した回数・うちスマホ。**一覧に出ない機能＝その期間に一度も使われていない**。
+  - `data.html`（🔒 データの扱い）の「送っているもの」に1行追加。**送る内容を変えたら data.html も直すこと**。
+  - 検証：本番 API に試験の送信→集計に出る・よそのオリジンは403→試験の行は削除済み。ローカルで実クリック（期間・見たいもの・凡例・レイヤー）が過不足なく数えられることを確認。
+- **対象日**（版 app n／css g）：最上段の `<label class="date-field">` を消し、`#incident-date` を `#range-panel` の末尾「別の日を見る」（`.range-day`）へ移した（id は同じなので処理は従来どおり）。今日以外を選んでいる間は `syncTargetDayChip()` が「本日」ボタンを「9/21」のような日付にする。
+- **県の規制状況図の見出し**（版 app m）：`placePrefKiseiBadge()` が `#quick-record-bar` と地図の重なりを測り、その分だけ `margin-bottom` を付ける（スクロール・リサイズで測り直す）。以前はスマホで固定50pxで「通れない道を追加」に重なっていた。
+
 ## 2026-09-28 🔗 平時化・段階3：同じ場所・近い時間の情報を吹き出しで互いに添える
 
 - **決定（事業主A）**：地図側（app.js）だけで計算。保存・AI・費用なし。B（CiDAO側でAIが同じ出来事か判定して保存）・C（位置のあるものだけ）は不採用。
