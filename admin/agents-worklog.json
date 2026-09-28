@@ -10592,6 +10592,20 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "Anthropicの「その他」をN's factory負担と記録＋停電後の競合の写し3件を整理 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "レザークラフト/監理部/業務日誌.md（2026-09-28 申し送りの未決項目を決定に）",
+            "agents/a8-ledger/knowledge/accounting-rules/2026-09-28_Anthropic費用の按分と計上.md",
+            "MOC_CiDAO.md（写しの新しい版で本体を置き換え）",
+            "site/admin/agents-worklog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "中司さん決定：COCoLa-threads（7月$0.10）とキー不明のウェブ検索（8月$0.11）はN's factory負担、N's factory分は計$9.10。停電後のOneDrive競合の写し3件（MOC_エージェント・口座計画・MOC_CiDAO）は本体と比べ、MOC_CiDAOだけ写しが新しかった（別セッションの目次2行と説明の追記）ので本体へ戻してから、3件ともごみ箱へ移した。hours は累計204,749から前回記録分196,441を引いた8,308（0.1）\nsession: dd49830c-b5e4-47c6-96ac-4275bae6792e / output: 204,749 / cost: $75.66"
+        },
+        {
+          "date": "2026-09-28",
           "title": "既存支出のAI判定・承認→監事の質問を受けAnthropic費用をキー別に按分し計上し直し（購入3件を無効化・使用額3件を登録）＋N's factory監理幕僚へ申し送り 0.6時間",
           "category": "事務",
           "outputs": [
