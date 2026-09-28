@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "返答が英語になるのを止める Stop フック（CBI・N's factory 共通）＋手順書 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "CBI/.claude/check-japanese.js（新規）・CBI/.claude/settings.local.json（Stop フック登録）",
+            "レザークラフト/.claude/check-japanese.js（新規）・レザークラフト/.claude/settings.json（Stop フック登録）",
+            "agents/a1-core/knowledge/runbooks/japanese-reply-check.md（新規）",
+            "MOC_エージェント.md",
+            "メモリ feedback-always-japanese（再発と仕組みを追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主『日本語化するのに無駄なトークンを使っているので何とかしてほしい』→最後の返答の日本語の文字が35%未満（100字以上・コード/URL/パス除外）なら Stop で差し戻して書き直させるフックを CBI に入れ、続けて N's factory 側にも同じものを入れた。見本（英語は差し戻し・日本語/短文/書き直し後は素通し）と、このセッションの実際の記録で英語の一言を検出できることを確認。途中の一言は差し戻せない限界あり。前回記録(215,889)以降の差分で算出。session: e4863296-46a1-4300-a931-52b49665e4d1 / output: 227,581 / cost: $101.79"
+        },
+        {
+          "date": "2026-09-28",
           "title": "停電自動配信サービス事務局の回答確認・GASに添付取り出し機能追加・ヒアリングシート記入と提出 0.3時間",
           "category": "事務",
           "outputs": ["gas-mail-share/コード.gs（attachment アクション）", "gas-mail-share/README.md", "調整経緯/東電停電/（説明資料PDF・ヒアリングシート・記入案xlsx）", "調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md"],
