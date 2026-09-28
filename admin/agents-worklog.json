@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-28",
+          "title": "GTFSバス停地図ツール（千葉NT中央駅・高花）のMVP作成・実データ検証＋鉄道運行情報の取り込み可否の調査 0.5時間",
+          "category": "実装",
+          "outputs": ["tools/gtfs-bus-map/（main.py・config.py・busmap/ 6ファイル・requirements.txt・README.md・.env.example）", "cidao/2026-09-28_GTFSバス停地図ツール_千葉NT中央駅と高花.md", "MOC_CiDAO.md", ".claude/launch.json（gtfs-bus-map・8791）"],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "ちばレインボーバス GTFS（gtfs-data.jp・CC BY 4.0）で main.py 終了コード0（バス停129件・33系統）、shapes なし・入力なし・404 の動きと地図の色分け・ポップアップ・ON/OFF を確認。仮置き座標のずれ（中央駅 約4.4km）を GTFS のバス停位置に置き換え。鉄道はODPTにJR東日本（チャレンジ限定）のみ・京成/北総なしと報告。累計：session: 3d3c1679-eb84-4c0f-8893-bd54dcb00275 / output: 167,798 / cost: $51.04"
+        },
+        {
+          "date": "2026-09-28",
           "title": "防災MAP平時化 段階3（関連の自動表示）＋よく使う機能の計測（CiDAO＋管理画面）＋対象日の移動・規制状況図の見出し修正 0.7時間",
           "category": "実装",
           "outputs": ["site/inzai-disaster-map/app.js（relatedPool・relatedFor・relatedHtml・placePrefKiseiBadge・syncTargetDayChip）", "site/inzai-disaster-map/index.html・styles.css・data.html・CLAUDE_HANDOFF.md", "site/assets/cbi-feature-usage.js", "site/admin/cbi-feature-ranking.js・index.html・changelog.json", "C:/Repos/cidao src/app/api/cbi-site-features/route.ts・src/lib/cbi-site-features.ts・テスト3件", "C:/Repos/cidao supabase/migrations/20260928170000_cbi_feature_uses.sql（本番適用）"],
