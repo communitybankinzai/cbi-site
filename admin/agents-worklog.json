@@ -10961,12 +10961,10 @@
         },
         {
           "due": "2026-10-05",
-          "title": "💴 2026年6月分のAnthropic利用額（CBIのキー $1.63＝¥291）をCBIの台帳に足すか決める",
+          "title": "✅ 2026年6月分のAnthropic利用額（6/30 ¥291）を会計が承認し、監事（須田）に確認してもらう",
           "category": "事務",
           "priority": "中",
-          "status": "保留",
-          "blockedBy": "中司さんが、設立日（6/8）より前の利用を含めてCBIの経費にするか、6/8以降だけにするか、N's factory負担とするかを決めること",
-          "note": "2026-09-28 N's factory 監理のセッション f91bccbd からの申し送り：6月に cidao-production-v3 $0.92・cidao-enrichment-local $0.70、計 $1.63＝¥291（×1.1×6/30 ECB 162.44）。CBI台帳は7/1分からで未計上。1〜5月は cidao キーの利用なし。決めたら同じ按分方法（agents/a8-ledger/knowledge/accounting-rules/2026-09-28_Anthropic費用の按分と計上.md）で立替として登録し、会計承認・監事確認。N's factory 側の経費の扱い（監理部の業務日誌）とそろえること"
+          "note": "2026-09-28 中司さん決定：6月分は設立日（6/8）前も含めCBIの経費。cidao-production-v3 $0.92・cidao-enrichment-local $0.70、計 $1.6268×1.1×162.44（6/30 ECB）＝¥291 を中司立替で登録済み（AI判定 妥当・証憑 按分表CSV）。6月のクレジット購入の領収書は台帳に無く特定できない旨を按分表に注記。N's factory 側（f91bccbd の申し送り）と数字一致を確認。残りは会計承認と監事確認"
         },
         {
           "due": "2026-10-05",
