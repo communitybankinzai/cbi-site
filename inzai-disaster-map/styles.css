@@ -3659,6 +3659,7 @@ body.citizen-road-editing { overflow: hidden; }
 .sns-road-marker.is-passed { border-color: #1565c0; }
 .sns-road-marker.is-blocked { border-color: #b8322c; }
 .sns-road-marker.is-cleared { border-color: #2e7d32; }
+.sns-road-marker.is-caution { border-color: #e08a00; }
 .sns-road-marker.is-old { opacity: .55; }
 .sns-road-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 2px dashed #6b7c8c; vertical-align: -3px; margin-right: 4px; background: #fff; }
 .sns-road-swatch.is-passed { border-color: #1565c0; }

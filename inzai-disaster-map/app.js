@@ -6920,8 +6920,25 @@ let snsRoadsLoaded = false;
 let snsRoadsTimer = null;
 let snsRoadsData = [];
 
-function snsRoadKindLabel(kind) { return kind === "passed" ? "通れた" : kind === "blocked" ? "通れない" : "通行止め解除"; }
-function snsRoadGlyph(kind) { return kind === "passed" ? "🔵" : kind === "blocked" ? "🚫" : "✅"; }
+// caution（通れるが支障あり）と理由（cause）は 2026-09-28 平時のために追加（事業主決定：道路・交通の困りごと）
+const SNS_ROAD_KINDS = ["passed", "blocked", "cleared", "caution"];
+function snsRoadKindOf(report) { return SNS_ROAD_KINDS.includes(report?.kind) ? report.kind : "blocked"; }
+function snsRoadKindLabel(kind) { return kind === "passed" ? "通れた" : kind === "blocked" ? "通れない" : kind === "caution" ? "注意（通れるが支障あり）" : "通行止め解除"; }
+const SNS_ROAD_CAUSES = {
+  flood: { label: "冠水・浸水", glyph: "🌊" },
+  construction: { label: "工事", glyph: "🚧" },
+  accident: { label: "事故", glyph: "💥" },
+  fallen_tree: { label: "倒木・落下物", glyph: "🌳" },
+  damage: { label: "道路の傷み（陥没・段差など）", glyph: "🕳" },
+  congestion: { label: "渋滞", glyph: "🚗" },
+  other: { label: "その他", glyph: "⚠️" },
+};
+function snsRoadCauseLabel(cause) { return SNS_ROAD_CAUSES[cause]?.label || ""; }
+// 印の中の絵は、理由が分かれば理由の絵（枠の色で通れる／通れないを分ける）、分からなければ従来どおり種類の絵
+function snsRoadGlyph(kind, cause) {
+  if (kind !== "passed" && kind !== "cleared" && SNS_ROAD_CAUSES[cause]) return SNS_ROAD_CAUSES[cause].glyph;
+  return kind === "passed" ? "🔵" : kind === "blocked" ? "🚫" : kind === "caution" ? "⚠️" : "✅";
+}
 function snsRoadPlatformLabel(platform) {
   return platform === "threads" ? "Threads" : platform === "instagram" ? "Instagram" : platform === "bluesky" ? "Bluesky" : "SNS";
 }
@@ -7097,9 +7114,9 @@ function renderSnsRoads() {
     // SNSは「過去の実績」では出さない（2026-09-28 事業主指示：古い投稿が残り続けるのはよくない。台風25号などを選べば出る）
     if (!passesSnsWhenFilter(report.observedAt || report.postedAt)) return;
     // 凡例の「通れない道」「通れた道」ボタンも効かせる。解除（通れるようになった）は「通れた道」に合わせる（2026-09-25 事業主指示）
-    if (!passedKindFilter[report.kind === "blocked" ? "blocked" : "passed"]) return;
+    if (!passedKindFilter[report.kind === "blocked" || report.kind === "caution" ? "blocked" : "passed"]) return;
     if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
-    const kind = ["passed", "blocked", "cleared"].includes(report.kind) ? report.kind : "blocked";
+    const kind = snsRoadKindOf(report);
     const when = report.observedAt || report.postedAt;
     const timeLabel = report.observedAt ? "見た時刻" : "投稿時刻";
     const sourceUrl = /^https:\/\//.test(String(report.sourceUrl || "")) ? report.sourceUrl : "";
@@ -7114,13 +7131,14 @@ function renderSnsRoads() {
     const stackNote = (total > 1 ? `<br><span style="font-size:11px;color:#53677b;">同じ地点に${total}件の投稿があるため、印を少しずらして並べています。</span>` : "") +
       (sameOthers.length ? `<br><span style="font-size:11px;color:#53677b;">同じ内容の投稿が他に${sameOthers.length}件あります（1つの印にまとめています）：${sameOthers.map(o => `<a href="${escapeAttribute(o.sourceUrl || "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(formatDateTime(toDateTimeLocal(o.observedAt || o.postedAt)) || "")}</a>`).join("、")}</span>` : "");
     const marker = L.marker([report.lat, report.lng], {
-      icon: L.divIcon({ className: "", html: `<div class="sns-road-marker is-${kind}${report.hidden ? " is-old" : ""}">${snsRoadGlyph(kind)}</div>`, iconSize: [26, 26], iconAnchor: [13 - offset[0], 13 - offset[1]], popupAnchor: [offset[0], offset[1] - 12] }),
-      title: `SNS：${report.locationName || ""} ${snsRoadKindLabel(kind)}（未確認）`,
+      icon: L.divIcon({ className: "", html: `<div class="sns-road-marker is-${kind}${report.hidden ? " is-old" : ""}">${snsRoadGlyph(kind, report.cause)}</div>`, iconSize: [26, 26], iconAnchor: [13 - offset[0], 13 - offset[1]], popupAnchor: [offset[0], offset[1] - 12] }),
+      title: `SNS：${report.locationName || ""} ${snsRoadKindLabel(kind)}${snsRoadCauseLabel(report.cause) ? `・${snsRoadCauseLabel(report.cause)}` : ""}（未確認）`,
       zIndexOffset: 300
     });
     const hasPath = Array.isArray(report.path) && report.path.length >= 2;
     const popupHtml =
       `<strong>📡 SNSの投稿：${snsRoadKindLabel(kind)}</strong><br>` +
+      (snsRoadCauseLabel(report.cause) ? `理由：${escapeHtml(snsRoadCauseLabel(report.cause))}<br>` : "") +
       `<span class="sns-road-unverified">AIが投稿を読み取ったもの・CBIや市の確認はありません</span><br>` +
       (report.summary ? `${escapeHtml(report.summary)}<br>` : "") +
       // 元の投稿（写真）は上の方に置く。下に置くと吹き出しが地図の下へはみ出し、画面下の「通れない道を追加」の帯に隠れた（2026-09-25 事業主指摘）
@@ -7144,7 +7162,7 @@ function renderSnsRoads() {
     // 「A〜B」の区間は、国道464号の道路の形に沿った破線でも出す（市民の記録＝実線と区別）
     if (hasPath) {
       L.polyline(report.path, {
-        color: kind === "passed" ? "#1f6fd1" : kind === "cleared" ? "#2e8b57" : "#c62828",
+        color: kind === "passed" ? "#1f6fd1" : kind === "cleared" ? "#2e8b57" : kind === "caution" ? "#e08a00" : "#c62828",
         weight: 5, opacity: report.hidden ? 0.35 : 0.8, dashArray: "8 8"
       }).bindPopup(popupHtml, snsRoadPopupOptions()).addTo(snsRoadsLayer);
     }
@@ -7174,11 +7192,11 @@ async function loadSnsModerationList() {
     if (!snsRoadsData.length) { box.innerHTML = "<p>SNS由来の通行情報はまだありません。</p>"; return; }
     const confLabel = c => c === "high" ? "確度 高（公開中）" : c === "medium" ? "確度 中（運営のみ）" : "確度 低（運営のみ）";
     box.innerHTML = snsRoadsData.map(report => {
-      const kind = ["passed", "blocked", "cleared"].includes(report.kind) ? report.kind : "blocked";
+      const kind = snsRoadKindOf(report);
       const when = report.observedAt || report.postedAt;
       const sourceUrl = /^https:\/\//.test(String(report.sourceUrl || "")) ? report.sourceUrl : "";
       return `<div class="moderate-row ${report.hidden ? "is-hidden-row" : ""}">` +
-        `<div><strong>${snsRoadGlyph(kind)} ${escapeHtml(snsRoadKindLabel(kind))}（SNS）</strong> ${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "時刻不明")}` +
+        `<div><strong>${snsRoadGlyph(kind, report.cause)} ${escapeHtml(snsRoadKindLabel(kind))}${snsRoadCauseLabel(report.cause) ? `・${escapeHtml(snsRoadCauseLabel(report.cause))}` : ""}（SNS）</strong> ${escapeHtml(formatDateTime(toDateTimeLocal(when)) || "時刻不明")}` +
         `<span class="moderate-meta">${escapeHtml(report.locationName || "場所不明")}・${escapeHtml(snsRoadPlatformLabel(report.platform))}・${escapeHtml(confLabel(report.confidence))}` +
         `${report.summary ? "・" + escapeHtml(report.summary) : ""}${report.unlocated ? "・<em>場所を特定できず（地図に出ません）</em>" : report.hidden ? "・<em>伏せ済み</em>" : ""}</span></div>` +
         `<div class="moderate-row-buttons">` +
