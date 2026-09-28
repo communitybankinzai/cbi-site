@@ -5616,13 +5616,14 @@ const UNREAD_POLL_MS = 30000;
   const ORG_THEMES = [
     { name: '防災MAP（印西市 災害状況整合MAP）', desc: '避難所・ハザード・気象・通行止め・市民の冠水と「通れた道」の記録を1つの地図で確かめられる仕組み', re: /防災MAP|災害|disaster|冠水|被害マップ|通れた道|避難|水位|通行止め|内水/i },
     { name: '3Dワールド（メタバース印西）', desc: '印西市の街並みを3Dで飛び回り、市の文化財50件を学べる仕組み', re: /メタバース|３D|3D|metaverse|文化財|夜景|鳶|白鳥|タイムトライアル|bunkazai|冒険|ずかん/i },
-    { name: '卒業論文（印西市民アカデミー）', desc: '', re: /卒論|卒業論文|thesis|アカデミー|academy/i },
     { name: 'CiDAO（市民の提案・投票・人材バンク）', desc: '市民が地域の課題を提案し、投票し、担い手とつながる仕組み', re: /CiDAO|FreeFree|人材バンク|提案|投票|団体一覧|イベントカレンダー/i },
     { name: 'イベントへの参加・出展', desc: '', re: /イルミライ|武蔵屋|だんご|マルシェ|出展/ },
     { name: '広報・SNS発信', desc: '', re: /SNS|Threads|Instagram|告知|ポスター|広報|note/i },
     { name: '公式サイト', desc: '', re: /site|トップページ|uniqueness|サイト|privacy|参加方法/i },
     { name: '団体運営（管理画面）', desc: '会計・書類・予定の管理', re: /管理画面|admin|agents|エージェント|収支|予算|団体書類|GAS/i },
   ];
+  // 活動報告書に載せない更新。卒業論文はCBIの活動ではない（CBIの活動を紹介しただけで、作成にCBIは関わっていない）ため、件数からも外す（2026-09-28 事業主決定・案A）
+  const ORG_EXCLUDE = /卒論|卒業論文|thesis|アカデミー|academy/i;
 
   // 書類に載せる団体情報（未入力は既定値）
   function orgInfo() {
@@ -5925,7 +5926,7 @@ const UNREAD_POLL_MS = 30000;
     const people = list.reduce((s, a) => s + (Number(a.participants) || 0), 0);
     const byProj = {};
     list.forEach(a => { const k = a.project || '（未設定）'; byProj[k] = (byProj[k] || 0) + 1; });
-    const cl = ((state.org.changelog && state.org.changelog.entries) || []).filter(e => e.date && fiscalYearOf(e.date) === fy);
+    const cl = ((state.org.changelog && state.org.changelog.entries) || []).filter(e => e.date && fiscalYearOf(e.date) === fy && !ORG_EXCLUDE.test(`${e.target || ''} ${e.title || ''}`));
     // 更新先（target）は書き方がばらばらなので、更新の種類でまとめる
     const CL_TYPE = { feature: '機能の追加', fix: '不具合の修正', content: '内容の更新', docs: '資料の作成・更新', deploy: '公開作業' };
     const clByTarget = {};
