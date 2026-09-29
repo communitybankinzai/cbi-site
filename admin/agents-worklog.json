@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-29",
+          "title": "台風25号に伴う市主催イベントの中止・延期をCiDAOカレンダーへ反映（8件更新）0.1時間",
+          "category": "保守",
+          "outputs": ["CiDAO events（本番DB）：まちフェス・スポーツ健康フェス・総合防災訓練＝【中止】＋cancelled、おさがりマルシェ＝【延期】1件＋重複4件を draft"],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "市LINE・市HP 0000022625（9/29）を受けて対応。事業主決定：中止は状態も cancelled、マルシェは広報PDF由来の cbb66100 を残し重複4件を下書きへ、下書きだった防災訓練は【中止】で公開。ペット防災避難訓練（10/18）は CiDAO に未登録。本番 /events?ym=2026-10 と詳細ページで表示を確認。\nsession: b217f959-6d9a-4587-8eb4-27abcefe5c65 / output: 11,449 / cost: $3.29"
+        },
+        {
+          "date": "2026-09-29",
           "title": "防災MAP 雨量しぼり込み時のみんつく表示の調査と修正（絞り込み中は非表示）0.1時間",
           "category": "保守",
           "outputs": ["site/inzai-disaster-map/app.js", "site/inzai-disaster-map/index.html", "site/admin/changelog.json"],
@@ -8242,6 +8251,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📅 おさがりマルシェの延期後の日程が市から出たら、CiDAO のイベント（cbb66100）の日時を直し【延期】を外す",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "印西市（クリーン推進課）が延期後の日程を発表すること",
+          "note": "2026-09-29 に台風25号対応で【延期】を付けた。重複していた4件（d3fcec5f・d343072c・07f70c73・664a6231）は draft にしてある。市は中止・延期の追加があり得ると告知しているので、市HP 0000022625 に追加があれば同じ手順で直す"
+        },
         {
           "due": "2026-10-03",
           "title": "🗾 千葉県被害マップ（chiba-typhoon25）の自動取り込みが、新しい報に無い項目（床上浸水など）で前の報の値を消している疑いを直す",
