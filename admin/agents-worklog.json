@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-09-29",
+          "title": "防災MAPへの県ライフライン発表（台風25号復旧・26号への注意）の反映：検討→「いまの雨」に土砂キキクル追加＋タイムラインへ手動登録 0.2時間",
+          "category": "実装",
+          "outputs": ["site/inzai-disaster-map/app.js（PRESETS.rain に kikikuruLand）・index.html（版 app 20260929a）", "site/admin/changelog.json", "CiDAO DB disaster_info_sources（kind=manual『公式発表（運営が確認して手で登録）』新設）・disaster_timeline_items（県の発表1件）"],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主決定A。県PDF（sinchokuhoukoku2・7ページ）を全ページ確認し、印西市内の場所・状況の記載が無いため地図には置かず、タイムライン（時刻はPDF掲載の9/28 18:21）と土砂キキクルで対応。manual の情報源がDBに1件も無かったため新設。本番でプリセットのON/OFFとタイムライン表示（3日分）を確認。site 2835d85。session: 4a2dcb1e-5e11-45ba-955f-02a0b9d988a7 / output: 23,454 / cost: $7.43"
+        },
+        {
           "date": "2026-09-28",
           "title": "防災MAPの鉄道運休欄に事業者の運行情報リンク追加＋ふれあいバスGTFSの市への問い合わせ（下書き作成・送信確認）＋運行情報APIの説明修正 0.3時間",
           "category": "実装",
@@ -8179,6 +8188,24 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🌀 台風26号：CiDAO の巡回間隔（SNS 30分・公式発表 毎時）をいつ元へ戻すか決める",
+          "category": "保守",
+          "priority": "高",
+          "status": "保留",
+          "blockedBy": "事業主が戻す合図（例：県か市の大雨の注意の発表）を決めること。戻すと Vercel の無料枠（Active CPU）を使う量が増え、9/5・9/20 のように上限に届くおそれ",
+          "note": "2026-09-29 県が台風26号の接近と地盤の緩みを発表。戻すのは python scripts/vercel-cpu-cron-slow.py --restore（DB 接続は pooler 経由が必要。memory supabase-connect-via-pooler 参照）"
+        },
+        {
+          "due": "未定",
+          "title": "🌀 台風26号で被害が出たら、防災MAPに「台風26号」の災害ボタン（recordEvents・市のページへのリンク）を足す",
+          "category": "実装",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "台風26号の通過と、市が被害状況のページ（URL）を出すこと",
+          "note": "CLAUDE_HANDOFF の『災害ボタンを押すと市の発表へのリンク』節の手順どおり。県の進捗報告PDFは第3報以降でファイル名が変わる見込みなので、タイムラインの手動登録のリンクもそのとき見直す"
+        },
         {
           "due": "未定",
           "title": "🗺 防災MAP（スマホ）：地図の出典表示（Leaflet｜地理院タイル）が記録バーの ⛰・📋 ボタンの下端に重なっているのを直すか決める",
