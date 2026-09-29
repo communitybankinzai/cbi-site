@@ -16,6 +16,17 @@
   "agents": {
     "A1": {
       "actuals": [
+      {
+        "date": "2026-09-30",
+        "title": "防災MAP『ルート修正ができない』の調査・原因特定（端末の運営合言葉が未保存）0.1時間",
+        "category": "調査",
+        "outputs": [
+          "調査のみ（site/ の変更なし）。passed-roads API の GET・PATCH を正しい合言葉／誤った合言葉で検証（PATCH は誤りで403・正で200、記録は同値上書きで変化なし）"
+        ],
+        "hours": 0.1,
+        "partnerApproved": false,
+        "note": "事業主報告：吹き出しに『時刻・メモを直す』『線を直す』が出ない。app.js の passedRoadHideButtonHtml は localStorage の運営合言葉がある端末だけボタンを出す作り。サーバー側（cidao PATCH）は credentials.md の合言葉で通ることを確認したので、新PCのブラウザに合言葉が未保存（または403で自動削除）が原因。対処は『⚙ 運営用→🗑 市民記録の管理→一覧を読み直す』で合言葉を入れ直す。\nsession: e6cdb2f7-8b64-4b64-8c4d-f97aaddcaa72 / output: 8,994 / cost: $4.27"
+      },
         {
           "date": "2026-09-29",
           "title": "台風25号に伴う市主催イベントの中止・延期をCiDAOカレンダーへ反映（8件更新）0.1時間",
