@@ -3066,9 +3066,11 @@ const PRESETS = {
     openGroups: ["🏫"],
     focus: "layer-panel"
   },
+  // 土砂キキクルは前に降った雨も数に入れる（土壌雨量指数）。大雨の後は
+  // 少ない雨でも崩れるおそれがあるため、いまの雨と一緒に出す（2026-09-29 県の台風26号への注意を受けて）
   rain: {
     label: "いまの雨",
-    on: ["boundary", "records", "rainNowcast", "kikikuruInund", "kikikuruFlood"],
+    on: ["boundary", "records", "rainNowcast", "kikikuruInund", "kikikuruFlood", "kikikuruLand"],
     openGroups: ["🌧"],
     focus: "layer-panel"
   },
