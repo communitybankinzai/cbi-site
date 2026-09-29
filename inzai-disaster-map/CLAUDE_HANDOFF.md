@@ -305,6 +305,8 @@
 
 ## ⚠ 2026-09-20 自動巡回の間隔を一時的に延ばしている（Vercel の CPU 無料枠対策）
 
+> **2026-09-29 から自動で切り替わる**（事業主決定・cidao 563e092・migration `20260929110000_disaster_cron_mode.sql`・本番適用済み）。印西市（1223100）に**雨・風・土砂の注意報**（大雨10・土砂災害29・洪水18・強風15・高潮19・風雪13）か**いずれかの警報・特別警報**が出ている間と、**すべて解除されてから3時間**は速く（SNS `*/5`・公式発表 `*/10`）、それ以外は平常（SNS `*/30`・公式発表 `0 * * * *`）。雷・乾燥・濃霧・霜・低温などの注意報だけでは切り替えない（乾燥は冬に何週間も続くため）。判定は DB の中だけ（Vercel を使わない）：pg_cron `cidao_disaster_cron_mode_fetch`（`*/10`）が pg_net で気象庁 `bosai/warning/data/r8/120000.json` を取り、`cidao_disaster_cron_mode`（`2-59/10`）が `public.disaster_cron_mode_tick()` で応答を読み `cron.alter_job` する。状態（mode・activeCodes・triggerCodes・lastTriggeredAt・normalAfter・checkedAt・error）は `app_settings.disaster_cron_mode`。応答が無い・形が違うときは間隔を変えず error だけ残す。**⚠ 下の `--restore` などで手で変えても最長10分で上書きされる**。通行止め（`cidao_road_closures`）と県の規制状況図（`cidao_pref_road_kisei`）は対象外（30分ごとのまま）。試験は `select public.disaster_cron_mode_tick(<作ったJSON>, <時刻>, false)`（間隔も状態も変えない）。以下は切り替え導入前の記録。
+
 CiDAO を動かす Vercel の無料枠「Fluid Active CPU 月4時間」が 100% に達した警告が届いた（8/26 75% → 9/5 100% → 9/20 100%）。超えると CiDAO が自動で一時停止され、この MAP の避難所・公式発表・SNS巡回・冠水・通れた道の層と、3Dワールドの受付も止まる。応急処置として、Supabase の pg_cron のうち Vercel を呼ぶ2本の間隔を延ばした：**`cidao_disaster_sns_monitor` `*/5`→`*/30`、`cidao_disaster_timeline` `*/10`→`0 * * * *`（毎時）**。下の「5分ごと」「10分ごと」の記述は元の設計値。**大雨などの災害時は `python scripts/vercel-cpu-cron-slow.py --restore`（CBI 直下の scripts）で元に戻す**。一覧は `python scripts/supabase-cron-list.py`。pg_cron 11本のうち Vercel を呼ぶのはこの2本だけ（ほかは DB 内の処理）。画面の文言には間隔を書いていないので変更なし。
 
 ## SNS自動巡回

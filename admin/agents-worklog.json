@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-29",
+          "title": "災害巡回の間隔を印西市の注意報・警報で自動切替（DB内で判定・pg_cron＋pg_net）0.3時間",
+          "category": "実装",
+          "outputs": ["C:/Repos/cidao supabase/migrations/20260929110000_disaster_cron_mode.sql（本番適用済み・cidao 563e092）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md（巡回間隔の節）"],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主決定：条件＝雨・風・土砂の注意報＋全警報（雷・乾燥等は除く）、戻す時期＝解除から3時間後、対象＝SNSと公式発表の2本。作ったJSONで7通り＋3時間保持を試験（試験の状態は消去）。本番初回 11:12 に雷注意報のみ→平常と判定し SNS */5→*/30・公式発表 */10→毎時 に自動変更を確認。着手時は台風25号以降速いままだった。予定『巡回間隔をいつ戻すか』は解決のため plans から外した。session: 4a2dcb1e-5e11-45ba-955f-02a0b9d988a7 / output: 48,888（前回記録から+25,434）/ cost: $12.78"
+        },
+        {
+          "date": "2026-09-29",
           "title": "船橋市の通行止め（X投稿が案内する市のページ）を防災MAPへ：巡回の追加（task-high に実装委託）＋位置図7枚の照合と6区間の線入れ＋本番確認 0.9時間",
           "category": "実装",
           "outputs": ["CiDAO src/lib/disaster-road-closures.ts・disaster-timeline.ts・テスト2本（1836d23・task-high）", "CiDAO DB disaster_info_sources（通行止め：船橋市 57b5ac70）・disaster_road_closures.path（6件）", "site/inzai-disaster-map/app.js・index.html（app 20260929b）・CLAUDE_HANDOFF.md", "site/admin/changelog.json"],
@@ -8214,15 +8223,6 @@
           "status": "待ち",
           "blockedBy": "船橋市が『通行止めについて（お知らせ）』の表から行を消すこと（2026-09-29 時点で7件とも継続中）",
           "note": "外れなければ cidao road-closure-city-table（scanCityTable）を確認。新しい箇所が増えたときは線を運営が写して path を PATCH する"
-        },
-        {
-          "due": "未定",
-          "title": "🌀 台風26号：CiDAO の巡回間隔（SNS 30分・公式発表 毎時）をいつ元へ戻すか決める",
-          "category": "保守",
-          "priority": "高",
-          "status": "保留",
-          "blockedBy": "事業主が戻す合図（例：県か市の大雨の注意の発表）を決めること。戻すと Vercel の無料枠（Active CPU）を使う量が増え、9/5・9/20 のように上限に届くおそれ",
-          "note": "2026-09-29 県が台風26号の接近と地盤の緩みを発表。戻すのは python scripts/vercel-cpu-cron-slow.py --restore（DB 接続は pooler 経由が必要。memory supabase-connect-via-pooler 参照）"
         },
         {
           "due": "未定",
