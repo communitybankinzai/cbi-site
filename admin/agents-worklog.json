@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-29",
+          "title": "船橋市の通行止めの見張り（自動処理が失敗したときだけ声で知らせる Windows タスク）を作成・登録・試験 0.3時間",
+          "category": "保守",
+          "outputs": ["scripts/road_closure_watch.py・road_closure_watch_speak.ps1・run_road_closure_watch.vbs・register_road_closure_watch.ps1（CBI 直下・git 管理外）", "Windows タスク CBI-通行止め見張り（30分ごと）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md"],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主決定：①解除の確認＝A（待つ）②鈴身町＝A（保留）＋『自動が前提で、ダメだった時の音声通知を実施』。タスク経由の実行で終了コード0・ログ『異常なし（市7件・一覧7件）』、食い違い80分と巡回失敗を模した判定、声の試験（タスク経由・終了コード0）を確認。この追加分は output 25,442（0.9時間の記録以降の差分）。session: be74836d-6308-4c2e-822c-89a5347aa44b / output: 115,760 / cost: $28.00"
+        },
+        {
+          "date": "2026-09-29",
           "title": "災害巡回の間隔を印西市の注意報・警報で自動切替（DB内で判定・pg_cron＋pg_net）0.3時間",
           "category": "実装",
           "outputs": ["C:/Repos/cidao supabase/migrations/20260929110000_disaster_cron_mode.sql（本番適用済み・cidao 563e092）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md（巡回間隔の節）"],
@@ -8222,7 +8231,7 @@
           "priority": "中",
           "status": "待ち",
           "blockedBy": "船橋市が『通行止めについて（お知らせ）』の表から行を消すこと（2026-09-29 時点で7件とも継続中）",
-          "note": "外れなければ cidao road-closure-city-table（scanCityTable）を確認。新しい箇所が増えたときは線を運営が写して path を PATCH する"
+          "note": "2026-09-29 事業主決定A＋『自動が前提・ダメだった時は音声通知』：Windows タスク CBI-通行止め見張り（30分ごと・scripts/road_closure_watch.py）が市のページの表と API を突き合わせ、市が消した行が75分以上残る・読み取り失敗・巡回2時間停止のときだけ声で知らせる。正しく外れたら scripts/_road_closure_watch.log に『一覧から外れた（解除として記録）』と残るので、それを見てこの予定を閉じる。外れなければ cidao road-closure-city-table（scanCityTable）を確認"
         },
         {
           "due": "未定",
