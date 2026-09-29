@@ -5751,7 +5751,7 @@ function renderRoadClosures() {
       (roadClosureContinuedText(item) ? `<span class="road-closure-meta closure-continued">⏳ ${escapeHtml(roadClosureContinuedText(item))}</span>` : "") +
       (item.url ? `<a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">出典：${escapeHtml(roadClosureSourceName(item.sourceLabel))} ↗</a>` : "") +
       // 線の無い件は、役所の位置図（区間を赤線で描いた地図）で場所を見てもらう
-      (item.mapUrl ? `<br><a href="${escapeAttribute(item.mapUrl)}" target="_blank" rel="noreferrer">📍 位置図（${escapeHtml(roadClosureSourceName(item.sourceLabel))}のPDF） ↗</a>` : "") +
+      (item.mapUrl ? `<br><a href="${escapeAttribute(item.mapUrl)}" target="_blank" rel="noreferrer">📍 位置図（${escapeHtml(roadClosureSourceName(item.sourceLabel))}の${/\.pdf(?:$|[?#])/i.test(item.mapUrl) ? "PDF" : "ページ"}） ↗</a>` : "") +
       // 線の無い件は吹き出しが無いので、名前の一致した市民の記録・SNSをここに添える（段階3）
       (onMapLine ? "" : relatedHtmlFor(`closure:${item.id}`)) +
       `</li>`;
@@ -5784,7 +5784,7 @@ function renderRoadClosures() {
     (hiddenByWhen && periodSelected ? `<p class="road-closure-warn">⏱ 期間の指定で ${hiddenByWhen}件を隠しています（発表が古い通行止めも、解除されるまでは通れません）。凡例の「⏱ 期間」で「すべて」にすると出ます。</p>` : "") +
     (failed.length ? `<p class="road-closure-warn">⚠ 前回 ${failed.map(s => escapeHtml(s.label)).join("・")} を読めませんでした。出典のページで確認してください。</p>` : "") +
     `<p class="road-closure-note">確認先：${sources.map(s => s.url ? `<a href="${escapeAttribute(s.url)}" target="_blank" rel="noreferrer">${escapeHtml(roadClosureSourceName(s.label))}</a>` : escapeHtml(s.label)).join("／") || "―"}` +
-    `${lastFetched ? `<br>最終確認：${escapeHtml(roadClosureTime(lastFetched, true))}（佐倉市・印西市は30分ごと、ほかは1時間ごと）` : ""}</p>`;
+    `${lastFetched ? `<br>最終確認：${escapeHtml(roadClosureTime(lastFetched, true))}（佐倉市・印西市・船橋市は30分ごと、ほかは1時間ごと）` : ""}</p>`;
   listEl.hidden = false;
 }
 
