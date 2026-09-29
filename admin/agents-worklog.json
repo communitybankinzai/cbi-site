@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-29",
+          "title": "船橋市の通行止め（X投稿が案内する市のページ）を防災MAPへ：巡回の追加（task-high に実装委託）＋位置図7枚の照合と6区間の線入れ＋本番確認 0.9時間",
+          "category": "実装",
+          "outputs": ["CiDAO src/lib/disaster-road-closures.ts・disaster-timeline.ts・テスト2本（1836d23・task-high）", "CiDAO DB disaster_info_sources（通行止め：船橋市 57b5ac70）・disaster_road_closures.path（6件）", "site/inzai-disaster-map/app.js・index.html（app 20260929b）・CLAUDE_HANDOFF.md", "site/admin/changelog.json"],
+          "hours": 0.9,
+          "partnerApproved": false,
+          "note": "事業主決定：見張り＝市のページを巡回（Xは購読しない）、地図＝運営が位置図から線を写す（途中で『一覧のみ』から決め直し）。線は国土地理院の番地検索・道路中心線・航空写真と位置図を突き合わせて6区間。鈴身町186は道が道路中心線に無く確かめきれず線なし。session: be74836d-6308-4c2e-822c-89a5347aa44b / output: 90,318 / cost: $17.71"
+        },
+        {
+          "date": "2026-09-29",
           "title": "防災MAPへの県ライフライン発表（台風25号復旧・26号への注意）の反映：検討→「いまの雨」に土砂キキクル追加＋タイムラインへ手動登録 0.2時間",
           "category": "実装",
           "outputs": ["site/inzai-disaster-map/app.js（PRESETS.rain に kikikuruLand）・index.html（版 app 20260929a）", "site/admin/changelog.json", "CiDAO DB disaster_info_sources（kind=manual『公式発表（運営が確認して手で登録）』新設）・disaster_timeline_items（県の発表1件）"],
@@ -8188,6 +8197,24 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🚧 船橋市 鈴身町186付近の通行止めに線を入れるか決める（位置図の道が地理院の道路中心線に無い）",
+          "category": "実装",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "現地の道の形が分かる資料（現地写真・市の道路台帳の閲覧・住民の記録）が得られること。候補2通りはどちらも位置図と曲がり方が合わない",
+          "note": "2026-09-29。一覧には出ており位置図リンクあり。候補B＝rdcl 90→96→153→157（標高の上がり方は合う）。手順は site/inzai-disaster-map/CLAUDE_HANDOFF.md 2026-09-29 節"
+        },
+        {
+          "due": "未定",
+          "title": "🚧 船橋市の通行止めが初めて解除されたとき、一覧・地図の線から外れるかを確かめる",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "船橋市が『通行止めについて（お知らせ）』の表から行を消すこと（2026-09-29 時点で7件とも継続中）",
+          "note": "外れなければ cidao road-closure-city-table（scanCityTable）を確認。新しい箇所が増えたときは線を運営が写して path を PATCH する"
+        },
         {
           "due": "未定",
           "title": "🌀 台風26号：CiDAO の巡回間隔（SNS 30分・公式発表 毎時）をいつ元へ戻すか決める",
