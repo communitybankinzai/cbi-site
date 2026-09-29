@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-29",
+          "title": "防災MAP 雨量しぼり込み時のみんつく表示の調査と修正（絞り込み中は非表示）0.1時間",
+          "category": "保守",
+          "outputs": ["site/inzai-disaster-map/app.js", "site/inzai-disaster-map/index.html", "site/admin/changelog.json"],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "中司さんの質問「1時間20mmで絞るとみんつくの線が出る。雨量データは付いていたか」を調査：みんつくは雨量を持たず、renderKansuiLayer が期間の条件しか見ていないため全件出ていた。事業主が3案から案1（絞り込み中は隠す）を選択。ローカル4173で 絞り込み前105〜116本→中0本→解除で同範囲105本に戻ることを確認（site 8735825）。\nsession: 032419f7-3b22-4782-832e-9ce0f60fbfc8 / output: 12,454 / cost: $4.06"
+        },
+        {
+          "date": "2026-09-29",
           "title": "東電PG高田氏の途中連絡の確認と返信（下書き作成・送信確認）0.1時間",
           "category": "事務",
           "outputs": ["調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md（9/29 途中連絡・返信）"],
