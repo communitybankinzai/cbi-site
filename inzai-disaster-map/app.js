@@ -6957,6 +6957,12 @@ function renderKansuiLayer() {
   let shown = 0;
   let todayCount = 0;
   kansuiHiddenImplausible = 0;
+  // 雨量でしぼり込み中は出さない。みんつくの投稿は雨量を持たず、出したままだと雨量で選ばれた線に見えるため（2026-09-29 中司さん指摘）
+  // rainVerdictFilter の代入はファイル後方なので、初期化の早い段階では未定義（その間はしぼり込みなし）
+  if (typeof rainVerdictFilter !== "undefined" && rainVerdictFilter && rainFilterActive()) {
+    setKansuiStatus(`雨量でしぼり込み中のため非表示（投稿に雨量が無いため）・全${kansuiData.length}件`);
+    return;
+  }
   kansuiData.forEach(road => {
     if (isImplausibleKansuiLine(road.path)) { kansuiHiddenImplausible += 1; return; }
     const isToday = isTargetDayRecord(road.createdAt);
@@ -8944,7 +8950,7 @@ function rainVerdictOf(road) {
 // ☔ 記録した時刻の雨量でしぼり込む（2026-09-23 中司さんの要望）。
 // 3つとも押された状態（既定）はしぼり込みなし＝雨量を取れなかった記録も出す。
 // 1つでも外すと、選んだ判定の記録だけを出す（雨量なし・取得失敗は外れる）。
-// みんつくの投稿（kansui）は雨量を持たないため対象外（注記を凡例に出す）。
+// みんつくの投稿（kansui）は雨量を持たないため、しぼり込み中は地図に出さない（注記を凡例に出す）。
 var rainVerdictFilter = { flood_likely: true, light_rain: true, no_rain: true };
 // 💧 積算雨量のしぼり込み（2026-09-23 追加指示）。window は r1h／r3h／r24h、min は mm（null＝未指定）
 var rainAmountFilter = { window: "r24h", min: null };
@@ -8985,12 +8991,13 @@ function syncRainFilterNote() {
   chip.textContent = active ? `💧 ${parts.join(" ／ ")}` : "💧 雨量";
   chip.setAttribute("aria-pressed", String(active));
   chip.title = active
-    ? "記録した時刻の雨量でしぼり込み中（みんつくの投稿は雨量が無いため対象外）。押すと変更・解除"
+    ? "記録した時刻の雨量でしぼり込み中（みんつくの投稿は雨量が無いため、しぼり込み中は表示しません）。押すと変更・解除"
     : "記録した時刻の雨量でしぼり込む（雨の有無・積算雨量）";
 }
 
 function applyRainFilter() {
   syncRainFilterNote();
+  renderKansuiLayer();
   renderPassedRoadsLayer();
   renderPassedRoadsList();
 }

@@ -775,7 +775,7 @@
               <button type="button" data-rain-min="50">50mm以上</button>
             </div>
             <label>この値以上 <input type="number" id="rain-min-input" min="0" max="500" step="1" inputmode="numeric"> mm</label>
-            <p class="range-note" id="rain-note">上の3つは、記録した時刻の前後の雨から付けた目安です（周辺4か所のアメダスの平均。<a href="./rain-logic.html" target="_blank" rel="noopener">考え方・数値を変えて試す ↗</a>）。下は、記録した時刻までの積算雨量（同じ平均）でしぼり込みます。印西市内に観測点がないため、実際の雨量とは差があります。<br><strong>みんつく千葉冠水マップの投稿は対象外です。</strong>本家のデータに「いつ冠水したか」が入っておらず、投稿された日時しか分からないためです（8月13日の豪雨の冠水が、雨の降らなかった8月24〜26日に3,416件まとめて投稿されています）。</p>
+            <p class="range-note" id="rain-note">上の3つは、記録した時刻の前後の雨から付けた目安です（周辺4か所のアメダスの平均。<a href="./rain-logic.html" target="_blank" rel="noopener">考え方・数値を変えて試す ↗</a>）。下は、記録した時刻までの積算雨量（同じ平均）でしぼり込みます。印西市内に観測点がないため、実際の雨量とは差があります。<br><strong>みんつく千葉冠水マップの投稿は、しぼり込み中は地図に出しません。</strong>本家のデータに「いつ冠水したか」が入っておらず、投稿された日時しか分からないためです（8月13日の豪雨の冠水が、雨の降らなかった8月24〜26日に3,416件まとめて投稿されています）。</p>
             <div class="range-actions">
               <button type="button" id="rain-apply">この雨量で見る</button>
               <button type="button" id="rain-clear">解除</button>
@@ -1884,7 +1884,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260928a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20260929b"></script>
+    <script src="./app.js?v=20260929c"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
