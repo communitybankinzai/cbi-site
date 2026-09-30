@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-30",
+      "type": "docs",
+      "target": "inzai-disaster-map",
+      "title": "防災MAPの引継ぎ文書が、雨量しぼり込み中はみんつくの投稿を出さない今の動きに合った内容になった",
+      "detail": "CLAUDE_HANDOFF.md の「💧 雨量」節（9/24）に『みんつくの投稿は対象外』とだけ残っていたのを、9/29 の修正（絞り込み中は非表示・状態欄に理由・解除で戻る・初期化順の注意・app 20260929c）に書き換えた。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-09-30",
       "type": "content",
       "target": "assets/sns",
       "title": "防災MAPの停電表示を知らせるSNS投稿の画像と本文を置いた（Threads・Instagram・Facebook）",
