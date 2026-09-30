@@ -410,9 +410,13 @@
             <summary>⚡ いまの停電（東京電力パワーグリッド）</summary>
             <div class="acc-body">
               <label class="live-layer-label"><input type="checkbox" data-overlay="teiden"> <span class="layer-name">⚡ 印西市の停電を地図に円で表示<span id="teiden-status">ONにすると読み込みます</span></span></label>
-              <p class="teiden-note">東京電力パワーグリッド株式会社の停電情報（印西市）を、地区の代表点に円で表示します。<strong>円の位置は地区の代表点で、停電の範囲そのものではありません。</strong>軒数は東京電力の発表どおりです。ONの間は10分ごとに読み直します。</p>
-              <p class="teiden-note">東京電力パワーグリッドの<strong>千葉県の停電情報（いま発生中）</strong>の画面をそのまま表示しています。市町村ごとの停電軒数が出て、「印西市」を押すと地区ごとの軒数と復旧見込みが出ます。<strong>この地図が数値を加工して表示しているものではありません。</strong></p>
-              <p class="teiden-note">軒数が「-」のままのときや更新時刻が出ないときは、アクセスの集中などで読み込めていないことがあります。<strong>下の「別の画面で開く」から東京電力のページを直接開いてください。</strong></p>
+              <!-- 2026-09-30 事業主指示：説明がくどいので、読みたい人だけ開く。出典の行は東電の条件なので下に常に出したまま -->
+              <details class="teiden-more">
+                <summary>ⓘ 説明を読む</summary>
+                <p class="teiden-note">東京電力パワーグリッド株式会社の停電情報（印西市）を、地区の代表点に円で表示します。<strong>円の位置は地区の代表点で、停電の範囲そのものではありません。</strong>軒数は東京電力の発表どおりです。ONの間は10分ごとに読み直します。</p>
+                <p class="teiden-note">東京電力パワーグリッドの<strong>千葉県の停電情報（いま発生中）</strong>の画面をそのまま表示しています。市町村ごとの停電軒数が出て、「印西市」を押すと地区ごとの軒数と復旧見込みが出ます。<strong>この地図が数値を加工して表示しているものではありません。</strong></p>
+                <p class="teiden-note">軒数が「-」のままのときや更新時刻が出ないときは、アクセスの集中などで読み込めていないことがあります。<strong>下の「別の画面で開く」から東京電力のページを直接開いてください。</strong></p>
+              </details>
               <div class="teiden-frame">
                 <iframe data-src="https://teideninfo.tepco.co.jp/html/12000000000.html" title="東京電力パワーグリッド 停電情報（千葉県）" loading="lazy" referrerpolicy="no-referrer"></iframe>
               </div>
