@@ -414,12 +414,9 @@
               <details class="teiden-more">
                 <summary>ⓘ 説明を読む</summary>
                 <p class="teiden-note">東京電力パワーグリッド株式会社の停電情報（印西市）を、地区の代表点に円で表示します。<strong>円の位置は地区の代表点で、停電の範囲そのものではありません。</strong>軒数は東京電力の発表どおりです。ONの間は10分ごとに読み直します。</p>
-                <p class="teiden-note">東京電力パワーグリッドの<strong>千葉県の停電情報（いま発生中）</strong>の画面をそのまま表示しています。市町村ごとの停電軒数が出て、「印西市」を押すと地区ごとの軒数と復旧見込みが出ます。<strong>この地図が数値を加工して表示しているものではありません。</strong></p>
-                <p class="teiden-note">軒数が「-」のままのときや更新時刻が出ないときは、アクセスの集中などで読み込めていないことがあります。<strong>下の「別の画面で開く」から東京電力のページを直接開いてください。</strong></p>
+                <p class="teiden-note">地区ごとの復旧見込みや、千葉県全体の停電は、下のリンクから東京電力パワーグリッドのページで確認してください。</p>
               </details>
-              <div class="teiden-frame">
-                <iframe data-src="https://teideninfo.tepco.co.jp/html/12000000000.html" title="東京電力パワーグリッド 停電情報（千葉県）" loading="lazy" referrerpolicy="no-referrer"></iframe>
-              </div>
+              <!-- 2026-10-01 事業主指示：左の列の東京電力の画面の埋め込み（千葉県の表）は狭くて縦書き状になるので外し、リンクだけにした -->
               <p>
                 <a class="golink" href="https://teideninfo.tepco.co.jp/html/12000000000.html" target="_blank" rel="noreferrer">いま発生中の停電（千葉県）を別の画面で開く ↗</a>
                 <a class="golink" href="https://teideninfo.tepco.co.jp/html/12231000000.html" target="_blank" rel="noreferrer">印西市の停電 ↗</a>
@@ -1890,7 +1887,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20260930a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261001a"></script>
+    <script src="./app.js?v=20261001t"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>

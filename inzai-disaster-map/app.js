@@ -3092,14 +3092,11 @@ const PRESETS = {
     focus: "#road-closures-list"
   },
   // 東京電力パワーグリッドの停電情報（左パネルの「⚡ いまの停電」の枠）を開いて見せる（2026-09-28 事業主指示）。
-  // 2026-09-30 円表示を公開：押すと停電の円（層 teiden）を足して枠も開く。もう一度押すと円を外す
+  // 2026-09-30 円表示を公開：押すと停電の円（層 teiden）を足す。もう一度押すと外す。
+  // 2026-10-01 事業主指示：押したら地図のまま円を見せる（左の枠を開いてスマホで下へ飛ばさない）。結果は地図の上に数秒だけ出す
   teiden: {
     label: "停電",
-    toggle: ["teiden"],
-    openAcc: ["⚡"],
-    // 枠の上端へ移動する（PC は左パネルの中、スマホはページごと）。id 指定（block:nearest）は、
-    // 上にある背の高い枠だと下端に合わせて上が切れた（2026-09-28）
-    focus: "acc"
+    toggle: ["teiden"]
   },
   landslide: {
     label: "土砂災害",
@@ -12543,6 +12540,16 @@ const teidenMode = new URLSearchParams(window.location.search).get("teiden") ===
   : (String(APP_CONFIG.teidenEndpoint || "").trim() ? "live" : "");
 
 let teidenTimer = null;
+let teidenNoticeTimer = null;
+
+// 地図の上の帯（#map-status）に数秒だけ出して消す。ほかの処理が帯を書き換えていたら消さない
+function flashTeidenNotice(text) {
+  const node = document.getElementById("map-status");
+  if (!node) return;
+  node.textContent = text;
+  clearTimeout(teidenNoticeTimer);
+  teidenNoticeTimer = setTimeout(() => { if (node.textContent === text) node.textContent = ""; }, 6000);
+}
 
 function teidenDisplay(area) {
   if (area.display) return String(area.display);
@@ -12578,7 +12585,7 @@ async function teidenPoint(area) {
   return point;
 }
 
-async function refreshTeidenLayer() {
+async function refreshTeidenLayer(options = {}) {
   if (!teidenMode) return;
   const url = teidenMode === "demo" ? "teiden-sample.json" : String(APP_CONFIG.teidenEndpoint).trim();
   let data;
@@ -12590,6 +12597,7 @@ async function refreshTeidenLayer() {
     // 取れないときは古い円を消す（前の停電が続いているように見せない）
     teidenLayer.clearLayers();
     setTeidenStatus("停電情報を読み込めませんでした。下の東京電力のページで確認してください");
+    if (options.notify) flashTeidenNotice("⚡ 停電情報を読み込めませんでした。東京電力パワーグリッドのページで確認してください");
     return;
   }
   const sample = Boolean(data.sample) || teidenMode === "demo";
@@ -12605,6 +12613,11 @@ async function refreshTeidenLayer() {
   setTeidenStatus(areas.length
     ? `印西市内 ${areas.length}地区で停電${sample ? "（見本）" : ""}${updatedText ? `・${updatedText}` : ""}`
     : `いま印西市内で発表されている停電はありません${updatedText ? `（${updatedText}）` : ""}`);
+  if (options.notify) {
+    flashTeidenNotice(areas.length
+      ? `⚡ 印西市内 ${areas.length}地区で停電${sample ? "（見本）" : ""}。円を押すと軒数が出ます（出典：東京電力パワーグリッド株式会社）`
+      : `⚡ 印西市内で発表されている停電はありません${updatedAt ? `（東京電力パワーグリッド株式会社・${updatedAt}更新）` : ""}`);
+  }
   areas.forEach((area, index) => {
     const point = points[index];
     if (!point) return; // 代表点が引けない地区は描かない（違う場所に置かない）
@@ -12644,7 +12657,7 @@ function setTeidenLayer(checked) {
   }
   teidenLayer.addTo(map);
   setTeidenStatus("読み込み中…");
-  refreshTeidenLayer();
+  refreshTeidenLayer({ notify: true });
   teidenTimer = setInterval(refreshTeidenLayer, 10 * 60 * 1000);
 }
 

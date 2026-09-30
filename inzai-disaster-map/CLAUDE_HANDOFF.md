@@ -581,6 +581,7 @@ score = 100 × [ 0.25·clip(−相対標高/5m) + 0.35·clip(窪地深さ/2m)
 - **了承の4条件（高田氏 9/30）**：①取得は印西市の XML（flash/xml/12231000000.xml）1件のみ ②利用者が停電の表示を選んだときだけ取得・常時巡回なし ③10分保存・10分に1回以下 ④東電のページと同じ Cookie（teideninfo-auth）を付ける。表示の条件（9/28）：出典「東京電力パワーグリッド株式会社」、復旧見込みは掲載時のみ。**⛔ 定期取得（cron）を足さない・開いただけで取りに行く作りに戻さない**。
 - **CiDAO**：`/api/disaster/teiden`（cidao e014bc3・`src/lib/tepco-teiden.ts`・テスト4件）。Cookie の値は Vercel の環境変数 `TEPCO_TEIDEN_AUTH`（Secret・Production。コードに書かない）。値が変わると東電が 302 を返し `auth_rejected`（502）になる → 東電の公開 JS `js/custom/blackout/address-city.js` の `AppController('teideninfo-auth', '…')` の値で登録し直す。next の revalidate と `s-maxage` はどちらも600秒。
 - **XML にあるもの**：市全体の `<停電軒数>`、`<エリア コード>` ごとの `<名前>`・`<停電軒数>`、`<地域詳細情報>`、`<更新日時>`（YYYYMMDDHHMM）。**発生時刻・復旧見込みは市の XML に無い**（町丁目のページ側で、1ファイルの約束のため取らない）→ 吹き出しには出さない。軒数の文字は東電の `convertDisplayBlackOuts` と同じ（10未満「10軒未満」・以上「約N軒」）。
+- **2026-10-01 変更（事業主指示）**：`PRESETS.teiden` は `toggle` だけ（枠を開かない・画面を動かさない）。ONにした1回目の結果を `flashTeidenNotice` が `#map-status` に約6秒出して消す（10分ごとの読み直しでは出さない）。左の列の東京電力の画面の iframe（千葉県の表）は狭くて崩れるので外し、リンクだけ。版 app 20261001t。
 - **MAP**：層 `teiden`（`#teiden-acc` の先頭のチェック・状態は `#teiden-status`）。`PRESETS.teiden` は `toggle:["teiden"]`＋枠を開く。`toggleOverlay` → `setTeidenLayer(checked)` が ON で1回取得＋10分ごと、OFF でタイマーを止めて円を消す。見本は `?teiden=demo` でもボタンを押したときだけ出る。版 app 20260930a／config 20260930a。
 - **検証（2026-09-30）**：本番 API 200（更新 12:49・停電なし）、2回目は X-Vercel-Cache HIT。ローカル 4173 で、開いた時点の呼び出し0回→ボタンで1回・枠が開き「いま印西市内で発表されている停電はありません（東京電力の更新 …）」→もう一度押すと OFF。見本で円6つ・「約900軒」。**実際に停電が出たときの本物の表示は未確認**（初回の停電で代表点の位置と軒数を東電のページと見比べること）。
 
