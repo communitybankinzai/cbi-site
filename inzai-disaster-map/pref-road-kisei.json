@@ -6,12 +6,12 @@
  "area": "分割図（1/3）県北部",
  "note": "県の状況図（PDF）の赤線＝規制中（被災）区間を、CBIが地図に写したもの。数十m〜100m程度ずれることがある。主に国道・県道で、市町村道は含まない。",
  "published": true,
- "pdfUrl": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/kisei5.pdf",
- "pageStamp": "令和8年9月29日（火曜日）午後2時時点",
- "pdfSha256": "85ba8cf08a86451c7b564350891cf834b9981581f6e7950879846babf09b44ff",
- "asOf": "9月29日14時時点",
- "asOfIso": "2026-09-29T14:00:00+09:00",
- "checkedAt": "2026-09-29T15:42:26+09:00",
+ "pdfUrl": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/kisei6.pdf",
+ "pageStamp": "令和8年9月30日（水曜日）午後2時時点",
+ "pdfSha256": "c6b7bb457cdea20108c7ad384a898e1bb3c9a5af6a6e49f6239cec36240c6d99",
+ "asOf": "9月30日14時時点",
+ "asOfIso": "2026-09-30T14:00:00+09:00",
+ "checkedAt": "2026-09-30T15:12:24+09:00",
  "lines": [
   {
    "path": [
@@ -90,7 +90,7 @@
   }
  ],
  "match": {
-  "score": 0.802,
+  "score": 0.504,
   "scale": 0.69
  },
  "snap": {
