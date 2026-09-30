@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-09-30",
+      "type": "content",
+      "target": "assets/sns",
+      "title": "防災MAPの停電表示を知らせるSNS投稿の画像と本文を置いた（Threads・Instagram・Facebook）",
+      "detail": "assets/sns/2026-09-30_teiden/ に、見出しの帯つき画像（見本・架空の数値と明記）と投稿文を置いた。東京電力パワーグリッド株式会社へのお礼を含む。",
+      "author": "Claude"
+    },
+    {
+      "date": "2026-09-30",
       "type": "feature",
       "target": "inzai-disaster-map",
       "title": "防災MAPで「⚡ 停電」を押すと、印西市の停電が地区ごとに地図上の円で見られるようになった（東京電力パワーグリッド株式会社の了承済み）",
