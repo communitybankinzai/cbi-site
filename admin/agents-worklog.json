@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-30",
+          "title": "停電表示の告知SNS（3媒体）作成・投稿、Meta鍵切れの切り分けと取り直し支援・IG/FB再投稿 0.5時間",
+          "category": "広報",
+          "outputs": ["site/assets/sns/2026-09-30_teiden/（cover.jpg・map_demo.png・投稿文.txt）", "site/admin/changelog.json", "予約投稿キュー q1790741409964（Threads）・q1790744581709（IG/FB）", "調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md"],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "見本の円を出した地図を撮影し見出し帯つきJPEGを作成（見本・架空の数値を明記、出典は東京電力パワーグリッド株式会社、連携とは書かずご了承への謝意）。Threadsは成功、IG/FBはMetaのセッション無効（190/467）で失敗。事業主がIG鍵をアプリ『スレッズ自動投稿』で取り直し、FBはユースケース『ページのすべてを管理』追加→Explorerでページ直接指定→延長した長期トークンから取得し、GASスクリプトプロパティへ保存（Claudeは鍵を入力せず）。IG/FBのみ再投稿し14:09両方成功、声で通知。前件（output 149,497）との差分 49,977 → 0.5時間\nsession: 40e862a6-9cad-4133-be50-a6671c9ffbfa / output: 199,474 / cost: $119.43"
+        },
+        {
+          "date": "2026-09-30",
           "title": "東電PGの取得方法了承を受け停電の円表示を公開（CiDAO /api/disaster/teiden・MAPはボタン時のみ取得）0.4時間",
           "category": "実装",
           "outputs": ["cidao: src/app/api/disaster/teiden/route.ts", "cidao: src/lib/tepco-teiden.ts", "cidao: src/lib/__tests__/tepco-teiden.test.ts", "site/inzai-disaster-map/app.js", "site/inzai-disaster-map/config.js", "site/inzai-disaster-map/index.html", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json", "調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md"],
@@ -8271,6 +8280,27 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📣 東電PG高田氏へ、停電表示の公開（9/30）を報告する（9/30の返信で『開始したら報告』と約束）",
+          "category": "事務",
+          "priority": "中",
+          "note": "下書きを作って中司さんが送る。表示のURLとSNS告知の件も添える"
+        },
+        {
+          "due": "未定",
+          "title": "🔑 SNS予約投稿の鍵（IG_ACCESS_TOKEN・FB_PAGE_TOKEN・Threads）が切れたら毎朝声で知らせる見張りを作るか検討",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-09-30 は投稿後に失敗して気づいた（Metaのセッション無効）。事業主『いつもこの作業で疲れた』。GASに鍵の疎通確認を足すか、既存の見張りに1本足すかを提案する"
+        },
+        {
+          "due": "未定",
+          "title": "📝 Metaの鍵の取り直し手順（branding/sns/Facebookトークン取得手順.md）を2026-09-30の実績で書き直すか検討",
+          "category": "事務",
+          "priority": "低",
+          "note": "アプリ切替・ユースケース追加・ページ直接指定・長期化が要点。記憶 cbi-sns-queue-facebook-instagram に要約済み"
+        },
         {
           "due": "未定",
           "title": "⚡ 初めて印西市で停電が出たとき、防災MAPの円（代表点の位置・軒数）を東電のページと見比べる",
