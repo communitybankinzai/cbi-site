@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-30",
+          "title": "SNS鍵の毎朝見張り（GAS checkSnsTokens＋Windowsタスク）・取り直し手順の全面改訂・停電枠の説明を開閉式に 0.3時間",
+          "category": "実装",
+          "outputs": ["cbi-admin-gas/SnsQueue.gs（checkSnsTokens_）", "cbi-admin-gas/Code.gs（action checkSnsTokens）", "scripts/sns_token_watch.py", "Windowsタスク CBI_SNS鍵の見張り（毎朝7:30・新PC）", "branding/sns/Facebookトークン取得手順.md（全面改訂）", "site/inzai-disaster-map/index.html（停電の説明を開閉式）", "site/admin/changelog.json", "~/.claude/CLAUDE.md（共通作業ルール6：GAS依頼はエディタのリンク付き）"],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "GASに鍵の疎通確認（各鍵で自分のアカウントを1回聞く・値は返さない）を追加しclasp push、事業主が再デプロイ。本番で3鍵OK、タスク手動実行で戻り値0・ログOK（正常時は無音）。事業主指摘『GAS作業はリンクを貼れ（何度も）』『作業効率を考慮せよ』を全体CLAUDE.md・記憶・共有ボード申し送りに反映。停電枠の説明3段落を『ⓘ 説明を読む』に格納（出典は常時表示）site 2f844a9。前件（output 206,172）からの差分\nsession: 40e862a6-9cad-4133-be50-a6671c9ffbfa / output: 233,781 / cost: $143.17"
+        },
+        {
+          "date": "2026-09-30",
           "title": "CiDAOイベント詳細の状態表示 cancelled を「中止」に日本語化 0.1時間",
           "category": "実装",
           "outputs": ["C:/Repos/cidao src/app/events/[id]/page.tsx（cidao 1738314）"],
@@ -8298,20 +8307,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "未定",
-          "title": "🔑 SNS予約投稿の鍵（IG_ACCESS_TOKEN・FB_PAGE_TOKEN・Threads）が切れたら毎朝声で知らせる見張りを作るか検討",
-          "category": "実装",
-          "priority": "中",
-          "note": "2026-09-30 は投稿後に失敗して気づいた（Metaのセッション無効）。事業主『いつもこの作業で疲れた』。GASに鍵の疎通確認を足すか、既存の見張りに1本足すかを提案する"
-        },
-        {
-          "due": "未定",
-          "title": "📝 Metaの鍵の取り直し手順（branding/sns/Facebookトークン取得手順.md）を2026-09-30の実績で書き直すか検討",
-          "category": "事務",
-          "priority": "低",
-          "note": "アプリ切替・ユースケース追加・ページ直接指定・長期化が要点。記憶 cbi-sns-queue-facebook-instagram に要約済み"
-        },
         {
           "due": "未定",
           "title": "⚡ 初めて印西市で停電が出たとき、防災MAPの円（代表点の位置・軒数）を東電のページと見比べる",
