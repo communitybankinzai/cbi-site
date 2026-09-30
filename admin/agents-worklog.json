@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-30",
+          "title": "東電PG高田氏へ停電表示の開始を報告（下書き作成・送信確認）0.1時間",
+          "category": "事務",
+          "outputs": ["調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md（報告済み）"],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "スレッドの最後が自分の送信のため reply ではなく send＋件名Reで下書き（自分宛て防止）。GAS 404でも再試行せず下書きフォルダで1通を確認。中司さんが15:05送信、朝の自分宛て下書きも削除済みを確認。前件（output 199,474）との差分 6,698 → 0.1時間\nsession: 40e862a6-9cad-4133-be50-a6671c9ffbfa / output: 206,172 / cost: $122.51"
+        },
+        {
+          "date": "2026-09-30",
           "title": "停電表示の告知SNS（3媒体）作成・投稿、Meta鍵切れの切り分けと取り直し支援・IG/FB再投稿 0.5時間",
           "category": "広報",
           "outputs": ["site/assets/sns/2026-09-30_teiden/（cover.jpg・map_demo.png・投稿文.txt）", "site/admin/changelog.json", "予約投稿キュー q1790741409964（Threads）・q1790744581709（IG/FB）", "調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md"],
@@ -8280,13 +8289,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "未定",
-          "title": "📣 東電PG高田氏へ、停電表示の公開（9/30）を報告する（9/30の返信で『開始したら報告』と約束）",
-          "category": "事務",
-          "priority": "中",
-          "note": "下書きを作って中司さんが送る。表示のURLとSNS告知の件も添える"
-        },
         {
           "due": "未定",
           "title": "🔑 SNS予約投稿の鍵（IG_ACCESS_TOKEN・FB_PAGE_TOKEN・Threads）が切れたら毎朝声で知らせる見張りを作るか検討",
