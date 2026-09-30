@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-30",
+          "title": "CiDAOイベント詳細の状態表示 cancelled を「中止」に日本語化 0.1時間",
+          "category": "実装",
+          "outputs": ["C:/Repos/cidao src/app/events/[id]/page.tsx（cidao 1738314）"],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主指示。STATUS_LABEL（cancelled→中止のみ・他は従来どおり値を表示）。tsc エラー0、Vercel 反映後に本番のまちフェス詳細で「中止」、公開中のマルシェは open のままを確認。前件（output 11,449）との差分 5,279 → 0.1時間\nsession: b217f959-6d9a-4587-8eb4-27abcefe5c65 / output: 16,728 / cost: $8.03"
+        },
+        {
+          "date": "2026-09-30",
           "title": "東電PG高田氏へ停電表示の開始を報告（下書き作成・送信確認）0.1時間",
           "category": "事務",
           "outputs": ["調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md（報告済み）"],
