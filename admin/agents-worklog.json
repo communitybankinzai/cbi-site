@@ -16,6 +16,15 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-09-30",
+          "title": "東電PGの取得方法了承を受け停電の円表示を公開（CiDAO /api/disaster/teiden・MAPはボタン時のみ取得）0.4時間",
+          "category": "実装",
+          "outputs": ["cidao: src/app/api/disaster/teiden/route.ts", "cidao: src/lib/tepco-teiden.ts", "cidao: src/lib/__tests__/tepco-teiden.test.ts", "site/inzai-disaster-map/app.js", "site/inzai-disaster-map/config.js", "site/inzai-disaster-map/index.html", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json", "調整経緯/2026-09-21_東京電力_停電情報の申請記入案.md"],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "高田氏9/30回答（Cookie設定なら4条件とも可）→確認返信を下書き→送信（GAS 404で下書きが2通でき、自分宛て1通は削除依頼）。東電の公開JSでXML項目と軒数表示規則を確認し、CiDAOに印西市XMLを10分キャッシュで返すAPIを実装（テスト4件・tsc通過・実XMLで確認）。Cookie値は認証用の値のため Claude は入力せず、Vercel環境変数 TEPCO_TEIDEN_AUTH を中司さんが登録（Vercel 2FAはGitHubをGoogleログインに紐づけて突破）。MAPはボタン時のみ取得・ON中10分ごと。本番API 200・ローカルで呼び出し0→1回・見本で円6つを確認。前件（output 110,405）との差分 39,092 → 0.4時間\nsession: 40e862a6-9cad-4133-be50-a6671c9ffbfa / output: 149,497 / cost: $88.79"
+        },
       {
         "date": "2026-09-30",
         "title": "防災MAP『ルート修正ができない』の調査・原因特定（端末の運営合言葉が未保存）0.1時間",
@@ -8264,6 +8273,15 @@
       "plans": [
         {
           "due": "未定",
+          "title": "⚡ 初めて印西市で停電が出たとき、防災MAPの円（代表点の位置・軒数）を東電のページと見比べる",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "印西市で停電が発生すること（平時は XML に地区が出ないため本物の表示を確かめられない）",
+          "note": "CLAUDE_HANDOFF.md「2026-09-30 ⚡ 停電の円表示を公開」。auth_rejected（502）が出たら TEPCO_TEIDEN_AUTH を東電の公開JSの値で登録し直す。表示開始を高田氏へ報告すると約束済み（9/30 返信）"
+        },
+        {
+          "due": "未定",
           "title": "📅 おさがりマルシェの延期後の日程が市から出たら、CiDAO のイベント（cbb66100）の日時を直し【延期】を外す",
           "category": "保守",
           "priority": "中",
@@ -8876,15 +8894,6 @@
           "category": "保守",
           "priority": "中",
           "note": "PCのヘッドレスブラウザでは線9本・ポップアップ・出典リンクまで確認済み。スマホ幅で赤い線と冠水の色が見分けられるか、ポップアップが画面に収まるかは未確認。"
-        },
-        {
-          "due": "未定",
-          "title": "⚡ 停電の取得方法を決めて円表示を公開する（自動配信サービス or 公開ページを10分に1回）",
-          "category": "実装",
-          "priority": "中",
-          "status": "待ち",
-          "blockedBy": "東電PG（高田氏）から、印西市の XML（flash/xml/12231000000.xml）を画面と同じ認証用 Cookie を付けて取得してよいかの回答（2026-09-28 14:33 に確認メール送信済み）。または事務局の審査結果（利用料は無料と回答済み。9/28 ヒアリングシート提出、9/29 に『電力各社で協議・2週間ほど』と連絡＝10/13 前後の見込み）",
-          "note": "東電PGは利用を承知済み（2026-09-28）。条件＝出典「東京電力パワーグリッド株式会社」・復旧見込みは東電の掲載があるときだけ（表示側は site 0c2bdc6 で対応済み）。残りは CiDAO の /api/disaster/teiden、config.js の teidenEndpoint、index.html のレイヤーのチェックと凡例。CLAUDE_HANDOFF.md「⚡ 停電の円表示」。"
         },
         {
           "due": "2026-09-21",

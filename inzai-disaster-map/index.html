@@ -409,6 +409,8 @@
           <details class="acc teiden-acc" id="teiden-acc">
             <summary>⚡ いまの停電（東京電力パワーグリッド）</summary>
             <div class="acc-body">
+              <label class="live-layer-label"><input type="checkbox" data-overlay="teiden"> <span class="layer-name">⚡ 印西市の停電を地図に円で表示<span id="teiden-status">ONにすると読み込みます</span></span></label>
+              <p class="teiden-note">東京電力パワーグリッド株式会社の停電情報（印西市）を、地区の代表点に円で表示します。<strong>円の位置は地区の代表点で、停電の範囲そのものではありません。</strong>軒数は東京電力の発表どおりです。ONの間は10分ごとに読み直します。</p>
               <p class="teiden-note">東京電力パワーグリッドの<strong>千葉県の停電情報（いま発生中）</strong>の画面をそのまま表示しています。市町村ごとの停電軒数が出て、「印西市」を押すと地区ごとの軒数と復旧見込みが出ます。<strong>この地図が数値を加工して表示しているものではありません。</strong></p>
               <p class="teiden-note">軒数が「-」のままのときや更新時刻が出ないときは、アクセスの集中などで読み込めていないことがあります。<strong>下の「別の画面で開く」から東京電力のページを直接開いてください。</strong></p>
               <div class="teiden-frame">
@@ -1882,9 +1884,9 @@
       })();
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
-    <script src="./config.js?v=20260928a"></script>
+    <script src="./config.js?v=20260930a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20260929c"></script>
+    <script src="./app.js?v=20260930a"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
