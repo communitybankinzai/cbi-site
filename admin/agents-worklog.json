@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-09-30",
+          "title": "通行止め見張りの誤報（国道事務所の規制を船橋市分と取り違え）の原因調査と修正、印西市 大塚二丁目の歩道陥没に位置図から線を入れる 0.3時間",
+          "category": "保守",
+          "outputs": ["scripts/road_closure_watch.py（情報源でも絞る・git 管理外）", "scripts/_road_closure_watch_state.json（誤った食い違いを削除）", "CiDAO 本番 disaster_road_closures 3b1f54f1 の path（10点・約233m）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md"],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主『解除の自動処理がうまくいっていない』→ 自動処理は正常で、見張りが千葉国道事務所の国道357号 栄町地先を船橋市の表と突き合わせた誤報と判明（市の表7件＝一覧7件・船橋市の解除はまだ0件）。事業主決定A で sourceLabel でも絞る修正、--dry-run で異常なしを確認。続けて事業主指示『この場所を通行止めにして』で印西市 0000022632 の位置図を地理院の道路中心線・図書館・公園・消防署と照合し線を入れ、本番の地図で赤い破線を確認。路線名・場所が空の件は plans へ\nsession: 55e67529-66a7-4695-a685-9dd419b6ea74 / output: 30,661 / cost: $7.15"
+        },
+        {
+          "date": "2026-09-30",
           "title": "SNS鍵の毎朝見張り（GAS checkSnsTokens＋Windowsタスク）・取り直し手順の全面改訂・停電枠の説明を開閉式に 0.3時間",
           "category": "実装",
           "outputs": ["cbi-admin-gas/SnsQueue.gs（checkSnsTokens_）", "cbi-admin-gas/Code.gs（action checkSnsTokens）", "scripts/sns_token_watch.py", "Windowsタスク CBI_SNS鍵の見張り（毎朝7:30・新PC）", "branding/sns/Facebookトークン取得手順.md（全面改訂）", "site/inzai-disaster-map/index.html（停電の説明を開閉式）", "site/admin/changelog.json", "~/.claude/CLAUDE.md（共通作業ルール6：GAS依頼はエディタのリンク付き）"],
@@ -8307,6 +8316,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🚧 印西市の通行止め記事で路線名・場所が空になる（0000022632 大塚二丁目の見出しが「道路」だけ）のを直す",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-09-30 発見。題名『大塚二丁目地先における歩道陥没に伴う市道の一部通行止めのお知らせ』から road／place を拾えていない（本文には『市道00-025号線の一部』『印西市大塚二丁目地先』がある）。巡回が road／place を上書きするので DB を手で直しても戻る。cidao src/lib/disaster-road-closures.ts の印西市の記事の読み取りを直し、テストを足してから本番の巡回で見出しが変わるのを確かめる。線（path）は 9/30 に運営が入れ済み"
+        },
         {
           "due": "未定",
           "title": "⚡ 初めて印西市で停電が出たとき、防災MAPの円（代表点の位置・軒数）を東電のページと見比べる",
