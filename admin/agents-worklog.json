@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-10-01",
+          "title": "防災MAPの通行止めの破線で吹き出しが出ない原因調査（すき間が当たり判定にならない）と、見えない太い当たり判定の線の追加 0.2時間",
+          "category": "保守",
+          "outputs": ["site/inzai-disaster-map/app.js（renderRoadClosures）", "site/inzai-disaster-map/index.html（app.js?v=20261001a）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json"],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主『地図上でタップしても根拠が出てこない』。本番で線の上49点を調べ反応27点（破線の塗り10px・すき間8px）、すき間のクリックで何も出ないことを確認。事業主決定A で透明・太さ20pxの線を下に敷いた。ローカルで49点すべて命中・横8pxも命中・すき間クリックで吹き出し表示・件数表示47件のまま・新しいエラーなしを確認。前件（output 30,661）との差分 20,766 → 0.2時間\nsession: 55e67529-66a7-4695-a685-9dd419b6ea74 / output: 51,427 / cost: $17.64"
+        },
+        {
           "date": "2026-09-30",
           "title": "通行止め見張りの誤報（国道事務所の規制を船橋市分と取り違え）の原因調査と修正、印西市 大塚二丁目の歩道陥没に位置図から線を入れる 0.3時間",
           "category": "保守",

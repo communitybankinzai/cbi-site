@@ -5713,7 +5713,18 @@ function renderRoadClosures() {
       (roadClosureContinuedText(item) ? `<span class="closure-continued">⏳ ${escapeHtml(roadClosureContinuedText(item))}</span><br>` : "") +
       (item.url ? `出典: <a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(roadClosureSourceName(item.sourceLabel))}</a><br>` : "") +
       `<span style="font-size:11px;">${item.pathSource === "city" ? "線は役所が公開した位置です。" : "線の位置は運営が発表をもとに確かめたものです。"}最新は出典で確認してください。</span>`;
-    L.polyline(item.path, {
+    const bindClosurePopup = layer => layer.bindPopup(() => popup + relatedHtmlFor(`closure:${item.id}`));
+    // 破線はすき間を押しても反応しない（約45%が空振り・2026-10-01 事業主指摘）ので、
+    // 見えない太い線を下に敷いて当たり判定にする（見た目は変えない）
+    bindClosurePopup(L.polyline(item.path, {
+      pane: "roadClosuresPane",
+      renderer: roadClosuresRenderer,
+      color: "#b8322c",
+      weight: 20,
+      opacity: 0,
+      lineCap: "round"
+    })).addTo(roadClosuresLayer);
+    bindClosurePopup(L.polyline(item.path, {
       pane: "roadClosuresPane",
       renderer: roadClosuresRenderer,
       color: "#b8322c",
@@ -5721,7 +5732,7 @@ function renderRoadClosures() {
       opacity: 0.9,
       dashArray: "10 8",
       lineCap: "butt"
-    }).bindPopup(() => popup + relatedHtmlFor(`closure:${item.id}`)).addTo(roadClosuresLayer);
+    })).addTo(roadClosuresLayer);
     drawn += 1;
   });
 
