@@ -16,6 +16,7 @@
   "agents": {
     "A1": {
       "actuals": [
+        {"date": "2026-10-01", "title": "CBI Facebookページ鍵の失効確認：GAS・CiDAO・credentials.md の3か所の鍵をGraph APIで実測し、CiDAO側3本の失効を特定 0.3時間", "category": "調査", "outputs": ["branding/sns/2026-10-01_CiDAO側Meta鍵の失効確認.md（新規）", "branding/sns/Facebookトークン取得手順.md（関連ノート1行）", "MOC_CiDAO.md（1行）", "site/admin/agents-worklog.json"], "hours": 0.3, "partnerApproved": false, "note": "事業主『CBIのFacebookページの鍵も同じ理由で無効の可能性が高い』。GAS checkSnsTokens で予約投稿キューの3鍵はOK（9/30取り直し済み）。CiDAO app_settings の sns_facebook_auth（9/9）・sns_instagram_auth（9/28）・sns_instagram_discovery_auth（8/17）は3本とも 190『session has been invalidated』で失効、Threads 2本は無事。credentials.md の控え2本も失効（古い）。鍵の値は出さずmd5で照合。最後にCiDAOからFB/IGへ出せたのは 9/28 18:55。貼り直しは事業主の操作（/admin/sns）なので plans に登録。要対応メール0件\nsession: 8cd2a993-f677-4b59-afc6-901f9e39e3ff / output: 27,807 / cost: $5.02"},
         {
           "date": "2026-10-01",
           "title": "防災MAPの通行止めの破線で吹き出しが出ない原因調査（すき間が当たり判定にならない）と、見えない太い当たり判定の線の追加 0.2時間",
@@ -8325,6 +8326,8 @@
         }
       ],
       "plans": [
+        {"due": "2026-10-03", "title": "🔑 CiDAO 側の Meta 鍵3本（Facebookページ・Instagram投稿・Instagram検索）を /admin/sns に貼り直す", "category": "保守", "priority": "高", "note": "2026-10-01 実測で3本とも 190『session has been invalidated』。FB・IG投稿は 9/30 に GAS へ入れたのと同じ鍵を貼る（GASエディタ⚙スクリプトプロパティ FB_PAGE_TOKEN／IG_ACCESS_TOKEN）。IG検索は Graph API Explorer（アプリ『スレッズ自動投稿』・User Token）→デバッガーで延長した鍵＋IG ID 17841443825933291。貼り終わったら Claude が CiDAO の DB 値を Graph API に当てて確認する。手順は branding/sns/2026-10-01_CiDAO側Meta鍵の失効確認.md"},
+        {"due": "未定", "title": "👀 毎朝のSNS鍵見張り（scripts/sns_token_watch.py）に CiDAO 側の鍵3本（FB・IG投稿・IG検索）の疎通確認を足す", "category": "実装", "priority": "中", "note": "2026-10-01 気づき。見張りは GAS の checkSnsTokens しか見ないため、CiDAO 側の失効（9/30〜）に気づけなかった。CiDAO に鍵の値を返さない疎通確認（管理者向け route か cron）を足し、見張りから呼ぶ。事業主の了承を得てから着手"},
         {
           "due": "未定",
           "title": "🚧 印西市の通行止め記事で路線名・場所が空になる（0000022632 大塚二丁目の見出しが「道路」だけ）のを直す",
