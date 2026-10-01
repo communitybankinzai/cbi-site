@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261002a">
+    <link rel="stylesheet" href="./styles.css?v=20261002b">
   </head>
   <body>
     <div class="app-shell">
@@ -855,19 +855,29 @@
               <select id="quake-play-speed" aria-label="再生の速さ"></select>
               <button type="button" id="quake-play-stop" title="再生をやめて最新の地震に戻る">■ 最新へ</button>
             </div>
+            <!-- 2026-10-02 事業主指示：過去の期間を指定して再生（「まで」が空なら今日まで）・震度〇以上だけ再生 -->
+            <div class="quake-play-custom">
+              <span class="quake-play-custom-title">過去の期間を指定</span>
+              <label>から <input type="date" id="quake-play-from"></label>
+              <label>まで <input type="date" id="quake-play-to" placeholder="今日まで"></label>
+              <label class="quake-play-minint">震度 <select id="quake-play-minint" aria-label="再生する地震の最大震度の下限">
+                <option value="0">すべて</option>
+                <option value="1">1以上</option>
+                <option value="2">2以上</option>
+                <option value="3">3以上</option>
+                <option value="4">4以上</option>
+                <option value="5">5弱以上</option>
+              </select></label>
+              <button type="button" id="quake-play-apply">この期間を再生</button>
+            </div>
             <div class="range-presets quake-play-presets">
               <button type="button" data-qrange="7d" aria-pressed="false">直近7日</button>
               <button type="button" data-qrange="30d" aria-pressed="false">1か月</button>
               <button type="button" data-qrange="90d" aria-pressed="false">3か月</button>
               <button type="button" data-qrange="365d" aria-pressed="false">1年</button>
             </div>
-            <div class="quake-play-custom">
-              <label>から <input type="date" id="quake-play-from"></label>
-              <label>まで <input type="date" id="quake-play-to"></label>
-              <button type="button" id="quake-play-apply">この期間を再生</button>
-            </div>
             <p class="range-note quake-play-status" id="quake-play-status"></p>
-            <p class="quake-play-source">出典: 気象庁 震源・震度情報（直近1か月）。それより前は P2P地震情報 API（気象庁の発表の転載）。輪の大きさ＝マグニチュード、色＝最大震度</p>
+            <p class="quake-play-source">出典: 気象庁 震源・震度情報（直近1か月）。それより前は P2P地震情報 API（気象庁の発表の転載）。輪は震度1のおよその範囲（Mと深さからの推定）まで広がる。色＝最大震度</p>
           </div>
           <div class="map-status" id="map-status">地図を読み込み中です</div>
           <!-- 2026-09-21: 「市民投稿の収集・公開運用は開始していません」は事実と合わなくなったので直した
@@ -1919,7 +1929,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261002a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261002b"></script>
+    <script src="./app.js?v=20261002c"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
