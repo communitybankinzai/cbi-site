@@ -2,6 +2,7 @@
   "updatedAt": "2026-09-28T17:00:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {"date": "2026-10-01", "type": "content", "target": "assets/sns", "title": "10月のイベントカレンダー（100件超）を知らせるSNS投稿の画像と本文を置いた（Instagram・Facebook）", "detail": "CiDAO のイベントカレンダーに 10月の催しが 100件超（広報いんざい10月号の取り込み分も画像つき）載ったことを知らせる投稿。表紙は見出し帯つき 1080×1350 JPEG。Meta の鍵を取り直した後の、Instagram・Facebook への最初の投稿（予約投稿キュー q1790823027648・Threads 無し）。", "author": "A1 Core (Claude)"},
     {
       "date": "2026-10-01",
       "type": "fix",
