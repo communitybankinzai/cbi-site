@@ -2662,6 +2662,7 @@ function refreshVisibleOpenDataLayers() {
 // 詳細JSONを追加取得せずに描画できる。印西市に震度記録がある地震を優先表示する。
 const quakeLayer = L.layerGroup();
 let quakeEvents = [];
+let quakeJmaArchive = []; // 気象庁 list.json の全件（約1か月分・過去の再生に使う）
 
 // "+35.8+140.1-10000/" 形式を {lat, lng, depthKm} へ。深さはm単位で入ることがある
 function parseJmaCoordinate(cod) {
@@ -2731,6 +2732,7 @@ function renderQuakeLayer() {
     `);
     quakeLayer.addLayer(marker);
   });
+  if (quakeWaveReady) updateQuakeLiveWave();
 }
 
 // ============================================================
@@ -3097,6 +3099,12 @@ const PRESETS = {
   teiden: {
     label: "停電",
     toggle: ["teiden"]
+  },
+  // 全国の地震（2026-10-02 事業主指示「地震のボタンがない」）。押すと震源の層（quakes）を足し、
+  // 最新の地震の波紋と右上の再生の枠が出て、地図は日本全体へ。もう一度押すと外して元の位置へ
+  quake: {
+    label: "地震",
+    toggle: ["quakes"]
   },
   landslide: {
     label: "土砂災害",
@@ -5797,6 +5805,11 @@ function renderRoadClosures() {
 }
 
 function toggleOverlay(name, checked) {
+  // 地震の震源：波紋と再生の枠も一緒に出す／片付ける（2026-10-02）
+  if (name === "quakes") {
+    setQuakeLayer(checked);
+    return;
+  }
   if (name === "teiden") {
     setTeidenLayer(checked);
     return;
@@ -10122,7 +10135,7 @@ async function refreshEarthquakeSummary(manual) {
 
     // 地図用: 座標が取れた地震を新しい順に最大20件保持する。
     // 印西市に震度記録がある地震は、市内への影響が分かるよう優先して残す
-    quakeEvents = reports
+    quakeJmaArchive = reports
       .map(item => {
         const position = parseJmaCoordinate(item.cod);
         if (!position) return null;
@@ -10135,8 +10148,8 @@ async function refreshEarthquakeSummary(manual) {
           inzaiIntensity: findCityIntensity(item, "1223100") || ""
         };
       })
-      .filter(Boolean)
-      .slice(0, 20);
+      .filter(Boolean);
+    quakeEvents = quakeJmaArchive.slice(0, 20);
     renderQuakeLayer();
     node.innerHTML = `
       <div class="earthquake-event">
@@ -12851,6 +12864,664 @@ function initHazardCheck() {
     }
   });
 }
+
+// ============================================================
+// 🌍 全国の地震：震源から広がる波紋と、過去の地震の早送り再生（2026-10-02 事業主指示）
+// - 層「地震の震源（quakes）」を ON にすると、最新の地震の震源で波紋（3本の輪）が繰り返し広がる。
+//   輪の大きさはマグニチュード、色は最大震度（震度が無いときはマグニチュード）。
+// - 右上の「🌍 全国の地震」の枠で期間を選ぶと、その期間の地震を発生順に早送りで再生する。
+//   仮想の時計が進み、発生時刻を通過した地震がその場で波紋を出し、小さな点として残る。
+// - 期間のデータ：直近1か月は気象庁 list.json（すでに読んでいる分）。それより前は
+//   P2P地震情報 API（気象庁の発表を転載・日付指定可）。P2P が落ちていたら気象庁の分だけで続ける。
+// - 輪・点は専用ペイン（quakeWavePane・クリックを通す）に SVG で描く。preferCanvas のままだと
+//   canvas の層がクリックを吸うため（CLAUDE_HANDOFF.md の注意どおり）。
+// - 層を OFF にすると波紋・再生・枠を片付け、ON にしたときの地図の位置へ戻す。
+var quakeWaveReady = false;
+const JAPAN_BOUNDS = L.latLngBounds([24.0, 122.5], [45.8, 149.0]);
+map.createPane("quakeWavePane");
+map.getPane("quakeWavePane").style.zIndex = 470;
+map.getPane("quakeWavePane").style.pointerEvents = "none";
+map.createPane("quakePlayPane");
+map.getPane("quakePlayPane").style.zIndex = 468;
+const quakeWaveRenderer = L.svg({ pane: "quakeWavePane" });
+const quakePlayRenderer = L.svg({ pane: "quakePlayPane" });
+const quakeWaveLayer = L.layerGroup();   // 波紋の輪
+const quakePlayLayer = L.layerGroup();   // 再生で残す点
+const QUAKE_WAVE_RINGS = 3;
+const QUAKE_WAVE_MAX = 80;               // 同時に動かす波紋の上限（早送りで重なりすぎないように）
+const QUAKE_SPEEDS = [
+  { key: "1h", label: "1時間／秒", msPerSec: 3600 * 1000 },
+  { key: "6h", label: "6時間／秒", msPerSec: 6 * 3600 * 1000 },
+  { key: "1d", label: "1日／秒", msPerSec: 24 * 3600 * 1000 },
+  { key: "1w", label: "1週間／秒", msPerSec: 7 * 24 * 3600 * 1000 }
+];
+const quakeWaves = [];
+let quakeWaveRaf = null;
+let quakeLiveWave = null;
+let quakePrevView = null;
+const quakePlayback = {
+  active: false, playing: false, events: [], from: 0, to: 0, now: 0, cursor: 0,
+  lastTick: 0, raf: null, token: 0, speed: QUAKE_SPEEDS[2].msPerSec, source: "", lastEvent: null, scrubbing: false,
+  loading: false, loadedUntil: 0 // 月ごとの読み込みがどこまで届いたか（再生はここより先へ進まない）
+};
+
+function quakeMagRadius(mag) {
+  const m = Number(mag);
+  if (!Number.isFinite(m)) return 22;
+  if (m >= 7) return 90;
+  if (m >= 6) return 70;
+  if (m >= 5) return 52;
+  if (m >= 4) return 38;
+  if (m >= 3) return 26;
+  return 18;
+}
+
+function quakeWaveColor(event) {
+  const rank = intensityRank(event.maxi);
+  if (rank > 0) return quakeColor(rank);
+  const m = Number(event.mag);
+  if (m >= 5) return "#dc2626";
+  if (m >= 4) return "#ea580c";
+  if (m >= 3) return "#d97706";
+  return "#0f766e";
+}
+
+function addQuakeWave(event, options) {
+  const pos = event.position;
+  if (!pos) return null;
+  if (quakeWaves.length >= QUAKE_WAVE_MAX) removeQuakeWave(quakeWaves.find(w => !w.loop) || quakeWaves[0]);
+  const color = quakeWaveColor(event);
+  const rings = [];
+  for (let i = 0; i < QUAKE_WAVE_RINGS; i += 1) {
+    const ring = L.circleMarker([pos.lat, pos.lng], {
+      renderer: quakeWaveRenderer, pane: "quakeWavePane", interactive: false,
+      radius: 0, color, weight: 2, opacity: 0, fill: false
+    });
+    quakeWaveLayer.addLayer(ring);
+    rings.push(ring);
+  }
+  // 中心の点（輪の出どころが分かるように）
+  const core = L.circleMarker([pos.lat, pos.lng], {
+    renderer: quakeWaveRenderer, pane: "quakeWavePane", interactive: false,
+    radius: 3, color: "#fff", weight: 1, fillColor: color, fillOpacity: 0.95, opacity: 0.95
+  });
+  quakeWaveLayer.addLayer(core);
+  const wave = {
+    rings, core, color,
+    start: performance.now(),
+    duration: options?.duration || 2600,
+    maxR: quakeMagRadius(event.mag),
+    loop: Boolean(options?.loop)
+  };
+  quakeWaves.push(wave);
+  if (!quakeWaveRaf) quakeWaveRaf = requestAnimationFrame(quakeWaveFrame);
+  return wave;
+}
+
+function removeQuakeWave(wave) {
+  if (!wave) return;
+  const index = quakeWaves.indexOf(wave);
+  if (index >= 0) quakeWaves.splice(index, 1);
+  wave.rings.forEach(ring => quakeWaveLayer.removeLayer(ring));
+  quakeWaveLayer.removeLayer(wave.core);
+}
+
+function clearQuakeWaves(keepLive) {
+  quakeWaves.slice().forEach(wave => { if (!(keepLive && wave === quakeLiveWave)) removeQuakeWave(wave); });
+}
+
+// 輪ごとに 1/3 ずつ位相をずらし、中心から maxR まで広がりながら薄くなる。
+// loop の波紋（最新の地震）は繰り返し、再生の波紋は最後の輪が消えたら片付ける
+function quakeWaveFrame(now) {
+  quakeWaveRaf = null;
+  if (document.hidden) { quakeWaveRaf = requestAnimationFrame(quakeWaveFrame); return; }
+  for (const wave of quakeWaves.slice()) {
+    const p = (now - wave.start) / wave.duration;
+    if (!wave.loop && p >= 1 + (QUAKE_WAVE_RINGS - 1) / QUAKE_WAVE_RINGS) { removeQuakeWave(wave); continue; }
+    wave.rings.forEach((ring, i) => {
+      let ph = p - i / QUAKE_WAVE_RINGS;
+      if (wave.loop) ph = ((ph % 1) + 1) % 1;
+      if (ph < 0 || ph > 1) { ring.setStyle({ opacity: 0 }); return; }
+      ring.setRadius(3 + ph * wave.maxR);
+      ring.setStyle({ opacity: (1 - ph) * 0.85, weight: 2.5 - ph * 1.5 });
+    });
+  }
+  if (quakeWaves.length) quakeWaveRaf = requestAnimationFrame(quakeWaveFrame);
+}
+
+// 最新の地震の震源で波紋を繰り返す（層が ON で、再生していないとき）
+function updateQuakeLiveWave() {
+  if (quakeLiveWave) { removeQuakeWave(quakeLiveWave); quakeLiveWave = null; }
+  renderQuakePlayIdle(); // 枠の「最新」の行は層が OFF でも最新にしておく（再生中は何もしない）
+  if (!map.hasLayer(quakeWaveLayer) || quakePlayback.active) return;
+  const latest = quakeEvents[0];
+  if (!latest) return;
+  quakeLiveWave = addQuakeWave(latest, { loop: true, duration: 2600 });
+}
+
+// 日本全体を、右上の枠（関東の上に重なる）を避けて左寄せで収める
+function fitJapanForQuakes() {
+  const panel = document.getElementById("quake-play-panel");
+  const panelW = panel && !panel.hidden ? panel.offsetWidth : 0;
+  // 枠を避けた残りに日本（ズーム4で約300px）が入るときだけ右に余白を取る。
+  // 入らない幅（スマホ）は枠が地図の上側を覆うので、その分だけ上に余白を取って日本を枠の下に出す
+  const roomRight = map.getSize().x - panelW - 26 >= 280;
+  let top = 10;
+  if (!roomRight && panel && !panel.hidden) {
+    const mapTop = map.getContainer().getBoundingClientRect().top;
+    top = Math.max(10, Math.round(panel.getBoundingClientRect().bottom - mapTop + 8));
+  }
+  map.fitBounds(JAPAN_BOUNDS, { paddingTopLeft: [10, top], paddingBottomRight: [roomRight ? panelW + 16 : 10, 10] });
+}
+
+function setQuakeLayer(checked) {
+  const panel = document.getElementById("quake-play-panel");
+  if (checked) {
+    if (!quakePrevView) quakePrevView = { center: map.getCenter(), zoom: map.getZoom() };
+    quakeLayer.addTo(map);
+    quakeWaveLayer.addTo(map);
+    quakePlayLayer.addTo(map);
+    if (panel) panel.hidden = false;
+    // 全国の地震なので日本全体を見せる。戻るときは ON にした時の位置へ
+    fitJapanForQuakes();
+    updateQuakeLiveWave();
+    if (!quakeEvents.length) renderQuakePlayIdle();
+  } else {
+    stopQuakePlayback();
+    clearQuakeWaves(false);
+    quakeLiveWave = null;
+    map.removeLayer(quakeLayer);
+    map.removeLayer(quakeWaveLayer);
+    map.removeLayer(quakePlayLayer);
+    if (panel) panel.hidden = true;
+    if (quakePrevView) { map.setView(quakePrevView.center, quakePrevView.zoom); quakePrevView = null; }
+  }
+}
+
+// ---- 期間のデータ ------------------------------------------------
+// P2P地震情報の /v2/jma/quake は1ページ（100件）に 6〜12秒かかり、同時に投げても直列に処理される
+// （2026-10-02 実測。/v2/history は速いが直近3週間しか持たない）。1年分＝約25ページ＝4分前後。
+// そこで ①月ごとに古い方から読み、最初の月が届いた時点で再生を始める（追いついたら読み込みを待つ）、
+// ②終わった月は端末（localStorage）に30日おぼえて2回目は待たない、③直近1か月は気象庁の一覧で済ませる。
+const P2P_SCALE_LABEL = { 10: "1", 20: "2", 30: "3", 40: "4", 45: "5-", 50: "5+", 55: "6-", 60: "6+", 70: "7" };
+const QUAKE_MONTH_CACHE_KEY = "cbiQuakeMonths.v1";
+const QUAKE_MONTH_CACHE_DAYS = 30;
+
+function quakeJstParts(ms) {
+  const parts = new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(ms));
+  const get = type => parts.find(p => p.type === type)?.value || "";
+  return { y: Number(get("year")), m: Number(get("month")), d: Number(get("day")) };
+}
+
+function quakeDateKeyJst(ms) {
+  const { y, m, d } = quakeJstParts(ms);
+  return `${y}${String(m).padStart(2, "0")}${String(d).padStart(2, "0")}`;
+}
+
+function jstMonthStart(y, m) { // m は 1〜12。13 は翌年1月
+  const yy = y + Math.floor((m - 1) / 12);
+  const mm = ((m - 1) % 12) + 1;
+  return new Date(`${yy}-${String(mm).padStart(2, "0")}-01T00:00:00+09:00`).getTime();
+}
+
+// 期間を日本時間の月で区切る（古い順）。各区切りは期間の端で切り詰める
+function quakeMonthChunks(fromMs, toMs) {
+  const chunks = [];
+  let { y, m } = quakeJstParts(fromMs);
+  for (let guard = 0; guard < 60; guard += 1) {
+    const start = jstMonthStart(y, m);
+    const end = jstMonthStart(y, m + 1) - 1;
+    if (start > toMs) break;
+    chunks.push({ key: `${y}-${String(m).padStart(2, "0")}`, monthStart: start, monthEnd: end, from: Math.max(start, fromMs), to: Math.min(end, toMs) });
+    m += 1;
+    if (m > 12) { m = 1; y += 1; }
+  }
+  return chunks;
+}
+
+function parseP2pTime(text) {
+  const m = String(text || "").match(/^(\d{4})\/(\d{2})\/(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+  if (!m) return NaN;
+  return new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}+09:00`).getTime();
+}
+
+function p2pToEvent(item) {
+  const eq = item?.earthquake;
+  const hypo = eq?.hypocenter;
+  if (!eq || !hypo) return null;
+  const lat = Number(hypo.latitude);
+  const lng = Number(hypo.longitude);
+  // 震源が未定（-200）や震度速報だけのものは出さない
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat <= -90 || lng <= -180) return null;
+  const atMs = parseP2pTime(eq.time);
+  if (!Number.isFinite(atMs)) return null;
+  const mag = Number(hypo.magnitude);
+  const depth = Number(hypo.depth);
+  const inzai = (item.points || []).find(point => String(point.addr || "").includes("印西市"));
+  return {
+    at: new Date(atMs).toISOString(),
+    atMs,
+    name: hypo.name || "",
+    mag: Number.isFinite(mag) && mag >= 0 ? String(mag) : "",
+    maxi: P2P_SCALE_LABEL[Number(eq.maxScale)] || "",
+    position: { lat, lng, depthKm: Number.isFinite(depth) && depth >= 0 ? depth : null },
+    inzaiIntensity: inzai ? (P2P_SCALE_LABEL[Number(inzai.scale)] || "") : "",
+    source: "p2p"
+  };
+}
+
+// 端末に残す形（短く）。t 発生時刻ms／n 震源名／m M／i 最大震度／la lo 緯度経度／d 深さkm／z 印西市の震度
+function quakeEventToCompact(e) { return { t: e.atMs, n: e.name, m: e.mag, i: e.maxi, la: e.position.lat, lo: e.position.lng, d: e.position.depthKm, z: e.inzaiIntensity }; }
+function quakeEventFromCompact(c) {
+  return { at: new Date(c.t).toISOString(), atMs: c.t, name: c.n || "", mag: c.m || "", maxi: c.i || "", position: { lat: c.la, lng: c.lo, depthKm: c.d ?? null }, inzaiIntensity: c.z || "", source: "p2p" };
+}
+
+function readQuakeMonthCache() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(QUAKE_MONTH_CACHE_KEY) || "{}");
+    return raw && typeof raw === "object" ? raw : {};
+  } catch { return {}; }
+}
+
+function getCachedQuakeMonth(key) {
+  const entry = readQuakeMonthCache()[key];
+  if (!entry || !Array.isArray(entry.events)) return null;
+  if (Date.now() - Number(entry.saved || 0) > QUAKE_MONTH_CACHE_DAYS * 24 * 3600 * 1000) return null;
+  return entry.events.map(quakeEventFromCompact);
+}
+
+function putCachedQuakeMonth(key, events) {
+  try {
+    const store = readQuakeMonthCache();
+    store[key] = { saved: Date.now(), events: events.map(quakeEventToCompact) };
+    // 古いものから落として、だいたい24か月分までにする
+    const keys = Object.keys(store).sort();
+    while (keys.length > 24) delete store[keys.shift()];
+    localStorage.setItem(QUAKE_MONTH_CACHE_KEY, JSON.stringify(store));
+  } catch (error) { console.warn("地震の月キャッシュを保存できません", error); }
+}
+
+async function fetchP2pQuakes(fromMs, toMs, token, onProgress) {
+  const endpoint = String(APP_CONFIG.p2pQuakeEndpoint || "https://api.p2pquake.net/v2/jma/quake");
+  const seen = new Set();
+  const events = [];
+  const pageSize = 100;
+  const maxPages = 12; // 1か月に100件超のページが12も続くことはない（通常は1〜3ページ）
+  for (let page = 0; page < maxPages; page += 1) {
+    const url = `${endpoint}?limit=${pageSize}&offset=${page * pageSize}&since_date=${quakeDateKeyJst(fromMs)}&until_date=${quakeDateKeyJst(toMs)}`;
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const items = await response.json();
+    if (quakePlayback.token !== token) throw new Error("中止");
+    if (!Array.isArray(items) || !items.length) break;
+    let oldest = Infinity;
+    items.forEach(item => {
+      const event = p2pToEvent(item);
+      if (!event) return;
+      oldest = Math.min(oldest, event.atMs);
+      // 同じ地震に速報・詳細と複数の発表があるので、発生時刻＋震源名で1件にする（新しい発表が先に来る）
+      const key = `${event.atMs}|${event.name}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      if (event.atMs >= fromMs && event.atMs <= toMs) events.push(event);
+    });
+    onProgress?.(events.length);
+    if (items.length < pageSize || oldest < fromMs) break;
+  }
+  return events;
+}
+
+function jmaArchiveEvents(fromMs, toMs) {
+  return quakeJmaArchive
+    .map(event => ({ ...event, atMs: new Date(event.at).getTime(), source: "jma" }))
+    .filter(event => Number.isFinite(event.atMs) && event.atMs >= fromMs && event.atMs <= toMs);
+}
+
+function quakeJmaOldest() {
+  return quakeJmaArchive.reduce((min, event) => Math.min(min, new Date(event.at).getTime() || Infinity), Infinity);
+}
+
+// 月ごとに古い方から読み、1区切りごとに onChunk(events, info) を呼ぶ。
+// info: { done, total, source, partial }。P2P が落ちていたら、その月は飛ばして気象庁で読める月だけ続ける
+async function loadQuakeRangeProgressive(fromMs, toMs, token, onChunk) {
+  const jmaOldest = quakeJmaOldest();
+  const chunks = quakeMonthChunks(fromMs, toMs);
+  const sources = new Set();
+  let partial = false;
+  let p2pDown = false;
+  for (let i = 0; i < chunks.length; i += 1) {
+    const chunk = chunks[i];
+    let events = null;
+    let source = "";
+    if (quakeJmaArchive.length && jmaOldest <= chunk.from) {
+      events = jmaArchiveEvents(chunk.from, chunk.to);
+      source = "気象庁 震源・震度情報";
+    } else {
+      const cached = getCachedQuakeMonth(chunk.key);
+      if (cached) {
+        events = cached.filter(e => e.atMs >= chunk.from && e.atMs <= chunk.to);
+        source = "P2P地震情報（気象庁の発表の転載・端末に保存した分）";
+      } else if (!p2pDown) {
+        try {
+          const monthComplete = chunk.monthEnd < Date.now() - 24 * 3600 * 1000;
+          // 終わった月は月全体を読んで保存し、次からは待たずに済むようにする
+          const got = await fetchP2pQuakes(monthComplete ? chunk.monthStart : chunk.from, monthComplete ? chunk.monthEnd : chunk.to, token,
+            n => setQuakePlayStatus(`読み込み中… ${chunk.key.replace("-", "/")}月 ${n}件（${i + 1}/${chunks.length}か月）`));
+          if (monthComplete) putCachedQuakeMonth(chunk.key, got);
+          events = got.filter(e => e.atMs >= chunk.from && e.atMs <= chunk.to);
+          source = "P2P地震情報（気象庁の発表の転載）";
+        } catch (error) {
+          if (error?.message === "中止") throw error;
+          console.warn("P2P地震情報 取得失敗", chunk.key, error);
+          p2pDown = true;
+        }
+      }
+      if (!events) {
+        // P2P が使えない月：気象庁の一覧にかかる分だけ（無ければ0件）
+        events = jmaArchiveEvents(chunk.from, chunk.to);
+        source = events.length ? "気象庁（P2P地震情報に接続できないため一部）" : "";
+        partial = true;
+      }
+    }
+    if (quakePlayback.token !== token) throw new Error("中止");
+    if (source) sources.add(source);
+    onChunk(events, { done: i + 1, total: chunks.length, chunkEnd: chunk.to, source: [...sources].join("／"), partial });
+  }
+}
+
+// ---- 再生 ------------------------------------------------------------
+function quakePlayEl(id) { return document.getElementById(id); }
+
+function setQuakePlayStatus(text, isError) {
+  const node = quakePlayEl("quake-play-status");
+  if (!node) return;
+  node.textContent = text || "";
+  node.classList.toggle("is-error", Boolean(isError));
+}
+
+function formatQuakeClock(ms) {
+  return new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit"
+  }).format(new Date(ms));
+}
+
+function quakeEventLine(event) {
+  const parts = [formatQuakeClock(event.atMs ?? new Date(event.at).getTime()), event.name || "震源地不明"];
+  if (event.mag) parts.push(`M${event.mag}`);
+  parts.push(event.maxi ? `最大震度${intensityLabel(event.maxi)}` : "震度なし");
+  if (event.inzaiIntensity) parts.push(`印西市 震度${intensityLabel(event.inzaiIntensity)}`);
+  return parts.join(" ");
+}
+
+// 再生していないとき：最新の地震を見出しに出し、つまみは右端（＝最新の発生時刻）
+function renderQuakePlayIdle() {
+  if (quakePlayback.active) return;
+  const latest = quakeEvents[0];
+  const time = quakePlayEl("quake-play-time");
+  const caption = quakePlayEl("quake-play-caption");
+  const slider = quakePlayEl("quake-play-slider");
+  const button = quakePlayEl("quake-play-toggle");
+  if (time) time.textContent = latest ? formatQuakeClock(new Date(latest.at).getTime()) : "--";
+  if (caption) caption.textContent = latest ? `最新: ${quakeEventLine({ ...latest, atMs: new Date(latest.at).getTime() })}` : "地震情報を読み込み中です";
+  if (slider) { slider.value = "1000"; slider.disabled = true; }
+  if (button) { button.textContent = "▶ 再生"; button.disabled = true; }
+  setQuakePlayStatus(latest ? "期間を選ぶと、その期間の地震を早送りで再生します" : "");
+  quakePlayEl("quake-play-panel")?.classList.remove("is-playing");
+}
+
+function stopQuakePlayback() {
+  quakePlayback.token += 1;
+  quakePlayback.playing = false;
+  quakePlayback.active = false;
+  quakePlayback.loading = false;
+  if (quakePlayback.raf) cancelAnimationFrame(quakePlayback.raf);
+  quakePlayback.raf = null;
+  quakePlayback.events = [];
+  quakePlayback.lastEvent = null;
+  quakePlayLayer.clearLayers();
+  clearQuakeWaves(false);
+  quakeLiveWave = null;
+  if (map.hasLayer(quakeWaveLayer)) {
+    if (!map.hasLayer(quakeLayer)) quakeLayer.addTo(map);
+    updateQuakeLiveWave();
+  }
+  document.querySelectorAll("#quake-play-panel [data-qrange]").forEach(btn => btn.setAttribute("aria-pressed", "false"));
+  renderQuakePlayIdle();
+}
+
+function quakeRangeFromKey(key) {
+  const DAY = 24 * 3600 * 1000;
+  const to = Date.now();
+  if (key === "7d") return { from: to - 7 * DAY, to };
+  if (key === "30d") return { from: to - 30 * DAY, to };
+  if (key === "90d") return { from: to - 90 * DAY, to };
+  if (key === "365d") return { from: to - 365 * DAY, to };
+  return null;
+}
+
+function pickQuakeSpeed(fromMs, toMs) {
+  const days = (toMs - fromMs) / (24 * 3600 * 1000);
+  if (days <= 8) return "1h";
+  if (days <= 40) return "6h";
+  if (days <= 120) return "1d";
+  return "1w";
+}
+
+function quakeLoadingStatus(info) {
+  const n = quakePlayback.events.length;
+  if (quakePlayback.loading) return `${n}件 読み込み中 ${info.done}/${info.total}か月（出典: ${info.source || "—"}）`;
+  return `${n}件（出典: ${info.source || "—"}）${info.partial ? " ※一部の月は読めていません" : ""}`;
+}
+
+async function startQuakePlayback(fromMs, toMs) {
+  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs) || toMs <= fromMs) { setQuakePlayStatus("期間の始まりと終わりを確かめてください", true); return; }
+  if (toMs - fromMs > 400 * 24 * 3600 * 1000) { setQuakePlayStatus("一度に再生できるのは400日までです", true); return; }
+  // 層が OFF のまま押されたら ON にする（枠は層と一緒に出る）
+  const box = document.querySelector('[data-overlay="quakes"]');
+  if (box && !box.checked) box.click();
+  stopQuakePlayback();
+  const token = quakePlayback.token;
+  quakePlayback.active = true;
+  quakePlayback.loading = true;
+  quakePlayback.from = fromMs;
+  quakePlayback.to = toMs;
+  quakePlayback.now = fromMs;
+  quakePlayback.loadedUntil = fromMs;
+  quakePlayback.cursor = 0;
+  quakePlayback.source = "";
+  if (quakeLiveWave) { removeQuakeWave(quakeLiveWave); quakeLiveWave = null; }
+  map.removeLayer(quakeLayer); // 直近20件の丸は再生の点と紛れるので、再生中は消す
+  const speedSel = quakePlayEl("quake-play-speed");
+  if (speedSel) { speedSel.value = pickQuakeSpeed(fromMs, toMs); quakePlayback.speed = QUAKE_SPEEDS.find(s => s.key === speedSel.value)?.msPerSec || quakePlayback.speed; }
+  quakePlayEl("quake-play-panel")?.classList.add("is-playing");
+  setQuakePlayStatus("読み込み中…");
+  const slider = quakePlayEl("quake-play-slider");
+  if (slider) { slider.disabled = true; slider.value = "0"; }
+  const button = quakePlayEl("quake-play-toggle");
+  if (button) { button.disabled = true; button.textContent = "▶ 再生"; }
+  const caption = quakePlayEl("quake-play-caption");
+  if (caption) caption.textContent = "読み込み中…";
+  renderQuakePlayClock();
+  let started = false;
+  let lastInfo = { done: 0, total: 0, source: "", partial: false };
+  try {
+    await loadQuakeRangeProgressive(fromMs, toMs, token, (events, info) => {
+      if (quakePlayback.token !== token) return;
+      lastInfo = info;
+      quakePlayback.events.push(...events);
+      quakePlayback.events.sort((a, b) => a.atMs - b.atMs);
+      quakePlayback.loadedUntil = info.chunkEnd;
+      quakePlayback.source = info.source;
+      if (info.done >= info.total) quakePlayback.loading = false;
+      setQuakePlayStatus(quakeLoadingStatus(info), info.partial && !quakePlayback.loading);
+      if (!started && (quakePlayback.events.length || !quakePlayback.loading)) {
+        started = true;
+        if (slider) slider.disabled = false;
+        if (button) button.disabled = false;
+        if (!quakePlayback.events.length && !quakePlayback.loading) { setQuakePlayStatus(`この期間の地震はありません（出典: ${info.source || "—"}）`, true); renderQuakePlayClock(); return; }
+        setQuakePlaying(true);
+      }
+    });
+  } catch (error) {
+    if (quakePlayback.token !== token) return;
+    setQuakePlayStatus(`読み込めませんでした: ${error?.message || "不明なエラー"}`, true);
+    quakePlayback.loading = false;
+    return;
+  }
+  if (quakePlayback.token !== token) return;
+  quakePlayback.loading = false;
+  quakePlayback.loadedUntil = toMs;
+  if (quakePlayback.playing || quakePlayback.now < toMs) setQuakePlayStatus(quakeLoadingStatus(lastInfo), lastInfo.partial);
+}
+
+function setQuakePlaying(playing) {
+  if (!quakePlayback.active) return;
+  if (playing && quakePlayback.now >= quakePlayback.to) seekQuakePlayback(quakePlayback.from);
+  quakePlayback.playing = playing;
+  const button = quakePlayEl("quake-play-toggle");
+  if (button) button.textContent = playing ? "⏸ 一時停止" : "▶ 再生";
+  if (quakePlayback.raf) cancelAnimationFrame(quakePlayback.raf);
+  quakePlayback.raf = null;
+  if (playing) {
+    quakePlayback.lastTick = performance.now();
+    quakePlayback.raf = requestAnimationFrame(quakePlayTick);
+  }
+}
+
+function quakePlayTick(ts) {
+  quakePlayback.raf = null;
+  if (!quakePlayback.playing) return;
+  const dt = Math.min(ts - quakePlayback.lastTick, 250); // タブを離れていた間は飛ばさない
+  quakePlayback.lastTick = ts;
+  // 読み込みが終わった時刻（loadedUntil）より先へは進まず、そこで待つ
+  const limit = quakePlayback.loading ? Math.min(quakePlayback.to, quakePlayback.loadedUntil) : quakePlayback.to;
+  quakePlayback.now = Math.min(limit, Math.max(quakePlayback.now, quakePlayback.now + dt / 1000 * quakePlayback.speed));
+  while (quakePlayback.cursor < quakePlayback.events.length && quakePlayback.events[quakePlayback.cursor].atMs <= quakePlayback.now) {
+    emitQuakePlayEvent(quakePlayback.events[quakePlayback.cursor], true);
+    quakePlayback.cursor += 1;
+  }
+  renderQuakePlayClock();
+  if (!quakePlayback.loading && quakePlayback.now >= quakePlayback.to) { setQuakePlaying(false); setQuakePlayStatus(`再生おわり：${quakePlayback.events.length}件（出典: ${quakePlayback.source}）`); return; }
+  quakePlayback.raf = requestAnimationFrame(quakePlayTick);
+}
+
+function quakePlayDot(event) {
+  const rank = intensityRank(event.maxi);
+  const m = Number(event.mag);
+  const radius = 2.5 + (Number.isFinite(m) ? Math.max(0, m - 1) * 1.1 : 1) + rank * 0.4;
+  const dot = L.circleMarker([event.position.lat, event.position.lng], {
+    renderer: quakePlayRenderer, pane: "quakePlayPane",
+    radius, color: "#fff", weight: 0.8, fillColor: quakeWaveColor(event), fillOpacity: 0.6, opacity: 0.9
+  });
+  dot.bindPopup(`
+    <div class="popup-title">震源: ${escapeHtml(event.name || "不明")}</div>
+    <div class="shelter-popup-badges">
+      <span class="badge ${rank >= 4 ? "red" : "blue"}">最大震度 ${escapeHtml(intensityLabel(event.maxi))}</span>
+      <span class="badge blue">M${escapeHtml(event.mag || "-")}</span>
+    </div>
+    <div>${escapeHtml(formatQuakeClock(event.atMs))}</div>
+    ${event.position.depthKm !== null ? `<div class="detail-meta">深さ 約${escapeHtml(String(event.position.depthKm))}km</div>` : ""}
+    ${event.inzaiIntensity ? `<div class="shelter-evidence"><strong>印西市の震度 ${escapeHtml(intensityLabel(event.inzaiIntensity))}</strong></div>` : ""}
+    <div class="detail-meta">出典: ${escapeHtml(quakePlayback.source)}</div>
+  `);
+  return dot;
+}
+
+function emitQuakePlayEvent(event, withWave) {
+  quakePlayLayer.addLayer(quakePlayDot(event));
+  if (withWave) addQuakeWave(event, { loop: false, duration: 1600 });
+  quakePlayback.lastEvent = event;
+}
+
+// つまみを動かしたとき：その時刻までの地震を点で置き直す（波紋は出さない）
+function seekQuakePlayback(ms) {
+  const limit = quakePlayback.loading ? Math.min(quakePlayback.to, quakePlayback.loadedUntil) : quakePlayback.to;
+  quakePlayback.now = Math.max(quakePlayback.from, Math.min(limit, ms));
+  quakePlayLayer.clearLayers();
+  clearQuakeWaves(false);
+  quakePlayback.lastEvent = null;
+  quakePlayback.cursor = 0;
+  while (quakePlayback.cursor < quakePlayback.events.length && quakePlayback.events[quakePlayback.cursor].atMs <= quakePlayback.now) {
+    emitQuakePlayEvent(quakePlayback.events[quakePlayback.cursor], false);
+    quakePlayback.cursor += 1;
+  }
+  // 直前の1件だけ波紋を出して、どこまで来たか分かるようにする
+  if (quakePlayback.lastEvent) addQuakeWave(quakePlayback.lastEvent, { loop: false, duration: 1600 });
+  renderQuakePlayClock();
+}
+
+function renderQuakePlayClock() {
+  const span = quakePlayback.to - quakePlayback.from;
+  const slider = quakePlayEl("quake-play-slider");
+  if (slider && !quakePlayback.scrubbing && span > 0) slider.value = String(Math.round((quakePlayback.now - quakePlayback.from) / span * 1000));
+  const time = quakePlayEl("quake-play-time");
+  if (time) time.textContent = formatQuakeClock(quakePlayback.now);
+  const caption = quakePlayEl("quake-play-caption");
+  if (caption) {
+    caption.textContent = quakePlayback.lastEvent
+      ? `${quakePlayback.cursor}/${quakePlayback.events.length}件 ${quakeEventLine(quakePlayback.lastEvent)}`
+      : (quakePlayback.loading && !quakePlayback.events.length ? "読み込み中…" : `0/${quakePlayback.events.length}件`);
+  }
+}
+
+(function bindQuakePlayPanel() {
+  const panel = document.getElementById("quake-play-panel");
+  if (!panel) return;
+  panel.querySelectorAll("[data-qrange]").forEach(btn => btn.addEventListener("click", () => {
+    const range = quakeRangeFromKey(btn.dataset.qrange);
+    if (!range) return;
+    panel.querySelectorAll("[data-qrange]").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+    const fromInput = quakePlayEl("quake-play-from");
+    const toInput = quakePlayEl("quake-play-to");
+    if (fromInput) fromInput.value = quakeDateKeyJst(range.from).replace(/^(\d{4})(\d{2})(\d{2})$/, "$1-$2-$3");
+    if (toInput) toInput.value = quakeDateKeyJst(range.to).replace(/^(\d{4})(\d{2})(\d{2})$/, "$1-$2-$3");
+    startQuakePlayback(range.from, range.to);
+  }));
+  quakePlayEl("quake-play-apply")?.addEventListener("click", () => {
+    const fromValue = quakePlayEl("quake-play-from")?.value;
+    const toValue = quakePlayEl("quake-play-to")?.value;
+    if (!fromValue || !toValue) { setQuakePlayStatus("始まりと終わりの日を入れてください", true); return; }
+    const from = new Date(`${fromValue}T00:00:00+09:00`).getTime();
+    const to = Math.min(Date.now(), new Date(`${toValue}T23:59:59+09:00`).getTime());
+    panel.querySelectorAll("[data-qrange]").forEach(b => b.setAttribute("aria-pressed", "false"));
+    startQuakePlayback(from, to);
+  });
+  quakePlayEl("quake-play-toggle")?.addEventListener("click", () => setQuakePlaying(!quakePlayback.playing));
+  quakePlayEl("quake-play-speed")?.addEventListener("change", event => {
+    const found = QUAKE_SPEEDS.find(s => s.key === event.target.value);
+    if (found) quakePlayback.speed = found.msPerSec;
+  });
+  const slider = quakePlayEl("quake-play-slider");
+  if (slider) {
+    const onScrub = () => {
+      if (!quakePlayback.active) return;
+      const span = quakePlayback.to - quakePlayback.from;
+      seekQuakePlayback(quakePlayback.from + Number(slider.value) / 1000 * span);
+    };
+    slider.addEventListener("pointerdown", () => { quakePlayback.scrubbing = true; });
+    slider.addEventListener("input", onScrub);
+    slider.addEventListener("change", () => { quakePlayback.scrubbing = false; onScrub(); });
+  }
+  quakePlayEl("quake-play-stop")?.addEventListener("click", () => stopQuakePlayback());
+  quakePlayEl("quake-play-close")?.addEventListener("click", () => {
+    const box = document.querySelector('[data-overlay="quakes"]');
+    if (box?.checked) box.click(); else setQuakeLayer(false);
+  });
+  quakePlayEl("quake-play-japan")?.addEventListener("click", () => fitJapanForQuakes());
+  // スマホでは期間の選択を折りたたんでおく（枠が地図を覆いすぎるため）。PC では常に出ていてこのボタンは隠れる
+  quakePlayEl("quake-play-expand")?.addEventListener("click", () => {
+    const expanded = panel.classList.toggle("is-expanded");
+    quakePlayEl("quake-play-expand").setAttribute("aria-expanded", String(expanded));
+    quakePlayEl("quake-play-expand").textContent = expanded ? "期間 ▴" : "期間 ▾";
+  });
+  const speedSel = quakePlayEl("quake-play-speed");
+  if (speedSel && !speedSel.options.length) {
+    QUAKE_SPEEDS.forEach(s => { const opt = document.createElement("option"); opt.value = s.key; opt.textContent = s.label; speedSel.appendChild(opt); });
+    speedSel.value = "1d";
+  }
+  renderQuakePlayIdle();
+})();
+quakeWaveReady = true;
 
 // 最初の画面は冠水の情報だけにする（2026-09-21 中司さんの実機指摘）。開いた直後に
 // 避難所55施設のピン・被害候補のピン・洪水浸水想定の赤い面が全部出ていて、地図そのものが

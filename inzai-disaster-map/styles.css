@@ -3921,3 +3921,40 @@ body.sns-popup-open #quick-record-bar { display: none; }
 @media (max-width: 820px) { .leaflet-bottom .leaflet-control.pref-kisei-badge { margin-bottom: 50px; max-width: 220px; } }
 .rail-status-links { margin-top: 3px; font-size: 12px; } /* 🚃 事業者の運行情報へのリンク（2026-09-28） */
 .rail-status-links a { white-space: nowrap; }
+
+/* 🌍 全国の地震：波紋と再生の枠（2026-10-02）。凡例の下・右寄せ。期間パネル（左）と同時に開いても重ならない */
+.range-panel.quake-play-panel { left: auto; right: 8px; width: min(320px, calc(100% - 16px)); z-index: 960; }
+.quake-play-head { display: flex; align-items: center; gap: 6px; }
+.quake-play-head strong { flex: 1; font-size: 13px; color: #16324f; }
+.quake-play-head button { min-height: 26px; padding: 2px 8px; font-size: 12px; }
+.quake-play-expand { display: none; }
+.quake-play-time { margin-top: 6px; font-size: 20px; font-weight: 700; color: #16324f; font-variant-numeric: tabular-nums; }
+.quake-play-panel input[type="range"] { width: 100%; margin: 4px 0 2px; padding: 0; border: 0; accent-color: #16324f; }
+.quake-play-panel input[type="range"]:disabled { opacity: .45; }
+.quake-play-caption { margin: 0 0 6px; min-height: 1.4em; font-size: 12px; color: #3d4f60; line-height: 1.4; word-break: break-word; }
+.quake-play-transport { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.quake-play-transport #quake-play-toggle { flex: 1; background: #16324f; border-color: #16324f; color: #fff; font-weight: 700; }
+.quake-play-transport #quake-play-toggle:disabled { opacity: .5; cursor: default; }
+.quake-play-transport select { min-height: 32px; padding: 4px 6px; border: 1px solid #b9c4d3; border-radius: 8px; background: #f7f9fc; color: #16324f; font: inherit; font-size: 12px; }
+.quake-play-presets { margin-bottom: 4px; }
+.quake-play-presets button[aria-pressed="true"] { background: #16324f; border-color: #16324f; color: #fff; }
+.quake-play-custom { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-items: center; }
+.quake-play-custom label { margin-top: 0; font-size: 11.5px; }
+.quake-play-custom input[type="date"] { font-size: 13px; padding: 4px; }
+.quake-play-custom #quake-play-apply { grid-column: 1 / -1; min-height: 30px; }
+.quake-play-status { color: #3d4f60; }
+.quake-play-status.is-error { color: #b8322c; }
+.quake-play-source { margin: 6px 0 0; color: #7b879a; font-size: 10.5px; line-height: 1.4; }
+.quake-play-panel.is-playing .quake-play-time { color: #b8322c; }
+@media (max-width: 820px) {
+  /* スマホは地図が 68dvh。枠が地図を覆いすぎないよう、期間の指定は折りたたんで小さくする */
+  /* 左の＋−ボタン（Leaflet）に見出しが隠れないよう、雨量の枠と同じく 58px から始める */
+  .range-panel.quake-play-panel { left: 58px; right: 8px; width: auto; padding: 8px; font-size: 12px; }
+  .quake-play-time { font-size: 17px; margin-top: 2px; }
+  .quake-play-expand { display: inline-block; }
+  .quake-play-panel:not(.is-expanded) .quake-play-presets,
+  .quake-play-panel:not(.is-expanded) .quake-play-custom,
+  .quake-play-panel:not(.is-expanded) .quake-play-source,
+  .quake-play-panel:not(.is-expanded) .quake-play-status:empty { display: none; }
+  .quake-play-transport { margin-bottom: 4px; }
+}

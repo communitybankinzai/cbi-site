@@ -16,6 +16,65 @@
   "agents": {
     "A1": {
       "actuals": [
+        {"date": "2026-10-02", "title": "防災MAP 全国の地震の波紋表示＋期間指定の早送り再生（データ源の実測比較・実装・PC/スマホ幅の動作確認）0.8時間", "category": "実装", "outputs": ["site/inzai-disaster-map/app.js（「🌍 全国の地震」節を新設：波紋・再生・P2P地震情報の月ごと読み込みと端末保存／toggleOverlay に quakes 分岐／PRESETS.quake／renderQuakeLayer から波紋更新・気象庁の全件を quakeJmaArchive に保持）", "site/inzai-disaster-map/index.html（「見たいもの」に 🌍 地震ボタン、#quake-play-panel、版 app/css/config 20261002a）", "site/inzai-disaster-map/styles.css（.quake-play-panel 一式・スマホの折りたたみ）", "site/inzai-disaster-map/config.js（p2pQuakeEndpoint）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md（経緯・P2P API の実測・残課題）", "site/admin/changelog.json, site/admin/agents-worklog.json（実績・予定2件）"], "hours": 0.8, "partnerApproved": false, "note": "データ源は事業主決定A（P2P地震情報API）。実測：気象庁 list.json は約1か月分（9/2〜10/2・202件）、P2P /v2/jma/quake は日付指定可・CORS可だが1ページ6〜12秒で同時に投げても直列（4本同時で8→27秒）、/v2/history は0.1秒だが直近3週間分のみ、USGS はM2.5以上のみ（9月54件 vs 気象庁202件）。ローカル8766で PC（1400px）とスマホ幅（375px）を確認：直近7日は気象庁で即時44件、3か月は7月が約45秒で届いて再生開始→8月が届くまで月末で待つ動きを確認、端末保存2か月で77KB。実機は未確認（予定に登録）。session: 098bec58-0f40-4d61-a7b8-16dc314bad0e / output: 81,114 / cost: $21.58"},
+        {
+          "date": "2026-10-01",
+          "title": "Instagram アカウント巡回の開通確認（権限追加後の本番実行・商工会3件が候補に）＋報告メール再送 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "本番: /api/cron/instagram-accounts-sync 手動実行（商工会 8 投稿→読み取り 4→候補 3・創業塾 4 日程は既存と重複判定・9.4円）",
+            "本番: 報告メール（#印西＋アカウント欄）を ?report=1 で CBI 公式メールへ送信",
+            "agents/a1-core/credentials.md（検索用トークンの権限追記）, cidao/2026-10-01_Instagram印西タグからイベント候補の自動取り込み.md（開通の追記）, cidao/worklog.md"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "中司さんが Graph API Explorer で instagram_manage_insights を承認。権限はユーザー×アプリに付くため保存済みトークンの貼り替えは不要だった（debug_token で確認・(#10) 解消）。Meta 審査も不要。前の実績（output 288,545）からの差分 19,918 で算出。session: 1aff5f01-71b6-4773-a106-07c595b97605 / output: 308,463 / cost: $92.46"
+        },
+        {
+          "date": "2026-10-01",
+          "title": "Instagram モニタ対象アカウント（団体・企業・行政）の自動取り込みの設計・実装・本番確認＋商工会チラシの読み取り試行 1.1時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20261001200000_sns_monitor_accounts.sql（新テーブル・本番適用済み）",
+            "cidao: src/lib/instagram-events/{accounts.ts,db-supabase.ts}（新規）, sync.ts（processPosts に分割・syncInstagramAccounts）, report-mail.ts（アカウント欄）, hashtag.ts, event-flyer-extract.ts（出力上限4096）",
+            "cidao: src/app/api/cron/instagram-accounts-sync/route.ts（新規・06:32）, src/app/api/cron/instagram-events-sync/route.ts（メール統合）, vercel.json",
+            "cidao: src/app/admin/sns-monitor/{page.tsx,actions.ts}（新規）, src/app/admin/page.tsx, src/app/admin/events/import/{page.tsx,actions.ts,_components/CosmosCandidates.tsx}",
+            "cidao: __tests__/{accounts.test.ts,report-mail.test.ts}（計 449 件）",
+            "cidao/2026-10-01_Instagram印西タグからイベント候補の自動取り込み.md（追記）, cidao/worklog.md"
+          ],
+          "hours": 1.1,
+          "partnerApproved": false,
+          "note": "中司さん指示「全団体をモニタ・団体編集で SNS 追加・企業行政は一覧管理」。試行：商工会の直近8投稿をローカルで読み取り5件の催しを抽出（出力上限1024で3件失敗→4096で2件回復）、商工会のタグに #印西 は無くハッシュタグ巡回では拾えないと判明。本番確認：商工会＋CBI（団体から自動）が (#10) 権限エラーとして行に書き戻され、実行記録とメール案内に出る。残りは検索用トークンへの instagram_manage_insights 追加（事業主操作）。前の実績（output 177,558）からの差分 110,987 で算出。session: 1aff5f01-71b6-4773-a106-07c595b97605 / output: 288,545 / cost: $72.25"
+        },
+        {
+          "date": "2026-10-01",
+          "title": "Instagram #印西 取り込みの朝の結果報告メール（一覧・経費見積もり・一時停止ボタン）と一時停止の仕組み 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/instagram-events/{report-mail.ts,pause.ts,__tests__/report-mail.test.ts}（新規・本文組み立て／署名トークンと状態の読み書き／テスト7件）",
+            "cidao: src/app/api/instagram-events/pause/route.ts（新規・確認ページ GET／停止・再開 POST）",
+            "cidao: src/app/api/cron/instagram-events-sync/route.ts（一時停止の判定・結果報告メール・?report=1 再送）, src/app/admin/events/import/{actions.ts,page.tsx}（状態表示と切替ボタン）",
+            "cidao/2026-10-01_Instagram印西タグからイベント候補の自動取り込み.md（追記）, cidao/worklog.md"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "中司さん指示「明日の朝の実行結果を一覧にしてメール報告・経費見積もり・一時停止ボタン」。宛先は費用アラートと同じ COST_ALERT_TO（CBI公式メール）、INSTAGRAM_EVENT_REPORT_TO で変更可。本番で ?report=1 により今日の結果で試送し、CBI公式メールへの着信と本文を確認。一時停止→停止中の cron が何もしない→再開を本番で確認（無効トークンは403）。GET は確認ページだけで POST でしか状態を変えない（リンクを機械的に開く保護ソフト対策）。前の実績（output 127,770）からの差分 49,788 で算出。session: 1aff5f01-71b6-4773-a106-07c595b97605 / output: 177,558 / cost: $37.86"
+        },
+        {
+          "date": "2026-10-01",
+          "title": "Instagram #印西 の投稿からイベント候補を自動取り込む仕組みの設計・実装・本番検証 1.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/api/cron/instagram-events-sync/route.ts（新規・毎朝06:35 JST）",
+            "cidao: src/lib/instagram-events/{hashtag.ts,sync.ts,__tests__/sync.test.ts}（新規・取得／一次ふるい／読み取り／重複排除／予算停止・テスト20件）",
+            "cidao: src/lib/event-flyer-extract.ts（新規・チラシ読み取りの共通化）, src/app/api/events/scan/route.ts（共通部品を使用）, src/lib/event-sync/record-run.ts（追加情報）",
+            "cidao: src/app/admin/events/import/{page.tsx,actions.ts,_components/CosmosCandidates.tsx}（Instagram の実行状況・費用・候補バッジ）, vercel.json（cron 追加）",
+            "cidao/2026-10-01_Instagram印西タグからイベント候補の自動取り込み.md（新規）, MOC_CiDAO.md, cidao/worklog.md"
+          ],
+          "hours": 1.3,
+          "partnerApproved": false,
+          "note": "中司さん決定：#印西 のみ・下書きで運営が公開・月500円まで。SNS別の可否（IGハッシュタグ＝可／特定アカウント＝権限追加で要検証／Threads＝審査待ち／FB・X・LINE＝不可）を整理して提示。本番初回は20秒タイムアウトで失敗→10件ずつ・childrenなし・時間予算100秒に修正→2回目成功（30件→通過1→読み取り1→候補0・2.9円）→空ページで終了する修正まで反映（2076d15）。並行セッションの80365ad（指示文）を共通化で一度消し b3b04d1 で移植。session: 1aff5f01-71b6-4773-a106-07c595b97605 / output: 127,770 / cost: $27.05"
+        },
         {"date": "2026-10-01", "title": "市サイト取り込みで6日を超えて続く催しを会期つきの1件（初日〜最終日）で入れるよう修正、月替わりの二重登録も予防（cidao cc6f235） 0.3時間", "category": "実装", "outputs": ["cidao: src/lib/inzai-city/calendar.ts（終了を最終日・題名の〜M/D廃止・本文は※会期・sourceId を city:<pageId>:period）", "cidao: src/lib/inzai-city/sync.ts（会期中の催しを候補に残す isStillUpcoming・下書き更新で開始を遅らせない widenPeriodRow）", "cidao: src/lib/inzai-city/__tests__/calendar.test.ts（期間のテスト修正＋3件追加）", "保管庫: cidao/2026-10-01_広報いんざい10月号のCiDAO登録と期間イベント欄.md（追記）", "site/admin/agents-worklog.json"], "hours": 0.3, "partnerApproved": false, "note": "事業主『市サイト取り込みの会期も直して』。task-high に依頼したが作業せず依頼文を返しただけだったため主エージェントが実装。月別ページを当月から3か月読む仕組みのため、月をまたぐ長期間の催しは翌月に初日が後ろにずれ、日付入りの sourceId が変わって二重登録になりうる既存の不具合も同時に予防。旧方式の長期間行（題名に〜M/D）は本番に0件で移行不要。tsc 0・eslint 0・vitest 40ファイル433件成功。本番の試し実行（?dry=1）：ページ11・候補14・新規0・変更なし11・重複3・エラー0（いまの市カレンダーに6日超の催しは無く、期間の挙動は単体テストでのみ確認）。試し実行は実行記録（event_sync_runs）に dry として1行残る。.env.local の CRON_SECRET は本番と違い 401、credentials.md の値で実行。ローカルの vitest では外部通信が止まっていて本物の市サイトを読めなかった。前回記録（output 203,863）からの差分 27,872 で算出\nsession: a7d6a1a4-04fa-4de5-bbcb-de8398f64e87 / output: 231,735 / cost: $41.90"},
         {"date": "2026-10-01", "title": "鍵の試し投稿：10月のイベントカレンダー（100件超）の告知を Instagram・Facebook・Threads へ投稿（本文・見出し帯つき表紙の作成、事前承認、結果確認） 0.4時間", "category": "広報", "outputs": ["site/assets/sns/2026-10-01_events-calendar/（cover.jpg・calendar_screenshot.png・投稿文.txt）", "site/admin/changelog.json", "予約投稿キュー q1790823027648（Instagram・Facebook 11:54 成功）", "予約投稿キュー q1790824157333（Threads 12:09 成功）", "branding/sns/2026-10-01_CiDAO側Meta鍵の失効確認.md（試し投稿の結果を追記）"], "hours": 0.4, "partnerApproved": true, "note": "事業主『Facebook と Instagram に試しに1件投稿して確かめて』→『テスト』とだけ出さず実のある告知にし、本文と画像を見せて承認（A）を得てから予約投稿キューへ IG＋FB（Threads 無し）で登録。件数は DB で実測（10月に開催がある公開イベント 120 件・画面の163件は前後の週を含む）ため本文は『100件超』。Playwright で 1080×1350 撮影→sns_headline.py で帯。投稿後は CiDAO 側の鍵で FB 投稿一覧・IG メディア一覧を読んで 200 を確認。他セッション（広報10月号の登録）へ重複投稿防止の申し送り。事業主指示で Threads にも同じ内容を出し成功（12:09）。前件（output 62,091）との差分 36,051 → 0.4時間\nsession: 8cd2a993-f677-4b59-afc6-901f9e39e3ff / output: 98,142 / cost: $21.53"},
         {"date": "2026-10-01", "title": "チラシ読み取りの指示文を直し、連続した会期を日ごとに分けず初日〜最終日の1件で返すように（cidao 80365ad） 0.2時間", "category": "実装", "outputs": ["cidao: src/app/api/events/scan/route.ts（指示文3か所＋先頭日時の補足2か所・80365ad・task-small 担当＋主エージェント補正）", "保管庫: cidao/広報取り込み/2026-10_令和8年10月号/test_scan.mjs（指示文を route.ts から読んで実APIで試す検証スクリプト）", "保管庫: cidao/2026-10-01_広報いんざい10月号のCiDAO登録と期間イベント欄.md（追記）", "site/admin/agents-worklog.json"], "hours": 0.2, "partnerApproved": false, "note": "事業主『チラシ読み取りの会期の扱いも直して』。登録画面・一括取り込みとも終了は日付＋時刻欄なので、直すのは指示文だけと確認。広報の記事画像4枚を実際のAPI（claude-opus-4-7）で読ませ、修正前は秋の小品展が8件に分割、修正後は 10/10 13:30〜10/18 13:30 の1件。初回修正ではクライミング教室（3回）の先頭の終了が最終回の日付になり、1回分だけ登録すると誤って期間イベントになるため『先頭には1回目』を補足し再確認（クライミング3回・サザンフェスタ2日・スタンプラリー1件いずれも正）。tsc 0・eslint 0・vitest 412件成功。検証のAPI利用は3回×4枚（入力約3.6万・出力約4千トークン）。本番の読み取り画面はログインが要るため未操作。前回記録（output 184,707）からの差分 19,156 で算出\nsession: a7d6a1a4-04fa-4de5-bbcb-de8398f64e87 / output: 203,863 / cost: $33.83"},
@@ -8333,6 +8392,15 @@
         }
       ],
       "plans": [
+        {"due": "未定", "title": "🌍 地震の過去データを CiDAO 側に貯めて配る（P2P地震情報 /jma/quake が1ページ6〜12秒・直列のため、1年分の初回読み込みが約4分かかる）", "category": "実装", "priority": "中", "note": "案：cron が毎日 気象庁 list.json を Supabase に貯め、/api/disaster/quakes?from&to で1件60バイト程度の圧縮JSONを返す（1年≈150KB・1秒未満）。過去分は P2P から一度だけ取り込む（1か月1〜4ページ・夜間に分けて）。実装までは端末の localStorage に月単位で30日残す現行（app.js の loadQuakeRangeProgressive）で運用。費用は Supabase の既存枠内の見込み（要確認）"},
+        {"due": "2026-10-09", "title": "🌍 地震ボタンの実機確認（スマホ2台：波紋の見え方・「期間 ▾」の折りたたみ・1か月再生の待ち時間）", "category": "保守", "priority": "中", "note": "ローカルの端末エミュレーション（375px）では確認済み。実機では ▶ 再生の反応、直近7日／1か月（気象庁・即時）と3か月（P2P・月ごとに待つ）の体感、閉じたときに元の位置へ戻ることを見る。P2P が落ちていたら「P2P地震情報に接続できないため一部」と出る"},
+        {
+          "due": "2026-10-08",
+          "title": "📷 Instagram #印西 取り込みの初週レビュー（候補の当たり率・費用・1回の上限12枚と一次ふるいの語の調整）",
+          "category": "保守",
+          "priority": "中",
+          "note": "管理画面 /admin/events/import の「Instagram #印西」欄で実行記録と今月の費用を確認（毎朝の結果報告メールでも同じ内容が CBI 公式メールに届く。10/2 06:35 すぎの初回着信と一時停止ボタンの表示も確認）。アカウント巡回（06:32・/admin/sns-monitor）も対象：商工会・CBI の読み取り結果と、団体編集の SNS 欄から自動で載る団体が増えているかを見る。1枚2.9円（実測）なので月500円で約170枚。候補にならなかった投稿が多ければ EVENT_WORDS_RE／NOT_EVENT_RE（src/lib/instagram-events/hashtag.ts）を調整、費用が嵩めば INSTAGRAM_EVENT_SCAN_MAX_PER_RUN を下げる。詳細は cidao/2026-10-01_Instagram印西タグからイベント候補の自動取り込み.md"
+        },
         {"due": "2026-12-20", "title": "🔑 Meta 鍵のデータアクセス期限（2026-12-30）前に Facebook ログインをやり直し、FBページ投稿用・IG検索用の鍵を取り直す（GAS・CiDAO・credentials.md の3か所）", "category": "保守", "priority": "高", "note": "2026-10-01 debug_token で確認：FBページ投稿用（GAS FB_PAGE_TOKEN／CiDAO sns_facebook_auth）と IG検索用（CiDAO sns_instagram_discovery_auth）はどちらも expires_at なしだが data_access_expires_at が 2026-12-30 11:28 JST。Threads の週次延長とは別物で、事業主が Graph API Explorer（アプリ『スレッズ自動投稿』）でログインし直す必要がある。手順は branding/sns/Facebookトークン取得手順.md と branding/sns/2026-10-01_CiDAO側Meta鍵の失効確認.md。取り直したら Claude が GAS checkSnsTokens と CiDAO の DB 値を Graph API に当てて確認し、credentials.md の控えも更新する。期限の7日前（12/23）に鍵の見張りが切れていなくても声で知らせる仕組みは無いので、この予定の期限で気づく"},
         {"due": "2026-10-02", "title": "☕ CiDAO のオレンジカフェ10/3の時刻食い違いを確かめて直す（CiDAO は10時、広報いんざい10月号は13時30分・トミオコスモステラス）", "category": "保守", "priority": "中", "note": "既存行 a62421e8（オレンジカフェのご案内 令和8年度下半期・手動登録）。広報12ページの表では『ふれあい・オレンジカフェ』10/3 13時30分〜15時30分。開催日の前に直す。2026-10-01 広報取り込みで気づいた"},
         {"due": "未定", "title": "🏃 CiDAO の印西シティリレーマラソン2026（11/15）の二重登録（06433b26 と 1d9f35f6）をどちらに寄せるか決める", "category": "保守", "priority": "低", "note": "06433b26 は 0:00〜23:59・画像なし（10/01 に広報の記事画像を付与）、1d9f35f6 は 9:00〜10:00・画像あり。どちらも手動登録。2026-10-01 広報取り込みで気づいた"},
