@@ -3101,10 +3101,12 @@ const PRESETS = {
     toggle: ["teiden"]
   },
   // 全国の地震（2026-10-02 事業主指示「地震のボタンがない」）。押すと震源の層（quakes）を足し、
-  // 最新の地震の波紋と右上の再生の枠が出て、地図は日本全体へ。もう一度押すと外して元の位置へ
+  // 最新の地震の波紋と右上の再生の枠が出て、地図は日本全体へ。もう一度押すと外して元の位置へ。
+  // 左のチェック欄から ON にしたときは地図を動かさない（同日「印西周辺を見たままでも震源を出せるように」）
   quake: {
     label: "地震",
-    toggle: ["quakes"]
+    toggle: ["quakes"],
+    onApply: () => fitJapanForQuakes({ remember: true })
   },
   landslide: {
     label: "土砂災害",
@@ -3152,6 +3154,8 @@ function applyTogglePreset(name, preset) {
   const turnOn = !boxes.length || boxes.some(box => !box.checked);
   if (turnOn) {
     boxes.forEach(box => { if (!box.checked) box.click(); });
+    // ボタンから ON にしたときだけの後処理（🌍 地震：日本全体へ移動。チェック欄から ON にしたときは動かさない）
+    if (typeof preset.onApply === "function") preset.onApply();
   } else {
     // 外すときは、ほかに ON のままのボタンが使っている層（被害・確認候補など）は残す
     const keep = new Set();
@@ -13000,7 +13004,9 @@ function updateQuakeLiveWave() {
 }
 
 // 日本全体を、右上の枠（関東の上に重なる）を避けて左寄せで収める
-function fitJapanForQuakes() {
+function fitJapanForQuakes(options) {
+  // remember: 閉じたときに戻す位置を覚える（🌍 地震ボタンから来たとき）。枠の「🗾 全国」は覚えない
+  if (options?.remember && !quakePrevView) quakePrevView = { center: map.getCenter(), zoom: map.getZoom() };
   const panel = document.getElementById("quake-play-panel");
   const panelW = panel && !panel.hidden ? panel.offsetWidth : 0;
   // 枠を避けた残りに日本（ズーム4で約300px）が入るときだけ右に余白を取る。
@@ -13017,13 +13023,11 @@ function fitJapanForQuakes() {
 function setQuakeLayer(checked) {
   const panel = document.getElementById("quake-play-panel");
   if (checked) {
-    if (!quakePrevView) quakePrevView = { center: map.getCenter(), zoom: map.getZoom() };
     quakeLayer.addTo(map);
     quakeWaveLayer.addTo(map);
     quakePlayLayer.addTo(map);
     if (panel) panel.hidden = false;
-    // 全国の地震なので日本全体を見せる。戻るときは ON にした時の位置へ
-    fitJapanForQuakes();
+    // 地図は動かさない（印西周辺を見たまま震源を出せるように）。日本全体へは 🌍 地震ボタンか枠の「🗾 全国」で
     updateQuakeLiveWave();
     if (!quakeEvents.length) renderQuakePlayIdle();
   } else {
@@ -13034,6 +13038,7 @@ function setQuakeLayer(checked) {
     map.removeLayer(quakeWaveLayer);
     map.removeLayer(quakePlayLayer);
     if (panel) panel.hidden = true;
+    // 🌍 地震ボタンで日本全体へ移動していたときだけ、押す前の位置へ戻す
     if (quakePrevView) { map.setView(quakePrevView.center, quakePrevView.zoom); quakePrevView = null; }
   }
 }
