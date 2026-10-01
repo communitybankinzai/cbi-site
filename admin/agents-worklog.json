@@ -16,6 +16,7 @@
   "agents": {
     "A1": {
       "actuals": [
+        {"date": "2026-10-01", "title": "広報いんざい10月号の催し91件（133行）を記事画像つきでCiDAOへ登録し、重複の既存17行に画像を付与、カレンダーに期間イベント欄を追加（cidao 9bc0138） 1.7時間", "category": "実装", "outputs": ["CiDAO events：133行（external_source=cbi-kouhou-import・external_source_id=kouhou_2610#…・全行open・画像つき）", "Supabase Storage：event-flyers/kouhou/kouhou_2610/ に記事画像64枚", "CiDAO events：重複の既存17行に flyer_image_url を付与、下書きの候補4件（海外派遣報告会・カラオケ予選・埴輪講座・有賀忍氏講演会）を open に", "cidao: src/app/events/_components/EventsBrowser.tsx（期間イベントを日付マスから外し上部欄に表示・9bc0138・task-medium 担当）", "保管庫: cidao/2026-10-01_広報いんざい10月号のCiDAO登録と期間イベント欄.md（新規）、MOC_CiDAO.md（1行）", "保管庫: cidao/広報取り込み/2026-10_令和8年10月号/（抽出データ・切り出し・登録スクリプト、登録行一覧 inserted.json・dup_c_result.json）", "site/admin/agents-worklog.json"], "hours": 1.7, "partnerApproved": false, "note": "事業主『市HP 0000022541 のイベントを画像とともにCiDAOのイベント一覧に登録、重複は事前に教えて』。PDF27ページを全文読み、日時のある催しを抽出（参加費は紙面の凡例どおり記載なし＝無料、終了時刻なしは開始＋1時間、時刻なしは9〜17時仮置き＋本文に明記）。既存約170件と題名の類似度・同日同会場で照合し、重複18件程度は登録せず提示。記事画像は見出し位置から段ごとに自動で切り出し、段をまたぐ記事は継ぎ合わせ、先頭と末尾の文字で境界を検証（9件は座標で手直し）。登録後、事業主『期間イベントは除外、カレンダーが見にくい』→6件を下書きに→Q1=A（上部欄）を実装・本番反映して6件を再公開。Q2=C（既存優先・平和学習報告会追加・候補4件公開・画像なし既存17行に画像付与、中止2件は紙面が中止前のため画像なし）。本番で表示確認（PC・スマホ375px）、tsc 0・vitest 412件成功。要対応メールは既存5件（9/23〜26・新着なし）\nsession: a7d6a1a4-04fa-4de5-bbcb-de8398f64e87 / output: 172,411 / cost: $24.77"},
         {"date": "2026-10-01", "title": "CBI Facebookページ鍵の失効確認：GAS・CiDAO・credentials.md の3か所の鍵をGraph APIで実測し、CiDAO側3本の失効を特定 0.3時間", "category": "調査", "outputs": ["branding/sns/2026-10-01_CiDAO側Meta鍵の失効確認.md（新規）", "branding/sns/Facebookトークン取得手順.md（関連ノート1行）", "MOC_CiDAO.md（1行）", "site/admin/agents-worklog.json"], "hours": 0.3, "partnerApproved": false, "note": "事業主『CBIのFacebookページの鍵も同じ理由で無効の可能性が高い』。GAS checkSnsTokens で予約投稿キューの3鍵はOK（9/30取り直し済み）。CiDAO app_settings の sns_facebook_auth（9/9）・sns_instagram_auth（9/28）・sns_instagram_discovery_auth（8/17）は3本とも 190『session has been invalidated』で失効、Threads 2本は無事。credentials.md の控え2本も失効（古い）。鍵の値は出さずmd5で照合。最後にCiDAOからFB/IGへ出せたのは 9/28 18:55。貼り直しは事業主の操作（/admin/sns）なので plans に登録。要対応メール0件\nsession: 8cd2a993-f677-4b59-afc6-901f9e39e3ff / output: 27,807 / cost: $5.02"},
         {
           "date": "2026-10-01",
@@ -8326,6 +8327,9 @@
         }
       ],
       "plans": [
+        {"due": "2026-10-02", "title": "☕ CiDAO のオレンジカフェ10/3の時刻食い違いを確かめて直す（CiDAO は10時、広報いんざい10月号は13時30分・トミオコスモステラス）", "category": "保守", "priority": "中", "note": "既存行 a62421e8（オレンジカフェのご案内 令和8年度下半期・手動登録）。広報12ページの表では『ふれあい・オレンジカフェ』10/3 13時30分〜15時30分。開催日の前に直す。2026-10-01 広報取り込みで気づいた"},
+        {"due": "未定", "title": "🏃 CiDAO の印西シティリレーマラソン2026（11/15）の二重登録（06433b26 と 1d9f35f6）をどちらに寄せるか決める", "category": "保守", "priority": "低", "note": "06433b26 は 0:00〜23:59・画像なし（10/01 に広報の記事画像を付与）、1d9f35f6 は 9:00〜10:00・画像あり。どちらも手動登録。2026-10-01 広報取り込みで気づいた"},
+        {"due": "未定", "title": "🗓 期間イベントが上部欄に入るよう、チラシ読み取りと市サイト取り込みの『会期』の扱いを揃えるか決める", "category": "実装", "priority": "中", "status": "保留", "blockedBy": "事業主が実施するかを決める（2026-10-01 に提案のみ、未回答）", "note": "カレンダーは開始日と終了日が違う催しを上部『開催中の期間イベント』欄に出す（cidao 9bc0138）。チラシ読み取り /api/events/scan の指示文には会期の扱いの指定がなく、日ごとに分けて返すとマスに毎日並ぶ。市サイト同期（src/lib/inzai-city/calendar.ts）は6日を超える催しを初日だけの1件で入れるので上部欄に入らない。案：読み取りの指示文に『会期のある催しは初日〜最終日の1件』を1行足す／市サイト同期で periodEnd を end_at に入れる"},
         {"due": "2026-10-03", "title": "🔑 CiDAO 側の Meta 鍵3本（Facebookページ・Instagram投稿・Instagram検索）を /admin/sns に貼り直す", "category": "保守", "priority": "高", "note": "2026-10-01 実測で3本とも 190『session has been invalidated』。FB・IG投稿は 9/30 に GAS へ入れたのと同じ鍵を貼る（GASエディタ⚙スクリプトプロパティ FB_PAGE_TOKEN／IG_ACCESS_TOKEN）。IG検索は Graph API Explorer（アプリ『スレッズ自動投稿』・User Token）→デバッガーで延長した鍵＋IG ID 17841443825933291。貼り終わったら Claude が CiDAO の DB 値を Graph API に当てて確認する。手順は branding/sns/2026-10-01_CiDAO側Meta鍵の失効確認.md"},
         {"due": "未定", "title": "👀 毎朝のSNS鍵見張り（scripts/sns_token_watch.py）に CiDAO 側の鍵3本（FB・IG投稿・IG検索）の疎通確認を足す", "category": "実装", "priority": "中", "note": "2026-10-01 気づき。見張りは GAS の checkSnsTokens しか見ないため、CiDAO 側の失効（9/30〜）に気づけなかった。CiDAO に鍵の値を返さない疎通確認（管理者向け route か cron）を足し、見張りから呼ぶ。事業主の了承を得てから着手"},
         {
@@ -9139,7 +9143,7 @@
           "title": "📰 広報いんざい10月号を sonnet で読み取り、抽出の質（件数・日時の正確さ）が opus と変わらないかと実費を確認する",
           "category": "保守",
           "priority": "中",
-          "note": "質が落ちていれば KOUHOU_SCAN_MODEL を claude-opus-5 に戻すか、haiku を試す（cost_rates に haiku の単価行が必要）。実費は管理画面「広報いんざいから取り込む」の今月／累計"
+          "note": "質が落ちていれば KOUHOU_SCAN_MODEL を claude-opus-5 に戻すか、haiku を試す（cost_rates に haiku の単価行が必要）。実費は管理画面「広報いんざいから取り込む」の今月／累計。【10/01追記】10月号は手作業で133行登録済み（external_source_id=kouhou_2610#…）で、管理画面で登録まで進めると二重登録になる。読み取り結果の確認だけにとどめ、比較の正解は保管庫 cidao/広報取り込み/2026-10_令和8年10月号/events_data.py"
         },
         {
           "due": "未定",
