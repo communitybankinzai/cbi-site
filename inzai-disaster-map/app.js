@@ -10156,7 +10156,9 @@ async function refreshEarthquakeSummary(manual) {
           json: item.json || "" // 詳細JSON（観測点ごとの震度と座標）の名前。震度1の範囲の実測に使う
         };
       })
-      .filter(Boolean);
+      .filter(Boolean)
+      // 同じ地震の発表が2回入ることがある（9/17 茨城県南部で確認）。発生時刻＋震源名で1件に（新しい発表を残す）
+      .filter((e, i, arr) => arr.findIndex(o => o.at === e.at && o.name === e.name) === i);
     quakeEvents = quakeJmaArchive.slice(0, 20);
     renderQuakeLayer();
     node.innerHTML = `
@@ -12926,6 +12928,47 @@ function quakeLabelText(event) {
 // 震度1以上を観測した観測点の座標から、震央から最も遠い観測点までの距離（＝輪の広がり）と外周（凸包）を求める。
 // 座標の出どころ：①気象庁の地震ごとの詳細JSON（IntensityStation.latlon・直近1か月の地震）
 // ②P2P地震情報の観測点名を quake-stations.json（気象庁 震度観測点一覧を元にした4360地点）で引く（過去の再生）
+// ---- 印西市が波紋の範囲に入るときの大きな震度表示（2026-10-02 事業主指示） ----
+// 判定：市内に震度の記録がある／震央から印西市までの距離が「震度1以上の最も遠い観測点までの距離」以内。
+// 記録が無く範囲内だけなら「震度1未満」と出す（市内の観測点が震度1に届かなかった、の意味）
+const INZAI_CENTER = { lat: 35.805, lng: 140.15 };
+let quakeInzaiMarker = null;
+
+function quakeCoversInzai(event) {
+  if (!event) return false;
+  if (event.inzaiIntensity) return true;
+  if (Number.isFinite(event.feltKm) && event.position) return quakeDistanceKm(event.position, INZAI_CENTER) <= event.feltKm;
+  return false;
+}
+
+function hideQuakeInzaiBadge() {
+  if (quakeInzaiMarker) { quakeWaveLayer.removeLayer(quakeInzaiMarker); quakeInzaiMarker = null; }
+}
+
+function showQuakeInzaiBadge(event) {
+  hideQuakeInzaiBadge();
+  if (!quakeCoversInzai(event)) return;
+  const rank = intensityRank(event.inzaiIntensity);
+  const color = rank > 0 ? quakeColor(rank) : "#55637a";
+  const intText = event.inzaiIntensity ? `震度${intensityLabel(event.inzaiIntensity)}` : "震度1未満";
+  const atMs = event.atMs ?? new Date(event.at).getTime();
+  const html = `<div class="quake-inzai-badge${rank >= 4 ? " is-strong" : ""}" style="border-color:${color}"><span class="qi-city">印西市</span><span class="qi-int" style="color:${color}">${escapeHtml(intText)}</span><span class="qi-sub">${escapeHtml(formatQuakeClock(atMs))} ${escapeHtml(event.name || "")}${event.inzaiIntensity ? "" : "（市内の観測点は震度1未満）"}</span></div>`;
+  quakeInzaiMarker = L.marker([INZAI_CENTER.lat, INZAI_CENTER.lng], {
+    pane: "quakeWavePane", interactive: false, keyboard: false,
+    icon: L.divIcon({ className: "quake-inzai-icon", html, iconSize: [190, 74], iconAnchor: [95, 37] })
+  });
+  quakeWaveLayer.addLayer(quakeInzaiMarker);
+}
+
+// つまみ移動の後：今の時刻までで印西市に届いた最後の地震の札を出す
+function refreshQuakeInzaiBadgeForPlayback() {
+  for (let i = quakePlayback.cursor - 1; i >= 0; i -= 1) {
+    const e = quakePlayback.events[i];
+    if (quakeCoversInzai(e)) { showQuakeInzaiBadge(e); return; }
+  }
+  hideQuakeInzaiBadge();
+}
+
 let quakeStationsPromise = null;
 function ensureQuakeStations() {
   if (!quakeStationsPromise) {
@@ -12970,6 +13013,10 @@ function quakeApplyFelt(event, felt) {
   event.feltCount = felt.count;
   event.feltHull = felt.hull;
   quakeWaveUpdateFelt(event);
+  // 範囲が分かった時点で印西市が入っていれば札を出す（最新の地震、または再生中の直前の地震）
+  const isLive = !quakePlayback.active && map.hasLayer(quakeWaveLayer) && event === quakeEvents[0];
+  const isLast = quakePlayback.active && event === quakePlayback.lastEvent;
+  if ((isLive || isLast) && quakeCoversInzai(event)) showQuakeInzaiBadge(event);
 }
 
 // 気象庁の詳細JSONから観測点（震度1以上・座標つき）を読む。同じ地震は1回だけ取りに行く
@@ -13092,6 +13139,7 @@ function removeQuakeWave(wave) {
 
 function clearQuakeWaves(keepLive) {
   quakeWaves.slice().forEach(wave => { if (!(keepLive && wave === quakeLiveWave)) removeQuakeWave(wave); });
+  if (!keepLive) hideQuakeInzaiBadge();
 }
 
 // 輪ごとに 1/3 ずつ位相をずらし、中心から maxR まで広がりながら薄くなる。
@@ -13124,6 +13172,7 @@ function updateQuakeLiveWave() {
   if (!latest) return;
   quakeLiveWave = addQuakeWave(latest, { loop: true, duration: 2600 });
   drawQuakeLiveFelt(latest);
+  showQuakeInzaiBadge(latest);
   // 気象庁の詳細JSONが読めたら、推定の円を実測（観測点の外周）に置き換える
   fetchQuakeFelt(latest).then(felt => {
     if (!felt || !quakeLiveWave || quakeLiveWave.event !== latest) return;
@@ -13628,6 +13677,7 @@ function emitQuakePlayEvent(event, withWave) {
   quakePlayback.lastDot = dot;
   if (withWave) addQuakeWave(event, { loop: false, duration: 1600 });
   quakePlayback.lastEvent = event;
+  if (withWave && quakeCoversInzai(event)) showQuakeInzaiBadge(event);
 }
 
 // つまみを動かしたとき：その時刻までの地震を点で置き直す（波紋は出さない）
@@ -13645,6 +13695,7 @@ function seekQuakePlayback(ms) {
   }
   // 直前の1件だけ波紋を出して、どこまで来たか分かるようにする
   if (quakePlayback.lastEvent) addQuakeWave(quakePlayback.lastEvent, { loop: false, duration: 1600 });
+  refreshQuakeInzaiBadgeForPlayback();
   renderQuakePlayClock();
 }
 

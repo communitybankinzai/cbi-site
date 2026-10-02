@@ -3966,3 +3966,18 @@ body.sns-popup-open #quick-record-bar { display: none; }
   .quake-play-panel:not(.is-expanded) .quake-play-status:empty { display: none; }
   .quake-play-transport { margin-bottom: 4px; }
 }
+
+/* 🌍 印西市が波紋の範囲に入ったときの大きな震度の札（2026-10-02）。印西市の位置に出す */
+.quake-inzai-icon { background: none; border: 0; }
+.quake-inzai-badge {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 190px; min-height: 74px; box-sizing: border-box; padding: 6px 10px;
+  border: 3px solid #16324f; border-radius: 12px; background: rgba(255,255,255,.95);
+  box-shadow: 0 4px 16px rgba(15,30,60,.3); text-align: center; line-height: 1.15;
+  animation: quake-inzai-pop .5s ease-out;
+}
+.quake-inzai-badge .qi-city { font-size: 13px; font-weight: 700; color: #16324f; letter-spacing: .05em; }
+.quake-inzai-badge .qi-int { font-size: 28px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.quake-inzai-badge .qi-sub { margin-top: 2px; font-size: 10px; color: #55637a; white-space: normal; }
+.quake-inzai-badge.is-strong { background: #fff5f4; }
+@keyframes quake-inzai-pop { 0% { transform: scale(.6); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
