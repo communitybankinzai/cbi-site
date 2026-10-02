@@ -2705,7 +2705,8 @@ function quakeColor(rank) {
 
 function renderQuakeLayer() {
   quakeLayer.clearLayers();
-  quakeEvents.forEach((event, index) => {
+  // 最新の1件だけを描く（2026-10-02 事業主指示「最新の地震だけの表示に」）。過去の地震は「⏪ 地震の再生」で見る
+  quakeEvents.slice(0, 1).forEach((event, index) => {
     const pos = event.position;
     const rank = intensityRank(event.maxi);
     const color = quakeColor(rank);
