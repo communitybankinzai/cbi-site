@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261002g">
+    <link rel="stylesheet" href="./styles.css?v=20261002h">
   </head>
   <body>
     <div class="app-shell">
@@ -845,6 +845,7 @@
           </div>
           <!-- 🌍 全国の地震（2026-10-02 事業主指示）：最新の震源で波紋が広がる。期間を選ぶとその期間の地震を
                発生順に早送りで再生する。中身は app.js の「🌍 全国の地震」節。層 quakes と一緒に出る／消える -->
+          <div class="range-panel quake-latest-card" id="quake-latest-card" hidden aria-label="最新の地震の詳細"></div>
           <div class="range-panel quake-play-panel" id="quake-play-panel" hidden aria-label="全国の地震の再生">
             <div class="quake-play-head">
               <strong>🌍 全国の地震</strong>
@@ -1934,7 +1935,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261002b"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261002l"></script>
+    <script src="./app.js?v=20261002m"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>

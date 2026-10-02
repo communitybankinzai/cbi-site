@@ -13171,7 +13171,33 @@ function quakeWaveFrame(now) {
 }
 
 // 最新の地震の震源で波紋を繰り返す（層が ON で、再生していないとき）
+// 最新の地震の詳細の札（再生の枠を出していないとき、層が ON の間だけ出す）
+function syncQuakeLatestCard() {
+  const card = document.getElementById("quake-latest-card");
+  if (!card) return;
+  const panel = document.getElementById("quake-play-panel");
+  const latest = quakeEvents[0];
+  const show = !!latest && map.hasLayer(quakeWaveLayer) && !(panel && !panel.hidden);
+  card.hidden = !show;
+  if (!show) return;
+  const rank = intensityRank(latest.maxi);
+  const depth = latest.position?.depthKm;
+  const row = (k, v) => `<div class="quake-latest-row"><span>${k}</span><b>${v}</b></div>`;
+  card.innerHTML = `
+    <div class="quake-latest-head"><strong>🌍 最新の地震</strong><button type="button" id="quake-latest-close" aria-label="閉じる">✕</button></div>
+    <div class="quake-latest-place">${escapeHtml(latest.name || "震源地不明")}</div>
+    ${row("発生", escapeHtml(formatJmaDateTime(latest.at)))}
+    ${row("規模", latest.mag ? `M${escapeHtml(String(latest.mag))}` : "—")}
+    ${row("最大震度", `<span class="badge ${rank >= 4 ? "red" : "blue"}">${escapeHtml(latest.maxi ? intensityLabel(latest.maxi) : "なし")}</span>`)}
+    ${row("深さ", depth !== null && depth !== undefined ? `約${escapeHtml(String(depth))}km` : "不明")}
+    ${row("印西市", latest.inzaiIntensity ? `震度${escapeHtml(intensityLabel(latest.inzaiIntensity))}` : "震度の記録なし")}
+    <div class="quake-latest-felt">${escapeHtml(quakeFeltText(latest))}</div>
+    <a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">出典: 気象庁 震源・震度情報</a>`;
+  card.querySelector("#quake-latest-close")?.addEventListener("click", () => { card.hidden = true; });
+}
+
 function updateQuakeLiveWave() {
+  syncQuakeLatestCard();
   if (quakeLiveWave) { removeQuakeWave(quakeLiveWave); quakeLiveWave = null; }
   renderQuakePlayIdle(); // 枠の「最新」の行は層が OFF でも最新にしておく（再生中は何もしない）
   if (!map.hasLayer(quakeWaveLayer) || quakePlayback.active) return;
@@ -13185,6 +13211,7 @@ function updateQuakeLiveWave() {
     if (!felt || !quakeLiveWave || quakeLiveWave.event !== latest) return;
     drawQuakeLiveFelt(latest);
     renderQuakePlayIdle();
+    syncQuakeLatestCard();
   });
 }
 
@@ -13226,6 +13253,7 @@ function openQuakePlayPanel() {
   if (box && !box.checked) box.click();
   const panel = document.getElementById("quake-play-panel");
   if (panel) panel.hidden = false;
+  syncQuakeLatestCard();
   fitJapanForQuakes({ remember: true });
 }
 
@@ -13247,6 +13275,7 @@ function setQuakeLayer(checked) {
     map.removeLayer(quakeWaveLayer);
     map.removeLayer(quakePlayLayer);
     if (panel) panel.hidden = true;
+    syncQuakeLatestCard();
     // 🌍 地震ボタンで日本全体へ移動していたときだけ、押す前の位置へ戻す
     if (quakePrevView) { map.setView(quakePrevView.center, quakePrevView.zoom); quakePrevView = null; }
   }
@@ -13774,7 +13803,7 @@ function renderQuakePlayClock() {
     slider.addEventListener("input", onScrub);
     slider.addEventListener("change", () => { quakePlayback.scrubbing = false; onScrub(); });
   }
-  quakePlayEl("quake-play-stop")?.addEventListener("click", () => { stopQuakePlayback(); panel.hidden = true; });
+  quakePlayEl("quake-play-stop")?.addEventListener("click", () => { stopQuakePlayback(); panel.hidden = true; syncQuakeLatestCard(); });
   document.getElementById("quake-play-open")?.addEventListener("click", openQuakePlayPanel);
   quakePlayEl("quake-play-close")?.addEventListener("click", () => {
     const box = document.querySelector('[data-overlay="quakes"]');
