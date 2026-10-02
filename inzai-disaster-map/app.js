@@ -13912,6 +13912,8 @@ document.getElementById("pref-recovery-list")?.addEventListener("click", event =
   if (!pos) return;
   map.setView(pos, Math.max(map.getZoom(), 13));
   prefRecoveryLayer.eachLayer(l => { if (l._prefRecoveryId === it.id) l.openPopup(); });
+  // スマホでは一覧が地図の下にあり、押しても地図が見えない（2026-10-02 事業主の実機）。地図まで画面を戻す
+  document.getElementById("map-pane")?.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 // 最初の画面は冠水の情報だけにする（2026-09-21 中司さんの実機指摘）。開いた直後に
