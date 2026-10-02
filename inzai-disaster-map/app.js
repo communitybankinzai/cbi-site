@@ -12955,7 +12955,8 @@ function showQuakeInzaiBadge(event) {
   const html = `<div class="quake-inzai-badge${rank >= 4 ? " is-strong" : ""}" style="border-color:${color}"><span class="qi-city">印西市</span><span class="qi-int" style="color:${color}">${escapeHtml(intText)}</span><span class="qi-sub">${escapeHtml(formatQuakeClock(atMs))} ${escapeHtml(event.name || "")}${event.inzaiIntensity ? "" : "（市内の観測点は震度1未満）"}</span></div>`;
   quakeInzaiMarker = L.marker([INZAI_CENTER.lat, INZAI_CENTER.lng], {
     pane: "quakeWavePane", interactive: false, keyboard: false,
-    icon: L.divIcon({ className: "quake-inzai-icon", html, iconSize: [190, 74], iconAnchor: [95, 37] })
+    // 札は印西市の点の右横に出す（点の上に置くと震源の波紋や数値ラベルを隠すため）。左辺の▶が点を指す
+    icon: L.divIcon({ className: "quake-inzai-icon", html, iconSize: [190, 74], iconAnchor: [-14, 37] })
   });
   quakeWaveLayer.addLayer(quakeInzaiMarker);
 }
@@ -13557,6 +13558,7 @@ async function startQuakePlayback(fromMs, toMs) {
   quakePlayback.cursor = 0;
   quakePlayback.source = "";
   if (quakeLiveWave) { removeQuakeWave(quakeLiveWave); quakeLiveWave = null; }
+  hideQuakeInzaiBadge(); // 最新の地震の札は再生では出し直す
   map.removeLayer(quakeLayer); // 直近20件の丸は再生の点と紛れるので、再生中は消す
   const speedSel = quakePlayEl("quake-play-speed");
   if (speedSel) { speedSel.value = pickQuakeSpeed(fromMs, toMs); quakePlayback.speed = QUAKE_SPEEDS.find(s => s.key === speedSel.value)?.msPerSec || quakePlayback.speed; }

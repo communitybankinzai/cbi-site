@@ -3981,3 +3981,5 @@ body.sns-popup-open #quick-record-bar { display: none; }
 .quake-inzai-badge .qi-sub { margin-top: 2px; font-size: 10px; color: #55637a; white-space: normal; }
 .quake-inzai-badge.is-strong { background: #fff5f4; }
 @keyframes quake-inzai-pop { 0% { transform: scale(.6); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+.quake-inzai-badge::before { content: ""; position: absolute; left: -12px; top: 50%; margin-top: -8px; border: 8px solid transparent; border-right: 10px solid #fff; border-left: 0; filter: drop-shadow(-2px 0 1px rgba(15,30,60,.25)); }
+.quake-inzai-badge { position: relative; }
