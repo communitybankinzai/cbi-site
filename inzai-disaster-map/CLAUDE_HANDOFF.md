@@ -1,3 +1,12 @@
+## 2026-10-02 🛣 県の「被災箇所の状況と復旧見込み」56区間の一覧と、解除の自動見張り（app 20261002g／css 20261002f）
+
+- **経緯**：事業主が県のLINE通知「道路の復旧見込み」（https://www.pref.chiba.lg.jp/doukan/press/2026/1002fukkyumitoshi.html ・10/1現在）を転送。タイムライン・通行止めとも0件だった（県の通行止めの情報源は一覧ページ pl_6302/6301 だけ）。手動登録（タイムライン id b14dc51b…）と案内文のあと、「通行止め一覧を作って解除のタイミングをモニタする仕組み」→ **事業主決定A**（一覧＋図で自動判定）。
+- **データ `pref-recovery-outlook.json`**：PDF（8ページ中7ページが画像）の表を拡大して手で書き起こした56区間（`routeNo`／`road`／`municipality`／`place`／`work`＝大規模・中規模・土砂撤去中・倒木撤去中・排水作業中／`outlook`／`scale`＝large 29・medium 8・small 19／`traffic`）。大規模29は県の発表と一致。位置は `lat/lon`（国土地理院の住所検索・町名の代表点。木更津市市野々は見つからず null、丹原は OSM の林道の位置）と `mark`（県の位置図の✕印・31区間）。**すべて市原〜南房総で印西周辺は0**。
+- **✕印の読み取り `pipeline/assign_recovery_marks.py --pdf <発表PDF>`**（県がPDFを更新したら1回流す）：位置図（3〜5ページ目・見出しも画像で文字なし）を**水面のマスク（海岸線）で地理院タイルに位置合わせ**（濃淡の照合 `K.locate` は 0.13 で合わない。水面なら 0.53／0.85／0.70）。✕は色（赤・橙・青の HSV）＋形 `is_cross`（対角線が塗られ、中央の横・縦線の端が空く）、凡例の見本（下端14%）は除外、重なった✕は面積÷1個ぶんで個数を推定し k-means で分ける（赤・橙のみ。青は解除後の丸い点が密集して誤検出するため）。割り当ては同じ色の印を町名から3km以内で距離の短い順に1対1。
+- **解除の見張り `pipeline/build_pref_recovery.py`**（`pref-road-kisei.yml` の工程に追加・毎時・PDF が同じなら何もしない）：規制状況図の**分割図3枚**（`K.map_image`／`K.locate`・全県の z12 タイル寄せ集め BBOX 139.70–140.90／34.85–36.10）から赤線を全県ぶん取り、区間ごとに ✕印から **800m**（`MARK_RADIUS_M`）／町名から **3.5km**（`WATCH_RADIUS_M`）以内に赤線が無ければ `status=cleared`・`clearedAt`＝図の時点（`clearedFigure`）。戻れば active に戻す。読めた図の範囲外は判定しない。10/2 14時の図：✕印のある31区間は赤線まで最大360m、全56区間が規制中。⚠ 町名だけの区間は粗い（笹・豊成・鶴舞は2.9〜3.4km）。**CBIの判定であって県の発表ではない**と画面に明記。
+- **MAP**：層 `prefRecovery`（🏫 群・県の規制状況図の下・既定OFF）→ `setPrefRecoveryLayer` が JSON を読み、`prefRecoveryPane`（463・SVG）に点（大規模＝赤 9px／中規模＝橙／小規模＝青／解除＝灰）、`#pref-recovery-list` に区分ごとの一覧と解除の節、「地図で見る」。ONで区間が収まる範囲へ `fitBounds`（印西へ戻るのは「印西市全域」）。手元で動かすには scratchpad に `pip install --target` した cv2/numpy/requests/psycopg と `PYTHONPATH`。
+- **関連**：Supabase MCP は sodatelog しか見えず cidao には使えない。cidao の DB は pooler（`postgres.<ref>@aws-1-ap-northeast-1.pooler.supabase.com`）に psycopg（scratchpad の _pylibs）で繋いだ。
+
 ## 2026-10-02 🌍 全国の地震：震源の波紋と、期間指定の早送り再生（app/css/config 20261002a）
 
 - **経緯**：事業主「防災MAPに全国の地震情報を掲載したい。震源地から波動が広がるような見せ方。最新の地震発生時刻を既定に、過去の地震を早送りで期間指定で再生できる機能」「地震のボタンがないので追加」。データ源は3択で**事業主決定A＝P2P地震情報 API**（B 気象庁 list.json のみ＝約1か月分だけ／C USGS＝M2.5以上のみ・震度なし）。
