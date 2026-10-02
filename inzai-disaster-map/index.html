@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261002h">
+    <link rel="stylesheet" href="./styles.css?v=20261002i">
   </head>
   <body>
     <div class="app-shell">
@@ -874,6 +874,7 @@
                 <option value="4">4以上</option>
                 <option value="5">5弱以上</option>
               </select></label>
+              <label class="quake-play-inzai"><input type="checkbox" id="quake-play-inzai"> 印西市で震度1以上だった地震だけ</label>
               <button type="button" id="quake-play-apply">この期間を再生</button>
             </div>
             <div class="range-presets quake-play-presets">
@@ -1935,7 +1936,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261002b"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261002m"></script>
+    <script src="./app.js?v=20261002n"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
