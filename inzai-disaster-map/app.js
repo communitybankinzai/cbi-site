@@ -13193,7 +13193,9 @@ function syncQuakeLatestCard() {
     ${row("深さ", depth !== null && depth !== undefined ? `約${escapeHtml(String(depth))}km` : "不明")}
     ${row("印西市", latest.inzaiIntensity ? `震度${escapeHtml(intensityLabel(latest.inzaiIntensity))}` : "震度の記録なし")}
     <div class="quake-latest-felt">${escapeHtml(quakeFeltText(latest))}</div>
+    <button type="button" id="quake-latest-play" class="quake-latest-play">⏪ 過去の地震を再生</button>
     <a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">出典: 気象庁 震源・震度情報</a>`;
+  card.querySelector("#quake-latest-play")?.addEventListener("click", openQuakePlayPanel);
   card.querySelector("#quake-latest-close")?.addEventListener("click", () => { card.hidden = true; });
 }
 
