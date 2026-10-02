@@ -877,7 +877,7 @@
               <button type="button" data-qrange="365d" aria-pressed="false">1年</button>
             </div>
             <p class="range-note quake-play-status" id="quake-play-status"></p>
-            <p class="quake-play-source">出典: 気象庁 震源・震度情報（直近1か月）。それより前は P2P地震情報 API（気象庁の発表の転載）。輪は震度1のおよその範囲（Mと深さからの推定）まで広がる。色＝最大震度</p>
+            <p class="quake-play-source">出典: 気象庁 震源・震度情報（直近1か月）。それより前は P2P地震情報 API（気象庁の発表の転載）。輪は震度1以上を観測した最も遠い観測点まで広がる（観測点の記録が無いときは M と深さからの推定）。色＝最大震度</p>
           </div>
           <div class="map-status" id="map-status">地図を読み込み中です</div>
           <!-- 2026-09-21: 「市民投稿の収集・公開運用は開始していません」は事実と合わなくなったので直した
@@ -1927,9 +1927,9 @@
       })();
     </script>
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
-    <script src="./config.js?v=20261002a"></script>
+    <script src="./config.js?v=20261002b"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261002c"></script>
+    <script src="./app.js?v=20261002d"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>

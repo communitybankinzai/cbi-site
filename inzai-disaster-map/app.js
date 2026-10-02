@@ -10152,7 +10152,8 @@ async function refreshEarthquakeSummary(manual) {
           mag: item.mag || "",
           maxi: item.maxi || "",
           position,
-          inzaiIntensity: findCityIntensity(item, "1223100") || ""
+          inzaiIntensity: findCityIntensity(item, "1223100") || "",
+          json: item.json || "" // 詳細JSON（観測点ごとの震度と座標）の名前。震度1の範囲の実測に使う
         };
       })
       .filter(Boolean);
@@ -12921,6 +12922,93 @@ function quakeLabelText(event) {
   return parts.join(" ");
 }
 
+// ---- 震度1の「実測」の範囲（2026-10-02 事業主指示「観測点の座標表を使って本当の震度1の範囲を描いて」） ----
+// 震度1以上を観測した観測点の座標から、震央から最も遠い観測点までの距離（＝輪の広がり）と外周（凸包）を求める。
+// 座標の出どころ：①気象庁の地震ごとの詳細JSON（IntensityStation.latlon・直近1か月の地震）
+// ②P2P地震情報の観測点名を quake-stations.json（気象庁 震度観測点一覧を元にした4360地点）で引く（過去の再生）
+let quakeStationsPromise = null;
+function ensureQuakeStations() {
+  if (!quakeStationsPromise) {
+    quakeStationsPromise = fetch("./quake-stations.json?v=20261002a", { cache: "force-cache" })
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(d => d?.stations || {})
+      .catch(error => { console.warn("観測点の座標表を読めません", error); quakeStationsPromise = null; return {}; });
+  }
+  return quakeStationsPromise;
+}
+
+function quakeDistanceKm(a, b) {
+  const R = 6371, toRad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * toRad, dLng = (b.lng - a.lng) * toRad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * toRad) * Math.cos(b.lat * toRad) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+// 凸包（Andrew の単調鎖）。点は {lat,lng}。見た目用なので平面として扱う
+function quakeConvexHull(points) {
+  const pts = points.map(p => [p.lng, p.lat]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  if (pts.length < 3) return pts.map(p => [p[1], p[0]]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower = [];
+  for (const p of pts) { while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop(); lower.push(p); }
+  const upper = [];
+  for (let i = pts.length - 1; i >= 0; i -= 1) { const p = pts[i]; while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop(); upper.push(p); }
+  return lower.slice(0, -1).concat(upper.slice(0, -1)).map(p => [p[1], p[0]]);
+}
+
+// 震度1以上の観測点 [{lat,lng}] → { km: 最も遠い観測点までの距離, hull: 外周, count }
+function quakeFeltFromStations(epicenter, stations) {
+  const valid = stations.filter(s => Number.isFinite(s.lat) && Number.isFinite(s.lng));
+  if (!valid.length) return null;
+  const km = Math.max(...valid.map(s => quakeDistanceKm(epicenter, s)));
+  return { km: Math.max(km, 3), hull: quakeConvexHull(valid), count: valid.length };
+}
+
+function quakeApplyFelt(event, felt) {
+  if (!felt) return;
+  event.feltKm = felt.km;
+  event.feltCount = felt.count;
+  event.feltHull = felt.hull;
+  quakeWaveUpdateFelt(event);
+}
+
+// 気象庁の詳細JSONから観測点（震度1以上・座標つき）を読む。同じ地震は1回だけ取りに行く
+const quakeDetailCache = new Map();
+function fetchQuakeFelt(event) {
+  if (!event?.json) return Promise.resolve(null);
+  if (Number.isFinite(event.feltKm)) return Promise.resolve({ km: event.feltKm, hull: event.feltHull || [], count: event.feltCount || 0 });
+  if (!quakeDetailCache.has(event.json)) {
+    const base = String(APP_CONFIG.earthquakeDetailBase || "https://www.jma.go.jp/bosai/quake/data/");
+    const p = fetch(`${base}${event.json}`, { cache: "force-cache" })
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(det => {
+        const stations = [];
+        (det?.Body?.Intensity?.Observation?.Pref || []).forEach(pref => (pref.Area || []).forEach(area => (area.City || []).forEach(city => (city.IntensityStation || []).forEach(st => {
+          const text = String(st.Int || "");
+          // 「震度５弱以上未入電」も震度1以上の観測として数える
+          if ((intensityRank(text) >= 1 || text.includes("未入電")) && st.latlon) stations.push({ lat: Number(st.latlon.lat), lng: Number(st.latlon.lon) });
+        }))));
+        return quakeFeltFromStations(event.position, stations);
+      })
+      .catch(error => { console.warn("気象庁 詳細JSON を読めません", event.json, error); quakeDetailCache.delete(event.json); return null; });
+    quakeDetailCache.set(event.json, p);
+  }
+  return quakeDetailCache.get(event.json).then(felt => { quakeApplyFelt(event, felt); return felt; });
+}
+
+// P2P の観測点名 → 座標表 → 実測の範囲
+function quakeFeltFromNames(event, names, table) {
+  const stations = (names || []).map(n => table[n]).filter(Boolean).map(c => ({ lat: c[0], lng: c[1] }));
+  const felt = quakeFeltFromStations(event.position, stations);
+  if (felt) { event.feltKm = felt.km; event.feltCount = felt.count; }
+}
+
+// 動いている波紋に実測の範囲を反映する（詳細JSONが後から届いたとき）
+function quakeWaveUpdateFelt(event) {
+  if (!Number.isFinite(event?.feltKm)) return;
+  quakeWaves.forEach(w => { if (w.event === event) w.maxMeters = event.feltKm * 1000; });
+}
+
 // 震度1が観測されるおよその範囲（震央からの距離 km）。P2P地震情報の観測点（2026-08〜10・322件）で
 // 「震度1以上が出た最も遠い県庁所在地までの距離」を M で回帰した式（log10 R = 0.326 M + 0.83）。
 // 深さ60kmより深い地震は残差が +0.1（約1.25倍）だったので掛けている。推定であって観測値ではない
@@ -12978,9 +13066,10 @@ function addQuakeWave(event, options) {
     radius: 3, color: "#fff", weight: 1, fillColor: color, fillOpacity: 0.95, opacity: 0.95
   });
   quakeWaveLayer.addLayer(core);
-  const feltKm = quakeFeltRadiusKm(event.mag, pos.depthKm);
+  // 実測（震度1以上の最も遠い観測点）があればそれ、無ければ M と深さからの推定
+  const feltKm = Number.isFinite(event.feltKm) ? event.feltKm : quakeFeltRadiusKm(event.mag, pos.depthKm);
   const wave = {
-    rings, core, color, lat: pos.lat,
+    rings, core, color, lat: pos.lat, event,
     start: performance.now(),
     duration: options?.duration || 2600,
     maxR: quakeMagRadius(event.mag),          // M が無いときの画面上の幅（px）
@@ -13034,15 +13123,28 @@ function updateQuakeLiveWave() {
   const latest = quakeEvents[0];
   if (!latest) return;
   quakeLiveWave = addQuakeWave(latest, { loop: true, duration: 2600 });
-  // 震度1のおよその範囲を破線の円で示す（輪の行き先）
-  const feltKm = quakeFeltRadiusKm(latest.mag, latest.position.depthKm);
-  if (feltKm) {
-    quakeLiveWave.felt = L.circle([latest.position.lat, latest.position.lng], {
-      renderer: quakeWaveRenderer, pane: "quakeWavePane", interactive: false,
-      radius: feltKm * 1000, color: quakeLiveWave.color, weight: 1, dashArray: "4 6", opacity: 0.6, fill: false
-    });
-    quakeWaveLayer.addLayer(quakeLiveWave.felt);
+  drawQuakeLiveFelt(latest);
+  // 気象庁の詳細JSONが読めたら、推定の円を実測（観測点の外周）に置き換える
+  fetchQuakeFelt(latest).then(felt => {
+    if (!felt || !quakeLiveWave || quakeLiveWave.event !== latest) return;
+    drawQuakeLiveFelt(latest);
+    renderQuakePlayIdle();
+  });
+}
+
+// 最新の地震の「震度1の範囲」：実測があれば観測点の外周（実線）、無ければ推定の円（破線）
+function drawQuakeLiveFelt(event) {
+  if (!quakeLiveWave) return;
+  if (quakeLiveWave.felt) { quakeWaveLayer.removeLayer(quakeLiveWave.felt); quakeLiveWave.felt = null; }
+  const style = { renderer: quakeWaveRenderer, pane: "quakeWavePane", interactive: false, color: quakeLiveWave.color, weight: 1.2, opacity: 0.7 };
+  if (Number.isFinite(event.feltKm) && Array.isArray(event.feltHull) && event.feltHull.length >= 3) {
+    quakeLiveWave.felt = L.polygon(event.feltHull, { ...style, fillColor: quakeLiveWave.color, fillOpacity: 0.06 });
+  } else {
+    const km = Number.isFinite(event.feltKm) ? event.feltKm : quakeFeltRadiusKm(event.mag, event.position.depthKm);
+    if (!km) return;
+    quakeLiveWave.felt = L.circle([event.position.lat, event.position.lng], { ...style, radius: km * 1000, dashArray: "4 6", opacity: 0.6, fill: false });
   }
+  quakeWaveLayer.addLayer(quakeLiveWave.felt);
 }
 
 // 日本全体を、右上の枠（関東の上に重なる）を避けて左寄せで収める
@@ -13091,7 +13193,7 @@ function setQuakeLayer(checked) {
 // そこで ①月ごとに古い方から読み、最初の月が届いた時点で再生を始める（追いついたら読み込みを待つ）、
 // ②終わった月は端末（localStorage）に30日おぼえて2回目は待たない、③直近1か月は気象庁の一覧で済ませる。
 const P2P_SCALE_LABEL = { 10: "1", 20: "2", 30: "3", 40: "4", 45: "5-", 50: "5+", 55: "6-", 60: "6+", 70: "7" };
-const QUAKE_MONTH_CACHE_KEY = "cbiQuakeMonths.v1";
+const QUAKE_MONTH_CACHE_KEY = "cbiQuakeMonths.v2"; // v2: 実測の範囲（f, c）を追加
 const QUAKE_MONTH_CACHE_DAYS = 30;
 
 function quakeJstParts(ms) {
@@ -13153,14 +13255,19 @@ function p2pToEvent(item) {
     maxi: P2P_SCALE_LABEL[Number(eq.maxScale)] || "",
     position: { lat, lng, depthKm: Number.isFinite(depth) && depth >= 0 ? depth : null },
     inzaiIntensity: inzai ? (P2P_SCALE_LABEL[Number(inzai.scale)] || "") : "",
-    source: "p2p"
+    source: "p2p",
+    // 震度1以上を観測した観測点名（座標表で引いて実測の範囲にする。終わったら消す）
+    pointNames: (item.points || []).filter(p => !p.isArea && Number(p.scale) >= 10 && p.addr).map(p => String(p.addr))
   };
 }
 
 // 端末に残す形（短く）。t 発生時刻ms／n 震源名／m M／i 最大震度／la lo 緯度経度／d 深さkm／z 印西市の震度
-function quakeEventToCompact(e) { return { t: e.atMs, n: e.name, m: e.mag, i: e.maxi, la: e.position.lat, lo: e.position.lng, d: e.position.depthKm, z: e.inzaiIntensity }; }
+// f 震度1以上の最も遠い観測点までの距離km（実測）／c その観測点数
+function quakeEventToCompact(e) { return { t: e.atMs, n: e.name, m: e.mag, i: e.maxi, la: e.position.lat, lo: e.position.lng, d: e.position.depthKm, z: e.inzaiIntensity, f: Number.isFinite(e.feltKm) ? Math.round(e.feltKm) : undefined, c: e.feltCount || undefined }; }
 function quakeEventFromCompact(c) {
-  return { at: new Date(c.t).toISOString(), atMs: c.t, name: c.n || "", mag: c.m || "", maxi: c.i || "", position: { lat: c.la, lng: c.lo, depthKm: c.d ?? null }, inzaiIntensity: c.z || "", source: "p2p" };
+  const e = { at: new Date(c.t).toISOString(), atMs: c.t, name: c.n || "", mag: c.m || "", maxi: c.i || "", position: { lat: c.la, lng: c.lo, depthKm: c.d ?? null }, inzaiIntensity: c.z || "", source: "p2p" };
+  if (Number.isFinite(c.f)) { e.feltKm = c.f; e.feltCount = c.c || 0; }
+  return e;
 }
 
 function readQuakeMonthCache() {
@@ -13215,6 +13322,9 @@ async function fetchP2pQuakes(fromMs, toMs, token, onProgress) {
     onProgress?.(events.length);
     if (items.length < pageSize || oldest < fromMs) break;
   }
+  // 観測点名を座標表で引いて、震度1以上の最も遠い観測点までの距離を付ける
+  const table = await ensureQuakeStations();
+  events.forEach(e => { quakeFeltFromNames(e, e.pointNames, table); delete e.pointNames; });
   return events;
 }
 
@@ -13292,6 +13402,13 @@ function formatQuakeClock(ms) {
   }).format(new Date(ms));
 }
 
+// 震度1の範囲の説明。実測（観測点）か推定（式）かを必ず書く
+function quakeFeltText(event) {
+  if (Number.isFinite(event.feltKm)) return `震度1以上の観測 最遠 約${Math.round(event.feltKm)}km（${event.feltCount || "?"}地点）`;
+  const est = quakeFeltRadiusKm(event.mag, event.position?.depthKm);
+  return est ? `震度1のおよその範囲 約${Math.round(est)}km（推定・観測点の記録待ち）` : "震度1の範囲 不明";
+}
+
 function quakeEventLine(event) {
   const parts = [formatQuakeClock(event.atMs ?? new Date(event.at).getTime()), event.name || "震源地不明"];
   if (event.mag) parts.push(`M${event.mag}`);
@@ -13309,8 +13426,7 @@ function renderQuakePlayIdle() {
   const slider = quakePlayEl("quake-play-slider");
   const button = quakePlayEl("quake-play-toggle");
   if (time) time.textContent = latest ? formatQuakeClock(new Date(latest.at).getTime()) : "--";
-  const feltKm = latest ? quakeFeltRadiusKm(latest.mag, latest.position.depthKm) : null;
-  if (caption) caption.textContent = latest ? `最新: ${quakeEventLine({ ...latest, atMs: new Date(latest.at).getTime() })}${feltKm ? `／震度1のおよその範囲 約${Math.round(feltKm)}km（推定）` : ""}` : "地震情報を読み込み中です";
+  if (caption) caption.textContent = latest ? `最新: ${quakeEventLine({ ...latest, atMs: new Date(latest.at).getTime() })}／${quakeFeltText(latest)}` : "地震情報を読み込み中です";
   if (slider) { slider.value = "1000"; slider.disabled = true; }
   if (button) { button.textContent = "▶ 再生"; button.disabled = true; }
   setQuakePlayStatus(latest ? "期間を選ぶと、その期間の地震を早送りで再生します" : "");
@@ -13463,6 +13579,11 @@ function quakePlayTick(ts) {
     emitQuakePlayEvent(quakePlayback.events[quakePlayback.cursor], true);
     quakePlayback.cursor += 1;
   }
+  // 気象庁の一覧から来た地震は詳細JSONで実測の範囲を取る（届いたら動いている輪に反映）。先の6件も先に読んでおく
+  for (let i = Math.max(0, quakePlayback.cursor - 1); i < Math.min(quakePlayback.events.length, quakePlayback.cursor + 6); i += 1) {
+    const e = quakePlayback.events[i];
+    if (e.json && !Number.isFinite(e.feltKm) && !quakeDetailCache.has(e.json)) fetchQuakeFelt(e);
+  }
   renderQuakePlayClock();
   if (!quakePlayback.loading && quakePlayback.now >= quakePlayback.to) { setQuakePlaying(false); setQuakePlayStatus(`再生おわり：${quakePlayback.events.length}件${quakePlayback.minRank > 0 ? `（全${quakePlayback.allEvents.length}件のうち）` : ""}（出典: ${quakePlayback.source}）`); return; }
   quakePlayback.raf = requestAnimationFrame(quakePlayTick);
@@ -13485,6 +13606,7 @@ function quakePlayDot(event) {
     <div>${escapeHtml(formatQuakeClock(event.atMs))}</div>
     ${event.position.depthKm !== null ? `<div class="detail-meta">深さ 約${escapeHtml(String(event.position.depthKm))}km</div>` : ""}
     ${event.inzaiIntensity ? `<div class="shelter-evidence"><strong>印西市の震度 ${escapeHtml(intensityLabel(event.inzaiIntensity))}</strong></div>` : ""}
+    <div class="detail-meta">${escapeHtml(quakeFeltText(event))}</div>
     <div class="detail-meta">出典: ${escapeHtml(quakePlayback.source)}</div>
   `);
   return dot;
