@@ -92,6 +92,43 @@ def figure_bounds(lines):
     return (min(lats), max(lats), min(lons), max(lons)) if lats else None
 
 
+def check_press(data):
+    """県の発表PDF（復旧見込みの一覧そのもの）が更新されたかを sha で見る。更新されたら旗を立てる。
+    一覧は手で書き起こしているので、県が更新したら assign_recovery_marks.py と書き起こしの更新が要る。
+    地図は旗が立っている間「一覧は古い可能性」と出し、「規制中」と断言しない（2026-10-02 事業主指示）"""
+    src = data.get("source") or {}
+    url = src.get("pdf")
+    if not url:
+        return False
+    press = data.setdefault("watch", {}).get("press") or {}
+    try:
+        r = requests.get(url, headers=K.UA, timeout=60)
+        if r.status_code == 404:
+            new = {**press, "missingSince": press.get("missingSince") or K.now_iso(), "checkedAt": K.now_iso()}
+            changed = press.get("missingSince") is None
+            data["watch"]["press"] = new
+            return changed
+        r.raise_for_status()
+        sha = hashlib.sha256(r.content).hexdigest()
+    except Exception as e:  # 一時的に読めないだけなら旗は立てない
+        log("発表PDFを読めない", e)
+        return False
+    base = src.get("pdfSha256")
+    if not base:
+        src["pdfSha256"] = sha  # 初回：書き起こした時点の版として控える
+        data["watch"]["press"] = {"sha256": sha, "checkedAt": K.now_iso()}
+        return True
+    if sha != base and press.get("updatedSha256") != sha:
+        data["watch"]["press"] = {"sha256": sha, "checkedAt": K.now_iso(), "updatedSha256": sha, "updatedDetectedAt": K.now_iso(),
+                                  "message": "県が発表PDF（復旧見込みの一覧）を更新しました。この一覧は書き起こした版のままなので、assign_recovery_marks.py と書き起こしの更新が必要です"}
+        log("⚠ 県の発表PDFが更新された（書き起こしの更新が必要）")
+        return True
+    if sha == base and press.get("updatedSha256"):
+        data["watch"]["press"] = {"sha256": sha, "checkedAt": K.now_iso()}  # 元に戻った
+        return True
+    return False
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pdf")
@@ -99,6 +136,7 @@ def main():
     args = ap.parse_args()
     data = load()
     watch_prev = data.get("watch") or {}
+    press_changed = False if args.pdf else check_press(data)
 
     if args.pdf:
         pdf_url = "file:" + os.path.basename(args.pdf)
@@ -107,8 +145,11 @@ def main():
     else:
         pdf_url, stamp = K.find_pdf_url()
         if not pdf_url:
-            # 県のページから図が消えた＝規制の掲載が終わった。判定は変えず、その旨だけ残す
-            data["watch"] = {**watch_prev, "checkedAt": K.now_iso(), "message": "県のページに規制状況図が掲載されていないため、解除の判定を止めています"}
+            # 県のページから図が消えた＝判定の根拠が無い。判定は変えず「止まっている」と記録し、地図は「判定できず」を出す
+            w = dict(data.get("watch") or watch_prev)
+            w["judgeStoppedSince"] = w.get("judgeStoppedSince") or K.now_iso()
+            w["message"] = "県のページに規制状況図が掲載されていないため、解除の判定ができません"
+            data["watch"] = w
             write(data)
             log("状況図なし。判定せず")
             return
@@ -117,7 +158,11 @@ def main():
         pdf_bytes = r.content
     sha = hashlib.sha256(pdf_bytes).hexdigest()
     if not args.force and watch_prev.get("pdfSha256") == sha:
-        log("前回と同じPDF。変更なし")
+        if press_changed:
+            write(data)
+            log("規制状況図は同じ。発表PDFの控えだけ更新")
+        else:
+            log("前回と同じPDF。変更なし")
         return
 
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
@@ -183,8 +228,14 @@ def main():
             it["clearedFigure"] = as_of
             changed.append(("解除", it["id"]))
         it["watch"] = f"{as_of}の図で判定"
+        it["judgedAtIso"] = as_of_iso or K.now_iso()
+    judged_any = bool(covered)
     data["watch"] = {"pdfUrl": pdf_url, "pdfSha256": sha, "pageStamp": stamp, "asOf": as_of, "asOfIso": as_of_iso,
-                     "checkedAt": K.now_iso(), "figures": figures, "redLines": len(lines), "radiusM": WATCH_RADIUS_M,
+                     "checkedAt": K.now_iso(), "lastSuccessAt": K.now_iso() if judged_any else watch_prev.get("lastSuccessAt"),
+                     "lastSuccessAsOfIso": as_of_iso if judged_any else watch_prev.get("lastSuccessAsOfIso"),
+                     "judgeStoppedSince": None if judged_any else (watch_prev.get("judgeStoppedSince") or K.now_iso()),
+                     "press": (data.get("watch") or {}).get("press"),
+                     "figures": figures, "redLines": len(lines), "radiusM": WATCH_RADIUS_M,
                      "markRadiusM": MARK_RADIUS_M, "note": "位置図の✕印がある区間は印から markRadiusM、無い区間は町名の代表点から radiusM 以内に、県の規制状況図の赤線（規制中）が無くなったら解除とみなす"}
     data["updatedAt"] = K.now_iso()
     write(data)

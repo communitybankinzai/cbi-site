@@ -4,7 +4,8 @@
   "url": "https://www.pref.chiba.lg.jp/doukan/press/2026/1002fukkyumitoshi.html",
   "pdf": "https://www.pref.chiba.lg.jp/doukan/press/2026/documents/fukkyumitoshi.pdf",
   "asOf": "2026-10-01",
-  "published": "2026-10-02"
+  "published": "2026-10-02",
+  "pdfSha256": "dd9ee81703b28a3ff7f3394ed9e38ae9615596695285dc694dc3a69f2e44eb8b"
  },
  "note": "県の発表PDF（写真に路線・場所・復旧見込みを焼き込んだもの）からCBIが書き起こした。位置は市町村＋地名を国土地理院の住所検索で引いた町名の代表点で、被災箇所そのものではない（数百m〜数kmずれる）。scale: large=大規模（復旧まで1か月以上）/medium=中規模（1か月程度）/small=小規模（1〜3週間・土砂撤去中など）。status と clearedAt は毎時の見張り（pipeline/build_pref_recovery.py）が県の規制状況図の赤線と突き合わせて更新する。",
  "legend": {
@@ -12,14 +13,21 @@
   "medium": "中規模（復旧までに1か月程度）",
   "small": "小規模（復旧までに1〜3週間程度）"
  },
- "updatedAt": "2026-10-02T21:20:29+09:00",
+ "updatedAt": "2026-10-02T22:18:48+09:00",
  "watch": {
   "pdfUrl": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/kisei8.pdf",
   "pdfSha256": "d26d05ce160932460dc025d78c52ff438ce2ddeb07d3ef2b3d123012cfb5bf78",
   "pageStamp": "令和8年10月2日（金曜日）午後2時時点",
   "asOf": "10月2日14時時点",
   "asOfIso": "2026-10-02T14:00:00+09:00",
-  "checkedAt": "2026-10-02T21:20:29+09:00",
+  "checkedAt": "2026-10-02T22:18:48+09:00",
+  "lastSuccessAt": "2026-10-02T22:18:48+09:00",
+  "lastSuccessAsOfIso": "2026-10-02T14:00:00+09:00",
+  "judgeStoppedSince": null,
+  "press": {
+   "sha256": "dd9ee81703b28a3ff7f3394ed9e38ae9615596695285dc694dc3a69f2e44eb8b",
+   "checkedAt": "2026-10-02T22:17:54+09:00"
+  },
   "figures": [
    {
     "name": "分割図（1/3）",
@@ -86,7 +94,8 @@
    "nearestRedLineM": 378,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "409-袖ケ浦市-大鳥居",
@@ -107,7 +116,8 @@
    "nearestRedLineM": 493,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "409-市原市-西国吉",
@@ -133,7 +143,8 @@
     "lon": 140.12129,
     "distM": 527,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "409-市原市-栢橋",
@@ -159,7 +170,8 @@
     "lon": 140.10335,
     "distM": 506,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "410-君津市-大坂",
@@ -180,7 +192,8 @@
    "nearestRedLineM": 810,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "13-長柄町-針ケ谷",
@@ -201,7 +214,8 @@
    "nearestRedLineM": 2,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "14-長柄町-山根",
@@ -227,7 +241,8 @@
     "lon": 140.23117,
     "distM": 693,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "21-茂原市-大沢",
@@ -253,7 +268,8 @@
     "lon": 140.26049,
     "distM": 233,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "21-市原市-金剛地",
@@ -274,7 +290,8 @@
    "nearestRedLineM": 739,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "24-君津市-笹",
@@ -295,7 +312,8 @@
    "nearestRedLineM": 3201,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "32-市原市-月崎",
@@ -316,7 +334,8 @@
    "nearestRedLineM": 301,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "32-市原市-石神",
@@ -337,7 +356,8 @@
    "nearestRedLineM": 104,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "33-袖ケ浦市-滝の口",
@@ -358,7 +378,8 @@
    "nearestRedLineM": 209,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "34-鋸南町-市井原",
@@ -384,7 +405,8 @@
     "lon": 139.89295,
     "distM": 470,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "67-茂原市-桂",
@@ -405,7 +427,8 @@
    "nearestRedLineM": 1878,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "67-市原市-瀬又",
@@ -431,7 +454,8 @@
     "lon": 140.23055,
     "distM": 1364,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "81-市原市-藪",
@@ -452,7 +476,8 @@
    "nearestRedLineM": 486,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "81-市原市-石神",
@@ -473,7 +498,8 @@
    "nearestRedLineM": 104,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "81-君津市-黄和田畑",
@@ -494,7 +520,8 @@
    "nearestRedLineM": 146,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "81-大多喜町-葛藤",
@@ -520,7 +547,8 @@
     "lon": 140.16148,
     "distM": 1010,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "81-鴨川市-天津",
@@ -546,7 +574,8 @@
     "lon": 140.1467,
     "distM": 1616,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "90-木更津市-小浜",
@@ -572,7 +601,8 @@
     "lon": 139.90622,
     "distM": 390,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "90-君津市-坂田",
@@ -598,7 +628,8 @@
     "lon": 139.88305,
     "distM": 444,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "93-君津市-大野台",
@@ -624,7 +655,8 @@
     "lon": 140.01495,
     "distM": 808,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "128-長柄町-船木",
@@ -650,7 +682,8 @@
     "lon": 140.24101,
     "distM": 166,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "143-袖ケ浦市-川原井",
@@ -676,7 +709,8 @@
     "lon": 140.08143,
     "distM": 616,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "143-市原市-上高根",
@@ -697,7 +731,8 @@
    "nearestRedLineM": 784,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "144-市原市-豊成",
@@ -718,7 +753,8 @@
    "nearestRedLineM": 2863,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "144-市原市-中高根",
@@ -744,7 +780,8 @@
     "lon": 140.10383,
     "distM": 1155,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "145-君津市-岩出",
@@ -770,7 +807,8 @@
     "lon": 140.04564,
     "distM": 966,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "147-長柄町-針ケ谷",
@@ -791,7 +829,8 @@
    "nearestRedLineM": 2,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "148-市原市-平蔵",
@@ -817,7 +856,8 @@
     "lon": 140.20424,
     "distM": 1021,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "160-市原市-飯給",
@@ -843,7 +883,8 @@
     "lon": 140.12268,
     "distM": 2499,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "163-君津市-鹿野山",
@@ -864,7 +905,8 @@
    "nearestRedLineM": 634,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "163-君津市-福岡",
@@ -890,7 +932,8 @@
     "lon": 139.97658,
     "distM": 322,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "164-君津市-草牛",
@@ -916,7 +959,8 @@
     "lon": 139.95376,
     "distM": 349,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "168-市原市-養老",
@@ -942,7 +986,8 @@
     "lon": 140.13869,
     "distM": 479,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "168-木更津市-真里谷",
@@ -968,7 +1013,8 @@
     "lon": 140.08978,
     "distM": 995,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "168-木更津市-市野々",
@@ -1012,7 +1058,8 @@
     "lon": 140.10862,
     "distM": 1705,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "171-市原市-古敷谷",
@@ -1033,7 +1080,8 @@
    "nearestRedLineM": 116,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "171-市原市-徳氏",
@@ -1054,7 +1102,8 @@
    "nearestRedLineM": 628,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "172-市原市-月出",
@@ -1075,7 +1124,8 @@
    "nearestRedLineM": 162,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "173-市原市-古敷谷",
@@ -1101,7 +1151,8 @@
     "lon": 140.17952,
     "distM": 1843,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "177-勝浦市-大森",
@@ -1127,7 +1178,8 @@
     "lon": 140.23077,
     "distM": 360,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "178-大多喜町-会所",
@@ -1153,7 +1205,8 @@
     "lon": 140.20408,
     "distM": 1221,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "182-富津市-志駒",
@@ -1179,7 +1232,8 @@
     "lon": 139.92351,
     "distM": 405,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "185-南房総市-富浦町大津",
@@ -1229,7 +1283,8 @@
     "lon": 139.96634,
     "distM": 640,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "269-木更津市-上烏田",
@@ -1255,7 +1310,8 @@
     "lon": 139.95621,
     "distM": 471,
     "figure": "分割図（3/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "284-市原市-鶴舞",
@@ -1276,7 +1332,8 @@
    "nearestRedLineM": 3376,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "287-市原市-椎津",
@@ -1297,7 +1354,8 @@
    "nearestRedLineM": 1320,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "287-袖ケ浦市-久保田",
@@ -1318,7 +1376,8 @@
    "nearestRedLineM": 1047,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "287-袖ケ浦市-蔵波",
@@ -1339,7 +1398,8 @@
    "nearestRedLineM": 2427,
    "watch": "10月2日14時時点の図で判定",
    "watchRadiusM": 3500,
-   "mark": null
+   "mark": null,
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "292-市原市-武士",
@@ -1365,7 +1425,8 @@
     "lon": 140.15162,
     "distM": 409,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   },
   {
    "id": "292-市原市-勝間",
@@ -1391,7 +1452,8 @@
     "lon": 140.17581,
     "distM": 1378,
     "figure": "分割図（2/3）"
-   }
+   },
+   "judgedAtIso": "2026-10-02T14:00:00+09:00"
   }
  ],
  "marks": {

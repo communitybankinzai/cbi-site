@@ -3992,3 +3992,5 @@ body.sns-popup-open #quick-record-bar { display: none; }
 .pref-recovery-list .prr-row.is-cleared { opacity: .75; }
 .pref-recovery-list .prr-sub { color: #55637a; }
 .pref-recovery-list .prr-focus { margin-left: 6px; min-height: 22px; padding: 1px 8px; border: 1px solid #b9c4d3; border-radius: 6px; background: #f7f9fc; color: #16324f; font: inherit; font-size: 11px; cursor: pointer; }
+.pref-recovery-list .prr-row.is-doubtful { border-left-color: #b8322c; background: #fff7f6; }
+.pref-recovery-list .prr-warn { border: 1px solid #e6a9a2; background: #fdecea; color: #7f1d1d; padding: 6px 8px; border-radius: 6px; }
