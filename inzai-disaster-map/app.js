@@ -5812,6 +5812,11 @@ function renderRoadClosures() {
 }
 
 function toggleOverlay(name, checked) {
+  // 県の被災箇所と復旧見込み（2026-10-02）
+  if (name === "prefRecovery") {
+    setPrefRecoveryLayer(checked);
+    return;
+  }
   // 地震の震源：波紋と再生の枠も一緒に出す／片付ける（2026-10-02）
   if (name === "quakes") {
     setQuakeLayer(checked);
@@ -13777,6 +13782,137 @@ function renderQuakePlayClock() {
   renderQuakePlayIdle();
 })();
 quakeWaveReady = true;
+
+// ============================================================
+// 🛣 県の被災箇所と復旧見込み（台風25号・全県・2026-10-02 事業主決定A）
+// 千葉県の報道発表「県管理道路の被災箇所の状況と復旧見込み」（10/1現在・全面通行止め56区間）を
+// pref-recovery-outlook.json（PDFから書き起こし・位置は県の位置図の✕印か町名の代表点）から読み、点と一覧にする。
+// 解除は GitHub Actions の pipeline/build_pref_recovery.py が県の規制状況図の赤線と毎時突き合わせて記録する。
+// 56区間はすべて南房総側（市原〜南房総）なので、ON にしたら区間が収まる範囲へ移る（戻るのは「印西市全域」）。
+map.createPane("prefRecoveryPane");
+map.getPane("prefRecoveryPane").style.zIndex = 463;
+const prefRecoveryRenderer = L.svg({ pane: "prefRecoveryPane" });
+const prefRecoveryLayer = L.layerGroup();
+let prefRecoveryData = null;
+const PREF_RECOVERY_COLORS = { large: "#dc2626", medium: "#ea580c", small: "#2563eb", cleared: "#6b7280" };
+const PREF_RECOVERY_LABEL = { large: "大規模（復旧まで1か月以上）", medium: "中規模（復旧まで1か月程度）", small: "小規模（復旧まで1〜3週間程度）" };
+
+function prefRecoveryPoint(it) {
+  if (it.mark && Number.isFinite(it.mark.lat)) return [it.mark.lat, it.mark.lon];
+  if (Number.isFinite(it.lat)) return [it.lat, it.lon];
+  return null;
+}
+
+function prefRecoveryWhere(it) {
+  return it.mark && Number.isFinite(it.mark.lat)
+    ? "県の位置図の✕印から読んだ位置（数百mの誤差）"
+    : "町名の代表点（被災箇所そのものではなく、数百m〜数kmずれる）";
+}
+
+function formatPrefRecoveryTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  return new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(d);
+}
+
+function prefRecoveryPopup(it, src) {
+  const cleared = it.status === "cleared";
+  const color = cleared ? PREF_RECOVERY_COLORS.cleared : PREF_RECOVERY_COLORS[it.scale];
+  return `
+    <div class="popup-title">${escapeHtml(it.road)}（${escapeHtml(it.routeNo)}）</div>
+    <div class="shelter-popup-badges">
+      <span class="badge" style="background:${color};color:#fff">${cleared ? "規制解除（県の図から赤線が消えた）" : escapeHtml(it.work)}</span>
+    </div>
+    <div>${escapeHtml(it.municipality)}${escapeHtml(it.place)}</div>
+    <div class="detail-meta">復旧見込：${escapeHtml(it.outlook)}（${escapeHtml(PREF_RECOVERY_LABEL[it.scale] || it.scale)}）／日交通量 ${escapeHtml(it.traffic || "-")}</div>
+    ${cleared ? `<div class="detail-meta">解除：${escapeHtml(it.clearedFigure || formatPrefRecoveryTime(it.clearedAt))}の県の規制状況図から赤線が消えた（CBIの判定・県の発表ではありません）</div>` : `<div class="detail-meta">判定：${escapeHtml(it.watch || "未判定")}${Number.isFinite(it.nearestRedLineM) ? `・赤線まで約${escapeHtml(String(it.nearestRedLineM))}m` : ""}</div>`}
+    <div class="detail-meta">位置：${escapeHtml(prefRecoveryWhere(it))}</div>
+    <a href="${escapeHtml(src.url)}" target="_blank" rel="noreferrer">出典: 千葉県の発表（${escapeHtml(src.asOf)}現在）</a>・<a href="${escapeHtml(src.pdf)}" target="_blank" rel="noreferrer">写真と位置図（PDF）</a>
+  `;
+}
+
+function renderPrefRecovery() {
+  prefRecoveryLayer.clearLayers();
+  const status = document.getElementById("pref-recovery-status");
+  const list = document.getElementById("pref-recovery-list");
+  const data = prefRecoveryData;
+  if (!data || !Array.isArray(data.items)) return;
+  const src = data.source || {};
+  const items = data.items;
+  const active = items.filter(it => it.status !== "cleared");
+  const cleared = items.filter(it => it.status === "cleared");
+  items.forEach(it => {
+    const pos = prefRecoveryPoint(it);
+    if (!pos) return;
+    const isCleared = it.status === "cleared";
+    const color = isCleared ? PREF_RECOVERY_COLORS.cleared : PREF_RECOVERY_COLORS[it.scale] || "#64748b";
+    const marker = L.circleMarker(pos, {
+      renderer: prefRecoveryRenderer, pane: "prefRecoveryPane",
+      radius: isCleared ? 6 : (it.scale === "large" ? 9 : 7), color: "#fff", weight: 1.5, fillColor: color, fillOpacity: isCleared ? 0.55 : 0.9
+    });
+    marker.bindPopup(prefRecoveryPopup(it, src));
+    marker.bindTooltip(`${it.routeNo} ${it.municipality}${it.place}`, { direction: "top", offset: [0, -8], className: "quake-label" });
+    marker._prefRecoveryId = it.id;
+    prefRecoveryLayer.addLayer(marker);
+  });
+  const watch = data.watch || {};
+  if (status) status.textContent = `規制中 ${active.length}・解除 ${cleared.length}（県の図 ${watch.asOf || "未判定"}で判定）`;
+  if (!list) return;
+  const group = (label, scale) => {
+    const rows = active.filter(it => it.scale === scale);
+    if (!rows.length) return "";
+    return `<div class="prr-group"><div class="prr-head"><span class="prr-dot" style="background:${PREF_RECOVERY_COLORS[scale]}"></span>${escapeHtml(label)} <span class="cnt">${rows.length}</span></div>${rows.map(rowHtml).join("")}</div>`;
+  };
+  const rowHtml = it => `
+    <div class="prr-row${it.status === "cleared" ? " is-cleared" : ""}">
+      <div class="prr-main"><strong>${escapeHtml(it.routeNo)} ${escapeHtml(it.road)}</strong> ${escapeHtml(it.municipality)}${escapeHtml(it.place)}</div>
+      <div class="prr-sub">${it.status === "cleared" ? `✅ 解除（${escapeHtml(it.clearedFigure || formatPrefRecoveryTime(it.clearedAt))}の図）` : `${escapeHtml(it.work)}・復旧見込 ${escapeHtml(it.outlook)}`}${it.mark ? "" : "・位置は町名"}
+        ${prefRecoveryPoint(it) ? `<button type="button" class="prr-focus" data-pref-recovery-focus="${escapeHtml(it.id)}">地図で見る</button>` : ""}</div>
+    </div>`;
+  list.innerHTML = `
+    <p class="road-closures-note">千葉県の発表（${escapeHtml(src.asOf || "")}現在・<a href="${escapeHtml(src.url || "#")}" target="_blank" rel="noreferrer">報道発表</a>）の56区間をCBIが書き起こしたもの。すべて市原〜南房総で、<strong>印西市周辺の区間はありません</strong>。解除は県の規制状況図（${escapeHtml(watch.asOf || "未判定")}）の赤線が消えたかで毎時判定（CBIの判定・県の発表ではない）。位置は県の位置図の✕印（${items.filter(it => it.mark).length}区間）か町名の代表点。</p>
+    ${group(PREF_RECOVERY_LABEL.large, "large")}${group(PREF_RECOVERY_LABEL.medium, "medium")}${group(PREF_RECOVERY_LABEL.small, "small")}
+    ${cleared.length ? `<div class="prr-group"><div class="prr-head"><span class="prr-dot" style="background:${PREF_RECOVERY_COLORS.cleared}"></span>解除された区間 <span class="cnt">${cleared.length}</span></div>${cleared.map(rowHtml).join("")}</div>` : ""}
+    <p class="road-closures-note">最終確認 ${escapeHtml(formatPrefRecoveryTime(watch.checkedAt))}${watch.figures ? `・読めた図 ${watch.figures.filter(f => f.ok).length}/${watch.figures.length}` : ""}。最新は県の発表と現地の表示で確認してください。</p>
+  `;
+}
+
+function setPrefRecoveryLayer(checked) {
+  const status = document.getElementById("pref-recovery-status");
+  const list = document.getElementById("pref-recovery-list");
+  if (!checked) {
+    map.removeLayer(prefRecoveryLayer);
+    if (list) list.hidden = true;
+    if (status) status.textContent = "ONにすると読み込みます";
+    return;
+  }
+  prefRecoveryLayer.addTo(map);
+  if (list) list.hidden = false;
+  if (status) status.textContent = "読み込み中…";
+  fetch(`./pref-recovery-outlook.json?_=${Date.now()}`, { cache: "no-store" })
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(data => {
+      prefRecoveryData = data;
+      renderPrefRecovery();
+      const pts = data.items.map(prefRecoveryPoint).filter(Boolean);
+      if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [24, 24] });
+    })
+    .catch(error => {
+      if (status) status.textContent = "読み込めませんでした";
+      if (list) list.innerHTML = `<p class="road-closures-note">一覧を読み込めませんでした（${escapeHtml(error?.message || "不明")}）。<a href="https://www.pref.chiba.lg.jp/doukan/press/2026/1002fukkyumitoshi.html" target="_blank" rel="noreferrer">県の発表</a>を確認してください。</p>`;
+    });
+}
+
+document.getElementById("pref-recovery-list")?.addEventListener("click", event => {
+  const btn = event.target.closest("[data-pref-recovery-focus]");
+  if (!btn || !prefRecoveryData) return;
+  const it = prefRecoveryData.items.find(x => x.id === btn.dataset.prefRecoveryFocus);
+  const pos = it && prefRecoveryPoint(it);
+  if (!pos) return;
+  map.setView(pos, Math.max(map.getZoom(), 13));
+  prefRecoveryLayer.eachLayer(l => { if (l._prefRecoveryId === it.id) l.openPopup(); });
+});
 
 // 最初の画面は冠水の情報だけにする（2026-09-21 中司さんの実機指摘）。開いた直後に
 // 避難所55施設のピン・被害候補のピン・洪水浸水想定の赤い面が全部出ていて、地図そのものが

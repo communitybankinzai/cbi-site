@@ -3984,5 +3984,11 @@ body.sns-popup-open #quick-record-bar { display: none; }
 .quake-inzai-badge::before { content: ""; position: absolute; left: -12px; top: 50%; margin-top: -8px; border: 8px solid transparent; border-right: 10px solid #fff; border-left: 0; filter: drop-shadow(-2px 0 1px rgba(15,30,60,.25)); }
 .quake-inzai-badge { position: relative; }
 
-/* 県の復旧見込みへの案内（通行止めの一覧の下・2026-10-02） */
-.road-closure-pref-outlook { margin: 6px 0 4px; padding: 6px 8px; border-left: 3px solid #b8322c; background: #fdf4f3; font-size: 11.5px; line-height: 1.5; color: #33404f; }
+/* 県の被災箇所と復旧見込みの一覧（2026-10-02） */
+.pref-recovery-list .prr-group { margin: 6px 0; }
+.pref-recovery-list .prr-head { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12px; color: #16324f; margin: 4px 0; }
+.pref-recovery-list .prr-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 0 0 1px #94a3b8; }
+.pref-recovery-list .prr-row { padding: 4px 6px; border-left: 2px solid #e2e8f0; margin: 2px 0; font-size: 11.5px; line-height: 1.45; }
+.pref-recovery-list .prr-row.is-cleared { opacity: .75; }
+.pref-recovery-list .prr-sub { color: #55637a; }
+.pref-recovery-list .prr-focus { margin-left: 6px; min-height: 22px; padding: 1px 8px; border: 1px solid #b9c4d3; border-radius: 6px; background: #f7f9fc; color: #16324f; font: inherit; font-size: 11px; cursor: pointer; }

@@ -47,15 +47,20 @@ jobs:
       - name: 県のページを確かめて線を作る
         run: python inzai-disaster-map/pipeline/build_pref_road_kisei.py ${{ inputs.force && '--force' || '' }}
 
+      # 2026-10-02 追加：県の「被災箇所の状況と復旧見込み」56区間の解除を、同じ状況図（分割図3枚）の赤線で判定する
+      # （inzai-disaster-map/pipeline/build_pref_recovery.py・事業主決定A）。失敗しても上の取り込みの結果は残す
+      - name: 復旧見込みの56区間の解除を判定する
+        run: python inzai-disaster-map/pipeline/build_pref_recovery.py ${{ inputs.force && '--force' || '' }} || echo "復旧見込みの判定に失敗（上の取り込みは有効）"
+
       - name: 変わっていればコミット
         run: |
-          if git diff --quiet -- inzai-disaster-map/pref-road-kisei.json; then
+          if git diff --quiet -- inzai-disaster-map/pref-road-kisei.json inzai-disaster-map/pref-recovery-outlook.json; then
             echo "変更なし"; exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add inzai-disaster-map/pref-road-kisei.json
-          git commit -m "防災MAP: 県の道路規制状況図を更新（自動）"
+          git add inzai-disaster-map/pref-road-kisei.json inzai-disaster-map/pref-recovery-outlook.json
+          git commit -m "防災MAP: 県の道路規制状況図・復旧見込みの解除判定を更新（自動）"
           for i in 1 2 3; do
             git pull --rebase origin "${GITHUB_REF_NAME}" && git push && exit 0
             sleep 10
