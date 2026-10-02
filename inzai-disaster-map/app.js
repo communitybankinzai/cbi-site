@@ -13847,9 +13847,18 @@ function renderPrefRecovery() {
     if (!pos) return;
     const isCleared = it.status === "cleared";
     const color = isCleared ? PREF_RECOVERY_COLORS.cleared : PREF_RECOVERY_COLORS[it.scale] || "#64748b";
+    // 位置の誤差を破線の円で示す（✕印＝約400m・町名の代表点＝約1.5km）。被災箇所そのものではないことが見て分かるように
+    const hasMark = Boolean(it.mark && Number.isFinite(it.mark.lat));
+    prefRecoveryLayer.addLayer(L.circle(pos, {
+      renderer: prefRecoveryRenderer, pane: "prefRecoveryPane", interactive: false,
+      radius: hasMark ? 400 : 1500, color, weight: 1, dashArray: "4 6", opacity: 0.6, fillColor: color, fillOpacity: 0.06
+    }));
+    // スマホ（指）では点を大きくして押しやすく（2026-10-02 事業主の実機「点を押しても詳細が見れない」）
+    const touch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    const baseR = isCleared ? 6 : (it.scale === "large" ? 9 : 7);
     const marker = L.circleMarker(pos, {
       renderer: prefRecoveryRenderer, pane: "prefRecoveryPane",
-      radius: isCleared ? 6 : (it.scale === "large" ? 9 : 7), color: "#fff", weight: 1.5, fillColor: color, fillOpacity: isCleared ? 0.55 : 0.9
+      radius: baseR + (touch ? 5 : 0), color: "#fff", weight: 1.5, fillColor: color, fillOpacity: isCleared ? 0.55 : 0.9
     });
     marker.bindPopup(prefRecoveryPopup(it, src));
     marker.bindTooltip(`${it.routeNo} ${it.municipality}${it.place}`, { direction: "top", offset: [0, -8], className: "quake-label" });
@@ -13910,7 +13919,8 @@ document.getElementById("pref-recovery-list")?.addEventListener("click", event =
   const it = prefRecoveryData.items.find(x => x.id === btn.dataset.prefRecoveryFocus);
   const pos = it && prefRecoveryPoint(it);
   if (!pos) return;
-  map.setView(pos, Math.max(map.getZoom(), 13));
+  // 町の縮尺（13）に固定する。拡大しすぎると、町名の代表点や位置図から読んだ点が「畑の真ん中」に見えてしまう
+  map.setView(pos, 13);
   prefRecoveryLayer.eachLayer(l => { if (l._prefRecoveryId === it.id) l.openPopup(); });
   // スマホでは一覧が地図の下にあり、押しても地図が見えない（2026-10-02 事業主の実機）。地図まで画面を戻す
   document.getElementById("map-pane")?.scrollIntoView({ behavior: "smooth", block: "start" });
