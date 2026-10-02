@@ -12919,7 +12919,7 @@ const quakePlayback = {
   active: false, playing: false, events: [], from: 0, to: 0, now: 0, cursor: 0,
   lastTick: 0, raf: null, token: 0, speed: QUAKE_SPEEDS[2].msPerSec, source: "", lastEvent: null, scrubbing: false,
   loading: false, loadedUntil: 0, // 月ごとの読み込みがどこまで届いたか（再生はここより先へ進まない）
-  allEvents: [], minRank: 0, lastDot: null // allEvents＝読み込んだ全件。events＝震度のしぼり込み後（minRank 以上）
+  allEvents: [], minRank: 0, inzaiOnly: false, lastDot: null // allEvents＝読み込んだ全件。events＝震度のしぼり込み後（minRank 以上）
 };
 
 // ピンの数値ラベル（公開されている M と最大震度だけ。どちらも無ければ空）
@@ -13571,16 +13571,19 @@ function pickQuakeSpeed(fromMs, toMs) {
 function applyQuakeMinRank(reseek) {
   const sel = quakePlayEl("quake-play-minint");
   quakePlayback.minRank = Number(sel?.value || 0);
-  quakePlayback.events = quakePlayback.minRank > 0
-    ? quakePlayback.allEvents.filter(e => intensityRank(e.maxi) >= quakePlayback.minRank)
-    : quakePlayback.allEvents.slice();
+  // 印西市のみ：市内の観測点で震度1以上の記録がある地震だけ（2026-10-03 事業主指示）
+  quakePlayback.inzaiOnly = !!quakePlayEl("quake-play-inzai")?.checked;
+  quakePlayback.events = quakePlayback.allEvents.filter(e =>
+    (quakePlayback.minRank <= 0 || intensityRank(e.maxi) >= quakePlayback.minRank) && (!quakePlayback.inzaiOnly || e.inzaiIntensity));
   if (reseek && quakePlayback.active) seekQuakePlayback(quakePlayback.now);
   else quakePlayback.cursor = quakePlayback.events.filter(e => e.atMs <= quakePlayback.now).length;
 }
 
 function quakeLoadingStatus(info) {
   const rankLabel = { 1: "1", 2: "2", 3: "3", 4: "4", 5: "5弱" }[quakePlayback.minRank] || "";
-  const n = quakePlayback.minRank > 0 ? `${quakePlayback.events.length}件（震度${rankLabel}以上・全${quakePlayback.allEvents.length}件のうち）` : `${quakePlayback.allEvents.length}件`;
+  const filtered = quakePlayback.minRank > 0 || quakePlayback.inzaiOnly;
+  const cond = [quakePlayback.inzaiOnly ? "印西市で震度1以上" : "", quakePlayback.minRank > 0 ? `最大震度${rankLabel}以上` : ""].filter(Boolean).join("・");
+  const n = filtered ? `${quakePlayback.events.length}件（${cond}・全${quakePlayback.allEvents.length}件のうち）` : `${quakePlayback.allEvents.length}件`;
   if (quakePlayback.loading) return `${n} 読み込み中 ${info.done}/${info.total}か月（出典: ${info.source || "—"}）`;
   return `${n}（出典: ${info.source || "—"}）${info.partial ? " ※一部の月は読めていません" : ""}`;
 }
@@ -13682,7 +13685,7 @@ function quakePlayTick(ts) {
     if (e.json && !Number.isFinite(e.feltKm) && !quakeDetailCache.has(e.json)) fetchQuakeFelt(e);
   }
   renderQuakePlayClock();
-  if (!quakePlayback.loading && quakePlayback.now >= quakePlayback.to) { setQuakePlaying(false); setQuakePlayStatus(`再生おわり：${quakePlayback.events.length}件${quakePlayback.minRank > 0 ? `（全${quakePlayback.allEvents.length}件のうち）` : ""}（出典: ${quakePlayback.source}）`); return; }
+  if (!quakePlayback.loading && quakePlayback.now >= quakePlayback.to) { setQuakePlaying(false); setQuakePlayStatus(`再生おわり：${quakePlayback.events.length}件${quakePlayback.minRank > 0 || quakePlayback.inzaiOnly ? `（全${quakePlayback.allEvents.length}件のうち）` : ""}（出典: ${quakePlayback.source}）`); return; }
   quakePlayback.raf = requestAnimationFrame(quakePlayTick);
 }
 
@@ -13784,10 +13787,12 @@ function renderQuakePlayClock() {
     startQuakePlayback(from, to);
   });
   quakePlayEl("quake-play-toggle")?.addEventListener("click", () => setQuakePlaying(!quakePlayback.playing));
-  quakePlayEl("quake-play-minint")?.addEventListener("change", () => {
+  const onFilterChange = () => {
     applyQuakeMinRank(true);
     if (quakePlayback.active) setQuakePlayStatus(quakeLoadingStatus({ done: 0, total: 0, source: quakePlayback.source, partial: false }));
-  });
+  };
+  quakePlayEl("quake-play-minint")?.addEventListener("change", onFilterChange);
+  quakePlayEl("quake-play-inzai")?.addEventListener("change", onFilterChange);
   quakePlayEl("quake-play-speed")?.addEventListener("change", event => {
     const found = QUAKE_SPEEDS.find(s => s.key === event.target.value);
     if (found) quakePlayback.speed = found.msPerSec;

@@ -3953,6 +3953,8 @@ body.sns-popup-open #quick-record-bar { display: none; }
 .quake-play-custom { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-items: center; margin-bottom: 8px; padding: 6px; border: 1px solid #dbe3ec; border-radius: 8px; background: #f7f9fc; }
 .quake-play-custom-title { grid-column: 1 / -1; font-size: 11.5px; font-weight: 700; color: #16324f; }
 .quake-play-custom .quake-play-minint { grid-column: 1 / -1; }
+.quake-play-custom .quake-play-inzai { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.quake-play-custom .quake-play-inzai input { width: auto; margin: 0; }
 .quake-play-custom select { flex: 1; min-height: 30px; padding: 4px 6px; border: 1px solid #b9c4d3; border-radius: 6px; background: #fff; color: #16324f; font: inherit; font-size: 12px; }
 /* ピンの数値ラベル（M・最大震度）。Leaflet の tooltip を小さく・矢印なしに */
 .leaflet-tooltip.quake-label { padding: 1px 5px; border: 1px solid #94a3b8; border-radius: 4px; background: rgba(255,255,255,.92); color: #16324f; font-size: 10.5px; font-weight: 700; line-height: 1.3; box-shadow: none; pointer-events: none; }
