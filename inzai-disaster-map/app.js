@@ -13219,13 +13219,22 @@ function fitJapanForQuakes(options) {
   map.fitBounds(JAPAN_BOUNDS, { paddingTopLeft: [10, top], paddingBottomRight: [roomRight ? panelW + 16 : 10, 10] });
 }
 
+// 過去の地震の再生の枠を開く（層が OFF なら ON にし、日本全体へ寄せる）
+function openQuakePlayPanel() {
+  const box = document.querySelector('[data-overlay="quakes"]');
+  if (box && !box.checked) box.click();
+  const panel = document.getElementById("quake-play-panel");
+  if (panel) panel.hidden = false;
+  fitJapanForQuakes({ remember: true });
+}
+
 function setQuakeLayer(checked) {
   const panel = document.getElementById("quake-play-panel");
   if (checked) {
     quakeLayer.addTo(map);
     quakeWaveLayer.addTo(map);
     quakePlayLayer.addTo(map);
-    if (panel) panel.hidden = false;
+    // 最新の地震には再生の枠は出さない（2026-10-02 事業主指示）。過去の再生は「⏪ 地震の再生」ボタンから
     // 地図は動かさない（印西周辺を見たまま震源を出せるように）。日本全体へは 🌍 地震ボタンか枠の「🗾 全国」で
     updateQuakeLiveWave();
     if (!quakeEvents.length) renderQuakePlayIdle();
@@ -13553,6 +13562,8 @@ async function startQuakePlayback(fromMs, toMs) {
   const box = document.querySelector('[data-overlay="quakes"]');
   if (box && !box.checked) box.click();
   stopQuakePlayback();
+  // 再生する地震は全国に散らばるので、印西周辺を見たままだと点が見えない。日本全体へ寄せる
+  openQuakePlayPanel();
   const token = quakePlayback.token;
   quakePlayback.active = true;
   quakePlayback.loading = true;
@@ -13762,7 +13773,8 @@ function renderQuakePlayClock() {
     slider.addEventListener("input", onScrub);
     slider.addEventListener("change", () => { quakePlayback.scrubbing = false; onScrub(); });
   }
-  quakePlayEl("quake-play-stop")?.addEventListener("click", () => stopQuakePlayback());
+  quakePlayEl("quake-play-stop")?.addEventListener("click", () => { stopQuakePlayback(); panel.hidden = true; });
+  document.getElementById("quake-play-open")?.addEventListener("click", openQuakePlayPanel);
   quakePlayEl("quake-play-close")?.addEventListener("click", () => {
     const box = document.querySelector('[data-overlay="quakes"]');
     if (box?.checked) box.click(); else setQuakeLayer(false);
