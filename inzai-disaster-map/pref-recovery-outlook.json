@@ -12,14 +12,14 @@
   "medium": "中規模（復旧までに1か月程度）",
   "small": "小規模（復旧までに1〜3週間程度）"
  },
- "updatedAt": "2026-10-02T21:13:18+09:00",
+ "updatedAt": "2026-10-02T21:20:29+09:00",
  "watch": {
   "pdfUrl": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/kisei8.pdf",
   "pdfSha256": "d26d05ce160932460dc025d78c52ff438ce2ddeb07d3ef2b3d123012cfb5bf78",
-  "pageStamp": "",
+  "pageStamp": "令和8年10月2日（金曜日）午後2時時点",
   "asOf": "10月2日14時時点",
   "asOfIso": "2026-10-02T14:00:00+09:00",
-  "checkedAt": "2026-10-02T21:13:18+09:00",
+  "checkedAt": "2026-10-02T21:20:29+09:00",
   "figures": [
    {
     "name": "分割図（1/3）",
