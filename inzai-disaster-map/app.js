@@ -10144,7 +10144,8 @@ async function refreshEarthquakeSummary(manual) {
     ));
     if (!latest) throw new Error("表示対象の地震情報がありません");
     const inzaiIntensity = inzai ? findCityIntensity(inzai, "1223100") : "";
-    renderQuakeBrief(latest, inzaiIntensity);
+    // 「直近の地震」の1行は最新の地震自身の印西市の震度（過去の別の地震の震度を付けない）
+    renderQuakeBrief(latest, findCityIntensity(latest, "1223100"));
 
     // 地図用: 座標が取れた地震を新しい順に最大20件保持する。
     // 印西市に震度記録がある地震は、市内への影響が分かるよう優先して残す
