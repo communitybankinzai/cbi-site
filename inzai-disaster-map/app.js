@@ -3110,7 +3110,7 @@ const PRESETS = {
   quake: {
     label: "地震",
     toggle: ["quakes"],
-    onApply: () => fitJapanForQuakes({ remember: true })
+    onApply: () => focusQuakeOnPress()
   },
   landslide: {
     label: "土砂災害",
@@ -13172,6 +13172,97 @@ function quakeWaveFrame(now) {
 }
 
 // 最新の地震の震源で波紋を繰り返す（層が ON で、再生していないとき）
+// ---- 🌍 地震ボタン：まず印西市全域。印西市が揺れた地震なら周辺100kmの震度MAP（2026-10-03 事業主指示）----
+const QUAKE_SHINDO_RADIUS_KM = 100;
+const quakeShindoLayer = L.layerGroup();
+let quakeFocusPending = false;
+let quakeShindoFor = null; // 震度MAPを描いた地震（json の名前）
+
+function rememberQuakeView() {
+  if (!quakePrevView) quakePrevView = { center: map.getCenter(), zoom: map.getZoom() };
+}
+
+function fitInzaiForQuakes() {
+  rememberQuakeView();
+  map.fitBounds(INZAI_BOUNDS);
+}
+
+function quakeShindoBounds() {
+  return L.latLng(INZAI_CENTER.lat, INZAI_CENTER.lng).toBounds(QUAKE_SHINDO_RADIUS_KM * 2000);
+}
+
+function clearQuakeShindo() {
+  quakeShindoLayer.clearLayers();
+  quakeShindoFor = null;
+}
+
+// 気象庁の詳細JSONの観測点ごとの震度（座標つき）。同じ地震は1回だけ取りに行く
+const quakeStationCache = new Map();
+function fetchQuakeStationIntensities(event) {
+  if (!event?.json) return Promise.resolve([]);
+  if (!quakeStationCache.has(event.json)) {
+    const base = String(APP_CONFIG.earthquakeDetailBase || "https://www.jma.go.jp/bosai/quake/data/");
+    const p = fetch(`${base}${event.json}`, { cache: "force-cache" })
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(det => {
+        const out = [];
+        (det?.Body?.Intensity?.Observation?.Pref || []).forEach(pref => (pref.Area || []).forEach(area => (area.City || []).forEach(city => (city.IntensityStation || []).forEach(st => {
+          const text = String(st.Int || "").trim();
+          if (intensityRank(text) >= 1 && st.latlon) out.push({ lat: Number(st.latlon.lat), lng: Number(st.latlon.lon), int: text, name: String(st.Name || "") });
+        }))));
+        return out;
+      })
+      .catch(error => { console.warn("気象庁 詳細JSON を読めません", event.json, error); quakeStationCache.delete(event.json); return []; });
+    quakeStationCache.set(event.json, p);
+  }
+  return quakeStationCache.get(event.json);
+}
+
+// 周辺100kmの震度MAP：観測点を震度の色の四角（震度の数字入り）で置き、100kmの円を破線で示す
+async function showQuakeShindoMap(event) {
+  if (quakeShindoFor === event.json) return;
+  quakeShindoFor = event.json;
+  const stations = await fetchQuakeStationIntensities(event);
+  if (quakeShindoFor !== event.json || !map.hasLayer(quakeWaveLayer)) return;
+  quakeShindoLayer.clearLayers();
+  quakeShindoLayer.addLayer(L.circle([INZAI_CENTER.lat, INZAI_CENTER.lng], {
+    renderer: quakeWaveRenderer, pane: "quakeWavePane", interactive: false, radius: QUAKE_SHINDO_RADIUS_KM * 1000,
+    color: "#16324f", weight: 1.5, dashArray: "6 6", fill: false, opacity: 0.7
+  }));
+  const near = stations.filter(st => quakeDistanceKm(INZAI_CENTER, st) <= QUAKE_SHINDO_RADIUS_KM)
+    .sort((a, b) => intensityRank(a.int) - intensityRank(b.int)); // 強い震度を上に重ねる
+  near.forEach(st => {
+    const color = QUAKE_INTENSITY_COLORS[st.int] || "#9aa5b1";
+    const dark = intensityRank(st.int) >= 6;
+    const html = `<span class="quake-shindo-pin" style="background:${color};color:${dark ? "#fff" : "#16324f"}" title="${escapeHtml(st.name)}">${escapeHtml(intensityLabel(st.int))}</span>`;
+    quakeShindoLayer.addLayer(L.marker([st.lat, st.lng], {
+      pane: "quakeWavePane", interactive: false, keyboard: false,
+      icon: L.divIcon({ className: "quake-shindo-icon", html, iconSize: [22, 18], iconAnchor: [11, 9] })
+    }));
+  });
+  quakeShindoLayer.__count = near.length;
+  syncQuakeLatestCard();
+}
+
+// 🌍 地震ボタンを押したとき：まず印西市全域。最新の地震が印西市で揺れていれば周辺100kmの震度MAP、
+// そうでなければ詳細の札（押すと全国を拡大）
+function focusQuakeOnPress() {
+  fitInzaiForQuakes();
+  quakeFocusPending = true;
+  runQuakeFocus();
+}
+
+function runQuakeFocus() {
+  const latest = quakeEvents[0];
+  if (!quakeFocusPending || !latest || quakePlayback.active) return;
+  quakeFocusPending = false;
+  if (latest.inzaiIntensity) {
+    rememberQuakeView();
+    map.fitBounds(quakeShindoBounds(), { paddingTopLeft: [10, 10], paddingBottomRight: [10, 10] });
+    showQuakeShindoMap(latest);
+  }
+}
+
 // 最新の地震の詳細の札（再生の枠を出していないとき、層が ON の間だけ出す）
 function syncQuakeLatestCard() {
   const card = document.getElementById("quake-latest-card");
@@ -13193,12 +13284,24 @@ function syncQuakeLatestCard() {
     ${row("深さ", depth !== null && depth !== undefined ? `約${escapeHtml(String(depth))}km` : "不明")}
     ${row("印西市", latest.inzaiIntensity ? `震度${escapeHtml(intensityLabel(latest.inzaiIntensity))}` : "震度の記録なし")}
     <div class="quake-latest-felt">${escapeHtml(quakeFeltText(latest))}</div>
+    ${latest.inzaiIntensity
+      ? `<div class="quake-latest-hint">印西市の周辺${QUAKE_SHINDO_RADIUS_KM}kmの震度MAPを地図に表示中${Number.isFinite(quakeShindoLayer.__count) ? `（${quakeShindoLayer.__count}地点）` : ""}。札を押すと${QUAKE_SHINDO_RADIUS_KM}km圏へ戻ります。</div>`
+      : `<div class="quake-latest-hint">印西市では震度の記録がない地震です。札を押すと全国を拡大します。</div>`}
+    <button type="button" id="quake-latest-play" class="quake-latest-play">⏪ 過去の地震を再生</button>
     <a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">出典: 気象庁 震源・震度情報</a>`;
+  card.querySelector("#quake-latest-play")?.addEventListener("click", event => { event.stopPropagation(); openQuakePlayPanel(); });
+  // 札を押す：印西市が揺れた地震は100km圏へ、それ以外は全国を拡大（出典リンク・✕・再生ボタンは別の動き）
+  card.onclick = event => {
+    if (event.target.closest("a, button")) return;
+    if (latest.inzaiIntensity) map.fitBounds(quakeShindoBounds(), { paddingTopLeft: [10, 10], paddingBottomRight: [10, 10] });
+    else fitJapanForQuakes({ remember: true });
+  };
   card.querySelector("#quake-latest-close")?.addEventListener("click", () => { card.hidden = true; });
 }
 
 function updateQuakeLiveWave() {
   syncQuakeLatestCard();
+  runQuakeFocus();
   if (quakeLiveWave) { removeQuakeWave(quakeLiveWave); quakeLiveWave = null; }
   renderQuakePlayIdle(); // 枠の「最新」の行は層が OFF でも最新にしておく（再生中は何もしない）
   if (!map.hasLayer(quakeWaveLayer) || quakePlayback.active) return;
@@ -13264,6 +13367,7 @@ function setQuakeLayer(checked) {
     quakeLayer.addTo(map);
     quakeWaveLayer.addTo(map);
     quakePlayLayer.addTo(map);
+    quakeShindoLayer.addTo(map);
     // 最新の地震には再生の枠は出さない（2026-10-02 事業主指示）。過去の再生は「⏪ 地震の再生」ボタンから
     // 地図は動かさない（印西周辺を見たまま震源を出せるように）。日本全体へは 🌍 地震ボタンか枠の「🗾 全国」で
     updateQuakeLiveWave();
@@ -13275,6 +13379,9 @@ function setQuakeLayer(checked) {
     map.removeLayer(quakeLayer);
     map.removeLayer(quakeWaveLayer);
     map.removeLayer(quakePlayLayer);
+    map.removeLayer(quakeShindoLayer);
+    clearQuakeShindo();
+    quakeFocusPending = false;
     if (panel) panel.hidden = true;
     syncQuakeLatestCard();
     // 🌍 地震ボタンで日本全体へ移動していたときだけ、押す前の位置へ戻す
@@ -13597,6 +13704,8 @@ async function startQuakePlayback(fromMs, toMs) {
   if (box && !box.checked) box.click();
   stopQuakePlayback();
   // 再生する地震は全国に散らばるので、印西周辺を見たままだと点が見えない。日本全体へ寄せる
+  quakeFocusPending = false;
+  clearQuakeShindo();
   openQuakePlayPanel();
   const token = quakePlayback.token;
   quakePlayback.active = true;
