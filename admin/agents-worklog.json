@@ -8408,6 +8408,7 @@
         }
       ],
       "plans": [
+        {"due": "2026-10-04", "title": "☁ cidao の Vercel Functions Storage（10.02GB/10GB）が下がったか Usage 画面で確かめる", "category": "保守", "priority": "高", "note": "10/3に超過メール。残りデプロイは8件のみ・保持設定は30日/最新10件で、削除済み分の反映待ちの可能性（確信度低）。https://vercel.com/cidao/~/usage の Functions Storage を見る。下がらなければ Vercel サポートへ問い合わせ。Active CPU・Invocations も超過中。"},
         {"due": "2026-10-09", "title": "🛣 県の復旧見込み56区間：初めて解除が出たときに判定が正しいか確かめる（県の次の発表PDFと突き合わせ）", "category": "保守", "priority": "高", "note": "pref-recovery-outlook.json の status=cleared と clearedFigure を、県の報道発表（随時更新）の次の版と比べる。町名だけの25区間は3.5km判定で粗い（笹・豊成・鶴舞は2.9〜3.4km）。県がPDFを更新したら python pipeline/assign_recovery_marks.py --pdf 新PDF を流して✕印を取り直し、書き起こしも更新する"},
         {"due": "未定", "title": "🛣 位置図の✕印の読み取りを 31/56 から上げる（番号札と重なった✕・青の✕の取りこぼし）", "category": "実装", "priority": "中", "note": "assign_recovery_marks.py の cross_marks。番号札（濃紺の六角形）に欠けた✕は is_cross の対角線条件を緩める、青は解除後の点と見分ける形の条件を足す。読めない区間は町名の代表点のまま（判定半径3.5km）"},
         {"due": "2026-10-16", "title": "📷 結縁寺里山保存会に団体ページ用の写真（彼岸花・里山）の提供をお願いする", "category": "広報", "priority": "低", "note": "10/2に らーぱんNAVI の記事内容を団体ページへ反映したが、団体ページの写真欄は logo_url の1枚のみで、雑誌の写真は転載許可が要るため載せていない。保存会から写真提供を受ける（依頼文は作成済みの案を使う）。複数枚載せたい場合は団体ページにギャラリー機能の追加が必要"},
