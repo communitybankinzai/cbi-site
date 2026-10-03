@@ -265,7 +265,7 @@ const UNREAD_POLL_MS = 30000;
       b.classList.toggle('active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports', 'ledger', 'org', 'budget', 'metaverse'].forEach(t => {
+    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports', 'ledger', 'org', 'budget', 'apiusage', 'metaverse'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
     document.body.classList.toggle('mail-fullwidth', name === 'mail');
@@ -273,6 +273,7 @@ const UNREAD_POLL_MS = 30000;
       document.body.classList.remove('mail-view-labels', 'mail-view-list', 'mail-view-detail');
     }
     if (name === 'budget') openBudgetTab();
+    if (name === 'apiusage') openApiUsageTab();
     if (name === 'agents' && !state.agentsLoaded) loadAgents();
     if (name === 'changelog' && !state.changelogLoaded) loadChangelog();
     if (name === 'changelog') loadNewsAdmin();
@@ -2020,6 +2021,129 @@ const UNREAD_POLL_MS = 30000;
   let mvFixesLoaded = false;
   let mvDailyLoaded = false;
   let mvDays = 14;
+
+  // ===== 📊 API・クラウド利用状況（2026-10-04） =====
+  // Anthropic API は CiDAO の /api/anthropic-usage（管理画面のパスワードで認証・CBI のキー分だけ）、
+  // Vercel の使用量警告は CBI 公式メールの警告を GAS 経由で拾う（現在値ではなく警告が出た時点の記録）。
+  const AU_API = 'https://cidao.vercel.app/api/anthropic-usage';
+  let auLoadedAt = 0;
+
+  function openApiUsageTab() {
+    const first = !$('au-refresh').dataset.bound;
+    if (first) {
+      $('au-refresh').dataset.bound = '1';
+      $('au-refresh').addEventListener('click', () => { auLoadedAt = 0; openApiUsageTab(); });
+    }
+    if (Date.now() - auLoadedAt < 60000) return;
+    auLoadedAt = Date.now();
+    loadAnthropicUsage();
+    loadVercelWarnings();
+  }
+
+  function auUsd(n, digits) {
+    return '$' + Number(n).toFixed(digits === undefined ? 2 : digits);
+  }
+
+  async function loadAnthropicUsage() {
+    const status = $('au-status');
+    const body = $('au-body');
+    status.textContent = '読み込み中…';
+    try {
+      const res = await fetch(AU_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: state.password })
+      });
+      const r = await res.json().catch(() => ({}));
+      if (!res.ok || !r.ok) throw new Error(r.error || ('HTTP ' + res.status));
+      renderAnthropicUsage(r);
+      status.textContent = '';
+      $('au-updated').textContent = '取得 ' + new Date(r.checkedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    } catch (err) {
+      body.innerHTML = '';
+      status.textContent = '読み込めませんでした：' + err.message;
+      auLoadedAt = 0;
+    }
+  }
+
+  function renderAnthropicUsage(r) {
+    let html = '';
+    if (r.credit) {
+      const low = r.credit.remainingUsd < r.credit.thresholdUsd;
+      html += '<p><strong style="font-size:1.6rem;color:' + (low ? '#b8322c' : 'inherit') + '">' + auUsd(r.credit.remainingUsd) + '</strong>' +
+        ' <span class="meta-note">共有クレジットの推定残高（警告ライン ' + auUsd(r.credit.thresholdUsd, 0) + '）' + (low ? ' ⚠ 少なくなっています' : '') + '</span></p>' +
+        '<p class="meta-note">' + escapeHtml(r.credit.baselineAt.slice(0, 10)) + ' の補充時点の残高から、それ以降の組織全体の消費を引いた推定です。' +
+        '<strong>補充したら基準額の更新が必要</strong>です（更新しないと実際より少なく出ます）。残高を返す API はありません。</p>';
+    } else {
+      html += '<p class="meta-note">残高の基準（CREDIT_BASELINE_*）が未設定のため、推定残高は出せません。</p>';
+    }
+
+    const c = r.cbi;
+    html += '<table class="sh-table"><thead><tr><th>CBI（cidao）の推定費用</th><th>金額</th></tr></thead><tbody>' +
+      '<tr><td>直近30日</td><td>' + auUsd(c.cost30dEstUsd) + '</td></tr>' +
+      '<tr><td>直近7日</td><td>' + auUsd(c.cost7dEstUsd) + '</td></tr></tbody></table>';
+
+    const activeKeys = c.keys.filter(k => k.status === 'active');
+    const expiry = {};
+    (r.keyExpiry || []).forEach(e => { expiry[e.name] = e; });
+    html += '<table class="sh-table" style="margin-top:14px"><thead><tr><th>キー</th><th>直近30日のトークン</th><th>失効</th></tr></thead><tbody>' +
+      activeKeys.map(k => {
+        const e = expiry[k.name];
+        const exp = e ? (e.daysLeft <= 30 ? '<span style="color:#b8322c">あと ' + e.daysLeft + ' 日</span>' : 'あと ' + e.daysLeft + ' 日') : 'なし';
+        return '<tr><td class="sh-name">' + escapeHtml(k.name) + '</td><td>' + k.tokens30d.toLocaleString('ja-JP') + '</td><td>' + exp + '</td></tr>';
+      }).join('') + '</tbody></table>';
+
+    if (c.byModel.length) {
+      html += '<table class="sh-table" style="margin-top:14px"><thead><tr><th>モデル別（推定・30日）</th><th>金額</th></tr></thead><tbody>' +
+        c.byModel.map(m => '<tr><td>' + escapeHtml(m.model) + '</td><td>' + auUsd(m.estUsd) + '</td></tr>').join('') + '</tbody></table>';
+    }
+
+    const days = c.daily.slice(-14);
+    const max = Math.max.apply(null, days.map(d => d.estUsd).concat([0.01]));
+    html += '<table class="sh-table" style="margin-top:14px"><thead><tr><th>日別（推定・直近14日・UTC日付）</th><th>金額</th><th></th></tr></thead><tbody>' +
+      days.map(d => '<tr><td>' + escapeHtml(d.date) + '</td><td>' + auUsd(d.estUsd) + '</td>' +
+        '<td style="width:50%"><div style="background:#2164ce;height:10px;border-radius:3px;width:' + Math.max(2, Math.round(d.estUsd / max * 100)) + '%"></div></td></tr>').join('') + '</tbody></table>';
+
+    $('au-body').innerHTML = html;
+  }
+
+  // Vercel の警告メール（件名・本文の冒頭から項目と％を読む）。読めなければ件名だけ出す。
+  async function loadVercelWarnings() {
+    const status = $('au-vercel-status');
+    const body = $('au-vercel-body');
+    status.textContent = '読み込み中…';
+    try {
+      const r = await mailCall({
+        action: 'list',
+        label: 'all',
+        q: 'from:vercel.com newer_than:90d (usage OR limits OR "free tier")'
+      });
+      if (!r.ok) throw new Error(r.error || 'unknown');
+      const rows = (r.threads || []).map(t => {
+        const text = (t.subject || '') + ' ' + (t.snippet || '');
+        const pct = (text.match(/(\d{2,3})\s*%/) || [])[1];
+        const res = (text.match(/(?:usage for|for)\s+([A-Z][A-Za-z ]+?)\s*(?:\(|\.|,|$)/) || [])[1];
+        return { date: t.date, subject: t.subject, pct: pct ? Number(pct) : null, resource: res ? res.trim() : '' };
+      });
+      if (!rows.length) {
+        body.innerHTML = '';
+        status.textContent = '直近90日に Vercel の使用量警告メールはありません。';
+      } else {
+        status.textContent = '';
+        body.innerHTML = '<table class="sh-table"><thead><tr><th>受信日時</th><th>項目</th><th>使用率</th><th>件名</th></tr></thead><tbody>' +
+          rows.map(x => {
+            const cls = x.pct >= 100 ? 'sh-danger' : (x.pct >= 75 ? 'sh-late' : '');
+            return '<tr class="' + cls + '"><td>' + escapeHtml(formatDate(x.date)) + '</td><td>' + escapeHtml(x.resource || '（本文で確認）') + '</td>' +
+              '<td>' + (x.pct === null ? '—' : '<span class="sh-badge">' + x.pct + '%</span>') + '</td>' +
+              '<td class="sh-detail">' + escapeHtml(x.subject) + '</td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+      $('au-vercel-updated').textContent = '取得 ' + new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    } catch (err) {
+      body.innerHTML = '';
+      status.textContent = '読み込めませんでした：' + err.message;
+    }
+  }
 
 
   // ===== 💰 予算計上アイテム =====

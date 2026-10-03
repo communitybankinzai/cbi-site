@@ -83,6 +83,7 @@ if (location.protocol === 'file:') {
       <button type="button" class="tab-btn" data-tab="org" role="tab" aria-selected="false">📋 団体書類</button>
       <button type="button" class="tab-btn" data-tab="metaverse" role="tab" aria-selected="false">🌐 ３D・防災MAP</button>
       <button type="button" class="tab-btn" data-tab="budget" role="tab" aria-selected="false">💰 予算</button>
+      <button type="button" class="tab-btn" data-tab="apiusage" role="tab" aria-selected="false">📊 API・クラウド</button>
     </nav>
 
     <!-- ===== タブ: アイデア ===== -->
@@ -1168,6 +1169,35 @@ if (location.protocol === 'file:') {
         <p class="panel-desc">
           データの実体は <code>site/admin/budget-items.json</code> です。項目の追加・金額の更新はこのファイルを編集してください。
         </p>
+      </section>
+    </div>
+    <!-- ===== タブ: API・クラウド利用状況（2026-10-04） ===== -->
+    <div class="tab-panel" id="tab-apiusage" role="tabpanel" hidden>
+      <section class="panel">
+        <div class="panel-head-row">
+          <h2 class="panel-title">🤖 Anthropic API（CiDAOのAI機能）</h2>
+          <span class="meta-note" id="au-updated"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="au-refresh" aria-label="API利用状況を更新" title="更新">↻</button>
+        </div>
+        <p class="panel-desc">
+          クレジットは<strong>N's factory と共有</strong>しており、片方が使い切るともう片方の API も止まります。ここには<strong>CBI のキー（cidao…）の分だけ</strong>を出します。
+          費用はキー別に取れないため、モデル・種別ごとの組織全体の費用をトークン数の割合で按分した<strong>推定</strong>です。当日分は含みません。
+        </p>
+        <p id="au-status" class="meta-note" role="status">読み込み待ち</p>
+        <div id="au-body"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-head-row">
+          <h2 class="panel-title">▲ Vercel の使用量警告（CiDAO）</h2>
+          <span class="meta-note" id="au-vercel-updated"></span>
+        </div>
+        <p class="panel-desc">
+          Vercel から CBI 公式メールに届いた警告（75%・100%）を表示します。<strong>警告が出た時点の記録で、リアルタイムの使用量ではありません。</strong>
+          無料枠を超えるとプロジェクトが自動で一時停止されます。現在値は
+          <a href="https://vercel.com/cidao" target="_blank" rel="noopener">Vercel の使用量ページ</a>（GitHub <code>communitybankinzai</code> でログイン）で確認します。
+        </p>
+        <p id="au-vercel-status" class="meta-note" role="status">読み込み待ち</p>
+        <div id="au-vercel-body"></div>
       </section>
     </div>
     <div class="tab-panel" id="tab-metaverse" role="tabpanel" hidden>
