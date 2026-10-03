@@ -3259,6 +3259,17 @@ body.embed-mode .cbi-home-link {
   font-size: 12px;
 }
 
+/* 2026-10-03: PC はスクロールバーを隠した横スクロールだと右端のボタン（停電・以降）に届かない
+   （マウスでは横にスワイプできない）。PC 幅では折り返して全部見せる。スマホは従来どおり横スワイプ */
+@media (min-width: 821px) {
+  .preset-items {
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
 @media (max-width: 820px) {
   .preset-bar {
     gap: 8px;
