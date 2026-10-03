@@ -13,16 +13,16 @@
   "medium": "中規模（復旧までに1か月程度）",
   "small": "小規模（復旧までに1〜3週間程度）"
  },
- "updatedAt": "2026-10-03T15:31:06+09:00",
+ "updatedAt": "2026-10-03T17:43:22+09:00",
  "watch": {
-  "pdfUrl": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/kisei9.pdf",
-  "pdfSha256": "0e2dac9033c975765245df3caae81a0b15549f9b7ee5e756c3805b8d9ec32df6",
-  "pageStamp": "令和8年10月3日（土曜日）午後2時時点",
-  "asOf": "10月3日14時時点",
-  "asOfIso": "2026-10-03T14:00:00+09:00",
-  "checkedAt": "2026-10-03T15:31:06+09:00",
-  "lastSuccessAt": "2026-10-03T15:31:06+09:00",
-  "lastSuccessAsOfIso": "2026-10-03T14:00:00+09:00",
+  "pdfUrl": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/kisei10.pdf",
+  "pdfSha256": "1b486e6ce9c7e37ebb7cf8a5c4736b79c2322c88e11894fb2ce5de6ab3bb3875",
+  "pageStamp": "令和8年10月3日（土曜日）午後5時時点",
+  "asOf": "10月3日17時時点",
+  "asOfIso": "2026-10-03T17:00:00+09:00",
+  "checkedAt": "2026-10-03T17:43:22+09:00",
+  "lastSuccessAt": "2026-10-03T17:43:22+09:00",
+  "lastSuccessAsOfIso": "2026-10-03T17:00:00+09:00",
   "judgeStoppedSince": null,
   "press": {
    "sha256": "dd9ee81703b28a3ff7f3394ed9e38ae9615596695285dc694dc3a69f2e44eb8b",
@@ -32,13 +32,13 @@
    {
     "name": "分割図（1/3）",
     "ok": true,
-    "score": 0.504,
-    "scale": 0.69,
+    "score": 0.459,
+    "scale": 0.744,
     "bounds": [
-     35.6115,
+     35.612,
      35.8646,
      139.996,
-     140.6056
+     140.6047
     ],
     "lines": 3
    },
@@ -46,30 +46,30 @@
     "name": "分割図（2/3）",
     "ok": true,
     "score": 0.476,
-    "scale": 0.69,
+    "scale": 0.742,
     "bounds": [
-     35.3351,
-     35.5881,
+     35.3353,
+     35.587,
      139.9095,
-     140.519
+     140.5166
     ],
-    "lines": 46
+    "lines": 58
    },
    {
     "name": "分割図（3/3）",
     "ok": true,
-    "score": 0.442,
-    "scale": 0.69,
+    "score": 0.404,
+    "scale": 0.744,
     "bounds": [
-     35.1257,
+     35.1259,
      35.3795,
      139.7633,
-     140.3728
+     140.372
     ],
-    "lines": 65
+    "lines": 64
    }
   ],
-  "redLines": 114,
+  "redLines": 125,
   "radiusM": 3500,
   "markRadiusM": 800,
   "note": "位置図の✕印がある区間は印から markRadiusM、無い区間は町名の代表点から radiusM 以内に、県の規制状況図の赤線（規制中）が無くなったら解除とみなす"
@@ -91,11 +91,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 383,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 342,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "409-袖ケ浦市-大鳥居",
@@ -113,11 +113,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 552,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 658,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "409-市原市-西国吉",
@@ -135,8 +135,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 333,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 387,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.39109,
@@ -144,7 +144,7 @@
     "distM": 527,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "409-市原市-栢橋",
@@ -162,8 +162,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 307,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 222,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.38888,
@@ -171,7 +171,7 @@
     "distM": 506,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "410-君津市-大坂",
@@ -189,11 +189,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 790,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 809,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "13-長柄町-針ケ谷",
@@ -211,11 +211,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 10,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 54,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "14-長柄町-山根",
@@ -233,8 +233,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 177,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 12,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.45617,
@@ -242,7 +242,7 @@
     "distM": 693,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "21-茂原市-大沢",
@@ -260,8 +260,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 89,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 203,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.48975,
@@ -269,7 +269,7 @@
     "distM": 233,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "21-市原市-金剛地",
@@ -287,11 +287,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 739,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 611,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "24-君津市-笹",
@@ -309,11 +309,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 3159,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 3175,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "32-市原市-月崎",
@@ -331,11 +331,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 415,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 315,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "32-市原市-石神",
@@ -353,11 +353,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 111,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 102,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "33-袖ケ浦市-滝の口",
@@ -375,11 +375,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 116,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 88,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "34-鋸南町-市井原",
@@ -397,8 +397,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 127,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 147,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.14158,
@@ -406,7 +406,7 @@
     "distM": 470,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "67-茂原市-桂",
@@ -424,11 +424,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 1850,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 2107,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "67-市原市-瀬又",
@@ -446,8 +446,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 2,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 141,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.52779,
@@ -455,7 +455,7 @@
     "distM": 1364,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "81-市原市-藪",
@@ -473,11 +473,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 537,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 452,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "81-市原市-石神",
@@ -495,11 +495,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 111,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 102,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "81-君津市-黄和田畑",
@@ -517,11 +517,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 129,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 154,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "81-大多喜町-葛藤",
@@ -539,8 +539,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 80,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 29,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.25778,
@@ -548,7 +548,7 @@
     "distM": 1010,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "81-鴨川市-天津",
@@ -566,8 +566,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 307,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 253,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.1489,
@@ -575,7 +575,7 @@
     "distM": 1616,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "90-木更津市-小浜",
@@ -593,8 +593,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 49,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 32,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.35479,
@@ -602,7 +602,7 @@
     "distM": 390,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "90-君津市-坂田",
@@ -620,8 +620,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 82,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 104,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.34613,
@@ -629,7 +629,7 @@
     "distM": 444,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "93-君津市-大野台",
@@ -647,8 +647,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 10,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 33,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.27795,
@@ -656,7 +656,7 @@
     "distM": 808,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "128-長柄町-船木",
@@ -674,8 +674,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 109,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 7,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.46605,
@@ -683,7 +683,7 @@
     "distM": 166,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "143-袖ケ浦市-川原井",
@@ -701,8 +701,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 122,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 80,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.41744,
@@ -710,7 +710,7 @@
     "distM": 616,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "143-市原市-上高根",
@@ -728,11 +728,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 767,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 710,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "144-市原市-豊成",
@@ -750,11 +750,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 2884,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 2769,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "144-市原市-中高根",
@@ -772,8 +772,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 25,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 65,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.44396,
@@ -781,7 +781,7 @@
     "distM": 1155,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "145-君津市-岩出",
@@ -799,8 +799,8 @@
    "status": "cleared",
    "clearedAt": "2026-10-03T14:00:00+09:00",
    "clearedFigure": "10月3日14時時点",
-   "nearestRedLineM": 4134,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 4096,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.31329,
@@ -808,7 +808,7 @@
     "distM": 966,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "147-長柄町-針ケ谷",
@@ -826,11 +826,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 10,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 54,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "148-市原市-平蔵",
@@ -848,8 +848,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 164,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 100,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.35195,
@@ -857,7 +857,7 @@
     "distM": 1021,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "160-市原市-飯給",
@@ -876,7 +876,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": 107,
-   "watch": "10月3日14時時点の図で判定",
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.32509,
@@ -884,7 +884,7 @@
     "distM": 2499,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "163-君津市-鹿野山",
@@ -902,11 +902,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 614,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 678,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "163-君津市-福岡",
@@ -924,8 +924,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 58,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 26,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.29238,
@@ -933,7 +933,7 @@
     "distM": 322,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "164-君津市-草牛",
@@ -951,8 +951,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 11,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 10,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.27943,
@@ -960,7 +960,7 @@
     "distM": 349,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "168-市原市-養老",
@@ -978,8 +978,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 19,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 37,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.3536,
@@ -987,7 +987,7 @@
     "distM": 479,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "168-木更津市-真里谷",
@@ -1005,8 +1005,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 11,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 14,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.3663,
@@ -1014,7 +1014,7 @@
     "distM": 995,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "168-木更津市-市野々",
@@ -1050,8 +1050,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 33,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 180,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.369,
@@ -1059,7 +1059,7 @@
     "distM": 1705,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "171-市原市-古敷谷",
@@ -1077,11 +1077,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 357,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 204,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "171-市原市-徳氏",
@@ -1099,11 +1099,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 1805,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 1697,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "172-市原市-月出",
@@ -1121,11 +1121,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 171,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 141,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "173-市原市-古敷谷",
@@ -1143,8 +1143,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 71,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 30,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.31206,
@@ -1152,7 +1152,7 @@
     "distM": 1843,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "177-勝浦市-大森",
@@ -1170,8 +1170,8 @@
    "status": "cleared",
    "clearedAt": "2026-10-03T14:00:00+09:00",
    "clearedFigure": "10月3日14時時点",
-   "nearestRedLineM": 1264,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 1282,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.16808,
@@ -1179,7 +1179,7 @@
     "distM": 360,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "178-大多喜町-会所",
@@ -1197,8 +1197,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 105,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 158,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.1797,
@@ -1206,7 +1206,7 @@
     "distM": 1221,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "182-富津市-志駒",
@@ -1224,8 +1224,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 131,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 127,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.18178,
@@ -1233,7 +1233,7 @@
     "distM": 405,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "185-南房総市-富浦町大津",
@@ -1275,8 +1275,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 352,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 422,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.32877,
@@ -1284,7 +1284,7 @@
     "distM": 640,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "269-木更津市-上烏田",
@@ -1302,8 +1302,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 97,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 131,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.3383,
@@ -1311,7 +1311,7 @@
     "distM": 471,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "284-市原市-鶴舞",
@@ -1329,11 +1329,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 3373,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 3365,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "287-市原市-椎津",
@@ -1351,11 +1351,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 1332,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 1331,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "287-袖ケ浦市-久保田",
@@ -1373,11 +1373,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 1077,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 1034,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "287-袖ケ浦市-蔵波",
@@ -1395,11 +1395,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 2429,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 2391,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "292-市原市-武士",
@@ -1417,8 +1417,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 140,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 31,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.46726,
@@ -1426,7 +1426,7 @@
     "distM": 409,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   },
   {
    "id": "292-市原市-勝間",
@@ -1444,8 +1444,8 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "nearestRedLineM": 188,
-   "watch": "10月3日14時時点の図で判定",
+   "nearestRedLineM": 219,
+   "watch": "10月3日17時時点の図で判定",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.47081,
@@ -1453,7 +1453,7 @@
     "distM": 1378,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T14:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00"
   }
  ],
  "marks": {
