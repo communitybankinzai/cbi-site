@@ -14021,6 +14021,10 @@ function prefRecoveryStaleness(data) {
   }
   if (w.press && w.press.updatedDetectedAt) reasons.push(`県が発表PDF（復旧見込みの一覧）を更新しました（${formatPrefRecoveryTime(w.press.updatedDetectedAt)}に検知）。この一覧は${(data.source || {}).asOf || ""}現在の版のままです`);
   if (w.press && w.press.missingSince) reasons.push("県の発表PDFがページから消えています");
+  // 発表PDFの自動読み取り（press_cards.py）が、一覧にない区間・PDFから消えた区間を見つけたとき
+  const pa = w.pressAuto || {};
+  const odd = [...(pa.unmatched || []), ...(pa.missing || [])];
+  if (pa.ok && odd.length) reasons.push(`県の発表PDFと一覧で食い違う区間があります（${odd.slice(0, 3).join("・")}${odd.length > 3 ? " ほか" : ""}）`);
   return { stale: reasons.length > 0, reasons, ageH };
 }
 function prefRecoveryOverdue(it, src) {

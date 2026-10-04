@@ -27,6 +27,7 @@ import numpy as np
 import requests
 
 import build_pref_road_kisei as K
+import press_cards as PC
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "pref-recovery-outlook.json")
@@ -149,6 +150,43 @@ def check_press(data):
     return False
 
 
+def auto_apply_press(data):
+    """県ページ上の最新の復旧見込みPDF（区間カード形式）を読み、一覧へ反映する。変更があれば True。
+    関門（press_cards.update）を通らなければ一覧は変えず、watch.pressAuto に理由を残す（手元の見張りが声で知らせる）"""
+    src = data.get("source") or {}
+    url = latest_press_pdf()
+    if not url:
+        return False
+    try:
+        r = requests.get(url, headers=K.UA, timeout=60)
+        r.raise_for_status()
+    except Exception as e:
+        log("発表PDFを読めない（自動反映せず）", e)
+        return False
+    sha = hashlib.sha256(r.content).hexdigest()
+    if sha == src.get("pdfSha256"):
+        return False
+    w = data.setdefault("watch", {})
+    try:
+        ok, summary = PC.update(data, PC.parse(r.content), url, sha)
+    except Exception as e:  # PDFの形が大きく変わったとき。一覧は触らない
+        ok, summary = False, {"ok": False, "reason": f"PDFを読み取れませんでした（{type(e).__name__}）", "unmatched": [], "missing": []}
+    summary = {k: v for k, v in summary.items() if k != "changeList"}
+    summary.update(sha256=sha, url=url, checkedAt=K.now_iso())
+    if ok:
+        w["press"] = {"sha256": sha, "checkedAt": K.now_iso(), "autoAppliedAt": K.now_iso()}
+        w["pressAuto"] = summary
+        data["updatedAt"] = K.now_iso()
+        log(f"✅ 発表PDFを自動で反映（規制中 {summary['active']}・解除 {summary['cleared']}・変更 {summary.get('changes')}件）", summary.get("unmatched") or "")
+        return True
+    prev = w.get("pressAuto") or {}
+    if prev.get("sha256") == sha and prev.get("reason") == summary.get("reason"):
+        return False  # 同じ失敗を毎時書き直さない
+    w["pressAuto"] = summary
+    log("⚠ 発表PDFを自動で反映できない（一覧は変更なし）：", summary.get("reason"))
+    return True
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pdf")
@@ -157,6 +195,8 @@ def main():
     data = load()
     watch_prev = data.get("watch") or {}
     press_changed = False if args.pdf else check_press(data)
+    if not args.pdf:
+        press_changed = auto_apply_press(data) or press_changed
 
     if args.pdf:
         pdf_url = "file:" + os.path.basename(args.pdf)
@@ -254,7 +294,7 @@ def main():
                      "checkedAt": K.now_iso(), "lastSuccessAt": K.now_iso() if judged_any else watch_prev.get("lastSuccessAt"),
                      "lastSuccessAsOfIso": as_of_iso if judged_any else watch_prev.get("lastSuccessAsOfIso"),
                      "judgeStoppedSince": None if judged_any else (watch_prev.get("judgeStoppedSince") or K.now_iso()),
-                     "press": (data.get("watch") or {}).get("press"),
+                     "press": (data.get("watch") or {}).get("press"), "pressAuto": (data.get("watch") or {}).get("pressAuto"),
                      "figures": figures, "redLines": len(lines), "radiusM": WATCH_RADIUS_M,
                      "markRadiusM": MARK_RADIUS_M, "note": "位置図の✕印がある区間は印から markRadiusM、無い区間は町名の代表点から radiusM 以内に、県の規制状況図の赤線（規制中）が無くなったら解除とみなす"}
     data["updatedAt"] = K.now_iso()
