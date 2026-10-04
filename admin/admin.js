@@ -5281,13 +5281,13 @@ const UNREAD_POLL_MS = 30000;
     if (unsettleBtn) unsettleBtn.addEventListener('click', () => settleLedgerEntry(id, false));
     const deleteBtn = cell.querySelector('[data-ledger-delete]');
     if (deleteBtn) deleteBtn.addEventListener('click', () => deleteLedgerEntry(id));
-    cell.querySelectorAll('[data-ledger-approve]').forEach(b => b.addEventListener('click', () => approveLedgerEntry(id, b.dataset.ledgerApprove)));
+    cell.querySelectorAll('[data-ledger-approve]').forEach(b => b.addEventListener('click', () => approveLedgerEntry(id, b.dataset.ledgerApprove, b)));
     cell.querySelectorAll('[data-ledger-audit]').forEach(b => b.addEventListener('click', () => auditLedgerEntry(id, b.dataset.ledgerAudit === '1')));
     const rejudgeBtn = cell.querySelector('[data-ledger-rejudge]');
     if (rejudgeBtn) rejudgeBtn.addEventListener('click', () => rejudgeLedgerEntry(id, rejudgeBtn));
   }
 
-  async function approveLedgerEntry(id, decision) {
+  async function approveLedgerEntry(id, decision, btn) {
     const e = state.ledger.entries.find(x => String(x.id) === String(id));
     if (!e) return;
     let note = '';
@@ -5306,6 +5306,11 @@ const UNREAD_POLL_MS = 30000;
       if (r === null) return;
       note = r.trim();
     }
+    const group = btn ? [...btn.parentElement.querySelectorAll('button')] : [];
+    const busyText = { approved: '⏳ 承認中…', rejected: '⏳ 差し戻し中…', '': '⏳ 取り消し中…' }[decision];
+    const origText = btn ? btn.textContent : '';
+    group.forEach(x => { x.disabled = true; });
+    if (btn) btn.textContent = busyText;
     try {
       const res = await ledgerCall({ action: 'ledgerApprove', password: state.password, id, decision, note, actor: state.me });
       if (!res.ok) throw new Error(res.error);
@@ -5314,6 +5319,8 @@ const UNREAD_POLL_MS = 30000;
       await reloadLedger();
     } catch (err) {
       toast('操作に失敗: ' + err.message, 'err');
+      group.forEach(x => { x.disabled = false; });
+      if (btn) btn.textContent = origText;
     }
   }
 
