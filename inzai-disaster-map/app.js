@@ -14023,7 +14023,8 @@ function prefRecoveryStaleness(data) {
   if (w.press && w.press.missingSince) reasons.push("県の発表PDFがページから消えています");
   // 発表PDFの自動読み取り（press_cards.py）が、一覧にない区間・PDFから消えた区間を見つけたとき
   const pa = w.pressAuto || {};
-  const odd = [...(pa.unmatched || []), ...(pa.missing || [])];
+  const mcCheck = w.mapCheck || {};
+  const odd = [...(pa.unmatched || []), ...(pa.missing || []), ...(mcCheck.contradict || [])];
   if (pa.ok && odd.length) reasons.push(`県の発表PDFと一覧で食い違う区間があります（${odd.slice(0, 3).join("・")}${odd.length > 3 ? " ほか" : ""}）`);
   return { stale: reasons.length > 0, reasons, ageH };
 }

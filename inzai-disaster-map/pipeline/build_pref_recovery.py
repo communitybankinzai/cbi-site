@@ -28,6 +28,7 @@ import requests
 
 import build_pref_road_kisei as K
 import press_cards as PC
+import press_map_check as MC
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "pref-recovery-outlook.json")
@@ -176,6 +177,12 @@ def auto_apply_press(data):
     if ok:
         w["press"] = {"sha256": sha, "checkedAt": K.now_iso(), "autoAppliedAt": K.now_iso()}
         w["pressAuto"] = summary
+        try:  # 位置図の赤線との突き合わせ（一覧は変えない検算）。失敗しても反映は有効
+            mc = MC.check(r.content, data)
+        except Exception as e:
+            mc = {"ok": False, "reason": f"位置図の検算に失敗（{type(e).__name__}）", "contradict": []}
+        w["mapCheck"] = {**mc, "sha256": sha, "checkedAt": K.now_iso()}
+        log("位置図の検算：", "食い違い " + str(len(mc.get("contradict") or [])) + "件" if mc.get("ok") else mc.get("reason"), mc.get("contradict") or "")
         data["updatedAt"] = K.now_iso()
         log(f"✅ 発表PDFを自動で反映（規制中 {summary['active']}・解除 {summary['cleared']}・変更 {summary.get('changes')}件）", summary.get("unmatched") or "")
         return True
@@ -294,7 +301,7 @@ def main():
                      "checkedAt": K.now_iso(), "lastSuccessAt": K.now_iso() if judged_any else watch_prev.get("lastSuccessAt"),
                      "lastSuccessAsOfIso": as_of_iso if judged_any else watch_prev.get("lastSuccessAsOfIso"),
                      "judgeStoppedSince": None if judged_any else (watch_prev.get("judgeStoppedSince") or K.now_iso()),
-                     "press": (data.get("watch") or {}).get("press"), "pressAuto": (data.get("watch") or {}).get("pressAuto"),
+                     "press": (data.get("watch") or {}).get("press"), "pressAuto": (data.get("watch") or {}).get("pressAuto"), "mapCheck": (data.get("watch") or {}).get("mapCheck"),
                      "figures": figures, "redLines": len(lines), "radiusM": WATCH_RADIUS_M,
                      "markRadiusM": MARK_RADIUS_M, "note": "位置図の✕印がある区間は印から markRadiusM、無い区間は町名の代表点から radiusM 以内に、県の規制状況図の赤線（規制中）が無くなったら解除とみなす"}
     data["updatedAt"] = K.now_iso()
