@@ -177,8 +177,8 @@ def auto_apply_press(data):
     if ok:
         w["press"] = {"sha256": sha, "checkedAt": K.now_iso(), "autoAppliedAt": K.now_iso()}
         w["pressAuto"] = summary
-        try:  # 位置図の赤線との突き合わせ（一覧は変えない検算）。失敗しても反映は有効
-            mc = MC.check(r.content, data)
+        try:  # 位置図の印・赤線との突き合わせ。区間の位置（mark）は更新するが状態は変えない。失敗しても反映は有効
+            mc = MC.check(r.content, data, apply=True)  # 位置図の印で区間の位置を精密にし、状態の食い違いを検算する
         except Exception as e:
             mc = {"ok": False, "reason": f"位置図の検算に失敗（{type(e).__name__}）", "contradict": []}
         w["mapCheck"] = {**mc, "sha256": sha, "checkedAt": K.now_iso()}
