@@ -23,7 +23,7 @@
   "checkedAt": "2026-10-03T17:43:22+09:00",
   "lastSuccessAt": "2026-10-03T17:43:22+09:00",
   "lastSuccessAsOfIso": "2026-10-03T17:00:00+09:00",
-  "judgeStoppedSince": null,
+  "judgeStoppedSince": "2026-10-04T14:42:28+09:00",
   "press": {
    "sha256": "dd9ee81703b28a3ff7f3394ed9e38ae9615596695285dc694dc3a69f2e44eb8b",
    "checkedAt": "2026-10-02T22:17:54+09:00"
@@ -72,7 +72,8 @@
   "redLines": 125,
   "radiusM": 3500,
   "markRadiusM": 800,
-  "note": "位置図の✕印がある区間は印から markRadiusM、無い区間は町名の代表点から radiusM 以内に、県の規制状況図の赤線（規制中）が無くなったら解除とみなす"
+  "note": "位置図の✕印がある区間は印から markRadiusM、無い区間は町名の代表点から radiusM 以内に、県の規制状況図の赤線（規制中）が無くなったら解除とみなす",
+  "message": "県のページに規制状況図が掲載されていないため、解除の判定ができません"
  },
  "items": [
   {
