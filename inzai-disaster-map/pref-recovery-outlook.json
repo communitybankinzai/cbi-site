@@ -1,11 +1,12 @@
 {
  "source": {
-  "name": "千葉県 県管理道路の被災箇所の状況と復旧見込み",
-  "url": "https://www.pref.chiba.lg.jp/doukan/press/2026/1002fukkyumitoshi.html",
-  "pdf": "https://www.pref.chiba.lg.jp/doukan/press/2026/documents/fukkyumitoshi.pdf",
-  "asOf": "2026-10-01",
-  "published": "2026-10-02",
-  "pdfSha256": "dd9ee81703b28a3ff7f3394ed9e38ae9615596695285dc694dc3a69f2e44eb8b"
+  "name": "千葉県 県管理道路の被災箇所の状況と復旧見込み（位置図付き）",
+  "url": "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html",
+  "pdf": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkyumitoshi1.pdf",
+  "asOf": "2026-10-04",
+  "published": "2026-10-04",
+  "pdfSha256": "95b44047d626d6e1a1b78f1e2ab07a7cd6df2b00c9dac06d9743b46849fdbc4e",
+  "asOfIso": "2026-10-04T14:00:00+09:00"
  },
  "note": "県の発表PDF（写真に路線・場所・復旧見込みを焼き込んだもの）からCBIが書き起こした。位置は市町村＋地名を国土地理院の住所検索で引いた町名の代表点で、被災箇所そのものではない（数百m〜数kmずれる）。scale: large=大規模（復旧まで1か月以上）/medium=中規模（1か月程度）/small=小規模（1〜3週間・土砂撤去中など）。status と clearedAt は毎時の見張り（pipeline/build_pref_recovery.py）が県の規制状況図の赤線と突き合わせて更新する。",
  "legend": {
@@ -13,7 +14,7 @@
   "medium": "中規模（復旧までに1か月程度）",
   "small": "小規模（復旧までに1〜3週間程度）"
  },
- "updatedAt": "2026-10-03T17:43:22+09:00",
+ "updatedAt": "2026-10-04T21:07:53+09:00",
  "watch": {
   "pdfUrl": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/kisei10.pdf",
   "pdfSha256": "1b486e6ce9c7e37ebb7cf8a5c4736b79c2322c88e11894fb2ce5de6ab3bb3875",
@@ -25,8 +26,8 @@
   "lastSuccessAsOfIso": "2026-10-03T17:00:00+09:00",
   "judgeStoppedSince": "2026-10-04T14:42:28+09:00",
   "press": {
-   "sha256": "dd9ee81703b28a3ff7f3394ed9e38ae9615596695285dc694dc3a69f2e44eb8b",
-   "checkedAt": "2026-10-02T22:17:54+09:00"
+   "sha256": "95b44047d626d6e1a1b78f1e2ab07a7cd6df2b00c9dac06d9743b46849fdbc4e",
+   "checkedAt": "2026-10-04T21:07:53+09:00"
   },
   "figures": [
    {
@@ -111,14 +112,16 @@
    "lat": 35.39101,
    "lon": 140.0012,
    "geocode": "千葉県袖ケ浦市大鳥居",
-   "status": "active",
-   "clearedAt": null,
+   "status": "cleared",
+   "clearedAt": "2026-10-03T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 658,
-   "watch": "10月3日17時時点の図で判定",
+   "watch": "県の発表（10月4日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "clearedBy": "announced",
+   "clearedDate": "2026-10-03"
   },
   {
    "id": "409-市原市-西国吉",
@@ -209,14 +212,16 @@
    "lat": 35.4349,
    "lon": 140.20845,
    "geocode": "千葉県長柄町針ケ谷",
-   "status": "active",
-   "clearedAt": null,
+   "status": "cleared",
+   "clearedAt": "2026-10-02T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 54,
-   "watch": "10月3日17時時点の図で判定",
+   "watch": "県の発表（10月4日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "clearedBy": "announced",
+   "clearedDate": "2026-10-02"
   },
   {
    "id": "14-長柄町-山根",
@@ -278,7 +283,7 @@
    "road": "主要地方道 五井本納線",
    "municipality": "市原市",
    "place": "金剛地",
-   "work": "土砂撤去中",
+   "work": "土砂撤去済",
    "outlook": "1週間程度",
    "scale": "small",
    "traffic": "1,000台以上",
@@ -422,14 +427,16 @@
    "lat": 35.49571,
    "lon": 140.28529,
    "geocode": "千葉県茂原市桂",
-   "status": "active",
-   "clearedAt": null,
+   "status": "cleared",
+   "clearedAt": "2026-10-03T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 2107,
-   "watch": "10月3日17時時点の図で判定",
+   "watch": "県の発表（10月4日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "clearedBy": "announced",
+   "clearedDate": "2026-10-03"
   },
   {
    "id": "67-市原市-瀬又",
@@ -748,14 +755,16 @@
    "lat": 35.44436,
    "lon": 140.07085,
    "geocode": "千葉県市原市豊成",
-   "status": "active",
-   "clearedAt": null,
+   "status": "cleared",
+   "clearedAt": "2026-10-01T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 2769,
-   "watch": "10月3日17時時点の図で判定",
+   "watch": "県の発表（10月4日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "clearedBy": "announced",
+   "clearedDate": "2026-10-01"
   },
   {
    "id": "144-市原市-中高根",
@@ -798,10 +807,10 @@
    "lon": 140.04227,
    "geocode": "千葉県君津市岩出",
    "status": "cleared",
-   "clearedAt": "2026-10-03T14:00:00+09:00",
-   "clearedFigure": "10月3日14時時点",
+   "clearedAt": "2026-10-02T00:00:00+09:00",
+   "clearedFigure": null,
    "nearestRedLineM": 4096,
-   "watch": "10月3日17時時点の図で判定",
+   "watch": "県の発表（10月4日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.31329,
@@ -809,7 +818,9 @@
     "distM": 966,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "clearedBy": "announced",
+   "clearedDate": "2026-10-02"
   },
   {
    "id": "147-長柄町-針ケ谷",
@@ -1097,14 +1108,16 @@
    "lat": 35.31303,
    "lon": 140.15706,
    "geocode": "千葉県市原市徳氏",
-   "status": "active",
-   "clearedAt": null,
+   "status": "cleared",
+   "clearedAt": "2026-10-02T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 1697,
-   "watch": "10月3日17時時点の図で判定",
+   "watch": "県の発表（10月4日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "clearedBy": "announced",
+   "clearedDate": "2026-10-02"
   },
   {
    "id": "172-市原市-月出",
@@ -1169,10 +1182,10 @@
    "lon": 140.22902,
    "geocode": "千葉県勝浦市大森",
    "status": "cleared",
-   "clearedAt": "2026-10-03T14:00:00+09:00",
-   "clearedFigure": "10月3日14時時点",
+   "clearedAt": "2026-10-02T00:00:00+09:00",
+   "clearedFigure": null,
    "nearestRedLineM": 1282,
-   "watch": "10月3日17時時点の図で判定",
+   "watch": "県の発表（10月4日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.16808,
@@ -1180,7 +1193,9 @@
     "distM": 360,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "clearedBy": "announced",
+   "clearedDate": "2026-10-02"
   },
   {
    "id": "178-大多喜町-会所",
@@ -1327,14 +1342,16 @@
    "lat": 35.38292,
    "lon": 140.1886,
    "geocode": "千葉県市原市鶴舞",
-   "status": "active",
-   "clearedAt": null,
+   "status": "cleared",
+   "clearedAt": "2026-10-01T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 3365,
-   "watch": "10月3日17時時点の図で判定",
+   "watch": "県の発表（10月4日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "clearedBy": "announced",
+   "clearedDate": "2026-10-01"
   },
   {
    "id": "287-市原市-椎津",

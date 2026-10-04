@@ -18,6 +18,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import sys
 
 import cv2
@@ -92,12 +93,31 @@ def figure_bounds(lines):
     return (min(lats), max(lats), min(lons), max(lons)) if lats else None
 
 
+PREF_PAGE = "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html"
+
+
+def latest_press_pdf():
+    """県の道路規制ページに載っている復旧見込みPDF（fukkyumitoshi・fukkyumitoshi1・…）のうち、番号が最大のものの URL。
+    県は同じ名前で差し替えず、番号を足した別名で出す（2026-10-04：fukkyumitoshi1.pdf）ため、旧名だけでは更新に気づけない"""
+    try:
+        r = requests.get(PREF_PAGE, headers=K.UA, timeout=60)
+        r.raise_for_status()
+        found = re.findall(r'href="([^"]*documents/fukkyumitoshi(\d*)\.pdf)"', r.content.decode("utf-8", "replace"))
+    except Exception as e:
+        log("県のページを読めない（旧URLで見る）", e)
+        return None
+    if not found:
+        return None
+    href = max(found, key=lambda x: int(x[1] or 0))[0]
+    return requests.compat.urljoin(PREF_PAGE, href)
+
+
 def check_press(data):
     """県の発表PDF（復旧見込みの一覧そのもの）が更新されたかを sha で見る。更新されたら旗を立てる。
     一覧は手で書き起こしているので、県が更新したら assign_recovery_marks.py と書き起こしの更新が要る。
     地図は旗が立っている間「一覧は古い可能性」と出し、「規制中」と断言しない（2026-10-02 事業主指示）"""
     src = data.get("source") or {}
-    url = src.get("pdf")
+    url = latest_press_pdf() or src.get("pdf")  # 県は差し替えを fukkyumitoshi1.pdf のように別名で出す（2026-10-04）
     if not url:
         return False
     press = data.setdefault("watch", {}).get("press") or {}

@@ -13987,7 +13987,7 @@ function prefRecoveryPopup(it, src, flags) {
     ${f.unknown ? `<div class="detail-meta">${escapeHtml((f.reasons || []).join("／"))}</div>` : ""}
     <div>${escapeHtml(it.municipality)}${escapeHtml(it.place)}</div>
     <div class="detail-meta">復旧見込：${escapeHtml(it.outlook)}（${escapeHtml(PREF_RECOVERY_LABEL[it.scale] || it.scale)}）／日交通量 ${escapeHtml(it.traffic || "-")}</div>
-    ${cleared ? `<div class="detail-meta">解除：${escapeHtml(it.clearedFigure || formatPrefRecoveryTime(it.clearedAt))}の県の規制状況図から赤線が消えた（CBIの判定・県の発表ではありません）</div>` : `<div class="detail-meta">判定：${escapeHtml(it.watch || "未判定")}${Number.isFinite(it.nearestRedLineM) ? `・赤線まで約${escapeHtml(String(it.nearestRedLineM))}m` : ""}</div>`}
+    ${cleared ? (it.clearedBy === "announced" ? `<div class="detail-meta">解除：県の発表（${escapeHtml(it.clearedDate || "")}に通行止め解除・県のPDFに記載）</div>` : `<div class="detail-meta">解除：${escapeHtml(it.clearedFigure || formatPrefRecoveryTime(it.clearedAt))}の県の規制状況図から赤線が消えた（CBIの判定・県の発表ではありません）</div>`) : `<div class="detail-meta">判定：${escapeHtml(it.watch || "未判定")}${Number.isFinite(it.nearestRedLineM) ? `・赤線まで約${escapeHtml(String(it.nearestRedLineM))}m` : ""}</div>`}
     <div class="detail-meta">位置：${escapeHtml(prefRecoveryWhere(it))}</div>
     <a href="${escapeHtml(src.url)}" target="_blank" rel="noreferrer">出典: 千葉県の発表（${escapeHtml(src.asOf)}現在）</a>・<a href="${escapeHtml(src.pdf)}" target="_blank" rel="noreferrer">写真と位置図（PDF）</a>
   `;
@@ -14007,11 +14007,18 @@ function prefRecoveryStaleness(data) {
   const w = data.watch || {};
   const now = Date.now();
   const reasons = [];
+  // 県の発表PDF（区間ごとの規制中／解除が載る）の時点。図が無くても、これが新しければ「規制中」と言える
+  const annIso = (data.source || {}).asOfIso;
+  const annAgeH = annIso ? (now - new Date(annIso).getTime()) / 3600000 : Infinity;
+  const annFresh = annAgeH <= PREF_RECOVERY_STALE_H;
   const asOf = w.lastSuccessAsOfIso || w.asOfIso;
-  const ageH = asOf ? (now - new Date(asOf).getTime()) / 3600000 : Infinity;
-  if (!asOf) reasons.push("まだ県の規制状況図で判定していません");
-  else if (ageH > PREF_RECOVERY_STALE_H) reasons.push(`県の規制状況図が${Math.floor(ageH / 24)}日間更新されていません（最後の図 ${w.asOf || ""}）`);
-  if (w.judgeStoppedSince) reasons.push(`解除の判定が止まっています（${formatPrefRecoveryTime(w.judgeStoppedSince)}から・${w.message || "図を読めない"}）`);
+  const figAgeH = asOf ? (now - new Date(asOf).getTime()) / 3600000 : Infinity;
+  const ageH = Math.min(figAgeH, annAgeH);
+  if (!annFresh) {
+    if (!asOf) reasons.push("まだ県の規制状況図で判定していません");
+    else if (figAgeH > PREF_RECOVERY_STALE_H) reasons.push(`県の規制状況図が${Math.floor(figAgeH / 24)}日間更新されていません（最後の図 ${w.asOf || ""}）`);
+    if (w.judgeStoppedSince) reasons.push(`解除の判定が止まっています（${formatPrefRecoveryTime(w.judgeStoppedSince)}から・${w.message || "図を読めない"}）`);
+  }
   if (w.press && w.press.updatedDetectedAt) reasons.push(`県が発表PDF（復旧見込みの一覧）を更新しました（${formatPrefRecoveryTime(w.press.updatedDetectedAt)}に検知）。この一覧は${(data.source || {}).asOf || ""}現在の版のままです`);
   if (w.press && w.press.missingSince) reasons.push("県の発表PDFがページから消えています");
   return { stale: reasons.length > 0, reasons, ageH };
@@ -14077,7 +14084,7 @@ function renderPrefRecovery() {
   const rowHtml = it => `
     <div class="prr-row${it.status === "cleared" ? " is-cleared" : ""}${it.status !== "cleared" && (unknown || prefRecoveryOverdue(it, src)) ? " is-doubtful" : ""}">
       <div class="prr-main"><strong>${escapeHtml(it.routeNo)} ${escapeHtml(it.road)}</strong> ${escapeHtml(it.municipality)}${escapeHtml(it.place)}</div>
-      <div class="prr-sub">${it.status === "cleared" ? `✅ 解除（${escapeHtml(it.clearedFigure || formatPrefRecoveryTime(it.clearedAt))}の図）` : `${escapeHtml(it.work)}・復旧見込 ${escapeHtml(it.outlook)}`}${it.mark ? "" : "・位置は町名"}${it.status !== "cleared" && unknown ? "・<strong>判定できず</strong>" : ""}${it.status !== "cleared" && !unknown && prefRecoveryOverdue(it, src) ? "・<strong>見込み超過・要確認</strong>" : ""}
+      <div class="prr-sub">${it.status === "cleared" ? (it.clearedBy === "announced" ? `✅ 解除（県の発表・${escapeHtml(it.clearedDate || "")}）` : `✅ 解除（${escapeHtml(it.clearedFigure || formatPrefRecoveryTime(it.clearedAt))}の図）`) : `${escapeHtml(it.work)}・復旧見込 ${escapeHtml(it.outlook)}`}${it.mark ? "" : "・位置は町名"}${it.status !== "cleared" && unknown ? "・<strong>判定できず</strong>" : ""}${it.status !== "cleared" && !unknown && prefRecoveryOverdue(it, src) ? "・<strong>見込み超過・要確認</strong>" : ""}
         ${prefRecoveryPoint(it) ? `<button type="button" class="prr-focus" data-pref-recovery-focus="${escapeHtml(it.id)}">地図で見る</button>` : ""}</div>
     </div>`;
   list.innerHTML = `
