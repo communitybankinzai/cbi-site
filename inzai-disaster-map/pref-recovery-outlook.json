@@ -26,8 +26,11 @@
   "lastSuccessAsOfIso": "2026-10-03T17:00:00+09:00",
   "judgeStoppedSince": "2026-10-04T14:42:28+09:00",
   "press": {
-   "sha256": "95b44047d626d6e1a1b78f1e2ab07a7cd6df2b00c9dac06d9743b46849fdbc4e",
-   "checkedAt": "2026-10-04T21:07:53+09:00"
+   "sha256": "5433f3deaeb9becd3e42657f27ab7a710804880843fdd8c4ac49627bd687fb81",
+   "checkedAt": "2026-10-05T14:26:21+09:00",
+   "updatedSha256": "5433f3deaeb9becd3e42657f27ab7a710804880843fdd8c4ac49627bd687fb81",
+   "updatedDetectedAt": "2026-10-05T14:26:21+09:00",
+   "message": "県が発表PDF（復旧見込みの一覧）を更新しました。この一覧は書き起こした版のままなので、assign_recovery_marks.py と書き起こしの更新が必要です"
   },
   "figures": [
    {
@@ -115,6 +118,36 @@
    ],
    "sha256": "95b44047d626d6e1a1b78f1e2ab07a7cd6df2b00c9dac06d9743b46849fdbc4e",
    "checkedAt": "2026-10-04T21:29:32+09:00"
+  },
+  "pressAuto": {
+   "cards": 46,
+   "cleared": 7,
+   "active": 39,
+   "unmatched": [
+    "(主)市原天津小湊線 君津市黄和田畑",
+    "(主)市原天津小湊線 大多喜町葛藤",
+    "(一)大多喜里見線 市原市月出"
+   ],
+   "missing": [
+    "81-君津市-黄和田畑",
+    "81-大多喜町-葛藤",
+    "93-君津市-大野台",
+    "168-市原市-養老",
+    "168-木更津市-真里谷",
+    "168-木更津市-市野々",
+    "172-市原市-月出",
+    "287-市原市-椎津",
+    "287-袖ケ浦市-久保田",
+    "287-袖ケ浦市-蔵波",
+    "292-市原市-武士",
+    "292-市原市-勝間"
+   ],
+   "asOfIso": "2026-10-05T14:00:00+09:00",
+   "ok": false,
+   "reason": "PDFの件数（48区間）と読み取った規制中の枚数（39）が合いません",
+   "sha256": "5433f3deaeb9becd3e42657f27ab7a710804880843fdd8c4ac49627bd687fb81",
+   "url": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkyumitoshi2.pdf",
+   "checkedAt": "2026-10-05T14:26:24+09:00"
   }
  },
  "items": [
