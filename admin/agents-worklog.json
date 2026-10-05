@@ -8419,6 +8419,7 @@
         }
       ],
       "plans": [
+        {"due": "2026-12-23", "title": "🔑 Meta鍵のデータアクセス期限（2026-12-30）の監視を追加する／期限前に取り直す", "category": "保守", "priority": "高", "note": "対象：Facebookページ鍵・Instagram検索鍵（どちらも無期限だがデータアクセス期限が12/30）。①CiDAO週次cron（sns-token-refresh の EXPIRY_WATCH）は expires_at 未保存の鍵を対象外にしており、10/1貼り直し後は通知されない → saveInstagramDiscoveryAuth が debug_token の data_access_expires_at を保存するよう直すか、見張り（scripts/sns_token_watch.py）で debug_token を読む。②期限の14日前までに Graph API Explorer で取り直し、GAS FB_PAGE_TOKEN／IG と CiDAO /admin/sns に貼り直す（手順：branding/sns/Facebookトークン取得手順.md）。2026-10-06 の見張り誤報調査で判明"},
         {"due": "2026-10-06", "title": "CiDAOカレンダーの日タップ誤動作（「＋」無効化 88a1cf3）がスマホ実機で直ったか確認する", "category": "保守", "priority": "中", "note": "直らなければ、開いたページの種類と押した位置を事業主に聞いて再調査（実機再現は未実施）"},
         {"due": "未定", "title": "🎨 展示ページ(/demo/)で映る CiDAO の見た目を基準に、スマホ画面のデザインを再設計するか判断する", "category": "その他", "priority": "低", "status": "保留", "blockedBy": "事業主が、実機のスマホ画面と展示ページ(PC表示のスマホ枠)で何が違い、どちらがよいかを特定すること（2026-10-05 事業主『この画面のほうがデザインがいいので将来的にこのデザインで再設計するかも』）", "note": "展示ページは site/demo/index.html。違いの候補は、フォント(Windows日本語フォントとiPhoneの差)・ステータスバー等の有無・表示内容。差が特定できたら参照用スクリーンショットを残し、方針を決めてから着手する。"},
         {"due": "2026-10-12", "title": "🔔 応援メッセージ通知（掲載者へのベル＋Webプッシュ）を本番の実機で確認する", "category": "保守", "priority": "中", "note": "2026-10-05 に f8cf5b5 で公開。テストは疑似DBのみで、実際の通知の受信は未確認。確認するには別の会員がコメントする必要があり、投稿者（例：バレエ教室のカケル）に本物の通知が飛ぶので、事前に連絡してから行う。団体の掲載では代表者と確認済みメンバーに届く。"},
