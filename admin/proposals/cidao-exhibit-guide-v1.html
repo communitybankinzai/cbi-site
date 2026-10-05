@@ -257,7 +257,7 @@ table{border-collapse:collapse;width:100%;font-size:2.7vh} th{text-align:left;co
   function bgmLabel(){bgmb.textContent=bgmOn?'🎵 BGM ON':'🎵 BGM OFF';credit.style.display=(bgmOk&&bgmOn)?'':'none';}
   function loadBgm(){
     bgmEl=new Audio();bgmEl.loop=true;bgmEl.volume=BGM_VOL;bgmEl.preload='auto';
-    bgmEl.addEventListener('error',function(){bgmIdx++;if(bgmIdx<BGM_SRCS.length){bgmEl.src=BGM_SRCS[bgmIdx];}else{bgmOk=false;bgmb.style.display='none';bgmLabel();}});
+    bgmEl.addEventListener('error',function(){bgmIdx++;if(bgmIdx<BGM_SRCS.length){bgmEl.src=BGM_SRCS[bgmIdx];if(bgmOn&&started)bgmEl.play().catch(function(){});}else{bgmOk=false;bgmb.style.display='none';bgmLabel();}});
     bgmEl.src=BGM_SRCS[0];
   }
   function startBgm(){if(!bgmOn||!bgmOk)return;if(!bgmEl)loadBgm();if(bgmEl.paused)bgmEl.play().catch(function(){});}
