@@ -59,11 +59,12 @@ table{border-collapse:collapse;width:100%;font-size:2.7vh} th{text-align:left;co
 .src{font-size:2vh;color:#9fb6cc;margin:.8vh 0 3vh}
 .lead.sm{font-size:3.1vh;line-height:1.5} .cards.two.sm{margin:1vh 0} .cards.two.sm .card{padding:1.8vh 2vw} .cards.two.sm .card .ic{font-size:4vh}
 .pager{position:absolute;left:3vw;bottom:2vh;font-size:2vh;color:#7f93a8}
+.credit{position:absolute;top:1.4vh;right:2vw;font-size:1.7vh;color:#9fb6cc;z-index:5;max-width:62vw;text-align:right;line-height:1.4}
 .sndbar{position:absolute;left:50%;bottom:1.6vh;transform:translateX(-50%);display:flex;gap:1vw;align-items:center;z-index:5}
 .sndbar button{background:rgba(255,255,255,.1);color:#cfe6ff;border:1px solid rgba(127,200,255,.5);border-radius:2vh;padding:.8vh 1.6vw;font-size:2vh;cursor:pointer;font-family:inherit}
 .sndbar button:hover{background:rgba(127,200,255,.25)}
 .sndbar #sndhint{font-size:1.8vh;color:#9fb6cc}
-@media print{.slide{display:flex!important;position:relative;height:100vh;page-break-after:always} .hint,.pager,.sndbar{display:none}}
+@media print{.slide{display:flex!important;position:relative;height:100vh;page-break-after:always} .hint,.pager,.sndbar,.credit{display:none}}
 </style></head><body>
 <div class="deck">
 
@@ -240,13 +241,27 @@ table{border-collapse:collapse;width:100%;font-size:2.7vh} th{text-align:left;co
   </div>
 </section>
 <div class="pager" id="pager"></div>
-<div class="sndbar" id="sndbar"><button id="snd" type="button">🔊 音声 ON</button><button id="rep" type="button">🔁 もう一度聞く</button><span id="sndhint"></span></div>
+<div class="credit" id="credit">♪ BGM：パッヘルベル「カノン」 Canon in D Major — Kevin MacLeod (incompetech.com) / CC BY 3.0</div>
+<div class="sndbar" id="sndbar"><button id="snd" type="button">🔊 音声 ON</button><button id="bgmb" type="button">🎵 BGM ON</button><button id="rep" type="button">🔁 もう一度聞く</button><span id="sndhint"></span></div>
 </div>
 <script>
 (function(){
   var s=document.querySelectorAll('.slide'),i=0,pg=document.getElementById('pager');
   var snd=document.getElementById('snd'),rep=document.getElementById('rep'),hint=document.getElementById('sndhint');
   var on=true,started=false,au=null;
+  // BGM：パッヘルベル「カノン」（Kevin MacLeod・CC BY 3.0）。ナレーションより約14dB小さく、ループ再生。
+  // ファイルは 音声/bgm_canon.mp3（手元）→ 同じフォルダの cidao-exhibit-bgm-canon.mp3（サイト掲載版）の順に探す。無ければBGMなしで動く
+  var BGM_SRCS=['音声/bgm_canon.mp3','cidao-exhibit-bgm-canon.mp3'],BGM_VOL=0.6;
+  var bgmb=document.getElementById('bgmb'),credit=document.getElementById('credit'),bgmOn=true,bgmEl=null,bgmIdx=0,bgmOk=true;
+  try{if(localStorage.getItem('cidao-guide-bgm')==='off')bgmOn=false;}catch(x){}
+  function bgmLabel(){bgmb.textContent=bgmOn?'🎵 BGM ON':'🎵 BGM OFF';credit.style.display=(bgmOk&&bgmOn)?'':'none';}
+  function loadBgm(){
+    bgmEl=new Audio();bgmEl.loop=true;bgmEl.volume=BGM_VOL;bgmEl.preload='auto';
+    bgmEl.addEventListener('error',function(){bgmIdx++;if(bgmIdx<BGM_SRCS.length){bgmEl.src=BGM_SRCS[bgmIdx];}else{bgmOk=false;bgmb.style.display='none';bgmLabel();}});
+    bgmEl.src=BGM_SRCS[0];
+  }
+  function startBgm(){if(!bgmOn||!bgmOk)return;if(!bgmEl)loadBgm();if(bgmEl.paused)bgmEl.play().catch(function(){});}
+  bgmb.addEventListener('click',function(e){e.stopPropagation();bgmOn=!bgmOn;try{localStorage.setItem('cidao-guide-bgm',bgmOn?'on':'off');}catch(x){}started=true;if(bgmOn)startBgm();else if(bgmEl)bgmEl.pause();bgmLabel();});
   try{if(localStorage.getItem('cidao-guide-sound')==='off')on=false;}catch(x){}
   function stop(){if(au){au.pause();au=null;}}
   function play(){
@@ -259,18 +274,19 @@ table{border-collapse:collapse;width:100%;font-size:2.7vh} th{text-align:left;co
   }
   function label(){snd.textContent=on?'🔊 音声 ON':'🔇 音声 OFF';}
   function show(n){i=(n+s.length)%s.length;s.forEach(function(e,k){e.classList.toggle('on',k===i)});pg.textContent=(i+1)+' / '+s.length;hint.textContent='';play();}
-  function begin(){ if(started)return false; started=true; hint.textContent=''; play(); return true; }
-  snd.addEventListener('click',function(e){e.stopPropagation();on=!on;try{localStorage.setItem('cidao-guide-sound',on?'on':'off');}catch(x){}label();started=true;if(on)play();else stop();});
-  rep.addEventListener('click',function(e){e.stopPropagation();started=true;on=true;try{localStorage.setItem('cidao-guide-sound','on');}catch(x){}label();play();});
+  function begin(){ if(started)return false; started=true; hint.textContent=''; startBgm(); play(); return true; }
+  snd.addEventListener('click',function(e){e.stopPropagation();on=!on;try{localStorage.setItem('cidao-guide-sound',on?'on':'off');}catch(x){}label();started=true;startBgm();if(on)play();else stop();});
+  rep.addEventListener('click',function(e){e.stopPropagation();started=true;on=true;try{localStorage.setItem('cidao-guide-sound','on');}catch(x){}label();startBgm();play();});
   document.getElementById('sndbar').addEventListener('click',function(e){e.stopPropagation();});
   document.addEventListener('keydown',function(e){
     if(e.key==='v'||e.key==='V'){snd.click();return;}
+    if(e.key==='b'||e.key==='B'){bgmb.click();return;}
     if(e.key==='r'||e.key==='R'){rep.click();return;}
     if(begin())return;  // 最初の操作は、いま表示中のスライドの音声を鳴らすだけ（めくらない）
     if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'||e.key==='Enter')show(i+1);else if(e.key==='ArrowLeft'||e.key==='PageUp')show(i-1);else if(e.key==='Home')show(0);
   });
   document.addEventListener('click',function(e){if(begin())return;show(e.clientX<window.innerWidth*0.25?i-1:i+1);});
-  label();
+  label();bgmLabel();
   var h=parseInt((location.hash||'').replace('#s',''));show(isNaN(h)?0:h-1);
 })();
 </script></body></html>

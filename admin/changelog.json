@@ -2,6 +2,7 @@
   "updatedAt": "2026-10-05T15:30:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {"date": "2026-10-05", "type": "content", "target": "admin/proposals/cidao-exhibit-guide-v1.html, admin/proposals/cidao-exhibit-bgm-canon.mp3", "title": "武蔵屋マルシェ来場者向けスライドに、パッヘルベル「カノン」のBGMが流れるようになった（Bキーでオン・オフ、クレジット表示つき）", "detail": "BGMはKevin MacLeod演奏のCanon in D Major（CC BY 3.0・Wikimedia Commons掲載・約5MB）。ナレーションより約14dB小さくループ再生。", "author": "Claude"},
     {"date": "2026-10-05", "type": "content", "target": "admin/proposals/cidao-exhibit-guide-v1.html", "title": "武蔵屋マルシェ来場者向けスライドの女性ナレーションが、少し速く（標準より5%速い設定）なり、全体の長さが約9分から約8分になった", "detail": "話すスピードが遅いという指摘を受け、音声13本を作り直して差し替え。", "author": "Claude"},
     {"date": "2026-10-05", "type": "docs", "target": "admin/index.html", "title": "管理画面の「📑 資料」から、古くなった「はじめての参加手順」と「β期間の既知の制限」の枠が削除され、「フィードバック方法」だけが残った", "detail": "参加手順は「武蔵屋マルシェ 来場者向けスライド」に置き換え。既知の制限は2FA・AI・通知・管理画面などの記述が現状と合わなくなっていたため削除。Gitの履歴には残っている。", "author": "Claude"},
     {"date": "2026-10-05", "type": "docs", "target": "admin/index.html, admin/data/documents.json, admin/proposals/machikatsu-meeting-v1.html", "title": "管理画面の「📑 資料」から、街活性室向けの提案資料（連携の方向性）が削除され、一覧にも資料コメントの選択肢にも出なくなった", "detail": "街活性室との連携が不成立のため。カード・HTMLファイル・資料コメントの登録（documents.json）を削除。Gitの履歴には残っているため、必要なら復元できる。", "author": "Claude"},
