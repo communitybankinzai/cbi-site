@@ -2,6 +2,7 @@
   "updatedAt": "2026-10-05T15:30:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {"date": "2026-10-05", "type": "docs", "target": "admin/index.html", "title": "管理画面の「📑 資料」から、古くなった「はじめての参加手順」と「β期間の既知の制限」の枠が削除され、「フィードバック方法」だけが残った", "detail": "参加手順は「武蔵屋マルシェ 来場者向けスライド」に置き換え。既知の制限は2FA・AI・通知・管理画面などの記述が現状と合わなくなっていたため削除。Gitの履歴には残っている。", "author": "Claude"},
     {"date": "2026-10-05", "type": "docs", "target": "admin/index.html, admin/data/documents.json, admin/proposals/machikatsu-meeting-v1.html", "title": "管理画面の「📑 資料」から、街活性室向けの提案資料（連携の方向性）が削除され、一覧にも資料コメントの選択肢にも出なくなった", "detail": "街活性室との連携が不成立のため。カード・HTMLファイル・資料コメントの登録（documents.json）を削除。Gitの履歴には残っているため、必要なら復元できる。", "author": "Claude"},
     {"date": "2026-10-05", "type": "docs", "target": "admin/index.html, admin/proposals/", "title": "管理画面の「📑 資料」に、武蔵屋マルシェの展示資料（来場者向けスライド・スタッフ用A4・1階ポスター）が下書きとして載り、メンバーが開いて確認できるようになった", "detail": "来場者向けスライドは女性ナレーションつき（13枚・約6MB）。いずれも「下書き（確認前）」の印つき。URLを知っていれば誰でも開けるが、検索には出ない設定（noindex）。コメント機能はまだ未対応。", "author": "Claude"},
     {"date": "2026-10-05", "type": "fix", "target": "inzai-disaster-map/pipeline/press_cards.py, press_map_check.py", "title": "防災MAPの県の復旧見込みの自動更新が、県の10/5版PDF（ページの大きさや路線名の表記が変わった版）でも読み取れるようになった", "detail": "10/5版で区間カードを46枚しか読めず、件数が合わないため自動更新が安全側で止まっていた。ページの大きさに合わせてカードの範囲を拡縮し、括弧が欠けた路線名と、作業名の文字が取れないカードの規模を復旧見込みから決めるようにして、56区間すべてを読めるようにした。誤った一覧は公開されていない。", "author": "Claude"},

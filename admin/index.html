@@ -333,28 +333,6 @@ if (location.protocol === 'file:') {
             </div>
           </a>
 
-          <div style="background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c9a55c; border-radius:8px; padding:18px 22px;">
-            <h3 style="margin:0 0 10px; font-size:15px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">📋 はじめての参加手順（3 ステップ・約 90 秒）</h3>
-            <ol style="margin:0; padding-left:22px; font-size:13px; color:#4a5663; line-height:1.9;">
-              <li><strong>https://cidao.vercel.app</strong> を開き「ログイン」をタップ</li>
-              <li>「LINEでログイン」をタップし、LINEアカウントで認可するだけ（初めての方は自動でアカウント作成）</li>
-              <li>ログイン後、ホーム画面の 6 機能（提案・議論・マイページ・イベント・団体・FreeFree）を試す</li>
-            </ol>
-            <p style="margin:10px 0 0; font-size:12px; color:#4a5663; line-height:1.7;">※ 初回ログインで「ライト登録」（重み 0.1）として自動作成されます。マイページから「プロフィール編集」で氏名・住所などを登録し本登録申請すると「LINE登録のみ（ハガキ未受領）」（重み 0.3）に、運営が郵送ハガキの受領を確認すると「住所確認済」（重み 1.0）に昇格します（仕様書 v2.1）。</p>
-          </div>
-
-          <div style="background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c0392b; border-radius:8px; padding:18px 22px;">
-            <h3 style="margin:0 0 10px; font-size:15px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">⚠️ β 期間の既知の制限（重要）</h3>
-            <ul style="margin:0; padding-left:22px; font-size:13px; color:#4a5663; line-height:1.9;">
-              <li><strong>2FA 未設定</strong>：GitHub / Supabase / Vercel の二要素認証が未導入。本格運用前に対応予定</li>
-              <li><strong>AI 機能はスタブ</strong>：提案分類・団体マッチングは keyword 簡易判定（LLM 差替待ち）</li>
-              <li><strong>メール／SNS 通知未実装</strong>：Resend / X / Facebook / LINE への配信は API キー取得後に対応</li>
-              <li><strong>本登録の住所確認フローは運営が手動処理</strong>：上位 tier（重み 1.0）への昇格は、運営が郵送ハガキの受領を管理画面で確認する方式（仕様書 v2.1。JPKI／マイナンバーカード連携は Phase 2+ で検討）</li>
-              <li><strong>/admin 運営画面未実装</strong>：投票期間調整等の管理操作はまだ DB 直編集</li>
-              <li><strong>重要な意思決定には未使用推奨</strong>：拘束的決議の本格運用は CBI 運営委員会承認後</li>
-            </ul>
-          </div>
-
           <div style="background:#fff; border:1px solid #e0d9c6; border-left:4px solid #2d5a3d; border-radius:8px; padding:18px 22px;">
             <h3 style="margin:0 0 10px; font-size:15px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">💬 フィードバック方法</h3>
             <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">操作で気づいた点・要望は、当面は CBI 公式 LINE または「📧 メール」タブで A1 Core 宛にお寄せください。Phase 1 後半で F18「仕様書を CiDAO 内に公開し節別コメント」を実装後はアプリ内で完結します。技術詳細は下段の <strong>CiDAO 開発仕様書 v2.0 / v2.1</strong> を参照。</p>
