@@ -19,10 +19,14 @@ import unicodedata
 import fitz  # PyMuPDF
 
 TITLE_RE = re.compile(r"復旧見込み\(\d+/\d+\)")  # 「…と復旧見込み（１／３）」。位置図のページ（分割図）とは区別する
-ROAD_RE = re.compile(r"^\((主|一|国)\)")
+# 見出しの路線名。括弧が付く「(主)五井本納線」のほか、括弧が欠けた「主久留里鹿野山湊線」「一勝浦上野大多喜線」の形もある（2026-10-05 版）
+ROAD_RE = re.compile(r"^(\((主|一|国)\)|[主一国](?=[^\s\d（）()]{2}))")
 WORKS = ("土砂撤去中", "倒木撤去中", "排水作業中", "土砂撤去済")
 SCALES = {"大規模": "large", "中規模": "medium"}  # 規模の札が無いカードは小規模（1〜3週間程度）
-COL_W, ROW_H = 129.5, 124.0  # カードの幅・高さ（pt）。見出しの左端 ax から photo の左端が ax-25、右端が ax+98
+# カードの幅・高さ（pt）。見出しの左端 ax から photo の左端が ax-25、右端が ax+98。いずれも幅 780pt のページでの値で、
+# ページの大きさが変わったら（10/5 版は 842pt）幅の比で拡縮する
+BASE_PAGE_W = 780.0
+COL_W, ROW_H = 129.5, 124.0
 COL_LEFT_OFF, ROW_TOP_OFF = 35.0, 12.0
 MIN_CARDS = 30
 
@@ -49,15 +53,15 @@ def place_key(s):
     return re.sub(r"\s+", "", N(s))
 
 
-def parse_card(words, ax, ay, cl, rt):
-    reg = [w for w in words if cl <= w[0] < cl + COL_W and rt <= w[1] < rt + ROW_H]
+def parse_card(words, ax, ay, cl, rt, f=1.0):
+    reg = [w for w in words if cl <= w[0] < cl + COL_W * f and rt <= w[1] < rt + ROW_H * f]
     anchor = next((w for w in reg if abs(w[0] - ax) < 1 and abs(w[1] - ay) < 1), None)
-    nums = [w for w in reg if re.fullmatch(r"\d+", N(w[4])) and w[0] < ax and ay - 8 <= w[1] < ay + 14]
+    nums = [w for w in reg if re.fullmatch(r"\d+", N(w[4])) and w[0] < ax and ay - 8 * f <= w[1] < ay + 14 * f]
     route_no = N(min(nums, key=lambda w: w[0])[4]) if nums else None
-    place_words = sorted((w for w in reg if ay + 6 <= w[1] < ay + 22 and w is not anchor and not re.fullmatch(r"\d+", N(w[4]))),
+    place_words = sorted((w for w in reg if ay + 6 * f <= w[1] < ay + 22 * f and w is not anchor and not re.fullmatch(r"\d+", N(w[4]))),
                          key=lambda w: (round(w[1] / 4), w[0]))
     place = "".join(N(w[4]) for w in place_words)
-    over = [N(w[4]) for w in reg if ay + 22 <= w[1] < ay + 112]
+    over = [N(w[4]) for w in reg if ay + 22 * f <= w[1] < ay + 112 * f]
     scale = next((SCALES[t] for t in over if t in SCALES), None)
     work = next((t for t in over if t in WORKS), None)
     outlook = None
@@ -78,8 +82,17 @@ def parse_card(words, ax, ay, cl, rt):
     # PDF には、画面に出ていない「大規模」の文字が残るカードがある（2026-10-04 養老）。作業名があれば小規模として作業名を優先する
     if work:
         scale, label = "small", None
+    scale, work_out = scale or ("small" if outlook else None), work or label
+    # 規模は「復旧見込み」で決める：大規模＝調査中／中規模＝◯カ月程度／小規模＝◯週間程度（作業名の文字が取れなくても決まる）。
+    # 2026-10-05 版では養老の「土砂撤去中」が文字として取れず、隠れた「大規模」だけが残った。作業名が取れなければ None（一覧の既存の値を保つ）
+    if outlook == "調査中":
+        scale, work_out = "large", "大規模"
+    elif outlook and outlook.endswith("カ月程度"):
+        scale, work_out = "medium", "中規模"
+    elif outlook and outlook.endswith("週間程度"):
+        scale, work_out = "small", work
     return {"routeNo": route_no, "road": N(anchor[4]) if anchor else None, "place": place, "cleared": cleared, "clearedMD": cleared_md,
-            "scale": scale or ("small" if outlook else None), "work": work or label, "outlook": outlook}
+            "scale": scale, "work": work_out, "outlook": outlook}
 
 
 def parse(pdf_bytes):
@@ -93,11 +106,12 @@ def parse(pdf_bytes):
         anchors = [w for w in words if ROAD_RE.match(N(w[4]))]
         if not anchors:
             continue
-        cols = _cluster([a[0] for a in anchors], 40)
-        rows = _cluster([a[1] for a in anchors], 30)
-        for a in sorted(anchors, key=lambda w: (round(w[1] / 30), w[0])):
+        f = page.rect.width / BASE_PAGE_W
+        cols = _cluster([a[0] for a in anchors], 40 * f)
+        rows = _cluster([a[1] for a in anchors], 30 * f)
+        for a in sorted(anchors, key=lambda w: (round(w[1] / (30 * f)), w[0])):
             c, r = cols[_nearest(cols, a[0])], rows[_nearest(rows, a[1])]
-            card = parse_card(words, a[0], a[1], c - COL_LEFT_OFF, r - ROW_TOP_OFF)
+            card = parse_card(words, a[0], a[1], c - COL_LEFT_OFF * f, r - ROW_TOP_OFF * f, f)
             card["page"] = pi + 1
             cards.append(card)
     m = re.search(r"令和(\d+)年(\d+)月(\d+)日時点", " ".join(N(p.get_text()) for p in doc))

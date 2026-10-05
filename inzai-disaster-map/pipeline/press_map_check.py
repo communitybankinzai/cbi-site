@@ -88,7 +88,9 @@ def read_layers(pdf_bytes):
         if page is None:
             notes.append(f"{name}：図が見つかりません")
             continue
-        pix = page.get_pixmap(dpi=DPI, clip=fitz.Rect(0, 40, page.rect.width, page.rect.height))
+        f = page.rect.width / 780.0  # ページの大きさが変わっても（10/5版は842pt）画素の大きさを保つ
+        k = DPI / 72.0 / f
+        pix = page.get_pixmap(matrix=fitz.Matrix(k, k), clip=fitz.Rect(0, 40 * f, page.rect.width, page.rect.height))
         shot = np.frombuffer(pix.samples, np.uint8).reshape(pix.h, pix.w, pix.n)[:, :, :3][:, :, ::-1].copy()
         found = A.locate_water(shot, mos)
         if not found or found[0] < MIN_SCORE:
