@@ -16,6 +16,18 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-10-06",
+          "title": "通行止め見張りの印西市『fetch failed』通知の原因調査と、failed は2回続いたら声に変更 0.4時間",
+          "category": "保守",
+          "outputs": [
+            "scripts/road_closure_watch.py（STATUS_FAIL_STREAK=2・source_health() に情報源ごとの連続失敗回数（同じ巡回結果は二重計上しない）・ログに『n回目』・冒頭説明）",
+            "cidao/2026-10-06_印西市サイトはImperva配下_Vercelからの取得が時々失敗する.md（調査結果）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "事業主報告「定期モニタが異常と言っている」。20:05 の巡回で『通行止め：印西市』が fetch failed（通信レベルの失敗）、20:35 の巡回で自然復旧・通行止め2件は保持。pg_cron は毎回成功、市のページはこのPCから正常。DB 集計で30日間の fetch failed 220 回はすべて印西市サイトの情報源（避難情報120・防災情報54・放送内容44・通行止め2）、他市・県・国道は0回。市サイトは Imperva 配下（X-CDN: Imperva）で、ボット判定で切られている可能性は中。事業主決定 A（見張り側で2回続いたら声）。検証：本番 --dry-run exit 0（印西市 success・状態ファイル未更新）、API 偽装の模擬7通り ALL OK（1回目無言・同一結果の二重計上なし・2回目で声・6時間抑止・success でリセット・partial は従来どおり）。音声そのものは未試験。 session: fe4543da-08c7-4e3d-a72f-951399233154 / output: 35,784 / cost: $6.83"
+        },
         {"date": "2026-10-06", "title": "通行止め見張りに印西市の巡回状態（partial／failed／停止）の音声通知を追加 0.25時間", "category": "保守", "outputs": ["scripts/road_closure_watch.py（STATUS_ONLY に印西市を追加・source_health() に船橋市の状態チェックを共通化・partial の文言を一覧見出し向けに）", "cidao/2026-10-06_印西市通行止め解除の読み落とし_一覧の見出しが時刻なし.md（見張りの強化の節）", "cidao/worklog.md"], "hours": 0.25, "partnerApproved": false, "note": "事業主指示「見張りに印西市のpartial通知も足して」。印西市は CiDAO の巡回状態だけを見る（市のページの表との突き合わせは船橋市のみ）。検証：本番 --dry-run で『印西市：異常なし（巡回 success）』、API 偽装の模擬3通り（partial／3時間停止／情報源なし）で声の予定を確認。Windows タスク（30分ごと）は同じファイルを読むので次回から有効。音声出力そのものは今回未試験（--test-voice は既存）。 session: dcfd19b8-8793-43b8-aadd-4e02c90a6c44 / output: 86,383 / cost: $19.64（このセッション累計・うち本件分 25,000。衝突コピー5件の削除を含む）"},
         {"date": "2026-10-06", "title": "防災MAP 通行止め：印西市の解除読み落とし（一覧見出しが時刻なし）と解除済み記事の復活を修正＋本番確認 0.5時間", "category": "保守", "outputs": ["C:\\Repos\\cidao src/lib/disaster-road-closures.ts（6849bf2 一覧見出しの時刻を省略可・時刻なしはその日の0時／2858056 一覧で解除済みの記事は読めた一覧に通行止めとして載るときだけ戻す）", "C:\\Repos\\cidao src/lib/__tests__/disaster-road-closures.test.ts（4件追加）", "cidao/2026-10-06_印西市通行止め解除の読み落とし_一覧の見出しが時刻なし.md", "cidao/worklog.md", "MOC_CiDAO.md"], "hours": 0.5, "partnerApproved": false, "note": "市道吉田・岩戸線の解除（10/6 14:00）が15:35の巡回でも反映されず（事業主が市の通知を貼付して発覚）。原因は市の一覧0000022584の見出し『【令和8年10月5日 現在】』（時刻なし）を読めず partial のまま。解除は一覧にしか書かれていなかった。山田・平賀線は一覧で9/26から解除なのに、一覧が読めない回に『解除済みなら通行止めに戻す』で復活していた。検証：vitest 55件・tsc 0、本番16:05の巡回で両路線が解除（announced）、通行止め中は師戸・江川線と大塚二丁目の2件で市のページと一致。追加：『通れない道』に残っていた山田・平賀線の運営記録（ddfb8220・約1080m）を事業主決定Aで非表示にし、公開APIから消えたことを確認。 session: dcfd19b8-8793-43b8-aadd-4e02c90a6c44 / output: 51,902 / cost: $10.65"},
         {"date": "2026-10-06", "title": "展示スライドのBGM音量スライダー追加（原因調査＋実装＋ローカル検証）0.15時間", "category": "実装", "outputs": ["site/admin/proposals/cidao-exhibit-guide-v1.html（音量スライダー0〜250%・Web Audioゲイン・localStorage保存・初期値150%・ボタン折り返し防止）", "site/admin/changelog.json"], "hours": 0.15, "partnerApproved": false, "note": "「BGMがONにならない」は誤認で、本番URLで再生中（paused=false・時間進行・エラーなし）。BGM平均-27dB×音量0.6≒-31dB、ナレーション-17.8dBに対し約14dB小さく聞こえなかった。ローカル(8766)で再生・既定150%・保存→再読込で220%復元・レイアウト崩れなしを確認。実機スピーカーでの聴感は未確認。 session: b1bda49e-8920-4778-a7e3-8c359ef1e939 / output: 24,172 / cost: $3.16"},
@@ -8422,6 +8434,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🔁 cidao の役所ページ取得に『数秒あけて1回だけ再試行』と fetch failed の原因コード（error.cause.code）の記録を足すか決める（印西市サイトは Imperva 配下で Vercel からの接続を30日で220回落とした・通行止めだけでなく避難情報・防災情報・放送内容も同じ）",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-10-06 見張りの空振り対策は A（見張り側で failed 2回続いたら声）を先に実施。B（cidao 側の再試行）は本番コードの変更とデプロイが要るため別途判断。原因コードを記録すれば『接続拒否（WAF）か・切断か・タイムアウトか』を切り分けられる。関連：A1 plans の『印西市の通行止め記事で路線名・場所が空になる』"
+        },
         {"due": "未定", "title": "🚧 通行止め：一覧が読めない回に解除済みの行が通行止めへ戻る穴が、他の情報源（千葉国道・千葉県・印旛土木・栄町・佐倉市・船橋市）にも無いか点検する", "category": "保守", "priority": "中", "note": "2026-10-06 印西市で、一覧（0000022584）が読めない回に syncRoadClosures の『解除済みなら通行止めに戻す』で山田・平賀線が復活していたのを 2858056 で塞いだ（印西市の scanInzai だけ）。他の情報源は『読めない＝前回のまま』の扱いが scan ごとに違うので、解除済みの行が active に戻り得る経路が無いか disaster-road-closures.ts を情報源ごとに読む。実害は未確認"},
         {"due": "2026-12-23", "title": "🔑 Meta鍵のデータアクセス期限（2026-12-30）の監視を追加する／期限前に取り直す", "category": "保守", "priority": "高", "note": "対象：Facebookページ鍵・Instagram検索鍵（どちらも無期限だがデータアクセス期限が12/30）。①CiDAO週次cron（sns-token-refresh の EXPIRY_WATCH）は expires_at 未保存の鍵を対象外にしており、10/1貼り直し後は通知されない → saveInstagramDiscoveryAuth が debug_token の data_access_expires_at を保存するよう直すか、見張り（scripts/sns_token_watch.py）で debug_token を読む。②期限の14日前までに Graph API Explorer で取り直し、GAS FB_PAGE_TOKEN／IG と CiDAO /admin/sns に貼り直す（手順：branding/sns/Facebookトークン取得手順.md）。2026-10-06 の見張り誤報調査で判明"},
         {"due": "2026-10-06", "title": "CiDAOカレンダーの日タップ誤動作（「＋」無効化 88a1cf3）がスマホ実機で直ったか確認する", "category": "保守", "priority": "中", "note": "直らなければ、開いたページの種類と押した位置を事業主に聞いて再調査（実機再現は未実施）"},
