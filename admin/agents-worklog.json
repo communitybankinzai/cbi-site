@@ -18,20 +18,22 @@
       "actuals": [
         {
           "date": "2026-10-08",
-          "title": "県の復旧見込みPDFが画像のみになり自動読み取りが止まった原因調査と、10/8版58区間の手反映・新区間2件の登録 0.7時間",
-          "category": "保守",
+          "title": "県の復旧見込みPDFが画像のみになり自動読み取りが止まった原因調査・10/8版58区間の手反映、通行止めの期間と県PDFリンクの表示、OCR の予備経路の実装と検証 1.4時間",
+          "category": "実装",
           "outputs": [
-            "site/inzai-disaster-map/pref-recovery-outlook.json（10/8版・58区間：天津 解除10/7／月崎・石神・上高根・古敷谷の見込み更新／桜井・上泉を追加／watch.pressAuto に manual 記録）",
-            "site/inzai-disaster-map/pipeline/manual/press_manual_20261008.py（読み取り表＋press_cards.update で反映する手順のスクリプト）",
-            "site/inzai-disaster-map/index.html（層の見出し 56→58区間）",
-            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（2026-10-08 節）",
-            "site/admin/changelog.json（1件）",
-            "cidao/2026-10-08_県の復旧見込みPDFが画像のみになり自動読み取り停止.md・MOC_行政調整.md（ノートと索引）",
+            "site/inzai-disaster-map/pref-recovery-outlook.json（10/8版・58区間へ更新／event・closedFrom・firstSeen・pdfPage・pdfPagesFor を追加）",
+            "site/inzai-disaster-map/app.js（吹き出しと一覧に通行止めの期間・県の発表で確認した日・県PDFの該当ページへのリンク／判定できず時の文言／9/22の根拠の注記／区間数を実数表示）",
+            "site/inzai-disaster-map/index.html（層の見出し 58区間・app.js の版 20261008a）",
+            "site/inzai-disaster-map/pipeline/press_cards.py（語の無いページを rapidocr 1.4.4 で読む予備経路・場所の類似度照合・pdfPage/pdfPagesFor の書き込み・◯カ月程度でも作業名の札を残す）",
+            "site/.github/workflows/pref-road-kisei.yml（rapidocr の導入・手動実行 ocr_check の試し読み）",
+            "site/inzai-disaster-map/pipeline/manual/press_manual_20261008.py・check_ocr_20261008.py（手の書き起こしと OCR の精度確認）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（2026-10-08 の2節）・site/admin/changelog.json（3件）",
+            "cidao/2026-10-08_県の復旧見込みPDFが画像のみになり自動読み取り停止.md・MOC_行政調整.md",
             "scripts/_road_closure_watch_state.json（10/7版の位置図の食い違い3件を通知済みに）"
           ],
-          "hours": 0.7,
+          "hours": 1.4,
           "partnerApproved": false,
-          "note": "事業主報告「自動反映が止まっている」。18:55 の見張りの声「区間カードが0枚」。原因：県の10/8版PDF（fukkyumitoshi5.pdf）は7ページ全部が1枚の画像で文字が無い（10/7版は各ページ14〜182語）。press_cards は文字を読む方式のため0枚→関門で停止（一覧は壊れず）。処置：各ページを200dpiで行ごとに画像に起こして Claude が読み、同じ関門（件数48・時点10/8 14:00）で反映。10/7版から追加の桜井が unmatched の警告止まりで未登録だったのも登録。検証：press_cards.update ok（cards 58・active 48・cleared 10・changes 5）、公開JSON asOf=2026-10-08、地図の一覧58行・解除10、見張り --dry-run で声の予定0。県サイトの利用規約は無断転載不可（写真掲載は県の許可が前提）。次版も画像なら同じ停止が起きる（方式は事業主に3択で確認中）。session: 99fb9040-9004-4d37-8bf0-3a79f00955eb / output: 67,226 / cost: $12.13"
+          "note": "事業主報告「自動反映が止まっている」→「原因探求して処置して」→追加要望（写真を地図に・クリックで写真・いつからいつまで）。原因：県の10/8版PDF（fukkyumitoshi5.pdf）は7ページ全部が1枚の画像で文字が無く、文字を読む press_cards が0枚→関門で停止（10/7版は各ページ14〜182語）。処置①：各ページを画像に起こして Claude が58枚を読み、同じ関門（件数48・時点10/8 14:00）で反映。差分5件＋新区間2件（桜井は10/7版から警告止まりで未登録だった）。事業主決定（3択）：写真は複製せず県PDFの該当ページへリンク（県の利用規約で無断転載不可）／開始日は9/22（県の推移の起点）で確認日と区別／OCRを試す。処置②：task-medium が期間とリンクの表示、task-high が OCR 予備経路を実装、主エージェントが裏取り（10/8版58枚＝手の書き起こしと全項目一致・関門通過・今の一覧との差分0）と版ずれ対策・文言・注記を追加。検証：公開JSON asOf=2026-10-08／本番の地図で一覧58行・吹き出し3通り（解除「9/22〜10/7（15日間）」・規制中「9/22から16日・継続中かは要確認」・新区間「開始日不明（10/8から掲載）」）・リンク #page=5/#page=7／見張り --dry-run で声の予定0／GitHub Actions の ocr_check（run 37766135279）で画像PDF 7ページ・words 0 を OCR し cards 58・active 48・cleared 10・8.8秒で成功（1回目は URL 取得に警告文が混ざり失敗→修正）。残り：位置図の検算は画像PDFで動かず「判定できず」表示は10/7の食い違い3件のまま（plans）。 session: 99fb9040-9004-4d37-8bf0-3a79f00955eb / output: 138,601 / cost: $45.75"
         },
         {
           "date": "2026-10-06",
@@ -8453,30 +8455,17 @@
       "plans": [
         {
           "due": "未定",
-          "title": "🖼 県の復旧見込みPDF（画像のみ）の自動読み取り方式を決めて実装する（OCR／Claudeの画像読み取り／手作業）",
-          "category": "実装",
+          "title": "🔍 県の次の復旧見込みPDF（画像版）で、OCR の自動反映が本番で正しく通ったかを確認する（changeList・fuzzy・Actions のログ）",
+          "category": "保守",
           "priority": "高",
-          "status": "保留",
-          "blockedBy": "事業主が方式を選ぶこと（A: GitHub Actions に tesseract の日本語OCR・B: Claude API の画像読み取り・C: 検知と声まで自動で反映は手作業。2026-10-08 に3択で提示）",
-          "note": "10/8版から全ページ画像。press_cards.parse は get_text 方式で0枚。どの方式でも関門（件数一致・時点・区分あり）は残す。手順の正本は CLAUDE_HANDOFF.md 2026-10-08 節。"
+          "note": "2026-10-08 に rapidocr の予備経路を導入。10/8版は手元と Actions（ocr_check）で58枚一致。次の版で初めて本番の自動反映が OCR で走る。場所の名前は類似度照合に頼るので、同じ路線に似た名前の区間が増えたら取り違えに注意。関門を通らなければ見張りが声を出すので pipeline/manual/press_manual_YYYYMMDD.py の手順へ。"
         },
         {
           "due": "未定",
-          "title": "📷 復旧見込みの区間の写真を防災MAPに載せ、マークをクリックで見られるようにする（災害記録として振り返る）",
+          "title": "✍ 解除済みの吹き出しの札「規制解除（県の図から赤線が消えた）」を、県の発表による解除では「規制解除（県の発表）」にする",
           "category": "実装",
-          "priority": "中",
-          "status": "待ち",
-          "blockedBy": "県サイトの利用規約（無断転載不可）のため、県の許可を得るか、写真は載せず県PDFへのリンクにするかを事業主が決めること（2026-10-08 提示）",
-          "note": "写真は県PDFの区間カードから切り出せる。旧版 fukkyumitoshi.pdf〜5.pdf がサーバーに残っているので版ごと（10/4〜10/8）の写真も取れる。許可申請の文案は 調整経緯/ に作る。"
-        },
-        {
-          "due": "未定",
-          "title": "📅 復旧見込みの各区間に『いつからいつまで通行止めだったか』を記録し、地図と一覧に出す",
-          "category": "実装",
-          "priority": "中",
-          "status": "保留",
-          "blockedBy": "開始日の定義を事業主が決めること（A: 9/22 の大雨の日を全区間の開始にして『県の発表で確認した日』と分けて表示・B: 県の発表で初めて載った日だけを確認日として記録・C: 県に照会。2026-10-08 提示）",
-          "note": "終了日は clearedDate（県の発表の解除日）で既にある。版ごとの状態の履歴は残っている旧版PDFから作れる。新区間には firstSeen を付け始めた（桜井 10/7・上泉 10/8）。"
+          "priority": "低",
+          "note": "app.js prefRecoveryPopup の badge。clearedBy=announced でも図の文言が出る（2026-10-08 の確認で気づいた・未修正・ついで改善をしない方針で提案のみ）。"
         },
         {
           "due": "未定",
