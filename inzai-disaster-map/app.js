@@ -3048,7 +3048,8 @@ const PRESETS = {
   // SNS 由来の被害候補ピンまで出すと地図が読めないため（中司さんの実機指摘）
   kansui: {
     label: "冠水した道・通れた道",
-    on: ["boundary", "kansui", "passedRoads", "leveeBreach"],
+    // leveeBreach（北印旛沼の決壊）は 2026-10-09 に外した：開口部は塞がり（荒締切が10/3に完了）過去の記録になったため
+    on: ["boundary", "kansui", "passedRoads"],
     openGroups: ["🚗"],
     focus: "layer-panel"
   },
@@ -3122,7 +3123,7 @@ const PRESETS = {
   reset: {
     label: "最初の表示",
     // snsRoads は index.html で初期 ON なのに入っておらず、押すと消えていた（2026-09-26 事業主指示で追加）
-    on: ["boundary", "kansui", "passedRoads", "leveeBreach", "snsRoads"],
+    on: ["boundary", "kansui", "passedRoads", "snsRoads"],
     openGroups: ["🚗"],
     focus: null
   }
@@ -5164,6 +5165,16 @@ function renderLeveeBreaches(data) {
       (ev.source?.url ? `出典: <a href="${escapeAttribute(ev.source.url)}" target="_blank" rel="noreferrer">${escapeHtml(ev.source.name)}</a><br>` : "") +
       (ev.mapSource?.url ? `図: <a href="${escapeAttribute(ev.mapSource.url)}" target="_blank" rel="noreferrer">${escapeHtml(ev.mapSource.name)}</a><br>` : "");
     const note = `<span style="font-size:11px;">公表された図の線を運営が地図に写したもので、数十mずれることがあります。最新の状況は出典で確認してください。</span>`;
+    // 復旧の状況（過去の記録として、その後どうなったかを添える。2026-10-09）
+    const rec = ev.recovery;
+    const recDay = rec ? roadClosureTime(`${rec.asOf}T12:00:00+09:00`) : "";
+    const recHtml = rec
+      ? `<div style="margin:6px 0;padding:6px 8px;border-left:3px solid #2e7d32;background:#f1f8f1;font-size:12px;">` +
+        `<strong>その後（${escapeHtml(recDay || rec.asOf)}時点）</strong>：${escapeHtml(rec.summary || "")}` +
+        (rec.note ? `<br>${escapeHtml(rec.note)}` : "") +
+        (rec.sources || []).map(s => `<br><a href="${escapeAttribute(s.url)}" target="_blank" rel="noreferrer">${escapeHtml(s.name)}</a>`).join("") +
+        `</div>`
+      : "";
     (ev.floodAreas || []).forEach(area => {
       if (!Array.isArray(area.path) || area.path.length < 3) return;
       L.polygon(area.path, {
@@ -5177,7 +5188,7 @@ function renderLeveeBreaches(data) {
         `<strong>🌊 ${escapeHtml(area.name || "浸水範囲（推定）")}</strong><br>` +
         `${escapeHtml(ev.title || "")}${asOf ? `（${escapeHtml(asOf)} 時点）` : ""}<br>` +
         (ev.mapSource?.estimatedBy ? `${escapeHtml(ev.mapSource.estimatedBy)}<br>` : "") +
-        sourceHtml + note
+        recHtml + sourceHtml + note
       ).addTo(leveeBreachLayer);
     });
     (ev.breaches || []).forEach(b => {
@@ -5190,7 +5201,7 @@ function renderLeveeBreaches(data) {
         `<strong>💥 決壊地点：${escapeHtml(b.name || "")}</strong><br>` +
         (b.detail ? `${escapeHtml(b.detail)}<br>` : "") +
         `${escapeHtml(ev.title || "")}<br>` +
-        sourceHtml + note
+        recHtml + sourceHtml + note
       ).addTo(leveeBreachLayer);
     });
   });

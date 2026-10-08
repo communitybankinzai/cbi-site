@@ -15,6 +15,22 @@
     "url": "https://www.pref.chiba.lg.jp/kendosei/press/2026/documents/bessi2_kitainnba_sinsuizu.pdf",
     "estimatedBy": "（独）水資源機構がドローンにて推定"
    },
+   "recovery": {
+    "status": "emergency-closed",
+    "asOf": "2026-10-03",
+    "summary": "開口部は塞がっています（応急復旧の第1段階「荒締切工」が完了）。9/29に県が管理する1か所、10/3に国土交通省が成田市船形干拓の約72mを完了し、県広報は「全ての箇所で荒締切が完了」と発表。引き続き、鋼矢板による二重締切を経て本復旧へ進みます。",
+    "note": "地図の浸水範囲は9/22 16時時点の推定で、排水が進んだ今の浸水域ではありません。",
+    "sources": [
+     {
+      "name": "国土交通省関東地方整備局 報道発表「印旛沼堤防決壊箇所における荒締切工の完了(見込み)について」（2026-10-02）",
+      "url": "https://www.ktr.mlit.go.jp/kisha/kisha_03747.pdf"
+     },
+     {
+      "name": "国土交通省関東地方整備局 報道発表「印旛沼の堤防の緊急復旧に着手します」（2026-09-24）",
+      "url": "https://www.ktr.mlit.go.jp/kisha/kyoku_s_kisha_00581.pdf"
+     }
+    ]
+   },
    "digitizing": "県のPDFに入っている浸水範囲の線と×印を、背景地図の水面の形を国土地理院の地図に重ねて位置合わせし、緯度経度へ直した（2026-09-23・CBI運営）。数十mのずれはありうる",
    "breaches": [
     {
