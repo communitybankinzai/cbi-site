@@ -22,6 +22,10 @@ on:
         description: "前回と同じPDFでも作り直す"
         type: boolean
         default: false
+      ocr_check:
+        description: "県の最新の復旧見込みPDFを OCR で試し読みする（一覧は変えない・結果はログ）"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -42,7 +46,13 @@ jobs:
           python-version: "3.12"
 
       - name: 部品を入れる
-        run: pip install --quiet pymupdf opencv-python-headless numpy requests
+        # 2026-10-08 追加：県の復旧見込みPDFが全ページ画像になったときの OCR 予備経路（inzai-disaster-map/pipeline/press_cards.py）。
+        # rapidocr-onnxruntime は opencv-python（GUI 付き）を道連れに入れるので --no-deps で入れ、必要な部品だけ別に入れる（opencv は上の headless を使う）。
+        # 版は手元で58枚の読み取りを検証した 1.4.4 に固定（Python 3.12 まで対応）。モデルは wheel に同梱で、ダウンロードも apt も不要
+        run: |
+          pip install --quiet pymupdf opencv-python-headless numpy requests
+          pip install --quiet --no-deps rapidocr-onnxruntime==1.4.4
+          pip install --quiet onnxruntime pyclipper shapely pyyaml pillow six tqdm
 
       - name: 県のページを確かめて線を作る
         run: python inzai-disaster-map/pipeline/build_pref_road_kisei.py ${{ inputs.force && '--force' || '' }}
@@ -66,3 +76,15 @@ jobs:
             sleep 10
           done
           exit 1
+
+      # 2026-10-08 追加：OCR の予備経路（画像だけのPDF）が Actions の環境で動くかの試し読み。手動実行で ocr_check を ON にしたときだけ。
+      # 県の最新の復旧見込みPDFを読んで、関門の判定（cards／active／cleared／reason）をログに出す。一覧は書かない（--apply なし）
+      - name: OCR の試し読み（手動実行・一覧は変えない）
+        if: ${{ inputs.ocr_check }}
+        run: |
+          cd inzai-disaster-map/pipeline
+          URL=$(python -c "import build_pref_recovery as B; print(B.latest_press_pdf() or '')")
+          echo "PDF: $URL"
+          curl -sSL -A "cbi-site pref-recovery ocr-check (communitybankinzai@gmail.com)" -o /tmp/press.pdf "$URL"
+          python -c "import fitz; d=fitz.open('/tmp/press.pdf'); print('pages', len(d), 'words/page', [len(p.get_text('words')) for p in d])"
+          time python press_cards.py /tmp/press.pdf

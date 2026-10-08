@@ -8,7 +8,13 @@
   "pdfSha256": "59c6e6fefdec7a5b5a57c881999b2dec3a2bc6883c6d09176262b93e3fe99a05",
   "asOfIso": "2026-10-08T14:00:00+09:00"
  },
- "note": "県の発表PDF（写真に路線・場所・復旧見込みを焼き込んだもの）からCBIが書き起こした。位置は市町村＋地名を国土地理院の住所検索で引いた町名の代表点で、被災箇所そのものではない（数百m〜数kmずれる）。scale: large=大規模（復旧まで1か月以上）/medium=中規模（1か月程度）/small=小規模（1〜3週間・土砂撤去中など）。status と clearedAt は毎時の見張り（pipeline/build_pref_recovery.py）が県の規制状況図の赤線と突き合わせて更新する。",
+ "event": {
+  "name": "2026年9月22日の大雨（台風25号）",
+  "closedFrom": "2026-09-22",
+  "basis": "県の発表「全面通行止め箇所の推移」の起点（9月22日 133区間）。区間ごとの開始日は県の資料に無いため、全区間の開始を9/22として扱う"
+ },
+ "pdfPagesFor": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkyumitoshi5.pdf",
+ "note": "県の発表PDF（写真に路線・場所・復旧見込みを焼き込んだもの）からCBIが書き起こした。位置は市町村＋地名を国土地理院の住所検索で引いた町名の代表点で、被災箇所そのものではない（数百m〜数kmずれる）。scale: large=大規模（復旧まで1か月以上）/medium=中規模（1か月程度）/small=小規模（1〜3週間・土砂撤去中など）。status と clearedAt は毎時の見張り（pipeline/build_pref_recovery.py）が県の規制状況図の赤線と突き合わせて更新する。closedFrom は通行止めの開始日で、2026年9月22日の大雨で全面通行止めとなった時点（県の「全面通行止め箇所の推移」の起点）を全区間に当てており、県の資料に開始日が無い区間は null（不明）とした。firstSeen は、CBIがその区間を県の発表で最初に確認した日で、通行止めの開始日ではない。pdfPage は、その区間の写真と位置図が載っている県のPDF（10/8版 fukkyumitoshi5.pdf）のページ番号で、写真は転載せずこのページへのリンクで案内する。",
  "legend": {
   "large": "大規模（復旧までに1か月以上）",
   "medium": "中規模（復旧までに1か月程度）",
@@ -163,7 +169,10 @@
     "distM": 1146,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "409-袖ケ浦市-大鳥居",
@@ -187,7 +196,10 @@
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-03"
+   "clearedDate": "2026-10-03",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "409-市原市-西国吉",
@@ -214,7 +226,10 @@
     "distM": 399,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "409-市原市-栢橋",
@@ -241,7 +256,10 @@
     "distM": 499,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "410-君津市-大坂",
@@ -268,7 +286,10 @@
     "distM": 1452,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "13-長柄町-針ケ谷",
@@ -292,7 +313,10 @@
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-02"
+   "clearedDate": "2026-10-02",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "14-長柄町-山根",
@@ -319,7 +343,10 @@
     "distM": 585,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "21-茂原市-大沢",
@@ -346,7 +373,10 @@
     "distM": 164,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "21-市原市-金剛地",
@@ -373,7 +403,10 @@
     "distM": 1002,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "24-君津市-笹",
@@ -400,7 +433,10 @@
     "distM": 4368,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "32-市原市-月崎",
@@ -427,7 +463,10 @@
     "distM": 1073,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "32-市原市-石神",
@@ -454,7 +493,10 @@
     "distM": 453,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "33-袖ケ浦市-滝の口",
@@ -481,7 +523,10 @@
     "distM": 307,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "34-鋸南町-市井原",
@@ -508,7 +553,10 @@
     "distM": 531,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "67-茂原市-桂",
@@ -532,7 +580,10 @@
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-03"
+   "clearedDate": "2026-10-03",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "67-市原市-瀬又",
@@ -559,7 +610,10 @@
     "distM": 1296,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "81-市原市-藪",
@@ -586,7 +640,10 @@
     "distM": 1086,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "81-市原市-石神",
@@ -613,7 +670,10 @@
     "distM": 908,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "81-君津市-黄和田畑",
@@ -640,7 +700,10 @@
     "distM": 1615,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "81-大多喜町-葛藤",
@@ -667,7 +730,10 @@
     "distM": 805,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "81-鴨川市-天津",
@@ -696,7 +762,10 @@
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-07"
+   "clearedDate": "2026-10-07",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "90-木更津市-小浜",
@@ -723,7 +792,10 @@
     "distM": 449,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "90-君津市-坂田",
@@ -750,7 +822,10 @@
     "distM": 451,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 5
   },
   {
    "id": "93-君津市-大野台",
@@ -777,7 +852,10 @@
     "distM": 919,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "128-長柄町-船木",
@@ -804,7 +882,10 @@
     "distM": 226,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "143-袖ケ浦市-川原井",
@@ -831,7 +912,10 @@
     "distM": 702,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "143-市原市-上高根",
@@ -858,7 +942,10 @@
     "distM": 906,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "144-市原市-豊成",
@@ -882,7 +969,10 @@
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-01"
+   "clearedDate": "2026-10-01",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "144-市原市-中高根",
@@ -909,7 +999,10 @@
     "distM": 845,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "145-君津市-岩出",
@@ -938,7 +1031,10 @@
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-02"
+   "clearedDate": "2026-10-02",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "147-長柄町-針ケ谷",
@@ -965,7 +1061,10 @@
     "distM": 202,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "148-市原市-平蔵",
@@ -992,7 +1091,10 @@
     "distM": 923,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "160-市原市-飯給",
@@ -1019,7 +1121,10 @@
     "distM": 2349,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "163-君津市-鹿野山",
@@ -1046,7 +1151,10 @@
     "distM": 1599,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "163-君津市-福岡",
@@ -1075,7 +1183,10 @@
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-06"
+   "clearedDate": "2026-10-06",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "164-君津市-草牛",
@@ -1102,7 +1213,10 @@
     "distM": 546,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "168-市原市-養老",
@@ -1129,7 +1243,10 @@
     "distM": 646,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "168-木更津市-真里谷",
@@ -1156,7 +1273,10 @@
     "distM": 1111,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "168-木更津市-市野々",
@@ -1181,7 +1301,10 @@
     "distM": 87,
     "figure": "分割図（2/3）"
    },
-   "nearestRedLineM": null
+   "nearestRedLineM": null,
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "169-木更津市-丹原",
@@ -1208,7 +1331,10 @@
     "distM": 1722,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "171-市原市-古敷谷",
@@ -1235,7 +1361,10 @@
     "distM": 1409,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "171-市原市-徳氏",
@@ -1259,7 +1388,10 @@
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-02"
+   "clearedDate": "2026-10-02",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "172-市原市-月出",
@@ -1286,7 +1418,10 @@
     "distM": 1713,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "173-市原市-古敷谷",
@@ -1313,7 +1448,10 @@
     "distM": 2066,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "177-勝浦市-大森",
@@ -1342,7 +1480,10 @@
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-02"
+   "clearedDate": "2026-10-02",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "178-大多喜町-会所",
@@ -1369,7 +1510,10 @@
     "distM": 1073,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "182-富津市-志駒",
@@ -1396,7 +1540,10 @@
     "distM": 333,
     "figure": "分割図（3/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 6
   },
   {
    "id": "185-南房総市-富浦町大津",
@@ -1421,7 +1568,10 @@
     "distM": 1425,
     "figure": "分割図（3/3）"
    },
-   "nearestRedLineM": null
+   "nearestRedLineM": null,
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 7
   },
   {
    "id": "269-君津市-大鷲新田",
@@ -1448,7 +1598,10 @@
     "distM": 636,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 7
   },
   {
    "id": "269-木更津市-上烏田",
@@ -1475,7 +1628,10 @@
     "distM": 856,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 7
   },
   {
    "id": "284-市原市-鶴舞",
@@ -1499,7 +1655,10 @@
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-01"
+   "clearedDate": "2026-10-01",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 7
   },
   {
    "id": "287-市原市-椎津",
@@ -1526,7 +1685,10 @@
     "distM": 1244,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 7
   },
   {
    "id": "287-袖ケ浦市-久保田",
@@ -1553,7 +1715,10 @@
     "distM": 973,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 7
   },
   {
    "id": "287-袖ケ浦市-蔵波",
@@ -1580,7 +1745,10 @@
     "distM": 3287,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 7
   },
   {
    "id": "292-市原市-武士",
@@ -1607,7 +1775,10 @@
     "distM": 255,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 7
   },
   {
    "id": "292-市原市-勝間",
@@ -1634,7 +1805,10 @@
     "distM": 1049,
     "figure": "分割図（2/3）"
    },
-   "judgedAtIso": "2026-10-03T17:00:00+09:00"
+   "judgedAtIso": "2026-10-03T17:00:00+09:00",
+   "closedFrom": "2026-09-22",
+   "firstSeen": "2026-10-01",
+   "pdfPage": 7
   },
   {
    "id": "163-富津市-桜井",
@@ -1657,7 +1831,9 @@
    "watchRadiusM": 3500,
    "mark": null,
    "firstSeen": "2026-10-07",
-   "firstSeenNote": "県の10/7版PDFで追加された区間"
+   "firstSeenNote": "県の10/7版PDFで追加された区間",
+   "closedFrom": null,
+   "pdfPage": 7
   },
   {
    "id": "143-袖ケ浦市-上泉",
@@ -1680,7 +1856,9 @@
    "watchRadiusM": 3500,
    "mark": null,
    "firstSeen": "2026-10-08",
-   "firstSeenNote": "県の10/8版PDFで追加された区間"
+   "firstSeenNote": "県の10/8版PDFで追加された区間",
+   "closedFrom": null,
+   "pdfPage": 7
   }
  ],
  "marks": {

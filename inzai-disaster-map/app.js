@@ -13973,11 +13973,73 @@ function formatPrefRecoveryTime(iso) {
   return new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(d);
 }
 
+// 通行止めの期間と県PDFのページ（2026-10-08 事業主決定）。
+// closedFrom（通行止めの開始日）は 2026年9月22日の大雨を起点にした扱いで、県が区間ごとに出した日ではない。
+// firstSeen（県の発表で確認した日）とは別の情報なので、文言を分けて出す。日数は JST の0時どうしで数える。
+// 県の写真は転載できない（県サイトの利用規約）ので、画像は載せず PDF の該当ページへのリンクだけにする。
+function prefRecoveryDayMs(ymd) {
+  const p = String(ymd || "").slice(0, 10).split("-");
+  if (p.length !== 3) return null;
+  const t = new Date(`${p[0]}-${p[1]}-${p[2]}T00:00:00+09:00`).getTime();
+  return Number.isNaN(t) ? null : t;
+}
+function prefRecoveryMonthDay(ymd) {
+  const p = String(ymd || "").slice(0, 10).split("-");
+  return prefRecoveryDayMs(ymd) === null ? "" : `${Number(p[1])}/${Number(p[2])}`;
+}
+// 解除した日（JST）。県の発表で解除なら clearedDate、図で判定した解除は clearedAt（時刻付き）の日付
+function prefRecoveryClearedDay(it) {
+  if (prefRecoveryDayMs(it.clearedDate) !== null) return String(it.clearedDate).slice(0, 10);
+  const t = it.clearedAt ? new Date(it.clearedAt) : null;
+  return t && !Number.isNaN(t.getTime()) ? new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo" }).format(t) : "";
+}
+// kind: "popup"（吹き出しの文）か "row"（一覧の短い文）。closedFrom が無い区間は開始日不明
+function prefRecoveryPeriod(it, kind) {
+  const row = kind === "row";
+  const from = prefRecoveryDayMs(it.closedFrom);
+  if (from === null) {
+    const seen = prefRecoveryMonthDay(it.firstSeen);
+    return row ? "開始日不明" : `通行止めの開始日：不明${seen ? `（県の発表に${seen}から掲載）` : ""}`;
+  }
+  const fromText = prefRecoveryMonthDay(it.closedFrom);
+  if (it.status === "cleared") {
+    const endDay = prefRecoveryClearedDay(it);
+    const end = prefRecoveryDayMs(endDay);
+    if (end === null) return row ? `${fromText}〜解除` : `通行止め：${fromText}〜解除`;
+    const days = Math.round((end - from) / 86400000);
+    const range = `${fromText}〜${prefRecoveryMonthDay(endDay)}`;
+    return row ? range : `通行止め：${range}${days >= 0 ? `（${days}日間）` : ""}`;
+  }
+  const today = prefRecoveryDayMs(todayJst());
+  const days = today === null ? -1 : Math.round((today - from) / 86400000);
+  if (row) return days >= 0 ? `${fromText}〜継続中（${days}日）` : `${fromText}〜継続中`;
+  return days >= 0 ? `通行止め：${fromText}から${days}日・継続中` : `通行止め：${fromText}から・継続中`;
+}
+// 吹き出しの期間の2行。開始日が不明な区間は1行目に掲載日を含めるので、「県の発表で確認」は足さない
+function prefRecoveryPeriodHtml(it, doubt) {
+  const seen = prefRecoveryMonthDay(it.firstSeen);
+  const known = prefRecoveryDayMs(it.closedFrom) !== null;
+  // 「判定できず」の区間は、日数だけ毎日増える「継続中」と言い切らない
+  const text = doubt ? prefRecoveryPeriod(it, "popup").replace("・継続中", "・継続中かは要確認") : prefRecoveryPeriod(it, "popup");
+  return `<div class="detail-meta">${escapeHtml(text)}</div>${known && seen ? `<div class="detail-meta">県の発表で確認：${escapeHtml(seen)}</div>` : ""}`;
+}
+// この区間の写真と位置図がある県PDFのページ。pdfPage は pdfPagesFor の版のページ番号なので、県が版を替えて
+// source.pdf が別のファイルになったら（毎時の自動反映が差し替える）ページ番号は信用せず、PDF全体へのリンクに戻す
+function prefRecoveryPdfLink(it, src) {
+  const base = src.pdf || "";
+  const sameVersion = !!(prefRecoveryData && prefRecoveryData.pdfPagesFor && prefRecoveryData.pdfPagesFor === base);
+  const page = sameVersion && Number.isInteger(it.pdfPage) && it.pdfPage > 0 ? it.pdfPage : null;
+  return page
+    ? { href: `${base}#page=${page}`, label: `この区間の写真と位置図（県のPDF p.${page}）` }
+    : { href: base, label: "写真と位置図（PDF）" };
+}
+
 function prefRecoveryPopup(it, src, flags) {
   const cleared = it.status === "cleared";
   const color = cleared ? PREF_RECOVERY_COLORS.cleared : PREF_RECOVERY_COLORS[it.scale];
   const f = flags || {};
   const doubt = !cleared && (f.unknown || f.overdue);
+  const pdf = prefRecoveryPdfLink(it, src);
   return `
     <div class="popup-title">${escapeHtml(it.road)}（${escapeHtml(it.routeNo)}）</div>
     <div class="shelter-popup-badges">
@@ -13987,9 +14049,10 @@ function prefRecoveryPopup(it, src, flags) {
     ${f.unknown ? `<div class="detail-meta">${escapeHtml((f.reasons || []).join("／"))}</div>` : ""}
     <div>${escapeHtml(it.municipality)}${escapeHtml(it.place)}</div>
     <div class="detail-meta">復旧見込：${escapeHtml(it.outlook)}（${escapeHtml(PREF_RECOVERY_LABEL[it.scale] || it.scale)}）／日交通量 ${escapeHtml(it.traffic || "-")}</div>
+    ${prefRecoveryPeriodHtml(it, !cleared && f.unknown)}
     ${cleared ? (it.clearedBy === "announced" ? `<div class="detail-meta">解除：県の発表（${escapeHtml(it.clearedDate || "")}に通行止め解除・県のPDFに記載）</div>` : `<div class="detail-meta">解除：${escapeHtml(it.clearedFigure || formatPrefRecoveryTime(it.clearedAt))}の県の規制状況図から赤線が消えた（CBIの判定・県の発表ではありません）</div>`) : `<div class="detail-meta">判定：${escapeHtml(it.watch || "未判定")}${Number.isFinite(it.nearestRedLineM) ? `・赤線まで約${escapeHtml(String(it.nearestRedLineM))}m` : ""}</div>`}
     <div class="detail-meta">位置：${escapeHtml(prefRecoveryWhere(it))}</div>
-    <a href="${escapeHtml(src.url)}" target="_blank" rel="noreferrer">出典: 千葉県の発表（${escapeHtml(src.asOf)}現在）</a>・<a href="${escapeHtml(src.pdf)}" target="_blank" rel="noreferrer">写真と位置図（PDF）</a>
+    <a href="${escapeHtml(src.url)}" target="_blank" rel="noreferrer">出典: 千葉県の発表（${escapeHtml(src.asOf)}現在）</a>・<a href="${escapeHtml(pdf.href)}" target="_blank" rel="noreferrer">${escapeHtml(pdf.label)}</a>
   `;
 }
 
@@ -14089,12 +14152,12 @@ function renderPrefRecovery() {
   const rowHtml = it => `
     <div class="prr-row${it.status === "cleared" ? " is-cleared" : ""}${it.status !== "cleared" && (unknown || prefRecoveryOverdue(it, src)) ? " is-doubtful" : ""}">
       <div class="prr-main"><strong>${escapeHtml(it.routeNo)} ${escapeHtml(it.road)}</strong> ${escapeHtml(it.municipality)}${escapeHtml(it.place)}</div>
-      <div class="prr-sub">${it.status === "cleared" ? (it.clearedBy === "announced" ? `✅ 解除（県の発表・${escapeHtml(it.clearedDate || "")}）` : `✅ 解除（${escapeHtml(it.clearedFigure || formatPrefRecoveryTime(it.clearedAt))}の図）`) : `${escapeHtml(it.work)}・復旧見込 ${escapeHtml(it.outlook)}`}${it.mark ? "" : "・位置は町名"}${it.status !== "cleared" && unknown ? "・<strong>判定できず</strong>" : ""}${it.status !== "cleared" && !unknown && prefRecoveryOverdue(it, src) ? "・<strong>見込み超過・要確認</strong>" : ""}
+      <div class="prr-sub">${it.status === "cleared" ? (it.clearedBy === "announced" ? `✅ 解除（県の発表・${escapeHtml(it.clearedDate || "")}）` : `✅ 解除（${escapeHtml(it.clearedFigure || formatPrefRecoveryTime(it.clearedAt))}の図）`) : `${escapeHtml(it.work)}・復旧見込 ${escapeHtml(it.outlook)}`}・${escapeHtml(prefRecoveryPeriod(it, "row"))}${it.mark ? "" : "・位置は町名"}${it.status !== "cleared" && unknown ? "・<strong>判定できず</strong>" : ""}${it.status !== "cleared" && !unknown && prefRecoveryOverdue(it, src) ? "・<strong>見込み超過・要確認</strong>" : ""}
         ${prefRecoveryPoint(it) ? `<button type="button" class="prr-focus" data-pref-recovery-focus="${escapeHtml(it.id)}">地図で見る</button>` : ""}</div>
     </div>`;
   list.innerHTML = `
     ${unknown ? `<p class="road-closures-note prr-warn"><strong>⚠ いま規制中かどうか判定できません。</strong>${escapeHtml(staleness.reasons.join("。"))}。最新は<a href="${escapeHtml(src.url || "#")}" target="_blank" rel="noreferrer">県の発表</a>と<a href="https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html" target="_blank" rel="noreferrer">県の通行規制情報</a>で確認してください。</p>` : ""}
-    <p class="road-closures-note">千葉県の発表（${escapeHtml(src.asOf || "")}現在・<a href="${escapeHtml(src.url || "#")}" target="_blank" rel="noreferrer">報道発表</a>）の56区間を、県のPDFの区間カードからCBIが毎時自動で読み取ったもの（CBIの整理であり県の発表そのものではありません）。すべて市原〜南房総で、<strong>印西市周辺の区間はありません</strong>。規制中・解除は県のPDFの記載に従います。位置は県の位置図の印（◎大規模・●中規模・▲小規模。${items.filter(it => it.mark && it.status !== "cleared").length}区間）か町名の代表点で、数百mほどの誤差があります。</p>
+    <p class="road-closures-note">千葉県の発表（${escapeHtml(src.asOf || "")}現在・<a href="${escapeHtml(src.url || "#")}" target="_blank" rel="noreferrer">報道発表</a>）の${items.length}区間を、県のPDFの区間カードからCBIが毎時自動で読み取ったもの（CBIの整理であり県の発表そのものではありません）。すべて市原〜南房総で、<strong>印西市周辺の区間はありません</strong>。規制中・解除は県のPDFの記載に従います。通行止めの開始日は、県の発表「全面通行止め箇所の推移」の起点である${escapeHtml(data.event && data.event.closedFrom ? prefRecoveryMonthDay(data.event.closedFrom) : "9/22")}（大雨の日）としてCBIが置いたもので、区間ごとの開始日は県の資料にありません。位置は県の位置図の印（◎大規模・●中規模・▲小規模。${items.filter(it => it.mark && it.status !== "cleared").length}区間）か町名の代表点で、数百mほどの誤差があります。</p>
     ${group(PREF_RECOVERY_LABEL.large, "large")}${group(PREF_RECOVERY_LABEL.medium, "medium")}${group(PREF_RECOVERY_LABEL.small, "small")}
     ${cleared.length ? `<div class="prr-group"><div class="prr-head"><span class="prr-dot" style="background:${PREF_RECOVERY_COLORS.cleared}"></span>解除された区間 <span class="cnt">${cleared.length}</span></div>${cleared.map(rowHtml).join("")}</div>` : ""}
     <p class="road-closures-note">最終確認 ${escapeHtml(formatPrefRecoveryTime(watch.checkedAt))}${watch.figures ? `・読めた図 ${watch.figures.filter(f => f.ok).length}/${watch.figures.length}` : ""}。最新は県の発表と現地の表示で確認してください。</p>
