@@ -9286,6 +9286,13 @@ function initRecordEvents() {
   // ここで syncEventChips() は呼ばない。初期化はファイル前半で走るため、
   // 後ろで宣言している recordWhenFilter に触れると TDZ で全体が止まる（2026-09-23 に踏んだ）。
   // 押した状態は applyRecordRange のたびに合わせている
+  // 決壊の層を利用者が自分で ON／OFF したときの印（自動の box.click() は isTrusted が false なので除く）。
+  // 中の変数は押されたときに初めて読むので、初期化の順序の問題は起きない
+  document.querySelector('input[data-overlay="leveeBreach"]')?.addEventListener("change", event => {
+    if (!event.isTrusted) return;
+    if (event.target.checked) leveeBreachAuto = false;                     // 手で ON にした：期間を外しても残す
+    else if (leveeBreachPeriodMatches()) leveeBreachUserOff = true;        // 期間のあいだに手で外した：出し直さない
+  });
 }
 
 function applyRecordRange(from, to, label) {
@@ -9308,6 +9315,35 @@ function applyRecordRange(from, to, label) {
   renderKansuiLayer();
   renderPassedRoadsLayer();
   if (snsRoadsLoaded) renderSnsRoads();
+  syncLeveeBreachWithPeriod();
+}
+
+// 北印旛沼の決壊の層は、既定では出さず、「台風25号」ボタンか「⏱ 期間」で、決壊していた期間と重なる期間を選んで
+// 通れた道・通れない道・通行止めを出したときに、一緒に出す（2026-10-09 事業主指示）。期間を外すと自動で消える。
+// 決壊していた期間＝9/22の決壊から、荒締切が全箇所で完了した10/3まで（levee-breaches.json の recovery と同じ事実）。
+// 新しい決壊を足すときは、この期間も事象ごとに持たせること。
+const LEVEE_BREACH_PERIOD = { from: Date.parse("2026-09-22T00:00:00+09:00"), to: Date.parse("2026-10-04T00:00:00+09:00") };
+let leveeBreachAuto = false;      // 期間の選択で自動的に ON にしている間 true
+let leveeBreachUserOff = false;   // 期間のあいだに利用者が自分で外した（同じ期間のあいだは出し直さない）
+
+function leveeBreachPeriodMatches() {
+  const { from, to } = recordWhenFilter;
+  if (from === null && to === null) return false;   // 期間を選んでいない（本日／過去の実績）
+  const start = from === null ? -Infinity : from;
+  const end = to === null ? Infinity : to;           // 終わりが null の災害（台風25号）は「今まで」
+  return start < LEVEE_BREACH_PERIOD.to && end > LEVEE_BREACH_PERIOD.from;
+}
+
+function syncLeveeBreachWithPeriod() {
+  const box = document.querySelector('input[data-overlay="leveeBreach"]');
+  if (!box) return;
+  if (leveeBreachPeriodMatches()) {
+    if (!box.checked && !leveeBreachUserOff) { box.click(); leveeBreachAuto = true; }
+  } else {
+    leveeBreachUserOff = false;
+    if (leveeBreachAuto && box.checked) box.click();   // 自動で出していた分だけ戻す（手で ON にした分は残す）
+    leveeBreachAuto = false;
+  }
 }
 
 function toLocalInputValue(ms) {
