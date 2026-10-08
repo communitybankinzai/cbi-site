@@ -83,7 +83,8 @@ jobs:
         if: ${{ inputs.ocr_check }}
         run: |
           cd inzai-disaster-map/pipeline
-          URL=$(python -c "import build_pref_recovery as B; print(B.latest_press_pdf() or '')")
+          # fitz の非推奨の警告が標準出力に混ざるので、URL の形の行だけ取り出す
+          URL=$(python -c "import build_pref_recovery as B; print(B.latest_press_pdf() or '')" 2>/dev/null | grep -o 'https\?://[^ ]*' | tail -1)
           echo "PDF: $URL"
           curl -sSL -A "cbi-site pref-recovery ocr-check (communitybankinzai@gmail.com)" -o /tmp/press.pdf "$URL"
           python -c "import fitz; d=fitz.open('/tmp/press.pdf'); print('pages', len(d), 'words/page', [len(p.get_text('words')) for p in d])"
