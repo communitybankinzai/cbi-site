@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-10-11",
+      "type": "feature",
+      "target": "inzai-disaster-map/app.js, index.html, styles.css, fire-incidents.json",
+      "title": "消防情報に「🔍 調査活動（火災の疑い）」のマークを追加。「見たいもの」に🔥消防情報ボタンも新設",
+      "detail": "実際の消防情報メールで、本文に「火災」ではなく「調査活動」とだけ書かれた速報が確認されたため、これも拾って🔍マーク（🔥とは別の見た目・火災と断定しない注記つき）で地図に表示するようにした。あわせて「見たいもの」ボタン列（停電と地震の間）に🔥消防情報のオンオフボタンを追加。",
+      "author": "Claude Code"
+    },
+    {
+      "date": "2026-10-11",
       "type": "fix",
       "target": "admin/admin.js",
       "title": "管理画面「API・クラウド利用状況」の推定残高が、CiDAOのキー分だけを基準額から引いた値になった",

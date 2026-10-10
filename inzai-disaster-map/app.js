@@ -3108,6 +3108,11 @@ const PRESETS = {
     label: "停電",
     toggle: ["teiden"]
   },
+  // 消防情報（2026-10-11追加・事業主指示「停電と地震の間」）。押すと fireMail 層を足す。もう一度押すと外す。
+  fireMail: {
+    label: "消防情報",
+    toggle: ["fireMail"]
+  },
   // 全国の地震（2026-10-02 事業主指示「地震のボタンがない」）。押すと震源の層（quakes）を足し、
   // 最新の地震の波紋と右上の再生の枠が出て、地図は日本全体へ。もう一度押すと外して元の位置へ。
   // 左のチェック欄から ON にしたときは地図を動かさない（同日「印西周辺を見たままでも震源を出せるように」）
@@ -5327,20 +5332,29 @@ async function ensureFireMailLayer() {
   }
 }
 
+// kind="fire"＝本文に「火災」の語あり／"investigating"＝「調査活動」の語のみ（火災とは断定できない）
+const FIRE_MAIL_KIND = {
+  fire: { emoji: "🔥", cls: "fire-mail-mark", label: "消防情報（火災）",
+    warn: "CBIが受信・判定したもので、消防の公式な鎮火発表そのものではありません。鎮火の続報が来るか、受信から一定時間たつと自動的に消します。" },
+  investigating: { emoji: "🔍", cls: "fire-mail-mark fire-mail-mark-investigating", label: "消防情報（調査活動・火災の疑い）",
+    warn: "本文に「火災」の語は無く「調査活動」とだけ書かれたものです。火災と確定したものではありません。鎮火・続報が来るか、受信から一定時間たつと自動的に消します。" }
+};
+
 function renderFireMail(data) {
   fireMailLayer.clearLayers();
   (data.incidents || []).forEach(inc => {
     if (inc.status !== "active") return;
     if (!Number.isFinite(inc.lat) || !Number.isFinite(inc.lon)) return;
+    const k = FIRE_MAIL_KIND[inc.kind] || FIRE_MAIL_KIND.fire;
     const received = roadClosureTime(inc.receivedAtIso, true);
     L.marker([inc.lat, inc.lon], {
       pane: "fireMailPane",
-      icon: L.divIcon({ className: "fire-mail-mark", html: "🔥", iconSize: [26, 26], iconAnchor: [13, 13] }),
-      title: `消防情報：${inc.addressText || ""}`
+      icon: L.divIcon({ className: k.cls, html: k.emoji, iconSize: [26, 26], iconAnchor: [13, 13] }),
+      title: `${k.label}：${inc.addressText || ""}`
     }).bindPopup(
-      `<strong>🔥 消防情報（印西市${escapeHtml(inc.addressText || "")}付近）</strong><br>` +
+      `<strong>${k.emoji} ${escapeHtml(k.label)}（印西市${escapeHtml(inc.addressText || "")}付近）</strong><br>` +
       (received ? `受信：${escapeHtml(received)}<br>` : "") +
-      `<span class="reference-warning">CBIが受信・判定したもので、消防の公式な鎮火発表そのものではありません。鎮火の続報が来るか、受信から一定時間たつと自動的に消します。</span><br>` +
+      `<span class="reference-warning">${escapeHtml(k.warn)}</span><br>` +
       `<span style="font-size:11px;">出典：${escapeHtml(inc.source || "印西地区消防組合 災害案内メール配信サービス")}（テレガイド 0476-45-5119）</span>`
     ).addTo(fireMailLayer);
   });
