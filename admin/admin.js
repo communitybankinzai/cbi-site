@@ -2071,8 +2071,9 @@ const UNREAD_POLL_MS = 30000;
     if (r.credit) {
       const low = r.credit.remainingUsd < r.credit.thresholdUsd;
       html += '<p><strong style="font-size:1.6rem;color:' + (low ? '#b8322c' : 'inherit') + '">' + auUsd(r.credit.remainingUsd) + '</strong>' +
-        ' <span class="meta-note">共有クレジットの推定残高（警告ライン ' + auUsd(r.credit.thresholdUsd, 0) + '）' + (low ? ' ⚠ 少なくなっています' : '') + '</span></p>' +
-        '<p class="meta-note">' + escapeHtml(r.credit.baselineAt.slice(0, 10)) + ' の補充時点の残高から、それ以降の組織全体の消費を引いた推定です。' +
+        ' <span class="meta-note">CiDAO分の推定残高（警告ライン ' + auUsd(r.credit.thresholdUsd, 0) + '）' + (low ? ' ⚠ 少なくなっています' : '') + '</span></p>' +
+        '<p class="meta-note">' + escapeHtml(r.credit.baselineAt.slice(0, 10)) + ' の補充時点の残高から、それ以降のCiDAOのキー分の消費（按分推定）を引いた値です。' +
+        'クレジットはN\'s factoryと共有なので、<strong>実際の残高はこれより少ない</strong>ことがあります。' +
         '<strong>補充したら基準額の更新が必要</strong>です（更新しないと実際より少なく出ます）。残高を返す API はありません。</p>';
     } else {
       html += '<p class="meta-note">残高の基準（CREDIT_BASELINE_*）が未設定のため、推定残高は出せません。</p>';
