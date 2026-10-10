@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-10-11",
+      "type": "feature",
+      "target": "inzai-disaster-map/app.js, index.html, styles.css, fire-incidents.json",
+      "title": "印西地区消防組合の消防情報メールを見張り、「火災」と分かるものだけ地図に🔥マークを置けるようになった",
+      "detail": "印西地区消防組合の「災害案内メール配信サービス」にCBI公式メールで登録し、手元のPythonスクリプトが30分ごとに新着を確認、本文に「火災」を含むものだけ住所を座標に変換してfire-incidents.jsonへ書く。新レイヤー「🔥 消防情報（火災・メール配信）」（既定OFF）で地図に表示。鎮火の続報があれば消し、続報が無ければ受信から一定時間（仮6時間）で自動的に消す。CBIの受信・判定であり、消防の公式な鎮火発表そのものではない旨を吹き出しに明記。",
+      "author": "Claude Code"
+    },
+    {
       "date": "2026-10-09",
       "type": "feature",
       "target": "inzai-disaster-map/app.js, index.html",

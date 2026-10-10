@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-10-11",
+          "title": "県の復旧見込みPDF食い違いの再確認＋印西地区消防組合の消防情報メール見張りを新設し防災MAPに🔥レイヤー追加 1.1時間",
+          "category": "実装",
+          "outputs": ["site/admin/agents-worklog.json", "site/admin/changelog.json", "site/inzai-disaster-map/app.js", "site/inzai-disaster-map/index.html", "site/inzai-disaster-map/styles.css", "site/inzai-disaster-map/fire-incidents.json", "scripts/fire_mail_watch.py", "scripts/register_fire_mail_watch.ps1", "scripts/run_fire_mail_watch.vbs"],
+          "hours": 1.1,
+          "partnerApproved": true,
+          "note": "前半：見張りの声（県資料の食い違い）を受けて10/9 14時版PDFと突き合わせ（agents-worklog.json のみ更新）。後半：事業主依頼で印西地区消防組合の「災害案内メール配信サービス」をCBI公式メール（communitybankinzai@gmail.com、空メール登録）に登録し、手元のPythonスクリプト（30分ごとWindowsタスク「CBI-消防情報見張り」）がGAS Web API経由で新着メールを確認、本文に「火災」を含むものだけ住所→座標変換してfire-incidents.jsonへ反映。防災MAPに新レイヤー「🔥 消防情報（火災・メール配信）」（既定OFF）を追加。鎮火の続報メールの有無は未確認のため、仮6時間のタイムアウトで自動解除する設計にした（実例が貯まったら見直し。plans登録済み）。session: 62520fb0-bc13-4b3e-a1c2-cd52f9df33a8 / output: 110,567 / cost: $23.26"
+        },
+        {
           "date": "2026-10-09",
           "title": "北印旛沼の決壊の現状調査（開口部は塞がっている）と、決壊層を過去の記録として既定OFFに・吹き出しに復旧の状況を追加、台風25号ボタン・期間で自動表示 0.5時間",
           "category": "調査",
@@ -8480,6 +8489,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🔥 消防情報メール見張りのタイムアウト時間（仮6時間）を、実例を見て見直す",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "印西地区消防組合の災害案内メール配信サービスで、実際の火災とその鎮火の続報メールが1件以上届くこと（2026-10-11時点で続報の有無・文言とも未確認）",
+          "note": "scripts/fire_mail_watch.py の FALLBACK_HOURS。続報が来る場合は住所文字列の一致で解除する作りにしてあるが、実際の文言（住所表記の揺れ等）で一致しない可能性がある。続報が来ない場合はタイムアウト時間を実態に合わせて調整する。CBI公式メールを fire.mail-dpt.jp/inzai/ に登録済み（2026-10-11・空メール登録）。"
+        },
         {
           "due": "未定",
           "title": "💧 県が北印旛沼の水位通知基準を元に戻したら、水位の層の注記と警告の出し方を見直す",

@@ -1486,6 +1486,15 @@ details.layer-group .layer-group-body {
   text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 5px #fff;
 }
 
+/* 🔥 消防情報（火災・メール配信） */
+.fire-mail-mark {
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  line-height: 1;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 4px #fff;
+}
+
 .risk-point {
   width: 22px;
   height: 22px;

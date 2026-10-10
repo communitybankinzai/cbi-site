@@ -1549,6 +1549,9 @@ map.getPane("leveeSimPane").style.zIndex = 437;
 // 決壊地点の✕は試算の面より上（面の下だと押せない）
 map.createPane("leveeBreachMarkPane");
 map.getPane("leveeBreachMarkPane").style.zIndex = 438;
+// 🔥 消防情報（火災・メール配信）。点だけなので冠水の層より上に置く
+map.createPane("fireMailPane");
+map.getPane("fireMailPane").style.zIndex = 456;
 map.createPane("kansuiPane");
 map.getPane("kansuiPane").style.zIndex = 450;
 
@@ -5304,6 +5307,45 @@ async function ensureUnderpassMlitLayer() {
   }
 }
 
+// 🔥 消防情報（火災・メール配信）（2026-10-11追加）
+// 印西地区消防組合の「災害案内メール配信サービス」を CBI 公式メールで受信し、手元の
+// scripts/fire_mail_watch.py が本文に「火災」を含むものだけ読み取って fire-incidents.json に書く。
+// 鎮火の続報が来れば status=cleared、来なければ受信から一定時間でタイムアウト扱いにする（運用で見直し中）。
+// ここでは status="active" のものだけ地図に置く。CBI の受信・判定であり、消防の公式発表そのものではない。
+const fireMailLayer = L.layerGroup();
+let fireMailLoaded = false;
+async function ensureFireMailLayer() {
+  if (fireMailLoaded) return;
+  fireMailLoaded = true;
+  try {
+    const res = await fetch("fire-incidents.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`fire-incidents.json HTTP ${res.status}`);
+    renderFireMail(await res.json());
+  } catch (error) {
+    fireMailLoaded = false;
+    console.error("消防情報（火災）の読み込みに失敗:", error);
+  }
+}
+
+function renderFireMail(data) {
+  fireMailLayer.clearLayers();
+  (data.incidents || []).forEach(inc => {
+    if (inc.status !== "active") return;
+    if (!Number.isFinite(inc.lat) || !Number.isFinite(inc.lon)) return;
+    const received = roadClosureTime(inc.receivedAtIso, true);
+    L.marker([inc.lat, inc.lon], {
+      pane: "fireMailPane",
+      icon: L.divIcon({ className: "fire-mail-mark", html: "🔥", iconSize: [26, 26], iconAnchor: [13, 13] }),
+      title: `消防情報：${inc.addressText || ""}`
+    }).bindPopup(
+      `<strong>🔥 消防情報（印西市${escapeHtml(inc.addressText || "")}付近）</strong><br>` +
+      (received ? `受信：${escapeHtml(received)}<br>` : "") +
+      `<span class="reference-warning">CBIが受信・判定したもので、消防の公式な鎮火発表そのものではありません。鎮火の続報が来るか、受信から一定時間たつと自動的に消します。</span><br>` +
+      `<span style="font-size:11px;">出典：${escapeHtml(inc.source || "印西地区消防組合 災害案内メール配信サービス")}（テレガイド 0476-45-5119）</span>`
+    ).addTo(fireMailLayer);
+  });
+}
+
 // 🚃 鉄道の運休・遅れ区間（2026-09-21追加）
 // 市「災害時の公共交通のご案内」は「成田駅～我孫子駅間」のように駅名で来るため、
 // 区間の形（rail-segments.json・OpenStreetMap 由来／pipeline/build_rail_segments.py で生成）と
@@ -5951,6 +5993,11 @@ function toggleOverlay(name, checked) {
   if (name === "pastFlood") {
     if (checked) { ensurePastFloodLayer(); pastFloodLayer.addTo(map); }
     else map.removeLayer(pastFloodLayer);
+    return;
+  }
+  if (name === "fireMail") {
+    if (checked) { ensureFireMailLayer(); fireMailLayer.addTo(map); }
+    else map.removeLayer(fireMailLayer);
     return;
   }
   const layerMap = {
