@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-10-11",
+      "type": "fix",
+      "target": "admin/admin.js",
+      "title": "管理画面「API・クラウド利用状況」の推定残高が、CiDAOのキー分だけを基準額から引いた値になった",
+      "detail": "N's factoryと共有しているクレジットのうち、N's factory側の消費が残高表示に混ざらなくなった。表示は「CiDAO分の推定残高」に変わり、実際の残高はこれより少ないことがある旨の注記を追加。警告メール（cost-alert）も同じ基準に揃えた。",
+      "author": "Claude"
+    },
+    {
+      "date": "2026-10-11",
       "type": "feature",
       "target": "inzai-disaster-map/app.js, index.html, styles.css, fire-incidents.json",
       "title": "印西地区消防組合の消防情報メールを見張り、「火災」と分かるものだけ地図に🔥マークを置けるようになった",
