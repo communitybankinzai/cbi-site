@@ -5372,12 +5372,14 @@ async function ensureFireMailLayer() {
   }
 }
 
-// kind="fire"＝本文に「火災」の語あり／"investigating"＝「調査活動」の語のみ（火災とは断定できない）
+// kind="fire"＝本文に「火災」の語あり／"investigating"＝「調査活動」の語のみ（火災とは断定できない）／"accident"＝「事故」の語あり（火災ではない）
 const FIRE_MAIL_KIND = {
   fire: { emoji: "🔥", cls: "fire-mail-mark", label: "消防情報（火災）",
     warn: "CBIが受信・判定したもので、消防の公式な鎮火発表そのものではありません。鎮火の続報が来るか、受信から一定時間たつと自動的に消します。" },
   investigating: { emoji: "🔍", cls: "fire-mail-mark fire-mail-mark-investigating", label: "消防情報（調査活動・火災の疑い）",
-    warn: "本文に「火災」の語は無く「調査活動」とだけ書かれたものです。火災と確定したものではありません。鎮火・続報が来るか、受信から一定時間たつと自動的に消します。" }
+    warn: "本文に「火災」の語は無く「調査活動」とだけ書かれたものです。火災と確定したものではありません。鎮火・続報が来るか、受信から一定時間たつと自動的に消します。" },
+  accident: { emoji: "💥", cls: "fire-mail-mark fire-mail-mark-accident", label: "消防情報（事故）",
+    warn: "CBIが受信・判定したもので、消防の公式な発表そのものではありません。火災ではありません。続報が来るか、受信から一定時間たつと自動的に消します。" }
 };
 
 function renderFireMail(data) {
