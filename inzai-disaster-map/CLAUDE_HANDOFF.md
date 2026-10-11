@@ -1,7 +1,7 @@
 ## 2026-10-11 🔧 消防情報の自動解除が新着なしの回に動かない不具合を修正
 
 - `scripts/fire_mail_watch.py`（git管理外）が、新着メールが無い回は「新着なし」で `return` しており、**6時間タイムアウト解除（FALLBACK_HOURS）は新着が来た回にしか走らなかった**。戸神台の🔍（7:12発生）が13時を過ぎても残った。`return` を外して必ず解除処理を通す形に直した（`--dry-run` で解除対象が戸神台だけと確認してから実行）。
-- ⚠ **このスクリプトは push しない**。fire-incidents.json を書き換えても、site で commit・push するまで公開サイトには反映されない（自動 push は未実装・事業主判断は A＝作らない）。解除が公開されるのは次に誰かが commit するとき。放置しない・気づいたら commit すること。
+- **自動公開（同日追加・事業主指示）**：`fire_mail_watch.py` の `publish()` が、マークの追加・解除で fire-incidents.json が変わった回に、**この1ファイルだけ**を pathspec 指定でコミットし（他セッションの未コミット変更を巻き込まない）`pull --rebase --autostash`→`push origin main`（前例：`update-chiba-higai.ps1`）。失敗しても見張りは止めず `_fire_mail_watch.log` に「公開に失敗（git …）」と残す。コミットメッセージは「消防情報: 見張りの自動更新（マークの追加・解除）」。試験は更新時刻だけ変えて push まで通した（a92baac）。**Windows タスク経由（wscript→py.exe）での push は、次に実際に変更が出た回（例：事故マークの6時間解除）が初の実地**。ログに「公開に失敗」が出たら git の認証・PATH を疑う。
 
 ## 2026-10-11 📂 右メニューの折り畳み＋⚙ 表示設定（app 末尾の initRightAccordion）
 
