@@ -9448,6 +9448,18 @@ function initRainPanel() {
       panel.hidden = true;
     }
   });
+  // 数値を打つたびに道を描き直す（2026-10-11 事業主指示「リアルタイムに道の描画」）。
+  // 打鍵ごとに全線を描き直すと重いので 200ms まとめる。パネルは閉じない（「この雨量で見る」は閉じる確定ボタンのまま）
+  let rainInputTimer = null;
+  panel.addEventListener("input", event => {
+    if (event.target.id !== "rain-min-input") return;
+    clearTimeout(rainInputTimer);
+    rainInputTimer = setTimeout(() => {
+      const value = Number(event.target.value);
+      rainAmountFilter.min = event.target.value !== "" && Number.isFinite(value) && value > 0 ? value : null;
+      applyRainFilter();
+    }, 200);
+  });
   document.addEventListener("click", event => {
     if (panel.hidden) return;
     if (event.target.closest("#rain-panel") || event.target.closest("#legend-rain-amount")) return;
