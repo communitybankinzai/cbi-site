@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-10-12",
+          "title": "CiDAO 災害情報の通知機能（希望者のみ・ベル＋Webプッシュ）の設計・実装・本番反映 0.9時間",
+          "category": "実装",
+          "outputs": ["cidao/src/lib/disaster-notify.ts", "cidao/src/lib/disaster-notify-categories.ts", "cidao/src/lib/notify.ts", "cidao/src/lib/disaster-timeline.ts", "cidao/src/lib/disaster-road-closures.ts", "cidao/src/lib/disaster-sns-road-ai.ts", "cidao/src/app/api/disaster/passed-roads/route.ts", "cidao/src/app/api/disaster/river-level/route.ts", "cidao/src/app/me/edit/page.tsx", "cidao/src/app/me/edit/_components/DisasterNotifySettings.tsx", "cidao/src/app/me/actions.ts", "cidao/supabase/migrations/20261012080000_notifications_disaster_kind.sql", "cidao/worklog.md", "cidao/2026-10-12_災害情報の通知機能（希望者のみ・ベルとプッシュ）.md"],
+          "hours": 0.9,
+          "partnerApproved": true,
+          "note": "事業主の3択回答に沿って実装（対象＝避難情報・警報・水位・通行止め・通れない冠水道路、きっかけ＝既存巡回に相乗り、設定＝/me/edit）。停電は東電の了承条件で対象外。tsc・eslint・全テスト556件・本番ビルド・API疎通まで確認。受信の実地確認は未。本セッション合計 output: 123,017 / cost: $27.69"
+        },
+        {
           "date": "2026-10-11",
           "title": "防災MAP右メニューの折り畳み化＋表示設定（常時展開・見たいもの連動）の実装と動作検証・消防情報の自動解除と自動公開の修正 0.8時間",
           "category": "実装",
@@ -8498,6 +8507,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-10-14",
+          "title": "🔔 災害情報の通知を、事業主自身がONにして実際に届くか確認する（ベル・プッシュ）",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-10-12 に本番へ反映済みだが、希望した会員が0人のため受信の実地確認ができていない。マイメニュー編集（/me/edit）で「災害情報の通知を受け取る」をONにし、プッシュ通知を許可したうえで、次に通行止め・警報などが出たときにベルと端末通知が来るか見る。確認用に今すぐ試す方法が要るなら、Claude に『災害通知の試験送信』を依頼（自分宛のみ）。見張る点：通れない道の通知が10分ごとに出すぎないか、通知の文面が長すぎないか。"
+        },
+        {
+          "due": "未定",
+          "title": "🌊 水位の災害通知を、地図が開かれていなくても出せるようにするか判断する",
+          "category": "保守",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "水位は千葉県の利用条件が未確認のため定期取得をしていない。県に定期取得の可否を確認できる、または別の定期取得の仕組みを使えると決まれば進められる",
+          "note": "いまの水位通知は、防災MAPが開かれて水位を取得したときだけ判定する。夜間に誰も開いていなければ遅れる。停電（東電の条件）とみんつくの冠水投稿（規約）も、同じ理由で通知対象外。"
+        },
         {
           "due": "2026-10-14",
           "title": "📂 防災MAPの右・左メニュー折り畳み（常時展開＝警報・注意報、見たいもの連動）を実機スマホで確認する",
