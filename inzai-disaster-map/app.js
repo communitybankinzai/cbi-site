@@ -10472,6 +10472,8 @@ function initPassedRoadRecorder() {
     ensurePassedRoadsOverlayOn();
     const group = document.getElementById("passed-roads-list-wrap")?.closest("details.layer-group");
     if (group) group.open = true;
+    // 畳んでいるレイヤー欄も開いてから移動する（2026-10-11 事業主指示）
+    expandRightSection(document.getElementById("passed-roads-list-wrap"));
     document.getElementById("passed-roads-list-wrap")?.scrollIntoView({ behavior: "smooth", block: "center" });
   });
   // 長押し（スマホ）／右クリック（PC）は Leaflet の contextmenu イベントとして届く
