@@ -3156,11 +3156,14 @@ function openRightForPreset(name) {
 // ボタンを外したとき、そのボタンが開いた項目を畳む。常時展開・ほかの押下中ボタンが使う項目は残す
 function closeRightForPreset(name) {
   const mine = rightOpenedByPreset[name];
+  delete rightOpenedByPreset[name];
   if (!mine || !mine.size) return;
   const pinned = rightPinned();
   const stillUsed = new Map();   // 項目 → それを使っている押下中の別ボタン
   Object.entries(PRESETS).forEach(([other, preset]) => {
     if (other === name || other === "reset") return;
+    // 利用者が実際に押したボタンだけを数える（開いた直後から押下扱いの「冠水した道」などは含めない）
+    if (!(other in rightOpenedByPreset)) return;
     const boxes = presetBoxes(preset);
     if (!boxes.length || !boxes.every(box => box.checked)) return;
     rightPresetKeys(other).forEach(key => { if (!stillUsed.has(key)) stillUsed.set(key, other); });
@@ -3175,7 +3178,6 @@ function closeRightForPreset(name) {
     }
     setRightSectionOpen(rightSection(key), false);
   });
-  delete rightOpenedByPreset[name];
 }
 
 // 「↺ 最初の表示」：常時展開に設定したものだけ開いた状態へ戻す

@@ -6,7 +6,7 @@
 - **連動**：`applyTogglePreset` の2か所（決め打ちボタンと通常トグルの ON 時）が `openRightForPreset(name)`、`↺ 最初の表示` が `resetRightAccordion()`（常時展開だけ開く）。画面内ジャンプ（`initQuickNav`）と水位の警告帯クリックは `expandRightSection` で畳まれた項目を開いてから移動する。**他にも右パネルの項目へ scrollIntoView する処理を足すときは `expandRightSection` を通すこと**。
 - ⚠ `initRightAccordion()` はファイル末尾の `initInitialOverlays` の中で呼ぶ（PRESETS が const のため、前方で呼ぶと TDZ で初期化が止まる）。
 - **検証（2026-10-11・localhost:8766 `?notiles=1`）**：初期は全部畳む→避難所で timeline・shelter／いまの雨で warning・amedas・river が追加で開く→最初の表示で全部畳む→常時展開チェックで保存・設定の上書きが反映→ジャンプで畳まれた地震が開く→初期化で保存が消える、をすべて確認。コンソールのエラーはローカル由来の CORS（metaverse-presence）のみ。**実機スマホは未確認**。
-- **同日追記（見たいものを外すと畳む）**：`rightOpenedByPreset[name]`＝そのボタンを押す前は畳まれていて、押して開いた項目だけを持ち分に記録。トグルを外したとき（`applyTogglePreset` の OFF 側）に `closeRightForPreset` が畳む。常時展開・ほかの押下中ボタンが使う項目は畳まず、後者はそのボタンへ持ち分を渡す（外す順番を問わず最後に畳まれる）。手で開いた項目・「最初の表示」で記録は消える。決め打ちの off 指定ボタン（通れない道のみ／通れた道のみ）は対象外。
+- **同日追記（見たいものを外すと畳む）**：`rightOpenedByPreset[name]`＝そのボタンを押す前は畳まれていて、押して開いた項目だけを持ち分に記録。トグルを外したとき（`applyTogglePreset` の OFF 側）に `closeRightForPreset` が畳む。常時展開・ほかの押下中ボタンが使う項目は畳まず、後者はそのボタンへ持ち分を渡す（外す順番を問わず最後に畳まれる）。手で開いた項目・「最初の表示」で記録は消える。共有判定の対象は利用者が実際に押したボタンだけ（`rightOpenedByPreset` に記録のあるもの。開いた直後から押下扱いの「冠水した道」は含めない＝含めると避難所を外してもレイヤー欄が残った・本番確認で発見）。決め打ちの off 指定ボタン（通れない道のみ／通れた道のみ）は対象外。
 - **同日追記（左メニュー）**：左パネル5セクション（`data-acc`＝layer／sim／shelterctl／filter／summary）にも同じ折り畳みを適用（CSS は `.right-panel` を `.side-panel` に一般化、`initRightAccordion` は `.workspace` 全体で受ける、設定の一覧に［左］付きで追加）。「見たいもの」のレイヤー系（冠水・浸水・避難所・雨・鉄道・通行止め・土砂）は既定で `layer` も開く（レイヤー欄内の `openGroups` が見えるように）。左の `details.acc`（公式リンク集など）は元から畳み済みで対象外。
 - **同日追記（事業主指示）**：警報・注意報は既定で常時展開（`RIGHT_PINNED_DEFAULT`＝["warning"]）。localStorage が未設定のときだけこの既定、設定画面で外すと `[]` を保存して尊重する（初期化で既定へ戻る）。
 
