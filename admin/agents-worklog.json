@@ -8490,6 +8490,15 @@
       ],
       "plans": [
         {
+          "due": "2026-10-12",
+          "title": "📰 X系公式発表3件（千葉県防災X・印西市長・news forest）の429エラーが、取得間隔を120分に広げて改善したか確認する",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "minIntervalMinutes を120分に広げてから（2026-10-11 12:00頃）、数回ぶんの巡回結果が貯まること",
+          "note": "2026-10-11、事業主から「公式発表タイムラインの新着が反映されない」と指摘を受け調査。disaster_info_sources の3件（千葉県防災X 2026-09-07以降ゼロ件・印西市長 藤代健吾 0件・news forest 0件）がいずれも HTTP 429 で失敗し続けていた。暫定対応としてDBの config.minIntervalMinutes を 30→120 に更新（コードは変更していない）。確認方法: psycopg で disaster_info_sources の last_status・last_error・last_fetched_at を見る、または /api/disaster/source-health の「公式発表の巡回」の前回失敗件数。改善しなければ screenName の仕様変更やVercel側のIPブロックを疑う。"
+        },
+        {
           "due": "未定",
           "title": "🔥 消防情報メール見張りのタイムアウト時間（仮6時間）を、実例を見て見直す",
           "category": "保守",
