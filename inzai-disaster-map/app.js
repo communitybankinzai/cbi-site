@@ -3058,23 +3058,29 @@ const RIGHT_ACC_ITEMS = [
   ["detail", "地点・道路区間詳細"],
   ["photo", "写真確認キュー"],
   ["locq", "場所確認待ち"],
-  ["snslog", "SNS収集履歴"]
+  ["snslog", "SNS収集履歴"],
+  // 左メニュー（2026-10-11 事業主指示「左のメニューも冗長すぎる。畳んで」）
+  ["layer", "［左］レイヤー"],
+  ["sim", "［左］CBI独自シミュレーション"],
+  ["shelterctl", "［左］避難所安全確認"],
+  ["filter", "［左］状況フィルター"],
+  ["summary", "［左］整合サマリー"]
 ];
 // 「見たいもの」ごとの既定（利用者が設定画面で上書きできる）
 const RIGHT_PRESET_DEFAULTS = {
-  kansui: ["damage", "detail"],
-  kansuiOnly: ["damage", "detail"],
-  passedOnly: ["damage", "detail"],
+  kansui: ["layer", "damage", "detail"],
+  kansuiOnly: ["layer", "damage", "detail"],
+  passedOnly: ["layer", "damage", "detail"],
   links: [],
-  flood: ["warning", "river"],
-  shelter: ["shelter", "timeline"],
-  rain: ["warning", "amedas", "river"],
-  rail: ["timeline"],
-  closures: ["timeline"],
+  flood: ["layer", "warning", "river"],
+  shelter: ["layer", "shelter", "timeline"],
+  rain: ["layer", "warning", "amedas", "river"],
+  rail: ["layer", "timeline"],
+  closures: ["layer", "timeline"],
   teiden: ["timeline"],
   fireMail: ["timeline"],
   quake: ["quake", "warning"],
-  landslide: ["warning", "timeline"]
+  landslide: ["layer", "warning", "timeline"]
 };
 const RIGHT_PINNED_KEY = "cbi-disaster-right-pinned-v1";
 const RIGHT_PRESET_KEY = "cbi-disaster-right-preset-v1";
@@ -3117,7 +3123,7 @@ function rightPresetKeys(name) {
 }
 
 function rightSection(key) {
-  return document.querySelector(`.right-panel .panel-section[data-acc="${key}"]`);
+  return document.querySelector(`.side-panel .panel-section[data-acc="${key}"]`);
 }
 
 function setRightSectionOpen(section, open) {
@@ -3128,7 +3134,7 @@ function setRightSectionOpen(section, open) {
 
 // 外から（ジャンプ・警告帯のクリックなど）その場所を見せたいとき、畳まれていれば開く
 function expandRightSection(target) {
-  const section = target?.closest?.(".right-panel .panel-section[data-acc]");
+  const section = target?.closest?.(".side-panel .panel-section[data-acc]");
   if (section) setRightSectionOpen(section, true);
 }
 
@@ -3171,17 +3177,17 @@ function renderRightSettings() {
 }
 
 function initRightAccordion() {
-  const panel = document.querySelector(".right-panel");
+  const panel = document.querySelector(".workspace");
   if (!panel) return;
-  // 見出し（h2）を押して開閉。更新ボタンなど見出し行の中のほかのボタンには反応しない
-  panel.querySelectorAll(".panel-section[data-acc]").forEach(section => {
+  // 見出し（h2）を押して開閉。更新ボタンなど見出し行の中のほかのボタンには反応しない（左右の両パネル）
+  panel.querySelectorAll(".side-panel .panel-section[data-acc]").forEach(section => {
     const head = section.querySelector("h2");
     if (!head) return;
     head.setAttribute("role", "button");
     head.setAttribute("tabindex", "0");
   });
   const toggle = (event) => {
-    const head = event.target.closest?.(".panel-section[data-acc] h2");
+    const head = event.target.closest?.(".side-panel .panel-section[data-acc] h2");
     if (!head) return;
     if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
     if (event.type === "keydown") event.preventDefault();

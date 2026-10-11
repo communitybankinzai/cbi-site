@@ -92,7 +92,7 @@
 
       <main class="workspace">
         <aside class="side-panel left-panel" aria-label="レイヤーとフィルター">
-          <section class="panel-section" id="layer-panel">
+          <section class="panel-section" id="layer-panel" data-acc="layer">
             <div class="section-title">
               <h2>レイヤー</h2>
               <button class="text-button" id="reset-view-button" type="button">印西市全域</button>
@@ -289,7 +289,7 @@
           </section>
 
 
-          <section class="panel-section cbi-simulation" id="cbi-simulation-panel">
+          <section class="panel-section cbi-simulation" id="cbi-simulation-panel" data-acc="sim">
             <h2>CBI独自シミュレーション</h2>
             <div class="callout warn">
               <span class="ico">⚠</span>
@@ -321,7 +321,7 @@
             </details>
           </section>
 
-          <section class="panel-section shelter-control-panel">
+          <section class="panel-section shelter-control-panel" data-acc="shelterctl">
             <div class="section-title">
               <h2>避難所安全確認</h2>
               <button class="text-button" id="show-shelter-flood-button" type="button">浸水想定を重ねる</button>
@@ -355,7 +355,7 @@
             <p class="shelter-control-note">公式の洪水・内水想定と、避難所データの災害別対応可否を2Dで照合します。流体計算による浸水シミュレーションではありません。</p>
           </section>
 
-          <section class="panel-section">
+          <section class="panel-section" data-acc="filter">
             <div class="section-title">
               <h2>状況フィルター</h2>
               <button class="text-button" id="clear-filters-button" type="button">解除</button>
@@ -395,7 +395,7 @@
             </label>
           </section>
 
-          <section class="panel-section">
+          <section class="panel-section" data-acc="summary">
             <h2>整合サマリー</h2>
             <div class="stat-grid" id="summary-stats"></div>
             <div class="legend">
@@ -901,7 +901,7 @@
 
         <aside class="side-panel right-panel" aria-label="被害一覧と詳細">
           <details class="right-settings" id="right-settings">
-            <summary>⚙ 表示設定（右メニューの開閉）</summary>
+            <summary>⚙ 表示設定（メニューの開閉）</summary>
             <div class="right-settings-body" id="right-settings-body"></div>
           </details>
 

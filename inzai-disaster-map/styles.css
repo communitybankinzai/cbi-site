@@ -446,36 +446,36 @@ input[type="checkbox"] {
 
 /* 右メニューの折り畳み（2026-10-11 事業主指示）。見出し（h2）を押して開閉する。
    折り畳み中は見出し行（.section-title か h2）だけ残す。中身の DOM は残すので描画処理には影響しない */
-.right-panel .panel-section[data-acc] h2 {
+.side-panel .panel-section[data-acc] h2 {
   cursor: pointer;
   user-select: none;
 }
 
-.right-panel .panel-section[data-acc] h2::before {
+.side-panel .panel-section[data-acc] h2::before {
   content: "▾";
   display: inline-block;
   width: 1.1em;
   color: var(--muted);
 }
 
-.right-panel .panel-section[data-acc].is-collapsed h2::before {
+.side-panel .panel-section[data-acc].is-collapsed h2::before {
   content: "▸";
 }
 
-.right-panel .panel-section[data-acc].is-collapsed > :not(.section-title):not(h2) {
+.side-panel .panel-section[data-acc].is-collapsed > :not(.section-title):not(h2) {
   display: none;
 }
 
-.right-panel .panel-section[data-acc].is-collapsed {
+.side-panel .panel-section[data-acc].is-collapsed {
   padding-top: 8px;
   padding-bottom: 8px;
 }
 
-.right-panel .panel-section[data-acc].is-collapsed > .section-title {
+.side-panel .panel-section[data-acc].is-collapsed > .section-title {
   margin-bottom: 0;
 }
 
-.right-panel .panel-section[data-acc].is-collapsed > h2 {
+.side-panel .panel-section[data-acc].is-collapsed > h2 {
   margin: 0;
 }
 
