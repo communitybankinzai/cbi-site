@@ -3057,18 +3057,20 @@ const PRESETS = {
     focus: "layer-panel"
   },
   // 2026-10-11 事業主指示「通れる道路と通れない道路のボタンを分離したい」。上の kansui（両方まとめて）はそのまま残し、
-  // 片方だけ見たいときのための個別ボタンを追加。kansui 単体がこの地図の冠水の投稿（＝通れない道の実績）
+  // 片方だけ見たいときのための個別ボタンを追加。kansui 単体がこの地図の冠水の投稿（＝通れない道の実績）。
+  // off を指定しているのでトグルではなく「押すたびに on を必ずON・off を必ずOFF」の決め打ちボタンになる
+  // （上の kansui ボタンが常に両方ONにするため、トグルのままだと keep 計算で OFF が無効化されてしまう）
   kansuiOnly: {
     label: "冠水した道（通れない道）のみ",
     on: ["boundary", "kansui"],
-    openGroups: ["🚗"],
-    focus: "layer-panel"
+    off: ["passedRoads"],
+    openGroups: ["🚗"]
   },
   passedOnly: {
     label: "通れた道のみ",
     on: ["boundary", "passedRoads"],
-    openGroups: ["🚗"],
-    focus: "layer-panel"
+    off: ["kansui"],
+    openGroups: ["🚗"]
   },
   links: {
     label: "公式リンク集",
@@ -3168,7 +3170,10 @@ function syncTogglePresets() {
   Object.entries(PRESETS).forEach(([name, preset]) => {
     if (name === "reset") return;
     const boxes = presetBoxes(preset);
-    const allOn = boxes.length > 0 && boxes.every(box => box.checked);
+    const offBoxes = (preset.off || [])
+      .map(key => document.querySelector(`input[data-overlay="${key}"]`))
+      .filter(Boolean);
+    const allOn = boxes.length > 0 && boxes.every(box => box.checked) && offBoxes.every(box => !box.checked);
     const button = document.querySelector(`.preset-btn[data-preset="${name}"]`);
     button?.classList.toggle("is-current", allOn);
     button?.setAttribute("aria-pressed", String(allOn));
@@ -3176,6 +3181,27 @@ function syncTogglePresets() {
 }
 
 function applyTogglePreset(name, preset) {
+  // off 指定があるボタン（例：通れない道のみ／通れた道のみ）はトグルにしない。
+  // 「冠水した道・通れた道」ボタンが両方 ON のままだと、トグルの keep 計算でこちらの OFF が無効化されるため、
+  // 押すたびに on を必ず ON・off を必ず OFF にする「状態を決め打ちする」ボタンにする（2026-10-11追加）
+  if (preset.off) {
+    (preset.on || []).forEach(key => {
+      const box = document.querySelector(`input[data-overlay="${key}"]`);
+      if (box && !box.checked) box.click();
+    });
+    preset.off.forEach(key => {
+      const box = document.querySelector(`input[data-overlay="${key}"]`);
+      if (box && box.checked) box.click();
+    });
+    if (typeof preset.onApply === "function") preset.onApply();
+    document.querySelectorAll("details.layer-group").forEach(group => {
+      const head = group.querySelector("summary")?.textContent || "";
+      if ((preset.openGroups || []).some(mark => head.includes(mark))) group.open = true;
+    });
+    syncTogglePresets();
+    syncMapLegend();
+    return;
+  }
   const boxes = presetBoxes(preset);
   // 1つでも OFF なら全部 ON に、全部 ON なら外す。層を持たないボタン（公式リンク集）は開くだけ
   const turnOn = !boxes.length || boxes.some(box => !box.checked);
