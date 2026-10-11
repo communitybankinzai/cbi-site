@@ -3138,12 +3138,49 @@ function expandRightSection(target) {
   if (section) setRightSectionOpen(section, true);
 }
 
+// 「見たいもの」が開いた項目（そのボタンを押す前は畳まれていたものだけ）。外したときに畳む対象
+const rightOpenedByPreset = {};
+
 function openRightForPreset(name) {
-  rightPresetKeys(name).forEach(key => setRightSectionOpen(rightSection(key), true));
+  const opened = new Set(rightOpenedByPreset[name] || []);
+  rightPresetKeys(name).forEach(key => {
+    const section = rightSection(key);
+    if (!section) return;
+    // もともと開いていた項目（常時展開・手で開いた・ほかのボタンが開いた）は、このボタンの持ち分にしない
+    if (section.classList.contains("is-collapsed")) opened.add(key);
+    setRightSectionOpen(section, true);
+  });
+  rightOpenedByPreset[name] = opened;
+}
+
+// ボタンを外したとき、そのボタンが開いた項目を畳む。常時展開・ほかの押下中ボタンが使う項目は残す
+function closeRightForPreset(name) {
+  const mine = rightOpenedByPreset[name];
+  if (!mine || !mine.size) return;
+  const pinned = rightPinned();
+  const stillUsed = new Map();   // 項目 → それを使っている押下中の別ボタン
+  Object.entries(PRESETS).forEach(([other, preset]) => {
+    if (other === name || other === "reset") return;
+    const boxes = presetBoxes(preset);
+    if (!boxes.length || !boxes.every(box => box.checked)) return;
+    rightPresetKeys(other).forEach(key => { if (!stillUsed.has(key)) stillUsed.set(key, other); });
+  });
+  mine.forEach(key => {
+    if (pinned.includes(key)) return;
+    if (stillUsed.has(key)) {
+      // 別の押下中ボタンが使うので開いたまま残し、そのボタンが外されたときに畳めるよう持ち分を渡す
+      const heir = stillUsed.get(key);
+      (rightOpenedByPreset[heir] = rightOpenedByPreset[heir] || new Set()).add(key);
+      return;
+    }
+    setRightSectionOpen(rightSection(key), false);
+  });
+  delete rightOpenedByPreset[name];
 }
 
 // 「↺ 最初の表示」：常時展開に設定したものだけ開いた状態へ戻す
 function resetRightAccordion() {
+  Object.keys(rightOpenedByPreset).forEach(key => delete rightOpenedByPreset[key]);
   const pinned = rightPinned();
   rightKeys().forEach(key => setRightSectionOpen(rightSection(key), pinned.includes(key)));
 }
@@ -3403,6 +3440,7 @@ function applyTogglePreset(name, preset) {
       if (otherBoxes.length && otherBoxes.every(box => box.checked)) presetLayers(p).forEach(key => keep.add(key));
     });
     boxes.forEach(box => { if (box.checked && !keep.has(box.dataset.overlay)) box.click(); });
+    closeRightForPreset(name);   // このボタンが開いた右・左メニューの項目を畳む（2026-10-11 事業主指示）
   }
   if (turnOn) {
     // 関係するグループを開く（ほかのグループは閉じない）

@@ -23,7 +23,7 @@
           "outputs": ["site/inzai-disaster-map/app.js", "site/inzai-disaster-map/index.html", "site/inzai-disaster-map/styles.css", "site/admin/changelog.json", "site/admin/agents-worklog.json", "site/inzai-disaster-map/CLAUDE_HANDOFF.md"],
           "hours": 0.3,
           "partnerApproved": true,
-          "note": "同日追記：警報・注意報の常時展開、左メニュー5項目の折り畳み化も実施。事業主の3択回答（設定は右メニュー上部・既定は当方で決め上書き可・追加で開く）に沿って実装。実ブラウザで初期状態・見たいもの連動・常時展開・上書き・ジャンプ・初期化を確認。session: a798282c-e973-4f9e-a2af-c02b22b970db / output: 25,073 / cost: $5.29"
+          "note": "同日追記：「見たいもの」を外したとき開いた項目を畳む処理、警報・注意報の常時展開、左メニュー5項目の折り畳み化も実施。事業主の3択回答（設定は右メニュー上部・既定は当方で決め上書き可・追加で開く）に沿って実装。実ブラウザで初期状態・見たいもの連動・常時展開・上書き・ジャンプ・初期化を確認。session: a798282c-e973-4f9e-a2af-c02b22b970db / output: 25,073 / cost: $5.29"
         },
         {
           "date": "2026-10-11",
