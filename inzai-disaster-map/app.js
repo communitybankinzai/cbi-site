@@ -3056,6 +3056,20 @@ const PRESETS = {
     openGroups: ["🚗"],
     focus: "layer-panel"
   },
+  // 2026-10-11 事業主指示「通れる道路と通れない道路のボタンを分離したい」。上の kansui（両方まとめて）はそのまま残し、
+  // 片方だけ見たいときのための個別ボタンを追加。kansui 単体がこの地図の冠水の投稿（＝通れない道の実績）
+  kansuiOnly: {
+    label: "冠水した道（通れない道）のみ",
+    on: ["boundary", "kansui"],
+    openGroups: ["🚗"],
+    focus: "layer-panel"
+  },
+  passedOnly: {
+    label: "通れた道のみ",
+    on: ["boundary", "passedRoads"],
+    openGroups: ["🚗"],
+    focus: "layer-panel"
+  },
   links: {
     label: "公式リンク集",
     // レイヤーではなく左パネルの2つのアコーディオンを開いて見せる。
