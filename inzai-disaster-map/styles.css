@@ -444,6 +444,96 @@ input[type="checkbox"] {
   margin-bottom: 10px;
 }
 
+/* 右メニューの折り畳み（2026-10-11 事業主指示）。見出し（h2）を押して開閉する。
+   折り畳み中は見出し行（.section-title か h2）だけ残す。中身の DOM は残すので描画処理には影響しない */
+.right-panel .panel-section[data-acc] h2 {
+  cursor: pointer;
+  user-select: none;
+}
+
+.right-panel .panel-section[data-acc] h2::before {
+  content: "▾";
+  display: inline-block;
+  width: 1.1em;
+  color: var(--muted);
+}
+
+.right-panel .panel-section[data-acc].is-collapsed h2::before {
+  content: "▸";
+}
+
+.right-panel .panel-section[data-acc].is-collapsed > :not(.section-title):not(h2) {
+  display: none;
+}
+
+.right-panel .panel-section[data-acc].is-collapsed {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.right-panel .panel-section[data-acc].is-collapsed > .section-title {
+  margin-bottom: 0;
+}
+
+.right-panel .panel-section[data-acc].is-collapsed > h2 {
+  margin: 0;
+}
+
+.right-settings {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.right-settings > summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.right-settings-body {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.right-settings-body h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.right-settings-body .rs-note {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.right-settings-body .rs-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 4px 8px;
+}
+
+.right-settings-body .rs-checks label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: inherit;
+  font-size: 13px;
+}
+
+.right-settings-body details.rs-preset {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.right-settings-body details.rs-preset > summary {
+  cursor: pointer;
+}
+
 .select-label,
 .range-label,
 .modal label {

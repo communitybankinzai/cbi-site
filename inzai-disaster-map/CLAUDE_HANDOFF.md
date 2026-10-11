@@ -1,3 +1,13 @@
+## 2026-10-11 📂 右メニューの折り畳み＋⚙ 表示設定（app 末尾の initRightAccordion）
+
+- **経緯**：事業主「右メニューは折り畳みを基本に、設定画面で常時展開を指定できるように。見たいものボタンで展開すべき情報をまとめて設定する機能も」。3択の回答：設定は右メニュー先頭の ⚙ ／組み合わせは当方が既定を決め利用者が上書き可／「見たいもの」は追加で開く（既存は閉じない）。
+- **作り**：index.html の右パネル12セクションに `data-acc`（warning／amedas／river／timeline／shelter／sns／quake／damage／detail／photo／locq／snslog）。見出し（h2）を押して `.is-collapsed` を切り替える（styles.css 末尾近くの「右メニューの折り畳み」。畳むと `.section-title`／h2 以外を `display:none`＝DOM は残るので描画処理には影響なし）。設定は右パネル先頭の `#right-settings`（中身は `renderRightSettings` が生成）。
+- **保存**：localStorage `cbi-disaster-right-pinned-v1`（常時展開のキー配列）／`cbi-disaster-right-preset-v1`（`{プリセット名:[キー…]}`）。「設定を初期値に戻す」で両方消す。既定は `RIGHT_PRESET_DEFAULTS`（PRESETS の名前と対応。**新しい「見たいもの」を足したらここにも足す**。無いと開くセクションなし＝設定画面にも自動で出る）。
+- **連動**：`applyTogglePreset` の2か所（決め打ちボタンと通常トグルの ON 時）が `openRightForPreset(name)`、`↺ 最初の表示` が `resetRightAccordion()`（常時展開だけ開く）。画面内ジャンプ（`initQuickNav`）と水位の警告帯クリックは `expandRightSection` で畳まれた項目を開いてから移動する。**他にも右パネルの項目へ scrollIntoView する処理を足すときは `expandRightSection` を通すこと**。
+- ⚠ `initRightAccordion()` はファイル末尾の `initInitialOverlays` の中で呼ぶ（PRESETS が const のため、前方で呼ぶと TDZ で初期化が止まる）。
+- **検証（2026-10-11・localhost:8766 `?notiles=1`）**：初期は全部畳む→避難所で timeline・shelter／いまの雨で warning・amedas・river が追加で開く→最初の表示で全部畳む→常時展開チェックで保存・設定の上書きが反映→ジャンプで畳まれた地震が開く→初期化で保存が消える、をすべて確認。コンソールのエラーはローカル由来の CORS（metaverse-presence）のみ。**実機スマホは未確認**。
+- **未対応（提案）**：警報・注意報は災害時に最重要なので、既定で常時展開にするかは事業主の判断待ち（いまは全部畳む既定）。
+
 ## 2026-10-11 🔥 消防情報（火災・メール配信）を見張り・地図に表示
 
 - **経緯**：事業主「印西市の消防情報を定期モニタし、消火活動が確認できる期間はその場所に🔥のマークを置く仕組みを作って」。調査の結果、印西地区消防組合の公式サイトにリアルタイムの火災情報ページは無く、事業主が実際に受信していた「印西消防 災害案内メール配信サービス」（https://fire.mail-dpt.jp/inzai/ 、配信元 inzai-fire@info.mail-dpt.jp）が唯一の公式情報源だった。テレガイド（0476-45-5119）は音声のみでWeb化できない。

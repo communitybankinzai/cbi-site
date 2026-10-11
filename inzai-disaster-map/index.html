@@ -900,7 +900,12 @@
         </section>
 
         <aside class="side-panel right-panel" aria-label="被害一覧と詳細">
-          <section class="panel-section weather-warning-panel" id="weather-warning-panel">
+          <details class="right-settings" id="right-settings">
+            <summary>⚙ 表示設定（右メニューの開閉）</summary>
+            <div class="right-settings-body" id="right-settings-body"></div>
+          </details>
+
+          <section class="panel-section weather-warning-panel" id="weather-warning-panel" data-acc="warning">
             <div class="section-title">
               <h2>印西市 警報・注意報</h2>
               <button class="text-button" id="refresh-weather-warning-button" type="button">更新</button>
@@ -911,7 +916,7 @@
             <div id="quake-brief" class="quake-brief" hidden></div>
           </section>
 
-          <section class="panel-section amedas-panel" id="amedas-panel">
+          <section class="panel-section amedas-panel" id="amedas-panel" data-acc="amedas">
             <div class="section-title">
               <h2>🌧 いまの雨量（アメダス実況）</h2>
               <button class="text-button" id="refresh-amedas-button" type="button">更新</button>
@@ -922,7 +927,7 @@
 
           <!-- 2026-09-21: 手賀沼は千葉県のページをCiDAOが読み取って表示。利根川は国の規約上
                定期取得できないため、基準値と公式ページへのリンクだけ（CLAUDE_HANDOFF.md 参照） -->
-          <section class="panel-section river-panel" id="river-panel">
+          <section class="panel-section river-panel" id="river-panel" data-acc="river">
             <div class="section-title">
               <h2>🌊 手賀沼・印旛沼・利根川の水位</h2>
               <button class="text-button" id="refresh-river-button" type="button">更新</button>
@@ -955,7 +960,7 @@
             </div>
           </section>
 
-          <section class="panel-section timeline-panel" id="timeline-panel">
+          <section class="panel-section timeline-panel" id="timeline-panel" data-acc="timeline">
             <div class="section-title">
               <div>
                 <h2>📰 公式発表・市長発信</h2>
@@ -984,7 +989,7 @@
             </div>
           </section>
 
-          <section class="panel-section shelter-status-panel" id="shelter-status-panel">
+          <section class="panel-section shelter-status-panel" id="shelter-status-panel" data-acc="shelter">
             <div class="section-title">
               <div>
                 <h2>避難所 開設・安全確認</h2>
@@ -1015,7 +1020,7 @@
             </details>
           </section>
 
-          <section class="panel-section sns-monitor-panel" id="sns-monitor-panel">
+          <section class="panel-section sns-monitor-panel" id="sns-monitor-panel" data-acc="sns">
             <div class="section-title">
               <div>
                 <h2>SNS新着巡回 <span class="new-count" id="sns-monitor-new-count" hidden>0</span></h2>
@@ -1042,7 +1047,7 @@
             <div class="sns-monitor-list" id="sns-monitor-list"></div>
           </section>
 
-          <section class="panel-section earthquake-summary" id="earthquake-panel">
+          <section class="panel-section earthquake-summary" id="earthquake-panel" data-acc="quake">
             <div class="section-title">
               <h2>気象庁 地震情報</h2>
               <button class="text-button" id="refresh-earthquake-button" type="button">更新</button>
@@ -1050,7 +1055,7 @@
             <div id="earthquake-summary-content" class="detail-empty">最新情報を確認中です。</div>
           </section>
 
-          <section class="panel-section">
+          <section class="panel-section" data-acc="damage">
             <div class="section-title">
               <h2>被害・確認候補</h2>
               <button class="text-button" id="load-demo-button" type="button">サンプル表示</button>
@@ -1058,22 +1063,22 @@
             <div class="record-list" id="record-list"></div>
           </section>
 
-          <section class="panel-section detail-section">
+          <section class="panel-section detail-section" data-acc="detail">
             <h2>地点・道路区間詳細</h2>
             <div id="detail-panel" class="detail-empty">地図または一覧から地点を選択してください。</div>
           </section>
 
-          <section class="panel-section">
+          <section class="panel-section" data-acc="photo">
             <h2>写真確認キュー</h2>
             <div class="photo-queue" id="photo-queue"></div>
           </section>
 
-          <section class="panel-section">
+          <section class="panel-section" data-acc="locq">
             <h2>場所確認待ち</h2>
             <div class="location-queue" id="location-queue"></div>
           </section>
 
-          <section class="panel-section">
+          <section class="panel-section" data-acc="snslog">
             <div class="section-title">
               <h2>SNS収集履歴</h2>
               <button class="text-button" id="clear-search-log-button" type="button">履歴消去</button>

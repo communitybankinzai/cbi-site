@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-10-11",
+          "title": "防災MAP右メニューの折り畳み化＋表示設定（常時展開・見たいもの連動）の実装と動作検証 0.3時間",
+          "category": "実装",
+          "outputs": ["site/inzai-disaster-map/app.js", "site/inzai-disaster-map/index.html", "site/inzai-disaster-map/styles.css", "site/admin/changelog.json", "site/admin/agents-worklog.json", "site/inzai-disaster-map/CLAUDE_HANDOFF.md"],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "事業主の3択回答（設定は右メニュー上部・既定は当方で決め上書き可・追加で開く）に沿って実装。実ブラウザで初期状態・見たいもの連動・常時展開・上書き・ジャンプ・初期化を確認。session: a798282c-e973-4f9e-a2af-c02b22b970db / output: 25,073 / cost: $5.29"
+        },
+        {
+          "date": "2026-10-11",
           "title": "県の復旧見込みPDF食い違いの再確認＋印西地区消防組合の消防情報メール見張りを新設し防災MAPに🔥レイヤー追加 1.1時間",
           "category": "実装",
           "outputs": ["site/admin/agents-worklog.json", "site/admin/changelog.json", "site/inzai-disaster-map/app.js", "site/inzai-disaster-map/index.html", "site/inzai-disaster-map/styles.css", "site/inzai-disaster-map/fire-incidents.json", "scripts/fire_mail_watch.py", "scripts/register_fire_mail_watch.ps1", "scripts/run_fire_mail_watch.vbs"],

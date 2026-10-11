@@ -2880,6 +2880,7 @@ function initQuickNav() {
     if (!button) return;
     const target = document.getElementById(button.dataset.jump);
     if (!target) return;
+    expandRightSection(target);   // 畳まれている右メニューの項目は開いてから移動する
     // バー自体が上部に固定されるので、その高さ分だけ余白をとって隠れないようにする
     const offset = nav.getBoundingClientRect().height + 8;
     const top = Math.max(0, target.getBoundingClientRect().top + window.pageYOffset - offset);
@@ -3036,6 +3037,179 @@ function showShelterFloodLayers() {
   renderShelters();
   map.fitBounds(INZAI_BOUNDS);
   document.getElementById("map-status").textContent = "公式の洪水・内水浸水想定と風水害対応避難所を重ねています。";
+}
+
+// ============================================================
+// 右メニューの折り畳み（2026-10-11 事業主指示）
+// 右パネルの各セクションは既定で畳み、見出し（h2）を押して開閉する。⚙ 表示設定で
+// ①常時展開するセクション ②「見たいもの」の各ボタンを押したとき一緒に開くセクション を選べる。
+// 設定は端末の localStorage に保存する。「見たいもの」は開くだけで、すでに開いているものは閉じない。
+// ⚠ PRESETS は後方の const なので、initRightAccordion はファイル末尾から呼ぶ（TDZ 回避）。
+// ============================================================
+const RIGHT_ACC_ITEMS = [
+  ["warning", "警報・注意報"],
+  ["amedas", "いまの雨量"],
+  ["river", "沼・川の水位"],
+  ["timeline", "公式発表・市長発信"],
+  ["shelter", "避難所 開設・安全確認"],
+  ["sns", "SNS新着巡回"],
+  ["quake", "気象庁 地震情報"],
+  ["damage", "被害・確認候補"],
+  ["detail", "地点・道路区間詳細"],
+  ["photo", "写真確認キュー"],
+  ["locq", "場所確認待ち"],
+  ["snslog", "SNS収集履歴"]
+];
+// 「見たいもの」ごとの既定（利用者が設定画面で上書きできる）
+const RIGHT_PRESET_DEFAULTS = {
+  kansui: ["damage", "detail"],
+  kansuiOnly: ["damage", "detail"],
+  passedOnly: ["damage", "detail"],
+  links: [],
+  flood: ["warning", "river"],
+  shelter: ["shelter", "timeline"],
+  rain: ["warning", "amedas", "river"],
+  rail: ["timeline"],
+  closures: ["timeline"],
+  teiden: ["timeline"],
+  fireMail: ["timeline"],
+  quake: ["quake", "warning"],
+  landslide: ["warning", "timeline"]
+};
+const RIGHT_PINNED_KEY = "cbi-disaster-right-pinned-v1";
+const RIGHT_PRESET_KEY = "cbi-disaster-right-preset-v1";
+
+function rightStoreGet(key, fallback) {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function rightStoreSet(key, value) {
+  try {
+    if (value === null) window.localStorage.removeItem(key);
+    else window.localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    // 保存できなくても画面は動く
+  }
+}
+
+function rightKeys() {
+  return RIGHT_ACC_ITEMS.map(item => item[0]);
+}
+
+function rightPinned() {
+  const saved = rightStoreGet(RIGHT_PINNED_KEY, []);
+  return Array.isArray(saved) ? saved.filter(key => rightKeys().includes(key)) : [];
+}
+
+function rightPresetKeys(name) {
+  const saved = rightStoreGet(RIGHT_PRESET_KEY, {});
+  const mine = saved && Array.isArray(saved[name]) ? saved[name] : RIGHT_PRESET_DEFAULTS[name] || [];
+  return mine.filter(key => rightKeys().includes(key));
+}
+
+function rightSection(key) {
+  return document.querySelector(`.right-panel .panel-section[data-acc="${key}"]`);
+}
+
+function setRightSectionOpen(section, open) {
+  if (!section) return;
+  section.classList.toggle("is-collapsed", !open);
+  section.querySelector("h2")?.setAttribute("aria-expanded", String(open));
+}
+
+// 外から（ジャンプ・警告帯のクリックなど）その場所を見せたいとき、畳まれていれば開く
+function expandRightSection(target) {
+  const section = target?.closest?.(".right-panel .panel-section[data-acc]");
+  if (section) setRightSectionOpen(section, true);
+}
+
+function openRightForPreset(name) {
+  rightPresetKeys(name).forEach(key => setRightSectionOpen(rightSection(key), true));
+}
+
+// 「↺ 最初の表示」：常時展開に設定したものだけ開いた状態へ戻す
+function resetRightAccordion() {
+  const pinned = rightPinned();
+  rightKeys().forEach(key => setRightSectionOpen(rightSection(key), pinned.includes(key)));
+}
+
+function renderRightSettings() {
+  const body = document.getElementById("right-settings-body");
+  if (!body) return;
+  const pinned = rightPinned();
+  const checks = (group, selected) => RIGHT_ACC_ITEMS.map(([key, label]) =>
+    `<label><input type="checkbox" data-rs-group="${group}" value="${key}"${selected.includes(key) ? " checked" : ""}>${label}</label>`
+  ).join("");
+  const presetBlocks = Object.entries(PRESETS)
+    .filter(([name]) => name !== "reset")
+    .map(([name, preset]) => `
+      <details class="rs-preset">
+        <summary>${preset.label || name}</summary>
+        <div class="rs-checks">${checks("preset:" + name, rightPresetKeys(name))}</div>
+      </details>`).join("");
+  body.innerHTML = `
+    <div>
+      <h3>常時展開にする項目</h3>
+      <p class="rs-note">チェックした項目は、開いたとき・「最初の表示」のときに必ず開いた状態になります。それ以外は畳んであります。</p>
+      <div class="rs-checks">${checks("pinned", pinned)}</div>
+    </div>
+    <div>
+      <h3>「見たいもの」を押したとき一緒に開く項目</h3>
+      <p class="rs-note">ボタンごとに選べます。すでに開いている項目は閉じません。</p>
+      ${presetBlocks}
+    </div>
+    <div><button type="button" class="text-button" id="right-settings-reset">設定を初期値に戻す</button></div>`;
+}
+
+function initRightAccordion() {
+  const panel = document.querySelector(".right-panel");
+  if (!panel) return;
+  // 見出し（h2）を押して開閉。更新ボタンなど見出し行の中のほかのボタンには反応しない
+  panel.querySelectorAll(".panel-section[data-acc]").forEach(section => {
+    const head = section.querySelector("h2");
+    if (!head) return;
+    head.setAttribute("role", "button");
+    head.setAttribute("tabindex", "0");
+  });
+  const toggle = (event) => {
+    const head = event.target.closest?.(".panel-section[data-acc] h2");
+    if (!head) return;
+    if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+    if (event.type === "keydown") event.preventDefault();
+    const section = head.closest(".panel-section");
+    setRightSectionOpen(section, section.classList.contains("is-collapsed"));
+  };
+  panel.addEventListener("click", toggle);
+  panel.addEventListener("keydown", toggle);
+  panel.addEventListener("change", (event) => {
+    const box = event.target.closest?.("input[data-rs-group]");
+    if (!box) return;
+    const group = box.dataset.rsGroup;
+    const selected = [...panel.querySelectorAll(`input[data-rs-group="${group}"]:checked`)].map(el => el.value);
+    if (group === "pinned") {
+      rightStoreSet(RIGHT_PINNED_KEY, selected);
+      // 常時展開に足したものは、その場でも開く（外したものは次回から畳む）
+      if (box.checked) setRightSectionOpen(rightSection(box.value), true);
+    } else {
+      const saved = rightStoreGet(RIGHT_PRESET_KEY, {}) || {};
+      saved[group.replace(/^preset:/, "")] = selected;
+      rightStoreSet(RIGHT_PRESET_KEY, saved);
+    }
+  });
+  panel.addEventListener("click", (event) => {
+    if (!event.target.closest?.("#right-settings-reset")) return;
+    rightStoreSet(RIGHT_PINNED_KEY, null);
+    rightStoreSet(RIGHT_PRESET_KEY, null);
+    renderRightSettings();
+    resetRightAccordion();
+  });
+  renderRightSettings();
+  resetRightAccordion();
 }
 
 // 用途別ワンタップ切替（2026-09-10追加）。
@@ -3198,6 +3372,7 @@ function applyTogglePreset(name, preset) {
       const head = group.querySelector("summary")?.textContent || "";
       if ((preset.openGroups || []).some(mark => head.includes(mark))) group.open = true;
     });
+    openRightForPreset(name);
     syncTogglePresets();
     syncMapLegend();
     return;
@@ -3229,6 +3404,7 @@ function applyTogglePreset(name, preset) {
       const head = acc.querySelector("summary")?.textContent || "";
       if ((preset.openAcc || []).some(mark => head.includes(mark))) acc.open = true;
     });
+    openRightForPreset(name);
     const panel = document.querySelector(".left-panel");
     if (preset.focus === "acc" && panel) {
       const target = [...document.querySelectorAll(".left-panel > details.acc[open]")]
@@ -3267,6 +3443,7 @@ function applyPreset(name) {
     const head = acc.querySelector("summary")?.textContent || "";
     acc.open = (preset.openAcc || []).some(mark => head.includes(mark));
   });
+  resetRightAccordion();
   // 既定の状態に含まれるボタン（🚗 冠水した道・通れた道）が濃くなる
   document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("is-current"));
   syncTogglePresets();
@@ -6852,7 +7029,9 @@ function handleMapAlertClick(event) {
     mapAlertExpanded = !mapAlertExpanded;
     renderMapAlert();
   } else if (kind === "river") {
-    document.getElementById("river-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const riverPanel = document.getElementById("river-panel");
+    expandRightSection(riverPanel);
+    riverPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
   } else if (kind === "close") {
     mapAlertDismissed = mapAlertSignature();
     renderMapAlert();
@@ -14377,4 +14556,6 @@ document.getElementById("pref-recovery-list")?.addEventListener("click", event =
   // 「見たいもの」は横スクロールの行なので、選んでいるボタンが画面外から始まらないようにする
   // （2026-09-21 実機で、右端の「いまの雨・土砂災害」だけが見えている状態になっていた）
   document.querySelector(".preset-items")?.scrollTo?.({ left: 0 });
+  // 右メニューは既定で畳む（常時展開に設定した項目だけ開く）。PRESETS が宣言済みのここで初期化する
+  initRightAccordion();
 })();
