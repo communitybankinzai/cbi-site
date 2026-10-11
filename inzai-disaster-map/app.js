@@ -3101,9 +3101,13 @@ function rightKeys() {
   return RIGHT_ACC_ITEMS.map(item => item[0]);
 }
 
+// 未設定のときの既定は警報・注意報だけ常時展開（2026-10-11 事業主指示）。設定画面で外すと [] を保存して尊重する
+const RIGHT_PINNED_DEFAULT = ["warning"];
+
 function rightPinned() {
-  const saved = rightStoreGet(RIGHT_PINNED_KEY, []);
-  return Array.isArray(saved) ? saved.filter(key => rightKeys().includes(key)) : [];
+  const saved = rightStoreGet(RIGHT_PINNED_KEY, null);
+  if (!Array.isArray(saved)) return RIGHT_PINNED_DEFAULT.slice();
+  return saved.filter(key => rightKeys().includes(key));
 }
 
 function rightPresetKeys(name) {

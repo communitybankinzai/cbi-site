@@ -6,7 +6,7 @@
 - **連動**：`applyTogglePreset` の2か所（決め打ちボタンと通常トグルの ON 時）が `openRightForPreset(name)`、`↺ 最初の表示` が `resetRightAccordion()`（常時展開だけ開く）。画面内ジャンプ（`initQuickNav`）と水位の警告帯クリックは `expandRightSection` で畳まれた項目を開いてから移動する。**他にも右パネルの項目へ scrollIntoView する処理を足すときは `expandRightSection` を通すこと**。
 - ⚠ `initRightAccordion()` はファイル末尾の `initInitialOverlays` の中で呼ぶ（PRESETS が const のため、前方で呼ぶと TDZ で初期化が止まる）。
 - **検証（2026-10-11・localhost:8766 `?notiles=1`）**：初期は全部畳む→避難所で timeline・shelter／いまの雨で warning・amedas・river が追加で開く→最初の表示で全部畳む→常時展開チェックで保存・設定の上書きが反映→ジャンプで畳まれた地震が開く→初期化で保存が消える、をすべて確認。コンソールのエラーはローカル由来の CORS（metaverse-presence）のみ。**実機スマホは未確認**。
-- **未対応（提案）**：警報・注意報は災害時に最重要なので、既定で常時展開にするかは事業主の判断待ち（いまは全部畳む既定）。
+- **同日追記（事業主指示）**：警報・注意報は既定で常時展開（`RIGHT_PINNED_DEFAULT`＝["warning"]）。localStorage が未設定のときだけこの既定、設定画面で外すと `[]` を保存して尊重する（初期化で既定へ戻る）。
 
 ## 2026-10-11 🔥 消防情報（火災・メール配信）を見張り・地図に表示
 
