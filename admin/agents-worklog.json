@@ -18,12 +18,21 @@
       "actuals": [
         {
           "date": "2026-10-12",
-          "title": "CiDAO 災害情報の通知機能（希望者のみ・ベル＋Webプッシュ）の設計・実装・本番反映 0.9時間",
+          "title": "消防情報に「🚑 救急支援活動」レイヤーと「見たいもの」ボタンを追加（既定OFF・受信から1時間で終結）0.4時間",
+          "category": "実装",
+          "outputs": ["scripts/fire_mail_watch.py（git管理外）", "site/inzai-disaster-map/app.js", "site/inzai-disaster-map/index.html", "site/inzai-disaster-map/styles.css", "site/inzai-disaster-map/fire-incidents.json", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json"],
+          "hours": 0.4,
+          "partnerApproved": true,
+          "note": "事業主の目的＝救急車の稼働状況を見る。終結は事業主決定A（受信から1時間・仮値）。白井市も管轄のため対象に。ローカル・本番で既定OFF／ON／独立／OFFを確認。前段で、消防情報の見張りの早期終了バグ修正と自動公開（commit・push）を実装し19:28に実地確認済み。終結時間の見直しは plans 登録済み。"
+        },
+        {
+          "date": "2026-10-12",
+          "title": "CiDAO 災害情報の通知機能（希望者のみ・ベル＋Webプッシュ）の設計・実装・本番反映（設定をマイページへ移動・試験送信ボタンを含む） 0.5時間",
           "category": "実装",
           "outputs": ["cidao/src/lib/disaster-notify.ts", "cidao/src/lib/disaster-notify-categories.ts", "cidao/src/lib/notify.ts", "cidao/src/lib/disaster-timeline.ts", "cidao/src/lib/disaster-road-closures.ts", "cidao/src/lib/disaster-sns-road-ai.ts", "cidao/src/app/api/disaster/passed-roads/route.ts", "cidao/src/app/api/disaster/river-level/route.ts", "cidao/src/app/me/edit/page.tsx", "cidao/src/app/me/edit/_components/DisasterNotifySettings.tsx", "cidao/src/app/me/actions.ts", "cidao/supabase/migrations/20261012080000_notifications_disaster_kind.sql", "cidao/worklog.md", "cidao/2026-10-12_災害情報の通知機能（希望者のみ・ベルとプッシュ）.md"],
-          "hours": 0.9,
+          "hours": 0.5,
           "partnerApproved": true,
-          "note": "事業主の3択回答に沿って実装（対象＝避難情報・警報・水位・通行止め・通れない冠水道路、きっかけ＝既存巡回に相乗り、設定＝/me/edit）。停電は東電の了承条件で対象外。tsc・eslint・全テスト556件・本番ビルド・API疎通まで確認。受信の実地確認は未。本セッション合計 output: 123,017 / cost: $27.69"
+          "note": "事業主の3択回答に沿って実装（対象＝避難情報・警報・水位・通行止め・通れない冠水道路、きっかけ＝既存巡回に相乗り、設定＝/me/edit）。停電は東電の了承条件で対象外。tsc・eslint・全テスト556件・本番ビルド・API疎通まで確認。受信の実地確認は未。設定は当初 /me/edit に置いたが、事業主指摘で マイページ（プッシュ通知設定の直下）へ移動し、押した時点で保存に変更。session: a798282c-e973-4f9e-a2af-c02b22b970db / output: 167,814 / cost: $44.98（本セッション合計）"
         },
         {
           "date": "2026-10-11",
