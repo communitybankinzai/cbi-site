@@ -1597,6 +1597,16 @@ details.layer-group .layer-group-body {
 }
 
 /* 💥 事故（火災ではない） */
+.fire-mail-mark-ems {
+  font-size: 16px;
+  background: rgba(79, 195, 247, 0.35);
+  border: 2px solid #0288d1;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  box-sizing: border-box;
+}
+
 .fire-mail-mark-accident {
   font-size: 18px;
   background: rgba(255, 213, 79, 0.35);

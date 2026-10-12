@@ -5585,6 +5585,9 @@ async function ensureUnderpassMlitLayer() {
 // 鎮火の続報が来れば status=cleared、来なければ受信から一定時間でタイムアウト扱いにする（運用で見直し中）。
 // ここでは status="active" のものだけ地図に置く。CBI の受信・判定であり、消防の公式発表そのものではない。
 const fireMailLayer = L.layerGroup();
+// 🚑 救急支援活動（2026-10-12・救急車の稼働状況を見る用）。火災などとは別のレイヤーで既定OFF
+const fireEmsLayer = L.layerGroup();
+let fireMailData = null;
 let fireMailLoaded = false;
 async function ensureFireMailLayer() {
   if (fireMailLoaded) return;
@@ -5592,7 +5595,8 @@ async function ensureFireMailLayer() {
   try {
     const res = await fetch("fire-incidents.json", { cache: "no-store" });
     if (!res.ok) throw new Error(`fire-incidents.json HTTP ${res.status}`);
-    renderFireMail(await res.json());
+    fireMailData = await res.json();
+    renderFireMail(fireMailData);
   } catch (error) {
     fireMailLoaded = false;
     console.error("消防情報（火災）の読み込みに失敗:", error);
@@ -5606,14 +5610,24 @@ const FIRE_MAIL_KIND = {
   investigating: { emoji: "🔍", cls: "fire-mail-mark fire-mail-mark-investigating", label: "消防情報（調査活動・火災の疑い）",
     warn: "本文に「火災」の語は無く「調査活動」とだけ書かれたものです。火災と確定したものではありません。鎮火・続報が来るか、受信から一定時間たつと自動的に消します。" },
   accident: { emoji: "💥", cls: "fire-mail-mark fire-mail-mark-accident", label: "消防情報（事故）",
-    warn: "CBIが受信・判定したもので、消防の公式な発表そのものではありません。火災ではありません。続報が来るか、受信から一定時間たつと自動的に消します。" }
+    warn: "CBIが受信・判定したもので、消防の公式な発表そのものではありません。火災ではありません。続報が来るか、受信から一定時間たつと自動的に消します。" },
+  ems: { emoji: "🚑", cls: "fire-mail-mark fire-mail-mark-ems", label: "救急支援活動",
+    warn: "消防車が救急支援活動を行っているという速報です。火災ではありません。CBIが受信・判定したもので、消防の公式な発表そのものではありません。終了を知らせるメールは届かないため、受信から1時間で自動的に消します（実際の活動の終了ではありません）。" }
 };
+// 救急支援活動は終了の知らせが無いので、JSON の更新が遅れても受信から70分を過ぎたら出さない（スクリプトは1時間で終結・巡回は30分間隔）
+const FIRE_EMS_MAX_AGE_MS = 70 * 60 * 1000;
 
 function renderFireMail(data) {
   fireMailLayer.clearLayers();
+  fireEmsLayer.clearLayers();
   (data.incidents || []).forEach(inc => {
     if (inc.status !== "active") return;
     if (!Number.isFinite(inc.lat) || !Number.isFinite(inc.lon)) return;
+    const isEms = inc.kind === "ems";
+    if (isEms) {
+      const at = Date.parse(inc.receivedAtIso || "");
+      if (!Number.isFinite(at) || Date.now() - at > FIRE_EMS_MAX_AGE_MS) return;
+    }
     const k = FIRE_MAIL_KIND[inc.kind] || FIRE_MAIL_KIND.fire;
     const received = roadClosureTime(inc.receivedAtIso, true);
     L.marker([inc.lat, inc.lon], {
@@ -5621,11 +5635,11 @@ function renderFireMail(data) {
       icon: L.divIcon({ className: k.cls, html: k.emoji, iconSize: [26, 26], iconAnchor: [13, 13] }),
       title: `${k.label}：${inc.addressText || ""}`
     }).bindPopup(
-      `<strong>${k.emoji} ${escapeHtml(k.label)}（印西市${escapeHtml(inc.addressText || "")}付近）</strong><br>` +
+      `<strong>${k.emoji} ${escapeHtml(k.label)}（${/^白井市/.test(inc.addressText || "") ? "" : "印西市"}${escapeHtml(inc.addressText || "")}付近）</strong><br>` +
       (received ? `受信：${escapeHtml(received)}<br>` : "") +
       `<span class="reference-warning">${escapeHtml(k.warn)}</span><br>` +
       `<span style="font-size:11px;">出典：${escapeHtml(inc.source || "印西地区消防組合 災害案内メール配信サービス")}（テレガイド 0476-45-5119）</span>`
-    ).addTo(fireMailLayer);
+    ).addTo(isEms ? fireEmsLayer : fireMailLayer);
   });
 }
 
@@ -6281,6 +6295,15 @@ function toggleOverlay(name, checked) {
   if (name === "fireMail") {
     if (checked) { ensureFireMailLayer(); fireMailLayer.addTo(map); }
     else map.removeLayer(fireMailLayer);
+    return;
+  }
+  if (name === "fireEms") {
+    // 🚑 救急支援活動：読み込み済みなら描き直して70分を過ぎたものを外す。初回は読み込み後に描く
+    if (checked) {
+      fireEmsLayer.addTo(map);
+      if (fireMailData) renderFireMail(fireMailData);
+      else ensureFireMailLayer();
+    } else map.removeLayer(fireEmsLayer);
     return;
   }
   const layerMap = {
