@@ -3746,6 +3746,7 @@ body.embed-mode .cbi-home-link {
 
 /* 地図上の記録入口。スマホでもPCでも同じ操作で道路をなぞる。 */
 .quick-record-bar { display: block; position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%); width: min(480px, calc(100% - 24px)); z-index: 900; padding: 10px; border: 1px solid #b9c4d3; border-radius: 14px; background: rgba(255,255,255,.97); box-shadow: 0 2px 10px rgba(0,0,0,.2); }
+.quick-record-bar[hidden] { display: none; } /* 通れた道・通れない道を出していないときは隠す（app.js syncMapLegend・2026-10-16） */
 .quick-record-buttons { display: flex; gap: 8px; }
 .quick-record-btn { flex: 1 1 0; min-height: 46px; padding: 6px 8px; border-radius: 10px; border: 0; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; }
 .quick-record-btn.is-blocked { background: #b8322c; }

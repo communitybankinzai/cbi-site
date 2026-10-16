@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-10-16",
+      "type": "fix",
+      "target": "inzai-disaster-map/app.js, styles.css, index.html",
+      "title": "防災MAPで、通れた道・通れない道を出していないときは、地図下の「通れない道／通れた道を追加」の帯を隠すようにした",
+      "detail": "「見たいもの」で地震や避難所などだけを見ているとき、地図の下の記録の帯（🚫通れない道を追加／🔵通れた道を追加／⛰／📋）が常に出て邪魔だった。凡例の「通れない道」「通れた道」のどちらも出していないときは帯を隠し、どちらかを出すと現れる。レイヤー一覧のチェックや凡例の色ボタンの操作にも連動する（どちらも出していない間は⛰・📋も帯ごと隠れる。道の吹き出しの「⛰ この道の断面図」は引き続き使える）。",
+      "author": "Claude"
+    },
+    {
       "date": "2026-10-12",
       "type": "feature",
       "target": "inzai-disaster-map/app.js, index.html, styles.css, fire-incidents.json",

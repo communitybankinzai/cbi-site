@@ -4032,12 +4032,23 @@ function syncMapLegend() {
   });
   const passedOn = Boolean(document.querySelector('[data-overlay="passedRoads"]')?.checked);
   const kansuiOn = Boolean(document.querySelector('[data-overlay="kansui"]')?.checked);
+  let anyRoadKindOn = false;
   document.querySelectorAll("#map-legend [data-kind]").forEach(chip => {
     // 初期化の早い段階では passedKindFilter にまだ値が無い（後方で代入）ので、そのときは両方表示とみなす
     const own = passedOn && (passedKindFilter?.[chip.dataset.kind] ?? true);
     // 赤（通れない道）は、みんつくの層が出ていれば押された状態にする
-    chip.setAttribute("aria-pressed", String(chip.dataset.kind === "blocked" ? own || kansuiOn : own));
+    const pressed = chip.dataset.kind === "blocked" ? own || kansuiOn : own;
+    if (pressed) anyRoadKindOn = true;
+    chip.setAttribute("aria-pressed", String(pressed));
   });
+  // 地図下の記録の帯（通れない・通れた道を追加）は、通れた道・通れない道のどちらかを出しているときだけ出す
+  // （2026-10-16 事業主指示：「見たいもの」でどちらも選んでいないときは邪魔なので隠す）
+  const quickBar = document.getElementById("quick-record-bar");
+  if (quickBar && quickBar.hidden === anyRoadKindOn) {
+    quickBar.hidden = !anyRoadKindOn;
+    // 帯の分だけ上げていた県の規制の見出しを戻す（初期化の早い段階では未準備＝ReferenceError になるので握りつぶす）
+    try { placePrefKiseiBadge(); } catch { /* 準備前 */ }
+  }
 }
 
 function initPresets() {
