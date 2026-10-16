@@ -10793,6 +10793,71 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 setInterval(() => refreshEarthquakeSummary(false), 10 * 60 * 1000);
+
+// P2P地震情報の発表通知で、すぐ地図に反映する（2026-10-16 事業主指示「P2P地震情報をトリガーにMAPにすぐ反映」）。
+// 気象庁は発生の約3分後に「震源・震度」を出し、これまでは10分おきの確認で最大10分遅れて見えていた。
+// P2P地震情報の WebSocket は発表の数秒後に知らせてくれるので、それをきっかけに気象庁の一覧を取り直す。
+// 地図に出す値は今までどおり気象庁の一覧のもの（P2Pの本文は使わない）。P2Pは受信だけで、こちらからは何も送らない。
+// 気象庁の一覧に載るのが少し遅れることがあるので、新しい地震が載るまで数回取り直す。切れたら再接続する。
+// 10分おきの確認は、接続できないときの予備としてそのまま残す。
+var quakePushSocket = null;
+var quakePushRetry = 0;
+var quakePushTimers = [];
+const QUAKE_PUSH_RETRY_SEC = [2, 10, 25, 50, 90];
+
+function quakePushLanded(hintTime, beforeKey) {
+  const key = quakeEvents[0] ? `${quakeEvents[0].at}|${quakeEvents[0].name}` : "";
+  if (hintTime) {
+    // P2P の発生時刻は「2026/10/16 00:13:00」（日本時間）
+    const t = Date.parse(String(hintTime).replace(/\//g, "-").replace(" ", "T").slice(0, 19) + "+09:00");
+    if (Number.isFinite(t)) return quakeJmaArchive.some(e => Math.abs(Date.parse(e.at) - t) < 90 * 1000);
+  }
+  return key !== beforeKey;
+}
+
+function refreshQuakeAfterPush(hintTime) {
+  quakePushTimers.forEach(clearTimeout);
+  quakePushTimers = [];
+  const beforeKey = quakeEvents[0] ? `${quakeEvents[0].at}|${quakeEvents[0].name}` : "";
+  QUAKE_PUSH_RETRY_SEC.forEach((sec, index) => {
+    quakePushTimers.push(setTimeout(async () => {
+      // 先の取り直しで載っていたら、残りは取りやめる（同じ地震の輪を何度も描き直さない）
+      if (index > 0 && quakePushLanded(hintTime, beforeKey)) return;
+      await refreshEarthquakeSummary(false);
+    }, sec * 1000));
+  });
+}
+
+function startQuakePushWatch(url) {
+  const endpoint = String(url || APP_CONFIG.p2pQuakeWsEndpoint || "").trim();
+  if (!endpoint || typeof WebSocket !== "function") return;
+  if (quakePushSocket && quakePushSocket.readyState <= 1) return; // 接続中・接続済みなら二重に繋がない
+  let socket;
+  try { socket = new WebSocket(endpoint); } catch { return; }
+  quakePushSocket = socket;
+  socket.addEventListener("open", () => { quakePushRetry = 0; });
+  socket.addEventListener("message", event => {
+    let message;
+    try { message = JSON.parse(event.data); } catch { return; }
+    // 551＝地震情報。震度速報（ScalePrompt）は震源の座標が無く、気象庁の一覧でも使っていないので対象外
+    if (message?.code !== 551 || message?.issue?.type === "ScalePrompt") return;
+    refreshQuakeAfterPush(message?.earthquake?.time);
+  });
+  socket.addEventListener("close", () => {
+    if (quakePushSocket !== socket) return;
+    quakePushSocket = null;
+    setTimeout(() => startQuakePushWatch(endpoint), Math.min(60000, 5000 * 2 ** Math.min(quakePushRetry++, 4)));
+  });
+  socket.addEventListener("error", () => { try { socket.close(); } catch { /* 閉じられなければ放置 */ } });
+}
+// スマホで画面を閉じていた間に接続が切れる・通知を取りこぼすので、戻ってきたとき1回取り直して、切れていれば繋ぎ直す
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  refreshEarthquakeSummary(false);
+  if (!quakePushSocket || quakePushSocket.readyState > 1) startQuakePushWatch();
+});
+startQuakePushWatch();
+
 setInterval(() => refreshAmedas(false), 5 * 60 * 1000);
 setInterval(() => refreshRiverLevel(false), 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
 setInterval(refreshEvacAlert, 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);

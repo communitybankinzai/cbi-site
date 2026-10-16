@@ -34,6 +34,9 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     earthquakeListEndpoint: "https://www.jma.go.jp/bosai/quake/data/list.json",
     // 過去の地震の再生（直近1か月より前）。気象庁の発表を転載している P2P地震情報 の API（2026-10-02）
     p2pQuakeEndpoint: "https://api.p2pquake.net/v2/jma/quake",
+    // 地震情報の発表を数秒で知らせてくれる P2P地震情報 の WebSocket（受信のみ・2026-10-16）。
+    // 来たら気象庁の一覧を取り直す（地図の中身は気象庁の値のまま）。空にすると使わず、10分おきの確認だけになる
+    p2pQuakeWsEndpoint: "wss://api.p2pquake.net/v2/ws",
     // 気象庁の地震ごとの詳細JSON（観測点ごとの震度と座標）。list.json の json 名を後ろに付ける
     earthquakeDetailBase: "https://www.jma.go.jp/bosai/quake/data/",
     weatherWarningEndpoint: "https://www.jma.go.jp/bosai/warning/data/r8/120000.json",
