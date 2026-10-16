@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-10-16",
+          "title": "防災MAP：記録バーの出し分け＋地震をP2P地震情報の通知で即時反映（最大10分遅れを解消） 0.4時間",
+          "category": "実装",
+          "outputs": ["site/inzai-disaster-map/app.js", "site/inzai-disaster-map/config.js", "site/inzai-disaster-map/styles.css", "site/inzai-disaster-map/index.html", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json"],
+          "hours": 0.4,
+          "partnerApproved": true,
+          "note": "①通れた道・通れない道を出していないとき地図下の記録バーを隠す（6パターンをローカルで確認）。②地震の遅れの原因を実測（気象庁は発生の約3分後に一覧へ載せ、MAPは10分おきの確認で最大10分上乗せ）。事業主の指示でP2P地震情報のWebSocketを合図に気象庁の一覧を取り直す方式にし、模擬の通知と応答差し替えで反映・取りやめを確認。本番WebSocketは接続に約20秒かかる。本物の地震での発生→表示の実測は未（plans 登録済み）。session: 39911c28-d4eb-4798-bc37-05503f070ea6 / output: 37,089 / cost: $5.71"
+        },
+        {
           "date": "2026-10-12",
           "title": "消防情報に「🚑 救急支援活動」レイヤーと「見たいもの」ボタンを追加（既定OFF・受信から1時間で終結）0.4時間",
           "category": "実装",
@@ -8516,6 +8525,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "⚡ 地震のP2P通知での即時反映を、本物の地震で実測する（発生→地図に出るまでの秒数）",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "国内（できれば関東周辺）で震度1以上の地震が起きること。模擬の通知では検証済みだが、本物の通知から気象庁の一覧に載るまでの実際の秒数は未測定",
+          "note": "2026-10-16 追加。app.js の startQuakePushWatch／refreshQuakeAfterPush。確認は、通知の時刻と地図に出た時刻を見比べる。取り直しの間隔（2・10・25・50・90秒）が足りなければ調整する。本番の WebSocket は接続に約20秒かかる（開いた直後は取りこぼしうる）ので、実測では接続後に起きた地震で見ること。震度速報の1行表示（案B）は未実装。"
+        },
         {
           "due": "2026-10-26",
           "title": "🚑 救急支援活動マークの終結時間（仮1時間）を、実例で見直す",
