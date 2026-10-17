@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>CiDAO 運営継続の経費と、Vercel使用量の警告の経過</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/vercel-timeline.css">
+<style>
+:root {
+  --c-navy: #1e3a5f; --c-navy-dark: #14283f; --c-gold: #c9a55c; --c-gold-soft: #d8b97a;
+  --c-green: #2d5a3d; --c-red: #c0392b; --c-bg: #faf8f3; --c-bg-alt: #f1ece0; --c-paper: #fff;
+  --c-ink: #1a2330; --c-ink-sub: #4a5663; --c-line: #e0d9c6;
+  --font-serif: "Noto Serif JP", "Yu Mincho", serif;
+  --font-sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: var(--font-sans); color: var(--c-ink); background: var(--c-bg-alt); line-height: 1.85; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1020px; margin: 0 auto; padding: 0 16px 72px; }
+.hero { background: radial-gradient(ellipse at top right, rgba(201,165,92,.22), transparent 60%), linear-gradient(180deg, var(--c-navy-dark), var(--c-navy)); color: #fff; padding: 44px 0 38px; border-bottom: 4px solid var(--c-gold); margin-bottom: 28px; }
+.hero .wrap { padding-bottom: 0; }
+.eyebrow { font-family: var(--font-serif); font-size: 13px; letter-spacing: .28em; color: var(--c-gold-soft); margin: 0 0 12px; }
+.hero h1 { font-family: var(--font-serif); font-size: clamp(24px, 4.2vw, 38px); margin: 0 0 14px; line-height: 1.45; }
+.hero .lead { color: rgba(255,255,255,.93); font-size: clamp(15px, 1.8vw, 17px); margin: 0 0 6px; max-width: 800px; }
+.pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.pill { display: inline-block; padding: 6px 14px; border: 1px solid var(--c-gold); border-radius: 999px; font-size: 12px; letter-spacing: .1em; color: var(--c-gold-soft); background: rgba(20,40,63,.4); }
+.pill strong { color: #fff; }
+.section { background: var(--c-paper); border: 1px solid var(--c-line); border-radius: 14px; padding: 24px 24px 22px; margin: 0 0 20px; }
+.section h2 { font-family: var(--font-serif); font-size: 21px; color: var(--c-navy); margin: 0 0 6px; padding-left: 12px; border-left: 5px solid var(--c-gold); line-height: 1.5; }
+.section .sub { margin: 0 0 14px; color: var(--c-ink-sub); font-size: 14px; }
+.plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 14px 0 6px; }
+.plan { border: 1px solid var(--c-line); border-radius: 12px; padding: 16px 18px; background: var(--c-bg); }
+.plan.rec { border: 2px solid var(--c-gold); background: #fffaf0; }
+.plan .tag { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--c-ink-sub); }
+.plan.rec .tag { color: #8a6a1f; }
+.plan h3 { margin: 4px 0 8px; font-size: 16px; color: var(--c-navy); }
+.plan .big { font-family: var(--font-serif); font-size: 26px; font-weight: 700; color: var(--c-navy); line-height: 1.3; }
+.plan .big small { font-size: 13px; font-weight: 500; color: var(--c-ink-sub); font-family: var(--font-sans); }
+.plan p { margin: 8px 0 0; font-size: 13px; color: var(--c-ink-sub); line-height: 1.7; }
+.card { border: 1px solid var(--c-line); border-radius: 10px; padding: 14px 16px; background: #fff; margin-top: 12px; }
+.readme { background: var(--c-bg); border-left: 4px solid var(--c-gold); border-radius: 8px; padding: 12px 16px; margin: 14px 0 0; font-size: 14px; }
+.readme ol { margin: 6px 0 0; padding-left: 1.4em; }
+.readme li { margin: 2px 0; }
+.toolbar { display: flex; gap: 8px; margin: 0 0 8px; }
+.toolbar button { font: inherit; font-size: 13px; padding: 4px 14px; border: 1px solid var(--c-line); border-radius: 999px; background: #fff; color: var(--c-ink); cursor: pointer; }
+.toolbar button[aria-pressed="true"] { background: var(--c-navy); color: #fff; border-color: var(--c-navy); }
+table.t { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.t th, table.t td { padding: 9px 10px; border-bottom: 1px solid var(--c-line); text-align: left; vertical-align: top; }
+table.t th { font-size: 12px; color: var(--c-ink-sub); white-space: nowrap; }
+table.t td.n { white-space: nowrap; font-variant-numeric: tabular-nums; }
+table.t tr.sum td { font-weight: 700; background: var(--c-bg); }
+.scroll-x { overflow-x: auto; }
+.ask li { margin: 4px 0; }
+.note { font-size: 13px; color: var(--c-ink-sub); margin: 10px 0 0; }
+.warn { color: var(--c-red); font-weight: 700; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.toc a { font-size: 13px; padding: 5px 12px; border: 1px solid var(--c-line); border-radius: 999px; background: #fff; color: var(--c-navy); text-decoration: none; }
+.toc a:hover { background: var(--c-navy); color: #fff; }
+.explain { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 6px 0 4px; }
+.ex-card { border: 1px solid var(--c-line); border-radius: 12px; padding: 14px 16px; background: var(--c-bg); }
+.ex-card h3 { margin: 0 0 6px; font-size: 15px; color: var(--c-navy); line-height: 1.5; }
+.ex-card p { margin: 6px 0 0; font-size: 14px; line-height: 1.8; }
+.tatoe { background: #fff; border-left: 3px solid var(--c-gold); border-radius: 6px; padding: 6px 10px; font-size: 13px !important; color: var(--c-ink-sub); }
+.tatoe span { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .08em; background: var(--c-gold); color: #fff; border-radius: 999px; padding: 0 8px; margin-right: 8px; }
+h3.mini { font-size: 15px; color: var(--c-navy); margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--c-line); }
+ul.plain { margin: 6px 0 0; padding-left: 1.3em; font-size: 14px; }
+ul.plain li { margin: 5px 0; }
+dl.gloss { margin: 6px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 0; font-size: 14px; }
+dl.gloss dt { font-weight: 700; color: var(--c-navy); padding: 8px 16px 8px 0; border-bottom: 1px solid var(--c-line); }
+dl.gloss dd { margin: 0; padding: 8px 0; border-bottom: 1px solid var(--c-line); }
+table.meters td:first-child { white-space: nowrap; }
+.foot { font-size: 12px; color: var(--c-ink-sub); text-align: center; margin: 28px 0 0; line-height: 1.8; }
+@media (max-width: 760px) {
+  .plans, .explain { grid-template-columns: 1fr; }
+  dl.gloss { grid-template-columns: 1fr; }
+  dl.gloss dt { border-bottom: none; padding-bottom: 0; }
+  .section { padding: 18px 14px; }
+  .hero { padding: 32px 0 28px; }
+  table.stack, table.stack tbody, table.stack tr, table.stack td { display: block; width: 100%; }
+  table.stack thead { display: none; }
+  table.stack tr { border: 1px solid var(--c-line); border-radius: 10px; padding: 8px 12px; margin: 0 0 10px; background: #fff; }
+  table.stack tr.sum { background: var(--c-bg); }
+  table.stack td { border-bottom: none; padding: 5px 0; white-space: normal !important; box-sizing: border-box; }
+  table.stack td::before { content: attr(data-l); display: block; font-size: 11px; font-weight: 700; color: var(--c-ink-sub); letter-spacing: .04em; }
+  table.stack td:first-child { font-size: 15px; font-weight: 700; color: var(--c-navy); border-bottom: 1px solid var(--c-line); padding-bottom: 7px; margin-bottom: 3px; }
+  table.stack td:first-child::before { display: none; }
+  table.stack td:first-child strong { font-weight: 700; }
+}
+@media print {
+  body { background: #fff; }
+  .toolbar { display: none; }
+  .section { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">CBI 内部資料 ｜ メンバー確認用</p>
+    <h1>CiDAO 運営継続の経費と、<br>Vercel 使用量の警告の経過</h1>
+    <p class="lead">CiDAO（シダオ）のウェブサイトは、「Vercel（バーセル）」というアメリカの会社のサービスを借りて動いています。その<strong>無料で使える量の上限</strong>を、いま超えています。11/3（武蔵屋イベント）の前に、<strong>有料のプラン（Pro）に変えるか</strong>を決めたい、という資料です。</p>
+    <p class="lead">CiDAOを続けるのに要るお金は、いまは月 約1,100〜2,300円。Proにすると月 約4,700〜5,900円です。人件費は含めていません。</p>
+    <div class="pills">
+      <span class="pill">データ時点 <strong>10/18 07:13</strong></span>
+      <span class="pill">作成 <strong>2026-10-18</strong></span>
+      <span class="pill">判断の期限 <strong>10/30（金）</strong></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<nav class="toc" aria-label="目次">
+  <a href="#summary">1 結論</a><a href="#about">2 Vercelとは</a><a href="#timeline">3 警告グラフ</a><a href="#usage">4 いまの使用率</a><a href="#mails">5 メール一覧</a><a href="#costs">6 経費</a><a href="#decision">7 Proにするか</a><a href="#unknown">8 確かでない点</a>
+</nav>
+
+<section class="section" id="summary">
+  <h2>1. 結論：3つの見方</h2>
+  <p class="sub">換算は会計と同じ基準です（1ドル＝162円・消費税10%を上乗せ）。為替と料金は変わります。</p>
+  <div class="plans">
+    <div class="plan">
+      <div class="tag">A 無料枠のまま</div>
+      <h3>止まるリスクを持ったまま</h3>
+      <div class="big">約1,100〜2,300円<small> /月</small></div>
+      <p>年 約1.3〜2.8万円。AI（Claude）とGeminiの利用料だけ。Vercelは0円ですが、上限を超えています。</p>
+    </div>
+    <div class="plan rec">
+      <div class="tag">B 標準（11/3に備えるなら）</div>
+      <h3>VercelをProにする</h3>
+      <div class="big">約4,700〜5,900円<small> /月</small></div>
+      <p>年 約5.6〜7.1万円。Aに Vercel Pro（月20ドル＝約3,600円）を足した額です。停止の心配が小さくなります。</p>
+    </div>
+    <div class="plan">
+      <div class="tag">C 上限の見積もり</div>
+      <h3>Bに、さらに増える分</h3>
+      <div class="big">約1.4〜1.5万円<small> /月</small></div>
+      <p>年 約17〜18万円。Bに、データベース（Supabase）のPro 約4,500円と、地図APIの上限額 月約5,000円を足した額です。</p>
+    </div>
+  </div>
+  <p class="note">「基盤の維持費は年3〜10万円」という以前の想定に、Bがちょうど収まります。</p>
+</section>
+
+<section class="section" id="about">
+  <h2>2. Vercel（バーセル）とは？ ── はじめての方へ</h2>
+  <p class="sub">専門用語が出てくるので、先にここで説明します。むずかしい言葉は、この節の下の「ことばの説明」にもまとめました。</p>
+
+  <div class="explain">
+    <div class="ex-card">
+      <h3>① CiDAOを動かしている「場所を貸すサービス」</h3>
+      <p>ウェブサイトは、インターネットにつながったコンピューター（サーバー）が24時間動いていて、はじめて誰でも見られます。そのコンピューターを自分で用意して守るのは大変なので、<strong>Vercelに借りて、CiDAOを動かしてもらっている</strong>のが、いまの形です。</p>
+      <p class="tatoe"><span>たとえば</span>お店でいえば、<strong>建物と電気を貸してくれる大家さん</strong>です。</p>
+    </div>
+    <div class="ex-card">
+      <h3>② 使った量が「メーター」で測られる</h3>
+      <p>CiDAOの画面を開く、地図を見る、ログインする。そのたびに、Vercelのコンピューターが少しだけ働きます。その<strong>働いた量が、4つのメーターで測られて</strong>います（下の表）。</p>
+      <p class="tatoe"><span>たとえば</span>電気やガスのメーターと同じです。使うほど、数字が増えます。</p>
+    </div>
+    <div class="ex-card">
+      <h3>③ 無料プランには「ここまで」という上限がある</h3>
+      <p>いまCBIは<strong>無料プラン</strong>で借りています。メーターごとに「無料で使える量（無料枠）」が決まっていて、<strong>超えると警告のメールが届きます。</strong>公式の説明では、超えたままだと「30日待たないと使えない」ことがあります。</p>
+      <p class="tatoe"><span>たとえば</span>携帯電話の「通信量の上限」を超えると、速度が落ちたり止まったりするのに似ています。</p>
+    </div>
+    <div class="ex-card">
+      <h3>④ 有料の「Pro」にすると</h3>
+      <p>月20ドル（約3,600円）で、<strong>上限を超えても止まらず、使った分だけ払う</strong>形に変わります。月20ドルの中に、20ドル分の利用枠が入っています。払う上限の金額を決めておくこともできます。</p>
+      <p class="tatoe"><span>たとえば</span>携帯を「使い放題の定額プラン」に変えるイメージです。</p>
+    </div>
+  </div>
+
+  <h3 class="mini">4つのメーターは、何を測っているのか</h3>
+  <div class="scroll-x">
+  <table class="t meters stack">
+    <thead><tr><th>この資料での名前</th><th>Vercelでの名前</th><th>何を測っているか（やさしく言うと）</th><th>無料で使える量</th><th>いまの使用率</th></tr></thead>
+    <tbody>
+      <tr><td data-l="この資料での名前"><strong>CPU</strong></td><td data-l="Vercelでの名前">Fluid Active CPU</td><td data-l="何を測っているか（やさしく言うと）">コンピューターが、実際に<strong>頭を使って計算していた時間</strong>。待っているだけの時間は数えません。</td><td data-l="無料で使える量" class="n">30日で 4時間</td><td data-l="いまの使用率" class="n">273%</td></tr>
+      <tr><td data-l="この資料での名前"><strong>呼び出し回数</strong></td><td data-l="Vercelでの名前">Function Invocation</td><td data-l="何を測っているか（やさしく言うと）">CiDAOの画面やデータが<strong>呼び出された回数</strong>。お店でいえば来店回数です。</td><td data-l="無料で使える量" class="n">30日で 100万回</td><td data-l="いまの使用率" class="n">110%</td></tr>
+      <tr><td data-l="この資料での名前"><strong>メモリ</strong></td><td data-l="Vercelでの名前">Fluid Provisioned Memory</td><td data-l="何を測っているか（やさしく言うと）">仕事のために<strong>確保しておく作業机の広さ</strong>に、使った時間をかけたもの（GB時）。</td><td data-l="無料で使える量" class="n">30日で 360 GB時</td><td data-l="いまの使用率" class="n">78%</td></tr>
+      <tr><td data-l="この資料での名前"><strong>ストレージ</strong></td><td data-l="Vercelでの名前">Function Storage</td><td data-l="何を測っているか（やさしく言うと）">公開のたびに残る、<strong>プログラムの保管場所の大きさ</strong>。</td><td data-l="無料で使える量" class="n">10 GB</td><td data-l="いまの使用率" class="n">25%</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 class="mini">いま起きていること</h3>
+  <ul class="plain">
+    <li>CPUが無料枠の<strong>約2.7倍</strong>、呼び出し回数が約1.1倍になっています。メモリとストレージは、枠の中です。</li>
+    <li>増えた原因は、<strong>9/21〜9/25の台風25号</strong>のとき、防災MAPなどにアクセスが集まったことです。</li>
+    <li>それでも、CiDAOは<strong>まだ止まっていません</strong>（6週間以上、超えたまま動いています）。ただし、公式の説明では、止まる可能性があります。</li>
+    <li>止まると、CiDAO全体のほか、3Dワールドの受付と、防災MAPの自動の見回りが止まります。</li>
+  </ul>
+
+  <h3 class="mini">ことばの説明</h3>
+  <dl class="gloss">
+    <dt>サーバー</dt><dd>ウェブサイトのデータを持っていて、見に来た人に送るコンピューター。</dd>
+    <dt>無料枠（むりょうわく）</dt><dd>無料で使える量の上限。</dd>
+    <dt>従量課金（じゅうりょうかきん）</dt><dd>使った量に応じて払う料金。電気代のような仕組み。この資料では「使った分だけ払う」と書いています。</dd>
+    <dt>Pro（プロ）</dt><dd>Vercelの有料プランの名前。月20ドル。</dd>
+    <dt>リセット</dt><dd>使用量が0に戻ること。<strong>Vercelの無料プランには、これがありません。</strong>「直近30日の合計」で数えるので、古い日が毎日抜けて、少しずつ減ります。</dd>
+    <dt>再通知（さいつうち）</dt><dd>同じ警告のメールが、もう一度届くこと。今回は、前回のちょうど14日後に届いています。</dd>
+  </dl>
+</section>
+
+<section class="section" id="timeline">
+  <h2>3. 警告メールの時系列（グラフ）</h2>
+  <p class="sub">Vercelから届いた「無料で使える量の上限が近い」というメールを、項目ごとに日付の順に並べました。点が、メールが届いた日です。</p>
+  <div class="card"><div data-cvt="timeline"></div><noscript><p class="note">グラフはJavaScriptで描きます。下の「警告メールの一覧」をご覧ください。</p></noscript></div>
+  <div class="readme">
+    <strong>読み方</strong>
+    <ol>
+      <li>●は「100%に達した」通知、○は「75%に達した」通知です。点線の○は、次に届くはずの再通知の予定日です。</li>
+      <li>同じ項目・同じ率のメールは、<strong>前回のちょうど14日後に、もう一度届きます</strong>（点と点のあいだの「14日」）。</li>
+      <li>予定日に再送が来なければ、その率を<strong>下回った</strong>ということです。</li>
+      <li>CPUの次の再通知は <strong>11/1 の午前2〜3時台</strong>。来れば、11/3の本番も超過が続く見込みです。</li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" id="usage">
+  <h2>4. いまの使用率（直近30日）</h2>
+  <p class="sub">無料プランには、決まったリセット日がありません。使用量は<strong>直近30日の合計</strong>で数えられ、古い日が毎日抜けていきます。</p>
+  <div class="card"><div data-cvt="usage"></div></div>
+  <div class="readme">
+    <strong>見立て</strong>
+    <ol>
+      <li>使用量の山は<strong>9/21〜9/25（台風25号の時期）</strong>でした。山の日が窓から抜ける<strong>10/21〜10/26</strong>に、合計は大きく下がる見込みです。</li>
+      <li>直近12時間のペースは、呼び出し約1,300回・メモリ約2.13 GB時。30日分に直すと、呼び出し約78,000回（上限の8%）・メモリ約128 GB時（36%）です。</li>
+      <li>CPUは、日別の数字がまだ無く、推定できません。<strong>10/27ごろ</strong>に画面の日別グラフを書き写して、この資料を更新します。</li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" id="mails">
+  <h2>5. 警告メールの一覧（時系列）</h2>
+  <p class="sub">受信した順に並べました。予測の行は、まだ届いていません。</p>
+  <div class="toolbar" role="group" aria-label="並べ方">
+    <button type="button" id="ord-asc" aria-pressed="true">古い順</button>
+    <button type="button" id="ord-desc" aria-pressed="false">新しい順</button>
+  </div>
+  <div class="scroll-x"><div data-cvt="mails"></div></div>
+</section>
+
+<section class="section" id="costs">
+  <h2>6. 費目ごとの経費</h2>
+  <p class="sub">いま実際にお金がかかっているのは、AI（Claude）とGeminiだけです。ほかは、無料で使える範囲に収まっています。</p>
+  <div class="scroll-x">
+  <table class="t stack">
+    <thead><tr><th>費目</th><th>現在</th><th>根拠</th><th>増える条件</th></tr></thead>
+    <tbody>
+      <tr><td data-l="費目">Claude（AI。文章を読み書きする部分）</td><td data-l="現在" class="n">月 約1,000〜2,000円</td><td data-l="根拠">7月¥723・8月¥750・9月1〜27日¥1,475（会計の割り振りの記録）</td><td data-l="増える条件">AI機能の利用が増えると、比例して増える</td></tr>
+      <tr><td data-l="費目">Gemini（Googleの画像づくりのAI）</td><td data-l="現在" class="n">月 約100〜300円</td><td data-l="根拠">3〜8月は¥98〜¥316。8月の¥316は画像生成が中心</td><td data-l="増える条件">CBI専用かは未確認。画像を作る処理だけが課金される</td></tr>
+      <tr><td data-l="費目">Google 地図API（3Dワールド）</td><td data-l="現在" class="n">0円</td><td data-l="根拠">8月は108回で、無料枠1,000回の11%</td><td data-l="増える条件">月1,000回を超えると約1円/回。提案書の上限額は年6万円</td></tr>
+      <tr><td data-l="費目">Vercel（CiDAOを動かす場所の貸し出し）</td><td data-l="現在" class="n">0円（無料）</td><td data-l="根拠">無料枠を超過中だが、止まってはいない</td><td data-l="増える条件">Proは月20ドル（約3,600円）。使用量は約5〜8ドルで、枠に収まる見込み</td></tr>
+      <tr><td data-l="費目">Supabase（会員や記録を入れておくデータの置き場）</td><td data-l="現在" class="n">0円（無料）</td><td data-l="根拠">DB 47MB・保存 78MB（無料枠は500MB・1GB）</td><td data-l="増える条件">超えたらPro 月25ドル（約4,500円）</td></tr>
+      <tr><td data-l="費目">Resend（お知らせメールを送るサービス）</td><td data-l="現在" class="n">0円（無料）</td><td data-l="根拠">無料枠は月3,000通・1日100通</td><td data-l="増える条件">超えたらPro 月20ドル（約3,600円）</td></tr>
+      <tr><td data-l="費目">GitHub・Meta API・LINEログイン</td><td data-l="現在" class="n">0円</td><td data-l="根拠">いずれも無料の範囲</td><td data-l="増える条件">LINEの通知配信は未実装（費用は未確認）</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">含めていないもの：人件費（ボランティア）、常駐PCと回線、イベントの費用、将来の外注。</p>
+</section>
+
+<section class="section" id="decision">
+  <h2>7. Proに変えるか：選択肢と、確認したいこと</h2>
+  <p class="sub">いま止まってはいませんが、公式の規定では、無料プランで上限を超えると「30日待つ」ことがあります。止まると、CiDAO全体と、3Dワールドの受付、防災MAPの巡回が止まります。</p>
+  <div class="scroll-x">
+  <table class="t stack">
+    <thead><tr><th>案</th><th>内容</th><th>費用</th></tr></thead>
+    <tbody>
+      <tr><td data-l="案"><strong>A</strong> 無料のまま</td><td data-l="内容">10/27の実測で、上限を下回る見込みなら続ける。止まるリスクは残る。</td><td data-l="費用" class="n">0円</td></tr>
+      <tr><td data-l="案"><strong>B</strong> Proに変更</td><td data-l="内容">使った量を、使った分だけ払う料金に直すと約5〜8ドル。Proに含まれる20ドル分の利用枠に収まる見込みです。超えた分は使った分だけ払い、払う上限の金額を決めて止めることもできます。いつでも無料へ戻せますが、戻すと所有者以外のメンバーが外れます。</td><td data-l="費用" class="n">月20ドル（約3,600円）</td></tr>
+      <tr><td data-l="案"><strong>C</strong> 使用量を減らす</td><td data-l="内容">定期巡回の間引きなど。応急処置は実施済みで、効果は10/27の実測で確かめる。</td><td data-l="費用" class="n">0円</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="card ask">
+    <strong>メンバーに確認したいこと（10/30（金）までに）</strong>
+    <ol>
+      <li>Proの費用（月約3,600円）を、団体として負担してよいか。</li>
+      <li>支払い手段：団体の口座は2026-09時点で未開設です（11月の総会のあとに開設予定）。立替か、個人のカードか、決めが要ります。</li>
+      <li>期間：イベント前後の1か月だけにするか、継続するか。</li>
+      <li>無料プランは「個人・非商用」が利用の条件です。団体のサイトとして問題ないか、念のための確認が要ります。</li>
+    </ol>
+    <p class="note"><strong>事務局案：</strong>10/27の実測で、上限を下回る見込みが立てば無料のまま。立たなければ、10/30（金）までにProへ。（私見・確信度：中）</p>
+  </div>
+</section>
+
+<section class="section" id="unknown">
+  <h2>8. 確かでない点</h2>
+  <div class="scroll-x">
+  <table class="t stack">
+    <thead><tr><th>点</th><th>確信度</th><th>確かめ方</th></tr></thead>
+    <tbody>
+      <tr><td data-l="点">無料プランで、いつ止まるのか（公式は「30日待ち」。実際は6週間以上止まっていない）</td><td data-l="確信度" class="n">低</td><td data-l="確かめ方">Vercelの公式の規定と、実際の様子を見続ける</td></tr>
+      <tr><td data-l="点">Vercelのコンピューターが置かれている場所（Proの料金が少し変わる）</td><td data-l="確信度" class="n">低</td><td data-l="確かめ方">Vercelの設定 → Functions → Region</td></tr>
+      <tr><td data-l="点">Gemini API がCBI専用か</td><td data-l="確信度" class="n">低</td><td data-l="確かめ方">Google Cloudの請求明細の項目</td></tr>
+      <tr><td data-l="点">10月分のAI（Claude）の、CBI分の割り振り</td><td data-l="確信度" class="n">中</td><td data-l="確かめ方">会計の月ごとの割り振り（毎月）</td></tr>
+      <tr><td data-l="点">為替・料金の改定</td><td data-l="確信度" class="n">中</td><td data-l="確かめ方">年1回、料金表を見直す</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">出典：Vercel公式の料金表（Proプラン 2026-09-15、関数の料金 2026-06-16）、Supabase・Resendの公式料金（2026-10-18確認）、会計の割り振りの記録（2026-09-28）、手入力の実測（Vercelの使用量画面・直近30日）。</p>
+</section>
+
+<p class="foot">この資料は scripts/build_cidao_costs_doc.py が作りました（データ時点 10/18 07:13）。内容を更新するときは、スクリプトを再実行して作り直します。<br>グラフと表は、共通部品 assets/vercel-timeline.js で描いています（Jarvisの定時報告と同じ部品）。</p>
+</main>
+
+<script type="application/json" id="cvt-data">{"asOf": "2026-10-18T07:13+09:00", "start": "2026-08-24", "end": "2026-11-06", "lanes": [{"id": "cpu", "name": "Fluid Active CPU", "short": "CPU", "limit": "無料枠 4時間", "events": [{"t": "2026-08-26T07:03+09:00", "pct": 75, "predicted": false}, {"t": "2026-09-06T02:08+09:00", "pct": 100, "predicted": false}, {"t": "2026-09-20T02:16+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-04T02:34+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-18T02:45+09:00", "pct": 100, "predicted": false}, {"t": "2026-11-01T02:45+09:00", "pct": 100, "predicted": true}]}, {"id": "invocation", "name": "Function Invocation", "short": "呼び出し回数", "limit": "無料枠 100万回", "events": [{"t": "2026-09-22T15:29+09:00", "pct": 75, "predicted": false}, {"t": "2026-09-23T10:31+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-07T10:39+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-21T10:39+09:00", "pct": 100, "predicted": true}]}, {"id": "memory", "name": "Fluid Provisioned Memory", "short": "メモリ", "limit": "無料枠 360 GB時", "events": [{"t": "2026-09-24T08:42+09:00", "pct": 75, "predicted": false}, {"t": "2026-10-08T09:29+09:00", "pct": 75, "predicted": false}, {"t": "2026-10-22T09:29+09:00", "pct": 75, "predicted": true}]}, {"id": "storage", "name": "Function Storage", "short": "ストレージ", "limit": "無料枠 10 GB", "events": [{"t": "2026-09-26T09:45+09:00", "pct": 75, "predicted": false}, {"t": "2026-10-03T19:26+09:00", "pct": 100, "predicted": false}]}], "markers": [{"t": "2026-10-18T07:13+09:00", "label": "今日 10/18", "kind": "now"}, {"t": "2026-11-03T12:00+09:00", "label": "11/3 武蔵屋イベント", "kind": "event"}], "usage": {"asOf": "2026-10-18T05:55+09:00", "window": "直近30日（9/17 14:00〜10/17 14:00）", "stale": false, "bars": [{"label": "CPU（4時間）", "percent": 272.9}, {"label": "呼び出し回数（100万回）", "percent": 110.0}, {"label": "メモリ（360 GB時）", "percent": 77.8}, {"label": "ストレージ（10 GB）", "percent": 24.9}]}}</script>
+<script src="assets/vercel-timeline.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('cvt-data').textContent);
+  var order = 'asc';
+  function drawMails() {
+    var host = document.querySelector('[data-cvt="mails"]');
+    CbiVercelTimeline.renderMailList(host, data, { order: order });
+    document.getElementById('ord-asc').setAttribute('aria-pressed', String(order === 'asc'));
+    document.getElementById('ord-desc').setAttribute('aria-pressed', String(order === 'desc'));
+  }
+  CbiVercelTimeline.renderAll(document, data, { theme: 'light' });
+  drawMails();
+  document.getElementById('ord-asc').addEventListener('click', function () { order = 'asc'; drawMails(); });
+  document.getElementById('ord-desc').addEventListener('click', function () { order = 'desc'; drawMails(); });
+})();
+</script>
+</body>
+</html>

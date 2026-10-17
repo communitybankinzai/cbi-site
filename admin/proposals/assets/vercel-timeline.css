@@ -1,0 +1,110 @@
+/* CBI Vercel 使用量タイムライン（共通部品）の見た目。vercel-timeline.js と組で使う。
+ * 色と文字の大きさはここだけで決める（JS はインライン style を使わない＝Jarvis の CSP でも動く）。
+ * data-theme="light"（既定・資料用）／"dark"（Jarvis の定時報告用）。 */
+.cvt {
+  --cvt-surface: #fcfcfb;
+  --cvt-halo: #fcfcfb;
+  --cvt-ink: #0b0b0b;
+  --cvt-ink2: #52514e;
+  --cvt-grid: #ebeae6;
+  --cvt-lane: #cfcec8;
+  --cvt-series: #2a78d6;
+  --cvt-evt: #eb6834;
+  --cvt-link: #b9c7dc;
+  --cvt-ok: #2d5a3d;
+  --cvt-warn: #d9473f;
+  --cvt-stale: #9a9588;
+  --cvt-track: #ece9df;
+  --cvt-row: #f6f3ea;
+  font-family: "Noto Sans JP", "Yu Gothic UI", Meiryo, "Hiragino Sans", sans-serif;
+  color: var(--cvt-ink);
+}
+.cvt[data-theme="dark"] {
+  --cvt-surface: transparent;
+  --cvt-halo: #14181f;
+  --cvt-ink: #f0ece0;
+  --cvt-ink2: #b9b3a3;
+  --cvt-grid: rgba(255, 255, 255, 0.10);
+  --cvt-lane: rgba(255, 255, 255, 0.24);
+  --cvt-series: #e8d3a2;
+  --cvt-evt: #e0a070;
+  --cvt-link: rgba(232, 211, 162, 0.38);
+  --cvt-ok: #9fd49a;
+  --cvt-warn: #e0584f;
+  --cvt-stale: #7d776b;
+  --cvt-track: rgba(255, 255, 255, 0.09);
+  --cvt-row: rgba(255, 255, 255, 0.05);
+}
+.cvt .cvt-svg { display: block; width: 100%; height: auto; }
+
+/* 時系列グラフ */
+.cvt-grid { stroke: var(--cvt-grid); stroke-width: 1; }
+.cvt-lane { stroke: var(--cvt-lane); stroke-width: 1; }
+.cvt-tick { font-size: 13px; fill: var(--cvt-ink2); }
+.cvt-lane-name { font-size: 17px; font-weight: 700; fill: var(--cvt-ink); }
+.cvt-lane-limit { font-size: 13px; fill: var(--cvt-ink2); }
+.cvt-lane-en { font-size: 12px; fill: var(--cvt-ink2); opacity: 0.85; }
+.cvt-now { stroke: var(--cvt-ink); stroke-width: 2; }
+.cvt-evt { stroke: var(--cvt-evt); stroke-width: 2; stroke-dasharray: 6 4; }
+.cvt-marker-text { font-size: 14px; font-weight: 700; fill: var(--cvt-ink); }
+.cvt-link { stroke: var(--cvt-link); stroke-width: 2; }
+.cvt-link-pred { stroke-dasharray: 4 4; }
+.cvt-gap { font-size: 12px; fill: var(--cvt-ink2); }
+.cvt-dot { stroke-width: 2.5; }
+.cvt-full { fill: var(--cvt-series); stroke: var(--cvt-halo); }
+.cvt-part { fill: var(--cvt-halo); stroke: var(--cvt-series); }
+.cvt-pred { fill: var(--cvt-halo); stroke: var(--cvt-series); stroke-dasharray: 3 3; }
+.cvt-dl { font-size: 14px; font-weight: 600; fill: var(--cvt-ink); }
+.cvt-dl-pred { font-weight: 400; fill: var(--cvt-ink2); }
+.cvt-leg { font-size: 14px; fill: var(--cvt-ink); }
+.cvt-dl, .cvt-gap, .cvt-marker-text {
+  paint-order: stroke;
+  stroke: var(--cvt-halo);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+.cvt-compact .cvt-dl, .cvt-compact .cvt-marker-text { font-size: 15px; }
+.cvt-compact .cvt-tick, .cvt-compact .cvt-gap, .cvt-compact .cvt-lane-limit { font-size: 13px; }
+.cvt-compact .cvt-lane-name { font-size: 16px; }
+
+/* 使用率の棒 */
+.cvt-track { fill: var(--cvt-track); }
+.cvt-bar-ok { fill: var(--cvt-ok); }
+.cvt-bar-warn { fill: var(--cvt-warn); }
+.cvt-bar-stale { fill: var(--cvt-stale); }
+.cvt-bar-label { font-size: 17px; fill: var(--cvt-ink); }
+.cvt-bar-value { font-size: 17px; font-weight: 700; }
+.cvt-bar-ok-text { fill: var(--cvt-ok); }
+.cvt-bar-warn-text { fill: var(--cvt-warn); }
+.cvt-bar-stale-text { fill: var(--cvt-stale); }
+.cvt-compact .cvt-bar-label, .cvt-compact .cvt-bar-value { font-size: 15px; }
+.cvt-note { margin: 6px 0 0; font-size: 13px; color: var(--cvt-ink2); line-height: 1.6; }
+.cvt-empty { margin: 8px 0; font-size: 14px; color: var(--cvt-ink2); }
+
+/* 警告メールの表 */
+.cvt-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.cvt-table th, .cvt-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--cvt-grid); vertical-align: top; }
+.cvt-table th { font-size: 12px; font-weight: 600; color: var(--cvt-ink2); white-space: nowrap; }
+.cvt-td-when { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cvt-td-gap { color: var(--cvt-ink2); white-space: nowrap; }
+.cvt-row-pred td { color: var(--cvt-ink2); background: var(--cvt-row); }
+.cvt-badge { display: inline-block; min-width: 3.4em; padding: 1px 8px; border-radius: 999px; text-align: center; font-size: 12px; font-weight: 700; }
+.cvt-badge-full { background: var(--cvt-series); color: var(--cvt-halo); }
+.cvt-badge-part { border: 2px solid var(--cvt-series); color: var(--cvt-ink); }
+.cvt-badge-pred { border: 2px dashed var(--cvt-series); color: var(--cvt-ink2); }
+/* 狭い画面（スマホ）では、1通を3行のカードにする：
+ *   1行目 日時（左）と率の印（右）／2行目 項目／3行目 できごと。「前回から」は「できごと」の文に入っているので畳む */
+@media (max-width: 600px) {
+  .cvt-table, .cvt-table tbody { display: block; }
+  .cvt-table thead { display: none; }
+  .cvt-table tr { display: grid; grid-template-columns: 1fr auto; column-gap: 10px; row-gap: 1px; align-items: center;
+                  padding: 9px 4px; border-bottom: 1px solid var(--cvt-grid); }
+  .cvt-table td { display: block; padding: 0; border: 0; }
+  .cvt-table td:nth-child(1) { grid-column: 1; grid-row: 1; font-weight: 700; }
+  .cvt-table td:nth-child(2) { grid-column: 1; grid-row: 2; }
+  .cvt-table td:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; }
+  .cvt-table td:nth-child(4) { grid-column: 1 / span 2; grid-row: 3; font-size: 13px; color: var(--cvt-ink2); }
+  .cvt-table td:nth-child(5) { display: none; }
+  .cvt-row-pred { background: var(--cvt-row); }
+  .cvt-row-pred td { background: transparent; }
+}

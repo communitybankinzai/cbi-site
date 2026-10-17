@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-10-11T15:00:00+09:00",
+  "updatedAt": "2026-10-18T07:30:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-10-18",
+      "type": "docs",
+      "target": "admin/proposals/cidao-operating-costs-v1.html, admin/proposals/assets/vercel-timeline.js・vercel-timeline.css, admin/index.html, admin/data/documents.json",
+      "title": "管理画面の内部資料に「CiDAO運営継続の経費とVercel使用量の警告の経過」を追加。Vercelの説明、警告メールの時系列グラフと一覧つきで、スマホでも読める",
+      "detail": "メンバーが、CiDAOを続けるのにいくらかかるか（いまは月 約1,100〜2,300円、Vercelを有料のProにすると約4,700〜5,900円）と、Vercelの無料枠を超えた警告メールがいつ・どの項目で届いたかを、1つのページで読めるようになった。初めての方向けに「Vercel（バーセル）とは」を、たとえ話・4つのメーターの表・ことばの説明で書いた。警告メールは時系列のグラフ（次の再通知の予測つき）と、古い順／新しい順を切り替えられる一覧で見られる。グラフと表は共通部品（assets/vercel-timeline.js）で描き、Jarvisの定時報告と同じ部品を使う。Proに変えるかの選択肢と、10/30（金）までにメンバーへ確認したいことも載せた。数字は scripts/vercel_monitor.py の記録から作り、10/27に画面の実測で更新する。",
+      "author": "Claude"
+    },
     {
       "date": "2026-10-17",
       "type": "content",

@@ -1,7 +1,16 @@
 {
-  "updatedAt": "2026-07-05",
+  "updatedAt": "2026-10-18",
   "note": "資料コメントタブで管理する内部資料の一覧。HTMLを追加したらこのリストに登録する。id はファイルパスから独立した安定識別子（comments.targetId と一致）。",
   "documents": [
+    {
+      "id": "cidao-operating-costs",
+      "title": "CiDAO運営継続の経費とVercel使用量の警告の経過｜Proに変えるかの判断資料",
+      "path": "proposals/cidao-operating-costs-v1.html",
+      "category": "経費・判断資料",
+      "description": "CiDAOの運営継続に要る経費（費目別）と、Vercel使用量の警告メールの時系列グラフ・一覧、Proに変えるかの選択肢と確認事項。初心者向けにVercelの説明つき。データは scripts/vercel_monitor.py の記録（3時間ごと更新）を元に build_cidao_costs_doc.py で生成。判断期限10/30。10/27に使用量の実測で更新予定。",
+      "createdAt": "2026-10-18",
+      "updatedAt": "2026-10-18"
+    },
     {
       "id": "machizukuri-fund-overview",
       "title": "公益信託 印西市まちづくりファンドの概要｜しくみ・助成額・スケジュール",
