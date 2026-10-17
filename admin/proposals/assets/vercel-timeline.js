@@ -7,7 +7,7 @@
  * 使い方:
  *   CbiVercelTimeline.renderTimeline(要素, timeline, { theme: 'light' | 'dark' })   時系列グラフ（項目ごとのレーン）
  *   CbiVercelTimeline.renderUsage(要素, timeline, { theme })                         いまの使用率の棒グラフ
- *   CbiVercelTimeline.renderMailList(要素, timeline, { order: 'asc' | 'desc' })      警告メールの時系列の表
+ *   CbiVercelTimeline.renderMailList(要素, timeline, { order: 'asc' | 'desc', limit: 件数 })   警告メールの時系列の表（limit は省略可）
  *
  * データの形（timeline）。作るのは CBI の scripts/vercel_monitor.py（状態ファイルの "timeline"）:
  * {
@@ -288,6 +288,7 @@
     let rows = mailRows(data);
     if (!rows.length) { host.appendChild(el('p', { class: 'cvt-empty' }, '警告メールはありません。')); return host; }
     if (opts && opts.order === 'desc') rows = rows.reverse();
+    if (opts && opts.limit > 0) rows = rows.slice(0, opts.limit);   // 先頭から数える（新しい順なら最新から）
     const table = el('table', { class: 'cvt-table' });
     const head = el('tr');
     ['受信日時（日本時間）', '項目', '率', 'できごと', '前回から'].forEach((h) => head.appendChild(el('th', { scope: 'col' }, h)));
