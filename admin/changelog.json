@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-10-17",
+      "type": "content",
+      "target": "assets/sns/2026-10-18_cocola-asacafe/",
+      "title": "COCoLa朝カフェ会（10/18）のCBI応援告知に使う画像（1080×1350 JPEG）を置いた",
+      "detail": "印西市鹿黒のアールベイカー内ガラス張りルームで急きょ開かれるCOCoLaの朝カフェ会（10/18 8:00〜11:00・テーマは「まちづくりの未来」と「新しいつながり」）の告知画像。写真は過去の朝カフェ会で撮った会場の実写真から、人が写らない部分を切り出したもの。SNS予約キューの画像URLとして使う（投稿は事業主の承認後）。",
+      "author": "Claude"
+    },
+    {
       "date": "2026-10-16",
       "type": "feature",
       "target": "inzai-disaster-map/app.js, config.js, index.html",
