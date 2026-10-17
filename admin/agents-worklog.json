@@ -10718,6 +10718,20 @@
     "A4": {
       "actuals": [
         {
+          "date": "2026-10-17",
+          "title": "COCoLa朝カフェ会（10/18 アールベイカー）のSNS告知画像2版（会場写真版・集合写真版）の制作 0.4時間",
+          "category": "広報",
+          "outputs": [
+            "events/2026-10-18_COCoLa朝カフェ会/朝カフェ会_SNS告知_会場写真版_20261017.jpg",
+            "events/2026-10-18_COCoLa朝カフェ会/朝カフェ会_SNS告知_集合写真版_20261017.jpg",
+            "events/2026-10-18_COCoLa朝カフェ会/src/（flyer.html・render.py・crop.py・切り出し写真2枚＝再生成用）",
+            "events/2026-10-18_COCoLa朝カフェ会/CBI応援告知_投稿文案.md"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "事業主指示：ゲリラ告知・SNS用画像のみ（LINEなし）・参加表明は各SNSのDM・問い合わせ先は載せない・アールベイカーの実写真を使う。1080×1350 JPEG（HTML→Playwright→PIL縮小）。会場写真版は過去の朝カフェ会の写真 IMG_3719 の顔が入らない上部（六角形の壁飾り＋ガラス壁）を切り出し、集合写真版は 2026-01-18 の写真＝公開には写っている方の了解が前提。Google Fonts（Zen Maru Gothic／Zen Kaku Gothic New）の読み込みと文字の等倍確認済み。Antigravity（agy）の挿絵生成は headless で command 権限が自動拒否され画像は出なかった（skill の記述と相違・要修正）。採用版の決定、CBI応援告知の投稿（文案は作成済み・未投稿）は事業主判断待ち。\nsession: 7a0d9960-c489-4b5d-91f8-214d7eab7d4a / output: 36,418 / cost: $8.09"
+        },
+        {
           "date": "2026-10-05",
           "title": "CBIのSNS投稿の反応分析（Instagram50件・Threads101件・直近30日）と分析ノート作成 0.2時間",
           "category": "分析",
@@ -10978,6 +10992,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-10-18",
+          "title": "📣 COCoLa朝カフェ会（10/18 8:00 アールベイカー）のCBI応援告知をSNS3媒体へ投稿する（事業主の承認後・当日朝まで）",
+          "category": "広報",
+          "priority": "高",
+          "note": "文案は events/2026-10-18_COCoLa朝カフェ会/CBI応援告知_投稿文案.md。画像は会場写真版か集合写真版のどちらか（事業主が選ぶ。集合写真版は写っている方の了解が要る）。COCoLa側の投稿の後に出す（事業主指示「そのあとに」）。投稿は予約キュー（3媒体・IGはJPEG）で、本文と画像を提示して承認を得てから。"
+        },
+        {
+          "due": "未定",
+          "title": "🛠 antigravity-image スキルの記述を直す（headless の agy で command 権限が自動拒否され画像が出ない。settings.json の permissions.allow か手順の見直し）",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-10-17 に実際に発生：『a tool required the \"command\" permission that headless mode cannot prompt for, so it was auto-denied』で exit 0・画像なし。スキルは『追加の確認プロンプトは出なかった』と書いており実態と違う。~/.claude/skills/antigravity-image/SKILL.md と agy 側の設定。"
+        },
         {
           "due": "2026-10-12",
           "title": "📣 だんご通信Vol.76掲載の告知動画（q1791251149670 Threads／q1791251151861 Instagram・Facebook・10/6 18:00）の投稿結果を確認する",
