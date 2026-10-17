@@ -10719,6 +10719,20 @@
       "actuals": [
         {
           "date": "2026-10-17",
+          "title": "COCoLa朝カフェ会（10/18）のCBI応援告知をSNS3媒体へ投稿（17:39 成功）＋COCoLaアカウント用キャプション作成 0.3時間",
+          "category": "広報",
+          "outputs": [
+            "site/assets/sns/2026-10-18_cocola-asacafe/cover.jpg（会場写真版・公開URL）",
+            "site/admin/changelog.json（content 1件）",
+            "events/2026-10-18_COCoLa朝カフェ会/本文_Instagram_Facebook.txt・本文_Threads.txt・COCoLa投稿キャプション.txt",
+            "予約キュー q1792225559297（Threads 155字）／q1792225565477（Instagram＋Facebook 327字・画像1枚）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "事業主が会場写真版を採用（文言そのまま）。本文・画像・媒体・時刻を提示して承認（「今すぐ」）を得てから 17:25 の時刻で登録し、17:39 の処理で Threads・Instagram・Facebook とも「成功」（キューの note 欄で確認）。順序は事業主指示どおり COCoLa 側の手動投稿（17:30ごろ）→ CBI。GitHub Pages の画像URLは push から約3分で 200 になるのを待ってから登録した。hours はセッション累計 67,327 から前回記録分 36,418 を引いた 30,909（0.3）。\nsession: 7a0d9960-c489-4b5d-91f8-214d7eab7d4a / output: 67,327 / cost: $24.96"
+        },
+        {
+          "date": "2026-10-17",
           "title": "COCoLa朝カフェ会（10/18 アールベイカー）のSNS告知画像2版（会場写真版・集合写真版）の制作 0.4時間",
           "category": "広報",
           "outputs": [
@@ -10992,13 +11006,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-10-18",
-          "title": "📣 COCoLa朝カフェ会（10/18 8:00 アールベイカー）のCBI応援告知をSNS3媒体へ投稿する（事業主の承認後・当日朝まで）",
-          "category": "広報",
-          "priority": "高",
-          "note": "文案は events/2026-10-18_COCoLa朝カフェ会/CBI応援告知_投稿文案.md。画像は会場写真版か集合写真版のどちらか（事業主が選ぶ。集合写真版は写っている方の了解が要る）。COCoLa側の投稿の後に出す（事業主指示「そのあとに」）。投稿は予約キュー（3媒体・IGはJPEG）で、本文と画像を提示して承認を得てから。"
-        },
         {
           "due": "未定",
           "title": "🛠 antigravity-image スキルの記述を直す（headless の agy で command 権限が自動拒否され画像が出ない。settings.json の permissions.allow か手順の見直し）",
