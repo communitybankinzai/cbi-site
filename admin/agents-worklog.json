@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-10-18",
+          "title": "CiDAO(Vercel)の使用量モニタ・警告メールの時系列グラフ部品・経費まとめのHTML資料を作り、管理画面へ登録してJarvisの定時報告にも組み込み 5.5時間",
+          "category": "実装",
+          "outputs": ["scripts/vercel_monitor.py", "scripts/run_vercel_monitor.vbs", "scripts/register_vercel_monitor.ps1", "scripts/_vercel_usage_snapshots.json", "scripts/build_cidao_costs_doc.py", "scripts/cbi_secret_set_from_clipboard.py", "site/admin/proposals/cidao-operating-costs-v1.html", "site/admin/proposals/assets/vercel-timeline.js", "site/admin/proposals/assets/vercel-timeline.css", "site/admin/index.html", "site/admin/data/documents.json", "site/admin/changelog.json", "site/admin/agents-worklog.json", "Jarvis（首席幕僚\\jarvis・git管理外）report.py・static/report-deck.js・static/report-deck.css・static/index.html・static/vercel-timeline.js・.css・tests/test_report.py", "cidao/2026-10-18_Vercel警告の時系列グラフ部品とHTML資料.md", "cidao/2026-10-18_Vercel使用量警告メールの時系列と読み方.md", "cidao/2026-10-18_CiDAO運営継続に必要な経費のまとめ.md", "MOC_CiDAO.md"],
+          "hours": 5.5,
+          "partnerApproved": true,
+          "note": "事業主の依頼の流れ＝家族カレンダーの空き時間の抽出と岩井さん宛LINE案→Vercelの100%警告メールの要否判断（緊急停止の兆候なし）→GitHub・Vercelへのログインの手助け（パスキー・復旧コード・受け取り箱でパスワードノートへ）→使用量モニタをJarvisの定時報告へ（グラフ・Pro説明の4節）→経費まとめ→HTML資料化→グラフと警告メールの時系列を共通部品にしてJarvisにも適用。分かったこと＝無料プランにリセット日は無く直近30日の移動窓／再通知は前回のちょうど14日後／Hobbyは使用量APIが使えない（402・404）ので手入力の実測を続ける（事業主決定）／Proは月20ドル（約3,600円・162円/ドル・消費税10%）。スマホ幅の確認では、ヘッドレスEdgeの最小幅（約500px）で右が切れて写る誤診を避け、幅375pxのiframe検証ページで測った。資料の表をカード化し、グラフ・棒・メール表にスマホ専用の配置を足した。検証＝Jarvisのテスト CidaoVercelTests 23件成功（test_report 全体は219件中1件が既存の失敗）、Jarvis実画面でグラフ・メール一覧が描かれCSP違反0件、公開サイトで資料が200。未確認＝実機のスマホ。事故＝credentials.md の grep で接続文字列が会話に出た（パスワードの回し直しは事業主の回答待ち）。残り＝10/27の実測更新（plans登録済み）。 session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569 / output: 545,274 / cost: $68.91"
+        },
+        {
           "date": "2026-10-16",
           "title": "防災MAP：記録バーの出し分け＋地震をP2P地震情報の通知で即時反映（最大10分遅れを解消） 0.4時間",
           "category": "実装",
@@ -8525,6 +8534,49 @@
         }
       ],
       "plans": [
+          {
+            "due": "2026-10-27",
+            "title": "☁ Vercel使用量：Usage画面の実測を書き写し、CiDAOのHTML資料とJarvis報告を更新する（CPU日別グラフに通知日を重ねる表示も足す）",
+            "category": "保守",
+            "priority": "高",
+            "status": "待ち",
+            "blockedBy": "事業主が Vercel の Usage 画面（Fluid Active CPU の日別グラフ）の写真を送ること。台風の山の日が窓から抜ける 10/26 のあと",
+            "note": "手順＝①_vercel_usage_snapshots.json と日別の _vercel_daily_cpu.json に書き写す（棒の高さの読み取りは概算と明記）②py scripts/vercel_monitor.py ③py scripts/build_cidao_costs_doc.py のあと site で admin/proposals/cidao-operating-costs-v1.html だけを add→commit→push（git add -A 禁止）④Jarvisの cidao_vercel カードに、日ごとのCPUの上へ通知日の縦線を重ねる表示を足す（report-deck.js・report.py・テスト）⑤10/21・10/22・11/1 の再通知が来たかを確認し、合計が4時間を下回る日を見積もって報告する。詳細は保管庫 cidao/2026-10-18_Vercel警告の時系列グラフ部品とHTML資料.md"
+          },
+          {
+            "due": "2026-10-30",
+            "title": "☁ CiDAO を Vercel Pro に変えるか、メンバーの確認を取って決める（判断の期限）",
+            "category": "事務",
+            "priority": "高",
+            "note": "資料＝管理画面「内部資料・提案資料」先頭の「CiDAO運営継続の経費とVercel使用量の警告の経過」。確認したいこと＝①費用（月約3,600円）を団体で負担してよいか ②支払い手段（団体の口座は未開設・11月の総会のあと開設予定）③期間（イベント前後の1か月だけか継続か）④無料プランの「個人・非商用」の条件に団体のサイトが当たらないか。事務局案＝10/27の実測で上限を下回る見込みが立てば無料のまま、立たなければ 10/30 までにPro。11/3 武蔵屋イベントに備える判断。"
+          },
+          {
+            "due": "2026-10-25",
+            "title": "🔐 Supabase の DB 接続文字列が 10/18 の会話に出た件：パスワードを回し直すか決める",
+            "category": "保守",
+            "priority": "中",
+            "status": "待ち",
+            "blockedBy": "事業主が回し直しの時期（A 今週中・B 後で・C そのまま）を答えること",
+            "note": "credentials.md を grep した出力に接続文字列が混ざり、会話に出た。画面外には出していない。回し直すと、Vercel・手元の .env.local・scripts の接続設定の差し替えが要る（Supabase の Database パスワードの再設定→各所を更新）。"
+          },
+          {
+            "due": "未定",
+            "title": "🖥 Jarvis定時報告の警告メール時系列グラフが右の枠より縦に長い（約900px）→ 高さを詰めるか決める",
+            "category": "実装",
+            "priority": "低",
+            "status": "保留",
+            "blockedBy": "事業主が Jarvis の画面で、右の枠の中をスクロールして見るのが不便かどうかを判断すること",
+            "note": "コンパクト配置（画面幅1500px未満）は文字が大きく読める反面、4項目で縦に約900px。広い枠なら標準配置（約340px）に戻せる。直すなら report-deck.js の compact 判定か、部品の LANE_H（compact）を縮める。CBIサイトと Jarvis の部品は同じ内容にそろえること。"
+          },
+          {
+            "due": "未定",
+            "title": "📱 CiDAO経費のHTML資料を、実機のスマホ（iPhone・Android）で開いて崩れがないか確認する",
+            "category": "保守",
+            "priority": "低",
+            "status": "待ち",
+            "blockedBy": "事業主または会員が実機のスマホで資料のURLを開いて見ること（幅375pxの検証では崩れなし）",
+            "note": "確認＝グラフの文字が欠けない・表がカードで読める・「古い順／新しい順」の切り替えが押せる。URLは https://communitybankinzai.github.io/cbi-site/admin/proposals/cidao-operating-costs-v1.html"
+          },
         {
           "due": "未定",
           "title": "⚡ 地震のP2P通知での即時反映を、本物の地震で実測する（発生→地図に出るまでの秒数）",
