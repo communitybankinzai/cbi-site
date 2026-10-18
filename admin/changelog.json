@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-10-18T22:40:00+09:00",
+  "updatedAt": "2026-10-19T08:15:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-10-19",
+      "type": "content",
+      "target": "assets/sns/2026-10-19_musashiya-prereg/",
+      "title": "武蔵屋マルシェ「先にCiDAO登録で体験がスムーズ」告知の動画1本と静止画7枚を、SNS予約投稿用の公開領域へ追加",
+      "detail": "11/3 武蔵屋マルシェの告知（10/23・10/31 の予約投稿）が読み込む素材。動画（1080x1920・約34秒・BGM入り）と、ゆっくり読める静止画7枚（JPEG・1080x1350）。ページからのリンクはなく、予約投稿の画像URLとしてだけ使う。3D地図の出典（Google Photorealistic 3D Tiles／Cesium）とBGMの表記は動画と静止画の中に入れてある。",
+      "author": "Claude"
+    },
     {
       "date": "2026-10-18",
       "type": "content",
