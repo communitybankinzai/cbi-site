@@ -12831,10 +12831,10 @@
         },
         {
           "due": "2026-10-22",
-          "title": "🔗 プロフィールのリンクを CiDAO のログイン（計測つき）に変える：Instagram・Facebookページ・Threads（事業主の操作・10/23 19:30 の投稿より前に）",
+          "title": "🔗 プロフィールのリンクに CiDAO のログイン（計測つき）を追加して先頭にする：Instagram・Facebookページ・Threads（事業主の操作・10/23 19:30 の投稿より前に）",
           "category": "広報",
           "priority": "高",
-          "note": "投稿本文にリンクは貼らず「プロフィールのリンクから」と案内するため、これが無いと登録の入口が無い。URL＝https://cidao.vercel.app/login?utm_source=sns&utm_medium=profile&utm_campaign=musashiya_prereg 。登録した人は管理画面で登録経路『sns:profile:musashiya_prereg』として数えられる。Instagramのリンクは API では変えられない（アプリのプロフィール編集から）。事業主が貼ると 2026-10-19 に表明済み。"
+          "note": "投稿本文にリンクは貼らず「プロフィールのリンクから」と案内するため、これが無いと登録の入口が無い。URL＝https://cidao.vercel.app/login?utm_source=sns&utm_medium=profile&utm_campaign=musashiya_prereg 。登録した人は管理画面で登録経路『sns:profile:musashiya_prereg』として数えられる。Instagramのリンクは API では変えられない（アプリのプロフィール編集から）。事業主が貼ると 2026-10-19 に表明済み。2026-10-19 の公開ページ確認：Instagram・Threads とも先頭は CBI のサイト（github.io/cbi-site）ほか3つあり、置き換えでなく『追加して先頭』が要る（Instagram はリンク最大5つ・タイトルを付けられる）。Threads は Instagram と連動している可能性。Facebook は未確認。"
         },
         {
           "due": "2026-10-23",
