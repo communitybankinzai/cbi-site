@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-10-19",
+          "title": "武蔵屋マルシェ『先にCiDAO登録』SNS告知の動画・静止画7枚・本文3種と予約7件、卒論スライドへのパネル写真、FreeFree広告PDFの保管 3.0時間",
+          "category": "広報",
+          "outputs": ["events/2026-11-03_武蔵屋/SNS告知_事前登録/（reel_9x16.mp4・cover_9x16.jpg・carousel_1〜7.jpg・thumb_check.jpg・本文3種・README.md）", "scripts/promo/record_prereg.mjs・make_prereg_assets.py", "site/assets/sns/2026-10-19_musashiya-prereg/（動画1・画像7）", "site/admin/changelog.json", "SNS予約キュー7件", "academy/06_発表/slides.md・build_h2p.py・img/panel_work.jpg・panel_done.jpg・卒論発表スライド_発表用.pptx・_動画入り.pptx", "広報部/FreeFree広告/README.md", "MOC_行政調整.md"],
+          "hours": 3.0,
+          "partnerApproved": true,
+          "note": "3D本番サイトを自動で撮る録画を作り、1コマ目が黒い・白鳥が見えない・最後に会場が分からない問題を直して4回撮り直し（原因＝サイト開始時のflyTo。cancelFlight で解決）。静止画は改行・重なりを直し、動画は 138MB→31MB に。予約は媒体ごとの別行で登録し、読み戻して7件とも本文・URL・日時・媒体が一致を確認（不一致0）。卒論スライドは imgs2＋統計を左右2段にする分岐を build_h2p.py に追加し、PowerPoint書き出し画像で確認。build_slides.py は公開サイトへ配る処理があるため動かしていない。session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569 / output: 1,007,590 / cost: $148.72（前回記録分 704,687 / $105.47 を引いた差分 302,903）"
+        },
+        {
+          "date": "2026-10-19",
           "title": "Vercelの超過後の挙動とPro/OSS支援の調査・LINEの所見への最善策の整理、CiDAOの画面をアイコン付きタイルにそろえるUI統一（枝で作成・本番は未反映） 1.2時間",
           "category": "実装",
           "outputs": ["C:/Repos/cidao-ui（git worktree・枝 feat/ui-tiles・コミット f08303f／592c526）", "cidao: src/components/Tile.tsx・layout/PageShell.tsx・layout/PageHeader.tsx・BottomNav.tsx・ui/button.tsx", "cidao: src/app/page.tsx と一覧系11ページ・詳細/入力/マイページ等20ページ・人材バンク・AIインタビュー", ".claude/launch.json（cidao-ui の開発サーバー設定）", "site/admin/agents-worklog.json"],
@@ -12811,6 +12820,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-10-22",
+          "title": "🔗 プロフィールのリンクを CiDAO のログイン（計測つき）に変える：Instagram・Facebookページ・Threads（事業主の操作・10/23 19:30 の投稿より前に）",
+          "category": "広報",
+          "priority": "高",
+          "note": "投稿本文にリンクは貼らず「プロフィールのリンクから」と案内するため、これが無いと登録の入口が無い。URL＝https://cidao.vercel.app/login?utm_source=sns&utm_medium=profile&utm_campaign=musashiya_prereg 。登録した人は管理画面で登録経路『sns:profile:musashiya_prereg』として数えられる。Instagramのリンクは API では変えられない（アプリのプロフィール編集から）。事業主が貼ると 2026-10-19 に表明済み。"
+        },
+        {
+          "due": "2026-10-23",
+          "title": "📣 武蔵屋『先にCiDAO登録で体験がスムーズ』の SNS 告知（10/23 19:30 動画・19:40 静止画、10/31 10:00 再投稿）の投稿結果を、キューの note 欄で媒体ごとに確かめる",
+          "category": "広報",
+          "priority": "高",
+          "note": "2026-10-19 事業主承認・予約7件（キューid q1792365141351 動画Threads／q1792365150229 動画IG／q1792365159833 動画FB／q1792365167655 静止画IG／q1792365176394 静止画FB／q1792365186028 再投稿IG／q1792365194322 再投稿FB）。素材は site/assets/sns/2026-10-19_musashiya-prereg/。IGは動画（リール）と7枚カルーセルが同じ日に2件。10/31 の再投稿は IG・FB のみ（Threads は入れていない）。確認後は events/2026-11-03_武蔵屋/SNS告知_事前登録/README.md の status を更新。投稿が失敗したときは同じ内容を再送せず、note 欄の理由を読む。"
+        },
         {
           "due": "2026-10-10",
           "title": "📽 市民活動支援センターのプロジェクター用スクリーン借用（CBI名義・プロジェクター本体は CBI 所有）：小熊さんの返事を受けて受取日時・場所、返却日時、申請手続きを確定する",
