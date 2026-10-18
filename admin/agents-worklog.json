@@ -8544,6 +8544,24 @@
       ],
       "plans": [
           {
+            "due": "未定",
+            "title": "☁ Vercel Open Source Program（3年で3,600ドル分のクレジット）に申請できるか検討する（CiDAOを完全なオープンソースにする場合）",
+            "category": "調査",
+            "priority": "中",
+            "status": "待ち",
+            "blockedBy": "Vercelの申請受付が再開すること（2026-10-18時点は停止中・3か月ごとに受付）と、事業主がCiDAOを完全に公開する方針を決めること",
+            "note": "条件＝実際に開発・保守されているオープンソース／Vercelで動かす／成長や影響の見込み／行動規範（Code of Conduct）。NPOは「完全なオープンソースなら申請可」。提供＝3年で3,600ドル分のクレジット（月に直すと約100ドルで、Proの月20ドルを上回る）。いまの communitybankinzai/cidao は公開だが LICENSE が無く、オープンソースとは言えない。申請するならライセンス（MIT・AGPLなど。方針と法務の確認が要る）と CODE_OF_CONDUCT を足す。出典 https://vercel.com/open-source-program（2026-10-18確認）"
+          },
+          {
+            "due": "未定",
+            "title": "☁ 収益化を始める前に、VercelをProへ切り替える（Hobbyは非商用のみ）",
+            "category": "事務",
+            "priority": "中",
+            "status": "保留",
+            "blockedBy": "団体が収益化（参加費・決済・広告・運営の対価など）を始める時期が決まること",
+            "note": "Vercelの公正利用の方針では、Hobbyは非商用の個人利用のみ。支払いの受け付け・商品やサービスの宣伝・サイトの作成や運営の対価を受け取ることは商用に当たる（寄付を求めるのは商用に当たらない）。須田さんの案（団体・個人の登録や告知・集客・イベントに絞って収益化を目指す）が進む場合は、始める前にProへ。出典 https://vercel.com/docs/limits/fair-use-guidelines（2026-10-18確認）。2026-10-18 のLINEで須田さんが提案。"
+          },
+          {
             "due": "2026-10-27",
             "title": "☁ Vercel使用量：Usage画面の実測を書き写し、CiDAOのHTML資料とJarvis報告を更新する（CPU日別グラフに通知日を重ねる表示も足す）",
             "category": "保守",
