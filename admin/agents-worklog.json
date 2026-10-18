@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-10-18",
+          "title": "CiDAO経費資料に「APIの利用料とVercelのプラン代の違い」の説明を足し、メンバー向けLINE文面を作成 0.4時間",
+          "category": "実装",
+          "outputs": ["scripts/build_cidao_costs_doc.py", "site/admin/proposals/cidao-operating-costs-v1.html", "site/admin/changelog.json", "site/admin/agents-worklog.json"],
+          "hours": 0.4,
+          "partnerApproved": true,
+          "note": "事業主の指摘「APIのコストとの違いも説明しないといけない」「今は運営費用はAPIのみ」を受けて、資料の1節の下に2種類のお金（①AIなどの利用料＝使った分・②Vercelのプラン代＝ほぼ固定）の説明枠と、ことばの説明の「API」を追加した。確認＝幅375pxの検証ページで、横のはみ出しなし・説明枠が読めることを確認。LINE文面は事業主へ提示（送信は事業主）。 session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569 / output: 582,097 / cost: $76.56"
+        },
+        {
+          "date": "2026-10-18",
           "title": "CiDAO(Vercel)の使用量モニタ・警告メールの時系列グラフ部品・経費まとめのHTML資料を作り、管理画面へ登録してJarvisの定時報告にも組み込み 5.5時間",
           "category": "実装",
           "outputs": ["scripts/vercel_monitor.py", "scripts/run_vercel_monitor.vbs", "scripts/register_vercel_monitor.ps1", "scripts/_vercel_usage_snapshots.json", "scripts/build_cidao_costs_doc.py", "scripts/cbi_secret_set_from_clipboard.py", "site/admin/proposals/cidao-operating-costs-v1.html", "site/admin/proposals/assets/vercel-timeline.js", "site/admin/proposals/assets/vercel-timeline.css", "site/admin/index.html", "site/admin/data/documents.json", "site/admin/changelog.json", "site/admin/agents-worklog.json", "Jarvis（首席幕僚\\jarvis・git管理外）report.py・static/report-deck.js・static/report-deck.css・static/index.html・static/vercel-timeline.js・.css・tests/test_report.py", "cidao/2026-10-18_Vercel警告の時系列グラフ部品とHTML資料.md", "cidao/2026-10-18_Vercel使用量警告メールの時系列と読み方.md", "cidao/2026-10-18_CiDAO運営継続に必要な経費のまとめ.md", "MOC_CiDAO.md"],

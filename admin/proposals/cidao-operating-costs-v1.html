@@ -106,7 +106,7 @@ table.meters td:first-child { white-space: nowrap; }
     <p class="lead">CiDAO（シダオ）のウェブサイトは、「Vercel（バーセル）」というアメリカの会社のサービスを借りて動いています。その<strong>無料で使える量の上限</strong>を、いま超えています。11/3（武蔵屋イベント）の前に、<strong>有料のプラン（Pro）に変えるか</strong>を決めたい、という資料です。</p>
     <p class="lead">CiDAOを続けるのに要るお金は、いまは月 約1,100〜2,300円。Proにすると月 約4,700〜5,900円です。人件費は含めていません。</p>
     <div class="pills">
-      <span class="pill">データ時点 <strong>10/18 07:13</strong></span>
+      <span class="pill">データ時点 <strong>10/18 09:00</strong></span>
       <span class="pill">作成 <strong>2026-10-18</strong></span>
       <span class="pill">判断の期限 <strong>10/30（金）</strong></span>
     </div>
@@ -143,6 +143,30 @@ table.meters td:first-child { white-space: nowrap; }
     </div>
   </div>
   <p class="note">「基盤の維持費は年3〜10万円」という以前の想定に、Bがちょうど収まります。</p>
+
+  <h3 class="mini">お金は2種類あります（まぜやすいので、分けて説明します）</h3>
+  <div class="explain">
+    <div class="ex-card">
+      <h3>① AIなどの利用料（API）── いま払っているのは、これだけです</h3>
+      <p>API（エーピーアイ）は、CiDAOが、外の会社の機能を呼び出す窓口です。AIの文章（Claude）や画像づくり（Gemini）を使うと、その会社へ<strong>使った分だけ</strong>払います。月 約1,100〜2,300円です。</p>
+      <p>アクセスの数ではなく、<strong>AIの機能を使った量</strong>で決まります。</p>
+      <p class="tatoe"><span>たとえば</span>タクシーの料金メーターです。乗った分だけ、かかります。</p>
+    </div>
+    <div class="ex-card">
+      <h3>② Vercelのプラン代 ── いまは0円（無料プラン）</h3>
+      <p>Vercelは、CiDAOのサイトを動かす場所を貸すサービスです。無料プランには「ここまで」という上限があり、いまそれを超えています。有料のPro（月20ドル＝約3,600円）にすると、上限が広がり、止まる心配が小さくなります。</p>
+      <p>月額は<strong>ほぼ決まった金額</strong>で、AIの使い方とは<strong>別</strong>です。</p>
+      <p class="tatoe"><span>たとえば</span>お店の家賃です。売上やメーターとは関係なく、毎月かかります。</p>
+    </div>
+  </div>
+  <div class="readme">
+    <strong>まとめ</strong>
+    <ol>
+      <li><strong>いま</strong>お金がかかっているのは、①のAIなどの利用料だけです（月 約1,100〜2,300円）。②のVercelは0円です。</li>
+      <li>Proにすると、①はそのままで、<strong>②が月約3,600円ふえます</strong>（上の「B」）。</li>
+      <li>原因が別なので、Proにしても、AIの利用料は減りません。AIを使うほど①がふえ、アクセスがふえるほど、②の無料の上限を超えやすくなります。</li>
+    </ol>
+  </div>
 </section>
 
 <section class="section" id="about">
@@ -195,6 +219,7 @@ table.meters td:first-child { white-space: nowrap; }
 
   <h3 class="mini">ことばの説明</h3>
   <dl class="gloss">
+    <dt>API（エーピーアイ）</dt><dd>CiDAOが、外の会社の機能（AI・地図など）を呼び出す窓口。使った量に応じて、その会社へ料金を払います。Vercelのプラン代とは別のお金です。</dd>
     <dt>サーバー</dt><dd>ウェブサイトのデータを持っていて、見に来た人に送るコンピューター。</dd>
     <dt>無料枠（むりょうわく）</dt><dd>無料で使える量の上限。</dd>
     <dt>従量課金（じゅうりょうかきん）</dt><dd>使った量に応じて払う料金。電気代のような仕組み。この資料では「使った分だけ払う」と書いています。</dd>
@@ -305,10 +330,10 @@ table.meters td:first-child { white-space: nowrap; }
   <p class="note">出典：Vercel公式の料金表（Proプラン 2026-09-15、関数の料金 2026-06-16）、Supabase・Resendの公式料金（2026-10-18確認）、会計の割り振りの記録（2026-09-28）、手入力の実測（Vercelの使用量画面・直近30日）。</p>
 </section>
 
-<p class="foot">この資料は scripts/build_cidao_costs_doc.py が作りました（データ時点 10/18 07:13）。内容を更新するときは、スクリプトを再実行して作り直します。<br>グラフと表は、共通部品 assets/vercel-timeline.js で描いています（Jarvisの定時報告と同じ部品）。</p>
+<p class="foot">この資料は scripts/build_cidao_costs_doc.py が作りました（データ時点 10/18 09:00）。内容を更新するときは、スクリプトを再実行して作り直します。<br>グラフと表は、共通部品 assets/vercel-timeline.js で描いています（Jarvisの定時報告と同じ部品）。</p>
 </main>
 
-<script type="application/json" id="cvt-data">{"asOf": "2026-10-18T07:13+09:00", "start": "2026-08-24", "end": "2026-11-06", "lanes": [{"id": "cpu", "name": "Fluid Active CPU", "short": "CPU", "limit": "無料枠 4時間", "events": [{"t": "2026-08-26T07:03+09:00", "pct": 75, "predicted": false}, {"t": "2026-09-06T02:08+09:00", "pct": 100, "predicted": false}, {"t": "2026-09-20T02:16+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-04T02:34+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-18T02:45+09:00", "pct": 100, "predicted": false}, {"t": "2026-11-01T02:45+09:00", "pct": 100, "predicted": true}]}, {"id": "invocation", "name": "Function Invocation", "short": "呼び出し回数", "limit": "無料枠 100万回", "events": [{"t": "2026-09-22T15:29+09:00", "pct": 75, "predicted": false}, {"t": "2026-09-23T10:31+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-07T10:39+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-21T10:39+09:00", "pct": 100, "predicted": true}]}, {"id": "memory", "name": "Fluid Provisioned Memory", "short": "メモリ", "limit": "無料枠 360 GB時", "events": [{"t": "2026-09-24T08:42+09:00", "pct": 75, "predicted": false}, {"t": "2026-10-08T09:29+09:00", "pct": 75, "predicted": false}, {"t": "2026-10-22T09:29+09:00", "pct": 75, "predicted": true}]}, {"id": "storage", "name": "Function Storage", "short": "ストレージ", "limit": "無料枠 10 GB", "events": [{"t": "2026-09-26T09:45+09:00", "pct": 75, "predicted": false}, {"t": "2026-10-03T19:26+09:00", "pct": 100, "predicted": false}]}], "markers": [{"t": "2026-10-18T07:13+09:00", "label": "今日 10/18", "kind": "now"}, {"t": "2026-11-03T12:00+09:00", "label": "11/3 武蔵屋イベント", "kind": "event"}], "usage": {"asOf": "2026-10-18T05:55+09:00", "window": "直近30日（9/17 14:00〜10/17 14:00）", "stale": false, "bars": [{"label": "CPU（4時間）", "percent": 272.9}, {"label": "呼び出し回数（100万回）", "percent": 110.0}, {"label": "メモリ（360 GB時）", "percent": 77.8}, {"label": "ストレージ（10 GB）", "percent": 24.9}]}}</script>
+<script type="application/json" id="cvt-data">{"asOf": "2026-10-18T09:00+09:00", "start": "2026-08-24", "end": "2026-11-06", "lanes": [{"id": "cpu", "name": "Fluid Active CPU", "short": "CPU", "limit": "無料枠 4時間", "events": [{"t": "2026-08-26T07:03+09:00", "pct": 75, "predicted": false}, {"t": "2026-09-06T02:08+09:00", "pct": 100, "predicted": false}, {"t": "2026-09-20T02:16+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-04T02:34+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-18T02:45+09:00", "pct": 100, "predicted": false}, {"t": "2026-11-01T02:45+09:00", "pct": 100, "predicted": true}]}, {"id": "invocation", "name": "Function Invocation", "short": "呼び出し回数", "limit": "無料枠 100万回", "events": [{"t": "2026-09-22T15:29+09:00", "pct": 75, "predicted": false}, {"t": "2026-09-23T10:31+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-07T10:39+09:00", "pct": 100, "predicted": false}, {"t": "2026-10-21T10:39+09:00", "pct": 100, "predicted": true}]}, {"id": "memory", "name": "Fluid Provisioned Memory", "short": "メモリ", "limit": "無料枠 360 GB時", "events": [{"t": "2026-09-24T08:42+09:00", "pct": 75, "predicted": false}, {"t": "2026-10-08T09:29+09:00", "pct": 75, "predicted": false}, {"t": "2026-10-22T09:29+09:00", "pct": 75, "predicted": true}]}, {"id": "storage", "name": "Function Storage", "short": "ストレージ", "limit": "無料枠 10 GB", "events": [{"t": "2026-09-26T09:45+09:00", "pct": 75, "predicted": false}, {"t": "2026-10-03T19:26+09:00", "pct": 100, "predicted": false}]}], "markers": [{"t": "2026-10-18T09:00+09:00", "label": "今日 10/18", "kind": "now"}, {"t": "2026-11-03T12:00+09:00", "label": "11/3 武蔵屋イベント", "kind": "event"}], "usage": {"asOf": "2026-10-18T05:55+09:00", "window": "直近30日（9/17 14:00〜10/17 14:00）", "stale": false, "bars": [{"label": "CPU（4時間）", "percent": 272.9}, {"label": "呼び出し回数（100万回）", "percent": 110.0}, {"label": "メモリ（360 GB時）", "percent": 77.8}, {"label": "ストレージ（10 GB）", "percent": 24.9}]}}</script>
 <script src="assets/vercel-timeline.js"></script>
 <script>
 (function () {
