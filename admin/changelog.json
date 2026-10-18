@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-10-18T09:30:00+09:00",
+  "updatedAt": "2026-10-18T22:40:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-10-18",
+      "type": "content",
+      "target": "workers-coop/index.html, index.html",
+      "title": "事業構想ページ「CBI × 労働者協同組合｜事業構想・設立ロードマップ」を /workers-coop/ に追加（提案・未決定の検討資料）",
+      "detail": "提供資料 cbi_workers_coop_plan.html の本文・注意書き・出典リンク（厚生労働省・千葉県・e-Gov）を書き換えずに掲載し、サイト共通のヘッダー・フッターで包んだ。資料の配色は .wc 配下に限定してサイト全体の style.css と衝突しないようにした。表の見出しに scope、新しいタブで開くリンクに読み上げ用の注記を追加。トップページのフッターに導線を1つ追加（ヘッダーのメニューは未決定の構想のため追加していない）。CBIの組織形態・既存ページは変更していない。",
+      "author": "Claude"
+    },
     {
       "date": "2026-10-18",
       "type": "docs",

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBI × 労働者協同組合｜事業構想・設立ロードマップ</title>
+<meta name="description" content="Community Bank INZAIにおける労働者協同組合の新設に関する検討資料。事業計画、収支試算、設立手順、法的留意点。提案段階であり、正式決定ではありません。">
+<meta property="og:title" content="CBI × 労働者協同組合｜事業構想・設立ロードマップ">
+<meta property="og:description" content="CBIの新たな収益事業として、労働者協同組合（ワーカーズコープ）を新設する構想の検討資料（提案・未決定）。">
+<meta property="og:image" content="../assets/cbi-logo.png">
+<meta property="og:type" content="article">
+<link rel="icon" type="image/png" href="../assets/cbi-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=20260814a">
+<style>
+  /* ===== workers-coop page only（提供資料 cbi_workers_coop_plan.html の配色・構成を .wc 配下に限定して移植） ===== */
+  .wc{--wc-ink:#182a35;--wc-muted:#526673;--wc-bg:#f5f8f8;--wc-paper:#fff;--wc-teal:#136b70;--wc-light:#e8f3f1;--wc-line:#d9e3e6;--wc-gold:#c18f45;background:var(--wc-bg);color:var(--wc-ink);line-height:1.8}
+  .wc a{color:var(--wc-teal)}
+  .wc .wc-wrap{max-width:1050px;margin:auto;padding:0 22px}
+  .wc .wc-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .wc .wc-crumb{font-size:.8rem;color:#bfe0dc;margin:0 0 14px}
+  .wc .wc-crumb a{color:#dcf5ef}
+  .wc .wc-hero{background:linear-gradient(130deg,#10363e,#166b6c);color:#fff;padding:56px 0 50px}
+  .wc .wc-tag{display:inline-block;border:1px solid #9bcbc8;padding:3px 12px;border-radius:50px;font-size:.82rem;color:#dcf5ef}
+  .wc .wc-hero h1{font-size:clamp(2rem,5vw,3.3rem);line-height:1.35;margin:20px 0;color:#fff}
+  .wc .wc-hero p{max-width:780px;font-size:1.08rem;color:#e2f3f0}
+  .wc .wc-meta{font-size:.84rem;color:#d1e5e2}
+  .wc .wc-nav{background:#fff;border-bottom:1px solid var(--wc-line);position:sticky;top:68px;z-index:40}
+  .wc .wc-nav .wc-wrap{display:flex;gap:20px;overflow-x:auto;white-space:nowrap;padding-top:11px;padding-bottom:11px}
+  .wc .wc-nav a{text-decoration:none;font-size:.9rem;font-weight:600}
+  .wc main{display:block}
+  .wc .wc-main{padding:35px 0 30px}
+  .wc section{background:var(--wc-paper);margin:22px 0;padding:32px;border:1px solid var(--wc-line);border-radius:18px;box-shadow:0 3px 16px #1c4b4d0a;scroll-margin-top:130px}
+  .wc h2{margin:0 0 16px;font-size:1.55rem;line-height:1.4;color:var(--wc-ink)}
+  .wc h3{font-size:1.08rem;margin-top:24px;color:var(--wc-ink)}
+  .wc p{margin:10px 0 16px}
+  .wc .wc-eyebrow{font-size:.8rem;font-weight:800;letter-spacing:.1em;color:var(--wc-teal)}
+  .wc .wc-lead{font-size:1.12rem;font-weight:650}
+  .wc .wc-notice{background:#fff7e9;border-left:4px solid var(--wc-gold);padding:15px 18px;border-radius:7px}
+  .wc .wc-note{background:var(--wc-light);padding:16px 19px;border-radius:10px;font-size:inherit;color:inherit}
+  .wc .wc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+  .wc .wc-tile{border:1px solid var(--wc-line);padding:18px;border-radius:12px;background:#fcfefe}
+  .wc .wc-tile strong{display:block;color:var(--wc-teal);font-size:1.04rem}
+  .wc .wc-tile p{font-size:.9rem;margin:8px 0 0}
+  .wc .wc-diagram{display:grid;gap:10px;max-width:720px;margin:20px auto;text-align:center}
+  .wc .wc-unit{border-radius:12px;padding:17px;background:#e8f3f1;border:1px solid #b9d7d4}
+  .wc .wc-unit.wc-alt{background:#f1f4f8;border-color:#cfdae4}
+  .wc .wc-arr{color:var(--wc-teal);font-weight:700}
+  .wc table{width:100%;border-collapse:collapse;font-size:.93rem}
+  .wc th,.wc td{padding:12px 11px;border-bottom:1px solid var(--wc-line);text-align:left;vertical-align:top}
+  .wc th{background:#edf5f4}
+  .wc td.wc-num,.wc th.wc-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .wc .wc-scroll{overflow-x:auto}
+  .wc .wc-steps{counter-reset:step;list-style:none;padding:0}
+  .wc .wc-steps li{counter-increment:step;padding:4px 0 20px 44px;position:relative;border-left:2px solid #c7dedb;margin-left:15px}
+  .wc .wc-steps li:before{content:counter(step);position:absolute;left:-16px;top:0;background:var(--wc-teal);color:#fff;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:750}
+  .wc .wc-steps li:last-child{border-left-color:transparent}
+  .wc .wc-steps b{display:block}
+  .wc .wc-small{font-size:.85rem;color:var(--wc-muted)}
+  .wc .wc-checks{padding-left:22px}
+  .wc .wc-checks li{margin:7px 0}
+  .wc .wc-pagefoot{padding:0 0 42px;color:var(--wc-muted);font-size:.85rem}
+  .wc .wc-btn{display:inline-block;background:var(--wc-teal);color:#fff;padding:11px 18px;border-radius:9px;text-decoration:none;font-weight:700}
+  .wc .wc-btn:focus-visible,.wc .wc-nav a:focus-visible{outline:3px solid var(--wc-gold);outline-offset:2px}
+  .wc .wc-source-list li{margin:7px 0;overflow-wrap:anywhere}
+  @media(max-width:700px){
+    .wc section{padding:23px 18px}
+    .wc .wc-grid{grid-template-columns:1fr}
+    .wc .wc-hero{padding:38px 0 35px}
+    .wc th,.wc td{padding:9px 8px;font-size:.85rem}
+    .wc .wc-wrap{padding:0 16px}
+  }
+  @media print{
+    .site-header,.site-footer,.wc .wc-nav,.wc .wc-btn{display:none!important}
+    .wc{background:#fff}
+    .wc .wc-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .wc section{box-shadow:none;break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="site-header">
+  <div class="container header-inner">
+    <a href="../index.html" class="brand">
+      <img src="../assets/cbi-logo.png" alt="CBI ロゴ" class="brand-logo">
+      <span class="brand-text">Community Bank INZAI</span>
+    </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開く" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="site-nav">
+      <a href="../index.html#about">事業概要</a>
+      <a href="../index.html#join">参加方法</a>
+      <a href="../index.html#report">活動報告</a>
+      <a href="../index.html#projects">プロジェクト</a>
+      <a href="../uniqueness/">他事例との比較</a>
+      <a href="../index.html#contact">団体情報</a>
+      <a href="https://cidao.vercel.app/" target="_blank" rel="noopener" class="nav-external" title="CBIが運営する無料の市民参加アプリ。地域で「やってみたい」人と団体をつなぎます">CiDAO ↗</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wc">
+<!-- 以下の本文は提供資料 cbi_workers_coop_plan.html（2026-10-18 作成・提案・未決定）をそのまま掲載。内容を正式決定事項として書き換えないこと。 -->
+<div class="wc-hero"><div class="wc-wrap"><p class="wc-crumb"><a href="../index.html">ホーム</a> ／ 事業構想（検討資料）</p><span class="wc-tag">CBI / CiDAO · 事業構想検討資料</span><h1>地域課題を、<br>続けられる仕事へ。</h1><p>CBIの新たな収益事業として、労働者協同組合（ワーカーズコープ）を新設する構想。事業モデル・収支試算・設立手順を一体で整理しました。</p><div class="wc-meta">作成日：2026年10月18日｜ステータス：提案・未決定</div></div></div>
+<nav class="wc-nav" aria-label="ページ内ナビ"><div class="wc-wrap"><a href="#conclusion">基本方針</a><a href="#scheme">組織設計</a><a href="#business">事業計画</a><a href="#finance">収支試算</a><a href="#roadmap">設立手順</a><a href="#risk">リスク</a><a href="#sources">出典</a></div></nav>
+<main class="wc-wrap wc-main" id="top">
+<section id="conclusion"><div class="wc-eyebrow">01 / CONCEPT</div><h2>結論：CBIとは別法人として設立する</h2><p class="wc-lead">市民参加の場であるCBI / CiDAOを残し、対価を得て仕事を行う主体として労働者協同組合を新設する案を推奨します。</p><div class="wc-notice"><b>重要：</b>本資料は設立決定・行政委託獲得・収益確定を示すものではありません。CBIの現行の法人格・規約・契約権限は未確認です。名称に「Bank」が含まれていても、この構想は預金受入れ・融資等の銀行業を想定しません。</div><p>選定理由：労働者協同組合は、組合員による出資・意見反映・事業従事を制度の基本とする法人形態です。単なる有償ボランティア組織ではなく、雇用・会計・意思決定の仕組みを整える必要があります。</p></section>
+<section id="scheme"><div class="wc-eyebrow">02 / ORGANIZATION</div><h2>役割分担のイメージ</h2><div class="wc-diagram"><div class="wc-unit wc-alt"><b>CBI / CiDAO（既存の地域コミュニティ）</b><div class="wc-small">課題の収集、参加者の意見交換、地域との連絡</div></div><div class="wc-arr">↓ アイデア共有・業務連携（契約関係は要整理）</div><div class="wc-unit"><b>仮称：印西地域ワーカーズ協同組合（新設案）</b><div class="wc-small">出資する組合員が共同で経営・就労し、対価を得る事業を実施</div></div><div class="wc-arr">↓ 契約・納品・請求</div><div class="wc-unit wc-alt"><b>顧客：地域事業者・主催者・自治体等</b><div class="wc-small">受託・受注は未確定。受注ごとに価格・成果物・責任を合意</div></div></div><div class="wc-note"><b>ガバナンスの原則：</b>出資額にかかわらず組合員一人一票。組合員の5分の4以上が事業に従事し、事業従事者の4分の3以上が組合員であること等の法的要件に注意。従事組合員とは原則労働契約が必要です（一部役員の例外あり）。</div></section>
+<section id="business"><div class="wc-eyebrow">03 / BUSINESS MODEL</div><h2>収益事業の優先順位（提案）</h2><div class="wc-grid"><div class="wc-tile"><strong>01 防災・地域データ整備</strong><p>冠水情報の整理、現地データ入力、地図の更新、報告書作成。顧客候補：企業・団体・自治体。写真の扱い・安全確認・個人情報管理が前提。</p></div><div class="wc-tile"><strong>02 イベント運営支援</strong><p>申込管理、出店者調整、当日運営、広報制作。顧客候補：イベント主催者・商店会・地域企業。</p></div><div class="wc-tile"><strong>03 デジタル・AI導入支援</strong><p>地域の小規模事業者向けにWeb更新、業務自動化、研修、保守を提供。データ保護と継続サポートの設計が必要。</p></div></div><h3>最初の90日で売る商品案（すべて仮説）</h3><div class="wc-scroll"><table><thead><tr><th scope="col">サービス</th><th scope="col">納品物の例</th><th scope="col">試験価格例（税込・参考値）</th><th scope="col">検証すること</th></tr></thead><tbody><tr><td>イベント運営パック</td><td>告知ページ、申込フォーム、当日進行表</td><td>5万〜15万円/件</td><td>有償依頼が成立するか</td></tr><tr><td>地域事業者DXパック</td><td>ヒアリング、業務整理、操作手順書</td><td>8万〜20万円/件</td><td>工数と満足度</td></tr><tr><td>防災マップ保守</td><td>更新履歴、データ一覧、月次報告</td><td>3万〜10万円/月</td><td>継続契約・精度担保</td></tr></tbody></table></div><p class="wc-small">価格は市場相場の調査結果ではなく、検証用の提案値です。契約・受注実績を意味しません。</p></section>
+<section id="finance"><div class="wc-eyebrow">04 / FINANCIAL MODEL</div><h2>3年間の収支イメージ</h2><p class="wc-notice"><b>数値はすべて試算上の仮定です。</b> 実際の顧客数・単価・人件費・保険料・資金繰りを確認していません。金額は万円／年。税・消費税処理や設備投資・借入金返済は別途精査が必要です。</p><div class="wc-scroll"><table><thead><tr><th scope="col">項目（万円/年）</th><th scope="col" class="wc-num">1年目</th><th scope="col" class="wc-num">2年目</th><th scope="col" class="wc-num">3年目</th></tr></thead><tbody><tr><td>売上</td><td class="wc-num">480</td><td class="wc-num">900</td><td class="wc-num">1,400</td></tr><tr><td>人件費・法定福利費等</td><td class="wc-num">390</td><td class="wc-num">590</td><td class="wc-num">880</td></tr><tr><td>外注・システム・保険・広報・管理費等</td><td class="wc-num">150</td><td class="wc-num">250</td><td class="wc-num">380</td></tr><tr><th>概算営業差額</th><th class="wc-num">▲60</th><th class="wc-num">+60</th><th class="wc-num">+140</th></tr></tbody></table></div><h3>初年度売上480万円の組み立て例</h3><div class="wc-scroll"><table><thead><tr><th scope="col">仮定</th><th scope="col" class="wc-num">金額（万円）</th></tr></thead><tbody><tr><td>イベント運営 12件 × 10万円</td><td class="wc-num">120</td></tr><tr><td>DX支援 12件 × 15万円</td><td class="wc-num">180</td></tr><tr><td>防災・データ管理 3契約 × 月5万円 × 12か月</td><td class="wc-num">180</td></tr><tr><th>合計</th><th class="wc-num">480</th></tr></tbody></table></div><p>初年度は赤字試算のため、設立前に運転資金と資金調達方法を確定する必要があります。出資金は売上ではなく資本性資金として別管理します。</p><h3>着手・継続の判定基準（提案値）</h3><ul class="wc-checks"><li>法人化の前に、具体的な有償見込み案件を複数確認する。</li><li>最低6か月分の固定費に相当する資金手当てを検討する。</li><li>毎月、受注額・粗利益・労働時間・翌3か月の資金繰りを点検する。</li><li>受注が伸びない場合の縮小・撤退条件を創立前に決める。</li></ul></section>
+<section id="roadmap"><div class="wc-eyebrow">05 / ROADMAP</div><h2>設立までの公式手順と実行計画</h2><ol class="wc-steps"><li><b>構想合意・発起人3人以上の確保</b>全員の出資・事業従事・共同経営への意思を確認。CBIとは別法人にするか最終決定。</li><li><b>受注仮説の検証</b>顧客候補へのヒアリング、概算見積、役割分担、資金繰り表を作成。これは任意の経営準備段階。</li><li><b>定款・事業計画・収支予算などの作成</b>組合員資格、出資口数、事業内容、役員、運営方法などを設計。</li><li><b>創立総会を公告</b>開催日の少なくとも2週間前までに、日時・場所・定款を公告。</li><li><b>創立総会の開催</b>定款承認、事業計画・収支予算の決議、理事・監事の選任などを実施。</li><li><b>代表理事選定・出資払込・登記</b>法令に沿って必要書類を整え、法務局で設立登記。登記により組合成立。</li><li><b>成立後2週間以内に千葉県へ届出</b>成立届書・登記事項証明書・定款・役員の氏名住所一覧を提出。</li><li><b>労務・税務・保険・許認可の確認後に営業開始</b>労働契約、社会保険・労働保険等、必要に応じた許認可、個人情報管理、契約書を整備。</li></ol><div class="wc-note"><b>千葉県の窓口</b><p>千葉県商工労働部 雇用労働課 多様な働き方推進班<br>〒260-8667 千葉市中央区市場町1-1<br>電話：043-223-2743（手続案内掲載番号）</p><p class="wc-small">公式案内：<a href="https://www.pref.chiba.lg.jp/koyou/kyoudoukumiai/tetsuzuki.html" target="_blank" rel="noopener noreferrer">千葉県・各種手続き<span class="wc-sr">（新しいタブで開きます）</span></a></p></div></section>
+<section id="risk"><div class="wc-eyebrow">06 / DECISION POINTS</div><h2>設立前に潰すべき論点</h2><div class="wc-scroll"><table><thead><tr><th scope="col">論点</th><th scope="col">確認・対策</th></tr></thead><tbody><tr><td>既存CBIとの関係</td><td>名称、ロゴ、会員情報、運営資産の利用条件と利益相反管理を文書化。</td></tr><tr><td>報酬と就労</td><td>組合員の労働契約、最低賃金、労働時間、社会保険加入要件を専門家と点検。</td></tr><tr><td>情報の正確性</td><td>防災マップを公的な避難指示や通行可否判定と混同させず、情報の出典・更新日時・限界を明示。</td></tr><tr><td>個人情報・写真</td><td>同意、公開範囲、保存期限、権限管理、事故時の連絡体制を整備。</td></tr><tr><td>財務</td><td>受注未確定の状態で固定人件費を過大にしない。初年度赤字への資金手当てを確保。</td></tr><tr><td>金融規制・名称</td><td>「CBI/Bank」の名称と、実際に提供するサービスを明確に区別。預金・融資などの金融業務は本計画の対象外。</td></tr></tbody></table></div><h3>最初に決める5項目</h3><ol><li>発起人候補3名以上と、その就労時間</li><li>最初に売るサービス1つ</li><li>料金・納品物・品質基準</li><li>初期資金と赤字時の負担ルール</li><li>CBI / CiDAOとの運営・情報連携規約</li></ol></section>
+<section id="sources"><div class="wc-eyebrow">07 / REFERENCES</div><h2>公式資料・制度上の根拠</h2><ul class="wc-source-list"><li><a href="https://www.roukyouhou.mhlw.go.jp/howtobegin" target="_blank" rel="noopener noreferrer">厚生労働省「設立の流れ」<span class="wc-sr">（新しいタブで開きます）</span></a></li><li><a href="https://www.mhlw.go.jp/stf/newpage_70372.html" target="_blank" rel="noopener noreferrer">厚生労働省「ろうきょうガイドブック」（令和8年2月発行）<span class="wc-sr">（新しいタブで開きます）</span></a></li><li><a href="https://www.pref.chiba.lg.jp/koyou/kyoudoukumiai/tetsuzuki.html" target="_blank" rel="noopener noreferrer">千葉県「労働者協同組合に係る各種手続きについて」（2026年9月更新）<span class="wc-sr">（新しいタブで開きます）</span></a></li><li><a href="https://laws.e-gov.go.jp/law/502AC1000000078" target="_blank" rel="noopener noreferrer">e-Gov 法令検索「労働者協同組合法」<span class="wc-sr">（新しいタブで開きます）</span></a></li></ul><p class="wc-small">本資料の法令・行政手続は上記公式情報を参照しています。収支・価格・事業優先順位はCBI向けの企画案であり、調査で確定した実績ではありません。公開・実施前に必ず所管行政庁、司法書士、社会保険労務士、税理士等に確認してください。</p><p><a class="wc-btn" href="#conclusion">ページ先頭へ戻る ↑</a></p></section>
+</main>
+<p class="wc-wrap wc-pagefoot">CBI × 労働者協同組合｜事業構想検討資料｜2026年10月18日｜本文は正式決定ではありません。</p>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/cbi-logo.png" alt="" class="footer-logo">
+      <div>
+        <p class="footer-name">Community Bank INZAI</p>
+        <p class="footer-tagline">印西「このゆびとまれ」プロジェクト</p>
+      </div>
+    </div>
+    <p class="footer-copy">
+      © <span id="year">2026</span> Community Bank INZAI. All rights reserved.
+      <span class="footer-sep" aria-hidden="true">｜</span>
+      <a href="../terms/" class="footer-admin-link">参加のお約束・FAQ</a>
+      <span class="footer-sep" aria-hidden="true">｜</span>
+      <a href="https://cidao.vercel.app/" target="_blank" rel="noopener" class="footer-admin-link">CiDAO（市民DAO）↗</a>
+      <span class="footer-sep" aria-hidden="true">｜</span>
+      <a href="../inzai-disaster-map/" class="footer-admin-link">印西市 災害状況MAP</a>
+      <span class="footer-sep" aria-hidden="true">｜</span>
+      <a href="../metaverse/" class="footer-admin-link">３Dワールド印西（3D）</a>
+      <span class="footer-sep" aria-hidden="true">｜</span>
+      <a href="../admin/" class="footer-admin-link" rel="nofollow">運営者ログイン →</a>
+    </p>
+  </div>
+</footer>
+
+<script src="../script.js?v=20260820b"></script>
+</body>
+</html>
