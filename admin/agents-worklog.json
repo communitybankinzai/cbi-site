@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-10-19",
+          "title": "Vercelの超過後の挙動とPro/OSS支援の調査・LINEの所見への最善策の整理、CiDAOの画面をアイコン付きタイルにそろえるUI統一（枝で作成・本番は未反映） 1.2時間",
+          "category": "実装",
+          "outputs": ["C:/Repos/cidao-ui（git worktree・枝 feat/ui-tiles・コミット f08303f／592c526）", "cidao: src/components/Tile.tsx・layout/PageShell.tsx・layout/PageHeader.tsx・BottomNav.tsx・ui/button.tsx", "cidao: src/app/page.tsx と一覧系11ページ・詳細/入力/マイページ等20ページ・人材バンク・AIインタビュー", ".claude/launch.json（cidao-ui の開発サーバー設定）", "site/admin/agents-worklog.json"],
+          "hours": 1.2,
+          "partnerApproved": true,
+          "note": "調査＝Vercel公式（無料プランは請求周期なし・超過は30日待ち・止める前に連絡・止まったら自動では戻らない）、フォーラムの実例、14日のPro試用（1アカウント1回・新チームで開始）、オープンソース支援（3年で3,600ドル分・NPOは完全なオープンソースなら申請可・いまは受付停止）。メンバー（新井さん・須田さん）のLINEの所見には、須田さん案（必要なら11月だけPro）を条件つきで推奨。UI統一は事業主がC案（全ページ）を選択。共通部品（タイル・PageShell・PageHeader・BackLink）を作り、ホームを3×3タイル、下メニューをアイコン化、一覧11ページを置換、ほか20ページの余白・戻るリンク・見出しを共通化、標準ボタンをスマホ幅だけ大きく。確認＝tsc・vitest 580件・ビルド成功・19ページを幅375pxで測定（横はみ出しなし）。未確認＝ログイン後の画面（LINEログインがローカルで使えないため）。本番へは事業主の承認待ち。 session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569 / output: 704,687 / cost: $105.47"
+        },
+        {
           "date": "2026-10-18",
           "title": "CiDAO経費資料に「APIの利用料とVercelのプラン代の違い」の説明を足し、メンバー向けLINE文面を作成 0.4時間",
           "category": "実装",
@@ -8543,6 +8552,31 @@
         }
       ],
       "plans": [
+          {
+            "due": "2026-10-22",
+            "title": "🎨 CiDAOのUI統一（アイコン付きタイルのホーム・全ページの見た目）を本番へ反映する（枝 feat/ui-tiles → main）",
+            "category": "実装",
+            "priority": "高",
+            "status": "待ち",
+            "blockedBy": "事業主がスマホ幅の見た目（ホーム・下メニュー・団体・イベント詳細）を確認して、本番へ出してよいと承認すること",
+            "note": "場所＝C:\\Repos\\cidao-ui。手順＝git fetch で main の進みを確認 → rebase → vitest・build → main へ push（Vercelが自動で本番へ）→ 反映後に、事業主のログイン済みの画面で、ホーム（会員証・次の一歩）・マイページ・入力フォームを目視。戻すときは該当コミットを revert。詳細は記憶 project-cidao-ui-unification。"
+          },
+          {
+            "due": "2026-10-25",
+            "title": "🎨 CiDAO UI統一の残り（入力フォーム・詳細ページの見出しを PageHeader へ寄せる／受付モード）",
+            "category": "実装",
+            "priority": "中",
+            "status": "待ち",
+            "blockedBy": "UI統一の第1〜3段階が本番へ反映され、事業主が見た目を確認すること",
+            "note": "第1〜3段階で共通化したのは、骨組み・余白・戻るリンク・見出しの大きさ・ボタンの大きさ。残り＝入力フォーム（events/new・orgs/new・freefree/new・proposals/new・me/edit）と詳細ページの見出し周りを PageHeader に寄せる。受付モード（orgs/[id]/reception）の戻るリンクは2つ並びのため手動で直す。ログイン後の画面は本番でしか確認できない。"
+          },
+          {
+            "due": "2026-10-31",
+            "title": "🧊 11/3 武蔵屋イベントの前に、CiDAOの本番へ新しい変更を出さない期間を設ける（案：11/1以降）",
+            "category": "事務",
+            "priority": "中",
+            "note": "イベント当日に使う人の大半が初めての利用。直前の変更で崩れるのを避けるため、11/1以降は不具合の修正だけにし、UI変更や新機能は11/4以降に回す案。事業主に提案済み（未決）。"
+          },
           {
             "due": "未定",
             "title": "☁ Vercel Open Source Program（3年で3,600ドル分のクレジット）に申請できるか検討する（CiDAOを完全なオープンソースにする場合）",
