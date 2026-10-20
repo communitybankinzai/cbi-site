@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-10-21",
+          "title": "英語メールの警告（Supabase『Final notice』）を確認し、CiDAOへの影響を点検 0.15時間",
+          "category": "調査",
+          "outputs": ["作業記録のみ（コード変更なし）", "メモリ supabase-new-table-checklist を更新"],
+          "hours": 0.15,
+          "partnerApproved": false,
+          "note": "事業主『英語メールで警告来ています』→ 個人Gmail（you0810jmsdf）の直近3日を検索し、Supabaseの『Final notice: new tables in \"public\" need grants from October 30』（10/21 03:00 JST受信・未読）が該当。内容＝10/30以降に public に作る新テーブルは Data API 用の GRANT を自動付与しなくなる（既存テーブルは影響なし）。新プロジェクト・プレビュー枝・ローカル db reset でも migration に GRANT が要る。**9/24 にメモリへ記録済みの既知の変更**（sodatelog は AGENTS.md に追記済み）。CiDAO の migration 129本を点検：テーブルを作る41本のうち GRANT 行が0のものが11本（freefree_openpoi_import・disaster_amedas_10min・disaster_sns_road_reports ほか）。既存テーブルは影響なし・本番運用への影響なし。新しく分かったこと＝メールが **service_role への GRANT も明示**を求めている（CiDAO のサーバー側の処理が使う権限）。10/30以降の新しい migration は anon／authenticated／service_role への GRANT を必ず書く。CBI公式メール側の警告（『要対応』ラベル）は、GASの Gmail 実行回数が1日の上限に達して読めなかった（リセット後に再確認）。ほかの英語の自動通知：GitHub ns-factory の pages build 失敗（10/18・のち公開版は反映済みと別セッションが確認）。session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569 / output: 1,550,297 / cost: $287.62（前回記録分 1,535,495 を引いた差分 14,802）"
+        },
+        {
           "date": "2026-10-20",
           "title": "広報いんざい1月号『いんざいのWA』掲載原稿の差し替えメール下書きを作成（説明欄の修正版・赤字） 0.4時間",
           "category": "事務",
@@ -8588,6 +8597,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-10-29",
+          "title": "🛡 10/30 までに：CiDAO の新しい migration は anon／authenticated／service_role への GRANT を必ず書く運用を確認し、書き忘れを機械的に止める検査を足すか決める",
+          "category": "保守",
+          "priority": "中",
+          "note": "Supabase の最終通知（2026-10-21 受信）：10/30 以降に public に作るテーブルは自動の GRANT が付かない。既存テーブルは影響なし。点検結果＝CiDAO の migration 129本のうち、テーブルを作る41本の中で GRANT が無いのが11本（過去分・本番影響なし。スキーマを一から作り直す場合だけ問題）。新規の migration が service_role の GRANT を忘れるとサーバー側の処理が permission denied になる。案：(1) 運用のみ（メモリ・手順書にある）／(2) テスト or pre-commit で『create table があるのに grant ... service_role が無い』migration を落とす（推奨・小さな作業）／(3) 過去の11本にも GRANT を足す。着手前に事業主へ3択で確認。"
+        },
           {
             "due": "未定",
             "title": "🎨 トップ画面以外へ色の見た目を広げる：見出し（8f3d937）・主なボタンと選んだ印（ffaf498）・入力フォーム／詳細ページ／通知など21ページの見出し（caae491）は 2026-10-19 に本番へ反映済み。残り＝ログイン後の画面の目視確認／C（全体の色調）を続けるか、ここで止めるか",
