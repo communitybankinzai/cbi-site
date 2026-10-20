@@ -8598,6 +8598,15 @@
       ],
       "plans": [
         {
+          "due": "2026-10-23",
+          "title": "📮 GAS「CBI Gmail共有」の自動仕分け（30分ごと）が Gmail の1日の上限で失敗する件の恒久対策（Google から英語の失敗通知・12回）",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "事業主が対策案（A 読み直しを減らす／B 間隔を2時間に／C 様子見）を選ぶこと。A・B は GAS エディタでの作業が要る（scriptId が記録に無いので、失敗メールの『click here』から開いて scriptId を教えてもらい、credentials.md に控える）",
+          "note": "2026-10-21 事業主のスクリーンショット：Summary of failures for Google Apps Script: CBI Gmail共有／Exception: Service invoked too many times for one day: gmail ／ Count 12 ／ 関数 triageInbox（時間トリガー・30分ごと・10/20 6:33 JST から連続）。Claude が同じ時刻帯に Web API の list を呼ぶと同じエラーが返り、今朝の英語メール要約（cbi-english-mail-morning-summary）も取得できなかった。影響：①上限に達している間は自動仕分け（要対応ラベル・スター・消防や更新履歴の振り分け）が止まり、Vercel/Anthropic などの警告が『要対応』に入らず見落としうる ②Web API 経由の読み書き（下書き・一覧・詳細）も失敗する。データは失われない・上限は太平洋時間0時（日本時間16時ごろ。夏時間の間）に戻る。原因の見立て（確信度：中。GASの実行ログは未確認）：MailTriage.gs の runTriage_ は、isSkipSubject_ に当たる『別系統で管理するメール』をラベルを付けずに continue するので、毎回同じ最大100件を getMessages で読み直す。さらに reconcileDone_／sortRoute_（3本）も最大100件ずつ検索する。実行は1日48回。同じ上限を fire_mail_watch.py（30分ごと list＋detail）・英語メール要約・各セッションの読み取りも共有している。案：A（推奨）スキップしたスレッドにも『仕分け済み（スキップ）』ラベルを付けて次回から除外（MailTriage.gs の数行・貼り替え1回）／B トリガーを30分→2時間に（コード変更なし・警告の拾いが最大2時間遅れる）／C 何もしない（毎日、午前に止まる恐れ）。"
+        },
+        {
           "due": "2026-10-29",
           "title": "🛡 10/30 までに：CiDAO の新しい migration は anon／authenticated／service_role への GRANT を必ず書く運用を確認し、書き忘れを機械的に止める検査を足すか決める",
           "category": "保守",
