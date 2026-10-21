@@ -11,6 +11,7 @@
 //     const m = CBIMap.create(document.getElementById("box"), {
 //       mini: true,
 //       onGo: (idx, spot) => { ... },   // 「ここへ飛ぶ」が押されたとき
+//       onWarp: (lat, lon, label) => { ... }, // あれば、地図のタップ／検索で選んだ場所に「ここへワープ」が出る
 //     });
 //     m.setMe(lat, lon, height);        // 現在地を動かす（省略すると出ない）
 //     m.refreshPieces();                // 集めた記録を読み直す
@@ -49,6 +50,7 @@
       "  font-size: 12px; font-weight: bold; }",
       ".cbiMap .goBtn:hover { background: #26506f; }",
       ".cbiMap .gotMark { color: #ffd166; font-weight: bold; }",
+      ".cbiMap .pickPin { font-size: 28px; line-height: 28px; text-shadow: 0 2px 6px rgba(0,0,0,0.7); }",
       ".cbiMap.mini .leaflet-popup-content { font-size: 12px; max-width: 200px; margin: 10px 12px; }",
       ".cbiMap.mini .leaflet-control-attribution { font-size: 9px; }",
     ].join("\n");
@@ -207,6 +209,45 @@
       if (opts.onFollowChange) opts.onFollowChange(follow);
     };
     api.getFollow = function () { return follow; };
+
+    // 選んだ場所の印（地図のタップ・検索の結果）。opts.onWarp があるとき、吹き出しに「ここへワープ」を出す
+    let pickMarker = null;
+    function pickPopup(lat, lon, label) {
+      const box = document.createElement("div");
+      box.innerHTML = "<h3>" + esc(label || "選んだ場所") + "</h3>"
+        + '<div class="meta">' + lat.toFixed(5) + ", " + lon.toFixed(5) + "</div>"
+        + '<button class="goBtn">🌀 ここへワープ</button>';
+      box.querySelector(".goBtn").addEventListener("click", function () {
+        if (opts.onWarp) opts.onWarp(lat, lon, label);
+      });
+      return box;
+    }
+    api.setPick = function (lat, lon, label, open) {
+      const pos = [lat, lon];
+      if (!pickMarker) {
+        pickMarker = L.marker(pos, {
+          icon: L.divIcon({ className: "", html: '<div class="pickPin">📍</div>', iconSize: [28, 28], iconAnchor: [14, 27], popupAnchor: [0, -26] }),
+          zIndexOffset: 1000,
+        }).addTo(map);
+        pickMarker.bindPopup(pickPopup(lat, lon, label));
+      } else {
+        pickMarker.setLatLng(pos);
+        pickMarker.setPopupContent(pickPopup(lat, lon, label));
+      }
+      if (open !== false) pickMarker.openPopup();
+    };
+    // 検索結果の場所へ地図を寄せて印を置く（追従は外す。外さないと自分の位置へすぐ戻ってしまう）
+    api.showPlace = function (lat, lon, label) {
+      if (follow) api.setFollow(false);
+      map.setView([lat, lon], Math.max(map.getZoom(), 14));
+      api.setPick(lat, lon, label, true);
+    };
+    api.clearPick = function () {
+      if (pickMarker) { map.removeLayer(pickMarker); pickMarker = null; }
+    };
+    if (opts.onWarp) {
+      map.on("click", function (e) { api.setPick(e.latlng.lat, e.latlng.lng, "地図で選んだ場所", true); });
+    }
     map.on("dragstart", function () {
       if (follow && !selfPan) api.setFollow(false);
     });

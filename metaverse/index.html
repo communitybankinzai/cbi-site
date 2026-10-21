@@ -873,7 +873,20 @@ if (location.protocol === "file:") {
     padding: 2px 8px; font-size: 12px; cursor: pointer;
   }
   #miniMapBar button:hover { background: #26506f; }
-  #miniMapBox { width: 100%; height: calc(100% - 30px); }
+  #miniMap { flex-direction: column; }
+  #miniMapBox { width: 100%; flex: 1 1 auto; min-height: 0; }
+  #miniMapBar, #miniMapSearch { flex: 0 0 auto; }
+  /* 場所を探してワープ（2026-10-21）：地図の上に検索欄。結果は地図の上へ重ねて出す */
+  #miniMapSearch { position: relative; display: flex; gap: 6px; padding: 4px 8px; background: #0f1d2c; }
+  #miniMapQ { flex: 1; min-width: 0; box-sizing: border-box; background: #0b1420; color: #e8f0f8; border: 1px solid #3a6a95; border-radius: 6px; padding: 3px 8px; font-size: 13px; }
+  #miniMapQ::placeholder { color: #6f8aa3; }
+  #miniMapSearch button { background: #1d3a56; color: #cfe8ff; border: 1px solid #3a6a95; border-radius: 6px; padding: 2px 10px; font-size: 13px; cursor: pointer; }
+  #miniMapResults { display: none; position: absolute; left: 8px; right: 8px; top: calc(100% + 2px); z-index: 1200; max-height: 220px; overflow-y: auto; background: #10202f; border: 1px solid #3a6a95; border-radius: 8px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); }
+  #miniMapResults button { display: block; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid #1d3a56; color: #e8f0f8; padding: 7px 10px; font-size: 12px; line-height: 1.4; cursor: pointer; }
+  #miniMapResults button:hover { background: #1d3a56; }
+  #miniMapResults small { display: block; color: #8fa4b8; font-size: 10px; }
+  #miniMapResults .none { padding: 8px 10px; color: #cfe8ff; font-size: 12px; }
+  @media (pointer: coarse) { #miniMapQ { font-size: 16px; } }  /* 16px未満だとiPhoneが入力のたびに拡大する */
   /* 地図を開いているあいだ、右下の診断パネルは地図の左隣へ寄せる（重なると地図が見えない） */
   body.miniMapOpen #padDebug { right: calc(min(34vw, 420px) + 16px); }
   @media (pointer: coarse), (max-width: 640px) {
@@ -1437,6 +1450,11 @@ if (location.protocol === "file:") {
     <button id="miniMapPop" title="別のタブで大きく開きます">⤢</button>
     <button id="miniMapClose" title="地図を閉じます">✕</button>
   </div>
+  <form id="miniMapSearch" autocomplete="off">
+    <input id="miniMapQ" type="search" placeholder="場所を探す（地名・住所・施設名・緯度,経度）" enterkeyhint="search" aria-label="場所を探してワープ">
+    <button id="miniMapGo" type="submit" title="さがす">🔎</button>
+    <div id="miniMapResults"></div>
+  </form>
   <div id="miniMapBox"></div>
 </div>
 
@@ -3389,7 +3407,7 @@ let miniMapApi = null;
 let miniMapLoading = false;
 function setMiniMap(open) {
   miniMapOpen = open;
-  document.getElementById("miniMap").style.display = open ? "block" : "none";
+  document.getElementById("miniMap").style.display = open ? "flex" : "none";
   document.body.classList.toggle("miniMapOpen", open);
   const btn = document.getElementById("mapBtn");
   btn.classList.toggle("on", open);
@@ -3413,6 +3431,7 @@ function setMiniMap(open) {
         teleportNear(b);
         showPickResult("地図から「" + b.name + "」の近くへ移動します。", 3000);
       },
+      onWarp: function (lat, lon, label) { warpTo(lat, lon, label || "選んだ場所"); },
       onCount: function (got, total) {
         document.getElementById("miniMapCount").textContent = "🗺 集めた文化財 " + got + " / " + total;
       },
@@ -3434,6 +3453,102 @@ document.getElementById("locMapBtn").addEventListener("click", function () {
   setMiniMap(!miniMapOpen);
   if (miniMapOpen && miniMapApi) miniMapApi.setFollow(true);   // 地図を動かして追従が外れていても、いまの場所へ戻す（初回の読み込み時は読み込み完了後に自動で追従）
 });
+
+// ============================================================
+// 🌀 場所を探してワープ（2026-10-21）：ミニマップの検索欄、または地図のタップで場所を選び、「ここへワープ」で移動する
+//   検索：緯度,経度 の直接入力／国土地理院の住所検索（日本の地名・住所・施設）／見つからないときだけ OpenStreetMap（世界の地名）
+//   記録を守るため、タイムトライアル・武蔵屋めぐり・2Pレースの最中はワープさせない
+// ============================================================
+function warpBlockedReason() {
+  if (typeof ttActive !== "undefined" && ttActive) return "タイムトライアル中";
+  if (typeof window.msyOn === "function" && window.msyOn()) return "武蔵屋めぐりの最中";
+  if (window.vsRaceModeEnabled) return "2Pレース中";
+  if (window.nightTtState && window.nightTtState.active) return "夜景タイムレース中";
+  return "";
+}
+function warpTo(lat, lon, label) {
+  const why = warpBlockedReason();
+  if (why) { showPickResult(why + "はワープできません（記録が成立しなくなるため）。", 3500); return; }
+  if (!(lat >= -85 && lat <= 85 && lon >= -180 && lon <= 180)) { showPickResult("その場所へはワープできません。", 3000); return; }
+  if (walkMode && typeof setMode === "function") setMode(false);   // 歩行のままだと地面へ吸着し直すので、飛行にしてから移動する
+  viewer.camera.cancelFlight();
+  // 行き先の約300m南・高さ300m から、北向き・斜め45°で見下ろす。道中のタイルを読まないよう、飛ばずに一瞬で移す
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(lon, lat - 0.0027, 300),
+    orientation: { heading: 0, pitch: Cesium.Math.toRadians(-45), roll: 0 },
+  });
+  showPickResult("「" + label + "」へワープしました。", 3000);
+  if (miniMapApi) { miniMapApi.setFollow(true); miniMapApi.clearPick(); }
+}
+async function searchPlaces(q) {
+  const out = [];
+  // 緯度,経度（日本では 緯度が先。経度が先に見える値は入れ替える）
+  const m = q.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,，、\s]\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if (m) {
+    let a = parseFloat(m[1]), b = parseFloat(m[2]);
+    if (Math.abs(a) > 90 && Math.abs(b) <= 90) { const t = a; a = b; b = t; }
+    if (Math.abs(a) <= 90 && Math.abs(b) <= 180) out.push({ title: "緯度経度 " + a + ", " + b, lat: a, lon: b, src: "入力した座標" });
+    return out;
+  }
+  const key = q.replace(/\s+/g, "");
+  const has = function (t) { return String(t || "").replace(/\s+/g, "").indexOf(key) >= 0; };
+  try {
+    const r = await fetch("https://msearch.gsi.go.jp/address-search/AddressSearch?q=" + encodeURIComponent(q));
+    const d = await r.json();
+    (Array.isArray(d) ? d : []).slice(0, 12).forEach(function (x) {
+      const c = x && x.geometry && x.geometry.coordinates;
+      if (c && isFinite(c[0]) && isFinite(c[1])) out.push({ title: (x.properties && x.properties.title) || q, lat: c[1], lon: c[0], src: "国土地理院" });
+    });
+  } catch (e) { /* 次の情報源へ */ }
+  // 国土地理院は「東京スカイツリー」のような施設名で関係のない住所を返すことがある。名前を丸ごと含む結果が無ければ OpenStreetMap でも探す
+  const exact = out.filter(function (it) { return has(it.title); });
+  let osm = [];
+  if (!exact.length) {
+    try {
+      const r = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=ja&q=" + encodeURIComponent(q));
+      const d = await r.json();
+      (Array.isArray(d) ? d : []).forEach(function (x) {
+        const lat = parseFloat(x.lat), lon = parseFloat(x.lon);
+        if (isFinite(lat) && isFinite(lon)) osm.push({ title: x.display_name || q, lat: lat, lon: lon, src: "OpenStreetMap" });
+      });
+    } catch (e) { /* 何も出なければ「見つかりません」 */ }
+  }
+  // 並び：名前を含む国土地理院 → OpenStreetMap → そのほかの国土地理院。表示は8件まで
+  const rest = out.filter(function (it) { return !has(it.title); });
+  return exact.concat(osm, rest).slice(0, 8);
+}
+(function initMiniMapSearch() {
+  const form = document.getElementById("miniMapSearch"), input = document.getElementById("miniMapQ"), box = document.getElementById("miniMapResults");
+  if (!form || !input || !box) return;
+  function hideResults() { box.style.display = "none"; box.innerHTML = ""; }
+  function showMessage(text) { box.innerHTML = '<div class="none"></div>'; box.firstChild.textContent = text; box.style.display = "block"; }
+  // 入力中のキーが飛行操作（W・A・S・D など）として拾われないようにする
+  ["keydown", "keyup", "keypress"].forEach(function (t) {
+    input.addEventListener(t, function (e) { e.stopPropagation(); if (t === "keydown" && e.key === "Escape") { hideResults(); input.blur(); } });
+  });
+  input.addEventListener("focus", function () { Object.keys(keys).forEach(function (k) { keys[k] = false; }); });
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const q = input.value.trim();
+    if (!q) { hideResults(); return; }
+    if (!miniMapApi) { showMessage("地図を読み込んでいます。少し待ってからもう一度押してください。"); return; }
+    showMessage("さがしています…");
+    const list = await searchPlaces(q);
+    if (!list.length) { showMessage("見つかりませんでした。地名や住所を変えるか、緯度,経度（例 35.83, 140.14）で入力してください。"); return; }
+    box.innerHTML = "";
+    list.forEach(function (it) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = it.title;
+      const sm = document.createElement("small");
+      sm.textContent = it.src + (it.src === "OpenStreetMap" ? "（© OpenStreetMap contributors）" : "");
+      b.appendChild(sm);
+      b.addEventListener("click", function () { hideResults(); if (miniMapApi) miniMapApi.showPlace(it.lat, it.lon, it.title); });
+      box.appendChild(b);
+    });
+    box.style.display = "block";
+  });
+})();
 document.getElementById("miniMapFollow").addEventListener("click", function () {
   if (miniMapApi) miniMapApi.setFollow(!miniMapApi.getFollow());
 });
