@@ -23,7 +23,7 @@
           "outputs": ["events/2026-11-03_武蔵屋/SNS告知_事前登録/当日投稿/本文_当日_Instagram_Facebook.txt・本文_当日_Threads.txt", "site/assets/sns/2026-11-03_musashiya-day/flyer_1_omote.jpg・flyer_2_ura.jpg"],
           "hours": 0.3,
           "partnerApproved": true,
-          "note": "事業主『リンクは変えています。実際に見て確認して』。結果：Threads（公開ページ）は先頭が cidao.vercel.app/login?utm_source=sns&utm_medium=profile&utm_campaign=musashiya_prereg（他4件）、Instagram（公開ページ・公式API）は website がこのURL（『他4人』）で一致。**Facebook ページ（公式API）は website が4件で、このCiDAOのURLは4番目**（先頭は CBI サイト）。Facebook の公開ページはログインなしでは見えず（『このコンテンツは現在ご利用いただけません』）、API で確認。先頭にしたければ事業主がページ情報で並べ替える。また『チラシはらいさんOK』『11/3当日の投稿も追加で』を受け、当日の投稿案（IG・FB・Threads。チラシ画像の表・裏の2枚・08:30案）を作成。画像は公開用に置いたが、予約は事業主の承認待ち。session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569 / output: 1,932,742 / cost: $356.52"
+          "note": "事業主『リンクは変えています。実際に見て確認して』。結果：Threads（公開ページ）は先頭が cidao.vercel.app/login?utm_source=sns&utm_medium=profile&utm_campaign=musashiya_prereg（他4件）、Instagram（公開ページ・公式API）は website がこのURL（『他4人』）で一致。**Facebook ページ（公式API）は website が4件で、このCiDAOのURLは4番目**（先頭は CBI サイト）。Facebook の公開ページはログインなしでは見えず（『このコンテンツは現在ご利用いただけません』）、API で確認。先頭にしたければ事業主がページ情報で並べ替える。また『チラシはらいさんOK』『11/3当日の投稿も追加で』を受け、当日の投稿案（IG・FB・Threads。チラシ画像の表・裏の2枚・08:30案）を作成。画像は公開用に置いたが、予約は事業主の承認待ち。【続き・実施済み 2026-10-21・事業主承認】11/3（火・祝）08:30 に、当日の投稿3件を予約した：Threads q1792563082784・Instagram q1792563090872・Facebook q1792563098217。チラシ画像2枚（表→裏・1080x1350 JPEG・公開URL 200）つき。本文は IG・FB 用（391字・タグ5）と Threads 用（270字）。読み戻して本文・画像2枚・日時・媒体・状態が一致、ほかの予約10件は変更なし。 session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569 / output: 1,932,742 / cost: $356.52"
         },
         {
           "date": "2026-10-21",
@@ -8678,15 +8678,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-11-02",
-          "title": "📣 11/3 当日の投稿（Threads・Instagram・Facebook・チラシ画像2枚）を予約する",
-          "category": "広報",
-          "priority": "高",
-          "status": "待ち",
-          "blockedBy": "事業主が本文案と投稿時刻（案：11/3 08:30）を承認すること",
-          "note": "本文案：events/2026-11-03_武蔵屋/SNS告知_事前登録/当日投稿/。画像：https://communitybankinzai.github.io/cbi-site/assets/sns/2026-11-03_musashiya-day/flyer_1_omote.jpg ・ flyer_2_ura.jpg（1080x1350 JPEG）。らいさんの了承済み（2026-10-21事業主）。登録は post_to_sns.py（媒体ごとに別行・--media-url は画像URLを改行区切り）→ listSnsQueue で読み戻して照合。Facebook ページのリンクは CiDAO のURLが4番目なので、先頭に並べ替えるかを事業主に確認。"
-        },
         {
           "due": "2026-12-01",
           "title": "🗂 消防の履歴が溜まったら、町丁目別の集計（案B）・ヒートマップ（案C）を検討する",
