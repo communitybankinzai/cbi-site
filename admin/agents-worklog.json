@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-10-21",
+          "title": "防災MAPに『消防の履歴』レイヤー（過去の火災・調査活動・事故を丸めて地図に重ねる）を追加 0.8時間",
+          "category": "実装",
+          "outputs": ["site/inzai-disaster-map/app.js（renderFireHistory・専用pane＋SVGレンダラ・toggleOverlay分岐）", "site/inzai-disaster-map/index.html（レイヤー行と操作欄 #fire-history-panel・版 20261021a）", "site/inzai-disaster-map/styles.css（.fire-history-*）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md（2026-10-21 節）", "site/admin/changelog.json（1件）"],
+          "hours": 0.8,
+          "partnerApproved": true,
+          "note": "事業主の問い『過去の消防関連調査をまとめてプロットできないか／火災が起きやすい場所の統計は』に、選択肢のうち案A（履歴を地図に重ねる）を事業主が選択。既存の fire-incidents.json を流用（追加通信なし）。ems は出さない・位置は約200mに丸め・住所は町丁目まで・同じ升目と種類は1つの丸にまとめる。検証：ヘッドレス Chrome（ローカルと公開版の両方）で ON→丸4／種類・期間の切替（5件→8件→4件→直近7日2件）→吹き出し→エラー0。操作欄の見た目も画像で確認。限界：記録は 10/11 受信分からで計8件。数日〜数週間分では『起きやすい場所』とは言えない（画面にも明記）。町丁目別の集計ページ（案B）・ヒートマップ（案C）は未実装。hours は本セッション全体（output 1,653,728 tokens＝16.5h・複数作業を含む）のうち、この作業分の概算。session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569 / output: 1,653,728 / cost: $311.97"
+        },
+        {
+          "date": "2026-10-21",
           "title": "Gmail『1日の呼び出し上限』で自動仕分け・メールAPIが止まった原因を特定し、消防メール見張りの検索を直近1日に絞った 0.4時間",
           "category": "保守",
           "outputs": ["scripts/fire_mail_watch.py（list の検索を from:\"印西地区消防組合\" newer_than:1d に）", "scripts/register_fire_mail_watch.ps1（登録の間隔を実態の5分に）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md（『30分ごと』を『5分ごと』に訂正・検索範囲を追記）"],
@@ -8606,6 +8615,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-12-01",
+          "title": "🗂 消防の履歴が溜まったら、町丁目別の集計（案B）・ヒートマップ（案C）を検討する",
+          "category": "分析",
+          "priority": "低",
+          "status": "待ち",
+          "blockedBy": "記録が増えること（現在 2026-10-11 受信分から計8件。1〜2か月分・数十件が溜まるまでは傾向を語れない）",
+          "note": "案A（地図に丸で重ねる）は 2026-10-21 公開済み。溜まったら 町丁目別の件数表＋期間比較（B）、密度の見える化（C）を事業主に提案する。公選法・プライバシーの観点から救急支援は載せず、位置は約200mに丸めたまま。"
+        },
         {
           "due": "2026-10-23",
           "title": "📮 GAS「CBI Gmail共有」の自動仕分け（30分ごと）が Gmail の1日の上限で失敗する件の恒久対策（Google から英語の失敗通知・12回）",
