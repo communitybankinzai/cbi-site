@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-09-13b";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-10-21a";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   // 録画（scripts/promo/record_musashiya.mjs がページ読み込み前に window.cbiRec を入れる）も受付を求めない。URL だけでは外せない（2026-09-14）
@@ -1432,7 +1432,7 @@
     claim({ name: name });
   }
   // Webカメラで会員証QR（https://cidao.vercel.app/talent/<uuid>）を読む。jsQR は CDN から必要時に読み込む
-  let qrStream = null, qrTimer = null, qrLoading = null;
+  let qrStream = null, qrTimer = null, qrLoading = null, qrGen = 0;
   function loadJsQR() {
     if (window.jsQR) return Promise.resolve();
     if (qrLoading) return qrLoading;
@@ -1447,28 +1447,50 @@
   async function startQrScan() {
     const box = document.getElementById("nightTtScanBox"), video = document.getElementById("nightTtVideo"), canvas = document.getElementById("nightTtCanvas"), msg = document.getElementById("nightTtScanMsg");
     if (!box || !video) return;
-    try {
-      await loadJsQR();
-      qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } }, audio: false });
-    } catch (e) {
-      claimMsg("カメラを使えません（" + (e && e.message) + "）。表示名の入力か LINE ログインで参加してください。", false);
-      return;
-    }
+    // 押し直しても重ならないよう、前のカメラを止めてから始める。カメラによっては起動に5〜7秒かかるので、押した瞬間に「起動中」を出す
+    if (qrTimer) { clearInterval(qrTimer); qrTimer = null; }
+    if (qrStream) { try { qrStream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { /* 無視 */ } qrStream = null; }
+    const gen = ++qrGen;
     box.style.display = "block";
     document.getElementById("nightTtScan").style.display = "none";
     document.getElementById("nightTtScanStop").style.display = "";
+    if (msg) msg.textContent = "カメラを起動しています…（数秒かかることがあります）";
+    let stream = null, camP = null;
+    try {
+      // カメラの起動（5〜7秒かかる機種がある）と jsQR の読み込みを同時に進める
+      camP = navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } }, audio: false });
+      await loadJsQR();
+      stream = await camP;
+    } catch (e) {
+      if (camP) camP.then(function (st) { try { st.getTracks().forEach(function (t) { t.stop(); }); } catch (e2) { /* 無視 */ } }, function () { /* 無視 */ });   // jsQR だけ失敗したとき、開けたカメラを残さない
+      if (gen === qrGen) { stopQrScan(); claimMsg("カメラを使えません（" + (e && e.message) + "）。表示名の入力か LINE ログインで参加してください。", false); }
+      return;
+    }
+    if (gen !== qrGen) { try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { /* 無視 */ } return; }   // 起動を待つ間に「停止」や別の画面へ移った
+    qrStream = stream;
     video.srcObject = qrStream;
     try { await video.play(); } catch (e) { /* 自動再生が拒まれても次の描画で進む */ }
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    let busy = false;
+    let busy = false, darkSince = 0, shown = false;
     qrTimer = setInterval(function () {
       if (busy || !qrStream || video.readyState < 2) return;
       const w = video.videoWidth, h = video.videoHeight;
       if (!w || !h) return;
       canvas.width = w; canvas.height = h;
       ctx.drawImage(video, 0, 0, w, h);
+      const img = ctx.getImageData(0, 0, w, h);
+      // 映像がずっと真っ黒なら、原因の見当を出す（レンズのカバー・ほかのアプリがカメラを使用中・カメラの選択違い）
+      let sum = 0, cnt = 0;
+      for (let i = 0; i < img.data.length; i += 388) { sum += img.data[i] + img.data[i + 1] + img.data[i + 2]; cnt += 3; }
+      if (cnt && sum / cnt < 6) {
+        if (!darkSince) darkSince = performance.now();
+        if (performance.now() - darkSince > 5000 && msg) msg.textContent = "映像が真っ黒です。レンズのカバー、ほかのアプリのカメラ使用を確認してください。直らないときは、下の表示名の入力か LINE ログインで参加できます。";
+      } else if (darkSince || !shown) {
+        darkSince = 0; shown = true;      // 最初の明るい映像（または真っ黒からの回復）で「起動中」の文を戻す
+        if (msg) msg.textContent = "QR をカメラの中央に…";
+      }
       let code = null;
-      try { code = window.jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: "dontInvert" }); } catch (e) { code = null; }
+      try { code = window.jsQR(img.data, w, h, { inversionAttempts: "dontInvert" }); } catch (e) { code = null; }
       if (!code || !code.data) return;
       const m = String(code.data).match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
       if (!m) { if (msg) msg.textContent = "CiDAO の会員証QRではありません"; return; }
@@ -1478,6 +1500,7 @@
     }, 300);
   }
   function stopQrScan() {
+    qrGen++;
     if (qrTimer) { clearInterval(qrTimer); qrTimer = null; }
     if (qrStream) { try { qrStream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { /* 無視 */ } qrStream = null; }
     const box = document.getElementById("nightTtScanBox"), b1 = document.getElementById("nightTtScan"), b2 = document.getElementById("nightTtScanStop"), v = document.getElementById("nightTtVideo");
