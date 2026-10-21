@@ -880,6 +880,11 @@ if (location.protocol === "file:") {
     body.miniMapOpen #padDebug { right: 8px; bottom: calc(46vh + 84px); }
   }
   #miniMapBar button.on { background: #26506f; border-color: #7fc8ff; }
+  /* 武蔵屋めぐりの最中は右下にタイム・目的地の箱（#ttHud・z 36）が出るので、地図はその上に置く（2026-10-21 現在地ボタン） */
+  body.modeMusashiya #miniMap { bottom: 196px; height: min(42vh, calc(100vh - 196px - 190px)); }
+  @media (pointer: coarse), (max-width: 640px) {
+    body.modeMusashiya #miniMap { bottom: 262px; height: min(40vh, calc(100vh - 262px - 150px)); }
+  }
   @media (pointer: coarse), (max-width: 640px) {
     #miniMap { width: 92vw; max-width: none; right: 4vw; bottom: 76px; height: 46vh; }
   }
@@ -1065,6 +1070,7 @@ if (location.protocol === "file:") {
     <button class="tbGroupBtn" type="button" aria-haspopup="true" aria-expanded="false" title="軽量モード・通信量・コントローラー・検証モード・撮影・録画">⚙ 設定 <span class="caret">▾</span></button>
     <div class="tbMenu">
       <button id="ctlGuideMenuBtn" type="button" onclick="window.CbiControlsGuide&&CbiControlsGuide.open()" title="コントローラー・キーボード・スマホの操作を、ずんだもんの声と鳥の動きで説明します">🎮 操作のしかた</button>
+      <button id="locMapBtn" type="button" title="いま飛んでいる場所を、平面の地図で見ます。迷ったときに。もう一度押すと閉じます">📍 現在地を地図で表示</button>
       <button id="liteBtn" class="off" title="動きが重い端末向け。描画の解像度を下げ、街並みを粗めに読み、空の表現やトンビを止めて軽くします（もう一度押すと元に戻ります）">🪶 軽量モード</button>
       <button id="trafficBtn" class="off" title="テザリングで使うときの見張り。今日この端末がダウンロードした3D都市データの推定量を表示し、上限を決めておくと8割で注意、超えたら自動で軽量モードに切り替えます">📶 通信量</button>
       <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
@@ -1985,7 +1991,7 @@ try {
   const bar = document.getElementById("topLeftBar");
   const groups = Array.from(bar.querySelectorAll(".tbGroup"));
   // 押すと別の画面や別タブが開く項目は、押した時点でメニューを畳む（切替系は状態が見えるよう開いたまま）
-  const CLOSE_AFTER = ["ctlGuideMenuBtn", "reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
+  const CLOSE_AFTER = ["ctlGuideMenuBtn", "locMapBtn", "reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
   function closeAll(except) {
     groups.forEach((g) => {
       if (g === except) return;
@@ -3388,6 +3394,8 @@ function setMiniMap(open) {
   const btn = document.getElementById("mapBtn");
   btn.classList.toggle("on", open);
   btn.textContent = open ? "🗺 マップ表示中" : "🗺 文化財マップ";
+  const locBtn = document.getElementById("locMapBtn");   // 設定メニューの「現在地を地図で表示」も同じ地図なので状態をそろえる
+  if (locBtn) { locBtn.classList.toggle("on", open); locBtn.textContent = open ? "📍 現在地の地図を閉じる" : "📍 現在地を地図で表示"; }
   if (!open || miniMapApi || miniMapLoading) {
     if (open && miniMapApi) miniMapApi.invalidate(); // 隠れている間に変わった大きさへ合わせ直す
     return;
@@ -3398,7 +3406,7 @@ function setMiniMap(open) {
       mini: true,
       spots: BUNKAZAI.length ? BUNKAZAI : null, // 3Dワールドが読み込み済みならそれを使う
       onGo: function (i, b) {
-        if (typeof ttActive !== "undefined" && ttActive) {
+        if ((typeof ttActive !== "undefined" && ttActive) || (typeof window.msyOn === "function" && window.msyOn())) {
           showPickResult("タイムトライアル中は地図から飛べません（記録が成立しなくなるため）。", 3500);
           return;
         }
@@ -3422,6 +3430,10 @@ function setMiniMap(open) {
   }).then(function () { miniMapLoading = false; });
 }
 document.getElementById("mapBtn").addEventListener("click", () => setMiniMap(!miniMapOpen));
+document.getElementById("locMapBtn").addEventListener("click", function () {
+  setMiniMap(!miniMapOpen);
+  if (miniMapOpen && miniMapApi) miniMapApi.setFollow(true);   // 地図を動かして追従が外れていても、いまの場所へ戻す（初回の読み込み時は読み込み完了後に自動で追従）
+});
 document.getElementById("miniMapFollow").addEventListener("click", function () {
   if (miniMapApi) miniMapApi.setFollow(!miniMapApi.getFollow());
 });
