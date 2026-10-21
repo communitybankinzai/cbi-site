@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-10-21",
+          "title": "武蔵屋マルシェのチラシ裏面の団体名を INZAI→Inzai に直して配布用・SNS用を作り直した 0.1時間",
+          "category": "保守",
+          "outputs": ["events/2026-11-03_武蔵屋/チラシ/CBI_A5チラシ/build_cbi_flyer.py（242行目）", "同 配布用/（PDF＋表・裏JPG）・SNS用/（2枚）・CBI_武蔵屋マルシェ_チラシA5_案2.pdf・HTML2点", "同 旧案/INZAI表記_20261021/（旧版の退避）・README.md"],
+          "hours": 0.1,
+          "partnerApproved": true,
+          "note": "事業主の問い『チラシの最新版は？INZAIになっていないか』→ 裏面下端が全大文字だったため、10/21朝決定の『Inzai』統一に合わせて修正。検証：PDFの文字抽出で『Community Bank Inzai［CBI］』、旧版との画像差分で表は同一・裏は団体名の箇所だけ変化、裏面QRの復号OK（表にQRなし）。ロゴ画像内のINZAIは画像のため未変更。session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569"
+        },
+        {
+          "date": "2026-10-21",
           "title": "防災MAPに『消防の履歴』レイヤー（過去の火災・調査活動・事故を丸めて地図に重ねる）を追加 0.8時間",
           "category": "実装",
           "outputs": ["site/inzai-disaster-map/app.js（renderFireHistory・専用pane＋SVGレンダラ・toggleOverlay分岐）", "site/inzai-disaster-map/index.html（レイヤー行と操作欄 #fire-history-panel・版 20261021a）", "site/inzai-disaster-map/styles.css（.fire-history-*）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md（2026-10-21 節）", "site/admin/changelog.json（1件）"],
