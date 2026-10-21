@@ -4156,3 +4156,10 @@ body.sns-popup-open #quick-record-bar { display: none; }
 .pref-recovery-list .prr-focus { margin-left: 6px; min-height: 22px; padding: 1px 8px; border: 1px solid #b9c4d3; border-radius: 6px; background: #f7f9fc; color: #16324f; font: inherit; font-size: 11px; cursor: pointer; }
 .pref-recovery-list .prr-row.is-doubtful { border-left-color: #b8322c; background: #fff7f6; }
 .pref-recovery-list .prr-warn { border: 1px solid #e6a9a2; background: #fdecea; color: #7f1d1d; padding: 6px 8px; border-radius: 6px; }
+
+/* 🗂 消防の履歴（過去の火災・調査活動・事故）：期間・種類の切り替えと件数のまとめ */
+.fire-history-panel { margin: 4px 0 8px 22px; padding: 8px 10px; border: 1px solid #ead7c0; border-left: 4px solid #ea580c; border-radius: 6px; background: #fffaf3; font-size: 12px; line-height: 1.6; }
+.fire-history-row { margin: 2px 0; }
+.fire-history-row label { margin-right: 8px; white-space: nowrap; }
+.fire-history-summary { margin-top: 4px; }
+.fire-history-note { color: #6b5a45; font-size: 11px; }

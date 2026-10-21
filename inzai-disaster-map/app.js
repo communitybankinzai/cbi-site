@@ -1552,6 +1552,8 @@ map.getPane("leveeBreachMarkPane").style.zIndex = 438;
 // 🔥 消防情報（火災・メール配信）。点だけなので冠水の層より上に置く
 map.createPane("fireMailPane");
 map.getPane("fireMailPane").style.zIndex = 456;
+map.createPane("fireHistoryPane");   /* 🗂 消防の履歴（いま続いている🔥より下に置く） */
+map.getPane("fireHistoryPane").style.zIndex = 454;
 map.createPane("kansuiPane");
 map.getPane("kansuiPane").style.zIndex = 450;
 
@@ -5605,6 +5607,81 @@ const fireMailLayer = L.layerGroup();
 const fireEmsLayer = L.layerGroup();
 let fireMailData = null;
 let fireMailLoaded = false;
+
+// 🗂 消防の履歴（2026-10-21追加・事業主指示「過去の消防関連調査をまとめてプロットする・どのへんで火災が起きやすいか」→ A案）
+// fire-incidents.json に残っている過去の出動を、終わったものも含めて重ねる（既定OFF）。上の「🔥 消防情報」は“いま続いているもの”だけ。
+// ・載せるのは 🔥火災・🔍調査活動（火災の疑い）・💥事故。🚑救急支援活動は個人の健康に関わるので載せない（履歴にも出さない）。
+// ・個人のお宅・施設が特定されないよう、履歴は粗く出す：位置は約200m四方に丸め、同じ場所・同じ種類は1つの丸にまとめて件数を出し、住所は町丁目までにする。
+// ・記録は見張りを始めた 2026-10-11 以降だけ。少ないうちは「起きやすい場所」と言える量ではない。CBIが受信・判定した記録で、消防の公式な統計ではない。
+const fireHistoryLayer = L.layerGroup();
+const fireHistoryRenderer = L.svg({ pane: "fireHistoryPane" });   // 他の層とクリックを取り合わないよう SVG で描く
+const FIRE_HISTORY_KIND = {
+  fire: { color: "#dc2626", label: "🔥 火災" },
+  investigating: { color: "#ea580c", label: "🔍 調査活動（火災の疑い）" },
+  accident: { color: "#2563eb", label: "💥 事故（火災ではない）" }
+};
+const FIRE_HISTORY_CELL_DEG = 0.002;   // 緯度で約220m・経度で約180m
+// 住所から町丁目だけを取り出す（例：「戸神台1丁目1番ローレルスクエアF棟」→「戸神台1丁目」／「滝966番小林牧場入口交差点」→「滝」）。市名（白井市）は残し、無ければ印西市を補う。
+function fireHistoryArea(text) {
+  const s = String(text || "").trim();
+  const m = s.match(/^(白井市)?(\D+?)(?:(\d+)丁目)?(?:\d+番|\d+|$)/);
+  const town = m ? m[2].trim() + (m[3] ? `${m[3]}丁目` : "") : s.slice(0, 6);
+  return `${/^白井市/.test(s) ? "白井市" : "印西市"}${town}`;
+}
+function fireHistoryTime(ms) {
+  const d = new Date(ms + 9 * 3600 * 1000);
+  return `${d.getUTCMonth() + 1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+}
+function renderFireHistory() {
+  fireHistoryLayer.clearLayers();
+  const panel = document.getElementById("fire-history-panel");
+  const summary = document.getElementById("fire-history-summary");
+  const status = document.getElementById("fire-history-status");
+  if (!panel || !fireMailData) return;
+  const days = Number(document.getElementById("fire-history-range")?.value || 0);
+  const since = days > 0 ? Date.now() - days * 86400000 : -Infinity;
+  const kinds = new Set([...panel.querySelectorAll("[data-fh-kind]")].filter(c => c.checked).map(c => c.dataset.fhKind));
+  const cells = new Map();
+  const byKind = {};
+  const byArea = new Map();
+  let total = 0;
+  for (const inc of fireMailData.incidents || []) {
+    if (!FIRE_HISTORY_KIND[inc.kind] || !kinds.has(inc.kind)) continue;   // 救急支援活動（ems）はここで除く
+    if (!Number.isFinite(inc.lat) || !Number.isFinite(inc.lon)) continue;
+    const at = Date.parse(inc.eventAtIso || inc.receivedAtIso || "");
+    if (!(at >= since)) continue;   // 時刻が読めないもの・期間外は除く
+    const cx = Math.round(inc.lat / FIRE_HISTORY_CELL_DEG), cy = Math.round(inc.lon / FIRE_HISTORY_CELL_DEG);
+    const key = `${inc.kind}|${cx}|${cy}`;
+    const area = fireHistoryArea(inc.addressText);
+    const cell = cells.get(key) || { kind: inc.kind, lat: cx * FIRE_HISTORY_CELL_DEG, lon: cy * FIRE_HISTORY_CELL_DEG, area, times: [] };
+    cell.times.push(at); cells.set(key, cell);
+    byKind[inc.kind] = (byKind[inc.kind] || 0) + 1; byArea.set(area, (byArea.get(area) || 0) + 1); total++;
+  }
+  for (const cell of cells.values()) {
+    const k = FIRE_HISTORY_KIND[cell.kind], n = cell.times.length;
+    const times = cell.times.sort((a, b) => a - b).map(fireHistoryTime);
+    L.circleMarker([cell.lat, cell.lon], {
+      pane: "fireHistoryPane", renderer: fireHistoryRenderer,
+      radius: 6 + 3 * Math.min(Math.sqrt(n), 4), color: "#ffffff", weight: 1.5, fillColor: k.color, fillOpacity: 0.6
+    }).bindPopup(
+      `<strong>${k.label}（${escapeHtml(cell.area)}付近）</strong><br>` +
+      `${n}件：${escapeHtml(times.join("、"))}<br>` +
+      `<span class="reference-warning">位置は約200m四方に丸めています。CBIが受信・判定した記録で、消防の公式な統計ではありません。</span><br>` +
+      `<span style="font-size:11px;">出典：印西地区消防組合 災害案内メール配信サービス（運営が受信した記録）</span>`
+    ).addTo(fireHistoryLayer);
+  }
+  const first = (fireMailData.incidents || []).map(i => Date.parse(i.eventAtIso || i.receivedAtIso || "")).filter(Number.isFinite).sort((a, b) => a - b)[0];
+  const top = [...byArea.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ja")).slice(0, 3).filter(x => x[1] >= 2);
+  if (status) status.textContent = `${total}件`;
+  if (summary) {
+    const parts = Object.entries(byKind).map(([kind, n]) => `${FIRE_HISTORY_KIND[kind].label.split(" ")[0]}${n}`).join("・");
+    summary.innerHTML =
+      (total ? `<strong>${total}件</strong>（${escapeHtml(parts)}）／${cells.size}か所` : "この条件の記録はありません") +
+      (top.length ? `<br>多い町丁目：${escapeHtml(top.map(x => `${x[0]} ${x[1]}件`).join("、"))}` : "") +
+      `<br><span class="fire-history-note">記録は${first ? escapeHtml(fireHistoryTime(first)) : "—"}から。数日〜数週間分では傾向とは言えません。救急支援活動は載せていません。</span>`;
+  }
+}
+for (const el of document.querySelectorAll("#fire-history-range, #fire-history-panel [data-fh-kind]")) el.addEventListener("change", renderFireHistory);
 async function ensureFireMailLayer() {
   if (fireMailLoaded) return;
   fireMailLoaded = true;
@@ -5613,6 +5690,7 @@ async function ensureFireMailLayer() {
     if (!res.ok) throw new Error(`fire-incidents.json HTTP ${res.status}`);
     fireMailData = await res.json();
     renderFireMail(fireMailData);
+    renderFireHistory();
   } catch (error) {
     fireMailLoaded = false;
     console.error("消防情報（火災）の読み込みに失敗:", error);
@@ -6311,6 +6389,17 @@ function toggleOverlay(name, checked) {
   if (name === "fireMail") {
     if (checked) { ensureFireMailLayer(); fireMailLayer.addTo(map); }
     else map.removeLayer(fireMailLayer);
+    return;
+  }
+  if (name === "fireHistory") {
+    // 🗂 消防の履歴：読み込み済みならすぐ描き、初回は読み込み後に描く。外すと操作欄も隠す
+    const panel = document.getElementById("fire-history-panel");
+    if (panel) panel.hidden = !checked;
+    if (checked) {
+      fireHistoryLayer.addTo(map);
+      if (fireMailData) renderFireHistory();
+      else ensureFireMailLayer();
+    } else map.removeLayer(fireHistoryLayer);
     return;
   }
   if (name === "fireEms") {
