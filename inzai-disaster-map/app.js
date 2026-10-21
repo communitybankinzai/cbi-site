@@ -5697,7 +5697,8 @@ function refreshFireMail() {
   if (fireMailFetching) return fireMailFetching;
   fireMailFetching = (async () => {
     try {
-      const res = await fetch(`fire-incidents.json?_=${Date.now()}`, { cache: "no-store" });
+      // 見張りの最終確認時刻も同時に取る（fetchFireWatchCheck は失敗しても投げない）
+      const [res] = await Promise.all([fetch(`fire-incidents.json?_=${Date.now()}`, { cache: "no-store" }), fetchFireWatchCheck()]);
       if (!res.ok) throw new Error(`fire-incidents.json HTTP ${res.status}`);
       fireMailData = await res.json();
       renderFireMail(fireMailData);
@@ -5706,10 +5707,103 @@ function refreshFireMail() {
       console.error("消防情報（火災）の読み込みに失敗:", error);   // 前に読めた表示（あれば）はそのまま残す
     } finally {
       fireMailFetching = null;
+      renderFireWatchBadge();
     }
   })();
   return fireMailFetching;
 }
+
+// 🔥 消防メールの見張りの最終確認（2026-10-21・事業主指示「『最終確認 ○分前』を表示」）。
+// 公開の fire-incidents.json の checkedAt は、変化がない間は約3時間ごとにしか書き換えない（見張りは5分ごとに確認している）ので、
+// 実際の確認時刻は見張りが CiDAO に送ったものを読む（/api/disaster/fire-watch・認証なしの GET・確認した時刻だけ返す）。
+// 経過は「取得時にサーバーが数えた経過秒＋その後の手元の経過」で数え、手元PCの時計のずれに左右されないようにする。
+const FIRE_WATCH_STALE_MIN = 60;   // これ以上確認が届いていなければ「見張りが止まっている可能性」と出す（間隔を空けても誤警告になりにくい値）
+let fireWatchCheck;   // undefined=まだ取っていない／null=読めなかった・まだ1回も届いていない／{ at, ageSec, fetchedAt }
+let fireWatchBadge = null;
+let fireWatchTimer = null;
+
+async function fetchFireWatchCheck() {
+  const url = String(APP_CONFIG.fireWatchEndpoint || "").trim();
+  if (!url) return;
+  try {
+    const res = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const body = await res.json();
+    const at = Date.parse(body?.checkedAt || "");
+    fireWatchCheck = Number.isFinite(at) && Number.isFinite(body.ageSeconds)
+      ? { at, ageSec: Math.max(0, body.ageSeconds), fetchedAt: Date.now() }
+      : null;
+  } catch (error) {
+    console.warn("消防の見張りの最終確認を取得できませんでした:", error);
+    if (fireWatchCheck === undefined) fireWatchCheck = null;   // 前に取れた値があればそのまま使う
+  }
+}
+
+function fireWatchAgeText(sec) {
+  const m = Math.floor(sec / 60);
+  if (m < 1) return "たった今";
+  if (m < 60) return `${m}分前`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}時間${m % 60 ? `${m % 60}分` : ""}前`;
+  return `${Math.floor(h / 24)}日前`;
+}
+
+// 消防の層（消防情報・事故・救急支援）のどれかが ON の間だけ、地図の左下に出す。全部 OFF になったら外す。
+// 履歴（🗂）は過去の記録なので対象にしない
+function renderFireWatchBadge() {
+  const on = [fireMailLayer, fireAccidentLayer, fireEmsLayer].some(layer => map.hasLayer(layer));
+  if (!on) {
+    if (fireWatchBadge?._map) map.removeControl(fireWatchBadge);
+    clearInterval(fireWatchTimer);
+    fireWatchTimer = null;
+    return;
+  }
+  if (!fireWatchBadge) {
+    fireWatchBadge = L.control({ position: "bottomleft" });
+    fireWatchBadge.onAdd = () => {
+      const el = L.DomUtil.create("div", "fire-watch-badge");
+      L.DomEvent.disableClickPropagation(el);
+      return el;
+    };
+  }
+  if (!fireWatchBadge._map) fireWatchBadge.addTo(map);
+  const el = fireWatchBadge.getContainer();
+  if (!el) return;
+  let html;
+  let stale = false;
+  if (fireWatchCheck === undefined) {
+    html = `<strong>🔥 消防メール</strong> 最終確認：確認中…`;
+  } else if (fireWatchCheck === null) {
+    html = `<strong>🔥 消防メール</strong> 最終確認：読めませんでした<br><span>最新は消防本部（0476-45-5119）で確認してください</span>`;
+  } else {
+    const ageSec = fireWatchCheck.ageSec + (Date.now() - fireWatchCheck.fetchedAt) / 1000;
+    stale = ageSec >= FIRE_WATCH_STALE_MIN * 60;
+    html = `<strong>${stale ? "⚠ " : "🔥 消防メール "}最終確認 ${escapeHtml(fireWatchAgeText(ageSec))}</strong>（${escapeHtml(fireHistoryTime(fireWatchCheck.at))}）` +
+      (stale
+        ? `<br><span>確認が届いていません。見張りが止まっている可能性があります。最新は消防本部（0476-45-5119）で確認してください</span>`
+        : `<br><span>CBIの見張りがメールを確認した時刻です</span>`);
+  }
+  el.classList.toggle("is-stale", stale);
+  el.innerHTML = html;
+  placeFireWatchBadge();
+  // 分の表示を進める（通信はしない）。押し直すと最新を取り直す
+  if (!fireWatchTimer) fireWatchTimer = setInterval(renderFireWatchBadge, 30000);
+}
+
+// 画面下の記録の帯と重なる分だけ上へ逃がす（県の規制状況図の札 placePrefKiseiBadge と同じ考え方）。
+// 左下に札が複数あるときは、いちばん下の札だけが逃がす
+function placeFireWatchBadge() {
+  const el = fireWatchBadge?._map ? fireWatchBadge.getContainer() : null;
+  if (!el) return;
+  const bar = document.getElementById("quick-record-bar");
+  const mapRect = document.getElementById("map")?.getBoundingClientRect();
+  const barRect = bar && !bar.hidden && getComputedStyle(bar).display !== "none" ? bar.getBoundingClientRect() : null;
+  const overlap = mapRect && barRect && barRect.height ? mapRect.bottom - barRect.top : 0;
+  const isBottomMost = el.parentElement?.lastElementChild === el;
+  el.style.marginBottom = overlap > 0 && isBottomMost ? `${Math.round(overlap + 8)}px` : "";
+}
+window.addEventListener("resize", () => placeFireWatchBadge());
+window.addEventListener("scroll", () => placeFireWatchBadge(), { passive: true });
 
 // kind="fire"＝本文に「火災」の語あり／"investigating"＝「調査活動」の語のみ（火災とは断定できない）／"accident"＝「事故」の語あり（火災ではない）
 const FIRE_MAIL_KIND = {
@@ -6404,12 +6498,14 @@ function toggleOverlay(name, checked) {
   if (name === "fireMail") {
     if (checked) { refreshFireMail(); fireMailLayer.addTo(map); }   // ONにするたび最新を読み直す
     else map.removeLayer(fireMailLayer);
+    renderFireWatchBadge();   // 左下の「最終確認 ○分前」（消防の層が全部OFFなら外す）
     return;
   }
   if (name === "fireAccident") {
     // 💥 事故：ONにするたび最新を読み直し、読み込み前は前回の表示を出しておく
     if (checked) { refreshFireMail(); fireAccidentLayer.addTo(map); }
     else map.removeLayer(fireAccidentLayer);
+    renderFireWatchBadge();
     return;
   }
   if (name === "fireHistory") {
@@ -6430,6 +6526,7 @@ function toggleOverlay(name, checked) {
       if (fireMailData) renderFireMail(fireMailData);
       refreshFireMail();
     } else map.removeLayer(fireEmsLayer);
+    renderFireWatchBadge();
     return;
   }
   const layerMap = {

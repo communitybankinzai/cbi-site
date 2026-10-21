@@ -25,6 +25,10 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     // 停電の円表示（2026-09-30 東電PGの了承で公開）。CiDAO が印西市の XML を10分に1回以下で取って配る。
     // ⛔ 「⚡ 停電」を押す（層 teiden を ON）まで取りに行かない約束。見本は ?teiden=demo（teiden-sample.json・架空の数値）
     teidenEndpoint: "https://cidao.vercel.app/api/disaster/teiden",
+    // 消防メールの見張り（PCのタスク）が最後にメールを確認した時刻（2026-10-21）。見張りが5分ごとの確認のたびに送り、
+    // 🔥消防情報・💥事故・🚑救急支援をONにしている間、地図の左下に「最終確認 ○分前」を出す。公開の fire-incidents.json の
+    // checkedAt は変化がない間は約3時間ごとにしか書き換えないので、実際の確認時刻はこちらで読む。空にすると表示しない
+    fireWatchEndpoint: "https://cidao.vercel.app/api/disaster/fire-watch",
     openDataEndpoint: "https://cidao.vercel.app/api/disaster/inzai-opendata",
     presenceEndpoint: "https://cidao.vercel.app/api/metaverse-presence",
     locationAiEndpoint: "",
