@@ -3359,6 +3359,11 @@ const PRESETS = {
     label: "救急支援",
     toggle: ["fireEms"]
   },
+  // 事故（2026-10-21・事業主指示「消防情報でくる事故情報のボタンがない」）。押すと fireAccident 層を足す。もう一度押すと外す
+  fireAccident: {
+    label: "事故",
+    toggle: ["fireAccident"]
+  },
   // 全国の地震（2026-10-02 事業主指示「地震のボタンがない」）。押すと震源の層（quakes）を足し、
   // 最新の地震の波紋と右上の再生の枠が出て、地図は日本全体へ。もう一度押すと外して元の位置へ。
   // 左のチェック欄から ON にしたときは地図を動かさない（同日「印西周辺を見たままでも震源を出せるように」）
@@ -5605,8 +5610,10 @@ async function ensureUnderpassMlitLayer() {
 const fireMailLayer = L.layerGroup();
 // 🚑 救急支援活動（2026-10-12・救急車の稼働状況を見る用）。火災などとは別のレイヤーで既定OFF
 const fireEmsLayer = L.layerGroup();
+// 💥 事故（2026-10-21・事業主指示「消防情報でくる事故情報のボタンがない」）。火災ではないので 🔥消防情報 とは別の層にして既定OFF
+const fireAccidentLayer = L.layerGroup();
 let fireMailData = null;
-let fireMailLoaded = false;
+let fireMailFetching = null;
 
 // 🗂 消防の履歴（2026-10-21追加・事業主指示「過去の消防関連調査をまとめてプロットする・どのへんで火災が起きやすいか」→ A案）
 // fire-incidents.json に残っている過去の出動を、終わったものも含めて重ねる（既定OFF）。上の「🔥 消防情報」は“いま続いているもの”だけ。
@@ -5682,19 +5689,26 @@ function renderFireHistory() {
   }
 }
 for (const el of document.querySelectorAll("#fire-history-range, #fire-history-panel [data-fh-kind]")) el.addEventListener("change", renderFireHistory);
-async function ensureFireMailLayer() {
-  if (fireMailLoaded) return;
-  fireMailLoaded = true;
-  try {
-    const res = await fetch("fire-incidents.json", { cache: "no-store" });
-    if (!res.ok) throw new Error(`fire-incidents.json HTTP ${res.status}`);
-    fireMailData = await res.json();
-    renderFireMail(fireMailData);
-    renderFireHistory();
-  } catch (error) {
-    fireMailLoaded = false;
-    console.error("消防情報（火災）の読み込みに失敗:", error);
-  }
+// 消防の層（🔥消防情報・💥事故・🚑救急支援・🗂履歴）をONにするたびに、公開済みの最新の fire-incidents.json を読み直す
+// （2026-10-21・事業主指示「ボタンを押した時に最新の状態となるように」。以前は初回だけ読み、開きっぱなしだと古いままだった）。
+// 見張り（PC のタスク）が書き換えた最新の公開版を読むもので、押した瞬間にメールを確認するものではない。
+// GitHub Pages の CDN は URL ごとに覚えるので、毎回違う ?_= を付けて古い写しを返させない。同時に何度押しても読み込みは1回にまとめる
+function refreshFireMail() {
+  if (fireMailFetching) return fireMailFetching;
+  fireMailFetching = (async () => {
+    try {
+      const res = await fetch(`fire-incidents.json?_=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`fire-incidents.json HTTP ${res.status}`);
+      fireMailData = await res.json();
+      renderFireMail(fireMailData);
+      renderFireHistory();
+    } catch (error) {
+      console.error("消防情報（火災）の読み込みに失敗:", error);   // 前に読めた表示（あれば）はそのまま残す
+    } finally {
+      fireMailFetching = null;
+    }
+  })();
+  return fireMailFetching;
 }
 
 // kind="fire"＝本文に「火災」の語あり／"investigating"＝「調査活動」の語のみ（火災とは断定できない）／"accident"＝「事故」の語あり（火災ではない）
@@ -5714,6 +5728,7 @@ const FIRE_EMS_MAX_AGE_MS = 70 * 60 * 1000;
 function renderFireMail(data) {
   fireMailLayer.clearLayers();
   fireEmsLayer.clearLayers();
+  fireAccidentLayer.clearLayers();
   (data.incidents || []).forEach(inc => {
     if (inc.status !== "active") return;
     if (!Number.isFinite(inc.lat) || !Number.isFinite(inc.lon)) return;
@@ -5733,7 +5748,7 @@ function renderFireMail(data) {
       (received ? `受信：${escapeHtml(received)}<br>` : "") +
       `<span class="reference-warning">${escapeHtml(k.warn)}</span><br>` +
       `<span style="font-size:11px;">出典：${escapeHtml(inc.source || "印西地区消防組合 災害案内メール配信サービス")}（テレガイド 0476-45-5119）</span>`
-    ).addTo(isEms ? fireEmsLayer : fireMailLayer);
+    ).addTo(isEms ? fireEmsLayer : inc.kind === "accident" ? fireAccidentLayer : fireMailLayer);
   });
 }
 
@@ -6387,8 +6402,14 @@ function toggleOverlay(name, checked) {
     return;
   }
   if (name === "fireMail") {
-    if (checked) { ensureFireMailLayer(); fireMailLayer.addTo(map); }
+    if (checked) { refreshFireMail(); fireMailLayer.addTo(map); }   // ONにするたび最新を読み直す
     else map.removeLayer(fireMailLayer);
+    return;
+  }
+  if (name === "fireAccident") {
+    // 💥 事故：ONにするたび最新を読み直し、読み込み前は前回の表示を出しておく
+    if (checked) { refreshFireMail(); fireAccidentLayer.addTo(map); }
+    else map.removeLayer(fireAccidentLayer);
     return;
   }
   if (name === "fireHistory") {
@@ -6397,17 +6418,17 @@ function toggleOverlay(name, checked) {
     if (panel) panel.hidden = !checked;
     if (checked) {
       fireHistoryLayer.addTo(map);
-      if (fireMailData) renderFireHistory();
-      else ensureFireMailLayer();
+      if (fireMailData) renderFireHistory();   // 前回の分を先に出し、最新が読めたら描き直す
+      refreshFireMail();
     } else map.removeLayer(fireHistoryLayer);
     return;
   }
   if (name === "fireEms") {
-    // 🚑 救急支援活動：読み込み済みなら描き直して70分を過ぎたものを外す。初回は読み込み後に描く
+    // 🚑 救急支援活動：読み込み済みなら先に描き直して70分を過ぎたものを外し、最新が読めたらもう一度描く
     if (checked) {
       fireEmsLayer.addTo(map);
       if (fireMailData) renderFireMail(fireMailData);
-      else ensureFireMailLayer();
+      refreshFireMail();
     } else map.removeLayer(fireEmsLayer);
     return;
   }
