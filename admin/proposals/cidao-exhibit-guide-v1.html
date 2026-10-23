@@ -252,13 +252,17 @@ table{border-collapse:collapse;width:100%;font-size:2.7vh} th{text-align:left;co
   var s=document.querySelectorAll('.slide'),i=0,pg=document.getElementById('pager');
   var snd=document.getElementById('snd'),rep=document.getElementById('rep'),hint=document.getElementById('sndhint');
   var on=true,started=false,au=null;
+  // 案内PC用の無人モード：URL に ?kiosk=1 を付けると、クリックなしで自動再生・繰り返し。保存された設定（自動OFFなど）は無視する。音は ?sound=off／?bgm=off で消せる
+  var QS=new URLSearchParams(location.search),KIOSK=QS.get('kiosk')==='1',lastChange=Date.now(),lastTouch=Date.now();
   // 自動再生：ナレーションが終わったら、少し間をおいて次のスライドへ。最後まで行ったら最初に戻って繰り返す（展示のループ）。
   // 音声をオフにしているときは、各スライドの音声の長さ（data-dur）に合わせたタイマーで進める。
   var GAP_MS=1500,END_WAIT_MS=3500,autoOn=true,autoTimer=null,autob=document.getElementById('autob');
-  try{if(localStorage.getItem('cidao-guide-auto')==='off')autoOn=false;}catch(x){}
+  if(!KIOSK){try{if(localStorage.getItem('cidao-guide-auto')==='off')autoOn=false;}catch(x){}}
   function autoLabel(){autob.textContent=autoOn?'▶ 自動 ON':'⏸ 自動 OFF';}
   function clearAuto(){if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}}
   function goNext(){show(i===s.length-1?0:i+1);}
+  // 音声が断られた・読み込めないときの代わりの送り（各スライドの長さに合わせた時間）
+  function silentSchedule(){clearAuto();if(!autoOn||!started)return;var d=parseFloat(s[i].getAttribute('data-dur'))||15;autoTimer=setTimeout(goNext,d*1000+1200);}
   function afterVoice(){clearAuto();if(!autoOn)return;autoTimer=setTimeout(goNext,i===s.length-1?END_WAIT_MS:GAP_MS);}
   function schedule(){clearAuto();if(!autoOn||!started)return;if(on&&s[i].getAttribute('data-audio'))return;var d=parseFloat(s[i].getAttribute('data-dur'))||15;autoTimer=setTimeout(goNext,d*1000+1200);}
   // BGM：パッヘルベル「カノン」（Kevin MacLeod・CC BY 3.0）。ナレーションより約14dB小さく、ループ再生。
@@ -267,7 +271,7 @@ table{border-collapse:collapse;width:100%;font-size:2.7vh} th{text-align:left;co
   var BGM_EMBED=document.getElementById('bgmdata').getAttribute('data-src');
   var BGM_SRCS=[BGM_EMBED?dataToBlobUrl(BGM_EMBED):'','音声/bgm_canon.mp3','cidao-exhibit-bgm-canon.mp3'].filter(function(x){return x;}),BGM_VOL=1.5;
   var bgmb=document.getElementById('bgmb'),credit=document.getElementById('credit'),bgmOn=true,bgmEl=null,bgmIdx=0,bgmOk=true;
-  try{if(localStorage.getItem('cidao-guide-bgm')==='off')bgmOn=false;}catch(x){}
+  if(KIOSK){if(QS.get('bgm')==='off')bgmOn=false;}else{try{if(localStorage.getItem('cidao-guide-bgm')==='off')bgmOn=false;}catch(x){}}
   function bgmLabel(){bgmb.textContent=bgmOn?'🎵 BGM ON':'🎵 BGM OFF';credit.style.display=(bgmOk&&bgmOn)?'':'none';}
   // 音量：0〜250%。100%超は Web Audio のゲインで増幅（使えない環境は上限100%）。最後に合わせた音量を localStorage に保存して次回の既定値にする
   var bgmv=document.getElementById('bgmv'),bgmvl=document.getElementById('bgmvl'),bgmCtx=null,bgmGain=null;
@@ -284,7 +288,7 @@ table{border-collapse:collapse;width:100%;font-size:2.7vh} th{text-align:left;co
   bgmv.addEventListener('input',function(){BGM_VOL=parseInt(bgmv.value)/100;try{localStorage.setItem('cidao-guide-bgm-vol',String(Math.round(BGM_VOL*100)));}catch(x){}applyBgmVol();if(started&&bgmOn)startBgm();});
   bgmv.addEventListener('keydown',function(e){e.stopPropagation();});
   bgmb.addEventListener('click',function(e){e.stopPropagation();bgmOn=!bgmOn;try{localStorage.setItem('cidao-guide-bgm',bgmOn?'on':'off');}catch(x){}started=true;if(bgmOn)startBgm();else if(bgmEl)bgmEl.pause();bgmLabel();});
-  try{if(localStorage.getItem('cidao-guide-sound')==='off')on=false;}catch(x){}
+  if(KIOSK){if(QS.get('sound')==='off')on=false;}else{try{if(localStorage.getItem('cidao-guide-sound')==='off')on=false;}catch(x){}}
   function stop(){if(au){au.pause();au=null;}}
   function play(){
     stop();
@@ -293,10 +297,11 @@ table{border-collapse:collapse;width:100%;font-size:2.7vh} th{text-align:left;co
     var cur=new Audio(src);au=cur;
     // 前の音声を止めたときの中断（AbortError）は失敗ではない。ブラウザが自動再生を断ったとき（NotAllowedError）だけ案内する
     cur.addEventListener('ended',function(){if(au===cur)afterVoice();});
-    cur.play().catch(function(err){if(au===cur&&err&&err.name==='NotAllowedError')hint.textContent='（音が出ないときは「もう一度聞く」を押してください）';});
+    cur.addEventListener('error',function(){if(au===cur)silentSchedule();});
+    cur.play().catch(function(err){if(au!==cur||!err||err.name==='AbortError')return;if(err.name==='NotAllowedError')hint.textContent='（音が出ないときは「もう一度聞く」を押してください）';silentSchedule();});
   }
   function label(){snd.textContent=on?'🔊 音声 ON':'🔇 音声 OFF';}
-  function show(n){i=(n+s.length)%s.length;s.forEach(function(e,k){e.classList.toggle('on',k===i)});pg.textContent=(i+1)+' / '+s.length;hint.textContent='';clearAuto();play();schedule();}
+  function show(n){i=(n+s.length)%s.length;lastChange=Date.now();s.forEach(function(e,k){e.classList.toggle('on',k===i)});pg.textContent=(i+1)+' / '+s.length;hint.textContent='';clearAuto();play();schedule();}
   function begin(){ if(started)return false; started=true; hint.textContent=''; startBgm(); play(); schedule(); return true; }
   snd.addEventListener('click',function(e){e.stopPropagation();on=!on;try{localStorage.setItem('cidao-guide-sound',on?'on':'off');}catch(x){}label();started=true;startBgm();if(on)play();else stop();schedule();});
   rep.addEventListener('click',function(e){e.stopPropagation();started=true;on=true;try{localStorage.setItem('cidao-guide-sound','on');}catch(x){}label();startBgm();play();});
@@ -313,5 +318,20 @@ table{border-collapse:collapse;width:100%;font-size:2.7vh} th{text-align:left;co
   document.addEventListener('click',function(e){if(begin())return;show(e.clientX<window.innerWidth*0.25?i-1:i+1);});
   label();bgmLabel();autoLabel();applyBgmVol();
   var h=parseInt((location.hash||'').replace('#s',''));show(isNaN(h)?0:h-1);
+  // 見張り（5秒ごと）：音声の終わりの知らせが来ないなどで止まったら次へ進める。無人モードでは、触られて自動送りが止まっても2分あとに戻す
+  ['pointerdown','keydown'].forEach(function(t){document.addEventListener(t,function(){lastTouch=Date.now();},true);});
+  setInterval(function(){
+    if(!started)return;
+    var now=Date.now();
+    if(KIOSK&&!autoOn&&now-lastTouch>120000){autoOn=true;autoLabel();schedule();}
+    if(!autoOn)return;
+    var d=parseFloat(s[i].getAttribute('data-dur'))||15;
+    if(now-lastChange>d*1000+30000)goNext();
+  },5000);
+  if(KIOSK){
+    // 画面を消さない（対応するブラウザのみ）。無人モードは、押さなくても最初から再生する
+    try{if(navigator.wakeLock){var wl=function(){navigator.wakeLock.request('screen').catch(function(){});};wl();document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')wl();});}}catch(x){}
+    begin();
+  }
 })();
 </script></body></html>
