@@ -579,7 +579,7 @@
     // ランキングなどすぐ見られるように」）。武蔵屋の写真と説明は PR のためその下に残す（右スティック・十字キーの上下で送れる）
     const top = extra +
       '<div id="msyRank" class="msyRank"><p class="msyRankNote">記録を送っています…</p></div>' +
-      '<div class="msyRow"><button type="button" data-act="close">とじる</button><button type="button" data-act="nextperson">👥 次の人に交代</button><button type="button" class="go" data-act="again">🔁 もういちど</button></div>' +
+      '<div class="msyRow"><button type="button" data-act="close">とじる</button><button type="button" data-act="nextperson">👥 次の人に交代</button><button type="button" data-act="map">🗺 地図で観光名所へ</button><button type="button" class="go" data-act="again">🔁 もういちど</button></div>' +
       '<p style="font-size:12px;color:#ffd166;margin:8px 0 0">次の人が遊ぶときは「👥 次の人に交代」で受付を替えてください。記録は受付の名前で残ります</p>' +
       '<p style="font-size:12px;color:#9fb6cc;margin:6px 0 10px;padding-bottom:8px;border-bottom:1px solid #33506e">▼ 武蔵屋の説明（右スティックか十字キーの上下で下へ送れます）</p>';
     pop.innerHTML = popHtml(state.home, head, top);
@@ -721,6 +721,10 @@
     if (!b) return;
     if (b.dataset.act === "next" || b.dataset.act === "close") hidePop();
     if (b.dataset.act === "again") openModal();
+    if (b.dataset.act === "map") { // ゴール後に、ほかの観光名所へ飛ぶため：画面を閉じて地図を開き、検索欄にカーソルを置く（ナレーションは「とじる」と同じく止めない）
+      hidePop();
+      if (typeof window.openMiniMapSearch === "function") window.openMiniMapSearch();
+    }
     if (b.dataset.act === "nextperson") { // 受付（右上のチップ）を開いて、次の人の会員証QR・表示名で照合してもらう
       hidePop(); speakStop();
       const chip = document.getElementById("nightEntryChip");

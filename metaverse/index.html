@@ -3453,6 +3453,13 @@ document.getElementById("locMapBtn").addEventListener("click", function () {
   setMiniMap(!miniMapOpen);
   if (miniMapOpen && miniMapApi) miniMapApi.setFollow(true);   // 地図を動かして追従が外れていても、いまの場所へ戻す（初回の読み込み時は読み込み完了後に自動で追従）
 });
+// 武蔵屋のゴール画面の「🗺 地図で観光名所へ」（musashiya.js）から呼ぶ：地図を開き、いまの場所へ追従させ、検索欄にカーソルを置く
+window.openMiniMapSearch = function () {
+  if (!miniMapOpen) setMiniMap(true);
+  if (miniMapApi) miniMapApi.setFollow(true);
+  const q = document.getElementById("miniMapQ");
+  if (q) setTimeout(function () { try { q.focus(); } catch (e) { /* フォーカスできなくても地図は開く */ } }, 50);
+};
 
 // ============================================================
 // 🌀 場所を探してワープ（2026-10-21）：ミニマップの検索欄、または地図のタップで場所を選び、「ここへワープ」で移動する
@@ -6674,7 +6681,7 @@ try {
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
 <script src="night.js?v=20260914-2"></script>
 <script src="controls-guide.js?v=20260915-1"></script>
-<script src="musashiya.js?v=20260919-1"></script>
+<script src="musashiya.js?v=20261023-1"></script>
 <!-- 🏟 会場モード（11/3 武蔵屋の会場PC用：街並みの記憶量・通信節約・事前読み込み飛行を一括で ON/OFF）。musashiya.js の後に読む -->
 <script src="venue.js?v=20260916-1"></script>
 <!-- 📡 回線速度をはかる（会場で Wi-Fi とテザリングを比べる。街並みは読み込まないので利用枠を使わない） -->
