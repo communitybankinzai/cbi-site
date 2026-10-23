@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-10-23T11:20:00+09:00",
+  "updatedAt": "2026-10-23T11:40:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-10-23",
+      "type": "fix",
+      "target": "admin/index.html",
+      "title": "管理画面の「武蔵屋マルシェ 来場者向けスライド」を「開く」と、無人モード（クリックなしで自動再生・繰り返し）で開くようになった",
+      "detail": "カードのリンクを proposals/cidao-exhibit-guide-v1.html から ?kiosk=1 付きに変更。説明の「最初のクリックで自動再生」も実態に合わせた。ダウンロードのボタン（ファイルそのもの）は変更なし。",
+      "author": "Claude"
+    },
     {
       "date": "2026-10-23",
       "type": "feature",
