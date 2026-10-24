@@ -3076,6 +3076,7 @@ const RIGHT_PRESET_DEFAULTS = {
   links: [],
   flood: ["layer", "warning", "river"],
   shelter: ["layer", "shelter", "timeline"],
+  shelterPin: ["shelter"],
   rain: ["layer", "warning", "amedas", "river"],
   rail: ["layer", "timeline"],
   closures: ["layer", "timeline"],
@@ -3317,6 +3318,12 @@ const PRESETS = {
     openGroups: ["🏫"],
     focus: "layer-panel"
   },
+  // 用途別の画面（rain／fire／quake／road／infra）で、必要なときだけ避難所のピンを足す（2026-10-24 事業主指示）。
+  // 上の shelter は被害候補・浸水想定まで一緒に出すので「まとめて見る」専用。こちらはピンだけ
+  shelterPin: {
+    label: "避難所",
+    toggle: ["shelters"]
+  },
   // 土砂キキクルは前に降った雨も数に入れる（土壌雨量指数）。大雨の後は
   // 少ない雨でも崩れるおそれがあるため、いまの雨と一緒に出す（2026-09-29 県の台風26号への注意を受けて）
   rain: {
@@ -3489,8 +3496,8 @@ function applyPreset(name) {
   const preset = PRESETS[name];
   if (!preset) return;
   if (name !== "reset") { applyTogglePreset(name, preset); return; }
-  // ↺ 最初の表示だけは、従来どおり既定の状態へ入れ替える
-  const wanted = new Set(preset.on || []);
+  // ↺ 最初の表示だけは、既定の状態へ入れ替える。用途を選んでいるときはその用途の最初の層（VIEWS・2026-10-24）
+  const wanted = new Set((typeof viewLayers === "function" && viewLayers()) || preset.on || []);
   // チェックを入れ替える。change イベントを起こすため click() を使う
   document.querySelectorAll("[data-overlay]").forEach(box => {
     const want = wanted.has(box.dataset.overlay);
@@ -4211,6 +4218,9 @@ async function loadSharedRecords() {
 
 function initHelpGuide() {
   try {
+    // 入口を出している間と、用途別の画面（?mode=）では、初回の使い方を自動で開かない（入口や全画面の地図を隠してしまうため）。
+    // 入口の「使い方」から開ける（2026-10-24）。「まとめて見る」は従来どおり初回に開く
+    if (document.body.dataset.view !== "all") return;
     if (!localStorage.getItem(GUIDE_SEEN_KEY)) {
       localStorage.setItem(GUIDE_SEEN_KEY, "true");
       document.getElementById("help-dialog").showModal();
@@ -14914,8 +14924,8 @@ document.getElementById("pref-recovery-list")?.addEventListener("click", event =
 // ⚠ ここはファイル末尾でなければならない。kansuiLayer・passedRoadsLayer は const で
 // 後方に宣言されており、上の初期化ブロック（baseLayers.pale.addTo あたり）で呼ぶと
 // 「Cannot access 'kansuiLayer' before initialization」でページ全体の初期化が止まる。
-// 状態は index.html の checked と PRESETS.reset（「↺ 最初の表示」）にも書いてあるので、
-// 変えるときは3か所そろえること。
+// ⚠ 2026-10-24 から、最初に出す層は用途の入口（このファイル末尾の VIEWS）が決める。index.html の checked は
+// boundary だけ（kansui・passedRoads・snsRoads の checked は外した）。「↺ 最初の表示」も VIEWS を見る。
 (function initInitialOverlays() {
   document.querySelectorAll("[data-overlay]").forEach(input => {
     if (!input.checked) return;
@@ -14933,4 +14943,123 @@ document.getElementById("pref-recovery-list")?.addEventListener("click", event =
   document.querySelector(".preset-items")?.scrollTo?.({ left: 0 });
   // 右メニューは既定で畳む（常時展開に設定した項目だけ開く）。PRESETS が宣言済みのここで初期化する
   initRightAccordion();
+})();
+
+// ─────────────────────────────────────────────────────────────
+// 用途の入口（2026-10-24 事業主指示「スマホで使いにくい」）
+// 開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
+//  - 入口の画面は index.html の #view-gate。選んだ用途は body[data-view]（all／rain／fire／quake／road／infra）に入る。
+//    入口を出している間は data-view="gate"。index.html の先頭のスクリプトも同じ用途名を使う（変えるときは両方）。
+//  - 用途ごとの初期の層は下の VIEWS。ここで入れ替えるので、index.html の checked は boundary だけ。
+//    （以前の「checked／initInitialOverlays／PRESETS.reset の3か所そろえ」は、reset が VIEWS を見る形になったので不要）
+//  - 通れた道・通れない道の線（kansui・passedRoads）と、その記録のボタン・凡例は rain の用途だけ（事業主指示）。
+//    どの要素をどの用途で出すかは、各要素の data-views（空白区切り）。印の無い要素はどの用途でも出す。
+//  - ⚠ ここはファイル末尾でなければならない（initInitialOverlays と同じ理由：後方の const を使う）。
+// ─────────────────────────────────────────────────────────────
+const VIEWS = {
+  // 「まとめて見る」＝これまでの全部入りの画面。冠水の線は rain だけにしたので、役所の通行止めと雨雲を初期に出す
+  all: { label: "🗺 まとめて見る", layers: ["boundary", "rainNowcast", "roadClosures", "prefKisei"] },
+  rain: { label: "🌧 雨・冠水・浸水・土砂", layers: ["boundary", "rainNowcast", "kansui", "passedRoads", "snsRoads"] },
+  road: { label: "🚧 通行止め", layers: ["boundary", "roadClosures", "prefKisei"] },
+  fire: { label: "🔥 消防", layers: ["boundary", "fireMail", "fireAccident"] },
+  quake: { label: "🌍 地震", layers: ["boundary", "quakes"], onEnter: () => focusQuakeOnPress() },
+  infra: { label: "⚡ 停電・鉄道", layers: ["boundary", "teiden", "railStatus", "railway"] }
+};
+var currentView = null;
+
+// 「↺ 最初の表示」が戻る層（applyPreset の reset が呼ぶ）。用途が決まっていなければ null＝従来の PRESETS.reset.on
+function viewLayers() {
+  return VIEWS[currentView]?.layers || null;
+}
+
+function writeViewUrl(name, replace) {
+  try {
+    const url = new URL(window.location.href);
+    if (name) url.searchParams.set("mode", name); else url.searchParams.delete("mode");
+    history[replace ? "replaceState" : "pushState"]({ mode: name || null }, "", url);
+  } catch { /* URL を書き換えられなくても画面は切り替わる */ }
+}
+
+// 地図の高さ＝画面の高さ − 上の帯。スマホの用途別の画面で使う（styles.css の body.view-focus）
+function syncViewChrome() {
+  let used = 0;
+  [document.querySelector(".topbar"), document.getElementById("preset-bar")].forEach(node => {
+    if (node && node.offsetParent !== null) used += node.offsetHeight;
+  });
+  document.documentElement.style.setProperty("--view-chrome-h", `${used}px`);
+}
+
+function setView(name, opts = {}) {
+  const view = VIEWS[name];
+  if (!view) return;
+  currentView = name;
+  document.body.dataset.view = name;
+  document.body.classList.toggle("view-focus", name !== "all");
+  // 層：その用途の組み合わせへ入れ替える（change を起こすため click。applyPreset("reset") と同じ作法）
+  const wanted = new Set(view.layers);
+  document.querySelectorAll("[data-overlay]").forEach(box => {
+    if (box.checked !== wanted.has(box.dataset.overlay)) box.click();
+  });
+  // この用途で出すボタン・凡例・枠（data-views）。hidden 属性は他の処理が使うので、専用の class で隠す
+  document.querySelectorAll("[data-views]").forEach(node => {
+    node.classList.toggle("view-off", !node.dataset.views.split(/\s+/).includes(name));
+  });
+  // 凡例の「›」（続きへ送る）の出し入れを測り直す。凡例の大きさは変わらず中身の幅だけ変わるので、自動では測り直されない
+  document.getElementById("map-legend")?.dispatchEvent(new Event("scroll"));
+  resetRightAccordion();
+  document.querySelectorAll(".preset-btn").forEach(button => button.classList.remove("is-current"));
+  syncTogglePresets();
+  syncMapLegend();
+  const badge = document.getElementById("view-badge");
+  if (badge) { badge.textContent = view.label; badge.hidden = false; }
+  if (opts.push !== false) writeViewUrl(name, false);
+  window.scrollTo(0, 0);
+  document.querySelector(".preset-items")?.scrollTo?.({ left: 0 });
+  syncViewChrome();
+  scheduleMapResize();
+  if (typeof view.onEnter === "function") {
+    view.onEnter();
+  } else {
+    // 枠の大きさが変わるので、市全域へ合わせ直す（利用者が動かした後でも、用途を選び直したときは戻す）
+    setTimeout(() => { userMovedMap = false; inzaiFitDone = false; fitToInzai(true); }, 320);
+  }
+}
+
+function showViewGate(opts = {}) {
+  document.body.dataset.view = "gate";
+  document.body.classList.remove("view-focus");
+  const badge = document.getElementById("view-badge");
+  if (badge) badge.hidden = true;
+  if (opts.push !== false) writeViewUrl(null, false);
+  window.scrollTo(0, 0);
+  document.querySelector("#view-gate .view-tile")?.focus({ preventScroll: true });
+}
+
+(function initViewGate() {
+  // 入口のタイルは本物のリンク（?mode=…）。読み込み直さずその場で切り替える。別タブで開く操作（Ctrl・中クリックなど）は普通のリンクのまま
+  document.getElementById("view-gate")?.addEventListener("click", event => {
+    const tile = event.target.closest("a.view-tile[data-view]");
+    if (tile) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) return;
+      event.preventDefault();
+      setView(tile.dataset.view);
+      return;
+    }
+    const proxy = event.target.closest("[data-gate-click]");
+    if (proxy) document.getElementById(proxy.dataset.gateClick)?.click();
+  });
+  document.getElementById("view-switch-button")?.addEventListener("click", () => showViewGate());
+  // 戻るボタン：用途の画面 → 入口 へ戻れるようにする（スマホの戻るで、いきなりサイトを出てしまわないため）
+  window.addEventListener("popstate", () => {
+    const mode = new URLSearchParams(window.location.search).get("mode");
+    if (VIEWS[mode]) setView(mode, { push: false }); else showViewGate({ push: false });
+  });
+  if (typeof ResizeObserver === "function") {
+    const observer = new ResizeObserver(syncViewChrome);
+    [document.querySelector(".topbar"), document.getElementById("preset-bar")].forEach(node => node && observer.observe(node));
+  }
+  window.addEventListener("resize", syncViewChrome);
+  // index.html の先頭のスクリプトが決めた用途（?mode= や従来の埋め込み・運営・位置指定のURL）。無ければ入口
+  const initial = document.body.dataset.view;
+  if (VIEWS[initial]) setView(initial, { push: false }); else showViewGate({ push: false });
 })();
