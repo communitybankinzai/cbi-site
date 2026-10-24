@@ -18,12 +18,12 @@
       "actuals": [
         {
           "date": "2026-10-24",
-          "title": "防災MAPに用途の入口（雨・冠水／通行止め／消防／地震／停電・鉄道／まとめて）を新設し、選んだ用途の地図をスマホで画面いっぱいに 1.0時間",
+          "title": "防災MAPに用途の入口（雨・冠水／通行止め／消防／地震／停電・鉄道／まとめて）を新設し、選んだ用途の地図をスマホで画面いっぱいに 1.2時間",
           "category": "実装",
-          "outputs": ["site/inzai-disaster-map/index.html（入口の画面・用途の印 data-views・冠水3層の初期ONを外す）", "site/inzai-disaster-map/app.js（VIEWS／setView／showViewGate・shelterPin・reset を用途対応・初回の使い方の自動表示を用途別では止める）", "site/inzai-disaster-map/styles.css（入口・スマホの用途別の全画面）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json（1件）"],
-          "hours": 1.0,
+          "outputs": ["site/inzai-disaster-map/index.html（入口の画面・用途の印 data-views・冠水3層の初期ONを外す・SNS通行情報のボタン）", "site/inzai-disaster-map/app.js（VIEWS／setView／showViewGate・shelterPin・reset を用途対応・初回の使い方の自動表示を用途別では止める）", "site/inzai-disaster-map/styles.css（入口・スマホの用途別の全画面）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json（1件）"],
+          "hours": 1.2,
           "partnerApproved": true,
-          "note": "事業主の依頼『防災MAPがスマホで使いにくい。開いたとき目的で絞り、地図を画面いっぱいに。通れる道・通れない道のボタンは冠水MAP以外に置かない』。事業主が3択で決定：①通れた道・通れない道は線も含めて冠水モードだけ、②用途は7枚案から浸水・土砂・雨を1つにまとめ、避難所は必要時に選んで足す、③入口は毎回出す。実装：ファイルごとに index.html → app.js → styles.css の順。直リンクは既存の ?view=public と衝突するため ?mode=。検証（ローカル・幅375x812）：入口6タイル表示・初期ONは境界だけ・冠水/通れた道のAPIは入口の間は呼ばれない／冠水モードで地図が画面の90%（帯80px・地図732px）・記録バー表示／消防・通行止め・地震・停電鉄道で記録バー・凡例の冠水チップ・🚗グループが消える／入口→用途→戻る→進む／?ops=1 は入口なしの従来表示／↺最初の表示が各用途の層に戻る／コンソールにJSエラーなし。未確認：①本番の冠水・通れた道の線の描画（ローカルはCiDAOのCORSで取得できない）、②実機スマホ、③PCの『まとめて見る』の凡例の›（高さ100%の可能性）。判断が分かれた点：SNSの通行情報（snsRoads）は通れた/通れない系なので冠水モードだけにした。『まとめて見る』の初期層は雨雲＋役所の通行止めにした。落とし穴：組み込みブラウザの localhost:8765 は別のFastAPI（Not Found）に当たる→ launch.json の cbi-site-c（python・8767）を使う。npx http-server は応答待ちで固まる。 session: b8327e88-8a02-4556-9531-b91c1c8daa9d / output: 96,017 / cost: $10.49"
+          "note": "事業主の依頼『防災MAPがスマホで使いにくい。開いたとき目的で絞り、地図を画面いっぱいに。通れる道・通れない道のボタンは冠水MAP以外に置かない』。事業主が3択で決定：①通れた道・通れない道は線も含めて冠水モードだけ、②用途は7枚案から浸水・土砂・雨を1つにまとめ、避難所は必要時に選んで足す、③入口は毎回出す。実装：ファイルごとに index.html → app.js → styles.css の順。直リンクは既存の ?view=public と衝突するため ?mode=。検証（ローカル・幅375x812）：入口6タイル表示・初期ONは境界だけ・冠水/通れた道のAPIは入口の間は呼ばれない／冠水モードで地図が画面の90%（帯80px・地図732px）・記録バー表示／消防・通行止め・地震・停電鉄道で記録バー・凡例の冠水チップ・🚗グループが消える／入口→用途→戻る→進む／?ops=1 は入口なしの従来表示／↺最初の表示が各用途の層に戻る／コンソールにJSエラーなし。未確認：①本番の冠水・通れた道の線の描画（ローカルはCiDAOのCORSで取得できない）、②実機スマホ、③PCの『まとめて見る』の凡例の›（高さ100%の可能性）。判断が分かれた点：SNSの通行情報（snsRoads）は通れた/通れない系なので当初は冠水モードだけにしたが、事業主の追加指示で通行止めの用途にも出した（通行止めの画面は層一覧が無いので専用ボタン PRESETS.snsRoads を追加。ローカル検証：初期ON・ボタンで外す/足す・↺で戻る・冠水/まとめて/他では出ない・コンソールにエラーなし）。『まとめて見る』の初期層は雨雲＋役所の通行止めにした。落とし穴：組み込みブラウザの localhost:8765 は別のFastAPI（Not Found）に当たる→ launch.json の cbi-site-c（python・8767）を使う。npx http-server は応答待ちで固まる。 session: b8327e88-8a02-4556-9531-b91c1c8daa9d / output: 119,512 / cost: $13.67"
         },
         {
           "date": "2026-10-24",

@@ -3324,6 +3324,12 @@ const PRESETS = {
     label: "避難所",
     toggle: ["shelters"]
   },
+  // 通行止めの用途で SNSの通行情報を足す／外すボタン（2026-10-24）。左の層一覧の🚗グループは冠水の用途だけなので、
+  // 通行止めの画面ではこのボタンが唯一の入り口。冠水の用途では層一覧から切り替えるので、このボタンは出さない
+  snsRoads: {
+    label: "SNSの通行情報",
+    toggle: ["snsRoads"]
+  },
   // 土砂キキクルは前に降った雨も数に入れる（土壌雨量指数）。大雨の後は
   // 少ない雨でも崩れるおそれがあるため、いまの雨と一緒に出す（2026-09-29 県の台風26号への注意を受けて）
   rain: {
@@ -14960,7 +14966,8 @@ const VIEWS = {
   // 「まとめて見る」＝これまでの全部入りの画面。冠水の線は rain だけにしたので、役所の通行止めと雨雲を初期に出す
   all: { label: "🗺 まとめて見る", layers: ["boundary", "rainNowcast", "roadClosures", "prefKisei"] },
   rain: { label: "🌧 雨・冠水・浸水・土砂", layers: ["boundary", "rainNowcast", "kansui", "passedRoads", "snsRoads"] },
-  road: { label: "🚧 通行止め", layers: ["boundary", "roadClosures", "prefKisei"] },
+  // SNSの通行情報（snsRoads）は 2026-10-24 事業主指示で通行止めの用途にも出す（通れた/通れない系だが、役所の発表を補う情報として）
+  road: { label: "🚧 通行止め", layers: ["boundary", "roadClosures", "prefKisei", "snsRoads"] },
   fire: { label: "🔥 消防", layers: ["boundary", "fireMail", "fireAccident"] },
   quake: { label: "🌍 地震", layers: ["boundary", "quakes"], onEnter: () => focusQuakeOnPress() },
   infra: { label: "⚡ 停電・鉄道", layers: ["boundary", "teiden", "railStatus", "railway"] }
