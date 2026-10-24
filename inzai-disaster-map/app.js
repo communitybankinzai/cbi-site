@@ -2427,6 +2427,43 @@ function initShelters() {
   initPresence();
 }
 
+let shelterFallbackLoaded = null; // 静的フォールバックのキャッシュ
+
+// 公式の避難所APIが取得できないときの予備表示。
+// 載せるのは施設マスター（名前・住所・座標・対応災害）だけ。
+// 開設状況は絶対に載せない: 全施設 not-announced とし、
+// 手動入力（shelterManualOverrides）があれば通常どおり優先される。
+async function loadShelterStaticFallback() {
+  const url = String(APP_CONFIG.shelterStaticFallbackUrl || "").trim();
+  if (!url) return false;
+  if (!shelterFallbackLoaded) {
+    shelterFallbackLoaded = (async () => {
+      const response = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error(`静的避難所 HTTP ${response.status}`);
+      return response.json();
+    })();
+  }
+  const data = await shelterFallbackLoaded;
+  const shelters = Array.isArray(data.shelters) ? data.shelters.filter(shelter => (
+    Number.isFinite(Number(shelter.latitude)) && Number.isFinite(Number(shelter.longitude))
+  )) : [];
+  if (!shelters.length) return false;
+  // 開設状況らしきものが混ざっていても、予備表示では使わない
+  officialShelters = shelters.map(shelter => ({
+    ...shelter, openingStatus: "not-announced", openingEvidence: null
+  }));
+  const asOf = data.generatedAt ? formatDateTime(toDateTimeLocal(data.generatedAt)) : "";
+  shelterPayload = {
+    fetchedAt: data.generatedAt || null,
+    stale: false,
+    fallback: true,
+    openingInformation: `⚠ 公式の避難所情報を取得できないため、${asOf ? `${asOf}時点の` : ""}避難所一覧（予備）を表示しています。開設状況は未確認です。必ず市の発表でご確認ください。`
+  };
+  renderShelters();
+  renderShelterManualList();
+  return true;
+}
+
 async function refreshShelters(showStatus = false, quiet = false) {
   const endpoint = String(APP_CONFIG.shelterEndpoint || "").trim();
   if (!endpoint) return;
@@ -2447,8 +2484,13 @@ async function refreshShelters(showStatus = false, quiet = false) {
     renderShelters();
     renderShelterManualList();
   } catch (error) {
-    summary.classList.add("is-error");
-    summary.textContent = `避難所情報を取得できませんでした（${error?.message || "接続エラー"}）。`;
+    // 公式APIが落ちている間も「避難所ゼロ」にはしない。
+    // 静的な施設一覧（開設状況なし）へ切り替え、予備表示であることを必ず明示する。
+    const fellBack = await loadShelterStaticFallback().catch(() => false);
+    if (!fellBack) {
+      summary.classList.add("is-error");
+      summary.textContent = `避難所情報を取得できませんでした（${error?.message || "接続エラー"}）。`;
+    }
   } finally {
     button.disabled = false;
   }

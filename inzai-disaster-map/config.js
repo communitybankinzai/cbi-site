@@ -4,6 +4,7 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     snsSearchEndpoint: "",
     snsMonitorEndpoint: "https://cidao.vercel.app/api/disaster/sns-monitor",
     shelterEndpoint: "https://cidao.vercel.app/api/disaster/inzai-shelters",
+    shelterStaticFallbackUrl: "./shelters-static.json",
     wellEndpoint: "https://cidao.vercel.app/api/disaster/inzai-wells",
     kansuiEndpoint: "https://cidao.vercel.app/api/disaster/kansui",
     passedRoadsEndpoint: "https://cidao.vercel.app/api/disaster/passed-roads",

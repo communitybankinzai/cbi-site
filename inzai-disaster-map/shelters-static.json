@@ -1,0 +1,817 @@
+{
+ "generatedAt": "2026-10-25T06:47:52+09:00",
+ "source": "印西市地域防災計画 資料編「8. 避難場所の一覧」（印西市公式サイト掲載PDF）",
+ "sourceUrl": "https://www.city.inzai.lg.jp/cmsfiles/contents/0000006/6581/shiryouhen.pdf",
+ "note": "これは公式APIが取得できないときの予備表示用です。開設状況は含みません（全施設『開設発表なし』として表示されます）。座標の取得方法は各施設の coordSource を参照。gsi-address は住所代表点のため、現地確認を推奨。",
+ "shelters": [
+  {
+   "id": "inzai-001",
+   "name": "千葉県立北総花の丘公園",
+   "kindLabel": "指定緊急避難場所",
+   "address": "印西市原山一丁目12番地1",
+   "latitude": 35.800854,
+   "longitude": 140.124664,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-47-4030"
+  },
+  {
+   "id": "inzai-002",
+   "name": "東京電機大学千葉ニュータウンキャンパス",
+   "kindLabel": "指定緊急避難場所",
+   "address": "印西市武西学園台二丁目1200番地",
+   "latitude": 35.794336,
+   "longitude": 140.108887,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-46-4111"
+  },
+  {
+   "id": "inzai-003",
+   "name": "松山下公園",
+   "kindLabel": "指定緊急避難場所",
+   "address": "印西市浦部275番地",
+   "latitude": 35.824677,
+   "longitude": 140.114947,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-42-8417"
+  },
+  {
+   "id": "inzai-004",
+   "name": "木下小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市木下1502番地",
+   "latitude": 35.839066,
+   "longitude": 140.1539,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-42-2607"
+  },
+  {
+   "id": "inzai-005",
+   "name": "小林小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市小林2448番地2",
+   "latitude": 35.8312,
+   "longitude": 140.187607,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": true
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-42-4311"
+  },
+  {
+   "id": "inzai-006",
+   "name": "大森小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市大森3350番地",
+   "latitude": 35.836186,
+   "longitude": 140.140976,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-42-2089"
+  },
+  {
+   "id": "inzai-007",
+   "name": "船穂小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市船尾1292番地",
+   "latitude": 35.784002,
+   "longitude": 140.127975,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": true
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-46-0023"
+  },
+  {
+   "id": "inzai-008",
+   "name": "旧永治小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市浦部557番地",
+   "latitude": 35.824215,
+   "longitude": 140.108322,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address"
+  },
+  {
+   "id": "inzai-009",
+   "name": "木刈小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市木刈二丁目6番地",
+   "latitude": 35.809998,
+   "longitude": 140.107117,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-46-1755"
+  },
+  {
+   "id": "inzai-010",
+   "name": "内野小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市内野一丁目1番地",
+   "latitude": 35.798061,
+   "longitude": 140.125092,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-46-1781"
+  },
+  {
+   "id": "inzai-011",
+   "name": "原山小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市原山三丁目4番地",
+   "latitude": 35.800302,
+   "longitude": 140.130631,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-46-1701"
+  },
+  {
+   "id": "inzai-012",
+   "name": "小林北小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市小林北五丁目1番地5",
+   "latitude": 35.831291,
+   "longitude": 140.19722,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-97-1100"
+  },
+  {
+   "id": "inzai-013",
+   "name": "小倉台小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市小倉台二丁目3番地",
+   "latitude": 35.804096,
+   "longitude": 140.109421,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-46-5711"
+  },
+  {
+   "id": "inzai-014",
+   "name": "高花小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市高花二丁目4番地",
+   "latitude": 35.796967,
+   "longitude": 140.138702,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-46-6211"
+  },
+  {
+   "id": "inzai-015",
+   "name": "西の原小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市西の原二丁目7番地",
+   "latitude": 35.800205,
+   "longitude": 140.152161,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-45-0150"
+  },
+  {
+   "id": "inzai-016",
+   "name": "原小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市原三丁目5番地",
+   "latitude": 35.799424,
+   "longitude": 140.16353,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-45-8611"
+  },
+  {
+   "id": "inzai-017",
+   "name": "印西中学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市大森2244番地",
+   "latitude": 35.830814,
+   "longitude": 140.146744,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-42-3151"
+  },
+  {
+   "id": "inzai-018",
+   "name": "船穂中学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市高花一丁目3番地",
+   "latitude": 35.794541,
+   "longitude": 140.133241,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-46-0021"
+  },
+  {
+   "id": "inzai-019",
+   "name": "木刈中学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市木刈二丁目1番地",
+   "latitude": 35.807617,
+   "longitude": 140.109879,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-46-1751"
+  },
+  {
+   "id": "inzai-020",
+   "name": "小林中学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市小林大門下一丁目4番地1",
+   "latitude": 35.823521,
+   "longitude": 140.18663,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-97-3100"
+  },
+  {
+   "id": "inzai-021",
+   "name": "原山中学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市原山一丁目2番地",
+   "latitude": 35.798057,
+   "longitude": 140.12724,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-46-6911"
+  },
+  {
+   "id": "inzai-022",
+   "name": "西の原中学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市西の原一丁目3番地",
+   "latitude": 35.803131,
+   "longitude": 140.156906,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-45-0160"
+  },
+  {
+   "id": "inzai-023",
+   "name": "そうふけふれあいの里",
+   "kindLabel": "指定避難所",
+   "address": "印西市草深924番地",
+   "latitude": 35.796062,
+   "longitude": 140.151917,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-47-4700"
+  },
+  {
+   "id": "inzai-024",
+   "name": "平岡自然公園",
+   "kindLabel": "指定避難所",
+   "address": "印西市平岡1554番地",
+   "latitude": 35.827607,
+   "longitude": 140.172585,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-42-1008"
+  },
+  {
+   "id": "inzai-025",
+   "name": "六合小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市瀬戸1580番地",
+   "latitude": 35.777912,
+   "longitude": 140.227249,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-98-0006"
+  },
+  {
+   "id": "inzai-026",
+   "name": "旧宗像小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市岩戸1680番地",
+   "latitude": 35.763531,
+   "longitude": 140.168365,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": true
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address"
+  },
+  {
+   "id": "inzai-027",
+   "name": "平賀小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市平賀1161番地2",
+   "latitude": 35.743637,
+   "longitude": 140.261826,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-98-1151"
+  },
+  {
+   "id": "inzai-028",
+   "name": "いには野小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市若萩三丁目9番地",
+   "latitude": 35.789978,
+   "longitude": 140.20726,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-98-2080"
+  },
+  {
+   "id": "inzai-029",
+   "name": "印旛中学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市舞姫二丁目1番地1",
+   "latitude": 35.784992,
+   "longitude": 140.204749,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-98-0711"
+  },
+  {
+   "id": "inzai-030",
+   "name": "本埜小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市中根1281番地2",
+   "latitude": 35.808044,
+   "longitude": 140.198334,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-97-0035"
+  },
+  {
+   "id": "inzai-031",
+   "name": "旧本埜第二小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市笠神1745番地",
+   "latitude": 35.826843,
+   "longitude": 140.214264,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address"
+  },
+  {
+   "id": "inzai-032",
+   "name": "滝野小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市滝野五丁目1番地",
+   "latitude": 35.809145,
+   "longitude": 140.175196,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-97-1977"
+  },
+  {
+   "id": "inzai-033",
+   "name": "本埜中学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市笠神250番地",
+   "latitude": 35.817272,
+   "longitude": 140.199738,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-97-0009"
+  },
+  {
+   "id": "inzai-034",
+   "name": "滝野中学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市滝野五丁目2番地",
+   "latitude": 35.808769,
+   "longitude": 140.174728,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-97-1988"
+  },
+  {
+   "id": "inzai-035",
+   "name": "牧の原小学校",
+   "kindLabel": "指定避難所",
+   "address": "印西市牧の原三丁目1番地1",
+   "latitude": 35.811988,
+   "longitude": 140.160815,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "osm-facility-name",
+   "phone": "0476-29-5560"
+  },
+  {
+   "id": "inzai-036",
+   "name": "総合福祉センター",
+   "kindLabel": "特別避難所",
+   "address": "印西市竹袋614番地9",
+   "latitude": 35.831989,
+   "longitude": 140.150757,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-42-0144"
+  },
+  {
+   "id": "inzai-037",
+   "name": "中央公民館",
+   "kindLabel": "特別避難所",
+   "address": "印西市大森3934番地1",
+   "latitude": 35.841534,
+   "longitude": 140.145203,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-42-2911"
+  },
+  {
+   "id": "inzai-038",
+   "name": "中央駅前地域交流館",
+   "kindLabel": "特別避難所",
+   "address": "印西市中央南一丁目2番地",
+   "latitude": 35.800278,
+   "longitude": 140.119278,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-46-5111"
+  },
+  {
+   "id": "inzai-039",
+   "name": "小林コミュニティプラザ",
+   "kindLabel": "特別避難所",
+   "address": "印西市小林北五丁目1番地6",
+   "latitude": 35.831291,
+   "longitude": 140.19722,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-97-0003"
+  },
+  {
+   "id": "inzai-040",
+   "name": "ふれあい文化館",
+   "kindLabel": "特別避難所",
+   "address": "印西市原三丁目4番地",
+   "latitude": 35.799629,
+   "longitude": 140.165695,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-45-3800"
+  },
+  {
+   "id": "inzai-041",
+   "name": "中央駅北コミュニティセンター（フレンドリープラザ）",
+   "kindLabel": "特別避難所",
+   "address": "印西市木刈四丁目3番地1",
+   "latitude": 35.809284,
+   "longitude": 140.105194,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-46-8611"
+  },
+  {
+   "id": "inzai-042",
+   "name": "中央駅南コミュニティセンター（サザンプラザ）",
+   "kindLabel": "特別避難所",
+   "address": "印西市原山三丁目3番地",
+   "latitude": 35.798763,
+   "longitude": 140.12941,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-45-0611"
+  },
+  {
+   "id": "inzai-043",
+   "name": "永治コミュニティセンター",
+   "kindLabel": "特別避難所",
+   "address": "印西市浦部411番地3",
+   "latitude": 35.825932,
+   "longitude": 140.109283,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-42-1101"
+  },
+  {
+   "id": "inzai-044",
+   "name": "船穂コミュニティセンター",
+   "kindLabel": "特別避難所",
+   "address": "印西市船尾786番地1",
+   "latitude": 35.781559,
+   "longitude": 140.129349,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": false
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-48-5311"
+  },
+  {
+   "id": "inzai-045",
+   "name": "ふれあいセンターいんば",
+   "kindLabel": "特別避難所",
+   "address": "印西市美瀬一丁目25番地",
+   "latitude": 35.779148,
+   "longitude": 140.205215,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": true
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-98-1111"
+  },
+  {
+   "id": "inzai-046",
+   "name": "本埜公民館",
+   "kindLabel": "特別避難所",
+   "address": "印西市中根1375番地",
+   "latitude": 35.808392,
+   "longitude": 140.197952,
+   "suitableFor": {
+    "windFlood": true,
+    "earthquake": true,
+    "landslide": true
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address",
+   "phone": "0476-97-2011"
+  },
+  {
+   "id": "inzai-047",
+   "name": "宮内青年館",
+   "kindLabel": "特別避難所",
+   "address": "印西市浦部1430番地3",
+   "latitude": 35.822796,
+   "longitude": 140.103714,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": false,
+    "landslide": true
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address"
+  },
+  {
+   "id": "inzai-048",
+   "name": "和泉会館",
+   "kindLabel": "特別避難所",
+   "address": "印西市和泉885番地1",
+   "latitude": 35.821648,
+   "longitude": 140.124039,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": false,
+    "landslide": true
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address"
+  },
+  {
+   "id": "inzai-049",
+   "name": "松崎中央会館",
+   "kindLabel": "特別避難所",
+   "address": "印西市松崎396番地",
+   "latitude": 35.77879,
+   "longitude": 140.138245,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": false,
+    "landslide": true
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address"
+  },
+  {
+   "id": "inzai-050",
+   "name": "大森ふれあい会館",
+   "kindLabel": "特別避難所",
+   "address": "印西市大森2646番地8",
+   "latitude": 35.834057,
+   "longitude": 140.141296,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": false,
+    "landslide": true
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address"
+  },
+  {
+   "id": "inzai-051",
+   "name": "平賀地区構造改善センター",
+   "kindLabel": "特別避難所",
+   "address": "印西市平賀928番地",
+   "latitude": 35.75671,
+   "longitude": 140.244812,
+   "suitableFor": {
+    "windFlood": false,
+    "earthquake": false,
+    "landslide": true
+   },
+   "openingStatus": "not-announced",
+   "coordSource": "gsi-address"
+  }
+ ],
+ "unresolved": []
+}
