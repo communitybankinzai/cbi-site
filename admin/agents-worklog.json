@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-10-25",
+          "title": "防災MAPの雨量しぼり込みを、右へ動かすほど冠水が増えるスライダーに変更（初期は最大・青は大雨でも通れた道） 0.6時間",
+          "category": "実装",
+          "outputs": ["site/inzai-disaster-map/app.js（rainAmountFilter を min→at・passesRainFilter・RAIN_HEAVY・syncRainSlider／syncRainSliderText・initRainPanel を書き換え）", "site/inzai-disaster-map/index.html（雨量パネル：スライダー・折りたたみ・版 app 20261025h）", "site/inzai-disaster-map/styles.css（スライダー・折りたたみ・パネル開閉時は現在地ボタンを隠す）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json（1件）"],
+          "hours": 0.6,
+          "partnerApproved": true,
+          "note": "事業主の依頼『雨量をスライダにして、雨量が増えれば冠水道路がどんどん増えていく表示に』。3択で決定：測り方は24時間が既定・1/3時間も切替／青は『その雨量でも通れる道路も知りたい』。追加指示『最初の画面はスライダー最大で、冠水実績のある道路とほぼ確実に通れる道路を表示』→ 最大のとき青が0件になる問題をデータで示し（24時間100mm以上でも通れた記録65・300mm以上は3）、3択から『大雨でも通れた道を固定で出す（24時間100mm以上＝65か所）』を選択。仕様：🔴＝記録時の雨量≦スライダー（右へ動かすほど増える・最大のときは雨量のない記録も含め全件・みんつくの冠水も表示）、🔵＝記録時の雨量≧min(スライダー, 大雨の目安)（1時間20・3時間50・24時間100mm）。動かしている間はみんつくの冠水（雨量なし）を隠す。検証（本番と同じデータ）：24時間で 0→50→100→150→200→300→最大 の赤が 17→46→50→55→88→103→112 件と単調に増え、青は 273→71→65 で固定／1時間に切替で最大32mm・青4／解除で24時間・最大へ戻る／本番でも同じ件数。パネルは長く地図を隠したため、説明と雨の有無の絞り込みを折りたたみに入れて289pxに。パネルを開いている間は現在地ボタンを隠す（パネルの左端に重なっていた）。未確認：実機スマホでの操作感。大雨の目安（3時間50mm）は私が間を取った値で、根拠の確認が要る。 session: b8327e88-8a02-4556-9531-b91c1c8daa9d / output: 399,163 / cost: $60.82"
+        },
+        {
+          "date": "2026-10-25",
           "title": "防災MAPをPC上のiPhone 15の枠で確認・プレゼンできるページ（phone-preview.html）を作成・公開 0.2時間",
           "category": "実装",
           "outputs": ["site/inzai-disaster-map/phone-preview.html（新規・iPhone 15の枠・Safariのバー・用途ボタン・縦横・拡大率・プレゼン表示・URL指定）", "site/admin/changelog.json（1件）"],
