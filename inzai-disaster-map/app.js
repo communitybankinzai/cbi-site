@@ -3321,6 +3321,8 @@ const PRESETS = {
     label: "冠水した道・通れた道",
     // leveeBreach（北印旛沼の決壊）は 2026-10-09 に外した：開口部は塞がり（荒締切が10/3に完了）過去の記録になったため
     on: ["boundary", "kansui", "passedRoads"],
+    // kinds＝凡例の🔴通れない道・🔵通れた道のしぼり込み（passedKindFilter）。押すと両方に戻す（2026-10-25）
+    kinds: { passed: true, blocked: true },
     openGroups: ["🚗"],
     focus: "layer-panel"
   },
@@ -3328,16 +3330,21 @@ const PRESETS = {
   // 片方だけ見たいときのための個別ボタンを追加。kansui 単体がこの地図の冠水の投稿（＝通れない道の実績）。
   // off を指定しているのでトグルではなく「押すたびに on を必ずON・off を必ずOFF」の決め打ちボタンになる
   // （上の kansui ボタンが常に両方ONにするため、トグルのままだと keep 計算で OFF が無効化されてしまう）
+  // 2026-10-25 事業主指摘「雨量での通れない道を出力できなくなった」。以前は passedRoads の層ごとOFFにしていたため、
+  // この地図で記録された「通れない」（kind=blocked・雨量つき）まで消え、雨量でしぼり込むとみんつくの冠水（雨量なし）も
+  // 出ず、何も出なかった。層は ON のまま、凡例の🔴🔵と同じ「種類のしぼり込み」（kinds）で分ける
   kansuiOnly: {
     label: "冠水した道（通れない道）のみ",
-    on: ["boundary", "kansui"],
-    off: ["passedRoads"],
+    on: ["boundary", "kansui", "passedRoads"],
+    off: [],
+    kinds: { passed: false, blocked: true },
     openGroups: ["🚗"]
   },
   passedOnly: {
     label: "通れた道のみ",
     on: ["boundary", "passedRoads"],
     off: ["kansui"],
+    kinds: { passed: true, blocked: false },
     openGroups: ["🚗"]
   },
   links: {
@@ -3463,11 +3470,25 @@ function syncTogglePresets() {
     const offBoxes = (preset.off || [])
       .map(key => document.querySelector(`input[data-overlay="${key}"]`))
       .filter(Boolean);
-    const allOn = boxes.length > 0 && boxes.every(box => box.checked) && offBoxes.every(box => !box.checked);
+    const allOn = boxes.length > 0 && boxes.every(box => box.checked) && offBoxes.every(box => !box.checked) && presetKindsMatch(preset);
     const button = document.querySelector(`.preset-btn[data-preset="${name}"]`);
     button?.classList.toggle("is-current", allOn);
     button?.setAttribute("aria-pressed", String(allOn));
   });
+}
+
+// 凡例の🔴通れない道・🔵通れた道のしぼり込み（passedKindFilter）を、ボタンの kinds に合わせる（2026-10-25）。
+// passedKindFilter は後方の var なので、初期化の早い段階では undefined（そのときは両方表示とみなす）
+function presetKindsMatch(preset) {
+  if (!preset.kinds) return true;
+  return Object.entries(preset.kinds).every(([kind, on]) => Boolean(passedKindFilter?.[kind] ?? true) === on);
+}
+
+function applyPresetKinds(kinds) {
+  if (!kinds || typeof passedKindFilter === "undefined") return;
+  Object.assign(passedKindFilter, kinds);
+  renderPassedRoadsLayer();
+  if (snsRoadsLoaded) renderSnsRoads();
 }
 
 function applyTogglePreset(name, preset) {
@@ -3475,6 +3496,7 @@ function applyTogglePreset(name, preset) {
   // 「冠水した道・通れた道」ボタンが両方 ON のままだと、トグルの keep 計算でこちらの OFF が無効化されるため、
   // 押すたびに on を必ず ON・off を必ず OFF にする「状態を決め打ちする」ボタンにする（2026-10-11追加）
   if (preset.off) {
+    applyPresetKinds(preset.kinds);   // 層を ON にして読み込む前に決めておく（読み込み後の描き直しが、このしぼり込みで出る）
     (preset.on || []).forEach(key => {
       const box = document.querySelector(`input[data-overlay="${key}"]`);
       if (box && !box.checked) box.click();
@@ -3495,8 +3517,10 @@ function applyTogglePreset(name, preset) {
   }
   const boxes = presetBoxes(preset);
   // 1つでも OFF なら全部 ON に、全部 ON なら外す。層を持たないボタン（公式リンク集）は開くだけ
-  const turnOn = !boxes.length || boxes.some(box => !box.checked);
+  // 層は全部 ON でも、通れない/通れたのしぼり込みがこのボタンと違うときは「押された」とみなして合わせる（外さない）
+  const turnOn = !boxes.length || boxes.some(box => !box.checked) || !presetKindsMatch(preset);
   if (turnOn) {
+    applyPresetKinds(preset.kinds);
     boxes.forEach(box => { if (!box.checked) box.click(); });
     // ボタンから ON にしたときだけの後処理（🌍 地震：日本全体へ移動。チェック欄から ON にしたときは動かさない）
     if (typeof preset.onApply === "function") preset.onApply();
@@ -3546,6 +3570,7 @@ function applyPreset(name) {
   if (name !== "reset") { applyTogglePreset(name, preset); return; }
   // ↺ 最初の表示だけは、既定の状態へ入れ替える。用途を選んでいるときはその用途の最初の層（VIEWS・2026-10-24）
   const wanted = new Set((typeof viewLayers === "function" && viewLayers()) || preset.on || []);
+  applyPresetKinds({ passed: true, blocked: true });   // 通れない/通れたのしぼり込みも両方に戻す（2026-10-25）
   // チェックを入れ替える。change イベントを起こすため click() を使う
   document.querySelectorAll("[data-overlay]").forEach(box => {
     const want = wanted.has(box.dataset.overlay);
@@ -4021,6 +4046,7 @@ function initMapLegend() {
       renderPassedRoadsLayer();
       if (snsRoadsLoaded) renderSnsRoads();
       syncMapLegend();
+      syncTogglePresets();   // 「見たいもの」の通れない道のみ／通れた道のみの「押された」表示も合わせる（2026-10-25）
       return;
     }
     if (chip.dataset.legend) {
@@ -15045,6 +15071,7 @@ function setView(name, opts = {}) {
   document.body.dataset.view = name;
   document.body.classList.toggle("view-focus", name !== "all");
   // 層：その用途の組み合わせへ入れ替える（change を起こすため click。applyPreset("reset") と同じ作法）
+  applyPresetKinds({ passed: true, blocked: true });   // 通れない/通れたのしぼり込みは用途を選び直すたびに両方へ
   const wanted = new Set(view.layers);
   document.querySelectorAll("[data-overlay]").forEach(box => {
     if (box.checked !== wanted.has(box.dataset.overlay)) box.click();
