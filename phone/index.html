@@ -201,11 +201,12 @@
       const kx = video.videoWidth / innerWidth, ky = video.videoHeight / innerHeight;
       const rect = el.getBoundingClientRect();           // 拡大縮小したあとの、枠（ベゼル）を含む外形
       const s = rect.width / el.offsetWidth;              // 拡大率
-      const sx = rect.left * kx, sy = rect.top * ky, sw = rect.width * kx, sh = rect.height * ky;
+      // スマホ本体（黒い枠）だけを切り出す。周りの背景・影は入れない。縁に背景色がにじまないよう、1px だけ内側を切る
+      const sx = (rect.left + s) * kx, sy = (rect.top + s) * ky, sw = (rect.width - s * 2) * kx, sh = (rect.height - s * 2) * ky;
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(sw); canvas.height = Math.round(sh);
       const ctx = canvas.getContext("2d");
-      const r = 62 * s * kx;
+      const r = (62 * s - s) * kx;
       ctx.beginPath();
       if (ctx.roundRect) ctx.roundRect(0, 0, canvas.width, canvas.height, r);
       else { ctx.moveTo(r, 0); ctx.arcTo(canvas.width, 0, canvas.width, canvas.height, r); ctx.arcTo(canvas.width, canvas.height, 0, canvas.height, r); ctx.arcTo(0, canvas.height, 0, 0, r); ctx.arcTo(0, 0, canvas.width, 0, r); ctx.closePath(); }
