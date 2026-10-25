@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-10-25",
+          "title": "防災MAPのスマホ表示・用途別表示の告知：SNS本文・画像・BGMつき動画の作成と、3媒体への予約（本日12:00） 0.8時間",
+          "category": "広報",
+          "outputs": ["site/assets/sns/2026-10-25_bousai-map-views/（画像3枚 cover・02_rain・03_road、動画 bousai-map-views-lively.mp4、本文 threads.txt・instagram_facebook.txt）", "予約キュー3件（Threads q1792889386914／Instagram リール q1792889393500／Facebook q1792889399152・いずれも 2026/10/25 12:00）", "scratchpad の自作BGM生成スクリプト（make_calm_bgm.py）"],
+          "hours": 0.8,
+          "partnerApproved": true,
+          "note": "事業主の依頼『明日も大雨予想。スマホ表示の最適化と用途別表示を告知したい』。事実確認：気象庁（10/25 5時発表）で、25日夕方〜夜のはじめ頃と26日夜に激しく降る所がある見込み（「大雨」とは断定せず気象庁の言い方に合わせた）。画像は本番の画面を撮影し、sns_headline.py で見出しの帯つきJPEG（1080x1350）に。一覧のサムネ（中央3:4）で見出しが読めることを確認。本文は避難所・市の避難情報を入れなかった（市の防災速報PHPが404で避難所は予備表示・避難情報の帯は取得できないため）。承認後に動画（約15.6秒・縦1080x1920・BGMつき）へ変更。BGM：当初は『白鳥の湖』（CC BY）だったが事業主指示で武蔵屋イベントと重なるため中止。告知のすみわけ（マルシェ全体はFreeFree、CBIは自分の持ち場）・10/23と10/31の投稿・FreeFree自動配信18:00・プロフィールのリンク（CiDAO先頭）との重複を確認し、CBI自作の曲に。『暗い→もっと明るく→もっと元気』と3回作り直し（テンポ120・ドラム入り・長調）。出典は『BGM：CBI制作』。承認ごとに動画を送って聞いてもらい、承認後に予約。照合：dry-run で3媒体の内容・時刻・URL、本登録後に一覧で媒体ごとに『同じ本文・同じ媒体・同じ動画の未投稿1件』。未確認：12:00の投稿の成否（キューの note 欄）、Instagram リールでの音声。誤転送：同じ画面で届いた N's CAD の依頼を別セッションへ転送し、取り消しを連絡（メモリに再発防止を登録）。 session: b8327e88-8a02-4556-9531-b91c1c8daa9d / output: 262,024 / cost: $41.74"
+        },
+        {
+          "date": "2026-10-25",
           "title": "防災MAP：避難所が出ない原因（市の防災速報PHPの404）の調査と、雨量しぼり込みで通れない道が出ない不具合の修正 0.6時間",
           "category": "実装",
           "outputs": ["site/inzai-disaster-map/app.js（PRESETS の kinds・presetKindsMatch・applyPresetKinds・凡例チップ後の syncTogglePresets）", "site/inzai-disaster-map/index.html（版 20261025a）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json（1件）", "site/admin/agents-worklog.json（予定1件・この実績）"],
@@ -8741,6 +8750,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-10-25",
+          "title": "📣 防災MAP告知（12:00予約・3媒体）の投稿結果を、キューの note 欄で確認する",
+          "category": "広報",
+          "priority": "高",
+          "note": "予約：Threads q1792889386914／Instagram（リール）q1792889393500／Facebook q1792889399152（いずれも 2026/10/25 12:00・動画 bousai-map-views-lively.mp4）。確認点：①媒体ごとの成否（Instagram は動画の取り込みに時間がかかる）②動画の音声が出ているか③投稿のあとの反応（見た人が用途の入口を使えているか。計測は未導入）。明日（26日）の雨の前後に、用途別の画面（?mode=rain など）で冠水・通れた道の記録が増えるかも見る。"
+        },
         {
           "due": "2026-10-25",
           "title": "🚨 市の防災速報の配信先（get_bousai_xml.php）が404：避難所API・市の避難情報の帯・防災行政無線の取り込み・自動SNSの避難指示判定が取れない",
