@@ -2493,6 +2493,7 @@ async function refreshShelters(showStatus = false, quiet = false) {
     }
   } finally {
     button.disabled = false;
+    renderStatusStrip();   // 状況の帯の避難所（開設中n／開設状況は取得できません）。成功・予備表示・失敗のどれでも更新
   }
 }
 
@@ -6325,6 +6326,7 @@ async function refreshRoadClosures() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     roadClosuresData = await res.json();
     renderRoadClosures();
+    renderStatusStrip();   // 状況の帯の「通行止め n件」（2026-10-25）
   } catch (error) {
     console.error("通行止め情報の読み込みに失敗:", error);
     // 前回の内容があれば残す（一時的な失敗で一覧を消さない）
@@ -7428,10 +7430,14 @@ async function refreshEvacAlert() {
     const response = await fetch(endpoint, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     evacAlertPayload = await response.json();
+    evacFetchState = { ok: true, at: Date.now(), lastOkAt: Date.now() };
   } catch {
-    // 取れないときは前回の内容を残す（一時的な失敗で避難指示の帯が消えるのを避ける）
+    // 取れないときは前回の内容を残す（一時的な失敗で避難指示の帯が消えるのを避ける）。
+    // ただし「取れていない」ことは状況の帯で必ず伝える（2026-10-25：502のとき何も出ず、避難情報なしに見えた）
+    evacFetchState = { ok: false, at: Date.now(), lastOkAt: (evacFetchState && evacFetchState.lastOkAt) || 0 };
   }
   renderMapAlert();
+  renderStatusStrip();
 }
 
 // 降水短時間予報（この先1時間の雨の予想）。実況の雨雲レーダーとは別配信
@@ -10919,7 +10925,11 @@ async function refreshWeatherWarnings(manual) {
     const reports = await response.json();
     const summary = parseInzaiWeatherWarnings(reports);
     renderWeatherWarnings(node, panel, summary);
+    weatherWarnState = { ok: true, active: summary.active, report: summary.reportDatetime, at: Date.now() };
+    renderStatusStrip();   // 地図の上の状況の帯へ（全用途・2026-10-25）
   } catch (error) {
+    weatherWarnState = { ok: false, active: [], report: "", at: Date.now() };
+    renderStatusStrip();
     setWeatherWarningPanelState(panel, "error");
     node.innerHTML = `
       <div class="weather-warning-error">
@@ -15033,6 +15043,9 @@ document.getElementById("pref-recovery-list")?.addEventListener("click", event =
 const VIEWS = {
   // 「まとめて見る」＝これまでの全部入りの画面。冠水の線は rain だけにしたので、役所の通行止めと雨雲を初期に出す
   all: { label: "🗺 まとめて見る", layers: ["boundary", "rainNowcast", "roadClosures", "prefKisei"] },
+  // 2026-10-25 外部レビュー：避難は最上位の目的。避難所のピン（市の公式データ・取れないときは予備の静的データ）だけを出し、
+  // 「浸水の想定」ボタンで想定区域を重ねられる
+  shelter: { label: "🏫 避難・避難所", layers: ["boundary", "shelters"] },
   rain: { label: "🌧 雨・冠水・浸水・土砂", layers: ["boundary", "rainNowcast", "kansui", "passedRoads", "snsRoads"] },
   // SNSの通行情報（snsRoads）は 2026-10-24 事業主指示で通行止めの用途にも出す（通れた/通れない系だが、役所の発表を補う情報として）
   road: { label: "🚧 通行止め", layers: ["boundary", "roadClosures", "prefKisei", "snsRoads"] },
@@ -15058,7 +15071,7 @@ function writeViewUrl(name, replace) {
 // 地図の高さ＝画面の高さ − 上の帯。スマホの用途別の画面で使う（styles.css の body.view-focus）
 function syncViewChrome() {
   let used = 0;
-  [document.querySelector(".topbar"), document.getElementById("preset-bar")].forEach(node => {
+  [document.querySelector(".topbar"), document.getElementById("preset-bar"), document.getElementById("status-strip")].forEach(node => {
     if (node && node.offsetParent !== null) used += node.offsetHeight;
   });
   document.documentElement.style.setProperty("--view-chrome-h", `${used}px`);
@@ -15093,15 +15106,24 @@ function setView(name, opts = {}) {
   document.querySelector(".preset-items")?.scrollTo?.({ left: 0 });
   syncViewChrome();
   scheduleMapResize();
+  const keep = lastMapView;
+  lastMapView = null;
   if (typeof view.onEnter === "function") {
     view.onEnter();
+  } else if (keep && keep.moved && keep.view !== "quake") {
+    // 2026-10-25 外部レビュー：用途を切り替えただけで場所と縮尺を失わない。地図を動かしていた場合は、そのままの中心・縮尺へ戻す
+    // （印西市全域へ戻すのは、地図を動かしていない初回と、地震から出るときだけ）
+    setTimeout(() => { map.invalidateSize({ animate: false, pan: false }); map.setView(keep.center, keep.zoom, { animate: false }); userMovedMap = true; }, 320);
   } else {
-    // 枠の大きさが変わるので、市全域へ合わせ直す（利用者が動かした後でも、用途を選び直したときは戻す）
+    // 枠の大きさが変わるので、市全域へ合わせ直す
     setTimeout(() => { userMovedMap = false; inzaiFitDone = false; fitToInzai(true); }, 320);
   }
 }
 
+var lastMapView = null;   // 入口へ戻る直前の地図の位置（用途を選び直したとき、場所を保つため）
+
 function showViewGate(opts = {}) {
+  if (currentView) lastMapView = { center: map.getCenter(), zoom: map.getZoom(), moved: Boolean(userMovedMap), view: currentView };
   document.body.dataset.view = "gate";
   document.body.classList.remove("view-focus");
   const badge = document.getElementById("view-badge");
@@ -15132,10 +15154,175 @@ function showViewGate(opts = {}) {
   });
   if (typeof ResizeObserver === "function") {
     const observer = new ResizeObserver(syncViewChrome);
-    [document.querySelector(".topbar"), document.getElementById("preset-bar")].forEach(node => node && observer.observe(node));
+    [document.querySelector(".topbar"), document.getElementById("preset-bar"), document.getElementById("status-strip")].forEach(node => node && observer.observe(node));
   }
   window.addEventListener("resize", syncViewChrome);
   // index.html の先頭のスクリプトが決めた用途（?mode= や従来の埋め込み・運営・位置指定のURL）。無ければ入口
   const initial = document.body.dataset.view;
   if (VIEWS[initial]) setView(initial, { push: false }); else showViewGate({ push: false });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// 状況の帯（2026-10-25 外部レビューの指摘1・2）
+// どの用途でも、地図の上（と入口）に「警報・注意報／避難情報／避難所／通行止め」の状況を1行で出す。
+//  - 取得し直しはしない。気象庁の警報・市の避難情報・避難所・通行止めの、すでに取っている結果を再利用する
+//  - ⚠ 取れていないときは「取得できません」と必ず出す。以前は避難情報APIが502のとき何も出ず、「避難情報なし」に見えた
+//  - 「発令なし」は、取得に成功したときだけ言う
+// ─────────────────────────────────────────────────────────────
+var evacFetchState = { ok: null, at: 0, lastOkAt: 0 };
+var weatherWarnState = { ok: null, active: [], report: "", at: 0 };
+const OFFICIAL_CITY_PORTAL_URL = "https://www.city.inzai.lg.jp/bousaiportal/";
+const OFFICIAL_JMA_WARNING_URL = "https://www.jma.go.jp/bosai/warning/#area_type=class20s&area_code=1223100";
+
+function statusHhmm(ms) {
+  return ms ? new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit" }).format(new Date(ms)) : "";
+}
+
+function statusChips() {
+  const chips = [];
+  // ① 警報・注意報（気象庁）
+  const w = weatherWarnState;
+  if (w.ok === null) {
+    chips.push({ cls: "muted", icon: "⚠", text: "警報・注意報：確認中…" });
+  } else if (!w.ok) {
+    chips.push({ cls: "danger", icon: "⚠", text: "警報・注意報を取得できません。気象庁で確認", title: "「発表なし」ではありません。気象庁のページで確認してください。", href: OFFICIAL_JMA_WARNING_URL });
+  } else if (!w.active.length) {
+    chips.push({ cls: "ok", icon: "⚠", text: `警報・注意報なし（${statusHhmm(w.at)}確認）`, href: OFFICIAL_JMA_WARNING_URL });
+  } else {
+    const top = Math.max(...w.active.map(item => item.level));
+    const cls = top >= 50 ? "emergency" : top >= 40 ? "danger" : top >= 30 ? "warning" : "advisory";
+    const label = top >= 50 ? "特別警報" : top >= 40 ? "危険警報" : top >= 30 ? "警報" : "注意報";
+    const names = Array.from(new Set(w.active.map(item => String(item.name).replace(/^レベル\d/, ""))));
+    chips.push({ cls, icon: "⚠", text: `${label}：${names.slice(0, 3).join("・")}${names.length > 3 ? ` ほか${names.length - 3}件` : ""}`, href: OFFICIAL_JMA_WARNING_URL });
+  }
+  // ② 市の避難情報
+  const e = evacFetchState;
+  const evacs = visibleEvacAlerts();
+  if (e.ok === null) {
+    chips.push({ cls: "muted", icon: "📢", text: "避難情報：確認中…" });
+  } else if (!e.ok) {
+    const prev = e.lastOkAt ? `前回 ${statusHhmm(e.lastOkAt)} の内容を地図に表示中。` : "";
+    chips.push({ cls: "danger", icon: "📢", text: "避難情報を取得できません。市の公式発表で確認", title: `${prev}「発令なし」ではありません。印西市の公式発表（防災ポータル）で確認してください。`, href: OFFICIAL_CITY_PORTAL_URL });
+  } else if (evacs.length) {
+    const top = evacs.reduce((a, b) => (b.level > a.level ? b : a));
+    chips.push({ cls: top.level >= 4 ? "danger" : "warning", icon: "📢", text: evacAlertSummary(evacs), act: "evac" });
+  } else {
+    chips.push({ cls: "ok", icon: "📢", text: `避難情報の発令なし（${statusHhmm(e.at)}確認）`, href: OFFICIAL_CITY_PORTAL_URL });
+  }
+  // ③ 避難所
+  if (shelterPayload && shelterPayload.fallback) {
+    chips.push({ cls: "caution", icon: "🏫", text: "避難所：開設状況は取得できません（場所だけ表示）", act: "view:shelter" });
+  } else if (shelterPayload) {
+    const open = officialShelters.filter(shelter => effectiveShelterOpening(shelter).status === "open").length;
+    chips.push({ cls: open ? "warning" : "ok", icon: "🏫", text: open ? `避難所：開設中 ${open}か所` : "避難所：開設中の発表なし", act: "view:shelter" });
+  } else if (document.getElementById("shelter-summary")?.classList.contains("is-error")) {
+    chips.push({ cls: "danger", icon: "🏫", text: "避難所の情報を取得できません。市の公式発表で確認", href: OFFICIAL_CITY_PORTAL_URL });
+  } else {
+    chips.push({ cls: "muted", icon: "🏫", text: "避難所：確認中…" });
+  }
+  // ④ 通行止め（読み込み済みのときだけ。ここのために追加の取得はしない）
+  if (roadClosuresData && Array.isArray(roadClosuresData.active)) {
+    const n = roadClosuresData.active.length;
+    chips.push({ cls: n ? "caution" : "ok", icon: "🚧", text: n ? `通行止め ${n}件` : "通行止めの発表なし", act: "view:road" });
+  }
+  chips.push({ cls: "link", icon: "📄", text: "公式情報", act: "official" });
+  // 取れていない・危険なものを先頭へ（スマホは横に流れるので、読まれるのは左端から）。同じ重さの中では元の並び
+  const rank = { emergency: 0, danger: 1, warning: 2, advisory: 3, caution: 4, ok: 5, muted: 6, link: 7 };
+  return chips.sort((a, b) => rank[a.cls] - rank[b.cls]);
+}
+
+function statusChipHtml(chip) {
+  const attr = chip.href ? ` data-status-href="${escapeAttribute(chip.href)}"` : chip.act ? ` data-status-act="${escapeAttribute(chip.act)}"` : "";
+  const title = chip.title ? ` title="${escapeAttribute(chip.title)}"` : "";
+  return `<button type="button" class="status-chip is-${chip.cls}"${attr}${title}><span aria-hidden="true">${chip.icon}</span> ${escapeHtml(chip.text)}</button>`;
+}
+
+function renderStatusStrip() {
+  try {
+    const html = statusChips().map(statusChipHtml).join("");
+    ["status-strip", "gate-status-body"].forEach(id => {
+      const node = document.getElementById(id);
+      if (node) node.innerHTML = html;
+    });
+  } catch { /* 画面の準備前。準備ができたあとの更新で出る */ }
+}
+
+document.addEventListener("click", event => {
+  const chip = event.target.closest?.(".status-chip[data-status-href], .status-chip[data-status-act]");
+  if (!chip) return;
+  if (chip.dataset.statusHref) { window.open(chip.dataset.statusHref, "_blank", "noopener"); return; }
+  const act = chip.dataset.statusAct;
+  if (act === "official") {
+    document.getElementById("official-links-button")?.click();
+  } else if (act === "evac") {
+    if (document.body.dataset.view === "gate") setView("all");
+    mapAlertDismissed = "";
+    mapAlertExpanded = true;
+    renderMapAlert();
+  } else if (act && act.startsWith("view:")) {
+    setView(act.slice(5));
+  }
+});
+renderStatusStrip();
+setInterval(renderStatusStrip, 60 * 1000);   // 「確認から○分」の時刻は変わらないが、取得の状態が変わったときの取りこぼしを防ぐ
+
+// ─────────────────────────────────────────────────────────────
+// 現在地ボタン（2026-10-25 外部レビューの指摘4）
+// 閲覧者向けの常設ボタン。位置は端末の中だけで使い、送らない。許可が得られないときは地名検索へ案内する。
+// （道路の記録の「現在地」とは別。記録は従来どおり GPS ボタンから）
+// ─────────────────────────────────────────────────────────────
+var locateLayer = null;
+
+function locateMe() {
+  const status = document.getElementById("map-status");
+  const say = text => {
+    if (!status) return;
+    status.textContent = text;
+    setTimeout(() => { if (status.textContent === text) status.textContent = "公開レイヤー接続済み"; }, 9000);
+  };
+  const openPlaceSearch = () => {
+    const panel = document.getElementById("place-panel");
+    if (panel && panel.hidden) document.getElementById("legend-place")?.click();
+  };
+  if (!navigator.geolocation) {
+    say("この端末では現在地を取得できません。「場所をさがす」で地名を入れてください。");
+    openPlaceSearch();
+    return;
+  }
+  say("現在地を取得しています…");
+  navigator.geolocation.getCurrentPosition(position => {
+    const latlng = L.latLng(position.coords.latitude, position.coords.longitude);
+    const accuracy = Math.round(position.coords.accuracy || 0);
+    if (!locateLayer) locateLayer = L.layerGroup().addTo(map);
+    locateLayer.clearLayers();
+    L.circle(latlng, { radius: Math.min(accuracy, 2000), color: "#1565c0", weight: 1, fillOpacity: 0.12, interactive: false }).addTo(locateLayer);
+    L.circleMarker(latlng, { radius: 8, color: "#ffffff", weight: 3, fillColor: "#1565c0", fillOpacity: 1 })
+      .bindPopup(`現在地（誤差 約${accuracy}m）`).addTo(locateLayer);
+    userMovedMap = true;
+    map.setView(latlng, Math.max(map.getZoom(), 15));
+    say(`現在地へ移動しました（誤差 約${accuracy}m）。位置は端末の中だけで使い、送りません。`);
+  }, error => {
+    say(error && error.code === 1
+      ? "位置情報が許可されていません。ブラウザの設定で許可するか、「場所をさがす」で地名を入れてください。"
+      : "現在地を取得できませんでした。「場所をさがす」で地名を入れてください。");
+    openPlaceSearch();
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+}
+
+(function initLocateControl() {
+  const Locate = L.Control.extend({
+    options: { position: "topleft" },
+    onAdd() {
+      const box = L.DomUtil.create("div", "leaflet-bar locate-control");
+      const button = L.DomUtil.create("button", "locate-btn", box);
+      button.type = "button";
+      button.id = "locate-button";
+      button.innerHTML = '<span aria-hidden="true">📍</span><span class="locate-label">現在地</span>';
+      button.title = "いまいる場所へ移動します（位置は端末の中だけで使い、送りません）";
+      L.DomEvent.disableClickPropagation(box);
+      L.DomEvent.on(button, "click", locateMe);
+      return box;
+    }
+  });
+  new Locate().addTo(map);
 })();

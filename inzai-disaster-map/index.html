@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261025a">
+    <link rel="stylesheet" href="./styles.css?v=20261025b">
   </head>
   <body data-view="gate">
     <!-- 2026-10-24 事業主指示「スマホで使いにくい」：開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
@@ -18,7 +18,7 @@
         try {
           var q = new URLSearchParams(location.search);
           var m = q.get("mode");
-          if (["all", "rain", "fire", "quake", "road", "infra"].indexOf(m) < 0) {
+          if (["all", "rain", "fire", "quake", "road", "infra", "shelter"].indexOf(m) < 0) {
             m = (q.get("embed") === "1" || q.get("view") === "public" || q.get("ops") === "1" || q.has("lat") || q.has("lon") || q.has("zoom")) ? "all" : null;
           }
           if (m) {
@@ -39,7 +39,13 @@
         </div>
         <h2 id="view-gate-title">何を見ますか？</h2>
         <p class="view-gate-lead">選ぶと、その情報だけの地図が画面いっぱいに開きます。あとから「🔀 用途を変える」で選び直せます。</p>
+        <!-- 2026-10-25 外部レビューの指摘：選ぶ前に「いま何が起きているか」を見せる。中身は app.js の renderStatusStrip（地図の上の帯と同じ） -->
+        <section class="gate-status" aria-label="いまの状況">
+          <h3>いまの状況</h3>
+          <div class="status-chips" id="gate-status-body"><span class="status-chip is-muted">確認中…</span></div>
+        </section>
         <div class="view-tiles">
+          <a class="view-tile is-shelter" href="?mode=shelter" data-view="shelter"><span class="view-tile-icon" aria-hidden="true">🏫</span><span class="view-tile-name">避難・避難所</span><span class="view-tile-note">避難所の場所を地図で見る。浸水の想定も重ねられます</span></a>
           <a class="view-tile is-rain" href="?mode=rain" data-view="rain"><span class="view-tile-icon" aria-hidden="true">🌧</span><span class="view-tile-name">雨・冠水・<br>浸水・土砂</span><span class="view-tile-note">雨雲、冠水した道・通れた道（記録もここ）、浸水・土砂の想定</span></a>
           <a class="view-tile is-road" href="?mode=road" data-view="road"><span class="view-tile-icon" aria-hidden="true">🚧</span><span class="view-tile-name">通行止め</span><span class="view-tile-note">役所が発表した通行止め・規制</span></a>
           <a class="view-tile is-fire" href="?mode=fire" data-view="fire"><span class="view-tile-icon" aria-hidden="true">🔥</span><span class="view-tile-name">消防</span><span class="view-tile-note">火災・事故・救急の消防情報</span></a>
@@ -112,9 +118,9 @@
           <button type="button" class="preset-btn" data-preset="kansuiOnly" data-views="rain">🔴 通れない道のみ</button>
           <button type="button" class="preset-btn" data-preset="passedOnly" data-views="rain">🔵 通れた道のみ</button>
           <button type="button" class="preset-btn" data-preset="links" data-views="all">🔗 公式リンク集</button>
-          <button type="button" class="preset-btn" data-preset="flood" data-views="all rain">🌊 浸水の想定</button>
+          <button type="button" class="preset-btn" data-preset="flood" data-views="all rain shelter">🌊 浸水の想定</button>
           <button type="button" class="preset-btn" data-preset="shelter" data-views="all">🏫 避難所</button>
-          <button type="button" class="preset-btn" data-preset="shelterPin" data-views="rain fire quake road infra">🏫 避難所</button>
+          <button type="button" class="preset-btn" data-preset="shelterPin" data-views="rain fire quake road infra shelter">🏫 避難所</button>
           <button type="button" class="preset-btn" data-preset="rain" data-views="all rain">🌧 いまの雨</button>
           <button type="button" class="preset-btn" data-preset="rail" data-views="all infra">🚃 鉄道の運休・遅れ</button>
           <button type="button" class="preset-btn" data-preset="closures" data-views="all road">🚧 通行止め</button>
@@ -129,6 +135,9 @@
           <button type="button" class="preset-btn preset-reset" data-preset="reset">↺ 最初の表示</button>
         </div>
       </nav>
+
+      <!-- 2026-10-25 状況の帯：どの用途でも、警報・避難情報・避難所の状況を1行で。取得できないときは「取得できません」と出す（app.js の renderStatusStrip） -->
+      <div class="status-strip" id="status-strip" role="status" aria-live="polite"><span class="status-chip is-muted">状況を確認中…</span></div>
 
       <nav class="quick-nav" id="quick-nav" aria-label="画面内の移動">
         <span class="quick-nav-label">見たい情報へ</span>
@@ -2008,7 +2017,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261025a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261025b"></script>
+    <script src="./app.js?v=20261025c"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
