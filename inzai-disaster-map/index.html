@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261025b">
+    <link rel="stylesheet" href="./styles.css?v=20261025e">
   </head>
   <body data-view="gate">
     <!-- 2026-10-24 事業主指示「スマホで使いにくい」：開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
@@ -841,28 +841,26 @@
 
           <!-- 💧 積算雨量でしぼり込む（2026-09-23）。雨量は記録した時刻に周辺4か所のアメダスの重み付け平均で付けた値（2026-09-26 から・rain-logic.html） -->
           <div class="range-panel rain-panel" id="rain-panel" hidden>
-            <div class="rain-verdicts" role="group" aria-label="記録した時刻に雨が降っていたか">
-              <button type="button" data-rain="flood_likely" aria-pressed="true" title="排水が追いつく強さ（1時間20mm・台風25号の記録から逆算）を超える雨があった、またはここ数日に降り続いた雨の量が多い（止んだ後も水が引くまでを含む）。雨による冠水と考えて矛盾しない">☔ 冠水のおそれ</button>
-              <button type="button" data-rain="light_rain" aria-pressed="true" title="3日以内に雨はあったが、冠水のおそれの条件には届かない。冠水か別の理由かは判断保留">🌦 小雨</button>
-              <button type="button" data-rain="no_rain" aria-pressed="true" title="3日間降っていなかった。工事・事故など冠水以外の理由の可能性">🌤 雨なし</button>
-            </div>
-            <p class="rain-sub">積算雨量でしぼり込む</p>
+            
+            <p class="rain-sub">雨量スライダー（記録した時刻までの雨量）</p>
             <div class="rain-window" role="group" aria-label="どの時間の雨量で見るか">
               <button type="button" data-rain-window="r1h" aria-pressed="false">1時間</button>
               <button type="button" data-rain-window="r3h" aria-pressed="false">3時間</button>
               <button type="button" data-rain-window="r24h" aria-pressed="true">24時間</button>
             </div>
-            <div class="range-presets">
-              <button type="button" data-rain-min="5">5mm以上</button>
-              <button type="button" data-rain-min="10">10mm以上</button>
-              <button type="button" data-rain-min="20">20mm以上</button>
-              <button type="button" data-rain-min="30">30mm以上</button>
-              <button type="button" data-rain-min="50">50mm以上</button>
+            <div class="rain-slider">
+              <input type="range" id="rain-slider" min="0" max="320" step="5" value="0" aria-label="雨量（記録した時刻までの積算）">
+              <div class="rain-slider-read"><strong id="rain-slider-value">24時間雨量：最大</strong><span id="rain-slider-count"></span></div>
+              <p class="rain-slider-legend" id="rain-slider-legend"><span class="rs-red">🔴 冠水実績のある道（すべて）</span><span class="rs-blue">🔵 大雨でも通れていた道</span></p>
             </div>
-            <label>この値以上 <input type="number" id="rain-min-input" min="0" max="500" step="1" inputmode="numeric"> mm</label>
-            <p class="range-note" id="rain-note">上の3つは、記録した時刻の前後の雨から付けた目安です（周辺4か所のアメダスの平均。<a href="./rain-logic.html" target="_blank" rel="noopener">考え方・数値を変えて試す ↗</a>）。下は、記録した時刻までの積算雨量（同じ平均）でしぼり込みます。印西市内に観測点がないため、実際の雨量とは差があります。<br><strong>みんつく千葉冠水マップの投稿は、しぼり込み中は地図に出しません。</strong>本家のデータに「いつ冠水したか」が入っておらず、投稿された日時しか分からないためです（8月13日の豪雨の冠水が、雨の降らなかった8月24〜26日に3,416件まとめて投稿されています）。</p>
+            
+            <details class="rain-more"><summary>雨の有無で絞る・くわしい説明</summary><p class="rain-slider-hint" id="rain-slider-hint">いちばん右（最大）では、冠水実績のある道（みんつくの投稿を含む）と、大雨でも通れた道を出します。左へ動かすと、その雨量までの冠水と、その雨量でも通れた道に変わります。</p><div class="rain-verdicts" role="group" aria-label="記録した時刻に雨が降っていたか">
+              <button type="button" data-rain="flood_likely" aria-pressed="true" title="排水が追いつく強さ（1時間20mm・台風25号の記録から逆算）を超える雨があった、またはここ数日に降り続いた雨の量が多い（止んだ後も水が引くまでを含む）。雨による冠水と考えて矛盾しない">☔ 冠水のおそれ</button>
+              <button type="button" data-rain="light_rain" aria-pressed="true" title="3日以内に雨はあったが、冠水のおそれの条件には届かない。冠水か別の理由かは判断保留">🌦 小雨</button>
+              <button type="button" data-rain="no_rain" aria-pressed="true" title="3日間降っていなかった。工事・事故など冠水以外の理由の可能性">🌤 雨なし</button>
+            </div><p class="range-note" id="rain-note">上の3つは、記録した時刻の前後の雨から付けた目安です（周辺4か所のアメダスの平均。<a href="./rain-logic.html" target="_blank" rel="noopener">考え方・数値を変えて試す ↗</a>）。下のスライダーは、記録した時刻までの積算雨量（同じ平均）で道を出し分けます（🔴は「その雨量までに通れなくなっていた記録」、🔵は「その雨量でも通れていた記録」）。印西市内に観測点がないため、実際の雨量とは差があります。<br><strong>みんつく千葉冠水マップの投稿は、しぼり込み中は地図に出しません。</strong>本家のデータに「いつ冠水したか」が入っておらず、投稿された日時しか分からないためです（8月13日の豪雨の冠水が、雨の降らなかった8月24〜26日に3,416件まとめて投稿されています）。</p></details>
             <div class="range-actions">
-              <button type="button" id="rain-apply">この雨量で見る</button>
+              <button type="button" id="rain-apply">閉じる</button>
               <button type="button" id="rain-clear">解除</button>
             </div>
           </div>
@@ -2017,7 +2015,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261025a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261025c"></script>
+    <script src="./app.js?v=20261025h"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>

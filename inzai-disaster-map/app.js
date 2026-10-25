@@ -9670,25 +9670,33 @@ function rainVerdictOf(road) {
 // みんつくの投稿（kansui）は雨量を持たないため、しぼり込み中は地図に出さない（注記を凡例に出す）。
 var rainVerdictFilter = { flood_likely: true, light_rain: true, no_rain: true };
 // 💧 積算雨量のしぼり込み（2026-09-23 追加指示）。window は r1h／r3h／r24h、min は mm（null＝未指定）
-var rainAmountFilter = { window: "r24h", min: null };
+var rainAmountFilter = { window: "r24h", at: null };   // at＝雨量スライダーの位置（mm）。null＝使っていない（2026-10-25：以前の min「◯mm以上」から変更）
 const RAIN_WINDOW_LABELS = { r1h: "1時間", r3h: "3時間", r24h: "24時間" };
+// 「大雨」の目安（雨量スライダーの🔵＝大雨でも通れていた道に使う）。1時間20mmは排水が追いつく強さ（判定 v2.1 の基準）、
+// 24時間100mmは台風25号級の大雨の目安（記録の24時間雨量は最大約320mm）。3時間は間をとった値
+const RAIN_HEAVY = { r1h: 20, r3h: 50, r24h: 100 };
 
 function rainFilterActive() {
-  return Object.values(rainVerdictFilter).some(on => !on) || rainAmountFilter.min !== null;
+  return Object.values(rainVerdictFilter).some(on => !on) || rainAmountFilter.at !== null;
 }
 
 function passesRainFilter(road) {
-  if (!rainFilterActive()) return true;
   const rain = road?.rain;
-  if (!rain) return false; // 雨量を持たない記録は、しぼり込み中は出さない
+  const win = rainAmountFilter.window;
+  const value = rain ? rain[win] : undefined;
+  const at = rainAmountFilter.at;   // null＝スライダーが最大（初期）
   if (Object.values(rainVerdictFilter).some(on => !on)) {
-    if (!rain.verdict || !rainVerdictFilter[rain.verdict]) return false;
+    if (!rain || !rain.verdict || !rainVerdictFilter[rain.verdict]) return false;
   }
-  if (rainAmountFilter.min !== null) {
-    const value = rain[rainAmountFilter.window];
-    if (typeof value !== "number" || value < rainAmountFilter.min) return false;
+  if (passedRoadKindOf(road) === "blocked") {
+    // 🔴通れない道＝その雨量「までに」通れなくなっていた記録（記録した時刻の雨量 ≦ スライダー。右へ動かすほど増える）。
+    // 最大のときは、雨量が無い記録も含めてすべて（冠水実績）
+    return at === null || (typeof value === "number" && value <= at);
   }
-  return true;
+  // 🔵通れた道＝その雨量「でも」通れていた記録（記録した時刻の雨量 ≧ スライダー。右へ動かすほど減る）。
+  // ただし大雨の目安（RAIN_HEAVY）より上は「大雨でも通れていた道」に固定する（最大でも、ほぼ確実に通れる道が残る）
+  const threshold = Math.min(at === null ? Infinity : at, RAIN_HEAVY[win]);
+  return typeof value === "number" && value >= threshold;
 }
 
 // しぼり込みの中身は凡例のボタン1つに畳んである（行が増えると地図が下がるため）。
@@ -9704,7 +9712,7 @@ function syncRainFilterNote() {
   if (Object.values(rainVerdictFilter).some(on => !on)) {
     parts.push(Object.keys(rainVerdictFilter).filter(key => rainVerdictFilter[key]).map(key => RAIN_VERDICTS[key].icon).join("") || "該当なし");
   }
-  if (rainAmountFilter.min !== null) parts.push(`${RAIN_WINDOW_LABELS[rainAmountFilter.window]}${rainAmountFilter.min}mm以上`);
+  if (rainAmountFilter.at !== null) parts.push(`${RAIN_WINDOW_LABELS[rainAmountFilter.window]}${rainAmountFilter.at}mm`);
   chip.textContent = active ? `💧 ${parts.join(" ／ ")}` : "💧 雨量";
   chip.setAttribute("aria-pressed", String(active));
   chip.title = active
@@ -9717,25 +9725,76 @@ function applyRainFilter() {
   renderKansuiLayer();
   renderPassedRoadsLayer();
   renderPassedRoadsList();
+  syncRainSliderText();
 }
 
 function resetRainFilter() {
   Object.keys(rainVerdictFilter).forEach(key => { rainVerdictFilter[key] = true; });
-  rainAmountFilter.min = null;
-  const input = document.getElementById("rain-min-input");
-  if (input) input.value = "";
+  rainAmountFilter.at = null;
+  rainAmountFilter.window = "r24h";   // 解除＝初期（24時間・最大）へ
+  syncRainSlider();
   applyRainFilter();
 }
 
 // 💧 雨量のパネル。期間・色の見方と同じ場所に出すので、開いたら他方を閉じる
+// 💧 雨量スライダー（2026-10-25 事業主指示「雨量が増えれば冠水道路がどんどん増えていく表示に」）。
+// 以前は「◯mm以上」でしぼり込み、数字を上げるほど件数が減った。スライダーの雨量を R とすると：
+//   🔴 通れない道＝記録した時刻の雨量が R 以下の記録（その雨量までに通れなくなっていた道。R を上げるほど増える）
+//   🔵 通れた道　＝記録した時刻の雨量が R 以上の記録（その雨量でも通れていた道。R を上げるほど減る）
+// 雨量は記録した時刻までの積算（24時間が既定。1・3時間にも切替）。雨量を持たない記録は、スライダー使用中は出さない。
+function rainWindowMax(win) {
+  const values = (typeof passedRoadsData !== "undefined" && Array.isArray(passedRoadsData) ? passedRoadsData : [])
+    .map(road => road.rain && road.rain[win]).filter(value => typeof value === "number");
+  const step = win === "r24h" ? 5 : 1;
+  const max = values.length ? Math.max(...values) : 0;
+  return Math.max(10, Math.ceil(max / step) * step);
+}
+
+function syncRainSlider() {
+  const slider = document.getElementById("rain-slider");
+  if (!slider) return;
+  const win = rainAmountFilter.window;
+  document.querySelectorAll("#rain-panel [data-rain-window]").forEach(button => {
+    button.setAttribute("aria-pressed", String(button.dataset.rainWindow === win));
+  });
+  slider.step = win === "r24h" ? "5" : "1";
+  slider.max = String(rainWindowMax(win));
+  slider.value = rainAmountFilter.at === null ? slider.max : String(Math.min(rainAmountFilter.at, Number(slider.max)));
+  syncRainSliderText();
+}
+
+function syncRainSliderText() {
+  const valueNode = document.getElementById("rain-slider-value");
+  const countNode = document.getElementById("rain-slider-count");
+  const legendNode = document.getElementById("rain-slider-legend");
+  const hintNode = document.getElementById("rain-slider-hint");
+  if (!valueNode || !countNode) return;
+  const win = rainAmountFilter.window;
+  const at = rainAmountFilter.at;
+  const heavy = `大雨（${RAIN_WINDOW_LABELS[win]}${RAIN_HEAVY[win]}mm以上）`;
+  valueNode.textContent = at === null ? `${RAIN_WINDOW_LABELS[win]}雨量：最大` : `${RAIN_WINDOW_LABELS[win]}雨量 ${at}mm`;
+  if (legendNode) {
+    legendNode.innerHTML = at === null
+      ? `<span class="rs-red">🔴 冠水実績のある道（すべて）</span><span class="rs-blue">🔵 ${heavy}でも通れていた道</span>`
+      : `<span class="rs-red">🔴 この雨量までに通れなくなっていた道</span><span class="rs-blue">🔵 ${at >= RAIN_HEAVY[win] ? `${heavy}でも` : "この雨量でも"}通れていた道</span>`;
+  }
+  if (hintNode) {
+    hintNode.textContent = at === null
+      ? "いちばん右（最大）では、冠水実績のある道（みんつくの投稿を含む）と、大雨でも通れた道を出します。左へ動かすと、その雨量までの冠水と、その雨量でも通れた道に変わります。"
+      : "右へ動かすほど、赤い道が増えます。みんつくの冠水は雨量が無いため、動かしている間は出しません（最大に戻すと出ます）。";
+  }
+  const shown = passedRoadsData.filter(road => passesWhenFilter(road.endedAt) && passedKindFilter[passedRoadKindOf(road)] && passesRainFilter(road));
+  const red = shown.filter(road => passedRoadKindOf(road) === "blocked").length;
+  countNode.textContent = `　この地図の記録 🔴 ${red}件　🔵 ${shown.length - red}件`;
+}
+
 function initRainPanel() {
   const panel = document.getElementById("rain-panel");
   const chip = document.getElementById("legend-rain-amount");
   if (!panel || !chip) return;
-  const input = () => document.getElementById("rain-min-input");
   // ⚠ この初期化はファイル前半から呼ばれ、rainAmountFilter の代入（後方）はまだ走っていない。
   // var の巻き上げで宣言だけがあり値は undefined なので、既定値で読む（2026-09-23 に踏んだ）
-  const state = () => (typeof rainAmountFilter !== "undefined" && rainAmountFilter) || { window: "r24h", min: null };
+  const state = () => (typeof rainAmountFilter !== "undefined" && rainAmountFilter) || { window: "r24h", at: null };
   const syncWindowButtons = () => {
     panel.querySelectorAll("[data-rain-window]").forEach(button => {
       button.setAttribute("aria-pressed", String(button.dataset.rainWindow === state().window));
@@ -9747,7 +9806,7 @@ function initRainPanel() {
       document.getElementById("range-panel")?.setAttribute("hidden", "");
       document.getElementById("color-guide")?.setAttribute("hidden", "");
       syncWindowButtons();
-      if (input() && rainAmountFilter.min !== null) input().value = String(rainAmountFilter.min);
+      syncRainSlider();
     }
     syncRainFilterNote();
   });
@@ -9762,39 +9821,31 @@ function initRainPanel() {
     if (win) {
       rainAmountFilter.window = win.dataset.rainWindow;
       syncWindowButtons();
-      if (rainAmountFilter.min !== null) applyRainFilter();
-      return;
-    }
-    const preset = event.target.closest("[data-rain-min]");
-    if (preset) {
-      rainAmountFilter.min = Number(preset.dataset.rainMin);
-      if (input()) input().value = preset.dataset.rainMin;
-      applyRainFilter();
+      syncRainSlider();   // 測り方が変わると雨量の目盛りも変わる（1時間は最大31mm、24時間は約320mm）
+      if (rainAmountFilter.at !== null) {
+        const slider = document.getElementById("rain-slider");
+        const v = Number(slider?.value || 0);
+        rainAmountFilter.at = slider && v >= Number(slider.max) ? null : v;
+      }
+      applyRainFilter();   // 大雨の目安（🔵）は測り方ごとに違うので、最大のときも描き直す
       return;
     }
     if (event.target.closest("#rain-apply")) {
-      const value = Number(input()?.value);
-      rainAmountFilter.min = Number.isFinite(value) && value > 0 ? value : null;
-      applyRainFilter();
       panel.hidden = true;
       return;
     }
     if (event.target.closest("#rain-clear")) {
       resetRainFilter();
-      panel.hidden = true;
     }
   });
-  // 数値を打つたびに道を描き直す（2026-10-11 事業主指示「リアルタイムに道の描画」）。
-  // 打鍵ごとに全線を描き直すと重いので 200ms まとめる。パネルは閉じない（「この雨量で見る」は閉じる確定ボタンのまま）
-  let rainInputTimer = null;
+  // スライダーを動かすたびに道を描き直す。全線を描き直すので 60ms まとめる（文字と件数はすぐ更新）
+  let rainSliderTimer = null;
   panel.addEventListener("input", event => {
-    if (event.target.id !== "rain-min-input") return;
-    clearTimeout(rainInputTimer);
-    rainInputTimer = setTimeout(() => {
-      const value = Number(event.target.value);
-      rainAmountFilter.min = event.target.value !== "" && Number.isFinite(value) && value > 0 ? value : null;
-      applyRainFilter();
-    }, 200);
+    if (event.target.id !== "rain-slider") return;
+    rainAmountFilter.at = Number(event.target.value) >= Number(event.target.max) ? null : Number(event.target.value);   // 最大の位置は「最大（初期）」
+    syncRainSliderText();
+    clearTimeout(rainSliderTimer);
+    rainSliderTimer = setTimeout(applyRainFilter, 60);
   });
   document.addEventListener("click", event => {
     if (panel.hidden) return;
@@ -10455,6 +10506,7 @@ async function ensurePassedRoadsLayer(force) {
     document.querySelectorAll("[data-event-start-label]").forEach(node => { node.textContent = eventStartLabel() || "設定なし"; });
     renderPassedRoadsLayer();
     renderPassedRoadsList();
+    syncRainSlider();   // 雨量スライダーの範囲を、読み込んだ記録の最大雨量に合わせる（2026-10-25）
     const recent = roads.filter(road => passedRoadTier(road.endedAt).maxHours !== Infinity).length;
     const blocked = roads.filter(road => road.kind === "blocked").length;
     setPassedRoadsStatus(`通れた ${roads.length - blocked}件・通れない ${blocked}件（6時間以内 ${recent}件）・ ${formatDateTime(toDateTimeLocal(payload.generatedAt)) || ""}時点`);
