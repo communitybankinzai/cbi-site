@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-10-25T11:20:00+09:00",
+  "updatedAt": "2026-10-25T11:50:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-10-25",
+      "type": "feature",
+      "target": "inzai-disaster-map/phone-preview.html",
+      "title": "防災MAPを、PCの画面の中の「iPhone 15」で確認・プレゼンできるページを追加（URLで開ける）",
+      "detail": "iPhone 15の画面（393×852px）を模した枠の中に、防災MAPをスマホ表示のまま映す。Safariのバーを含む実機相当の表示領域（393×659px）、縦横の切り替え、用途（?mode=）のボタン、拡大率の指定、操作欄を隠す「プレゼン表示」（Fキー）に対応。URLに ?mode=rain&present=1 を付けると、そのまま会場で開ける。検索には出さない（noindex）。マウス操作の簡易版で、指での操作までは再現しない。",
+      "author": "Claude"
+    },
     {
       "date": "2026-10-25",
       "type": "feature",

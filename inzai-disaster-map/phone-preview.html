@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>iPhone 15 スマホ表示チェック</title>
+<style>
+  :root { --bg: #1d232b; --panel: #262d36; --text: #e8edf3; --muted: #9aa7b6; --accent: #4aa3ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100vh; display: flex; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, "Yu Gothic UI", "Meiryo", sans-serif; overflow: hidden; }
+  aside { width: 300px; flex: 0 0 300px; padding: 16px; background: var(--panel); overflow-y: auto; border-right: 1px solid #38424e; }
+  aside h1 { margin: 0 0 4px; font-size: 17px; }
+  aside p.sub { margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+  aside label { display: block; margin: 12px 0 4px; color: var(--muted); font-size: 12px; }
+  aside input[type=text], aside select { width: 100%; padding: 7px 8px; border: 1px solid #4a5666; border-radius: 6px; background: #1b2128; color: var(--text); font: inherit; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  button { padding: 7px 11px; border: 1px solid #4a5666; border-radius: 6px; background: #313b47; color: var(--text); font: inherit; cursor: pointer; }
+  button:hover { background: #3b4756; }
+  button.on { background: var(--accent); border-color: var(--accent); color: #07131f; font-weight: 700; }
+  button.go { background: var(--accent); border-color: var(--accent); color: #07131f; font-weight: 700; }
+  .check { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--text); }
+  .note { margin-top: 14px; padding: 9px 10px; border-radius: 6px; background: #1b2128; color: var(--muted); font-size: 12px; }
+  .size { margin-top: 10px; color: var(--muted); font-size: 12px; }
+  @media (max-width: 760px) { body { flex-direction: column; overflow: auto; height: auto; min-height: 100vh; } aside { width: auto; flex: none; max-height: 46vh; border-right: 0; border-bottom: 1px solid #38424e; } main { padding: 14px 0; } }
+  body.present aside { display: none; }
+  body.present #hint { display: block; }
+  #hint { display: none; position: fixed; right: 12px; bottom: 10px; padding: 4px 10px; border-radius: 12px; background: rgba(0,0,0,.45); color: #cfd8e3; font-size: 12px; pointer-events: none; }
+  main { flex: 1; display: grid; place-items: center; min-width: 0; overflow: hidden; }
+  #scaler { transform-origin: center center; }
+  /* iPhone 15：画面 393x852（CSSピクセル）。枠（ベゼル）14px */
+  #device { position: relative; background: #0b0d10; border-radius: 62px; padding: 14px; box-shadow: 0 0 0 2px #3a4048 inset, 0 18px 50px rgba(0,0,0,.55); }
+  #device::before, #device::after { content: ""; position: absolute; width: 4px; background: #2b3036; border-radius: 2px; }
+  #device::before { left: -4px; top: 150px; height: 56px; box-shadow: 0 74px 0 #2b3036; }   /* 音量ボタン */
+  #device::after { right: -4px; top: 190px; height: 90px; }                                  /* 電源ボタン */
+  #screen { position: relative; overflow: hidden; background: #fff; border-radius: 48px; }
+  iframe { position: absolute; left: 0; border: 0; background: #fff; }
+  .statusbar { position: absolute; left: 0; right: 0; top: 0; height: 59px; padding: 18px 34px 0 38px; display: flex; justify-content: space-between; align-items: flex-start; font-weight: 700; font-size: 16px; color: #111; background: #f2f2f7; z-index: 4; pointer-events: none; }
+  .statusbar .icons { display: flex; gap: 6px; align-items: center; }
+  .island { position: absolute; top: 11px; left: 50%; width: 126px; height: 37px; margin-left: -63px; border-radius: 20px; background: #000; z-index: 5; pointer-events: none; }
+  .safari { position: absolute; left: 0; right: 0; bottom: 0; height: 134px; background: #f2f2f7; z-index: 4; padding: 14px 14px 0; border-top: .5px solid #c9ccd2; }
+  .urlpill { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 46px; padding: 0 14px; border-radius: 14px; background: #e3e4e8; color: #111; font-size: 15px; }
+  .urlpill .host { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .urlpill .aa { font-size: 13px; font-weight: 600; }
+  .homebar { position: absolute; left: 50%; bottom: 8px; width: 139px; height: 5px; margin-left: -69.5px; border-radius: 3px; background: #111; }
+  .landscape .statusbar { display: none; }
+  .landscape .island { top: 50%; left: 11px; margin: -63px 0 0; width: 37px; height: 126px; }
+</style>
+</head>
+<body>
+<aside>
+  <h1>iPhone 15 スマホ表示チェック</h1>
+  <p class="sub">画面 393×852（CSSピクセル）。枠の中は本物の幅393pxなので、スマホ用の表示がそのまま出ます。会場では「プレゼン表示」か、URLに <code>?present=1</code> を付けて開きます。</p>
+
+  <label for="url">表示するページのURL</label>
+  <input id="url" type="text" value="https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/" spellcheck="false">
+  <div class="row"><button class="go" id="go">表示する</button><button id="present">プレゼン表示（Fキー）</button><button id="reload">再読み込み</button><button id="newtab">別タブで開く</button></div>
+
+  <label>用途（防災MAPの ?mode=）</label>
+  <div class="row" id="modes">
+    <button data-mode="">入口</button>
+    <button data-mode="shelter">避難・避難所</button>
+    <button data-mode="rain">雨・冠水</button>
+    <button data-mode="road">通行止め</button>
+    <button data-mode="fire">消防</button>
+    <button data-mode="quake">地震</button>
+    <button data-mode="infra">停電・鉄道</button>
+    <button data-mode="all">まとめて</button>
+  </div>
+
+  <label>向き</label>
+  <div class="row"><button id="portrait" class="on">縦</button><button id="landscape">横</button></div>
+
+  <label class="check"><input type="checkbox" id="bars" checked> Safariのバーを表示（実機の表示領域 393×659）</label>
+
+  <label for="scale">拡大率</label>
+  <select id="scale"><option value="auto">自動（画面に合わせる）</option><option value="1">100%</option><option value="0.85">85%</option><option value="0.7">70%</option><option value="0.55">55%</option></select>
+
+  <div class="size" id="size"></div>
+  <div class="note">
+    マウスで操作する簡易版です。<strong>指での操作・長押し・画面の回転による再配置までは再現しません</strong>。
+    実機に近い確認は、Edge／Chrome の開発者ツール（F12 → Ctrl+Shift+M）の「iPhone 14 Pro Max」などでも行えます。
+    位置情報は、このページを開いたブラウザの許可に従います。
+  </div>
+</aside>
+
+<div id="hint">F または Esc で操作欄を戻す</div>
+<main>
+  <div id="scaler">
+    <div id="device">
+      <div id="screen">
+        <div class="statusbar" id="statusbar">
+          <span id="clock">9:41</span>
+          <span class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 2.2a8 8 0 0 1 5.6 2.3l1.2-1.3A9.8 9.8 0 0 0 8 .4 9.8 9.8 0 0 0 1.2 3.2l1.2 1.3A8 8 0 0 1 8 2.2zm0 3.6a4.5 4.5 0 0 1 3.1 1.3l1.2-1.3A6.3 6.3 0 0 0 8 4a6.3 6.3 0 0 0-4.3 1.8l1.2 1.3A4.5 4.5 0 0 1 8 5.8zm0 3.4a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/></svg>
+            <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="#111" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2.2"/><rect x="24" y="4" width="2" height="5" rx="1" opacity=".4"/></svg>
+          </span>
+        </div>
+        <div class="island"></div>
+        <iframe id="frame" title="表示中のページ" allow="geolocation; clipboard-write"></iframe>
+        <div class="safari" id="safari">
+          <div class="urlpill"><span class="aa">ぁあ</span><span class="host" id="host"></span><span id="reloadicon" style="cursor:pointer">⟳</span></div>
+          <div class="homebar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const W = 393, H = 852, TOP = 59, BAR = 134;      // iPhone 15 の画面・上の安全領域・Safari の下のバー（実機の表示領域 393×659）
+  const PROD = "https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/";
+  const state = { landscape: false, bars: true, mode: "", scale: "auto" };
+  $("url").value = location.protocol === "file:" ? PROD : new URL("./", location.href).href;   // 公開サイト上では、同じサイトの防災MAP
+  try { Object.assign(state, JSON.parse(localStorage.getItem("iphone15-preview") || "{}")); $("url").value = localStorage.getItem("iphone15-url") || $("url").value; } catch (e) {}
+  const q = new URLSearchParams(location.search);              // 例：?mode=rain&present=1&url=...（会場でそのまま開ける）
+  if (q.has("url")) $("url").value = q.get("url");
+  if (q.has("mode")) state.mode = q.get("mode");
+  if (q.get("present") === "1") document.body.classList.add("present");
+  if (q.get("landscape") === "1") state.landscape = true;
+
+  function buildUrl() {
+    let url;
+    try { url = new URL($("url").value.trim()); } catch (e) { return null; }
+    if (state.mode) url.searchParams.set("mode", state.mode); else url.searchParams.delete("mode");
+    url.searchParams.set("_", String(Date.now()));   // キャッシュを避ける
+    return url.toString();
+  }
+  function load() {
+    const u = buildUrl();
+    if (!u) { alert("URL の形が正しくありません"); return; }
+    $("frame").src = u;
+    try { $("host").textContent = "🔒 " + new URL(u).host; } catch (e) {}
+    try { localStorage.setItem("iphone15-url", $("url").value.trim()); } catch (e) {}
+  }
+  function layout() {
+    const w = state.landscape ? H : W, h = state.landscape ? W : H;
+    const screen = $("screen");
+    screen.style.width = w + "px"; screen.style.height = h + "px";
+    screen.parentElement.classList.toggle("landscape", state.landscape);
+    $("screen").classList.toggle("landscape", state.landscape);
+    $("device").classList.toggle("landscape", state.landscape);
+    const frame = $("frame");
+    const top = state.landscape ? 0 : TOP;
+    const bottom = state.bars ? (state.landscape ? 50 : BAR) : 0;
+    frame.style.top = top + "px"; frame.style.width = w + "px"; frame.style.height = (h - top - bottom) + "px";
+    $("safari").style.display = state.bars ? "block" : "none";
+    $("safari").style.height = (state.landscape ? 50 : BAR) + "px";
+    $("statusbar").style.display = state.landscape ? "none" : "flex";
+    $("size").textContent = "表示領域：" + w + " × " + (h - top - bottom) + " px（" + (state.landscape ? "横" : "縦") + (state.bars ? "・Safariのバーあり" : "・バーなし") + "）";
+    $("portrait").classList.toggle("on", !state.landscape); $("landscape").classList.toggle("on", state.landscape);
+    document.querySelectorAll("#modes button").forEach(b => b.classList.toggle("on", b.dataset.mode === state.mode));
+    $("bars").checked = state.bars; $("scale").value = state.scale;
+    fit();
+    try { localStorage.setItem("iphone15-preview", JSON.stringify(state)); } catch (e) {}
+  }
+  function fit() {
+    const dev = $("device");
+    const s = state.scale === "auto" ? Math.max(0.3, Math.min(1, (innerHeight - 28) / dev.offsetHeight, (innerWidth - (document.body.classList.contains("present") || innerWidth <= 760 ? 0 : 300) - 28) / dev.offsetWidth)) : Number(state.scale);
+    $("scaler").style.transform = "scale(" + s + ")";
+    $("scaler").style.width = dev.offsetWidth + "px"; $("scaler").style.height = dev.offsetHeight + "px";
+    $("scaler").style.margin = ((dev.offsetHeight * (s - 1)) / 2) + "px " + ((dev.offsetWidth * (s - 1)) / 2) + "px";
+  }
+  $("go").onclick = load; $("reload").onclick = load; $("reloadicon").onclick = load;
+  $("url").addEventListener("keydown", e => { if (e.key === "Enter") load(); });
+  $("newtab").onclick = () => { const u = buildUrl(); if (u) window.open(u, "_blank", "noopener"); };
+  $("portrait").onclick = () => { state.landscape = false; layout(); };
+  $("landscape").onclick = () => { state.landscape = true; layout(); };
+  $("bars").onchange = () => { state.bars = $("bars").checked; layout(); };
+  $("scale").onchange = () => { state.scale = $("scale").value; layout(); };
+  $("modes").onclick = e => { const b = e.target.closest("button[data-mode]"); if (!b) return; state.mode = b.dataset.mode; layout(); load(); };
+  const togglePresent = () => { document.body.classList.toggle("present"); fit(); };
+  $("present").onclick = togglePresent;
+  addEventListener("keydown", e => {
+    if (/^(input|select|textarea)$/i.test((e.target.tagName || ""))) return;
+    if (e.key === "f" || e.key === "F" || (e.key === "Escape" && document.body.classList.contains("present"))) togglePresent();
+  });
+  addEventListener("resize", fit);
+  layout(); load();
+})();
+</script>
+</body>
+</html>

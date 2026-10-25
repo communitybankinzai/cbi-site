@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-10-25",
+          "title": "防災MAPをPC上のiPhone 15の枠で確認・プレゼンできるページ（phone-preview.html）を作成・公開 0.2時間",
+          "category": "実装",
+          "outputs": ["site/inzai-disaster-map/phone-preview.html（新規・iPhone 15の枠・Safariのバー・用途ボタン・縦横・拡大率・プレゼン表示・URL指定）", "site/admin/changelog.json（1件）"],
+          "hours": 0.2,
+          "partnerApproved": true,
+          "note": "事業主『スマホを模擬した画面でPC上でチェックしたい』→『iPhone15を模擬したブラウザアプリ』→『公開サイトでは使えない。外でプレゼンに使いたい』。最初はPC内だけの1ファイル（tools/）に作ったが、外の会場で使えないため、公開サイトの inzai-disaster-map/ へ移して URL で開ける形にした（移したあと、先に渡した旧パスが『ファイルが見つかりません』になり、事業主に指摘された）。作り：枠の中のiframeは393px幅なので、スマホ用のCSS（820px以下）がそのまま効く。実機Safariの表示領域393×659px（上59px・下134px）。検証（ローカル）：iframe 393×659・防災MAPの用途・状況の帯・現在地ボタンが枠の中で出る／?mode=・?present=1・Fキー／狭いブラウザ枠でも枠が小さくなりすぎない。未確認：実際の会場の画面・プロジェクターでの見え方、Safari実機との差（指での操作・長押しは再現しない）。 session: b8327e88-8a02-4556-9531-b91c1c8daa9d / output: 336,653 / cost: $52.50"
+        },
+        {
+          "date": "2026-10-25",
           "title": "防災MAP：外部レビューの1〜4（状況の帯・入口の状況と避難所・現在地ボタン・用途切替での位置保持）を実装 0.5時間",
           "category": "実装",
           "outputs": ["site/inzai-disaster-map/index.html（状況の帯・入口の『いまの状況』と避難所タイル・版 app 20261025c／css 20261025b）", "site/inzai-disaster-map/app.js（statusChips／renderStatusStrip・取得状態の記録・VIEWS.shelter・locateMe／現在地コントロール・lastMapView）", "site/inzai-disaster-map/styles.css（帯・入口・現在地ボタン）", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json（1件）"],
