@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-10-25T13:00:00+09:00",
+  "updatedAt": "2026-10-25T13:30:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-10-25",
+      "type": "feature",
+      "target": "phone/index.html・inzai-disaster-map/phone-preview.html・admin/index.html",
+      "title": "「スマホ表示シミュレーター（iPhone 15）」を、誰でも無料で使える公開Webアプリとして /phone/ に公開。好きなURLを映せて、スマホ部分を画像で保存できる",
+      "detail": "PCの画面の中にiPhone 15の枠を出し、好きなWebページ（https）をスマホの表示のまま映す。「画像で保存」は、画面の共有で「このタブ」を選ぶと、スマホ部分（中の画面を含む）だけをPNGで保存する（角は透明）。プレゼン表示（操作欄を隠して大きく・Fキー）、縦横、Safariのバーの有無、拡大率に対応。登録・ログイン不要。公開向けの安全策として、映したページが全体を別の場所へ飛ばせない枠（sandbox）にし、?url= での他サイトの自動表示はやめ、http／https以外（javascript: など）は受け付けない。入力したURLや画像はブラウザの中だけで扱い、CBIには送らない。旧URL（inzai-disaster-map/phone-preview.html）は新URLへ自動で転送し、管理画面のリンクも新URLに更新。CiDAOの管理画面（/admin/phone）にも、同じアドレス欄と画像保存を追加した。",
+      "author": "Claude"
+    },
     {
       "date": "2026-10-25",
       "type": "feature",

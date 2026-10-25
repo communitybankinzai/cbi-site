@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>スマホ表示シミュレーター（iPhone 15）｜CBI</title>
+<meta name="description" content="PCの画面の中に iPhone 15 の枠を出し、好きなWebページをスマホの表示のまま映します。プレゼン用の大きな表示と、スマホ部分だけの画像保存つき。無料・登録不要。">
+<style>
+  :root { --bg: #1d232b; --panel: #262d36; --text: #e8edf3; --muted: #9aa7b6; --accent: #4aa3ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100vh; display: flex; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, "Yu Gothic UI", "Meiryo", sans-serif; overflow: hidden; }
+  aside { width: 310px; flex: 0 0 310px; padding: 16px; background: var(--panel); overflow-y: auto; border-right: 1px solid #38424e; }
+  aside h1 { margin: 0 0 4px; font-size: 17px; }
+  aside p.sub { margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+  aside label { display: block; margin: 12px 0 4px; color: var(--muted); font-size: 12px; }
+  aside input[type=text], aside select { width: 100%; padding: 8px; border: 1px solid #4a5666; border-radius: 6px; background: #1b2128; color: var(--text); font: inherit; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  button { padding: 8px 11px; border: 1px solid #4a5666; border-radius: 6px; background: #313b47; color: var(--text); font: inherit; cursor: pointer; }
+  button:hover { background: #3b4756; }
+  button.on { background: var(--accent); border-color: var(--accent); color: #07131f; font-weight: 700; }
+  button.go, button.save { background: var(--accent); border-color: var(--accent); color: #07131f; font-weight: 700; }
+  .check { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--text); }
+  .note { margin-top: 14px; padding: 9px 10px; border-radius: 6px; background: #1b2128; color: var(--muted); font-size: 12px; }
+  .note strong { color: var(--text); }
+  #msg { margin-top: 10px; min-height: 18px; color: #ffd479; font-size: 12px; }
+  .size { margin-top: 10px; color: var(--muted); font-size: 12px; }
+  footer { margin-top: 16px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+  footer a { color: var(--accent); }
+  #hint { display: none; position: fixed; right: 12px; bottom: 10px; padding: 4px 10px; border-radius: 12px; background: rgba(0,0,0,.45); color: #cfd8e3; font-size: 12px; pointer-events: none; }
+  body.present aside { display: none; }
+  body.present #hint { display: block; }
+  @media (max-width: 760px) { body { flex-direction: column; overflow: auto; height: auto; min-height: 100vh; } aside { width: auto; flex: none; max-height: 46vh; border-right: 0; border-bottom: 1px solid #38424e; } main { padding: 14px 0; } }
+  main { flex: 1; display: grid; place-items: center; min-width: 0; overflow: hidden; }
+  #scaler { transform-origin: center center; }
+  /* iPhone 15：画面 393x852（CSSピクセル）。枠（ベゼル）14px */
+  #device { position: relative; background: #0b0d10; border-radius: 62px; padding: 14px; box-shadow: 0 0 0 2px #3a4048 inset, 0 18px 50px rgba(0,0,0,.55); }
+  #device::before, #device::after { content: ""; position: absolute; width: 4px; background: #2b3036; border-radius: 2px; }
+  #device::before { left: -4px; top: 150px; height: 56px; box-shadow: 0 74px 0 #2b3036; }
+  #device::after { right: -4px; top: 190px; height: 90px; }
+  #screen { position: relative; overflow: hidden; background: #fff; border-radius: 48px; }
+  iframe { position: absolute; left: 0; border: 0; background: #fff; }
+  .statusbar { position: absolute; left: 0; right: 0; top: 0; height: 59px; padding: 18px 34px 0 38px; display: flex; justify-content: space-between; align-items: flex-start; font-weight: 700; font-size: 16px; color: #111; background: #f2f2f7; z-index: 4; pointer-events: none; }
+  .statusbar .icons { display: flex; gap: 6px; align-items: center; }
+  .island { position: absolute; top: 11px; left: 50%; width: 126px; height: 37px; margin-left: -63px; border-radius: 20px; background: #000; z-index: 5; pointer-events: none; }
+  .safari { position: absolute; left: 0; right: 0; bottom: 0; height: 134px; background: #f2f2f7; z-index: 4; padding: 14px 14px 0; border-top: .5px solid #c9ccd2; }
+  .urlpill { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 46px; padding: 0 14px; border-radius: 14px; background: #e3e4e8; color: #111; font-size: 15px; }
+  .urlpill .host { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .urlpill .aa { font-size: 13px; font-weight: 600; }
+  .homebar { position: absolute; left: 50%; bottom: 8px; width: 139px; height: 5px; margin-left: -69.5px; border-radius: 3px; background: #111; }
+  .landscape .statusbar { display: none; }
+  .landscape .island { top: 50%; left: 11px; margin: -63px 0 0; width: 37px; height: 126px; }
+</style>
+</head>
+<body>
+<aside>
+  <h1>スマホ表示シミュレーター</h1>
+  <p class="sub">iPhone 15（画面 393×852）の枠の中に、好きなWebページをスマホの表示のまま映します。無料・登録不要。</p>
+
+  <label for="url">表示するページのURL</label>
+  <input id="url" type="text" spellcheck="false" placeholder="https://… またはドメイン">
+  <div class="row"><button class="go" id="go">表示する</button><button id="reload">再読み込み</button><button id="newtab">別タブで開く</button></div>
+
+  <label>サンプル（CBIの防災MAP）</label>
+  <div class="row" id="samples">
+    <button data-mode="">入口</button>
+    <button data-mode="shelter">避難・避難所</button>
+    <button data-mode="rain">雨・冠水</button>
+    <button data-mode="road">通行止め</button>
+    <button data-mode="fire">消防</button>
+    <button data-mode="quake">地震</button>
+    <button data-mode="infra">停電・鉄道</button>
+  </div>
+
+  <div class="row" style="margin-top:14px"><button class="save" id="save">画像で保存（スマホ部分）</button><button id="present">プレゼン表示（Fキー）</button></div>
+  <div id="msg" role="status"></div>
+
+  <label>向き</label>
+  <div class="row"><button id="portrait" class="on">縦</button><button id="landscape">横</button></div>
+  <label class="check"><input type="checkbox" id="bars" checked> Safariのバーを表示（実機の表示領域 393×659）</label>
+
+  <label for="scale">拡大率</label>
+  <select id="scale"><option value="auto">自動（画面に合わせる）</option><option value="1">100%</option><option value="0.85">85%</option><option value="0.7">70%</option><option value="0.55">55%</option></select>
+  <div class="size" id="size"></div>
+
+  <div class="note">
+    <strong>使い方のヒント</strong><br>
+    ・<strong>画像で保存</strong>：押すと「画面の共有」の確認が出ます。<strong>「このタブ」</strong>を選ぶと、スマホ部分（中の画面を含む）だけをPNGで保存します（Edge／Chrome）。<br>
+    ・表示されないサイトは、相手側が枠への埋め込みを禁止しています。「別タブで開く」を使ってください。<br>
+    ・マウス操作の簡易版です。指での操作・長押しは再現しません。
+  </div>
+  <footer>
+    入力したURLや撮った画像は、このブラウザの中だけで扱い、CBIには送られません。他のサイトを表示・撮影するときは、そのサイトの利用条件に従ってください。<br>
+    提供：<a href="https://communitybankinzai.github.io/cbi-site/" target="_blank" rel="noopener">Community Bank Inzai（CBI）</a>。iPhone は Apple Inc. の商標で、本ツールは Apple 社とは関係ありません。
+  </footer>
+</aside>
+
+<div id="hint">F または Esc で操作欄を戻す</div>
+<main>
+  <div id="scaler">
+    <div id="device">
+      <div id="screen">
+        <div class="statusbar" id="statusbar">
+          <span id="clock">9:41</span>
+          <span class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 2.2a8 8 0 0 1 5.6 2.3l1.2-1.3A9.8 9.8 0 0 0 8 .4 9.8 9.8 0 0 0 1.2 3.2l1.2 1.3A8 8 0 0 1 8 2.2zm0 3.6a4.5 4.5 0 0 1 3.1 1.3l1.2-1.3A6.3 6.3 0 0 0 8 4a6.3 6.3 0 0 0-4.3 1.8l1.2 1.3A4.5 4.5 0 0 1 8 5.8zm0 3.4a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/></svg>
+            <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="#111" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2.2"/><rect x="24" y="4" width="2" height="5" rx="1" opacity=".4"/></svg>
+          </span>
+        </div>
+        <div class="island"></div>
+        <!-- sandbox：映したページが、このページ全体を別の場所へ飛ばす（top への遷移）ことはできない。ページの中の動き・保存・フォーム・位置情報は使える -->
+        <iframe id="frame" title="表示中のページ" allow="geolocation; clipboard-write" referrerpolicy="no-referrer-when-downgrade"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"></iframe>
+        <div class="safari" id="safari">
+          <div class="urlpill"><span class="aa">ぁあ</span><span class="host" id="host"></span><span id="reloadicon" style="cursor:pointer">⟳</span></div>
+          <div class="homebar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const W = 393, H = 852, TOP = 59, BAR = 134;      // iPhone 15 の画面・上の安全領域・Safari の下のバー（実機の表示領域 393×659）
+  const MAP = "https://communitybankinzai.github.io/cbi-site/inzai-disaster-map/";
+  const SAMPLE = location.protocol === "file:" ? MAP : new URL("../inzai-disaster-map/", location.href).href;
+  const state = { landscape: false, bars: true, scale: "auto" };
+  let current = SAMPLE;
+  try { Object.assign(state, JSON.parse(localStorage.getItem("phone-sim") || "{}")); } catch (e) {}
+  $("url").value = SAMPLE;
+
+  function say(text) { $("msg").textContent = text || ""; }
+
+  // 入力を、枠に出してよい形にそろえる。http／https 以外（javascript: や data: など）は受け付けない
+  function normalize(raw) {
+    const t = String(raw || "").trim();
+    if (!t) return SAMPLE;
+    try {
+      const u = new URL(/^[a-z][a-z0-9+.-]*:/i.test(t) ? t : "https://" + t);
+      return (u.protocol === "http:" || u.protocol === "https:") ? u.toString() : null;
+    } catch (e) { return null; }
+  }
+  function load(url) {
+    const u = normalize(url !== undefined ? url : $("url").value);
+    if (!u) { say("URLの形が正しくありません（https://… で始まるか、ドメインを入れてください）"); return; }
+    current = u;
+    $("url").value = u;
+    $("frame").src = u;
+    try { $("host").textContent = "🔒 " + new URL(u).host; } catch (e) {}
+    say(u === SAMPLE || u.indexOf(MAP) === 0 ? "" : "表示されないサイトは、相手側が埋め込みを禁止しています（「別タブで開く」を使ってください）");
+  }
+
+  function layout() {
+    const w = state.landscape ? H : W, h = state.landscape ? W : H;
+    $("screen").style.width = w + "px"; $("screen").style.height = h + "px";
+    $("device").classList.toggle("landscape", state.landscape);
+    const top = state.landscape ? 0 : TOP;
+    const bottom = state.bars ? (state.landscape ? 50 : BAR) : 0;
+    const frame = $("frame");
+    frame.style.top = top + "px"; frame.style.width = w + "px"; frame.style.height = (h - top - bottom) + "px";
+    $("safari").style.display = state.bars ? "block" : "none";
+    $("safari").style.height = (state.landscape ? 50 : BAR) + "px";
+    $("statusbar").style.display = state.landscape ? "none" : "flex";
+    $("size").textContent = "表示領域：" + w + " × " + (h - top - bottom) + " px（" + (state.landscape ? "横" : "縦") + (state.bars ? "・Safariのバーあり" : "・バーなし") + "）";
+    $("portrait").classList.toggle("on", !state.landscape); $("landscape").classList.toggle("on", state.landscape);
+    $("bars").checked = state.bars; $("scale").value = state.scale;
+    fit();
+    try { localStorage.setItem("phone-sim", JSON.stringify(state)); } catch (e) {}
+  }
+  function fit() {
+    const dev = $("device");
+    const present = document.body.classList.contains("present");
+    const s = state.scale === "auto"
+      ? Math.max(0.3, Math.min(1, (innerHeight - 28) / dev.offsetHeight, (innerWidth - (present || innerWidth <= 760 ? 0 : 310) - 28) / dev.offsetWidth))
+      : Number(state.scale);
+    $("scaler").style.transform = "scale(" + s + ")";
+    $("scaler").style.width = dev.offsetWidth + "px"; $("scaler").style.height = dev.offsetHeight + "px";
+    $("scaler").style.margin = ((dev.offsetHeight * (s - 1)) / 2) + "px " + ((dev.offsetWidth * (s - 1)) / 2) + "px";
+  }
+  function clock() { $("clock").textContent = new Date().toLocaleTimeString("ja-JP", { hour: "numeric", minute: "2-digit", hour12: false }); }
+
+  // スマホ部分だけを画像（PNG）で保存する。中に映っている画面も含める。
+  // 他サイトの中身は、安全のためページの中からは読み取れない。そこで「このタブ」の画面共有で1コマ撮り、枠の位置で切り出す（枠の外は透明）
+  async function savePhoneImage() {
+    const el = $("device");
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== "function") { say("このブラウザは画面の取り込みに対応していません（Edge／Chrome の最新版で開いてください）"); return; }
+    let stream = null;
+    try {
+      say("共有の画面が出たら「このタブ」を選んで共有してください");
+      stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "browser" }, audio: false, preferCurrentTab: true, selfBrowserSurface: "include", surfaceSwitching: "exclude" });
+      const track = stream.getVideoTracks()[0];
+      const surface = track.getSettings().displaySurface;
+      if (surface && surface !== "browser") { say("共有は「タブ」の「このタブ」を選んでください（画面全体やウィンドウでは切り出せません）"); return; }
+      document.body.classList.add("capturing");
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 250))));
+      const video = document.createElement("video");
+      video.muted = true; video.srcObject = stream; await video.play();
+      await new Promise(r => setTimeout(r, 200));
+      const kx = video.videoWidth / innerWidth, ky = video.videoHeight / innerHeight;
+      const rect = el.getBoundingClientRect();           // 拡大縮小したあとの、枠（ベゼル）を含む外形
+      const s = rect.width / el.offsetWidth;              // 拡大率
+      const sx = rect.left * kx, sy = rect.top * ky, sw = rect.width * kx, sh = rect.height * ky;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(sw); canvas.height = Math.round(sh);
+      const ctx = canvas.getContext("2d");
+      const r = 62 * s * kx;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(0, 0, canvas.width, canvas.height, r);
+      else { ctx.moveTo(r, 0); ctx.arcTo(canvas.width, 0, canvas.width, canvas.height, r); ctx.arcTo(canvas.width, canvas.height, 0, canvas.height, r); ctx.arcTo(0, canvas.height, 0, 0, r); ctx.arcTo(0, 0, canvas.width, 0, r); ctx.closePath(); }
+      ctx.clip();
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise(r2 => canvas.toBlob(r2, "image/png"));
+      if (!blob) throw new Error("画像を作れませんでした");
+      const d = new Date(), p = n => String(n).padStart(2, "0");
+      const name = "phone-" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "-" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + ".png";
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = name; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      say("保存しました：" + name + "（" + canvas.width + "×" + canvas.height + "px）");
+    } catch (e) {
+      say(e && e.name === "NotAllowedError" ? "共有がキャンセルされました（画像は保存していません）" : "保存できませんでした：" + (e && e.message ? e.message : "不明なエラー"));
+    } finally {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      document.body.classList.remove("capturing");
+    }
+  }
+
+  $("go").onclick = () => load(); $("reload").onclick = () => load(current); $("reloadicon").onclick = () => load(current);
+  $("url").addEventListener("keydown", e => { if (e.key === "Enter") load(); });
+  $("newtab").onclick = () => { const u = normalize($("url").value); if (u) window.open(u, "_blank", "noopener"); else say("URLの形が正しくありません"); };
+  $("samples").onclick = e => {
+    const b = e.target.closest("button[data-mode]"); if (!b) return;
+    load(MAP === SAMPLE || location.protocol !== "file:" ? SAMPLE + (b.dataset.mode ? "?mode=" + b.dataset.mode : "") : MAP + (b.dataset.mode ? "?mode=" + b.dataset.mode : ""));
+  };
+  $("portrait").onclick = () => { state.landscape = false; layout(); };
+  $("landscape").onclick = () => { state.landscape = true; layout(); };
+  $("bars").onchange = () => { state.bars = $("bars").checked; layout(); };
+  $("scale").onchange = () => { state.scale = $("scale").value; layout(); };
+  $("save").onclick = savePhoneImage;
+  const togglePresent = () => { document.body.classList.toggle("present"); fit(); };
+  $("present").onclick = togglePresent;
+  addEventListener("keydown", e => {
+    if (/^(input|select|textarea)$/i.test(e.target.tagName || "")) return;
+    if (e.key === "f" || e.key === "F" || (e.key === "Escape" && document.body.classList.contains("present"))) togglePresent();
+  });
+  addEventListener("resize", fit);
+  const q = new URLSearchParams(location.search);       // ?present=1 で操作欄なし、?mode=rain で防災MAPのサンプルの用途を指定（他サイトのURLは指定できない）
+  if (q.get("present") === "1") document.body.classList.add("present");
+  if (q.get("landscape") === "1") state.landscape = true;
+  const sampleMode = q.get("mode");
+  clock(); setInterval(clock, 20000);
+  layout();
+  load(sampleMode && /^[a-z]+$/.test(sampleMode) ? SAMPLE + "?mode=" + sampleMode : SAMPLE);
+})();
+</script>
+<style>
+  /* 画像撮影の間は、枠の外の操作欄などが写り込んでも切り出されないが、念のため案内の文字は消す */
+  body.capturing #hint, body.capturing #msg { visibility: hidden; }
+</style>
+</body>
+</html>
