@@ -4196,7 +4196,7 @@ body[data-view="gate"] .app-shell { visibility: hidden; }
 .view-tile:hover, .view-tile:focus-visible { background: #f4f8fc; outline: 2px solid var(--tile); outline-offset: 1px; }
 .view-tile:active { transform: scale(.985); }
 .view-tile-icon { font-size: 30px; line-height: 1; }
-.view-tile-name { font-size: 16px; font-weight: 700; line-height: 1.3; }
+.view-tile-name { font-size: 16px; font-weight: 700; line-height: 1.3; word-break: keep-all; } /* 折り返しは <wbr> の位置だけ（「土／砂」のように字の途中で切れない） */
 .view-tile-note { font-size: 12px; line-height: 1.5; color: #55657a; }
 .view-tile.is-rain { --tile: #1565c0; }
 .view-tile.is-road { --tile: #b8322c; }
