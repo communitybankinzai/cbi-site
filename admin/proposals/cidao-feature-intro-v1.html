@@ -131,12 +131,43 @@ ul.feat li b{color:var(--green-d)}
 .hint{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);color:#8a94a0;font-size:11px;letter-spacing:.15em;z-index:50;
   opacity:1;transition:opacity 1s}
 .hint.off{opacity:0}
+/* ---- 縦長の画面（スマホ）：左右の余白と、部品の幅・内側の余白をそろえる ----
+   ・スライドの左右の余白は22pxで同じ。文字のブロックはどのスライドも同じ幅（中身の長さで幅が変わらない）
+   ・カード・工程は、内側の余白をそろえ、縦に積んで文字を大きくする */
 @media (max-aspect-ratio: 1/1){
-  .split{flex-direction:column;gap:3vh}
+  .slide{padding:4.5vh 22px}
+  .split{flex-direction:column;gap:3vh;align-items:stretch}
+  .split .txt,.split .vis{flex:none;width:100%;min-width:0}
   .phone{--ph:min(48vh,480px)}
   .phone.small{--ph:min(42vh,420px)}
-  .grid7{grid-template-columns:repeat(2,1fr)}
-  .wsteps,.steps3,.tl{flex-wrap:wrap}
+  .cover-wrap{flex-direction:column;align-items:stretch;gap:3vh}
+  .cover-txt{flex:none}
+  .cover-wrap .vis .phone{--ph:min(34vh,340px)}
+  .grid7{grid-template-columns:repeat(2,1fr);gap:10px}
+  .grid7[style*="repeat(2"]{grid-template-columns:1fr !important}
+  .gcard{padding:12px 10px}
+  /* タイムライン：縦に並べる（点を左・文を右） */
+  .tl{flex-direction:column;margin-top:3vh}
+  .tl .step{display:grid;grid-template-columns:24px 1fr;column-gap:14px;text-align:left;padding:0 0 18px;position:relative}
+  .tl .dot{margin:3px 0 0;grid-row:1 / span 3}
+  .tl .bar{left:5px;right:auto;top:24px;bottom:2px;width:4px;height:auto;background:linear-gradient(180deg,var(--green),#bfe3d3)}
+  .tl h4{margin-top:0;font-size:15px}
+  .tl p{font-size:12px;margin-top:2px}
+  .tl .tag{justify-self:start;font-size:11px}
+  /* 投票の重み：数字を左・説明を右に（矢印は消す） */
+  .wsteps{flex-direction:column;align-items:stretch;gap:10px;margin-top:3vh}
+  .warrow{display:none}
+  .wcard{display:grid;grid-template-columns:76px 1fr;column-gap:14px;align-items:center;text-align:left;padding:12px 16px}
+  .wcard .wv{grid-row:1 / span 2;font-size:44px;text-align:center}
+  .wcard .wl{margin-top:0;font-size:15px}
+  .wcard p{font-size:12px;margin-top:2px}
+  /* はじめかた：縦に積み、数字を左に */
+  .steps3{flex-direction:column;gap:10px;margin-top:3vh}
+  .scard{display:grid;grid-template-columns:54px 1fr;column-gap:14px;align-items:start;padding:14px 16px}
+  .scard .sno{grid-row:1 / span 3;font-size:34px}
+  .scard h3{margin:0 0 4px;font-size:16px}
+  .scard p{font-size:12px;line-height:1.7}
+  .scard .chip{justify-self:start;font-size:11px;margin-top:6px}
 }
 /* ---- 音声プレーヤー（build_narrated.py が style の末尾に入れる。⛔ このコメントに「閉じタグ」の文字列を書かない：style が途中で閉じる） ---- */
 .hint{bottom:calc(1.4vh + 15vh) !important;white-space:nowrap}
@@ -165,7 +196,7 @@ ul.feat li b{color:var(--green-d)}
   .hint{display:none}
   .sndhint{bottom:150px}
   .credit{font-size:10px}
-  .counter{bottom:78px}
+  .counter{top:9px;bottom:auto;left:22px;font-size:11px}
 }
 </style>
 </head>
