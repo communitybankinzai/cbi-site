@@ -49,20 +49,20 @@ ul.feat li b{color:var(--green-d)}
 @keyframes floaty{0%,100%{transform:translateY(0) rotate(var(--tilt,0deg))}50%{transform:translateY(-10px) rotate(var(--tilt,0deg))}}
 
 /* ---- スマホモックアップ ---- */
-.phone{--tilt:0deg;position:relative;height:min(76vh,760px);aspect-ratio:470/1020;border-radius:clamp(22px,3vh,38px);
+.phone{--tilt:0deg;position:relative;--ph:min(76vh,760px);height:var(--ph);aspect-ratio:470/1020;border-radius:clamp(22px,3vh,38px);
   background:#101418;padding:clamp(7px,1vh,11px);box-shadow:0 30px 70px -20px rgba(13,27,38,.45),0 8px 22px rgba(13,27,38,.18);
   transform:rotate(var(--tilt));animation:floaty 7s ease-in-out infinite}
 .phone .screen{width:100%;height:100%;border-radius:clamp(16px,2.2vh,28px);overflow:hidden;background:#fff;position:relative}
 .phone .screen img{display:block;width:100%;height:auto}
 .phone .notch{position:absolute;top:calc(clamp(7px,1vh,11px) + 6px);left:50%;transform:translateX(-50%);
   width:26%;height:9px;border-radius:999px;background:#101418;z-index:3;opacity:.9}
-.phone.small{height:min(66vh,640px)}
+.phone.small{--ph:min(66vh,640px)}
 /* 縦長スクショの自動スクロール */
 .screen img.scroll{animation:scrollShot var(--dur,14s) ease-in-out infinite alternate;animation-play-state:paused;animation-delay:1s}
 .slide.active .screen img.scroll{animation-play-state:running}
-@keyframes scrollShot{0%,8%{transform:translateY(0)}92%,100%{transform:translateY(calc(-100% + min(76vh,760px) - 2*clamp(7px,1vh,11px)))}}
+@keyframes scrollShot{0%,8%{transform:translateY(0)}92%,100%{transform:translateY(calc(-100% + var(--ph) - 2*clamp(7px,1vh,11px)))}}
 .phone.small .screen img.scroll{animation-name:scrollShotS}
-@keyframes scrollShotS{0%,8%{transform:translateY(0)}92%,100%{transform:translateY(calc(-100% + min(66vh,640px) - 2*clamp(7px,1vh,11px)))}}
+@keyframes scrollShotS{0%,8%{transform:translateY(0)}92%,100%{transform:translateY(calc(-100% + var(--ph) - 2*clamp(7px,1vh,11px)))}}
 .phone-duo{display:flex;gap:2.5vw;align-items:center}
 .phone-duo .phone:first-child{--tilt:-3deg}
 .phone-duo .phone:last-child{--tilt:2.5deg;height:min(62vh,600px)}
@@ -133,8 +133,8 @@ ul.feat li b{color:var(--green-d)}
 .hint.off{opacity:0}
 @media (max-aspect-ratio: 1/1){
   .split{flex-direction:column;gap:3vh}
-  .phone{height:min(48vh,480px)}
-  .phone.small{height:min(42vh,420px)}
+  .phone{--ph:min(48vh,480px)}
+  .phone.small{--ph:min(42vh,420px)}
   .grid7{grid-template-columns:repeat(2,1fr)}
   .wsteps,.steps3,.tl{flex-wrap:wrap}
 }
@@ -315,7 +315,7 @@ ul.feat li b{color:var(--green-d)}
       <div class="warrow a d4">→</div>
       <div class="wcard hero a d4"><div class="wv" data-count="1.0">1.0</div><div class="wl">本人確認済み（市民）</div><p>確認ができた市民は満票。市外の応援団は0.5。確認のしくみは将来の予定です</p></div>
     </div>
-    <p class="note a d5" style="margin-top:4vh">重みは「集計上の重み」です。個人の投票内容そのものが公開されることはありません。1人1LINEアカウントのため、なりすまし登録も防げます。</p>
+    <p class="note a d5" style="margin-top:4vh">重みは「集計上の重み」です。個人の投票内容そのものが公開されることはありません。重みの決め方は検討中で、変更される場合があります。1人1LINEアカウントのため、なりすまし登録も防げます。</p>
   </div>
 </section>
 
