@@ -249,6 +249,20 @@ const UNREAD_POLL_MS = 30000;
     document.querySelectorAll('.tab-btn').forEach(b => {
       b.addEventListener('click', () => switchTab(b.dataset.tab));
     });
+    // タブ見出し: ← → Home End でフォーカスを移す（開くのは従来どおり Enter / Space・クリック）
+    const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+    tabBtns.forEach((b, i) => {
+      b.addEventListener('keydown', e => {
+        let to = -1;
+        if (e.key === 'ArrowRight') to = (i + 1) % tabBtns.length;
+        else if (e.key === 'ArrowLeft') to = (i - 1 + tabBtns.length) % tabBtns.length;
+        else if (e.key === 'Home') to = 0;
+        else if (e.key === 'End') to = tabBtns.length - 1;
+        if (to < 0) return;
+        e.preventDefault();
+        tabBtns[to].focus();
+      });
+    });
     // 予算タブ: 提案書へ貼り付ける形で書き出す
     const mdBtn = $('budget-copy-md');
     if (mdBtn) mdBtn.addEventListener('click', () => budgetData && budgetCopy(budgetToMarkdown(), '提案書用の表'));
@@ -265,7 +279,7 @@ const UNREAD_POLL_MS = 30000;
       b.classList.toggle('active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'sns', 'bug-reports', 'ledger', 'org', 'budget', 'apiusage', 'metaverse'].forEach(t => {
+    ['ideas', 'mail', 'agents', 'changelog', 'docs', 'doc-comments', 'presentations', 'sns', 'bug-reports', 'ledger', 'org', 'budget', 'apiusage', 'metaverse'].forEach(t => {
       $('tab-' + t).hidden = (t !== name);
     });
     document.body.classList.toggle('mail-fullwidth', name === 'mail');

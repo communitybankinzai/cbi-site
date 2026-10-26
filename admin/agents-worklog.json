@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-13",
+  "updatedAt": "2026-10-26T10:35:00+09:00",
   "_comment_updated": "2026-07-03 A1: CBI/CiDAO 作業フォルダを OneDrive\\CBI（Obsidian保管庫）へ一本化",
   "note": "各エージェントの作業実績(actuals)と作業予定(plans)。私(A1 Core)がCBI関連の作業を行うたびに該当エージェントの actuals 先頭へ追記する。市・企業との連携時はこのデータから提出用PDFを生成。category: 実装/保守/レポート/分析/会議/広報/事務/調査/その他。priority: 高/中/低。2026-06-27 以降: Claude Code セッション工数は output_tokens / 100,000 で算出（scripts/session-stats.py）、note 末尾に session/output/cost を1行残す。会議など Claude を使わない作業は実時間で記入。 2026-08-22 以降: plans に status（進行中/待ち/保留）と blockedBy（待ちの理由）を追加。status 未設定は「進行中」扱いで、期限超過すると管理画面エージェントタブ先頭の「要対応」パネルに赤で出る。着手できない事情があるものだけ status:\"待ち\" にして blockedBy に解除条件を書く（忘れによる放置と区別するため）。",
   "categories": [
@@ -16,6 +16,20 @@
   "agents": {
     "A1": {
       "actuals": [
+        {
+          "date": "2026-10-26",
+          "title": "管理画面に「🎤 プレゼン」タブを新設し、外部向けスライド5本とiPhone 15の入口を1か所に集約（タブ見出しの矢印キー操作つき） 0.7時間",
+          "category": "実装",
+          "outputs": [
+            "site/admin/index.html（🎤プレゼンタブの新設・資料タブから5本を移動・3D防災MAPタブのiPhone入口を移動・資料タブの説明文・admin.js読込のv更新）",
+            "site/admin/admin.js（switchTab に presentations を追加・タブ見出しの ← → Home End）",
+            "site/admin/changelog.json（1件）",
+            "site/admin/agents-worklog.json（1件）"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "事業主の依頼：「CBIサイトの外部向けプレゼンに関するHTMLは一つのタグ（＝管理画面のタブ）カテゴリを作り、アクセス性を改善したい」「3D・防災MAPタブ最上段（iPhone 15）もプレゼン資料なので、どこかにまとめたい」。質問で確定：まとめ先＝新タブ「🎤 プレゼン」／対象＝資料タブのスライド型5本（iPhone入口は選択肢では未選択だったが、依頼文を優先して含めた。不要なら戻せる）／アクセシビリティ＝まとめ先の画面だけ（スライド本体は触らない）。途中で、公開サイトにはプレゼンHTMLへの導線がなく、卒論スライドは「導線を張らない・noindex」の方針（事業主→市担当者への事前確認用）と分かったため、公開の一覧ページは作らず管理画面（ログイン必須）の中にまとめた。作業中に他セッションが iPhone 入口を /phone/ へ変更していたため、編集前に最新を読み直してから移した。検証（ローカル・実ブラウザ）：タブを切り替えても表示パネルは常に1つ／リンク10本すべてHTTP 200／資料タブから5本が消え、防災MAPタブからiPhone入口が消えた／実キー操作で ← → Home End が先頭と末尾で循環し、Enterで開く／コンソールのエラーはCORSのみ（localhostからcidaoのAPIを呼ぶため。今回の変更とは無関係）。未実施：スライド本体HTMLのアクセシビリティ（cidao-intro は aria 2個・thesis/slides は0個）／武蔵屋のPDF2本は資料タブのまま／公開後の本番画面の目視（ログインが要るため）。事業主の確認前のため partnerApproved は false。\nsession: 39876d0d-2e25-412f-b3a9-16a24b380d7f / output: 72,170 / cost: $5.93"
+        },
         {
           "date": "2026-10-25",
           "title": "スマホ表示シミュレーターを、他のURLも映せて画像保存できる公開Webアプリ（/phone/）に。CiDAO管理画面（/admin/phone）にも同機能 0.5時間",

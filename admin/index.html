@@ -77,6 +77,7 @@ if (location.protocol === 'file:') {
       <button type="button" class="tab-btn" data-tab="changelog" role="tab" aria-selected="false">📝 更新履歴</button>
       <button type="button" class="tab-btn" data-tab="docs" role="tab" aria-selected="false">📑 資料</button>
       <button type="button" class="tab-btn" data-tab="doc-comments" role="tab" aria-selected="false">💬 資料コメント</button>
+      <button type="button" class="tab-btn" id="tabbtn-presentations" data-tab="presentations" role="tab" aria-selected="false" aria-controls="tab-presentations">🎤 プレゼン</button>
       <button type="button" class="tab-btn" data-tab="sns" role="tab" aria-selected="false">📣 自動投稿</button>
       <button type="button" class="tab-btn" data-tab="bug-reports" role="tab" aria-selected="false">🐛 不具合レポート</button>
       <button type="button" class="tab-btn" data-tab="ledger" role="tab" aria-selected="false">💰 収支管理</button>
@@ -345,7 +346,7 @@ if (location.protocol === 'file:') {
         <div class="panel-head-row">
           <h2 class="panel-title">内部資料・提案資料</h2>
         </div>
-        <p class="panel-desc">CBIの内部資料・外部関係者への提案資料です。ログインしたメンバーのみ閲覧できます（noindex設定）。</p>
+        <p class="panel-desc">CBIの内部資料です。外部向けのスライドは「🎤 プレゼン」タブにあります。ログインしたメンバーのみ閲覧できます（noindex設定）。</p>
         <div class="docs-list" style="display:grid; gap:14px; margin-top:8px;">
 
           <a href="proposals/cidao-operating-costs-v1.html" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #2d5a3d; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
@@ -359,22 +360,6 @@ if (location.protocol === 'file:') {
                 <div>v1 ／ 2026-10-18 作成</div>
                 <div style="color:#2d5a3d; font-weight:700;">開く →</div>
                 <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('cidao-operating-costs');" style="font-size:12px; padding:4px 10px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">💬 コメント</button>
-              </div>
-            </div>
-          </a>
-
-          <a href="proposals/cidao-exhibit-guide-v1.html?kiosk=1" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #2d5a3d; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
-            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
-              <div style="flex:1; min-width:240px;">
-                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#2d5a3d; font-weight:700; background:#e8f0ea; padding:3px 10px; border-radius:999px; margin-bottom:8px;">展示資料 ・ プレゼンスライド</div>
-                <div style="display:inline-block; font-size:11px; color:#fff; font-weight:700; background:#c0392b; padding:3px 10px; border-radius:999px; margin:0 0 8px 6px;">下書き（確認前）</div>
-                <h3 style="margin:0 0 6px; font-size:17px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">武蔵屋マルシェ 来場者向けスライド｜CiDAO登録のご案内・女性音声つき・13枚</h3>
-                <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">11/3 武蔵屋マルシェ（CBIの展示・2階8畳）で来場者に見せるHTMLスライド。CiDAOとは・できること・目指すところ、LINEでの登録手順（実画面入り）、LINEにログインできないとき、会員QR、体験の受付、武蔵屋めぐりの遊び方。<b>女性ナレーションつき</b>（「開く」は<b>無人モード</b>：クリックなしで<b>自動再生がスタート</b>。ナレーションが終わると次のスライドへ進み、約9分で一巡して最初に戻って繰り返す。ブラウザが音の自動再生を断ったときは、無音で時間どおりに進むので、1回クリックすると音が出る／Aで自動オン・オフ／Vで音声オン・オフ／Bで<b>BGMオン・オフ</b>／Rでもう一度聞く／F11で全画面）。BGMはパッヘルベル「カノン」（Kevin MacLeod・CC BY 3.0。画面右上にクレジット表示）。※下書き：スライド4「目指すところ」の文言は代表・中司さんの確認前。音声（約8分）は edge-tts（非公式ツール）で作成。ファイルは約9.5MB（音声・BGM込みの1ファイル）で、開いてから数秒待つと音声が始まります。</p>
-              </div>
-              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-                <div>v1 ／ 2026-10-05 作成</div>
-                <div style="color:#2d5a3d; font-weight:700;">開く →</div>
-                <button type="button" onclick="event.preventDefault();event.stopPropagation();var a=document.createElement('a');a.href='proposals/cidao-exhibit-guide-v1.html';a.download='武蔵屋マルシェ_来場者向けスライド.html';document.body.appendChild(a);a.click();a.remove();" style="font-size:12px; padding:5px 12px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">⬇ ダウンロード（約9.5MB）</button>
               </div>
             </div>
           </a>
@@ -411,67 +396,6 @@ if (location.protocol === 'file:') {
             </div>
           </a>
 
-          <a href="proposals/machizukuri-fund-overview-v1.html" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #2d5a3d; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
-            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
-              <div style="flex:1; min-width:240px;">
-                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#2d5a3d; font-weight:700; background:#e8f0ea; padding:3px 10px; border-radius:999px; margin-bottom:8px;">勉強資料 ・ プレゼンスライド</div>
-                <h3 style="margin:0 0 6px; font-size:17px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">公益信託 印西市まちづくりファンドの概要｜しくみ・助成額・スケジュール</h3>
-                <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">2027年1月の応募に向けた勉強資料。11枚構成のHTMLスライド。制度のしくみ、3コースの助成額（10万円〜500万円）、1年のスケジュール、審査の基準、CBIにあてはめた見込みをまとめた。出典は第20回（2026年度）の応募の手引き。第21回の日付は推測なので、要項が出たら差し替える。←→キー・クリック・スワイプで操作、<code>#8</code> のように付けると当該ページへ直行。</p>
-              </div>
-              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-                <div>v1 ／ 2026-09-28 作成</div>
-                <div style="color:#2d5a3d; font-weight:700;">開く →</div>
-                <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('machizukuri-fund-overview');" style="font-size:12px; padding:4px 10px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">💬 コメント</button>
-              </div>
-            </div>
-          </a>
-
-          <a href="proposals/cidao-feature-intro-v1.html" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c9a55c; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
-            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
-              <div style="flex:1; min-width:240px;">
-                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#c9a55c; font-weight:700; background:#faf3e3; padding:3px 10px; border-radius:999px; margin-bottom:8px;">広報資料 ・ プレゼンスライド</div>
-                <h3 style="margin:0 0 6px; font-size:17px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">CiDAO機能紹介スライド｜一般向け・20枚（実画面キャプチャ入り）</h3>
-                <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">一般市民向けにCiDAOの7機能（提案・投票／イベント／団体／AIマッチング／人材バンク／FreeFree／貢献度）を本番アプリの実画面で紹介する20枚構成のHTMLスライド。←→キー・クリック・スワイプで操作。URL末尾に <code>?still</code> を付けるとアニメ無効（印刷・PDF化用）、<code>#8</code> のように付けると当該ページへ直行。画面は β 版（サンプルデータ含む）。</p>
-              </div>
-              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-                <div>v1 ／ 2026-07-05 作成</div>
-                <div style="color:#c9a55c; font-weight:700;">開く →</div>
-                <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('cidao-feature-intro');" style="font-size:12px; padding:4px 10px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">💬 コメント</button>
-              </div>
-            </div>
-          </a>
-
-
-          <a href="proposals/ekimae-marche-proposal-v1.html" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c9a55c; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
-            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
-              <div style="flex:1; min-width:240px;">
-                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#c9a55c; font-weight:700; background:#faf3e3; padding:3px 10px; border-radius:999px; margin-bottom:8px;">アーカイブ ・ 元提案資料</div>
-                <h3 style="margin:0 0 6px; font-size:17px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">駅前常設マルシェ提案｜2025-03-25 市長タウンミーティング</h3>
-                <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">COCoLa有志メンバーが藤代市長に提示した千葉NT中央駅前歩道エリア活用提案。9枚構成。後のCBI設立につながった元提案。最終スライドで2026年公民連携業務委託との接続を整理。</p>
-              </div>
-              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-                <div>v1 ／ 2026-06-22 整形</div>
-                <div style="color:#c9a55c; font-weight:700;">開く →</div>
-                <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('ekimae-marche');" style="font-size:12px; padding:4px 10px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">💬 コメント</button>
-              </div>
-            </div>
-          </a>
-
-          <a href="proposals/container-shokan-mapping-v1.html" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c9a55c; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
-            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
-              <div style="flex:1; min-width:240px;">
-                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#c9a55c; font-weight:700; background:#faf3e3; padding:3px 10px; border-radius:999px; margin-bottom:8px;">設計資料 ・ 協業パッケージ</div>
-                <h3 style="margin:0 0 6px; font-size:17px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">コンテナ別 市役所主管マッピング｜駅前常設マルシェ協業設計</h3>
-                <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">7コンテナ（学び／物販／喫茶／国際／創業／広報／ステージ）を印西市の各課主管と紐づけ、CBI連携体の協業価値を可視化した7枚構成のHTML。受託事業者・街活性室向け説明装置。</p>
-              </div>
-              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-                <div>v1 ／ 2026-06-22 作成</div>
-                <div style="color:#c9a55c; font-weight:700;">開く →</div>
-                <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('container-shokan');" style="font-size:12px; padding:4px 10px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">💬 コメント</button>
-              </div>
-            </div>
-          </a>
-
           <a href="proposals/cidao-specification-v2.0.html" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #2d5a3d; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
             <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
               <div style="flex:1; min-width:240px;">
@@ -503,7 +427,7 @@ if (location.protocol === 'file:') {
           </a>
 
           <p style="font-size:12px; color:#4a5663; padding:12px 16px; background:#faf8f3; border-radius:8px; border-left:3px solid #e0d9c6; margin:8px 0 0;">
-            ※ 新規資料を追加する場合は <code>site/admin/proposals/</code> にHTMLを配置し、このタブに <code>&lt;a&gt;</code> 要素を追記してください。
+            ※ 新規資料を追加する場合は <code>site/admin/proposals/</code> にHTMLを配置し、このタブに <code>&lt;a&gt;</code> 要素を追記してください（外部向けのスライドは「🎤 プレゼン」タブへ）。
           </p>
         </div>
       </section>
@@ -637,6 +561,110 @@ if (location.protocol === 'file:') {
 
       </section>
     </div><!-- /tab-doc-comments -->
+
+    <!-- ===== タブ: プレゼン（外部向けのプレゼン資料を1か所に集める・2026-10-26 事業主指示） ===== -->
+    <div class="tab-panel" id="tab-presentations" role="tabpanel" aria-labelledby="tabbtn-presentations" hidden>
+      <section class="panel" aria-labelledby="pres-slides-title">
+        <div class="panel-head-row">
+          <h2 class="panel-title" id="pres-slides-title">外部向けスライド</h2>
+        </div>
+        <p class="panel-desc">来場者・市・関係者に見せるスライドです。リンクは新しいタブで開きます。ログインしたメンバーのみ閲覧できます（noindex設定）。</p>
+        <div class="docs-list" style="display:grid; gap:14px; margin-top:8px;">
+          <a href="proposals/cidao-exhibit-guide-v1.html?kiosk=1" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #2d5a3d; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
+            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:240px;">
+                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#2d5a3d; font-weight:700; background:#e8f0ea; padding:3px 10px; border-radius:999px; margin-bottom:8px;">展示資料 ・ プレゼンスライド</div>
+                <div style="display:inline-block; font-size:11px; color:#fff; font-weight:700; background:#c0392b; padding:3px 10px; border-radius:999px; margin:0 0 8px 6px;">下書き（確認前）</div>
+                <h3 style="margin:0 0 6px; font-size:17px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">武蔵屋マルシェ 来場者向けスライド｜CiDAO登録のご案内・女性音声つき・13枚</h3>
+                <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">11/3 武蔵屋マルシェ（CBIの展示・2階8畳）で来場者に見せるHTMLスライド。CiDAOとは・できること・目指すところ、LINEでの登録手順（実画面入り）、LINEにログインできないとき、会員QR、体験の受付、武蔵屋めぐりの遊び方。<b>女性ナレーションつき</b>（「開く」は<b>無人モード</b>：クリックなしで<b>自動再生がスタート</b>。ナレーションが終わると次のスライドへ進み、約9分で一巡して最初に戻って繰り返す。ブラウザが音の自動再生を断ったときは、無音で時間どおりに進むので、1回クリックすると音が出る／Aで自動オン・オフ／Vで音声オン・オフ／Bで<b>BGMオン・オフ</b>／Rでもう一度聞く／F11で全画面）。BGMはパッヘルベル「カノン」（Kevin MacLeod・CC BY 3.0。画面右上にクレジット表示）。※下書き：スライド4「目指すところ」の文言は代表・中司さんの確認前。音声（約8分）は edge-tts（非公式ツール）で作成。ファイルは約9.5MB（音声・BGM込みの1ファイル）で、開いてから数秒待つと音声が始まります。</p>
+              </div>
+              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                <div>v1 ／ 2026-10-05 作成</div>
+                <div style="color:#2d5a3d; font-weight:700;">開く →</div>
+                <button type="button" onclick="event.preventDefault();event.stopPropagation();var a=document.createElement('a');a.href='proposals/cidao-exhibit-guide-v1.html';a.download='武蔵屋マルシェ_来場者向けスライド.html';document.body.appendChild(a);a.click();a.remove();" style="font-size:12px; padding:5px 12px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">⬇ ダウンロード（約9.5MB）</button>
+              </div>
+            </div>
+          </a>
+
+          <a href="proposals/machizukuri-fund-overview-v1.html" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #2d5a3d; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
+            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:240px;">
+                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#2d5a3d; font-weight:700; background:#e8f0ea; padding:3px 10px; border-radius:999px; margin-bottom:8px;">勉強資料 ・ プレゼンスライド</div>
+                <h3 style="margin:0 0 6px; font-size:17px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">公益信託 印西市まちづくりファンドの概要｜しくみ・助成額・スケジュール</h3>
+                <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">2027年1月の応募に向けた勉強資料。11枚構成のHTMLスライド。制度のしくみ、3コースの助成額（10万円〜500万円）、1年のスケジュール、審査の基準、CBIにあてはめた見込みをまとめた。出典は第20回（2026年度）の応募の手引き。第21回の日付は推測なので、要項が出たら差し替える。←→キー・クリック・スワイプで操作、<code>#8</code> のように付けると当該ページへ直行。</p>
+              </div>
+              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                <div>v1 ／ 2026-09-28 作成</div>
+                <div style="color:#2d5a3d; font-weight:700;">開く →</div>
+                <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('machizukuri-fund-overview');" style="font-size:12px; padding:4px 10px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">💬 コメント</button>
+              </div>
+            </div>
+          </a>
+
+          <a href="proposals/cidao-feature-intro-v1.html" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c9a55c; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
+            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:240px;">
+                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#c9a55c; font-weight:700; background:#faf3e3; padding:3px 10px; border-radius:999px; margin-bottom:8px;">広報資料 ・ プレゼンスライド</div>
+                <h3 style="margin:0 0 6px; font-size:17px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">CiDAO機能紹介スライド｜一般向け・20枚（実画面キャプチャ入り）</h3>
+                <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">一般市民向けにCiDAOの7機能（提案・投票／イベント／団体／AIマッチング／人材バンク／FreeFree／貢献度）を本番アプリの実画面で紹介する20枚構成のHTMLスライド。←→キー・クリック・スワイプで操作。URL末尾に <code>?still</code> を付けるとアニメ無効（印刷・PDF化用）、<code>#8</code> のように付けると当該ページへ直行。画面は β 版（サンプルデータ含む）。</p>
+              </div>
+              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                <div>v1 ／ 2026-07-05 作成</div>
+                <div style="color:#c9a55c; font-weight:700;">開く →</div>
+                <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('cidao-feature-intro');" style="font-size:12px; padding:4px 10px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">💬 コメント</button>
+              </div>
+            </div>
+          </a>
+
+          <a href="proposals/ekimae-marche-proposal-v1.html" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c9a55c; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
+            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:240px;">
+                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#c9a55c; font-weight:700; background:#faf3e3; padding:3px 10px; border-radius:999px; margin-bottom:8px;">アーカイブ ・ 元提案資料</div>
+                <h3 style="margin:0 0 6px; font-size:17px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">駅前常設マルシェ提案｜2025-03-25 市長タウンミーティング</h3>
+                <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">COCoLa有志メンバーが藤代市長に提示した千葉NT中央駅前歩道エリア活用提案。9枚構成。後のCBI設立につながった元提案。最終スライドで2026年公民連携業務委託との接続を整理。</p>
+              </div>
+              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                <div>v1 ／ 2026-06-22 整形</div>
+                <div style="color:#c9a55c; font-weight:700;">開く →</div>
+                <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('ekimae-marche');" style="font-size:12px; padding:4px 10px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">💬 コメント</button>
+              </div>
+            </div>
+          </a>
+
+          <a href="proposals/container-shokan-mapping-v1.html" target="_blank" rel="noopener" class="doc-card" style="display:block; background:#fff; border:1px solid #e0d9c6; border-left:4px solid #c9a55c; border-radius:8px; padding:18px 22px; text-decoration:none; color:#1a2330; transition:transform .15s, box-shadow .25s;">
+            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:240px;">
+                <div style="display:inline-block; font-size:11px; letter-spacing:0.08em; color:#c9a55c; font-weight:700; background:#faf3e3; padding:3px 10px; border-radius:999px; margin-bottom:8px;">設計資料 ・ 協業パッケージ</div>
+                <h3 style="margin:0 0 6px; font-size:17px; color:#1e3a5f; font-family:'Noto Serif JP',serif;">コンテナ別 市役所主管マッピング｜駅前常設マルシェ協業設計</h3>
+                <p style="margin:0; font-size:13px; color:#4a5663; line-height:1.7;">7コンテナ（学び／物販／喫茶／国際／創業／広報／ステージ）を印西市の各課主管と紐づけ、CBI連携体の協業価値を可視化した7枚構成のHTML。受託事業者・街活性室向け説明装置。</p>
+              </div>
+              <div style="font-size:12px; color:#4a5663; white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                <div>v1 ／ 2026-06-22 作成</div>
+                <div style="color:#c9a55c; font-weight:700;">開く →</div>
+                <button type="button" onclick="event.preventDefault();event.stopPropagation();window.openDocComments&&window.openDocComments('container-shokan');" style="font-size:12px; padding:4px 10px; background:#2d5a3d; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; letter-spacing:0.05em;">💬 コメント</button>
+              </div>
+            </div>
+          </a>
+
+          <p style="font-size:12px; color:#4a5663; padding:12px 16px; background:#faf8f3; border-radius:8px; border-left:3px solid #e0d9c6; margin:8px 0 0;">
+            ※ 新しい外部向けスライドを追加する場合は <code>site/admin/proposals/</code> にHTMLを配置し、このタブに <code>&lt;a&gt;</code> 要素を追記してください。
+          </p>
+        </div>
+      </section>
+      <!-- 2026-10-25 事業主指示：PCの画面の中の iPhone 15 で防災MAPを確認・プレゼンするページへの入口（メンバー向け。市民向けの防災MAPの入口には置かない）／2026-10-26 事業主指示で「3D・防災MAP」タブから「プレゼン」タブへ移動 -->
+      <section class="panel" id="phone-preview-link" aria-labelledby="pres-phone-title">
+        <h2 class="panel-title" id="pres-phone-title">📱 スマホ表示で見る（iPhone 15・プレゼン用）</h2>
+        <p class="panel-desc">PCの画面の中に iPhone 15 の枠を出し、防災MAPをスマホの表示のまま映します。外の会場では「プレゼン表示」が便利です（操作欄を隠して大きく表示。F キーで戻せます）。インターネット接続が必要です。</p>
+        <div role="group" aria-label="iPhone 15 表示の入口（新しいタブで開く）" style="display:flex; gap:8px; flex-wrap:wrap">
+          <a class="btn btn-ghost btn-sm" href="../phone/" target="_blank" rel="noopener">開く（操作欄つき）</a>
+          <a class="btn btn-ghost btn-sm" href="../phone/?present=1" target="_blank" rel="noopener">入口（プレゼン表示）</a>
+          <a class="btn btn-ghost btn-sm" href="../phone/?mode=shelter&amp;present=1" target="_blank" rel="noopener">避難・避難所（プレゼン表示）</a>
+          <a class="btn btn-ghost btn-sm" href="../phone/?mode=rain&amp;present=1" target="_blank" rel="noopener">雨・冠水（プレゼン表示）</a>
+          <a class="btn btn-ghost btn-sm" href="../phone/?mode=road&amp;present=1" target="_blank" rel="noopener">通行止め（プレゼン表示）</a>
+        </div>
+        <p class="meta-note">マウス操作の簡易版です。指での操作・長押しは再現しません。</p>
+      </section>
+    </div><!-- /tab-presentations -->
 
     <!-- ===== タブ: 自動投稿 ===== -->
     <div class="tab-panel" id="tab-sns" role="tabpanel" hidden>
@@ -1228,19 +1256,6 @@ if (location.protocol === 'file:') {
       </section>
     </div>
     <div class="tab-panel" id="tab-metaverse" role="tabpanel" hidden>
-      <!-- 2026-10-25 事業主指示：PCの画面の中の iPhone 15 で防災MAPを確認・プレゼンするページへの入口（メンバー向け。市民向けの防災MAPの入口には置かない） -->
-      <section class="panel" id="phone-preview-link">
-        <h2 class="panel-title">📱 スマホ表示で見る（iPhone 15・プレゼン用）</h2>
-        <p class="panel-desc">PCの画面の中に iPhone 15 の枠を出し、防災MAPをスマホの表示のまま映します。外の会場では「プレゼン表示」が便利です（操作欄を隠して大きく表示。F キーで戻せます）。インターネット接続が必要です。</p>
-        <div style="display:flex; gap:8px; flex-wrap:wrap">
-          <a class="btn btn-ghost btn-sm" href="../phone/" target="_blank" rel="noopener">開く（操作欄つき）</a>
-          <a class="btn btn-ghost btn-sm" href="../phone/?present=1" target="_blank" rel="noopener">入口（プレゼン表示）</a>
-          <a class="btn btn-ghost btn-sm" href="../phone/?mode=shelter&amp;present=1" target="_blank" rel="noopener">避難・避難所（プレゼン表示）</a>
-          <a class="btn btn-ghost btn-sm" href="../phone/?mode=rain&amp;present=1" target="_blank" rel="noopener">雨・冠水（プレゼン表示）</a>
-          <a class="btn btn-ghost btn-sm" href="../phone/?mode=road&amp;present=1" target="_blank" rel="noopener">通行止め（プレゼン表示）</a>
-        </div>
-        <p class="meta-note">マウス操作の簡易版です。指での操作・長押しは再現しません。</p>
-      </section>
       <!-- 情報源の鮮度（2026-09-25）。古いデータが古いと気づかれないまま使われる事故が9/24に2件続いたため -->
       <section class="panel" id="source-health">
         <div class="panel-head-row">
@@ -1516,7 +1531,7 @@ if (location.protocol === 'file:') {
   <div id="toast" class="toast" hidden></div>
 </section>
 
-<script src="admin.js?v=20260924org3"></script>
+<script src="admin.js?v=20261026pres1"></script>
 <script src="cbi-content-analytics.js?v=20260910-2"></script>
 <script src="cbi-feature-ranking.js?v=20260928-1"></script>
 </body>
