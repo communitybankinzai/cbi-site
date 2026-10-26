@@ -142,6 +142,11 @@ ul.feat li b{color:var(--green-d)}
    ・カード・工程は、内側の余白をそろえ、縦に積んで文字を大きくする */
 @media (max-aspect-ratio: 1/1){
   .slide{padding:4.5vh 22px}
+  /* 改行：意味の切れ目（文節）でだけ折り返す。1文字だけ次の行に残る・行頭に句読点が来る形を避ける */
+  h1,h2,h3,h4,p,li,.note,.chip,.tag{word-break:auto-phrase;line-break:strict;overflow-wrap:anywhere}
+  h1,h2,h3,h4{text-wrap:balance}
+  p,li,.note{text-wrap:pretty}
+  .slide h1[style]{font-size:clamp(26px,7.6vw,34px) !important}
   .split{flex-direction:column;gap:3vh;align-items:stretch}
   .split .txt,.split .vis{flex:none;width:100%;min-width:0}
   .phone{--ph:min(48vh,480px)}
@@ -152,6 +157,9 @@ ul.feat li b{color:var(--green-d)}
   .grid7{grid-template-columns:repeat(2,1fr);gap:10px}
   .grid7[style*="repeat(2"]{grid-template-columns:1fr !important}
   .gcard{padding:12px 10px}
+  .grid7:not([style*="repeat(2"]) .gcard{padding:12px 6px}
+  .grid7:not([style*="repeat(2"]) .gcard h3{font-size:11.5px;line-height:1.35}
+  .grid7:not([style*="repeat(2"]) .gcard p{font-size:10.5px}
   /* タイムライン：縦に並べる（点を左・文を右） */
   .tl{flex-direction:column;margin-top:3vh}
   .tl .step{display:grid;grid-template-columns:24px 1fr;column-gap:14px;text-align:left;padding:0 0 18px;position:relative}
@@ -577,7 +585,7 @@ ul.feat li b{color:var(--green-d)}
     <h1 class="a d1" style="font-size:clamp(34px,5.5vw,72px);color:#fff;margin-top:1.5vh">あなたの一票から、<br>印西は変わりはじめる。</h1>
     <div class="a d2" style="margin-top:5vh"><span class="cover-url" style="font-size:clamp(16px,2.2vw,28px);padding:.8em 2em">cidao.vercel.app</span></div>
     <p class="a d3" style="margin-top:4vh;color:#b9c6cf;font-size:clamp(12px,1.4vw,17px);line-height:2">
-      運営：Community Bank INZAI（印西市市民活動団体 登録番号 08-001）<br>
+      運営：Community Bank INZAI<span style="display:inline-block">（印西市市民活動団体 登録番号 08-001）</span><br>
       お問い合わせ：communitybankinzai@gmail.com
     </p>
     <p class="cover-note a d4">※ 本資料の画面は実際のアプリ画面です（一部の名前や数字は、個人情報を守るためサンプルに置き換えています）。機能・名称は今後変更される場合があります。</p>
