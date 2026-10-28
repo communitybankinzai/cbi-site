@@ -2779,8 +2779,8 @@ function renderQuakeLayer() {
       </div>
       <div>${escapeHtml(formatJmaDateTime(event.at))}</div>
       ${pos.depthKm !== null ? `<div class="detail-meta">深さ 約${escapeHtml(String(pos.depthKm))}km</div>` : ""}
-      ${event.inzaiIntensity ? `<div class="shelter-evidence"><strong>印西市の震度 ${escapeHtml(intensityLabel(event.inzaiIntensity))}</strong><span>市内の観測点で記録された震度です。</span></div>` : '<div class="popup-contact-note">印西市の震度記録はありません。</div>'}
-      <a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">出典: 気象庁 震源・震度情報</a>
+      ${event.inzaiPending ? '<div class="popup-contact-note">印西市の震度は確認中です（気象庁の詳細待ち）。</div>' : event.inzaiIntensity ? `<div class="shelter-evidence"><strong>印西市の震度 ${escapeHtml(intensityLabel(event.inzaiIntensity))}</strong><span>市内の観測点で記録された震度です。</span></div>` : '<div class="popup-contact-note">印西市の震度記録はありません。</div>'}
+      <a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">出典: 気象庁 ${event.provisional ? "震度速報・震源に関する情報（P2P地震情報経由の仮表示）" : "震源・震度情報"}</a>
     `);
     quakeLayer.addLayer(marker);
   });
@@ -7266,8 +7266,156 @@ let mapAlertExpanded = false;
 let mapAlertDismissed = "";
 
 function mapAlertSignature() {
-  return JSON.stringify([visibleEvacAlerts().map(a => a.publishedAt), riverWarnings.map(w => w.text)]);
+  return JSON.stringify([visibleEvacAlerts().map(a => a.publishedAt), riverWarnings.map(w => w.text), quakeFlashActive() ? quakeFlashSummary() : ""]);
 }
+
+// ---- 地震の速報を警告帯に出す（2026-10-29 事業主指示「地震情報反映遅すぎる」） ----
+// 地図はこれまで気象庁の「震源・震度情報」（発生の約5分後）だけを待っていた。気象庁は
+//   震度速報（約2.5分後）→ 震源に関する情報（約4分後）→ 震源・震度情報（約5分後）
+// の順に出す（2026-10-29 00:07 千葉県北東部 M5.4 で実測）。P2P地震情報の WebSocket／履歴で先の2つを受け、
+// 帯に「震度速報」、震源は地図に仮表示する。気象庁の詳細が届いたら正式な値に置き換わる。
+// 緊急地震速報（秒単位）ではない。公式の発表が出るまでの時間は縮められない
+let quakeFlash = null;
+let quakeFlashExpanded = false;
+let quakeProvisional = null;
+const QUAKE_FLASH_MINUTES = 30;
+const QUAKE_FLASH_INZAI_AREA = "千葉県北西部"; // 印西市を含む震度速報の区域（2026-10-29 の震源・震度情報で確認：印西市・成田市・白井市）
+const QUAKE_FLASH_NEAR_PREFS = ["千葉県", "茨城県", "埼玉県", "東京都", "神奈川県", "栃木県", "群馬県"];
+const P2P_SCALE_TO_JMA = { 10: "1", 20: "2", 30: "3", 40: "4", 45: "5-", 50: "5+", 55: "6-", 60: "6+", 70: "7" };
+const JMA_BY_RANK = ["", "1", "2", "3", "4", "5-", "5+", "6-", "6+", "7"];
+
+// P2P の時刻は「2026/10/29 00:07:00」（日本時間）
+function p2pTimeMs(text) {
+  return Date.parse(String(text || "").replace(/\//g, "-").replace(" ", "T").slice(0, 19) + "+09:00");
+}
+
+function quakeFlashActive() {
+  if (!quakeFlash || !quakeFlash.relevant) return false;
+  const age = Date.now() - quakeFlash.atMs;
+  return age < QUAKE_FLASH_MINUTES * 60000 && age > -5 * 60000;
+}
+
+function quakeFlashClock(atMs) {
+  return new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", hour: "numeric", minute: "2-digit" }).format(atMs);
+}
+
+// 印西市の周りの地震か：全国で震度5弱以上／近県で震度速報に載った／印西市から150km以内のM4以上
+function quakeFlashRelevant(q) {
+  if (q.maxRank >= 5) return true;
+  if (q.areas.some(a => QUAKE_FLASH_NEAR_PREFS.includes(a.pref))) return true;
+  return !!q.position && Number(q.mag) >= 4 && quakeDistanceKm(q.position, INZAI_CENTER) <= 150;
+}
+
+function quakeFlashSummary() {
+  const q = quakeFlash;
+  const top = q.areas.filter(a => a.rank === q.maxRank).slice(0, 2).map(a => a.name).join("・");
+  let text = `${q.detail ? "地震" : "震度速報"} ${quakeFlashClock(q.atMs)}発生：最大震度${q.maxLabel || "確認中"}${top ? `（${top}）` : ""}`;
+  if (q.detail) {
+    text += q.detail.inzai ? `／印西市 震度${intensityLabel(q.detail.inzai)}` : "／印西市は震度1未満";
+  } else if (q.inzaiLabel) {
+    text += `／印西市を含む${QUAKE_FLASH_INZAI_AREA} 震度${q.inzaiLabel}`;
+  } else {
+    text += `／${QUAKE_FLASH_INZAI_AREA}は震度3未満（速報時点）`;
+  }
+  if (!q.detail) text += q.name ? `・震源 ${q.name}${q.mag ? ` M${q.mag}` : ""}（詳細確認中）` : "・震源は確認中";
+  return text;
+}
+
+function quakeFlashDetailHtml() {
+  const q = quakeFlash;
+  const groups = new Map();
+  q.areas.forEach(a => { if (!groups.has(a.rank)) groups.set(a.rank, []); groups.get(a.rank).push(a.name); });
+  const rows = [...groups.entries()].sort((a, b) => b[0] - a[0])
+    .map(([rank, names]) => `<div class="map-alert-item"><strong>震度${escapeHtml(intensityLabel(JMA_BY_RANK[rank]))}</strong><div>${escapeHtml(names.join("、"))}</div></div>`).join("");
+  return `<div class="map-alert-kind">気象庁の震度速報・震源に関する情報を、P2P地震情報経由で受けてCBIが表示しています。気象庁の詳細（震源・震度情報）が出ると、正式な値に置き換わります。</div>
+    ${rows}
+    ${q.position ? `<button type="button" class="map-alert-reopen" data-map-alert="quakeOpen">🌍 地震の地図を開く</button>` : ""}
+    <div class="map-alert-source">出典：<a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">気象庁 地震情報 ↗</a>。緊急地震速報ではありません（発表は発生の約2〜3分後です）。</div>`;
+}
+
+// P2P地震情報（code 551）の1件を取り込む。震度速報＝区域ごとの震度、震源に関する情報＝震源・M、詳細＝観測点ごとの震度
+function handleQuakeP2P(message) {
+  const type = message?.issue?.type;
+  if (!["ScalePrompt", "Destination", "DetailScale"].includes(type)) return;
+  const eq = message.earthquake || {};
+  const atMs = p2pTimeMs(eq.time);
+  if (!Number.isFinite(atMs)) return;
+  if (!quakeFlash || Math.abs(quakeFlash.atMs - atMs) > 90000) {
+    if (quakeFlash && quakeFlash.atMs > atMs) return; // 古い地震の電文で新しいものを上書きしない
+    quakeFlash = { atMs, areas: [], maxRank: 0, maxLabel: "", inzaiLabel: "", name: "", mag: "", position: null, detail: null, relevant: false };
+    quakeFlashExpanded = false;
+  }
+  const q = quakeFlash;
+  const scaleRank = scale => intensityRank(P2P_SCALE_TO_JMA[scale] || "");
+  const maxRank = scaleRank(eq.maxScale);
+  if (maxRank > q.maxRank) q.maxRank = maxRank;
+  if (type === "ScalePrompt") {
+    q.areas = (message.points || []).filter(p => p.addr).map(p => ({ pref: p.pref || "", name: p.addr, rank: scaleRank(p.scale) })).filter(a => a.rank > 0);
+    q.areas.forEach(a => { if (a.rank > q.maxRank) q.maxRank = a.rank; });
+    const mine = q.areas.find(a => a.pref === "千葉県" && a.name === QUAKE_FLASH_INZAI_AREA);
+    q.inzaiLabel = mine ? intensityLabel(JMA_BY_RANK[mine.rank]) : "";
+  }
+  const h = eq.hypocenter || {};
+  if (type !== "ScalePrompt" && h.name && Number.isFinite(h.latitude) && Math.abs(h.latitude) <= 90 && Number.isFinite(h.longitude) && Math.abs(h.longitude) <= 180) {
+    q.name = h.name;
+    q.mag = Number(h.magnitude) > 0 ? String(h.magnitude) : q.mag;
+    q.position = { lat: h.latitude, lng: h.longitude, depthKm: Number(h.depth) >= 0 ? Number(h.depth) : null };
+  }
+  if (type === "DetailScale") {
+    // 観測点ごとの震度。印西市内の観測点の最大が印西市の震度（観測点が無ければ震度1未満）
+    const inzaiRank = (message.points || []).filter(p => String(p.addr || "").startsWith("印西市")).reduce((m, p) => Math.max(m, scaleRank(p.scale)), 0);
+    q.detail = { inzai: JMA_BY_RANK[inzaiRank] || "", from: "p2p" };
+  }
+  q.maxLabel = q.maxRank ? intensityLabel(JMA_BY_RANK[q.maxRank]) : "";
+  q.relevant = quakeFlashRelevant(q);
+  if (q.position && q.relevant) {
+    quakeProvisional = {
+      at: new Date(q.atMs).toISOString(), atMs: q.atMs, name: q.name, mag: q.mag, maxi: JMA_BY_RANK[q.maxRank] || "",
+      position: q.position, inzaiIntensity: q.detail ? q.detail.inzai : "", json: "", provisional: true,
+      inzaiPending: !q.detail // 観測点ごとの震度が届くまでは、印西市の震度は「確認中」（記録なしではない）
+    };
+    mergeQuakeProvisional();
+    renderQuakeLayer();
+  }
+  renderMapAlert();
+}
+
+// 気象庁の一覧に同じ地震の詳細（震源・震度情報）が載るまで、P2P の震源を仮に先頭へ置く
+function mergeQuakeProvisional() {
+  quakeEvents = quakeEvents.filter(e => !e.provisional);
+  const p = quakeProvisional;
+  if (!p) return;
+  if (quakeJmaArchive.some(e => Math.abs(Date.parse(e.at) - p.atMs) < 90000)) { quakeProvisional = null; return; } // 気象庁の詳細が届いたので置き換え
+  if (!quakeEvents[0] || Date.parse(quakeEvents[0].at) < p.atMs) quakeEvents.unshift(p);
+}
+
+// 気象庁の詳細が載ったら、帯の印西市の震度を気象庁の値にする
+function applyQuakeFlashDetail(reports) {
+  if (!quakeFlash) return;
+  const r = reports.find(x => Math.abs(Date.parse(x.at) - quakeFlash.atMs) < 90000);
+  if (!r) return;
+  quakeFlash.detail = { inzai: findCityIntensity(r, "1223100"), from: "jma" };
+  if (intensityRank(r.maxi) > 0) { quakeFlash.maxRank = intensityRank(r.maxi); quakeFlash.maxLabel = intensityLabel(r.maxi); }
+  renderMapAlert();
+}
+
+// 開いたとき・画面に戻ったとき：直近30分の地震の電文を P2P の履歴から拾う（開く前に起きた地震の速報を出すため）
+let quakeCatchUpAt = 0;
+async function catchUpQuakeFlash() {
+  const endpoint = String(APP_CONFIG.p2pQuakeHistoryEndpoint || "").trim();
+  if (!endpoint || Date.now() - quakeCatchUpAt < 20000) return;
+  quakeCatchUpAt = Date.now();
+  try {
+    const response = await fetch(endpoint, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const list = await response.json();
+    const cutoff = Date.now() - QUAKE_FLASH_MINUTES * 60000;
+    (Array.isArray(list) ? list : []).filter(m => m?.code === 551 && p2pTimeMs(m.earthquake?.time) >= cutoff).reverse().forEach(handleQuakeP2P);
+  } catch (error) {
+    console.warn("P2P地震情報の履歴を読めません", error);
+  }
+}
+setInterval(() => { if (quakeFlash && !quakeFlashActive()) { quakeFlash = null; renderMapAlert(); } }, 60000);
 
 // 発令中で、運営が消していないもの（新しい順）
 function visibleEvacAlerts() {
@@ -7359,12 +7507,13 @@ function renderMapAlert() {
   const evacs = visibleEvacAlerts();
   let dismissed = "";
   dismissed = mapAlertDismissed;
-  const hasAny = Boolean(evacs.length || riverWarnings.length);
+  const quakeOn = quakeFlashActive();
+  const hasAny = Boolean(evacs.length || riverWarnings.length || quakeOn);
   const show = hasAny && dismissed !== mapAlertSignature();
   // ✕で閉じても、警告が出ている間は小さな「表示する」ボタンを残す（2026-09-21：閉じたら戻せなかった）
   if (hasAny && !show) {
-    const count = evacs.length + riverWarnings.length;
-    const severeClosed = evacs.some(a => a.level >= 4) || riverWarnings.some(w => w.severe);
+    const count = evacs.length + riverWarnings.length + (quakeOn ? 1 : 0);
+    const severeClosed = evacs.some(a => a.level >= 4) || riverWarnings.some(w => w.severe) || (quakeOn && quakeFlash.maxRank >= 5);
     alertNode.hidden = false;
     alertNode.className = `river-alert is-collapsed ${severeClosed ? "is-danger" : "is-caution"}`;
     alertNode.innerHTML = `<button type="button" class="map-alert-reopen" data-map-alert="reopen">📢 警告 ${count}件（閉じています）　表示する</button>`;
@@ -7379,9 +7528,14 @@ function renderMapAlert() {
     if (inzaiFitDone) fitToInzai(true);
     return;
   }
-  const severe = evacs.some(a => a.level >= 4) || riverWarnings.some(w => w.severe);
+  const severe = evacs.some(a => a.level >= 4) || riverWarnings.some(w => w.severe) || (quakeOn && quakeFlash.maxRank >= 5);
   alertNode.className = `river-alert ${severe ? "is-danger" : "is-caution"}`;
   const lines = [];
+  if (quakeOn) {
+    // 地震は一番上。押すと区域ごとの震度と出典を開く
+    lines.push(`<button type="button" class="map-alert-line is-quake" data-map-alert="quake" aria-expanded="${quakeFlashExpanded}" title="気象庁の震度速報・震源に関する情報です（緊急地震速報ではありません）">🌍 ${escapeHtml(quakeFlashSummary())}</button>`);
+    if (quakeFlashExpanded) lines.push(`<div class="map-alert-detail">${quakeFlashDetailHtml()}</div>`);
+  }
   if (evacs.length) {
     // 何件出ていても1行。2件以上は「避難指示 2件」とまとめ、押すと1件ずつ開く
     const summary = evacAlertSummary(evacs);
@@ -7410,6 +7564,14 @@ function handleMapAlertClick(event) {
   if (kind === "evac") {
     mapAlertExpanded = !mapAlertExpanded;
     renderMapAlert();
+  } else if (kind === "quake") {
+    quakeFlashExpanded = !quakeFlashExpanded;
+    renderMapAlert();
+  } else if (kind === "quakeOpen") {
+    // 地震の層を ON にして、仮表示の震源へ寄せる
+    const box = document.querySelector('[data-overlay="quakes"]');
+    if (box && !box.checked) box.click();
+    if (quakeFlash?.position) map.flyTo([quakeFlash.position.lat, quakeFlash.position.lng], 8, { duration: 0.8 });
   } else if (kind === "river") {
     const riverPanel = document.getElementById("river-panel");
     expandRightSection(riverPanel);
@@ -10948,6 +11110,8 @@ async function refreshEarthquakeSummary(manual) {
       // 同じ地震の発表が2回入ることがある（9/17 茨城県南部で確認）。発生時刻＋震源名で1件に（新しい発表を残す）
       .filter((e, i, arr) => arr.findIndex(o => o.at === e.at && o.name === e.name) === i);
     quakeEvents = quakeJmaArchive.slice(0, 20);
+    mergeQuakeProvisional(); // 気象庁の詳細が載るまで、P2P の震源を仮に先頭へ置く
+    applyQuakeFlashDetail(reports);
     renderQuakeLayer();
     node.innerHTML = `
       <div class="earthquake-event">
@@ -11192,8 +11356,11 @@ function startQuakePushWatch(url) {
   socket.addEventListener("message", event => {
     let message;
     try { message = JSON.parse(event.data); } catch { return; }
-    // 551＝地震情報。震度速報（ScalePrompt）は震源の座標が無く、気象庁の一覧でも使っていないので対象外
-    if (message?.code !== 551 || message?.issue?.type === "ScalePrompt") return;
+    // 551＝地震情報。震度速報（ScalePrompt）・震源に関する情報（Destination）・詳細（DetailScale）を帯と仮の震源に使う。
+    // 気象庁の一覧は「震源・震度情報」だけを地図に使うので、取り直しは震度速報では行わない（2026-10-29 に震度速報も帯へ）
+    if (message?.code !== 551) return;
+    handleQuakeP2P(message);
+    if (message?.issue?.type === "ScalePrompt") return;
     refreshQuakeAfterPush(message?.earthquake?.time);
   });
   socket.addEventListener("close", () => {
@@ -11207,9 +11374,11 @@ function startQuakePushWatch(url) {
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") return;
   refreshEarthquakeSummary(false);
+  catchUpQuakeFlash();
   if (!quakePushSocket || quakePushSocket.readyState > 1) startQuakePushWatch();
 });
 startQuakePushWatch();
+catchUpQuakeFlash(); // WebSocket は接続に約20秒かかる。開く前の30分に起きた地震は履歴から先に拾う
 
 setInterval(() => refreshAmedas(false), 5 * 60 * 1000);
 setInterval(() => refreshRiverLevel(false), 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
@@ -14132,13 +14301,15 @@ function syncQuakeLatestCard() {
     ${row("規模", latest.mag ? `M${escapeHtml(String(latest.mag))}` : "—")}
     ${row("最大震度", `<span class="badge ${rank >= 4 ? "red" : "blue"}">${escapeHtml(latest.maxi ? intensityLabel(latest.maxi) : "なし")}</span>`)}
     ${row("深さ", depth !== null && depth !== undefined ? `約${escapeHtml(String(depth))}km` : "不明")}
-    ${row("印西市", latest.inzaiIntensity ? `震度${escapeHtml(intensityLabel(latest.inzaiIntensity))}` : "震度の記録なし")}
+    ${row("印西市", latest.inzaiPending ? "確認中" : latest.inzaiIntensity ? `震度${escapeHtml(intensityLabel(latest.inzaiIntensity))}` : "震度の記録なし")}
     <div class="quake-latest-felt">${escapeHtml(quakeFeltText(latest))}</div>
-    ${latest.inzaiIntensity
-      ? `<div class="quake-latest-hint">印西市の周辺${QUAKE_SHINDO_RADIUS_KM}kmの震度MAPを地図に表示中${Number.isFinite(quakeShindoLayer.__count) ? `（${quakeShindoLayer.__count}地点）` : ""}。札を押すと${QUAKE_SHINDO_RADIUS_KM}km圏へ戻ります。</div>`
-      : `<div class="quake-latest-hint">印西市では震度の記録がない地震です。札を押すと全国を拡大します。</div>`}
+    ${latest.inzaiPending
+      ? `<div class="quake-latest-hint">仮表示です。気象庁の詳細（震源・震度情報）が出ると、印西市の震度と正式な値に置き換わります。</div>`
+      : latest.inzaiIntensity
+        ? `<div class="quake-latest-hint">印西市の周辺${QUAKE_SHINDO_RADIUS_KM}kmの震度MAPを地図に表示中${Number.isFinite(quakeShindoLayer.__count) ? `（${quakeShindoLayer.__count}地点）` : ""}。札を押すと${QUAKE_SHINDO_RADIUS_KM}km圏へ戻ります。</div>`
+        : `<div class="quake-latest-hint">印西市では震度の記録がない地震です。札を押すと全国を拡大します。</div>`}
     <button type="button" id="quake-latest-play" class="quake-latest-play">⏪ 過去の地震を再生</button>
-    <a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">出典: 気象庁 震源・震度情報</a>`;
+    <a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">出典: 気象庁 ${latest.provisional ? "震度速報・震源に関する情報（P2P経由・仮表示）" : "震源・震度情報"}</a>`;
   card.querySelector("#quake-latest-play")?.addEventListener("click", event => { event.stopPropagation(); openQuakePlayPanel(); });
   // 札を押す：印西市が揺れた地震は100km圏へ、それ以外は全国を拡大（出典リンク・✕・再生ボタンは別の動き）
   card.onclick = event => {
