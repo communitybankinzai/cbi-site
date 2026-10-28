@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-10-29",
+          "title": "防災MAPの地震表示の紹介動画（ニュース風・縦型68秒）の制作：台本・読み上げ・自動録画・音の合成まで。投稿は承認待ち 0.9時間",
+          "category": "広報",
+          "outputs": [
+            "scripts/promo/quake_news/（scenes.json・build_voice.py・record.mjs・compose.py・post_text.txt・out/quake_news_9x16_draft.mp4）",
+            "保管庫 cidao/2026-10-29_防災MAPの地震表示の紹介動画の作り方.md・MOC_CiDAO.md"
+          ],
+          "hours": 0.9,
+          "partnerApproved": false,
+          "note": "事業主指示：今表示している画面の範囲で、緊迫したニュース風の動画を作りSNSに投稿したい（予知ではなく傾向把握のツールと明記）。puppeteerが無いのでChromeをCDPで直接操作し仮想時間で1コマずつ撮影（2049コマ・約4分）。10/29 0:07 千葉県北東部M5.4・最大震度5弱は実際のP2P電文で再現（画面に明記）。踏んだ不具合：P2P履歴取得の実時間との競合であとの地震が混ざった／1コマ目が白い→修正。出力：1080x1920・68.3秒・12.5MB・-16.9LUFS。⛔緊急地震速報の音に似せていない。投稿は未実施（承認待ち）。読み上げの発音は耳での確認が必要。session: ab2d5fba-1f3f-4fb6-878c-f1d4b9f54725 / output: 370,898 / cost: $68.92"
+        },
+        {
+          "date": "2026-10-29",
           "title": "防災MAPの地震：「最新の地震」の札と「再生」の枠を1つの枠に統合（詳細／再生・期間の2モード・しぼり込みを共通化） 0.4時間",
           "category": "実装",
           "outputs": [
