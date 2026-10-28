@@ -7369,6 +7369,7 @@ function handleQuakeP2P(message) {
   q.maxLabel = q.maxRank ? intensityLabel(JMA_BY_RANK[q.maxRank]) : "";
   q.relevant = quakeFlashRelevant(q);
   if (q.position && q.relevant) {
+    quakeBrowseKey = null; // 新しい地震が来たら、遡って見ていても最新へ戻す
     quakeProvisional = {
       at: new Date(q.atMs).toISOString(), atMs: q.atMs, name: q.name, mag: q.mag, maxi: JMA_BY_RANK[q.maxRank] || "",
       position: q.position, inzaiIntensity: q.detail ? q.detail.inzai : "", json: "", provisional: true,
@@ -11111,6 +11112,7 @@ async function refreshEarthquakeSummary(manual) {
       .filter((e, i, arr) => arr.findIndex(o => o.at === e.at && o.name === e.name) === i);
     quakeEvents = quakeJmaArchive.slice(0, 20);
     mergeQuakeProvisional(); // 気象庁の詳細が載るまで、P2P の震源を仮に先頭へ置く
+    applyQuakeBrowse(); // 過去の地震を遡って見ているときは、その地震のまま動かさない
     applyQuakeFlashDetail(reports);
     renderQuakeLayer();
     node.innerHTML = `
@@ -14293,9 +14295,10 @@ function syncQuakeLatestCard() {
   if (!show) return;
   const rank = intensityRank(latest.maxi);
   const depth = latest.position?.depthKm;
-  const row = (k, v) => `<div class="quake-latest-row"><span>${k}</span><b>${v}</b></div>`;
+  const row = (k, v) => `<div class="quake-latest-row" data-k="${k}"><span>${k}</span><b>${v}</b></div>`;
+  const step = quakeStepState();
   card.innerHTML = `
-    <div class="quake-latest-head"><strong>🌍 最新の地震</strong><button type="button" id="quake-latest-close" aria-label="閉じる">✕</button></div>
+    <div class="quake-latest-head"><strong>🌍 ${step.browsing ? `過去の地震（${step.idx + 1}/${step.total}）` : "最新の地震"}</strong><button type="button" id="quake-latest-close" aria-label="閉じる">✕</button></div>
     <div class="quake-latest-place">${escapeHtml(latest.name || "震源地不明")}</div>
     ${row("発生", escapeHtml(formatJmaDateTime(latest.at)))}
     ${row("規模", latest.mag ? `M${escapeHtml(String(latest.mag))}` : "—")}
@@ -14308,9 +14311,17 @@ function syncQuakeLatestCard() {
       : latest.inzaiIntensity
         ? `<div class="quake-latest-hint">印西市の周辺${QUAKE_SHINDO_RADIUS_KM}kmの震度MAPを地図に表示中${Number.isFinite(quakeShindoLayer.__count) ? `（${quakeShindoLayer.__count}地点）` : ""}。札を押すと${QUAKE_SHINDO_RADIUS_KM}km圏へ戻ります。</div>`
         : `<div class="quake-latest-hint">印西市では震度の記録がない地震です。札を押すと全国を拡大します。</div>`}
-    <button type="button" id="quake-latest-play" class="quake-latest-play">⏪ 過去の地震を再生</button>
+    <div class="quake-latest-step">
+      <button type="button" id="quake-latest-prev" ${step.canPrev ? "" : "disabled"} title="1つ前（古い）の地震へ">◀ 前の地震</button>
+      <button type="button" id="quake-latest-next" ${step.canNext ? "" : "disabled"} title="1つ後（新しい）の地震へ">次の地震 ▶</button>
+    </div>
+    ${step.browsing ? `<button type="button" id="quake-latest-reset" class="quake-latest-reset">■ 最新の地震へ戻る</button>` : ""}
+    <button type="button" id="quake-latest-play" class="quake-latest-play">⏪ 期間を指定して再生</button>
     <a href="https://www.jma.go.jp/bosai/map.html#contents=earthquake_map" target="_blank" rel="noreferrer">出典: 気象庁 ${latest.provisional ? "震度速報・震源に関する情報（P2P経由・仮表示）" : "震源・震度情報"}</a>`;
   card.querySelector("#quake-latest-play")?.addEventListener("click", event => { event.stopPropagation(); openQuakePlayPanel(); });
+  card.querySelector("#quake-latest-prev")?.addEventListener("click", event => { event.stopPropagation(); stepQuake(1); });
+  card.querySelector("#quake-latest-next")?.addEventListener("click", event => { event.stopPropagation(); stepQuake(-1); });
+  card.querySelector("#quake-latest-reset")?.addEventListener("click", event => { event.stopPropagation(); resetQuakeBrowse(); });
   // 札を押す：印西市が揺れた地震は100km圏へ、それ以外は全国を拡大（出典リンク・✕・再生ボタンは別の動き）
   card.onclick = event => {
     if (event.target.closest("a, button")) return;
@@ -14640,20 +14651,114 @@ function quakeEventLine(event) {
   return parts.join(" ");
 }
 
-// 再生していないとき：最新の地震を見出しに出し、つまみは右端（＝最新の発生時刻）
+// ---- 過去の地震を1件ずつ遡る（2026-10-29 事業主指示「過去の地震をボタンで一つづつ遡りたい」） ----
+// 「◀ 前」で1つ古い地震、「次 ▶」で1つ新しい地震へ。見ている地震は最新の地震と同じ作り（震源の丸・波紋・印西市の札）で出す。
+// 対象は気象庁の一覧（約1か月・200件ほど）。それより前は「期間」で指定して再生する。「震度〇以上」「印西市だけ」のしぼり込みも守る
+let quakeBrowseKey = null; // null＝最新。値＝いま見ている地震の「発生時刻|震源名」
+const quakeKey = e => `${e.at}|${e.name}`;
+
+function quakeBrowseList() {
+  const minRank = Number(quakePlayEl("quake-play-minint")?.value || 0);
+  const inzaiOnly = !!quakePlayEl("quake-play-inzai")?.checked;
+  return quakeJmaArchive.filter(e => (minRank <= 0 || intensityRank(e.maxi) >= minRank) && (!inzaiOnly || e.inzaiIntensity));
+}
+
+// 一覧を取り直したあと（10分おき・P2P通知）も、見ている地震を動かさない。しぼり込みで消えたら最新へ戻す
+function applyQuakeBrowse() {
+  if (!quakeBrowseKey) return;
+  const list = quakeBrowseList();
+  const i = list.findIndex(e => quakeKey(e) === quakeBrowseKey);
+  if (i < 0) { quakeBrowseKey = null; return; }
+  quakeEvents = list.slice(i, i + 20);
+}
+
+// いま出している地震（quakeEvents[0]）へ地図を寄せる。印西市で揺れた地震は100km圏、それ以外はその震源へ
+function focusQuakeEvent() {
+  const ev = quakeEvents[0];
+  if (ev && !ev.inzaiIntensity && ev.position) map.flyTo([ev.position.lat, ev.position.lng], 6, { duration: 0.6 });
+}
+
+function resetQuakeBrowse() {
+  quakeBrowseKey = null;
+  quakeEvents = quakeJmaArchive.slice(0, 20);
+  mergeQuakeProvisional();
+  quakeFocusPending = true;
+  renderQuakeLayer();
+  focusQuakeEvent();
+  quakeFocusPending = false;
+  renderQuakePlayIdle();
+}
+
+// dir = +1：1つ古い地震へ／-1：1つ新しい地震へ。再生中は再生中の地震の列を1件ずつ動く
+function stepQuake(dir) {
+  if (quakePlayback.active) { stepQuakePlayback(dir); return; }
+  const list = quakeBrowseList();
+  if (!list.length) return;
+  const cur = Math.max(0, quakeBrowseKey ? list.findIndex(e => quakeKey(e) === quakeBrowseKey) : 0);
+  const i = Math.min(list.length - 1, Math.max(0, cur + dir));
+  if (i === cur && quakeBrowseKey) { renderQuakePlayIdle(); return; }
+  // 先頭が本当の最新（仮表示は除く）なら「最新」に戻す
+  quakeBrowseKey = i === 0 && list[0] === quakeJmaArchive[0] ? null : quakeKey(list[i]);
+  if (quakeBrowseKey) quakeEvents = list.slice(i, i + 20);
+  else { quakeEvents = quakeJmaArchive.slice(0, 20); mergeQuakeProvisional(); }
+  quakeFocusPending = true;
+  renderQuakeLayer(); // 震源の丸・波紋・印西市の札を、この地震で描き直す。印西市で揺れた地震は100km圏へ寄る
+  focusQuakeEvent();
+  quakeFocusPending = false;
+  renderQuakePlayIdle();
+}
+
+// 再生中：いま出している最後の地震の1つ前／1つ先へ時刻を動かす（再生は止める）
+function stepQuakePlayback(dir) {
+  const p = quakePlayback;
+  if (!p.events.length) return;
+  setQuakePlaying(false);
+  const last = p.cursor - 1; // いま出している最後の地震の番号（まだ何も出ていなければ -1）
+  const target = p.events[Math.max(0, Math.min(p.events.length - 1, last - dir))];
+  if (dir > 0 && last <= 0) seekQuakePlayback(p.from); // いちばん古い地震より前＝始まりに戻る
+  else if (target) seekQuakePlayback(target.atMs);
+}
+
+// 「◀ 前」「次 ▶」を押せるか。再生中は再生の列の中、そうでなければ気象庁の一覧の中
+function quakeStepState() {
+  if (quakePlayback.active) {
+    return { canPrev: quakePlayback.events.length > 0 && quakePlayback.cursor > 0, canNext: quakePlayback.cursor < quakePlayback.events.length, browsing: false, idx: 0, total: 0 };
+  }
+  const list = quakeBrowseList();
+  const cur = quakeBrowseKey ? list.findIndex(e => quakeKey(e) === quakeBrowseKey) : 0;
+  return { canPrev: list.length > 0 && cur < list.length - 1, canNext: !!quakeBrowseKey && cur > 0, browsing: !!quakeBrowseKey && cur >= 0, idx: Math.max(0, cur), total: list.length };
+}
+
+function updateQuakeStepButtons() {
+  const prev = quakePlayEl("quake-play-prev");
+  const next = quakePlayEl("quake-play-next");
+  if (!prev || !next) return;
+  const st = quakeStepState();
+  prev.disabled = !st.canPrev;
+  next.disabled = !st.canNext;
+}
+
+// 再生していないとき：最新（または遡って見ている）地震を見出しに出し、つまみは右端（＝最新の発生時刻）
 function renderQuakePlayIdle() {
-  if (quakePlayback.active) return;
+  if (quakePlayback.active) { updateQuakeStepButtons(); return; }
   const latest = quakeEvents[0];
   const time = quakePlayEl("quake-play-time");
   const caption = quakePlayEl("quake-play-caption");
   const slider = quakePlayEl("quake-play-slider");
   const button = quakePlayEl("quake-play-toggle");
+  const list = quakeBrowseList();
+  const cur = quakeBrowseKey ? list.findIndex(e => quakeKey(e) === quakeBrowseKey) : 0;
+  const browsing = !!quakeBrowseKey && cur >= 0;
   if (time) time.textContent = latest ? formatQuakeClock(new Date(latest.at).getTime()) : "--";
-  if (caption) caption.textContent = latest ? `最新: ${quakeEventLine({ ...latest, atMs: new Date(latest.at).getTime() })}／${quakeFeltText(latest)}` : "地震情報を読み込み中です";
+  if (caption) caption.textContent = latest ? `${browsing ? `過去(${cur + 1}/${list.length})` : "最新"}: ${quakeEventLine({ ...latest, atMs: new Date(latest.at).getTime() })}／${quakeFeltText(latest)}` : "地震情報を読み込み中です";
   if (slider) { slider.value = "1000"; slider.disabled = true; }
   if (button) { button.textContent = "▶ 再生"; button.disabled = true; }
-  setQuakePlayStatus(latest ? "期間を選ぶと、その期間の地震を早送りで再生します" : "");
-  quakePlayEl("quake-play-panel")?.classList.remove("is-playing");
+  const atOldest = list.length > 0 && cur >= list.length - 1;
+  setQuakePlayStatus(!latest ? "" : atOldest ? "ここが気象庁の一覧でいちばん古い地震です。これより前は「期間」で指定してください" : browsing ? "「次 ▶」で新しい地震へ、「■ 最新へ」で最新に戻ります" : "「◀ 前」で1つ前の地震へ。期間を選ぶと、その期間の地震を早送りで再生します");
+  const panel = quakePlayEl("quake-play-panel");
+  panel?.classList.remove("is-playing");
+  panel?.classList.toggle("is-browsing", browsing);
+  updateQuakeStepButtons();
 }
 
 function stopQuakePlayback() {
@@ -14706,6 +14811,7 @@ function applyQuakeMinRank(reseek) {
     (quakePlayback.minRank <= 0 || intensityRank(e.maxi) >= quakePlayback.minRank) && (!quakePlayback.inzaiOnly || e.inzaiIntensity));
   if (reseek && quakePlayback.active) seekQuakePlayback(quakePlayback.now);
   else quakePlayback.cursor = quakePlayback.events.filter(e => e.atMs <= quakePlayback.now).length;
+  updateQuakeStepButtons(); // 読み込みが進んだら「前／次」を押せるようにする
 }
 
 function quakeLoadingStatus(info) {
@@ -14724,6 +14830,9 @@ async function startQuakePlayback(fromMs, toMs) {
   const box = document.querySelector('[data-overlay="quakes"]');
   if (box && !box.checked) box.click();
   stopQuakePlayback();
+  quakeBrowseKey = null; // 遡って見ていた地震は、再生を始めたらやめる
+  // スマホは期間の入力欄が地図を覆うので、再生を始めたら畳む（2026-10-29 事業主指摘「スマホだと地震は画面が隠れて見えない」）
+  collapseQuakePeriod();
   // 再生する地震は全国に散らばるので、印西周辺を見たままだと点が見えない。日本全体へ寄せる
   quakeFocusPending = false;
   clearQuakeShindo();
@@ -14881,7 +14990,17 @@ function seekQuakePlayback(ms) {
   renderQuakePlayClock();
 }
 
+// 期間の入力欄（スマホでは折りたたみ式）を畳む
+function collapseQuakePeriod() {
+  const panel = quakePlayEl("quake-play-panel");
+  if (!panel || !panel.classList.contains("is-expanded")) return;
+  panel.classList.remove("is-expanded");
+  const btn = quakePlayEl("quake-play-expand");
+  if (btn) { btn.setAttribute("aria-expanded", "false"); btn.textContent = "期間 ▾"; }
+}
+
 function renderQuakePlayClock() {
+  updateQuakeStepButtons();
   const span = quakePlayback.to - quakePlayback.from;
   const slider = quakePlayEl("quake-play-slider");
   if (slider && !quakePlayback.scrubbing && span > 0) slider.value = String(Math.round((quakePlayback.now - quakePlayback.from) / span * 1000));
@@ -14919,6 +15038,11 @@ function renderQuakePlayClock() {
   });
   quakePlayEl("quake-play-toggle")?.addEventListener("click", () => setQuakePlaying(!quakePlayback.playing));
   const onFilterChange = () => {
+    if (!quakePlayback.active) {
+      // 遡って見ているとき：しぼり込みを変えたら、見ている地震が残るかを確かめる（残らなければ最新へ戻す）
+      if (quakeBrowseKey) { applyQuakeBrowse(); if (quakeBrowseKey) renderQuakeLayer(); else resetQuakeBrowse(); }
+      renderQuakePlayIdle();
+    }
     applyQuakeMinRank(true);
     if (quakePlayback.active) setQuakePlayStatus(quakeLoadingStatus({ done: 0, total: 0, source: quakePlayback.source, partial: false }));
   };
@@ -14939,7 +15063,13 @@ function renderQuakePlayClock() {
     slider.addEventListener("input", onScrub);
     slider.addEventListener("change", () => { quakePlayback.scrubbing = false; onScrub(); });
   }
-  quakePlayEl("quake-play-stop")?.addEventListener("click", () => { stopQuakePlayback(); panel.hidden = true; syncQuakeLatestCard(); });
+  quakePlayEl("quake-play-prev")?.addEventListener("click", () => stepQuake(1));
+  quakePlayEl("quake-play-next")?.addEventListener("click", () => stepQuake(-1));
+  quakePlayEl("quake-play-stop")?.addEventListener("click", () => {
+    // 遡って見ているだけなら、枠は閉じずに最新へ戻す
+    if (!quakePlayback.active && quakeBrowseKey) { resetQuakeBrowse(); return; }
+    stopQuakePlayback(); panel.hidden = true; syncQuakeLatestCard();
+  });
   document.getElementById("quake-play-open")?.addEventListener("click", openQuakePlayPanel);
   quakePlayEl("quake-play-close")?.addEventListener("click", () => {
     const box = document.querySelector('[data-overlay="quakes"]');

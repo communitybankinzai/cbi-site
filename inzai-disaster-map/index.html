@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261025e">
+    <link rel="stylesheet" href="./styles.css?v=20261029b">
   </head>
   <body data-view="gate">
     <!-- 2026-10-24 事業主指示「スマホで使いにくい」：開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
@@ -931,7 +931,9 @@
             <input type="range" id="quake-play-slider" min="0" max="1000" value="1000" disabled aria-label="再生位置">
             <p class="quake-play-caption" id="quake-play-caption"></p>
             <div class="quake-play-transport">
+              <button type="button" id="quake-play-prev" title="1つ前（古い）の地震へ">◀ 前</button>
               <button type="button" id="quake-play-toggle" disabled>▶ 再生</button>
+              <button type="button" id="quake-play-next" title="1つ後（新しい）の地震へ" disabled>次 ▶</button>
               <select id="quake-play-speed" aria-label="再生の速さ"></select>
               <button type="button" id="quake-play-stop" title="再生をやめて最新の地震に戻る">■ 最新へ</button>
             </div>
@@ -2015,7 +2017,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261029a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261029a"></script>
+    <script src="./app.js?v=20261029e"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>

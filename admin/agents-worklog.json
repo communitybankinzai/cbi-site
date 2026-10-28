@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-10-29",
+          "title": "防災MAPの地震：過去の地震を1件ずつ遡るボタン（前／次）の追加と、スマホで枠が地図を覆う問題の修正 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（stepQuake・stepQuakePlayback・遡っている地震を取り直しでも保つ・最新の札へ前/次/最新へ戻る・再生開始で期間欄を畳む）",
+            "site/inzai-disaster-map/styles.css（スマホで札・枠を縮める）",
+            "site/inzai-disaster-map/index.html（前/次ボタン・版）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "事業主指摘（iPhone画面写し）：再生中の枠が期間欄まで開いたまま約500pxになり地図が見えない。原因＝期間欄が再生開始後も開いたままで、アイドルでも札・枠が大きい。直し：再生開始で期間欄を畳む・アイドル時はつまみ/速さ/最新へを隠す（約156px）・札はスマホで深さ/説明文を隠す（約330→247px）。検証：幅375pxで、札の前/次/最新へ戻る、遡り2〜4件目と戻り、最新へ戻ったときの地図の位置、再生の枠の高さ（展開505→再生中218px）、再生中の前/次（43件を1件ずつ・両端で無効）を確認。実機iPhoneは未確認。session: ab2d5fba-1f3f-4fb6-878c-f1d4b9f54725 / output: 236,635 / cost: $43.85"
+        },
+        {
+          "date": "2026-10-29",
           "title": "防災MAPの地震情報の反映が遅い件：実際に起きた地震（千葉県北東部M5.4・震度5弱）で各段階の遅れを実測し、震度速報の帯表示と震源の仮表示を追加 0.6時間",
           "category": "実装",
           "outputs": [
