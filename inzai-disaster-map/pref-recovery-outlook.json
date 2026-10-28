@@ -2,25 +2,25 @@
  "source": {
   "name": "千葉県 県管理道路の被災箇所の状況と復旧見込み（位置図付き）",
   "url": "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html",
-  "pdf": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkyumitoshi21.pdf",
-  "asOf": "2026-10-24",
-  "published": "2026-10-24",
-  "pdfSha256": "f53bad2b7d7a9f572cfe268215b9bc7781717cde0ab0001a27cc9a0583f36e1a",
-  "asOfIso": "2026-10-24T14:00:00+09:00"
+  "pdf": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkymitoshi24.pdf",
+  "asOf": "2026-10-27",
+  "published": "2026-10-27",
+  "pdfSha256": "8b6943efb28597fbd60fb17f1221fc6d5e5661eeb2fa6160206f879f17001b4d",
+  "asOfIso": "2026-10-27T14:00:00+09:00"
  },
  "event": {
   "name": "2026年9月22日の大雨（台風25号）",
   "closedFrom": "2026-09-22",
   "basis": "県の発表「全面通行止め箇所の推移」の起点（9月22日 133区間）。区間ごとの開始日は県の資料に無いため、全区間の開始を9/22として扱う"
  },
- "pdfPagesFor": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkyumitoshi21.pdf",
+ "pdfPagesFor": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkymitoshi24.pdf",
  "note": "県の発表PDF（写真に路線・場所・復旧見込みを焼き込んだもの）からCBIが書き起こした。位置は市町村＋地名を国土地理院の住所検索で引いた町名の代表点で、被災箇所そのものではない（数百m〜数kmずれる）。scale: large=大規模（復旧まで1か月以上）/medium=中規模（1か月程度）/small=小規模（1〜3週間・土砂撤去中など）。status と clearedAt は毎時の見張り（pipeline/build_pref_recovery.py）が県の規制状況図の赤線と突き合わせて更新する。closedFrom は通行止めの開始日で、2026年9月22日の大雨で全面通行止めとなった時点（県の「全面通行止め箇所の推移」の起点）を全区間に当てており、県の資料に開始日が無い区間は null（不明）とした。firstSeen は、CBIがその区間を県の発表で最初に確認した日で、通行止めの開始日ではない。pdfPage は、その区間の写真と位置図が載っている県のPDF（10/8版 fukkyumitoshi5.pdf）のページ番号で、写真は転載せずこのページへのリンクで案内する。",
  "legend": {
   "large": "大規模（復旧までに1か月以上）",
   "medium": "中規模（復旧までに1か月程度）",
   "small": "小規模（復旧までに1〜3週間程度）"
  },
- "updatedAt": "2026-10-24T14:49:16+09:00",
+ "updatedAt": "2026-10-28T16:15:08+09:00",
  "watch": {
   "pdfUrl": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/kisei10.pdf",
   "pdfSha256": "1b486e6ce9c7e37ebb7cf8a5c4736b79c2322c88e11894fb2ce5de6ab3bb3875",
@@ -32,9 +32,9 @@
   "lastSuccessAsOfIso": "2026-10-03T17:00:00+09:00",
   "judgeStoppedSince": "2026-10-04T14:42:28+09:00",
   "press": {
-   "sha256": "f53bad2b7d7a9f572cfe268215b9bc7781717cde0ab0001a27cc9a0583f36e1a",
-   "checkedAt": "2026-10-24T14:48:30+09:00",
-   "autoAppliedAt": "2026-10-24T14:48:30+09:00"
+   "sha256": "8b6943efb28597fbd60fb17f1221fc6d5e5661eeb2fa6160206f879f17001b4d",
+   "checkedAt": "2026-10-28T16:13:22+09:00",
+   "autoAppliedAt": "2026-10-28T16:13:22+09:00"
   },
   "figures": [
    {
@@ -87,65 +87,64 @@
    "figures": [
     {
      "name": "分割図（1/3）",
-     "score": 0.578
+     "score": 0.563
     },
     {
      "name": "分割図（2/3）",
-     "score": 0.915
+     "score": 0.902
     },
     {
      "name": "分割図（3/3）",
-     "score": 0.736
+     "score": 0.721
     }
    ],
-   "redPoints": 1096,
+   "redPoints": 1083,
    "marks": {
     "large": {
      "marks": 20,
-     "active": 15,
-     "unexplained": 2
+     "active": 13,
+     "unexplained": 4
     },
     "medium": {
      "marks": 11,
-     "active": 16,
-     "unexplained": -5
+     "active": 17,
+     "unexplained": -6
     },
     "small": {
-     "marks": 15,
-     "active": 12,
-     "unexplained": 3
+     "marks": 13,
+     "active": 11,
+     "unexplained": 2
     }
    },
-   "assigned": 35,
+   "assigned": 33,
    "contradict": [
     "国道409号 袖ケ浦市大鳥居：解除のカードですが、位置図に印が残っています（県の資料の食い違い）",
     "一般県道 小櫃佐貫(T)線 君津市福岡：解除のカードですが、位置図に印が残っています（県の資料の食い違い）",
     "主要地方道 大多喜君津線 市原市石神：解除のカードですが、位置図に印が残っています（県の資料の食い違い）",
-    "位置図の大規模（◎）の印が20個ですが、一覧の規制中は15区間です",
-    "位置図の中規模（●）の印が11個ですが、一覧の規制中は16区間です",
-    "位置図の小規模（▲）の印が15個ですが、一覧の規制中は12区間です",
-    "一般県道 上畑湊線 富津市志駒：規制中のはずが赤線が見当たりません"
+    "位置図の大規模（◎）の印が20個ですが、一覧の規制中は13区間です",
+    "位置図の中規模（●）の印が11個ですが、一覧の規制中は17区間です",
+    "位置図の小規模（▲）の印が13個ですが、一覧の規制中は11区間です"
    ],
-   "sha256": "f53bad2b7d7a9f572cfe268215b9bc7781717cde0ab0001a27cc9a0583f36e1a",
-   "checkedAt": "2026-10-24T14:49:16+09:00"
+   "sha256": "8b6943efb28597fbd60fb17f1221fc6d5e5661eeb2fa6160206f879f17001b4d",
+   "checkedAt": "2026-10-28T16:15:08+09:00"
   },
   "pressAuto": {
    "cards": 59,
-   "cleared": 15,
-   "active": 44,
+   "cleared": 17,
+   "active": 42,
    "unmatched": [
     "(主)君津鴨川線 君津市東粟倉"
    ],
    "missing": [],
    "fuzzy": [],
    "ocr": false,
-   "asOfIso": "2026-10-24T14:00:00+09:00",
+   "asOfIso": "2026-10-27T14:00:00+09:00",
    "ok": true,
    "reason": null,
-   "changes": 1,
-   "sha256": "f53bad2b7d7a9f572cfe268215b9bc7781717cde0ab0001a27cc9a0583f36e1a",
-   "url": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkyumitoshi21.pdf",
-   "checkedAt": "2026-10-24T14:48:30+09:00"
+   "changes": 8,
+   "sha256": "8b6943efb28597fbd60fb17f1221fc6d5e5661eeb2fa6160206f879f17001b4d",
+   "url": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkymitoshi24.pdf",
+   "checkedAt": "2026-10-28T16:13:22+09:00"
   }
  },
  "items": [
@@ -166,12 +165,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.38623,
-    "lon": 140.07047,
-    "distM": 1116,
+    "lat": 35.38679,
+    "lon": 140.07042,
+    "distM": 1074,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -193,15 +192,15 @@
    "lon": 140.0012,
    "geocode": "千葉県袖ケ浦市大鳥居",
    "status": "cleared",
-   "clearedAt": "2026-10-03T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 658,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-03",
+   "clearedDate": "2026-10-27",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
    "pdfPage": 5
@@ -220,10 +219,10 @@
    "lon": 140.11649,
    "geocode": "千葉県市原市西国吉",
    "status": "cleared",
-   "clearedAt": "2026-10-23T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月23日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.39098,
@@ -236,7 +235,7 @@
    "firstSeen": "2026-10-01",
    "pdfPage": 5,
    "clearedBy": "announced",
-   "clearedDate": "2026-10-23"
+   "clearedDate": "2026-10-27"
   },
   {
    "id": "409-市原市-栢橋",
@@ -255,7 +254,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.3885,
@@ -275,7 +274,7 @@
    "municipality": "君津市",
    "place": "大坂 外",
    "work": "中規模",
-   "outlook": "3週間程度",
+   "outlook": "2週間程度",
    "scale": "small",
    "traffic": "1,000台以上",
    "lat": 35.24091,
@@ -285,12 +284,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.23174,
-    "lon": 140.03075,
-    "distM": 1084,
+    "lat": 35.23217,
+    "lon": 140.02942,
+    "distM": 1087,
     "figure": "分割図（3/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -312,15 +311,15 @@
    "lon": 140.20845,
    "geocode": "千葉県長柄町針ケ谷",
    "status": "cleared",
-   "clearedAt": "2026-10-02T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 54,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-02",
+   "clearedDate": "2026-10-27",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
    "pdfPage": 5
@@ -332,7 +331,7 @@
    "municipality": "長柄町",
    "place": "山根",
    "work": "中規模",
-   "outlook": "3週間程度",
+   "outlook": "2週間程度",
    "scale": "small",
    "traffic": "10,000台以上",
    "lat": 35.44997,
@@ -342,12 +341,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.45659,
-    "lon": 140.23322,
-    "distM": 779,
+    "lat": 35.45699,
+    "lon": 140.23319,
+    "distM": 820,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -372,12 +371,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.48805,
-    "lon": 140.25774,
-    "distM": 141,
+    "lat": 35.48842,
+    "lon": 140.25758,
+    "distM": 164,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -398,11 +397,11 @@
    "lat": 35.49288,
    "lon": 140.23772,
    "geocode": "千葉県市原市金剛地",
-   "status": "active",
-   "clearedAt": null,
+   "status": "cleared",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.49221,
@@ -413,7 +412,9 @@
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
-   "pdfPage": 5
+   "pdfPage": 5,
+   "clearedBy": "announced",
+   "clearedDate": "2026-10-27"
   },
   {
    "id": "24-君津市-笹",
@@ -429,10 +430,10 @@
    "lon": 140.07439,
    "geocode": "千葉県君津市笹",
    "status": "cleared",
-   "clearedAt": "2026-10-21T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.24017,
@@ -445,7 +446,7 @@
    "firstSeen": "2026-10-01",
    "pdfPage": 5,
    "clearedBy": "announced",
-   "clearedDate": "2026-10-21"
+   "clearedDate": "2026-10-27"
   },
   {
    "id": "32-市原市-月崎",
@@ -464,12 +465,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.29156,
-    "lon": 140.14132,
-    "distM": 1131,
+    "lat": 35.29218,
+    "lon": 140.13992,
+    "distM": 1010,
     "figure": "分割図（3/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -491,10 +492,10 @@
    "lon": 140.17052,
    "geocode": "千葉県市原市石神",
    "status": "cleared",
-   "clearedAt": "2026-10-23T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月23日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.27286,
@@ -507,7 +508,7 @@
    "firstSeen": "2026-10-01",
    "pdfPage": 5,
    "clearedBy": "announced",
-   "clearedDate": "2026-10-23"
+   "clearedDate": "2026-10-27"
   },
   {
    "id": "33-袖ケ浦市-滝の口",
@@ -526,7 +527,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.37771,
@@ -546,7 +547,7 @@
    "municipality": "鋸南町",
    "place": "市井原",
    "work": "中規模",
-   "outlook": "2週間程度",
+   "outlook": "1週間程度",
    "scale": "small",
    "traffic": "1,000台以上",
    "lat": 35.14558,
@@ -556,12 +557,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.14318,
-    "lon": 139.89494,
-    "distM": 425,
+    "lat": 35.14365,
+    "lon": 139.8936,
+    "distM": 300,
     "figure": "分割図（3/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -583,15 +584,15 @@
    "lon": 140.28529,
    "geocode": "千葉県茂原市桂",
    "status": "cleared",
-   "clearedAt": "2026-10-03T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 2107,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-03",
+   "clearedDate": "2026-10-27",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
    "pdfPage": 5
@@ -613,12 +614,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.52577,
-    "lon": 140.22824,
-    "distM": 1254,
+    "lat": 35.52621,
+    "lon": 140.22831,
+    "distM": 1237,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -643,12 +644,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.37354,
-    "lon": 140.15149,
-    "distM": 1023,
+    "lat": 35.37392,
+    "lon": 140.15152,
+    "distM": 993,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -673,7 +674,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.26903,
@@ -693,7 +694,7 @@
    "municipality": "君津市",
    "place": "黄和田畑 外",
    "work": "中規模",
-   "outlook": "3週間程度",
+   "outlook": "2週間程度",
    "scale": "small",
    "traffic": "1,000台以上",
    "lat": 35.21003,
@@ -703,12 +704,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.19519,
-    "lon": 140.14132,
-    "distM": 1664,
+    "lat": 35.19563,
+    "lon": 140.13995,
+    "distM": 1605,
     "figure": "分割図（3/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -730,10 +731,10 @@
    "lon": 140.16809,
    "geocode": "千葉県大多喜町葛藤",
    "status": "cleared",
-   "clearedAt": "2026-10-14T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.25659,
@@ -746,7 +747,7 @@
    "firstSeen": "2026-10-01",
    "pdfPage": 5,
    "clearedBy": "announced",
-   "clearedDate": "2026-10-14"
+   "clearedDate": "2026-10-27"
   },
   {
    "id": "81-鴨川市-天津",
@@ -762,10 +763,10 @@
    "lon": 140.16197,
    "geocode": "千葉県鴨川市天津",
    "status": "cleared",
-   "clearedAt": "2026-10-07T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.14824,
@@ -775,7 +776,7 @@
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-07",
+   "clearedDate": "2026-10-27",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
    "pdfPage": 5
@@ -797,12 +798,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.35407,
-    "lon": 139.90627,
-    "distM": 416,
+    "lat": 35.35461,
+    "lon": 139.90629,
+    "distM": 391,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -827,12 +828,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.34657,
+    "lat": 35.34704,
     "lon": 139.88794,
-    "distM": 516,
+    "distM": 563,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -857,12 +858,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.27777,
-    "lon": 140.01713,
-    "distM": 880,
+    "lat": 35.27823,
+    "lon": 140.01576,
+    "distM": 865,
     "figure": "分割図（3/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -887,12 +888,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.46636,
-    "lon": 140.23658,
-    "distM": 247,
+    "lat": 35.46685,
+    "lon": 140.23662,
+    "distM": 264,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -917,12 +918,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.41685,
+    "lat": 35.41724,
     "lon": 140.08278,
-    "distM": 687,
+    "distM": 707,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -947,7 +948,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.42649,
@@ -974,15 +975,15 @@
    "lon": 140.07085,
    "geocode": "千葉県市原市豊成",
    "status": "cleared",
-   "clearedAt": "2026-10-01T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 2769,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-01",
+   "clearedDate": "2026-10-27",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
    "pdfPage": 6
@@ -993,9 +994,9 @@
    "road": "一般県道 南総姉崎線",
    "municipality": "市原市",
    "place": "中高根",
-   "work": "大規模",
-   "outlook": "調査中",
-   "scale": "large",
+   "work": "中規模",
+   "outlook": "2カ月程度",
+   "scale": "medium",
    "traffic": "5,000台以上",
    "lat": 35.43471,
    "lon": 140.09805,
@@ -1004,12 +1005,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.44277,
-    "lon": 140.10033,
-    "distM": 921,
+    "lat": 35.42698,
+    "lon": 140.10454,
+    "distM": 1043,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1031,10 +1032,10 @@
    "lon": 140.04227,
    "geocode": "千葉県君津市岩出",
    "status": "cleared",
-   "clearedAt": "2026-10-02T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 4096,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.31329,
@@ -1044,7 +1045,7 @@
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-02",
+   "clearedDate": "2026-10-27",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
    "pdfPage": 6
@@ -1066,12 +1067,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.44217,
-    "lon": 140.20542,
-    "distM": 855,
+    "lat": 35.44275,
+    "lon": 140.2054,
+    "distM": 917,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1086,7 +1087,7 @@
    "municipality": "市原市",
    "place": "平蔵",
    "work": "土砂撤去中",
-   "outlook": "10月30日",
+   "outlook": "3週間程度",
    "scale": "small",
    "traffic": "5,000台以上",
    "lat": 35.3431,
@@ -1096,12 +1097,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.35168,
-    "lon": 140.20377,
-    "distM": 981,
+    "lat": 35.35229,
+    "lon": 140.20376,
+    "distM": 1047,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1126,12 +1127,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.32364,
-    "lon": 140.12423,
-    "distM": 2358,
+    "lat": 35.32402,
+    "lon": 140.12428,
+    "distM": 2353,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1156,7 +1157,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.26518,
@@ -1183,10 +1184,10 @@
    "lon": 139.97568,
    "geocode": "千葉県君津市福岡",
    "status": "cleared",
-   "clearedAt": "2026-10-06T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.29295,
@@ -1196,7 +1197,7 @@
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-06",
+   "clearedDate": "2026-10-27",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
    "pdfPage": 6
@@ -1218,7 +1219,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.28118,
@@ -1248,12 +1249,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.35312,
+    "lat": 35.35373,
     "lon": 140.13657,
-    "distM": 655,
+    "distM": 669,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1278,12 +1279,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.36682,
-    "lon": 140.09805,
-    "distM": 965,
+    "lat": 35.36728,
+    "lon": 140.09803,
+    "distM": 1013,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1307,11 +1308,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "mark": {
-    "lat": 35.3493,
-    "lon": 140.12151,
-    "distM": 107,
+    "lat": 35.34975,
+    "lon": 140.12149,
+    "distM": 138,
     "figure": "分割図（2/3）"
    },
    "nearestRedLineM": null,
@@ -1336,12 +1337,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.38912,
-    "lon": 140.10321,
-    "distM": 1482,
+    "lat": 35.38962,
+    "lon": 140.10328,
+    "distM": 1531,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1366,12 +1367,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.33814,
-    "lon": 140.17308,
-    "distM": 1424,
+    "lat": 35.3386,
+    "lon": 140.17305,
+    "distM": 1471,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1393,15 +1394,15 @@
    "lon": 140.15706,
    "geocode": "千葉県市原市徳氏",
    "status": "cleared",
-   "clearedAt": "2026-10-02T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 1697,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-02",
+   "clearedDate": "2026-10-27",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
    "pdfPage": 6
@@ -1423,12 +1424,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.28777,
-    "lon": 140.19894,
-    "distM": 1746,
+    "lat": 35.28822,
+    "lon": 140.19753,
+    "distM": 1617,
     "figure": "分割図（3/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1453,12 +1454,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.31116,
-    "lon": 140.18086,
-    "distM": 1994,
+    "lat": 35.31153,
+    "lon": 140.1808,
+    "distM": 1957,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1480,10 +1481,10 @@
    "lon": 140.22902,
    "geocode": "千葉県勝浦市大森",
    "status": "cleared",
-   "clearedAt": "2026-10-02T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 1282,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.16808,
@@ -1493,7 +1494,7 @@
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-02",
+   "clearedDate": "2026-10-27",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
    "pdfPage": 6
@@ -1515,12 +1516,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.18058,
-    "lon": 140.20405,
-    "distM": 1134,
+    "lat": 35.18114,
+    "lon": 140.20258,
+    "distM": 1018,
     "figure": "分割図（3/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1541,11 +1542,11 @@
    "lat": 35.1804,
    "lon": 139.92763,
    "geocode": "千葉県富津市志駒",
-   "status": "active",
-   "clearedAt": null,
+   "status": "cleared",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.18404,
@@ -1556,7 +1557,9 @@
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
-   "pdfPage": 6
+   "pdfPage": 6,
+   "clearedBy": "announced",
+   "clearedDate": "2026-10-27"
   },
   {
    "id": "185-南房総市-富浦町大津",
@@ -1574,11 +1577,11 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "mark": {
-    "lat": 35.07126,
-    "lon": 139.88635,
-    "distM": 1396,
+    "lat": 35.07196,
+    "lon": 139.88506,
+    "distM": 1305,
     "figure": "分割図（3/3）"
    },
    "nearestRedLineM": null,
@@ -1603,12 +1606,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.32545,
-    "lon": 139.96726,
-    "distM": 660,
+    "lat": 35.32595,
+    "lon": 139.96724,
+    "distM": 654,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1633,12 +1636,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.33523,
-    "lon": 139.9588,
-    "distM": 719,
+    "lat": 35.33569,
+    "lon": 139.95881,
+    "distM": 667,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1660,15 +1663,15 @@
    "lon": 140.1886,
    "geocode": "千葉県市原市鶴舞",
    "status": "cleared",
-   "clearedAt": "2026-10-01T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": 3365,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 3500,
    "mark": null,
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
    "clearedBy": "announced",
-   "clearedDate": "2026-10-01",
+   "clearedDate": "2026-10-27",
    "closedFrom": "2026-09-22",
    "firstSeen": "2026-10-01",
    "pdfPage": 7
@@ -1690,12 +1693,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.46353,
-    "lon": 140.02356,
-    "distM": 1269,
+    "lat": 35.46392,
+    "lon": 140.02348,
+    "distM": 1292,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1720,12 +1723,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.45587,
-    "lon": 140.00763,
-    "distM": 1024,
+    "lat": 35.45645,
+    "lon": 140.00764,
+    "distM": 1068,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1750,7 +1753,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.43869,
@@ -1777,10 +1780,10 @@
    "lon": 140.15126,
    "geocode": "千葉県市原市武士",
    "status": "cleared",
-   "clearedAt": "2026-10-14T00:00:00+09:00",
+   "clearedAt": "2026-10-27T00:00:00+09:00",
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点のPDF）で通行止め解除",
+   "watch": "県の発表（10月27日14時時点のPDF）で通行止め解除",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.46578,
@@ -1793,7 +1796,7 @@
    "firstSeen": "2026-10-01",
    "pdfPage": 7,
    "clearedBy": "announced",
-   "clearedDate": "2026-10-14"
+   "clearedDate": "2026-10-27"
   },
   {
    "id": "292-市原市-勝間",
@@ -1812,12 +1815,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
-    "lat": 35.47272,
+    "lat": 35.4732,
     "lon": 140.17247,
-    "distM": 1040,
+    "distM": 1035,
     "figure": "分割図（2/3）"
    },
    "judgedAtIso": "2026-10-03T17:00:00+09:00",
@@ -1842,7 +1845,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.26002,
@@ -1872,12 +1875,12 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（10月24日14時時点）で規制中",
+   "watch": "県の発表（10月27日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
-    "lat": 35.40867,
-    "lon": 140.04866,
-    "distM": 173,
+    "lat": 35.40928,
+    "lon": 140.04865,
+    "distM": 133,
     "figure": "分割図（2/3）"
    },
    "firstSeen": "2026-10-08",
