@@ -100,11 +100,12 @@ PREF_PAGE = "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html"
 
 def latest_press_pdf():
     """県の道路規制ページに載っている復旧見込みPDF（fukkyumitoshi・fukkyumitoshi1・…）のうち、番号が最大のものの URL。
-    県は同じ名前で差し替えず、番号を足した別名で出す（2026-10-04：fukkyumitoshi1.pdf）ため、旧名だけでは更新に気づけない"""
+    県は同じ名前で差し替えず、番号を足した別名で出す（2026-10-04：fukkyumitoshi1.pdf）ため、旧名だけでは更新に気づけない。
+    2026-10-27 の 24 番は綴りが fukkymitoshi24.pdf（u が1字抜け）だった。名前の揺れで追えなくならないよう u は省略可にする"""
     try:
         r = requests.get(PREF_PAGE, headers=K.UA, timeout=60)
         r.raise_for_status()
-        found = re.findall(r'href="([^"]*documents/fukkyumitoshi(\d*)\.pdf)"', r.content.decode("utf-8", "replace"))
+        found = pdf_links(r.content.decode("utf-8", "replace"))
     except Exception as e:
         log("県のページを読めない（旧URLで見る）", e)
         return None
@@ -112,6 +113,14 @@ def latest_press_pdf():
         return None
     href = max(found, key=lambda x: int(x[1] or 0))[0]
     return requests.compat.urljoin(PREF_PAGE, href)
+
+
+PRESS_PDF_RE = re.compile(r'href="([^"]*documents/fukkyu?mitoshi(\d*)\.pdf)"')
+
+
+def pdf_links(html):
+    """県ページの HTML から復旧見込みPDFのリンク [(href, 番号の文字列)] を拾う"""
+    return PRESS_PDF_RE.findall(html)
 
 
 def check_press(data):

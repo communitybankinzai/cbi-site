@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-10-27T07:00:00+09:00",
+  "updatedAt": "2026-10-28T16:30:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-10-28",
+      "type": "fix",
+      "target": "inzai-disaster-map/pipeline/build_pref_recovery.py",
+      "title": "防災MAPの県の復旧見込み一覧が、県の新しい発表（10/27版）を取り込めるようになった",
+      "detail": "県が10/27の発表PDFを fukkymitoshi24.pdf（正しい綴りは fukkyumitoshi で u が1字抜けていた）という名前で出したため、取り込みが見つけられず10/24版のまま3日止まっていた。ファイル名の綴りが揺れても最新の発表を追えるようにした。取り込み後は、県の発表どおり規制中42区間に更新される。",
+      "author": "Claude"
+    },
     {
       "date": "2026-10-27",
       "type": "fix",
