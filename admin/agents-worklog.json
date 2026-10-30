@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-10-31",
+          "title": "CiDAOのInstagram取り込み結果メールを、専用ラベルに振り分けて受信トレイから外す設定をMailTriage.gsに追加 0.3時間",
+          "category": "実装",
+          "outputs": ["gas-mail-share/MailTriage.gs（SORT_ROUTES に1行・sortRoute_ に excludeSubjects の判定）", "gas-mail-share/README.md（振り分けの節に1段落）"],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "事業主の依頼『CBIメールのInstagram取り込みのメール通知は、振り分け設定をしてメインから見えないように』。対象は CiDAO が毎朝送る『【CiDAO】Instagram 取り込み ○/○ の結果：候補 N 件…』（Gmail検索で26通・すべて正常、10/1〜）。既存の振り分け（消防・更新履歴・投稿プレビュー）と同じ方式で、ラベル『Instagram取り込み』を付けて受信トレイから外す。判断：件名の先頭に ⚠（失敗）・⏸（予算の上限）が付く回は振り分けない（失敗の知らせまで隠れないように。1行で外せる）。検証：①実際の Gmail 検索（subject:\\\"Instagram 取り込み\\\"）が26通に当たることを Web API で確認 ②GmailApp を疑似物にした node で、正常2件だけが振り分けられ ⚠・⏸・別件は触られないことを確認。**未反映**：GAS『CBI Gmail共有』はCBI公式アカウントの持ち物で、手元から書き換えられない。事業主が GAS エディタに貼り付けて保存するまで効かない（貼り付け用の全文はクリップボードに入れた）。このGASの scriptId は記録に無い（失敗通知メールのリンクは trigger_id のみ）。session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569 / output: 2,143,781 / cost: $413.23"
+        },
+        {
           "date": "2026-10-29",
           "title": "防災MAPの地震表示の紹介動画（ニュース風・縦型68秒）の制作：台本・読み上げ・自動録画・音の合成まで。投稿は承認待ち 0.9時間",
           "category": "広報",
@@ -8896,6 +8905,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-01",
+          "title": "📬 Instagram取り込みメールの振り分けが効いているか確認する（GASへの貼り付け後）",
+          "category": "保守",
+          "priority": "低",
+          "note": "確認：Web API の list（label=inbox）に『【CiDAO】Instagram 取り込み』が残っていない／label=Instagram取り込み に過去26通＋新着が入っている／⚠・⏸ の回は振り分けられず要確認に残る。貼り付けが済んでいなければ、事業主へ貼り付けを促す（MailTriage.gs の全文を貼って保存するだけ。再デプロイは不要＝時間トリガーは保存した最新コードで動く）。Gmail検索は list が1スレッドごとに本文まで読むので、確認の呼び出しは最小限に（1日の呼び出し上限を他の見張りと共有している）。"
+        },
         {
           "due": "2026-11-11",
           "title": "🕒 防災MAPの通行止めの各行に『市の最終更新』と『CBIの最終確認』を表示する【案1の手順③】",
