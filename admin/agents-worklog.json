@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-11-01",
+          "title": "Instagramの機能紹介動画（中編・後編）を順番どおりに投稿し、3媒体の実投稿の並びを読み戻して確認／Vercel CPU警告の再通知の確認と予定の整理／CiDAOの説明文（案A）の決定と反映先の洗い出し／Instagram取り込みメール振り分けの反映確認 0.85時間",
+          "category": "広報",
+          "outputs": ["Instagram 中編 https://www.instagram.com/reel/DfLe3I9kluP/", "Instagram 後編 https://www.instagram.com/reel/DfLe8B1k5XE/", "site/admin/agents-worklog.json（Vercel予定1件の削除と追記・本件の記録）"],
+          "hours": 0.85,
+          "partnerApproved": true,
+          "note": "事業主の依頼（画面写し・口頭）。①動画投稿：予約キューの記録では、中編のInstagramが10/30 19:39に『container timeout』（取り込みの待ちが100秒で切れた）で失敗。後編は中編が欠けたまま先に出たため、事業主が順番の逆転した投稿を削除。3媒体の実投稿を読み取りで確認し、足りないのはInstagramの中編・後編だけと確定（Threads・Facebookは序章→前編→中編→後編の順で4本そろっていた）。本文はThreads・Facebookに出した承認済みの文と同一を確認して使用し、投稿前に二重投稿の有無を毎回確認、中編が実際に出たのを読み戻してから後編を投稿（取り込みは各26秒で完了）。投稿後、3媒体とも4本が古い順に並ぶことを読み戻して確認。キューの失敗行（q1793200371201）はそのまま残してある。②Vercel CPU 100%の再通知は11/1 04:05に到着（超過継続・サイトは200）。予定1件を完了にして11/2判断の項目へ追記。③『CiDAOとは？』の言い方は、直近30日の閲覧人数（イベント152・FreeFree118・団体64・提案・投票45・人材バンク34・マッチ25／全体489人）を根拠に案Aに決定。反映先は洗い出しのみで、まだ反映していない。④Instagram取り込みメールの振り分けは、巡回後に受信トレイ0通・専用ラベル26通を確認（10/31 10:06）。工数は前回記録（output 2,143,781）からの差分84,768→0.85時間。session: 3fb37d5c-39a1-4d9e-bd8e-99315d031569 / output: 2,228,549 / cost: $427.32"
+        },
+        {
+          "date": "2026-11-01",
           "title": "資料一覧のCiDAO機能紹介スライドにダウンロードボタンを追加（admin/index.html 1行）0.1時間",
           "category": "実装",
           "outputs": ["site/admin/index.html（CiDAO機能紹介スライドのカードにダウンロードボタン1つ）", "site/admin/changelog.json（feature 1件）"],
