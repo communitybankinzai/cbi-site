@@ -6392,11 +6392,13 @@ function applyRenderQuality(sse) {
   viewer.scene.requestRender();
 }
 function usageFetch() {
+  if (document.hidden) return; // 画面を見ていない間は送らない（戻ってきたとき1回取り直す）
   fetch(USAGE_API).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
     .then(function (d) { usageInfo = d; applyRenderQuality(d.maximumScreenSpaceError); presenceRender(); })
     .catch(function () { /* 取得できないときは人数だけ表示。精度は既定値のまま */ });
 }
 function presencePing() {
+  if (document.hidden) return; // 別のタブ・最小化の間は送らない（Vercel の呼び出し回数の節約。防災MAPと同じ）
   fetch(PRESENCE_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -6411,6 +6413,9 @@ if (!new URLSearchParams(location.search).get("cinema")) { // 撮影・告知モ
   usageFetch();
   setInterval(usageFetch, 5 * 60 * 1000);
   setInterval(presencePing, PRESENCE_INTERVAL_MS);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) { presencePing(); usageFetch(); }
+  });
 }
 
 // ============================================================

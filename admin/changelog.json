@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-11-01T09:00:00+09:00",
+  "updatedAt": "2026-11-02T09:00:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-11-02",
+      "type": "fix",
+      "target": "metaverse/index.html",
+      "title": "3Dページを開いたまま別のタブや最小化にしても、在席確認と利用状況の取得を送り続けないようになった",
+      "detail": "これまで3Dページ（/metaverse/）は背景に回しても1分ごとに在席確認を送っており、開きっぱなしの1台で1日約1,700回、CiDAO（Vercel）の無料枠を使っていた。画面が見えていない間は在席確認（presencePing）と利用状況の取得（usageFetch）を止め、画面に戻った時に1回ずつ送り直す。防災MAPの在席確認と同じ作り。会場PCで終日開いていても、画面が見えていれば従来どおり送る。",
+      "author": "Claude Code（A1）"
+    },
     {
       "date": "2026-11-01",
       "type": "feature",
