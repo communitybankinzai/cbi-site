@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-01",
+          "title": "資料一覧のCiDAO機能紹介スライドにダウンロードボタンを追加（admin/index.html 1行）0.1時間",
+          "category": "実装",
+          "outputs": ["site/admin/index.html（CiDAO機能紹介スライドのカードにダウンロードボタン1つ）", "site/admin/changelog.json（feature 1件）"],
+          "hours": 0.1,
+          "partnerApproved": true,
+          "note": "事業主の依頼（画面写し付き）。武蔵屋来場者向けスライドの既存ボタンと同じ方式。検証：ローカル配信でファイル200・13,632,943バイト、ボタンのクリックで href=proposals/cidao-feature-intro-v1.html・保存名が期待どおり。ログイン後の実画面の目視は未確認。session: 3c9f6ff1-8127-47b6-89aa-fbbc67235883 / output: 6,813 / cost: $2.24"
+        },
+        {
           "date": "2026-10-31",
           "title": "CiDAOのInstagram取り込み結果メールを、専用ラベルに振り分けて受信トレイから外す設定をMailTriage.gsに追加 0.3時間",
           "category": "実装",
