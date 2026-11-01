@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-11-01",
+          "title": "武蔵屋 会場PC用バッチ一式を管理画面の資料一覧からダウンロード可能に（zip再作成・カード追加）0.1時間",
+          "category": "実装",
+          "outputs": ["scripts/build_venue_pc_zip.py（収録に表示用3本を追加）", "site/metaverse/venue-pc/cbi-venue-pc.zip（再作成・8ファイル 12,782バイト）", "site/admin/index.html（資料カード1枚）", "site/admin/changelog.json（feature 1件）"],
+          "hours": 0.1,
+          "partnerApproved": true,
+          "note": "事業主の依頼「会場運営時に事前に処置すべきバッチ類がどこか分からない。サイトからダウンロードできるように」。バッチ類＝events/2026-11-03_武蔵屋/会場PC/ の会場モードON/OFF等と解釈（確信度 中〜高）。検証：zipの全8ファイルが読めること（testzip=None）・日本語名はUTF-8フラグ付き。ログイン後の画面表示と、展開してのバッチ実行は未確認。"
+        },
+        {
+          "date": "2026-11-01",
           "title": "Instagramの機能紹介動画（中編・後編）を順番どおりに投稿し、3媒体の実投稿の並びを読み戻して確認／Vercel CPU警告の再通知の確認と予定の整理／CiDAOの説明文（案A）の決定と反映先の洗い出し／Instagram取り込みメール振り分けの反映確認 0.85時間",
           "category": "広報",
           "outputs": ["Instagram 中編 https://www.instagram.com/reel/DfLe3I9kluP/", "Instagram 後編 https://www.instagram.com/reel/DfLe8B1k5XE/", "site/admin/agents-worklog.json（Vercel予定1件の削除と追記・本件の記録）"],
