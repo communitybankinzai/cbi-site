@@ -8942,6 +8942,15 @@
       ],
       "plans": [
         {
+          "due": "2026-11-08",
+          "title": "🔐 パスワードノート（N's notebook）の CBI 項目を整理する（削除1・名前直し2・要確認1）",
+          "category": "保守",
+          "priority": "低",
+          "status": "待ち",
+          "blockedBy": "事業主がノートの画面で操作する（私は金庫を読めず、項目の削除・名前の変更ができない設計）",
+          "note": "2026-11-01 に、ノートを『CBI』で絞った7件のスクショで確認。新しい2件（CBI管理画面・防災MAP運営の合言葉）は取り込み済み。①『Vercel APIトークン（cbi-usage-monitor・cidaoチーム）』は10/18に試したあと同日に失効・削除済みの記録があるため削除推奨（確信度 中）。②『Vervel』→『Vercel｜cidaoチーム ログイン』に名前直し＋担当をCBIに。③『Git-hub（CBI）』→『GitHub｜CBI（communitybankinzai）ログイン』。④『Google,Github,Instagram,Threads,SUPABASE』（5サービスが1件・PW変更から100日）は編集画面で中身を見て、②③と重なる分を消すかサービスごとに分ける。担当がCBI以外の項目（cidao・Supabase・Resend など）の重複は未確認。cidao／Supabase／Resend で検索したスクショがあれば候補を挙げる。ルール：項目名は『サービス｜用途』、担当は必ずCBI。"
+        },
+        {
           "due": "2026-11-11",
           "title": "🕒 防災MAPの通行止めの各行に『市の最終更新』と『CBIの最終確認』を表示する【案1の手順③】",
           "category": "実装",
