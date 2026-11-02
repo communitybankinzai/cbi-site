@@ -595,6 +595,7 @@ if (location.protocol === "file:") {
     background: linear-gradient(160deg, #2c3e50, #1a2533); color: #fff;
     border: 2px solid #ffd166; border-radius: 18px; padding: 22px 20px;
     max-width: 420px; width: 100%; text-align: center;
+    max-height: calc(100vh - 32px); overflow-y: auto; box-sizing: border-box; /* 7択になり、スマホの高さに収まらないため */
   }
   #modeSelect h2 { color: #ffd166; font-size: 17px; margin: 0 0 14px; }
   .modeCard {
@@ -1045,6 +1046,7 @@ if (location.protocol === "file:") {
   <!-- 常時表示（2026-09-05 整理：残りは4つの開閉メニューへ。ボタンの id と処理は変えていない） -->
   <button id="puzzleBtn">🏛 印西市文化財<span class="badge" id="puzzleCount">0/50</span></button>
   <button id="ttBtn" title="文化財を順番に巡ってタイムを競うオンラインイベント">⏱ タイムトライアル</button>
+  <button id="tourBtn" style="display:none" title="日本と世界の観光地の一覧を開きます。選ぶと、その観光地の上空へ移ります（観光地めぐりモード）">🗺 観光地めぐり</button>
   <button id="musashiyaBtn" style="display:none" title="武蔵屋（岩井家住宅主屋）をスタートし、近くの文化財3か所をめぐって武蔵屋へ戻ります。到着するたびに写真と説明（こども用／おとな用）が出ます（武蔵屋イベントモード）">🏠 武蔵屋めぐり</button>
   <button id="nightBtn" class="off" title="街を夜景にします。星空・光の列・空にうかぶ いんザイ君のイルミネーションが出ます（イルミライINZAI向け。もう一度押すと昼に戻ります）">🌃 夜景</button>
   <button id="nightTourBtn" title="東の空から、いんザイ君の光のゲート10か所を順にくぐって千葉ニュータウン中央駅に降りる自動遊覧（約70秒）。操作すると途中でやめられます">🛸 夜間遊覧</button>
@@ -1133,6 +1135,7 @@ if (location.protocol === "file:") {
     <button class="modeCard" onclick="applyMode('all')">🌏 すべて表示<small>文化財・お店・公民館のピンをまとめて（ピンは多くなります）</small></button>
     <button class="modeCard" onclick="applyMode('night')">🌃 イルミライINZAI（夜景）<small>夜景・いんザイ君の光のゲート・夜間遊覧・夜景タイムレース（イルミライ会場用）</small></button>
     <button class="modeCard" onclick="applyMode('musashiya')">🏠 武蔵屋イベント<small>武蔵屋から近くの文化財3か所をめぐって戻る（11/3 武蔵屋マルシェの会場用）</small></button>
+    <button class="modeCard" onclick="applyMode('tour')">🗺 日本・世界の観光地めぐり<small>東京スカイツリー・富士山・エッフェル塔など。一覧から選んで、その上空へ</small></button>
     <p class="note">あとから「🔀 モード切替」（左上メニュー）でいつでも変更できます</p>
   </div>
 </div>
@@ -5109,7 +5112,8 @@ const MODE_KEY = "cbi-meta-mode-v1";
 //  bousai: 防災（避難所ピン＋浸水シミュレーション。演出なし）
 //  all   : すべて（文化財＋お店＋公民館のピン。ゲーム系UIあり）
 // 個別のピン表示トグルはどのモードでも使える（モードは初期状態を決めるだけ）
-const MODE_LIST = ["event", "shop", "bousai", "all", "musashiya", "night"];
+//  tour  : 日本・世界の観光地めぐり（2026-11-02）。一覧から選んで移る（tour.js）。ピンは出さない
+const MODE_LIST = ["event", "shop", "bousai", "all", "musashiya", "night", "tour"];
 let currentMode = "event";
 function applyMode(mode) {
   currentMode = MODE_LIST.indexOf(mode) >= 0 ? mode : "event";
@@ -5167,6 +5171,8 @@ function applyMode(mode) {
   if (bunkazaiPinsVisible !== (game || musashiya)) { bunkazaiPinsVisible = (game || musashiya); applyBunkazaiPinVisibility(); }
   if (musashiya) { if (typeof window.msyEnterMode === "function") window.msyEnterMode(); }
   else if (typeof window.msyLeaveMode === "function") window.msyLeaveMode();
+  if (m === "tour") { if (typeof window.tourEnterMode === "function") window.tourEnterMode(); }
+  else if (typeof window.tourLeaveMode === "function") window.tourLeaveMode();
   setShopPins(m === "shop" || m === "all", m === "all"); // 「すべて」では0件でも案内を出さない
   if (m === "all" && !kominkanPinsVisible) document.getElementById("kominkanToggleBtn").click();
   if (m !== "all" && kominkanPinsVisible) document.getElementById("kominkanToggleBtn").click();
@@ -6687,6 +6693,7 @@ try {
 <script src="night.js?v=20260914-2"></script>
 <script src="controls-guide.js?v=20260915-1"></script>
 <script src="musashiya.js?v=20261023-1"></script>
+<script src="tour.js?v=20261102-1"></script>
 <!-- 🏟 会場モード（11/3 武蔵屋の会場PC用：街並みの記憶量・通信節約・事前読み込み飛行を一括で ON/OFF）。musashiya.js の後に読む -->
 <script src="venue.js?v=20260916-1"></script>
 <!-- 📡 回線速度をはかる（会場で Wi-Fi とテザリングを比べる。街並みは読み込まないので利用枠を使わない） -->
