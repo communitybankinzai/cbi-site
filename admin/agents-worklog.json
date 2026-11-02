@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-11-02",
+          "title": "通信・金融・サイバー画面のSNS向け紹介動画（縦型96秒）を制作 0.55時間",
+          "category": "広報",
+          "outputs": ["scripts/promo/cyber_status/scenes.json", "scripts/promo/cyber_status/record.mjs", "scripts/promo/cyber_status/compose.py", "scripts/promo/cyber_status/build_voice.py", "scripts/promo/cyber_status/post_text.txt", "scripts/promo/cyber_status/out/cyber_status_9x16.mp4"],
+          "hours": 0.55,
+          "partnerApproved": false,
+          "note": "事業主決定：新聞紙面の画像は使わず、媒体名・日付・要旨（CBIの要約）と公式資料で構成。CBIは分析せず公開情報を集約するだけと明示。投稿は未実施（本文と動画の承認待ち）。\nsession: e010c588-e98a-46b3-9c24-0d222043993c / output: 159,573 / cost: $22.67（累計）"
+        },
+        {
+          "date": "2026-11-02",
           "title": "通信・金融・サイバー画面：各社・機関の利用条件を調査（別担当へ委任）し、ドコモRSSと金融庁RSSを自動取得に追加 0.29時間",
           "category": "調査",
           "outputs": ["site/inzai-disaster-map/pipeline/build_cyber_status.py", "site/inzai-disaster-map/cyber-status.json", "site/inzai-disaster-map/app.js", "site/inzai-disaster-map/index.html", "site/inzai-disaster-map/CLAUDE_HANDOFF.md", "site/admin/changelog.json", "site/admin/agents-worklog.json（本件の記録）"],
@@ -8968,6 +8977,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📣 通信・金融・サイバー画面の紹介動画をSNSへ投稿する（本文 scripts/promo/cyber_status/post_text.txt）",
+          "category": "広報",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "事業主が動画と本文を承認すること",
+          "note": "画面の「内閣サイバーセキュリティセンター」は現在の名称「国家サイバー統括室」と異なる。直すかは事業主の判断待ち。実機スマホ表示も未確認。"
+        },
         {
           "due": "2026-11-11",
           "title": "🕒 防災MAPの通行止めの各行に『市の最終更新』と『CBIの最終確認』を表示する【案1の手順③】",
