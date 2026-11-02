@@ -15519,6 +15519,16 @@ function cyberDuration(text) {
   return /^\D*\d+[dhm]/.test(s) ? s.replace(/(\d+)d/g, "$1日").replace(/(\d+)h/g, "$1時間").replace(/(\d+)m/g, "$1分") : s;
 }
 
+// 日付・（分類）・見出しリンクの一覧（ドコモ・金融庁）。items が無いときは emptyText
+function cyberFeedListHtml(items, emptyText, withCategory) {
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) return `<p class="cyber-muted">${escapeHtml(emptyText)}</p>`;
+  return `<ul class="cyber-list">${list.map(item => `
+      <li><span class="cyber-date">${escapeHtml(cyberMd(item.date))}</span>
+        ${withCategory && item.category ? `<span class="cyber-kind">${escapeHtml(item.category)}</span>` : ""}
+        <a href="${escapeHtml(cyberSafeUrl(item.url))}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a></li>`).join("")}</ul>`;
+}
+
 function cyberIncidentsHtml(so) {
   const items = Array.isArray(so?.incidents?.items) ? so.incidents.items : [];
   if (so && so.incidentsOk === false) {
@@ -15552,11 +15562,14 @@ function renderCyberPanel(data, failed) {
   if (!body) return;
   const jp = data?.jpcert;
   const so = data?.soumu;
+  const dc = data?.docomo;
+  const fsa = data?.fsa;
+  const anyBad = [jp, so, dc, fsa].some(src => src?.ok === false);
   const jpItems = Array.isArray(jp?.items) ? jp.items : [];
   const soReports = Array.isArray(so?.reports) ? so.reports : [];
   if (sum) {
-    sum.textContent = failed ? "取得できません" : (jp?.ok === false || so?.ok === false) ? "一部取得できません" : (jpItems[0] ? `最新の注意喚起 ${cyberMd(jpItems[0].date)}` : "");
-    sum.classList.toggle("is-bad", Boolean(failed || jp?.ok === false || so?.ok === false));
+    sum.textContent = failed ? "取得できません" : anyBad ? "一部取得できません" : (jpItems[0] ? `最新の注意喚起 ${cyberMd(jpItems[0].date)}` : "");
+    sum.classList.toggle("is-bad", Boolean(failed || anyBad));
   }
   const failBanner = failed ? `<p class="cyber-state is-bad">公的な発表の一覧を読み込めませんでした（${escapeHtml(failed)}）。下のリンクから公式ページで確認してください。</p>` : "";
   const jpHtml = jpItems.length ? `<ul class="cyber-list">${jpItems.map(item => `
@@ -15571,7 +15584,7 @@ function renderCyberPanel(data, failed) {
     so?.excelUrl ? { label: "個々の事故の一覧（Excel）", url: so.excelUrl } : null
   ].filter(Boolean);
   body.innerHTML = `
-    <p class="cyber-note">公的機関の発表を整理した画面です。<strong>通信などの障害とサイバー攻撃は別</strong>で、原因はここでは判断せず、各機関の発表のとおりに出します。印西市の地図に置ける位置の発表は、いまはありません（全国・事業者単位の発表のため）。CBI（市民団体）の試作で、公式情報ではありません。</p>
+    <p class="cyber-note">公的機関と通信事業者の公式発表を整理した画面です。<strong>通信などの障害とサイバー攻撃は別</strong>で、原因はここでは判断せず、各機関の発表のとおりに出します。印西市の地図に置ける位置の発表は、いまはありません（全国・事業者単位の発表のため）。CBI（市民団体）の試作で、公式情報ではありません。</p>
     ${failBanner}
     <h3>🔐 サイバー：JPCERT/CC の注意喚起</h3>
     ${cyberStatusLine(jp)}
@@ -15586,8 +15599,17 @@ function renderCyberPanel(data, failed) {
     <p class="cyber-muted">発生要因などの分類は総務省の一覧のとおりです。この分類だけでは、サイバー攻撃かどうかは分かりません。詳しくは各資料で確認してください。</p>
     ${soExtra.length ? cyberLinkList(soExtra) : ""}
     <p class="cyber-src">出典：総務省ホームページ「電気通信事故の発生状況」（題名・公表日・一覧の項目を CBI が整理・長い文は短く切って掲載）</p>
-    <h3>📶 いま起きている通信障害（各社の公式ページ）</h3>
+    <h3>📶 ドコモの重要なお知らせ（通信障害等）</h3>
+    ${cyberStatusLine(dc)}
+    ${cyberFeedListHtml(dc?.items, "表示できるお知らせがありません。")}
+    <p class="cyber-src">出典：NTTドコモ「重要なお知らせ（通信障害等）」のRSS（見出しと日付だけを掲載。内容は各リンク先）</p>
+    <h3>📶 ほかの通信各社（公式ページ）</h3>
     ${cyberLinkList(CYBER_LINKS.carriers)}
+    <h3>🏦 金融庁の新着から（障害・サイバー・不正に関する見出し）</h3>
+    ${cyberStatusLine(fsa)}
+    ${cyberFeedListHtml(fsa?.items, `直近の新着${Number(fsa?.scanned) || 0}件のうち、該当する見出しはありません。`, true)}
+    <p class="cyber-muted">金融庁の新着の見出しに「障害」「サイバー」「不正」などの語を含むものを自動で拾い、半年分を残しています。語で拾うため、拾い漏れがあります。</p>
+    <p class="cyber-src">出典：金融庁ウェブサイト（https://www.fsa.go.jp/）。見出し・日付・リンクを CBI が抜き出して掲載（加工）</p>
     <h3>🏦 金融（公式ページへのリンク）</h3>
     ${cyberLinkList(CYBER_LINKS.finance)}
     <p class="cyber-muted">銀行・証券・決済サービスの個別の障害は、各社のお知らせで確認してください。</p>

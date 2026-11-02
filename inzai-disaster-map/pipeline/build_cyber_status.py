@@ -1,6 +1,9 @@
 """通信・金融・サイバーの画面（?mode=cyber）に出す公的情報を、cyber-status.json に書く。
 
-自動で取るのは公的な2件だけ（2026-11-02 事業主決定）。ほかの事業者・団体のページは地図の画面にリンクを置くだけで取らない。
+自動で取るのは、公式のRSS・公開資料がある4件だけ（2026-11-02 事業主決定。ドコモ・金融庁は規約調査のあとに追加）。
+ほかの事業者・団体のページは地図の画面にリンクを置くだけで取らない（JPX は「二次利用・再配信不可」、各社・NICTER は許可の記載なし）。
+  - NTTドコモ「重要なお知らせ（通信障害等）」RSS … 見出し・日付・リンクだけ。
+  - 金融庁の新着情報RSS … 障害・サイバー・不正に関する見出しだけを拾って積む（出典は PDL1.0 の形式で画面に明記）。
   - JPCERT/CC の注意喚起・緊急報告（RSS 1.0）… 見出し・日付・リンクだけを持つ（本文は写さない）。
   - 総務省「電気通信事故の発生状況」… 年度ごとの報道資料（PDF）の題名・公表日・リンクと、個々の事故の一覧（Excel・openpyxl が要る）から
     発生が新しい事故の 事業者名・発生日時・継続時間・影響利用者数・障害内容・発生要因・参考資料のリンク を持つ（PDF の中身は読まない）。
@@ -25,6 +28,11 @@ SOUMU_BASE = "https://www.soumu.go.jp"
 JPCERT_KEEP = 8      # 画面に出す件数
 SOUMU_KEEP = 3
 INCIDENT_KEEP = 8    # 画面に出す事故の件数（発生が新しい順）
+DOCOMO_RSS = "https://www.docomo.ne.jp/info/rss/network.rdf"
+FSA_RSS = "https://www.fsa.go.jp/fsaNewsListAll_rss2.xml"
+DOCOMO_KEEP = 6
+FSA_KEEP = 8
+FSA_KEEP_DAYS = 180  # 金融庁の拾った見出しを残す日数
 HEARTBEAT_HOURS = 6  # 変化がなくても、この時間ごとには確認時刻を書き直す
 
 NS = {
@@ -65,6 +73,57 @@ def read_jpcert():
         raise ValueError("注意喚起・緊急報告が1件も読めませんでした（フィードの形が変わった可能性）")
     items.sort(key=lambda x: x["date"], reverse=True)
     return {"items": items[:JPCERT_KEEP]}
+
+
+def read_docomo():
+    """NTTドコモ「重要なお知らせ（通信障害等）」の公式RSS（RSS 1.0）。見出し・日付・リンクだけを持つ。再利用条件の記載はないため、本文は写さない。"""
+    root = ET.fromstring(fetch(DOCOMO_RSS))
+    items = []
+    for node in root.findall("rss:item", NS):
+        title = squeeze(node.findtext("rss:title", "", NS), 120)
+        link = (node.findtext("rss:link", "", NS) or "").strip()
+        date = (node.findtext("dc:date", "", NS) or "").strip()
+        if title and link.startswith("https://www.docomo.ne.jp/"):
+            items.append({"title": title, "url": link, "date": date})
+    if not items:
+        raise ValueError("ドコモのRSSから1件も読めませんでした（フィードの形が変わった可能性）")
+    items.sort(key=lambda x: x["date"], reverse=True)   # 同じ日付の順はフィードのまま（sort は安定）
+    return {"items": items[:DOCOMO_KEEP]}
+
+
+FSA_TOPIC = re.compile(r"サイバー|システム障害|障害|不正アクセス|不正送金|不正取引|不正引出|フィッシング|情報セキュリティ|ランサムウェア|個人情報.{0,4}流出|情報漏えい|情報漏洩")
+FSA_MONTHS = {m: i + 1 for i, m in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])}
+
+
+def fsa_date(text):
+    """RSS 2.0 の pubDate（例 Fri, 30 Oct 2026 18:00:00 JST）→ ISO。読めなければ空。"""
+    m = re.search(r"(\d{1,2}) ([A-Z][a-z]{2}) (\d{4}) (\d{2}):(\d{2})", text or "")
+    if not m or m.group(2) not in FSA_MONTHS:
+        return ""
+    return f"{int(m.group(3)):04d}-{FSA_MONTHS[m.group(2)]:02d}-{int(m.group(1)):02d}T{m.group(4)}:{m.group(5)}:00+09:00"
+
+
+def read_fsa(previous):
+    """金融庁の新着情報RSS（RSS 2.0・新着の全般で十数件）から、障害・サイバー・不正に関する見出しだけを拾う。
+    新着の全般は流れが速いので、拾った分は前回までの分に積み、FSA_KEEP_DAYS 日で捨てる。出典は「金融庁ウェブサイト」（公共データ利用規約 PDL1.0）。"""
+    root = ET.fromstring(fetch(FSA_RSS))
+    nodes = list(root.iter("item"))
+    if not nodes:
+        raise ValueError("金融庁のRSSから1件も読めませんでした（フィードの形が変わった可能性）")
+    found = {}
+    for old in (previous or {}).get("items", []):
+        found[old["url"]] = old
+    for node in nodes:
+        raw = squeeze(node.findtext("title", ""), 160)
+        link = (node.findtext("link", "") or "").strip()
+        if not raw or not link.startswith("https://www.fsa.go.jp/") or not FSA_TOPIC.search(raw):
+            continue
+        cm = re.match(r"^([^,，]{1,10}),(.+)$", raw)
+        found[link] = {"category": cm.group(1) if cm else "", "title": (cm.group(2) if cm else raw).strip(),
+                       "url": link, "date": fsa_date(node.findtext("pubDate", ""))}
+    limit = (datetime.now(JST) - timedelta(days=FSA_KEEP_DAYS)).isoformat(timespec="seconds")
+    items = sorted((x for x in found.values() if x.get("date", "") >= limit), key=lambda x: x["date"], reverse=True)
+    return {"items": items[:FSA_KEEP], "scanned": len(nodes)}
 
 
 def squeeze(text, limit):
@@ -192,6 +251,8 @@ def main():
     data = {
         "jpcert": refresh(prev.get("jpcert"), read_jpcert),
         "soumu": refresh(prev.get("soumu"), read_soumu),
+        "docomo": refresh(prev.get("docomo"), read_docomo),
+        "fsa": refresh(prev.get("fsa"), lambda: read_fsa(prev.get("fsa"))),
     }
     data["generatedAt"] = now_iso()
     # 中身（取得の成否・件数・内容）が前回と同じなら、確認時刻だけの違いでは書き換えない（コミットを増やさない）。
@@ -207,7 +268,7 @@ def main():
         print("変更なし")
         return 0
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    for key in ("jpcert", "soumu"):
+    for key in ("jpcert", "soumu", "docomo", "fsa"):
         print(key, "ok" if data[key]["ok"] else "NG: " + data[key]["error"])
     return 0
 

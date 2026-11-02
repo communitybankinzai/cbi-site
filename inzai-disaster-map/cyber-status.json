@@ -1,6 +1,6 @@
 {
   "jpcert": {
-    "checkedAt": "2026-11-02T10:09:09+09:00",
+    "checkedAt": "2026-11-02T10:48:49+09:00",
     "items": [
       {
         "kind": "注意喚起",
@@ -47,10 +47,10 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-02T10:09:09+09:00"
+    "lastSuccessAt": "2026-11-02T10:48:49+09:00"
   },
   "soumu": {
-    "checkedAt": "2026-11-02T10:09:09+09:00",
+    "checkedAt": "2026-11-02T10:48:49+09:00",
     "pageUrl": "https://www.soumu.go.jp/menu_seisaku/ictseisaku/net_anzen/jiko/result.html",
     "excelUrl": "https://www.soumu.go.jp/main_content/001089876.xlsx",
     "reports": [
@@ -72,7 +72,7 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-02T10:09:09+09:00",
+    "lastSuccessAt": "2026-11-02T10:48:49+09:00",
     "incidents": {
       "total": 91,
       "items": [
@@ -185,5 +185,58 @@
     "incidentsOk": true,
     "incidentsError": ""
   },
-  "generatedAt": "2026-11-02T10:09:10+09:00"
+  "docomo": {
+    "checkedAt": "2026-11-02T10:48:50+09:00",
+    "items": [
+      {
+        "title": "【お詫び/復旧】ドコモメールがご利用しづらい状況について",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261030_01_m.html",
+        "date": "2026-10-30T00:00:00+09:00"
+      },
+      {
+        "title": "【障害発生】ドコモメールがご利用しづらい状況について",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261030_00_m.html",
+        "date": "2026-10-30T00:00:00+09:00"
+      },
+      {
+        "title": "【お詫び/復旧】携帯電話サービスがご利用しづらい状況について",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261028_01_m.html",
+        "date": "2026-10-28T00:00:00+09:00"
+      },
+      {
+        "title": "【障害発生】携帯電話サービスがご利用しづらい状況について",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261028_00_m.html",
+        "date": "2026-10-28T00:00:00+09:00"
+      },
+      {
+        "title": "【お詫び/復旧済み】一部のドコモ回線利用MVNOにおいてご利用しづらい事象について",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261025_00_m.html",
+        "date": "2026-10-25T00:00:00+09:00"
+      },
+      {
+        "title": "【お詫び/復旧済み】一部のドコモ回線利用MVNOにおいてご利用しづらい事象について",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261024_00_m.html",
+        "date": "2026-10-24T00:00:00+09:00"
+      }
+    ],
+    "ok": true,
+    "error": "",
+    "lastSuccessAt": "2026-11-02T10:48:50+09:00"
+  },
+  "fsa": {
+    "checkedAt": "2026-11-02T10:48:50+09:00",
+    "items": [
+      {
+        "category": "その他",
+        "title": "個人情報流出の被害に遭われた方・ご心配のある方向けの相談窓口について掲載しました。",
+        "url": "https://www.fsa.go.jp/receipt/soudansitu/index.html#kojinjouhou",
+        "date": "2026-10-30T18:00:00+09:00"
+      }
+    ],
+    "scanned": 15,
+    "ok": true,
+    "error": "",
+    "lastSuccessAt": "2026-11-02T10:48:50+09:00"
+  },
+  "generatedAt": "2026-11-02T10:48:50+09:00"
 }
