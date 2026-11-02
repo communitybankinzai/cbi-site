@@ -7,18 +7,18 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261029e">
+    <link rel="stylesheet" href="./styles.css?v=20261102a">
   </head>
   <body data-view="gate">
     <!-- 2026-10-24 事業主指示「スマホで使いにくい」：開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
          ?mode= で用途が決まっているとき（と、従来の埋め込み・運営・位置指定のURL）は入口を出さず、最初の描画から地図にする。
-         用途の一覧は app.js の VIEWS と同じ（all／rain／fire／quake／road／infra）。変えるときは両方そろえること。 -->
+         用途の一覧は app.js の VIEWS と同じ（all／rain／fire／quake／road／infra／shelter／cyber）。変えるときは両方そろえること。 -->
     <script>
       (function () {
         try {
           var q = new URLSearchParams(location.search);
           var m = q.get("mode");
-          if (["all", "rain", "fire", "quake", "road", "infra", "shelter"].indexOf(m) < 0) {
+          if (["all", "rain", "fire", "quake", "road", "infra", "shelter", "cyber"].indexOf(m) < 0) {
             m = (q.get("embed") === "1" || q.get("view") === "public" || q.get("ops") === "1" || q.has("lat") || q.has("lon") || q.has("zoom")) ? "all" : null;
           }
           if (m) {
@@ -51,6 +51,7 @@
           <a class="view-tile is-fire" href="?mode=fire" data-view="fire"><span class="view-tile-icon" aria-hidden="true">🔥</span><span class="view-tile-name">消防</span><span class="view-tile-note">火災・事故・救急の消防情報</span></a>
           <a class="view-tile is-quake" href="?mode=quake" data-view="quake"><span class="view-tile-icon" aria-hidden="true">🌍</span><span class="view-tile-name">地震</span><span class="view-tile-note">全国の最新の地震と、印西市の震度</span></a>
           <a class="view-tile is-infra" href="?mode=infra" data-view="infra"><span class="view-tile-icon" aria-hidden="true">⚡</span><span class="view-tile-name">停電・鉄道</span><span class="view-tile-note">停電の範囲と、鉄道の運休・遅れ</span></a>
+          <a class="view-tile is-cyber" href="?mode=cyber" data-view="cyber"><span class="view-tile-icon" aria-hidden="true">🛡</span><span class="view-tile-name">通信・金融・<br>サイバー</span><span class="view-tile-note">通信障害・金融システム・サイバー攻撃の公的な発表と、公式ページへのリンク</span></a>
           <a class="view-tile is-all" href="?mode=all" data-view="all"><span class="view-tile-icon" aria-hidden="true">🗺</span><span class="view-tile-name">まとめて見る</span><span class="view-tile-note">いろいろな情報を重ねて見る（これまでの画面）</span></a>
         </div>
         <p class="view-gate-note">CBI（市民団体）が自主的に試作している画面で、公式の防災情報ではありません。避難などの判断は、市や気象庁などの公式情報を優先してください。救助・事件・事故は119・110へ。</p>
@@ -792,6 +793,16 @@
             </div>
             <p class="feedback-status" id="feedback-status" role="status"></p>
           </div>
+
+          <!-- 🛡 通信・金融・サイバー（2026-11-02 事業主指示）。自然災害以外のインフラ停止・サイバー関連の公的な発表を、地図の上の枠に整理して出す。
+               自動で取るのは JPCERT/CC と総務省の2件だけ（cyber-status.json・中身は app.js の renderCyberPanel）。
+               そのほかの事業者・団体は公式ページへのリンクだけ。印西市の地図に置ける位置の発表は今のところ無い（全国規模のため） -->
+          <section class="cyber-panel" id="cyber-panel" data-views="cyber" aria-label="通信・金融・サイバーの公的な発表">
+            <details class="cyber-sheet" open>
+              <summary>🛡 通信・金融・サイバー <span class="cyber-sum-note" id="cyber-sum-note"></span></summary>
+              <div class="cyber-body" id="cyber-body"><p class="cyber-muted">読み込み中…</p></div>
+            </details>
+          </section>
 
           <!-- ⓘ 色の見方（2026-09-22）。色の濃さが「新しさ」を表していることが利用者に伝わらないため -->
           <div class="range-panel color-guide" id="color-guide" hidden>
@@ -2025,7 +2036,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261029a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261029g"></script>
+    <script src="./app.js?v=20261102a"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>

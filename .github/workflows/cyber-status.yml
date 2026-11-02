@@ -1,0 +1,48 @@
+name: 防災MAP 通信・金融・サイバー画面の公的情報を取り込む
+
+# 「通信・金融・サイバー」の画面（?mode=cyber）に出す公的な2件を cyber-status.json に書く（2026-11-02 導入・事業主決定）。
+#   - JPCERT/CC の注意喚起・緊急報告（見出し・日付・リンクだけ）
+#   - 総務省「電気通信事故の発生状況」の年度ごとの報道資料（題名・公表日・リンクだけ）
+# 中身は inzai-disaster-map/pipeline/build_cyber_status.py。ほかの事業者・団体のページは取らない（画面にリンクを置くだけ）。
+# 両方とも更新は日・週の単位なので、3時間に1回で足りる。内容が変わらないときは確認時刻だけの書き換えを6時間に1回まで減らしてある。
+
+on:
+  schedule:
+    - cron: "23 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cyber-status
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 公的な2件を読む
+        run: python inzai-disaster-map/pipeline/build_cyber_status.py
+
+      - name: 変わっていればコミット
+        run: |
+          if [ -z "$(git status --porcelain -- inzai-disaster-map/cyber-status.json)" ]; then
+            echo "変更なし"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add inzai-disaster-map/cyber-status.json
+          git commit -m "防災MAP: 通信・金融・サイバー画面の公的情報を更新（自動）"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push && exit 0
+            sleep 10
+          done
+          exit 1

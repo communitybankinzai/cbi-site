@@ -15440,13 +15440,141 @@ const VIEWS = {
   road: { label: "🚧 通行止め", layers: ["boundary", "roadClosures", "prefKisei", "snsRoads"] },
   fire: { label: "🔥 消防", layers: ["boundary", "fireMail", "fireAccident"] },
   quake: { label: "🌍 地震", layers: ["boundary", "quakes"], onEnter: () => focusQuakeOnPress() },
-  infra: { label: "⚡ 停電・鉄道", layers: ["boundary", "teiden", "railStatus", "railway"] }
+  infra: { label: "⚡ 停電・鉄道", layers: ["boundary", "teiden", "railStatus", "railway"] },
+  // 2026-11-02 事業主指示：自然災害以外（通信・金融・サイバー）。印西市の地図に置ける位置の発表は無いので、層は境界だけ。
+  // 中身は地図の上の枠 #cyber-panel（公的な2件を自動取得・そのほかはリンクだけ）。入るたびに最新を読み直す（onShow）
+  cyber: { label: "🛡 通信・金融・サイバー", layers: ["boundary"], onShow: () => loadCyberPanel() }
 };
 var currentView = null;
 
 // 「↺ 最初の表示」が戻る層（applyPreset の reset が呼ぶ）。用途が決まっていなければ null＝従来の PRESETS.reset.on
 function viewLayers() {
   return VIEWS[currentView]?.layers || null;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 🛡 通信・金融・サイバー（2026-11-02）
+// 自動で取るのは公的な2件だけ（JPCERT/CC の注意喚起・総務省の電気通信事故の報道資料）。pipeline/build_cyber_status.py が
+// GitHub Actions（cyber-status.yml・3時間ごと）で cyber-status.json に書く。ほかの事業者・団体は公式ページへのリンクだけ。
+// ⚠ 取れていない情報を「問題なし」に見せない：読めなかったときは赤で「取得できません」と出し、前回の分は「前回取得分」と添える。
+// ⚠ 障害とサイバー攻撃は別。原因はここで判断せず、発表の見出しのとおりに出す。
+// ─────────────────────────────────────────────────────────────
+const CYBER_LINKS = {
+  carriers: [
+    { label: "ドコモ：重要なお知らせ（通信障害等）", url: "https://www.docomo.ne.jp/info/network/" },
+    { label: "ドコモ：通信状況（地域別）", url: "https://www.docomo.ne.jp/info/status/" },
+    { label: "au：通信障害等に関するお知らせ", url: "https://www.au.com/information/notice_mobile/network/" },
+    { label: "ソフトバンク：障害情報", url: "https://www.softbank.jp/mobile/info/personal/important/" },
+    { label: "楽天モバイル：お知らせ", url: "https://network.mobile.rakuten.co.jp/information/" }
+  ],
+  finance: [
+    { label: "全銀ネット：お知らせ（全銀システム）", url: "https://www.zengin-net.jp/announcement/" },
+    { label: "金融庁", url: "https://www.fsa.go.jp/" },
+    { label: "日本取引所グループ", url: "https://www.jpx.co.jp/" }
+  ],
+  cyber: [
+    { label: "NICTER（NICT のサイバー攻撃観測）", url: "https://www.nicter.jp/" },
+    { label: "警察庁 サイバー警察局", url: "https://www.npa.go.jp/bureau/cyber/" },
+    { label: "内閣サイバーセキュリティセンター", url: "https://www.cyber.go.jp/" },
+    { label: "Cloudflare Radar（国単位のネット障害）", url: "https://radar.cloudflare.com/outage-center" }
+  ]
+};
+var cyberLoadedAt = 0;
+var cyberLoading = false;
+
+function cyberSafeUrl(url) {
+  return /^https:\/\//.test(String(url || "")) ? String(url) : "#";
+}
+
+function cyberMd(iso) {   // "2026-10-29T15:43+09:00" → "10/29"
+  const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${Number(m[2])}/${Number(m[3])}` : "";
+}
+
+function cyberCheckedText(iso) {
+  const d = new Date(iso);
+  if (!iso || Number.isNaN(d.getTime())) return "確認時刻不明";
+  return d.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+function cyberLinkList(items) {
+  return `<ul class="cyber-links">${items.map(item => `<li><a href="${escapeHtml(cyberSafeUrl(item.url))}" target="_blank" rel="noreferrer">${escapeHtml(item.label)}</a></li>`).join("")}</ul>`;
+}
+
+// 取得の状態を1行にする。ok でなければ赤、24時間以上確認できていなければ橙
+function cyberStatusLine(src) {
+  if (!src) return `<p class="cyber-state is-bad">取得できません（データがありません）</p>`;
+  if (!src.ok) {
+    const last = src.lastSuccessAt ? `最後に読めたのは ${escapeHtml(cyberCheckedText(src.lastSuccessAt))}` : "まだ一度も読めていません";
+    return `<p class="cyber-state is-bad">取得できません（${last}）。下は前回取得分です。公式ページで確認してください。</p>`;
+  }
+  const ageH = (Date.now() - new Date(src.lastSuccessAt).getTime()) / 3600000;
+  if (ageH > 24) return `<p class="cyber-state is-warn">最終確認 ${escapeHtml(cyberCheckedText(src.lastSuccessAt))}（24時間以上前です）</p>`;
+  return `<p class="cyber-state">最終確認 ${escapeHtml(cyberCheckedText(src.lastSuccessAt))}</p>`;
+}
+
+function renderCyberPanel(data, failed) {
+  const body = document.getElementById("cyber-body");
+  const sum = document.getElementById("cyber-sum-note");
+  if (!body) return;
+  const jp = data?.jpcert;
+  const so = data?.soumu;
+  const jpItems = Array.isArray(jp?.items) ? jp.items : [];
+  const soReports = Array.isArray(so?.reports) ? so.reports : [];
+  if (sum) {
+    sum.textContent = failed ? "取得できません" : (jp?.ok === false || so?.ok === false) ? "一部取得できません" : (jpItems[0] ? `最新の注意喚起 ${cyberMd(jpItems[0].date)}` : "");
+    sum.classList.toggle("is-bad", Boolean(failed || jp?.ok === false || so?.ok === false));
+  }
+  const failBanner = failed ? `<p class="cyber-state is-bad">公的な発表の一覧を読み込めませんでした（${escapeHtml(failed)}）。下のリンクから公式ページで確認してください。</p>` : "";
+  const jpHtml = jpItems.length ? `<ul class="cyber-list">${jpItems.map(item => `
+      <li><span class="cyber-date">${escapeHtml(cyberMd(item.date))}</span>
+        <span class="cyber-kind">${escapeHtml(item.kind || "")}${item.state ? `・${escapeHtml(item.state)}` : ""}</span>
+        <a href="${escapeHtml(cyberSafeUrl(item.url))}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a></li>`).join("")}</ul>` : `<p class="cyber-muted">表示できる注意喚起がありません。</p>`;
+  const soHtml = soReports.length ? `<ul class="cyber-list">${soReports.map(item => `
+      <li><span class="cyber-date">${escapeHtml(cyberMd(item.published))}</span>
+        <a href="${escapeHtml(cyberSafeUrl(item.url))}" target="_blank" rel="noreferrer">${escapeHtml(item.label)}</a></li>`).join("")}</ul>` : `<p class="cyber-muted">表示できる資料がありません。</p>`;
+  const soExtra = [
+    so?.pageUrl ? { label: "総務省：電気通信事故の発生状況（一覧のページ）", url: so.pageUrl } : null,
+    so?.excelUrl ? { label: "個々の事故の一覧（Excel）", url: so.excelUrl } : null
+  ].filter(Boolean);
+  body.innerHTML = `
+    <p class="cyber-note">公的機関の発表を整理した画面です。<strong>通信などの障害とサイバー攻撃は別</strong>で、原因はここでは判断せず、各機関の発表のとおりに出します。印西市の地図に置ける位置の発表は、いまはありません（全国・事業者単位の発表のため）。CBI（市民団体）の試作で、公式情報ではありません。</p>
+    ${failBanner}
+    <h3>🔐 サイバー：JPCERT/CC の注意喚起</h3>
+    ${cyberStatusLine(jp)}
+    ${jpHtml}
+    <p class="cyber-src">出典：JPCERT/CC（見出しと日付だけを掲載。内容は各リンク先）</p>
+    <h3>📡 通信：総務省の電気通信事故の報道資料</h3>
+    ${cyberStatusLine(so)}
+    <p class="cyber-muted">重大な事故（影響3万人以上かつ2時間以上）などを年度ごとにまとめた資料です。<strong>速報ではありません</strong>。</p>
+    ${soHtml}
+    ${soExtra.length ? cyberLinkList(soExtra) : ""}
+    <p class="cyber-src">出典：総務省ホームページ（題名・公表日・リンクを CBI が整理）</p>
+    <h3>📶 いま起きている通信障害（各社の公式ページ）</h3>
+    ${cyberLinkList(CYBER_LINKS.carriers)}
+    <h3>🏦 金融（公式ページへのリンク）</h3>
+    ${cyberLinkList(CYBER_LINKS.finance)}
+    <p class="cyber-muted">銀行・証券・決済サービスの個別の障害は、各社のお知らせで確認してください。</p>
+    <h3>🛰 サイバーの観測・公的機関（リンク）</h3>
+    ${cyberLinkList(CYBER_LINKS.cyber)}
+    <p class="cyber-muted">リンク先は取得・転載していません。最新の内容は各ページで確認してください。</p>`;
+}
+
+async function loadCyberPanel() {
+  if (cyberLoading) return;
+  if (Date.now() - cyberLoadedAt < 60000 && document.querySelector("#cyber-body .cyber-note")) return;   // 切り替えの連打で何度も読まない
+  cyberLoading = true;
+  try {
+    const res = await fetch(`cyber-status.json?_=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    renderCyberPanel(await res.json(), "");
+    cyberLoadedAt = Date.now();
+  } catch (error) {
+    console.error("通信・金融・サイバーの発表の読み込みに失敗:", error);
+    renderCyberPanel(null, error?.message || "接続エラー");
+  } finally {
+    cyberLoading = false;
+  }
 }
 
 function writeViewUrl(name, replace) {
@@ -15482,6 +15610,7 @@ function setView(name, opts = {}) {
   document.querySelectorAll("[data-views]").forEach(node => {
     node.classList.toggle("view-off", !node.dataset.views.split(/\s+/).includes(name));
   });
+  if (typeof view.onShow === "function") view.onShow();   // 用途に入るたびに呼ぶ（地図の位置は動かさない。onEnter は動かす）
   // 凡例の「›」（続きへ送る）の出し入れを測り直す。凡例の大きさは変わらず中身の幅だけ変わるので、自動では測り直されない
   document.getElementById("map-legend")?.dispatchEvent(new Event("scroll"));
   resetRightAccordion();

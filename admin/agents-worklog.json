@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-02",
+          "title": "防災MAPに「通信・金融・サイバー」の画面を新設：情報源の選定（公的2件を自動取得・他はリンクのみ）→取り込みスクリプト・自動更新・画面を実装 0.4時間",
+          "category": "実装",
+          "outputs": ["site/inzai-disaster-map/pipeline/build_cyber_status.py（新規）", "site/inzai-disaster-map/cyber-status.json（新規）", "site/.github/workflows/cyber-status.yml（新規）", "site/inzai-disaster-map/index.html", "site/inzai-disaster-map/app.js", "site/inzai-disaster-map/styles.css", "site/admin/changelog.json", "site/admin/agents-worklog.json（本件の記録）"],
+          "hours": 0.4,
+          "partnerApproved": true,
+          "note": "事業主決定：表示は事業者カード＋地図／範囲は3分野を最小構成／自動取得は公的な2件（JPCERT/CC・総務省）のみ、他はリンクのみ。JPCERT/CC はリンクと引用が自由（出典明記）、総務省は政府標準利用規約準拠（出典・加工の明記）。位置を持つ発表は無いため地図の層は市境だけ。ローカルで幅375の表示・取得失敗時の赤表示・リンクのエスケープを確認。本番での表示と、GitHub Actions の初回実行は未確認。\nsession: e010c588-e98a-46b3-9c24-0d222043993c / output: 40,086 / cost: $5.54"
+        },
+        {
           "date": "2026-11-01",
           "title": "CBI管理画面のパスワードとCiDAO防災MAP運営の合言葉を、パスワードノートの受け取り箱へ担当＝CBIで追加／CiDAOの説明文の言い回しを1行に整理 0.29時間",
           "category": "事務",
