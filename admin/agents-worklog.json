@@ -18,6 +18,15 @@
       "actuals": [
         {
           "date": "2026-11-02",
+          "title": "通信・金融・サイバー画面の紹介動画をThreads・Instagram・Facebookへ投稿 0.16時間",
+          "category": "広報",
+          "outputs": ["site/assets/sns/2026-11-02_cyber-status/cyber_status_9x16.mp4", "scripts/promo/cyber_status/post_text_threads.txt", "予約キュー q1793607350887（Threads）・q1793607358370（Facebook）", "Instagram は直接公開"],
+          "hours": 0.16,
+          "partnerApproved": false,
+          "note": "事業主の「公開して」（動画と本文の提示後）で投稿。取り込み試験で Instagram が100秒かかり予約キューの待ち（最長100秒）を超えるおそれがあったため、Instagram だけ直接公開（取り込み43秒・1回だけ公開）。Threads は500字制限のためハッシュタグ行を外した487字版。3媒体とも実投稿を読み戻して確認：Instagram https://www.instagram.com/reel/DfO20ZYDcJi/ ・Threads https://www.threads.com/@communitybankinzai/post/DfO3wP-k0Fm ・Facebook https://www.facebook.com/reel/1545459394283707/ 。画面の旧機関名（内閣サイバーセキュリティセンター）は直さずに投稿。前回の記録（output 159,573）からの差分で算出。\nsession: e010c588-e98a-46b3-9c24-0d222043993c / output: 175,099 / cost: $28.05（累計）"
+        },
+        {
+          "date": "2026-11-02",
           "title": "通信・金融・サイバー画面のSNS向け紹介動画（縦型96秒）を制作 0.55時間",
           "category": "広報",
           "outputs": ["scripts/promo/cyber_status/scenes.json", "scripts/promo/cyber_status/record.mjs", "scripts/promo/cyber_status/compose.py", "scripts/promo/cyber_status/build_voice.py", "scripts/promo/cyber_status/post_text.txt", "scripts/promo/cyber_status/out/cyber_status_9x16.mp4"],
@@ -8979,12 +8988,12 @@
       "plans": [
         {
           "due": "未定",
-          "title": "📣 通信・金融・サイバー画面の紹介動画をSNSへ投稿する（本文 scripts/promo/cyber_status/post_text.txt）",
-          "category": "広報",
-          "priority": "中",
-          "status": "待ち",
-          "blockedBy": "事業主が動画と本文を承認すること",
-          "note": "画面の「内閣サイバーセキュリティセンター」は現在の名称「国家サイバー統括室」と異なる。直すかは事業主の判断待ち。実機スマホ表示も未確認。"
+          "title": "🛡 防災MAP 通信・金融・サイバー画面のリンク名「内閣サイバーセキュリティセンター」を現在の名称「国家サイバー統括室」へ直すか決める",
+          "category": "保守",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "事業主が直すかを決めること（app.js の CYBER_LINKS.cyber の1行。紹介動画は旧名のまま投稿済み）",
+          "note": "2026-11-02 の紹介動画の制作中に発見。リンク先 cyber.go.jp は現在「内閣官房 国家サイバー統括室」と名乗っている。"
         },
         {
           "due": "2026-11-11",
