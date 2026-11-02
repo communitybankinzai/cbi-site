@@ -29,6 +29,10 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: 部品を入れる
+        # 総務省の「個々の事故の一覧（Excel）」を読むために openpyxl が要る
+        run: pip install --quiet openpyxl
+
       - name: 公的な2件を読む
         run: python inzai-disaster-map/pipeline/build_cyber_status.py
 

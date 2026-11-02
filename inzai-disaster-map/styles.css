@@ -4320,15 +4320,15 @@ body.view-focus .legend-more { height: var(--legend-h, 37px); }
    用途以外では data-views="cyber" により .view-off で隠れる。
    ───────────────────────────────────────────────────────────── */
 .view-tile.is-cyber { --tile: #5b3fa0; }
-.cyber-panel { position: absolute; left: 8px; bottom: 28px; z-index: 1050; box-sizing: border-box; width: min(460px, calc(100% - 16px)); max-height: calc(100% - 150px); display: flex; flex-direction: column; background: rgba(255, 255, 255, .97); border: 1px solid #b9c4d3; border-left: 6px solid #5b3fa0; border-radius: 12px; box-shadow: 0 2px 10px rgba(15, 30, 60, .25); color: #16324f; }
-.cyber-sheet { display: flex; flex-direction: column; min-height: 0; }
-.cyber-sheet > summary { cursor: pointer; list-style: none; padding: 9px 12px; font-size: 14px; font-weight: 700; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.cyber-panel { position: absolute; left: 8px; bottom: 28px; z-index: 1050; box-sizing: border-box; width: min(460px, calc(100% - 16px)); max-height: calc(100% - 150px); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; background: rgba(255, 255, 255, .97); border: 1px solid #b9c4d3; border-left: 6px solid #5b3fa0; border-radius: 12px; box-shadow: 0 2px 10px rgba(15, 30, 60, .25); color: #16324f; }
+.cyber-sheet { min-height: 0; }
+.cyber-sheet > summary { position: sticky; top: 0; z-index: 1; background: rgba(255, 255, 255, .98); border-radius: 12px; cursor: pointer; list-style: none; padding: 9px 12px; font-size: 14px; font-weight: 700; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
 .cyber-sheet > summary::-webkit-details-marker { display: none; }
 .cyber-sheet > summary::after { content: "▾"; margin-left: auto; color: #55657a; }
 .cyber-sheet:not([open]) > summary::after { content: "▴"; }
 .cyber-sum-note { font-size: 11px; font-weight: 400; color: #55657a; }
 .cyber-sum-note.is-bad { color: #b3261e; font-weight: 700; }
-.cyber-body { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 12px 12px; font-size: 12.5px; line-height: 1.6; min-height: 0; }
+.cyber-body { padding: 0 12px 12px; font-size: 12.5px; line-height: 1.6; min-height: 0; }
 .cyber-body h3 { margin: 12px 0 4px; font-size: 13px; color: #16324f; }
 .cyber-note { margin: 0 0 4px; padding: 6px 8px; background: #f1ecfa; border-radius: 8px; color: #3b2a6b; }
 .cyber-muted { margin: 4px 0; color: #55657a; font-size: 12px; }
@@ -4346,3 +4346,13 @@ body.view-focus .legend-more { height: var(--legend-h, 37px); }
 @media (max-width: 820px) {
   .cyber-panel { left: 6px; right: 6px; width: auto; max-height: calc(100% - 130px); }
 }
+.cyber-body h4 { margin: 10px 0 2px; font-size: 12.5px; color: #16324f; }
+.cyber-incidents { margin: 4px 0; padding: 0; list-style: none; }
+.cyber-incidents li { padding: 6px 0; border-bottom: 1px solid #e3e9f0; }
+.cyber-incidents li:last-child { border-bottom: 0; }
+.cyber-inc-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; }
+.cyber-inc-when { color: #44546a; font-size: 12px; }
+.cyber-inc-sum { margin-top: 2px; }
+.cyber-inc-link { margin-top: 2px; font-size: 12px; }
+.cyber-inc-link a { color: #1a5fb4; }
+.cyber-kind.is-serious { background: #fde7e5; color: #b3261e; font-weight: 700; }

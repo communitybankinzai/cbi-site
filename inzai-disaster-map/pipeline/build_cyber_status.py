@@ -2,7 +2,8 @@
 
 自動で取るのは公的な2件だけ（2026-11-02 事業主決定）。ほかの事業者・団体のページは地図の画面にリンクを置くだけで取らない。
   - JPCERT/CC の注意喚起・緊急報告（RSS 1.0）… 見出し・日付・リンクだけを持つ（本文は写さない）。
-  - 総務省「電気通信事故の発生状況」… 年度ごとの報道資料（PDF）の題名・公表日・リンクだけを持つ（PDF の中身は読まない）。
+  - 総務省「電気通信事故の発生状況」… 年度ごとの報道資料（PDF）の題名・公表日・リンクと、個々の事故の一覧（Excel・openpyxl が要る）から
+    発生が新しい事故の 事業者名・発生日時・継続時間・影響利用者数・障害内容・発生要因・参考資料のリンク を持つ（PDF の中身は読まない）。
 
 取れなかった情報源は前回の値を残し、ok=false と error を付ける（画面は「取得できません」と出す。古い値を最新に見せない）。
 標準ライブラリだけで動く。使い方: python pipeline/build_cyber_status.py [--out cyber-status.json]
@@ -23,6 +24,7 @@ SOUMU_PAGE = "https://www.soumu.go.jp/menu_seisaku/ictseisaku/net_anzen/jiko/res
 SOUMU_BASE = "https://www.soumu.go.jp"
 JPCERT_KEEP = 8      # 画面に出す件数
 SOUMU_KEEP = 3
+INCIDENT_KEEP = 8    # 画面に出す事故の件数（発生が新しい順）
 HEARTBEAT_HOURS = 6  # 変化がなくても、この時間ごとには確認時刻を書き直す
 
 NS = {
@@ -65,6 +67,65 @@ def read_jpcert():
     return {"items": items[:JPCERT_KEEP]}
 
 
+def squeeze(text, limit):
+    """改行・連続空白を1つの空白にし、limit 字を超えたら「…」で切る。"""
+    s = re.sub(r"\s+", " ", str(text or "")).strip()
+    return s if len(s) <= limit else s[:limit - 1] + "…"
+
+
+def parse_occurred(text):
+    """総務省 Excel の発生日時（例 R8.2.9.6:52）を (表示用, ISO日付) にする。読めない形（旧様式の区切りなし等）は原文のまま・ISO は空。"""
+    m = re.match(r"^([RH])(\d+)\.(\d+)\.(\d+)\.(\d+):(\d+)", str(text or "").strip())
+    if not m:
+        return squeeze(text, 40), ""
+    year = int(m.group(2)) + (2018 if m.group(1) == "R" else 1988)
+    mon, day, hour, minute = (int(m.group(i)) for i in (3, 4, 5, 6))
+    rest = str(text).strip()[m.end():]
+    return f"{year}年{mon}月{day}日 {hour}:{minute:02d}{rest[:2] if rest.startswith('頃') else ''}", f"{year:04d}-{mon:02d}-{day:02d}T{hour:02d}:{minute:02d}"
+
+
+def read_incidents(excel_url):
+    """総務省「電気通信事故の発生状況」の個々の事故の一覧（Excel）から、発生が新しい事故を INCIDENT_KEEP 件取る。
+    列は見出しの名前で探す（列の並びが変わっても読める。見出しが無ければ例外＝画面は「取得できません」）。"""
+    import io
+    import openpyxl   # Actions では pip で入れる（cyber-status.yml）
+    wb = openpyxl.load_workbook(io.BytesIO(fetch(excel_url)), read_only=True, data_only=True)
+    rows = [["" if c is None else str(c) for c in r] for r in wb.worksheets[0].iter_rows(values_only=True)]
+    if not rows:
+        raise ValueError("Excel が空でした")
+    head = [h.replace("\n", "").strip() for h in rows[0]]
+
+    def col(prefix):
+        for i, h in enumerate(head):
+            if h.startswith(prefix):
+                return i
+        raise ValueError(f"Excel に「{prefix}」の列がありません（様式が変わった可能性）")
+    idx = {k: col(v) for k, v in {
+        "no": "No", "year": "発生年度", "operator": "事業者名", "occurred": "発生日時", "duration": "継続時間",
+        "users": "影響利用者数", "summary": "障害内容", "serious": "重大な事故への該当性", "cause": "発生要因", "ref": "参考資料",
+    }.items()}
+    out = []
+    for r in rows[1:]:
+        if not r[idx["no"]].strip().isdigit():
+            continue   # 空行・前の行の続き
+        shown, iso = parse_occurred(r[idx["occurred"]])
+        ref = r[idx["ref"]].strip()
+        if not (ref.startswith("https://www.soumu.go.jp/") and ref.endswith(".pdf")):
+            ref = ""
+        dash = lambda s, n: ("" if s.strip() in ("ー", "－", "-", "") else squeeze(s, n))
+        out.append({
+            "no": int(r[idx["no"]]), "year": r[idx["year"]].strip(),
+            "operator": dash(r[idx["operator"]], 40), "occurred": shown, "occurredAt": iso,
+            "duration": dash(r[idx["duration"]], 30), "users": dash(r[idx["users"]], 70),
+            "summary": dash(r[idx["summary"]], 90), "serious": r[idx["serious"]].strip(),
+            "cause": r[idx["cause"]].strip(), "refUrl": ref,
+        })
+    if not out:
+        raise ValueError("Excel から事故の行を1件も読めませんでした")
+    out.sort(key=lambda x: (x["occurredAt"], x["no"]), reverse=True)
+    return {"total": len(out), "items": out[:INCIDENT_KEEP]}
+
+
 def read_soumu():
     html = fetch(SOUMU_PAGE).decode("cp932", errors="replace")
     reports = []
@@ -88,7 +149,18 @@ def read_soumu():
     em = re.search(r'href="(/main_content/\d+\.xlsx)"', html)
     if em:
         excel = SOUMU_BASE + em.group(1)
-    return {"pageUrl": SOUMU_PAGE, "excelUrl": excel, "reports": reports[:SOUMU_KEEP]}
+    result = {"pageUrl": SOUMU_PAGE, "excelUrl": excel, "reports": reports[:SOUMU_KEEP]}
+    # 事故の一覧（Excel）は別扱い：読めなくても年度ごとの資料の一覧は出せる。失敗時は前回の incidents を残し、incidentsOk=false にする
+    try:
+        if not excel:
+            raise ValueError("事故一覧（Excel）のリンクが見つかりません")
+        result["incidents"] = read_incidents(excel)
+        result["incidentsOk"] = True
+        result["incidentsError"] = ""
+    except Exception as exc:
+        result["incidentsOk"] = False
+        result["incidentsError"] = f"{type(exc).__name__}: {exc}"[:300]
+    return result
 
 
 def refresh(previous, reader):

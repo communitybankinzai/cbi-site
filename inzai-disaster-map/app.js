@@ -15513,6 +15513,39 @@ function cyberStatusLine(src) {
   return `<p class="cyber-state">最終確認 ${escapeHtml(cyberCheckedText(src.lastSuccessAt))}</p>`;
 }
 
+// 総務省の事故の一覧の継続時間（22d18h30m）を日本語にする。読めない形は原文のまま
+function cyberDuration(text) {
+  const s = String(text || "");
+  return /^\D*\d+[dhm]/.test(s) ? s.replace(/(\d+)d/g, "$1日").replace(/(\d+)h/g, "$1時間").replace(/(\d+)m/g, "$1分") : s;
+}
+
+function cyberIncidentsHtml(so) {
+  const items = Array.isArray(so?.incidents?.items) ? so.incidents.items : [];
+  if (so && so.incidentsOk === false) {
+    return `<p class="cyber-state is-bad">事故の一覧（Excel）を取得できません。${items.length ? "下は前回取得分です。" : ""}総務省のページで確認してください。</p>${items.length ? cyberIncidentListHtml(items) : ""}`;
+  }
+  return items.length ? cyberIncidentListHtml(items) : `<p class="cyber-muted">表示できる事故がありません。</p>`;
+}
+
+function cyberIncidentListHtml(items) {
+  return `<ul class="cyber-incidents">${items.map(item => {
+    const link = /^https:\/\//.test(item.refUrl || "") ? `<a href="${escapeHtml(item.refUrl)}" target="_blank" rel="noreferrer">資料（PDF）</a>` : "";
+    const meta = [
+      item.duration ? `継続 ${cyberDuration(item.duration)}` : "",
+      item.users ? `影響 ${item.users}` : ""
+    ].filter(Boolean).map(escapeHtml).join("／");
+    return `<li>
+        <div class="cyber-inc-head"><strong>${escapeHtml(item.operator || "（事業者名の記載なし）")}</strong>
+          <span class="cyber-kind">${escapeHtml(item.year || "")}</span>
+          ${item.serious === "要" ? `<span class="cyber-kind is-serious">重大な事故</span>` : item.serious === "否" ? `<span class="cyber-kind">重大な事故には該当せず</span>` : ""}
+          ${item.cause ? `<span class="cyber-kind">${escapeHtml(item.cause)}</span>` : ""}</div>
+        <div class="cyber-inc-when">${escapeHtml(item.occurred || "発生日時の記載なし")}${meta ? `　${meta}` : ""}</div>
+        ${item.summary ? `<div class="cyber-inc-sum">${escapeHtml(item.summary)}</div>` : ""}
+        ${link ? `<div class="cyber-inc-link">${link}</div>` : ""}
+      </li>`;
+  }).join("")}</ul>`;
+}
+
 function renderCyberPanel(data, failed) {
   const body = document.getElementById("cyber-body");
   const sum = document.getElementById("cyber-sum-note");
@@ -15548,8 +15581,11 @@ function renderCyberPanel(data, failed) {
     ${cyberStatusLine(so)}
     <p class="cyber-muted">重大な事故（影響3万人以上かつ2時間以上）などを年度ごとにまとめた資料です。<strong>速報ではありません</strong>。</p>
     ${soHtml}
+    <h4>直近の事故（総務省の一覧から、発生が新しい${Array.isArray(so?.incidents?.items) ? so.incidents.items.length : 0}件${so?.incidents?.total ? `／全${Number(so.incidents.total)}件` : ""}）</h4>
+    ${cyberIncidentsHtml(so)}
+    <p class="cyber-muted">発生要因などの分類は総務省の一覧のとおりです。この分類だけでは、サイバー攻撃かどうかは分かりません。詳しくは各資料で確認してください。</p>
     ${soExtra.length ? cyberLinkList(soExtra) : ""}
-    <p class="cyber-src">出典：総務省ホームページ（題名・公表日・リンクを CBI が整理）</p>
+    <p class="cyber-src">出典：総務省ホームページ「電気通信事故の発生状況」（題名・公表日・一覧の項目を CBI が整理・長い文は短く切って掲載）</p>
     <h3>📶 いま起きている通信障害（各社の公式ページ）</h3>
     ${cyberLinkList(CYBER_LINKS.carriers)}
     <h3>🏦 金融（公式ページへのリンク）</h3>

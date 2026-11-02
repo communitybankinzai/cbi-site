@@ -1,6 +1,6 @@
 {
   "jpcert": {
-    "checkedAt": "2026-11-02T10:01:07+09:00",
+    "checkedAt": "2026-11-02T10:09:09+09:00",
     "items": [
       {
         "kind": "注意喚起",
@@ -47,10 +47,10 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-02T10:01:07+09:00"
+    "lastSuccessAt": "2026-11-02T10:09:09+09:00"
   },
   "soumu": {
-    "checkedAt": "2026-11-02T10:01:07+09:00",
+    "checkedAt": "2026-11-02T10:09:09+09:00",
     "pageUrl": "https://www.soumu.go.jp/menu_seisaku/ictseisaku/net_anzen/jiko/result.html",
     "excelUrl": "https://www.soumu.go.jp/main_content/001089876.xlsx",
     "reports": [
@@ -72,7 +72,118 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-02T10:01:07+09:00"
+    "lastSuccessAt": "2026-11-02T10:09:09+09:00",
+    "incidents": {
+      "total": 91,
+      "items": [
+        {
+          "no": 90,
+          "year": "令和7年度",
+          "operator": "株式会社TOKAIコミュニケーションズ",
+          "occurred": "2026年2月9日 6:52",
+          "occurredAt": "2026-02-09T06:52",
+          "duration": "約4h46m",
+          "users": "最大91,064人",
+          "summary": "電子メールの送受信ができない及び過去に受信したメールの閲覧ができない事象が発生",
+          "serious": "要",
+          "cause": "設備要因",
+          "refUrl": "https://www.soumu.go.jp/main_content/001082649.pdf"
+        },
+        {
+          "no": 89,
+          "year": "令和7年度",
+          "operator": "楽天モバイル株式会社",
+          "occurred": "2026年1月27日 14:00頃",
+          "occurredAt": "2026-01-27T14:00",
+          "duration": "約6h24m",
+          "users": "音声通話：約9.1万人 データ通信：約9.8万人",
+          "summary": "一部の利用者において音声通信サービスおよびデータ通信サービスが利用できない、もしくは利用しづらい事象が発生",
+          "serious": "要",
+          "cause": "人為要因",
+          "refUrl": "https://www.soumu.go.jp/main_content/001078747.pdf"
+        },
+        {
+          "no": 88,
+          "year": "令和7年度",
+          "operator": "NTT東日本株式会社",
+          "occurred": "2026年1月20日 10:07",
+          "occurredAt": "2026-01-20T10:07",
+          "duration": "1h21m",
+          "users": "約22万回線",
+          "summary": "北海道内一部エリアのメタルIP電話サービスとの通話が片通話になる事象が発生",
+          "serious": "要",
+          "cause": "人為要因",
+          "refUrl": "https://www.soumu.go.jp/main_content/001078747.pdf"
+        },
+        {
+          "no": 87,
+          "year": "令和7年度",
+          "operator": "株式会社NTTドコモ",
+          "occurred": "2025年10月21日 12:15",
+          "occurredAt": "2025-10-21T12:15",
+          "duration": "3h52m",
+          "users": "最大325,564ユーザ",
+          "summary": "ドコモAビルに設置しているゲートウェイサーバのInternet Protocol Version 6（以下、「IPv6」という）用ルーティングテーブル領域の設定誤り（本来設定すべ…",
+          "serious": "要",
+          "cause": "人為要因",
+          "refUrl": "https://www.soumu.go.jp/main_content/001067531.pdf"
+        },
+        {
+          "no": 86,
+          "year": "令和7年度",
+          "operator": "NTT西日本株式会社",
+          "occurred": "2025年9月22日 15:50",
+          "occurredAt": "2025-09-22T15:50",
+          "duration": "22d18h30m",
+          "users": "固定電話（加入電話、ISDN）：7回線",
+          "summary": "長崎県五島市黄島町の全域でNTT西日本の通信サービスの一部が利用できない状況が発生した。",
+          "serious": "要",
+          "cause": "外的要因",
+          "refUrl": "https://www.soumu.go.jp/main_content/001067531.pdf"
+        },
+        {
+          "no": 91,
+          "year": "令和7年度",
+          "operator": "NTT西日本株式会社",
+          "occurred": "2025年9月16日 15:45",
+          "occurredAt": "2025-09-16T15:45",
+          "duration": "51m",
+          "users": "ひかり電話：最大約111万契約 固定電話（加入電話、INSネット）：最大約116万契約",
+          "summary": "ひかり電話・固定電話の発着信ができない状態及び緊急通報が繋がりにくい状態となった。",
+          "serious": "否",
+          "cause": "人為要因",
+          "refUrl": "https://www.soumu.go.jp/main_content/001067531.pdf"
+        },
+        {
+          "no": 85,
+          "year": "令和7年度",
+          "operator": "株式会社kubell",
+          "occurred": "2025年4月26日 7:41",
+          "occurredAt": "2025-04-26T07:41",
+          "duration": "23h44m",
+          "users": "①有料プラン契約数：最大約5.9万社 ➁無料プラン契約数：最大約8.3万社 ③音声サービス利用者数：316社",
+          "summary": "ビジネスチャットサービス「Chatwork」が5分または10分間隔で1分間オフラインとなる現象が発生した。",
+          "serious": "要",
+          "cause": "設備要因",
+          "refUrl": "https://www.soumu.go.jp/main_content/001047618.pdf"
+        },
+        {
+          "no": 84,
+          "year": "令和6年度",
+          "operator": "",
+          "occurred": "2025年1月28日 11:10",
+          "occurredAt": "2025-01-28T11:10",
+          "duration": "",
+          "users": "",
+          "summary": "広島県の宇品ビルと似島ビル間の通信に障害が発生し、調査を行ったところ当該ビル間を接続する中継光ケーブルが海底区間で損傷していることが判明した。 通信はう回路を経由し疎通確保できて…",
+          "serious": "否",
+          "cause": "外的要因",
+          "refUrl": "https://www.soumu.go.jp/main_content/001045794.pdf"
+        }
+      ]
+    },
+    "incidentsOk": true,
+    "incidentsError": ""
   },
-  "generatedAt": "2026-11-02T10:01:07+09:00"
+  "generatedAt": "2026-11-02T10:09:10+09:00"
 }
