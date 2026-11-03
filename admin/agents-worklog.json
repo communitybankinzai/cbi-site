@@ -11453,6 +11453,15 @@
     "A4": {
       "actuals": [
         {
+          "date": "2026-11-04",
+          "title": "イルミライ点灯式 当日告知「本日点灯」16秒の制作と11/14 12:00の3媒体予約 0.44時間",
+          "category": "広報",
+          "outputs": ["events/irumirai/告知_点灯式_映画ダイジェスト/（build_lighting.py・record_night_plates.mjs の lighting 組・動画・cover_当日.jpg・当日の本文2つ・README.md）", "site/assets/sns/2026-11-14_irumirai-lighting/video.mp4", "site/assets/sns/2026-11-14_irumirai-lighting/cover.jpg", "site/admin/changelog.json", "レザークラフト/広報部/BGM候補/BGM候補台帳.md"],
+          "hours": 0.44,
+          "partnerApproved": true,
+          "note": "事業主の指摘（同じ素材はくどい・クリスマスのBGMで）で、新しい4場面・游ゴシック・金と赤・甘茶の音楽工房「クリスマスの街」に変えて制作。取り込みテスト IG 69秒・Threads 27秒。予約 q1793740140136（Threads）・q1793740147888（IG）・q1793740156013（FB）11/14 12:00、読み戻しで本文・URL・日時・媒体が一致。時間は前回記録（output 85,928）からの差分。session: 23e4cfce-7c62-4879-a0fe-5dbe3447a7d5 / output: 129,825 / cost: $37.24"
+        },
+        {
           "date": "2026-11-03",
           "title": "武蔵屋お礼＋イルミライ夜景の公開告知 映画ダイジェスト動画の制作と3媒体予約 0.66時間",
           "category": "広報",

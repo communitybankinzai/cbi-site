@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-11-04",
+      "type": "content",
+      "target": "assets/sns/2026-11-14_irumirai-lighting/",
+      "title": "イルミライ★INZAI 点灯式の当日（11/14）に出す「本日点灯」の告知動画（縦16秒・クリスマスの曲）をSNS用に置いた",
+      "detail": "Threads・Instagram・Facebook の 11/14 12:00 の予約投稿が読む動画（video.mp4）とカバー（cover.jpg）。11/3 のお礼つき告知と同じに見えないよう、夜景モードの別の場面（ゲートへ飛び込む・見上げる・光の列・会場の上）と雪の演出で作った。",
+      "author": "Claude"
+    },
+    {
       "date": "2026-11-03",
       "type": "content",
       "target": "assets/sns/2026-11-03_irumirai-digest/",
