@@ -1,6 +1,6 @@
 {
   "jpcert": {
-    "checkedAt": "2026-11-03T06:50:12+09:00",
+    "checkedAt": "2026-11-03T16:02:34+09:00",
     "items": [
       {
         "kind": "注意喚起",
@@ -47,10 +47,10 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-03T06:50:12+09:00"
+    "lastSuccessAt": "2026-11-03T16:02:34+09:00"
   },
   "soumu": {
-    "checkedAt": "2026-11-03T06:50:13+09:00",
+    "checkedAt": "2026-11-03T16:02:34+09:00",
     "pageUrl": "https://www.soumu.go.jp/menu_seisaku/ictseisaku/net_anzen/jiko/result.html",
     "excelUrl": "https://www.soumu.go.jp/main_content/001089876.xlsx",
     "reports": [
@@ -72,7 +72,7 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-03T06:50:13+09:00",
+    "lastSuccessAt": "2026-11-03T16:02:34+09:00",
     "incidents": {
       "total": 91,
       "items": [
@@ -186,7 +186,7 @@
     "incidentsError": ""
   },
   "docomo": {
-    "checkedAt": "2026-11-03T06:50:14+09:00",
+    "checkedAt": "2026-11-03T16:02:36+09:00",
     "items": [
       {
         "title": "【お詫び/復旧】ドコモメールがご利用しづらい状況について",
@@ -221,10 +221,10 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-03T06:50:14+09:00"
+    "lastSuccessAt": "2026-11-03T16:02:36+09:00"
   },
   "fsa": {
-    "checkedAt": "2026-11-03T06:50:15+09:00",
+    "checkedAt": "2026-11-03T16:02:36+09:00",
     "items": [
       {
         "category": "その他",
@@ -236,7 +236,7 @@
     "scanned": 15,
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-03T06:50:15+09:00"
+    "lastSuccessAt": "2026-11-03T16:02:36+09:00"
   },
-  "generatedAt": "2026-11-03T06:50:15+09:00"
+  "generatedAt": "2026-11-03T16:02:36+09:00"
 }
