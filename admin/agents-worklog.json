@@ -9002,7 +9002,7 @@
           "priority": "高",
           "status": "待ち",
           "blockedBy": "事業主が Cloud Console の割り当て（tile.googleapis.com の renderer 1日上限）を引き上げて、承認された値を伝えること",
-          "note": "2026-11-03 決定。直す先は CiDAO の RENDERER_LIMIT_PER_DAY（C:\Repos\cidao）・site/admin/admin.js・site/metaverse/index.html のフォールバック（rendererLimitPerDay || 500000 と quotaAutoSave の既定）。直さないと警告と自動節約のしきい値がずれる。上限の集計日は日本時間16時リセット。"
+          "note": "2026-11-03 決定。直す先は CiDAO の RENDERER_LIMIT_PER_DAY（C:/Repos/cidao）・site/admin/admin.js・site/metaverse/index.html のフォールバック（rendererLimitPerDay || 500000 と quotaAutoSave の既定）。直さないと警告と自動節約のしきい値がずれる。上限の集計日は日本時間16時リセット。"
         },
         {
           "due": "未定",
