@@ -2679,6 +2679,11 @@ try {
 const LITE_KEY = "cbi-meta-lite";
 const LITE_SSE = 24;
 const LITE_RES = 0.6;
+// 夜景（イルミライ）の既定の街並みの粗さ。8だと1人あたり4,000〜8,000枚のタイルを読み、
+// 2026-11-03 武蔵屋は1日の上限50万件を超えて街並みが粗くなった。夜景は明かりの点が主役なので少し粗くしても見栄えは大きく変わらない（2026-11-03）
+const NIGHT_SSE = 12;
+// 全員の本日のタイル取得が上限に近づいたときの自動節約（usageFetch が window.quotaSse に入れる）。7割で16、8.5割で24
+const QUOTA_SSE_WARN = 16, QUOTA_SSE_HIGH = 24;
 const LITE_DEFAULTS = {
   msaa: viewer.scene.msaaSamples,
   fxaa: (viewer.scene.postProcessStages && viewer.scene.postProcessStages.fxaa) ? viewer.scene.postProcessStages.fxaa.enabled : true,
@@ -2689,6 +2694,8 @@ function liteApplyTileset() {
   if (!tileset) return;
   const base = pendingSse !== null ? pendingSse : 8;
   let v = liteOn ? Math.max(base, LITE_SSE) : base;
+  if (window.nightOn) v = Math.max(v, NIGHT_SSE); // 🌃 夜景モードの既定（上限50万件の超過対策・2026-11-03）
+  if (window.quotaSse) v = Math.max(v, window.quotaSse); // 本日のタイル取得が上限に近いときの自動節約
   if (window.venueSse) v = Math.max(v, window.venueSse); // 🏟 会場モード（venue.js）の通信節約。白鳥は消さずに街並みだけ粗くする（2026-09-15）
   if (tileset.maximumScreenSpaceError !== v) tileset.maximumScreenSpaceError = v;
 }
@@ -6397,10 +6404,25 @@ function applyRenderQuality(sse) {
   liteApplyTileset(); // 軽量モード中は管理画面の値より粗い側を採る
   viewer.scene.requestRender();
 }
+// 本日の全員のタイル取得が1日の上限に近づいたら、街並みの粗さを自動で段階的に上げて以後の消費を減らす。
+// 上限を超えると詳細タイルが止まって街並みがぼやけるため、その手前で自分から粗くする（2026-11-03 武蔵屋で508,866件・上限50万件を超過）。
+// 数値は5分ごとの利用状況API（Cloud Monitoring・数分の遅れあり）。集計日は日本時間16時にリセットされるので、翌日に下がれば元に戻る
+function quotaAutoSave(d) {
+  if (!d || typeof d.todayRequests !== "number") return;
+  const rate = d.todayRequests / (d.rendererLimitPerDay || 500000);
+  const next = rate >= 0.85 ? QUOTA_SSE_HIGH : (rate >= 0.7 ? QUOTA_SSE_WARN : 0);
+  const prev = window.quotaSse || 0;
+  if (next === prev) return;
+  window.quotaSse = next;
+  liteApplyTileset();
+  if (next > prev && typeof showPickResult === "function") {
+    showPickResult("⚡ 本日の3Dタイル取得が上限の" + Math.round(rate * 100) + "%に近づいたため、街並みの細かさを自動で少し下げました（描画精度 " + next + "）", 9000);
+  }
+}
 function usageFetch() {
   if (document.hidden) return; // 画面を見ていない間は送らない（戻ってきたとき1回取り直す）
   fetch(USAGE_API).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-    .then(function (d) { usageInfo = d; applyRenderQuality(d.maximumScreenSpaceError); presenceRender(); })
+    .then(function (d) { usageInfo = d; quotaAutoSave(d); applyRenderQuality(d.maximumScreenSpaceError); presenceRender(); })
     .catch(function () { /* 取得できないときは人数だけ表示。精度は既定値のまま */ });
 }
 function presencePing() {
@@ -6690,7 +6712,7 @@ try {
 <script src="vs-race.js?v=20260913-5"></script>
 <script src="race-radar.js?v=20260913-2"></script>
 <!-- 🌃 夜景フライトモード（イルミライINZAI向け）。上の変数・関数をそのまま使うため、本体の直後に読む -->
-<script src="night.js?v=20260914-2"></script>
+<script src="night.js?v=20261103-1"></script>
 <script src="controls-guide.js?v=20260915-1"></script>
 <script src="musashiya.js?v=20261103-1"></script>
 <script src="tour.js?v=20261102-2"></script>

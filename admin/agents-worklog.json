@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-03",
+          "title": "イルミライ3D地図のタイル超過対策（原因調査・夜景の既定精度とクォータ連動の自動節約）0.2時間",
+          "category": "実装",
+          "outputs": ["metaverse/index.html", "metaverse/night.js", "metaverse/CLAUDE_HANDOFF.md", "admin/changelog.json", "admin/agents-worklog.json"],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "武蔵屋のタイル取得508,866件（上限50万件・日本時間16時リセット）を原因と見て、夜景の既定精度を8→12、全員の取得が上限の7割で16・8.5割で24へ自動で粗くする処理を追加。ローカルで値の切替を検証。Console側の上限引き上げは事業主操作。session: 23e4cfce-7c62-4879-a0fe-5dbe3447a7d5 / output: 22,061 / cost: $3.75"
+        },
+        {
           "date": "2026-11-02",
           "title": "通信・金融・サイバー画面の紹介動画をThreads・Instagram・Facebookへ投稿 0.16時間",
           "category": "広報",

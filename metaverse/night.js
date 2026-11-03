@@ -36,7 +36,7 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-10-21a";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-11-03a";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   // 録画（scripts/promo/record_musashiya.mjs がページ読み込み前に window.cbiRec を入れる）も受付を求めない。URL だけでは外せない（2026-09-14）
@@ -952,6 +952,7 @@
       capEl.classList.remove("show");
       if (tt.active) ttAbortNight("夜景モードを終了したので中止しました");
     }
+    if (typeof liteApplyTileset === "function") liteApplyTileset(); // 夜景中は街並みの粗さの下限を上げる（タイル取得の節約・2026-11-03）
     sc.requestRender();
   }
   window.nightRefresh = function () { if (window.nightOn) applyNight(true); };
