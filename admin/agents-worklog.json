@@ -11760,6 +11760,13 @@
       ],
       "plans": [
         {
+          "due": "2026-11-14",
+          "title": "📣 イルミライ点灯式 当日告知（11/14 12:00・3媒体）の公開を読み戻して確かめる",
+          "category": "広報",
+          "priority": "高",
+          "note": "予約 q1793740140136（Threads）・q1793740147888（IG）・q1793740156013（FB）。12:10以降に各媒体の投稿一覧を読み戻し、動画の再生と本文を確認して events/irumirai/告知_点灯式_映画ダイジェスト/README.md に投稿URLを書く。11/3 分の読み戻しと同じ手順"
+        },
+        {
           "due": "未定",
           "title": "🛠 antigravity-image スキルの記述を直す（headless の agy で command 権限が自動拒否され画像が出ない。settings.json の permissions.allow か手順の見直し）",
           "category": "保守",
