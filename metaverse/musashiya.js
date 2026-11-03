@@ -1086,6 +1086,16 @@
     if (state.on && typeof ttAbort === "function") ttAbort();
     hidePop(); speakStop(); closeModal();
   };
+  // 受付が次の人に替わったら、最初（白鳥の郷・開始画面）に戻す（2026-11-03 中司さん「交代したら途中からで困る」）。
+  // 走っている回は記録なしで取り消す。受付が空になっただけ（放置で解除）のときは受付画面が出るので、ここでは何もしない
+  window.addEventListener("cbi-login-changed", function () {
+    if (!state.entered) return;
+    if (typeof window.nightLogin === "function" && !window.nightLogin(1)) return;
+    if (state.on && typeof ttAbort === "function") ttAbort();
+    hidePop(); speakStop();
+    goHome();
+    setTimeout(openModal, 800);
+  });
   // 会場用：?mode=musashiya で開いたときは、文化財データの読み込みと受付が済んだところで開始画面を出す
   (function () {
     let tries = 0;
