@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-11-03",
+      "type": "content",
+      "target": "assets/sns/2026-11-03_irumirai-digest/",
+      "title": "武蔵屋マルシェのお礼と、イルミライ夜景モードの公開告知を1本にした映画ダイジェスト動画（縦54秒）をSNS用に置いた",
+      "detail": "Threads・Instagram・Facebook の 11/3 21:00 の予約投稿が読む動画（video.mp4）とカバー（cover.jpg）。第一章 武蔵屋マルシェ → 第二章 イルミライ★INZAI（いんザイ君の光のゲート）→ 11/14 点灯式にあわせた夜景モードの公開告知。",
+      "author": "Claude"
+    },
+    {
+      "date": "2026-11-03",
       "type": "fix",
       "target": "metaverse/",
       "title": "イルミライ（夜景）の3D地図が、来場者が増えても街並みが粗くならないよう、タイルの使い方を自動で抑えるようになった",

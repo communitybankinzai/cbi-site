@@ -11453,6 +11453,15 @@
     "A4": {
       "actuals": [
         {
+          "date": "2026-11-03",
+          "title": "武蔵屋お礼＋イルミライ夜景の公開告知 映画ダイジェスト動画の制作と3媒体予約 0.66時間",
+          "category": "広報",
+          "outputs": ["events/irumirai/告知_点灯式_映画ダイジェスト/（record_night_plates.mjs・build_digest.py・動画・カバー・本文2つ・README.md）", "site/assets/sns/2026-11-03_irumirai-digest/video.mp4", "site/assets/sns/2026-11-03_irumirai-digest/cover.jpg", "site/admin/changelog.json"],
+          "hours": 0.66,
+          "partnerApproved": true,
+          "note": "事業主の選択（告知＝3D夜景のWeb公開・お礼と1本に・縦60秒前後）で制作。夜景は現行の承認済みデザインで縦に撮り直し（root 2回）、お礼の昼の空撮とつないだ。取り込みテスト IG 47秒・Threads 32秒。予約 q1793703700570（Threads）・q1793703707943（IG）・q1793703716256（FB）21:00、読み戻しで本文・URL・日時・媒体が一致。お礼担当セッション（a8d1ac24）と調整し、お礼26秒版は単独では出さない。時間はセッション全体0.86hからタイル対策の0.2hを除いた値。session: 23e4cfce-7c62-4879-a0fe-5dbe3447a7d5 / output: 85,928 / cost: $23.70"
+        },
+        {
           "date": "2026-10-17",
           "title": "COCoLa朝カフェ会（10/18）のCBI応援告知をSNS3媒体へ投稿（17:39 成功）＋COCoLaアカウント用キャプション作成 0.3時間",
           "category": "広報",
