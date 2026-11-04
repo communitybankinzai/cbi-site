@@ -17,6 +17,15 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-04",
+          "title": "CBI公式メール自動仕分け（triageInbox）に一時エラー時の再試行を追加 0.2時間",
+          "category": "保守",
+          "outputs": ["gas-mail-share/MailTriage.gs"],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "Apps Script『CBI Gmail共有』の失敗通知（Gmail側の一時的なサーバーエラー）を調査。過去90日で7件、10/13以降の6件が集中していた。取りこぼしはなし（直近3日を30分ごとに再走査するため）。triageInbox を最大3回（10秒・20秒待ち）やり直す形に変更し、3回とも失敗したときだけ通知が出るようにした。本番GASへの貼り付けは事業主が実施（再デプロイ不要）。効果は今後の通知の有無で確認する。session: fb1d428a-7859-490a-9266-635442686bde / output: 18,636 / cost: $2.24"
+        },
+        {
           "date": "2026-11-03",
           "title": "イルミライ3D地図のタイル超過対策（原因調査・夜景の既定精度とクォータ連動の自動節約）0.2時間",
           "category": "実装",
@@ -8995,6 +9004,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-18",
+          "title": "📬 Gmail共有GASの失敗通知が減ったか確認する（再試行の効果判定）",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-11-04 に MailTriage.gs へ再試行（最大3回）を入れた。11/4〜11/18 に 『Summary of failures for Google Apps Script: CBI Gmail共有』が届いていなければ成功。届いた場合は3回とも失敗した本当の障害か、貼り付けの不具合かを実行ログ（仕分け失敗 n/3 回目）で切り分ける。検索は Web API で from:noreply-apps-scripts-notifications@google.com newer_than:14d。"
+        },
+        {
+          "due": "2026-11-11",
+          "title": "🔗 CBI Gmail共有GASの scriptId を記録する（エディタ直リンクを作れるようにする）",
+          "category": "保守",
+          "priority": "低",
+          "status": "待ち",
+          "blockedBy": "事業主が『CBI Gmail共有』のエディタのURL（script.google.com/d/…/edit）を伝えること",
+          "note": "scriptId が記録のどこにも無く（.clasp.json も credentials.md も無し）、GAS作業の依頼で直リンクを貼れない。URLを受け取ったら gas-mail-share/README.md と credentials.md に書く。"
+        },
         {
           "due": "2026-11-13",
           "title": "🗺 Map Tiles の renderer 上限を引き上げたら、3か所の 500000 を同じ値に直す（イルミライ点灯式 11/14 の前）",
