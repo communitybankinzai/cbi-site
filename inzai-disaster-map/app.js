@@ -5790,10 +5790,13 @@ for (const el of document.querySelectorAll("#fire-history-range, #fire-history-p
 // GitHub Pages の CDN は URL ごとに覚えるので、毎回違う ?_= を付けて古い写しを返させない。同時に何度押しても読み込みは1回にまとめる
 function refreshFireMail() {
   if (fireMailFetching) return fireMailFetching;
+  // 見張りの最終確認時刻（CiDAO）は並行して取り、届いた時点で左下の札だけ描き直す。JSON の描画はこれを待たない
+  // （2026-11-06 改善提案：以前は Promise.all で両方を待っていたため、CiDAO（Vercel）の起動が遅いとマークと通知の案内まで数秒遅れた。
+  //  fetchFireWatchCheck は失敗しても投げない。上の抑止の後ろに置き、1回の読み直しにつき1回だけ呼ぶ）
+  fetchFireWatchCheck().finally(() => renderFireWatchBadge());
   fireMailFetching = (async () => {
     try {
-      // 見張りの最終確認時刻も同時に取る（fetchFireWatchCheck は失敗しても投げない）
-      const [res] = await Promise.all([fetch(`fire-incidents.json?_=${Date.now()}`, { cache: "no-store" }), fetchFireWatchCheck()]);
+      const res = await fetch(`fire-incidents.json?_=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`fire-incidents.json HTTP ${res.status}`);
       fireMailData = await res.json();
       renderFireMail(fireMailData);

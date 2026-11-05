@@ -5,7 +5,8 @@
 - **5分おきの自動読み直し**：`autoRefreshFireMail`（`setInterval` 5分＋`visibilitychange`）。消防の層（🔥💥🚑🗂）のどれかが ON で画面が表のときだけ。`fireMailFetchedAt` で間隔を守る（失敗時も叩き続けない）。描き直しで読んでいる途中のポップアップが閉じないよう、`renderFireMail` が開いていた件を控えて描き直した後に開き直す。
 - **検証**：ローカル 8799 で ①解除済みの件のリンク → 高花へ寄せて「すでに解除」のポップアップ ②無い id → 札に「反映しています…」と20秒後の再取得（ネットワーク一覧で確認）③ active に書き換えた件 → zoom 15・マークのポップアップ。CiDAO への CORS 失敗はローカルの origin のためで本番では出ない。**未確認**：本番の通知から実際に開く（次の火災・事故で確認）、実機スマホ、5分後の自動読み直しの実動（間隔を待っていない）。
 - **同時に直した既存の不具合**：`popupopen`／`popupclose` の SNS 用の処理が、マーク由来でない吹き出し（`L.popup().openOn(map)`・`_source` なし）で `snsRoadsLayer.hasLayer(undefined)` を呼び、Leaflet 1.9.4 では例外（`_leaflet_id` in undefined）。閉じるときに落ちて以後の吹き出しが開けなくなるため、`_source` の有無を先に見るようにした（「すでに解除」の吹き出しがこの経路）。
-- **関係ファイル**：app.js、index.html の `app.js?v=20261106a`。
+- **同日追記（改善提案の実施）**：`refreshFireMail` が JSON と CiDAO の最終確認を `Promise.all` で同時に待っていたのをやめ、JSON だけで先に描く。最終確認は並行して取り、届いた時点で札だけ描き直す（`fetchFireWatchCheck().finally(renderFireWatchBadge)`・抑止の後ろで1回だけ）。CiDAO の起動が遅くてもマークと通知の案内が遅れない。版名は `20261106b`。
+- **関係ファイル**：app.js、index.html の `app.js?v=20261106b`。
 
 ## 2026-11-02 🛡 通信・金融・サイバー（自然災害以外・?mode=cyber）
 
