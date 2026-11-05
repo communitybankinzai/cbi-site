@@ -5835,16 +5835,16 @@ function applyFireDeepLink() {
       setTimeout(() => {
         userMovedMap = true;   // 以後の自動あわせに動かされない
         inzaiFitDone = true;
-        map.flyTo([inc.lat, inc.lon], Math.max(map.getZoom(), 15), { duration: 0.8 });
-        map.once("moveend", () => {
-          const marker = fireMailMarkers.get(fireDeepLink.id);
-          if (marker && marker._map) { marker.openPopup(); return; }
-          // 記録はあるが地図に無い＝すでに解除（終了）になっている
-          const k = FIRE_MAIL_KIND[inc.kind] || FIRE_MAIL_KIND.fire;
-          L.popup({ maxWidth: 260 }).setLatLng([inc.lat, inc.lon])
-            .setContent(`<strong>${k.emoji} ${escapeHtml(k.label)}（${escapeHtml(inc.addressText || "")}付近）</strong><br><span class="reference-warning">この件はすでに解除（終了）になっています</span>`)
-            .openOn(map);
-        });
+        // アニメーションなしで寄せる。flyTo は requestAnimationFrame 頼みで、裏のタブ・隠れた画面では動き切らず moveend が来ないため、
+        // 開いた瞬間が裏でも（表に戻ったとき）その場所になっているようにする（2026-11-06 公開版の確認で判明）
+        map.setView([inc.lat, inc.lon], Math.max(map.getZoom(), 15), { animate: false });
+        const marker = fireMailMarkers.get(fireDeepLink.id);
+        if (marker && marker._map) { marker.openPopup(); return; }
+        // 記録はあるが地図に無い＝すでに解除（終了）になっている
+        const k = FIRE_MAIL_KIND[inc.kind] || FIRE_MAIL_KIND.fire;
+        L.popup({ maxWidth: 260 }).setLatLng([inc.lat, inc.lon])
+          .setContent(`<strong>${k.emoji} ${escapeHtml(k.label)}（${escapeHtml(inc.addressText || "")}付近）</strong><br><span class="reference-warning">この件はすでに解除（終了）になっています</span>`)
+          .openOn(map);
       }, wait);
     }
     renderFireWatchBadge();
