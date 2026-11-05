@@ -9038,7 +9038,7 @@
           "title": "💳 CiDAO（Vercel Pro）の Spend Management に上限を設定する（目安10ドル・Pause はオフ・アラートだけ受け取る）",
           "category": "保守",
           "priority": "中",
-          "note": "2026-11-06 に Pro 契約済み。設定は Vercel の cidao チーム > Settings > Billing > Spend Management > Add Budget（https://vercel.com/cidao/~/settings/billing）。Pause をオンにすると上限到達でまた402になる。従量分は今の使い方なら数ドル未満の見込み。通信が月100万回を超えると Flat Rate CDN の段階課金（+20ドル）がかかる可能性があるので、アラートのメールで気づけるようにする。"
+          "note": "2026-11-06 に Pro 契約済み。設定は Vercel の cidao チーム > Settings > Billing > Spend Management（https://vercel.com/cidao/~/settings/billing）。契約時に上限200ドルの予算が自動で入っているので、これを10〜20ドルに下げる（Pause 列も確認）。Pause をオンにすると上限到達でまた402になる。従量分は今の使い方なら数ドル未満の見込み。通信が月100万回を超えると Flat Rate CDN の段階課金（+20ドル）がかかる可能性があるので、アラートのメールで気づけるようにする。"
         },
         {
           "due": "未定",
