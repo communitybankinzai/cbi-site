@@ -17,6 +17,17 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-06",
+          "title": "CiDAO停止（Vercel無料枠超過・5:03〜7:35）の原因調査と、Pro契約の案内による復旧 0.5時間",
+          "category": "保守",
+          "outputs": [
+            "site/admin/agents-worklog.json（完了した予定4件の整理・新しい予定2件の登録）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": true,
+          "note": "原因：Vercel Hobby の Fluid Active CPU が無料枠4時間の130%に達し、11/5 3:48 の「24時間後に停止」警告のあと、11/6 5:03 にアカウントが停止（本番は全ページ 402 DEPLOYMENT_DISABLED）。事業主が N's factory の負担で Pro（月20ドル＋消費税約2ドル）に契約し、7:35 に200へ復旧（再開操作は不要・コード変更なし）。N's factory のサイトは GitHub Pages の静的ページのため移行不要と判断。停止中に飛んだ朝の定期同期5本（Vercel cron 6:20〜6:35）は翌朝まで古いまま。監視スクリプトが402を停止と判定しない問題を見つけて予定に登録。決着した予定（11/2 判断・準備・収益化前のPro化）は削除。 session: dec9d276-7a4f-427d-a5e4-df3939bb3aea / output: 47,247 / cost: $5.82"
+        },
+        {
           "date": "2026-11-05",
           "title": "卒業論文の最終仕上げ（Word正本化・図の追加・表記統一）＋発表スライド18枚と動画3本の作り直し＋防災マップのサイト表記をマップに統一 20.8時間",
           "category": "レポート",
@@ -9023,11 +9034,18 @@
       ],
       "plans": [
         {
-          "due": "2026-11-06",
-          "title": "🚨 CiDAOがVercel無料枠超過で停止中（11/6 5:03〜）。Pro化か12/5の自動解除待ちかを決める",
+          "due": "2026-11-07",
+          "title": "💳 CiDAO（Vercel Pro）の Spend Management に上限を設定する（目安10ドル・Pause はオフ・アラートだけ受け取る）",
           "category": "保守",
-          "priority": "高",
-          "note": "原因：Vercel Hobby の Fluid Active CPU が無料枠 4時間の130%に達し、11/5 3:48 に「24時間後に停止」の警告→11/6 5:03 に「Your account has been paused」。本番は全ページ HTTP 402 DEPLOYMENT_DISABLED（11/6 朝に実測）。Vercel は「Pro にするか30日待つ（2026-12-05 に自動解除）」と案内。以前は272%でも止まらなかったが今回は止まった（理由は不明）。止まっている間は CiDAO 全体・3Dワールド受付・災害MAPのうち cidao を呼ぶ層が使えない（記録上）。選択肢：A Pro化（月20ドル・約3,600円・即再開・予算なし [[feedback-cbi-no-budget]]）／B 12/5まで待つ（無料）／C 別の置き場へ移す（大工事）。Pro化は課金のため事業主本人の操作。再開は手動で1つずつ（自動では戻らない）。"
+          "priority": "中",
+          "note": "2026-11-06 に Pro 契約済み。設定は Vercel の cidao チーム > Settings > Billing > Spend Management > Add Budget（https://vercel.com/cidao/~/settings/billing）。Pause をオンにすると上限到達でまた402になる。従量分は今の使い方なら数ドル未満の見込み。通信が月100万回を超えると Flat Rate CDN の段階課金（+20ドル）がかかる可能性があるので、アラートのメールで気づけるようにする。"
+        },
+        {
+          "due": "未定",
+          "title": "🧾 CiDAO（Vercel Pro）の月約22ドルを N's factory が負担する形の帳簿上の扱い（寄付か立替か）を決める",
+          "category": "事務",
+          "priority": "中",
+          "note": "2026-11-06 に事業主が N's factory の負担で Pro 契約（請求書の宛名は N's factory）。CBI は予算がないため。寄付か立替かは会計判断。A8 の「Vercel Pro を協働事業の経費に計上するか」と一体で決める。経費の整理は保管庫 cidao/2026-10-18_CiDAO運営継続に必要な経費のまとめ.md。"
         },
         {
           "due": "2026-11-13",
@@ -9276,35 +9294,12 @@
             "note": "条件＝実際に開発・保守されているオープンソース／Vercelで動かす／成長や影響の見込み／行動規範（Code of Conduct）。NPOは「完全なオープンソースなら申請可」。提供＝3年で3,600ドル分のクレジット（月に直すと約100ドルで、Proの月20ドルを上回る）。いまの communitybankinzai/cidao は公開だが LICENSE が無く、オープンソースとは言えない。申請するならライセンス（MIT・AGPLなど。方針と法務の確認が要る）と CODE_OF_CONDUCT を足す。出典 https://vercel.com/open-source-program（2026-10-18確認）"
           },
           {
-            "due": "未定",
-            "title": "☁ 収益化を始める前に、VercelをProへ切り替える（Hobbyは非商用のみ）",
-            "category": "事務",
-            "priority": "中",
-            "status": "保留",
-            "blockedBy": "団体が収益化（参加費・決済・広告・運営の対価など）を始める時期が決まること",
-            "note": "Vercelの公正利用の方針では、Hobbyは非商用の個人利用のみ。支払いの受け付け・商品やサービスの宣伝・サイトの作成や運営の対価を受け取ることは商用に当たる（寄付を求めるのは商用に当たらない）。須田さんの案（団体・個人の登録や告知・集客・イベントに絞って収益化を目指す）が進む場合は、始める前にProへ。出典 https://vercel.com/docs/limits/fair-use-guidelines（2026-10-18確認）。2026-10-18 のLINEで須田さんが提案。"
-          },
-          {
             "due": "2026-10-31",
             "title": "☁ Vercel使用量：Usage画面の実測を書き写し、CiDAOのHTML資料とJarvis報告を更新する（CPU日別グラフに通知日を重ねる表示も足す）",
             "category": "保守",
             "priority": "高",
             "status": "進行中",
             "note": "【2026-10-26 進捗】事業主から Usage 画面（Fluid Active CPU）の画像が届き、①（実測 6時間24分/4時間・日別CPUの書き写し）と②（vercel_monitor 実行）は済み。残り＝③資料の作り直し（本文の「10/27に更新します」の言い回しも直す）④Jarvis の日別表示⑤11/1 の再通知の確認。判断日は 11/2（月）の朝に変更済み。【元の手順】手順＝①_vercel_usage_snapshots.json と日別の _vercel_daily_cpu.json に書き写す（棒の高さの読み取りは概算と明記）②py scripts/vercel_monitor.py ③py scripts/build_cidao_costs_doc.py のあと site で admin/proposals/cidao-operating-costs-v1.html だけを add→commit→push（git add -A 禁止）④Jarvisの cidao_vercel カードに、日ごとのCPUの上へ通知日の縦線を重ねる表示を足す（report-deck.js・report.py・テスト）⑤10/21・10/22・11/1 の再通知が来たかを確認し、合計が4時間を下回る日を見積もって報告する。詳細は保管庫 cidao/2026-10-18_Vercel警告の時系列グラフ部品とHTML資料.md"
-          },
-          {
-            "due": "2026-11-02",
-            "title": "☁ CiDAO を Vercel Pro に変えるか、メンバーの確認を取って決める（判断日＝11/2（月）の朝・事業主が 10/26 に 10/30 から変更）",
-            "category": "事務",
-            "priority": "高",
-            "note": "【2026-11-01 追記】11/1 04:05 に Fluid Active CPU 100% の再通知が届いた（10/18 の予想どおり＝超過は続いている）。同日7:52 の実測は cidao.vercel.app が200・停止なし（vercel_monitor の6:00も paused:false）。次の再通知は 11/15 04:05 ごろの見込み。資料＝管理画面「内部資料・提案資料」先頭の「CiDAO運営継続の経費とVercel使用量の警告の経過」。確認したいこと＝①費用（月約3,600円）を団体で負担してよいか ②支払い手段（団体の口座は未開設・11月の総会のあと開設予定）③期間（イベント前後の1か月だけか継続か）④無料プランの「個人・非商用」の条件に団体のサイトが当たらないか。事務局案（2026-10-26 更新）＝10/26 の実測は Fluid Active CPU 6時間24分/4時間で、4時間以下には戻っていない（直近は約10.5分/日。4時間以下には約8分/日＝約24%減が要り、どの削減でも 11/3 の窓は4時間超・概算）。事業主は 10/26 に「まだ様子を見たい」と決め、判断日を 10/30（金）→ 11/2（月）の朝に変更した（前日の Pro 化でも可）。11/2 朝の確認＝①https://cidao.vercel.app/ が200か（止まっていると 503 DEPLOYMENT_PAUSED）②管理画面「API・クラウド」の「Vercel の使用量警告」表 ③必要なら Usage 画面（https://vercel.com/cidao/~/usage）。止まっていなければ、様子見を続けるか Pro にするかをその場で決める。万一 11/3 に止まったら、Pro にしたうえで、ダッシュボードか API でプロジェクトを1つずつ手動で再開する（自動では戻らない・Vercel 公式）。準備は 10/31 まで（別の予定「Vercel Pro 化の準備」）。11/3 武蔵屋イベントに備える判断。"
-          },
-          {
-            "due": "2026-10-31",
-            "title": "☁ Vercel Pro 化の準備を済ませる（11/2 朝に決めたら、その場でできる状態に）：ログインの再確認・支払い手段・メンバーの合意・支出の上限",
-            "category": "事務",
-            "priority": "高",
-            "note": "目的＝11/2（月）朝に「Pro にする」と決めたとき、当日にログインや支払いで詰まらないようにする。①ログインの再確認＝Vercel(cidao) には Google アカウント＋iPhone「パスワード」アプリの6桁で入れる（10/26 に事業主が入れた方法・PC の Edge の InPrivate）。試行は1回ずつ。失敗が続くと制限（ロック）が掛かる。管理画面の説明文「GitHub でログイン」は実際と違う。②支払い手段＝団体の口座は未開設（11月の総会のあと開設予定）のため、誰のカードで立て替えるかを決める。③メンバーの合意＝管理画面「内部資料・提案資料」先頭の資料で、月約3,600円・期間（イベント前後の1か月だけか）・無料プランの「個人・非商用」の条件を確認してもらう。④支出の上限＝Pro にしたら Spend Management の通知（初期値は$200）を低めに設定し直す。⑤費用＝月$20（利用クレジット$20込み）。Hobby に戻すには Settings→Billing→Downgrade Plan（元のオーナー以外のメンバーは外れる）。日割りの扱いは未確認。出典＝Vercel 公式 https://vercel.com/docs/plans/pro-plan と https://vercel.com/kb/guide/why-is-my-account-deployment-blocked（2026-10-26確認）。"
           },
           {
             "due": "2026-10-31",
