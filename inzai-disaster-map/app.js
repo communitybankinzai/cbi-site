@@ -5699,6 +5699,16 @@ const fireEmsLayer = L.layerGroup();
 const fireAccidentLayer = L.layerGroup();
 let fireMailData = null;
 let fireMailFetching = null;
+let fireMailFetchedAt = 0;   // 最後に fire-incidents.json を読みに行った時刻（自動読み直しの間隔に使う）
+const FIRE_MAIL_AUTO_REFRESH_MS = 5 * 60 * 1000;   // 開きっぱなしの地図の読み直し間隔（見張りの確認間隔と同じ5分）
+const FIRE_DEEP_LINK_RETRY_MS = 20 * 1000;          // 通知リンクの件がまだ公開に無いときの読み直し間隔
+const FIRE_DEEP_LINK_MAX_MS = 5 * 60 * 1000;        // 通知リンクの件を待つ上限
+const fireMailMarkers = new Map();                  // 記録のid（小文字）→ 地図上のマーク。通知リンクの件へ寄せるため
+// 通知リンク（CiDAO のベル・プッシュ：?mode=fire#d=fire-<記録のid>）で開いたか。URL の # は setView が ?mode= を書き換えても残る
+const fireDeepLink = (() => {
+  const m = String(window.location.hash || "").match(/[#&]d=fire-([0-9a-f]{6,})/i);
+  return m ? { id: m[1].toLowerCase(), startedAt: Date.now(), done: false, timer: null, status: "" } : null;
+})();
 
 // 🗂 消防の履歴（2026-10-21追加・事業主指示「過去の消防関連調査をまとめてプロットする・どのへんで火災が起きやすいか」→ A案）
 // fire-incidents.json に残っている過去の出動を、終わったものも含めて重ねる（既定OFF）。上の「🔥 消防情報」は“いま続いているもの”だけ。
@@ -5792,11 +5802,73 @@ function refreshFireMail() {
       console.error("消防情報（火災）の読み込みに失敗:", error);   // 前に読めた表示（あれば）はそのまま残す
     } finally {
       fireMailFetching = null;
+      fireMailFetchedAt = Date.now();   // 失敗しても次の自動読み直しまで待つ（落ちている先を叩き続けない）
+      applyFireDeepLink();              // 通知リンクの件が読めたか確かめる（まだなら20秒後にもう一度）
       renderFireWatchBadge();
     }
   })();
   return fireMailFetching;
 }
+
+// ── 通知リンクの件へ案内（2026-11-06・事業主決定「A＋5分おき」）──
+// 見張り（scripts/fire_mail_watch.py）は「記録 → CiDAO へ通知 → git push」の順で、GitHub Pages の反映は push から約2分かかる。
+// そのため通知を押してすぐ開くと、公開の fire-incidents.json にまだその件が無い（2026-11-05 高花の事故で実際に起きた）。
+// 読めるまで20秒おきに最大5分読み直し、読めたらその場所へ寄せてポップアップを開く。利用者の操作（再読み込み）は要らない。
+function applyFireDeepLink() {
+  if (!fireDeepLink || fireDeepLink.done) return;
+  clearTimeout(fireDeepLink.timer);
+  fireDeepLink.timer = null;
+  const inc = (fireMailData?.incidents || []).find(i => String(i.id || "").toLowerCase() === fireDeepLink.id);
+  if (inc) {
+    fireDeepLink.done = true;
+    fireDeepLink.status = "";
+    if (Number.isFinite(inc.lat) && Number.isFinite(inc.lon)) {
+      // その種類の層が OFF なら ON にする（?mode=fire では火災・調査活動・事故の層は既定 ON。通知は救急支援には出ない）
+      const overlay = inc.kind === "ems" ? "fireEms" : inc.kind === "accident" ? "fireAccident" : "fireMail";
+      const box = document.querySelector(`input[data-overlay="${overlay}"]`);
+      if (box && !box.checked) box.click();
+      // setView は 320ms 後に市全域へ合わせ直す（fitToInzai）ので、それより後に寄せる
+      const wait = Math.max(0, 600 - (Date.now() - fireDeepLink.startedAt));
+      setTimeout(() => {
+        userMovedMap = true;   // 以後の自動あわせに動かされない
+        inzaiFitDone = true;
+        map.flyTo([inc.lat, inc.lon], Math.max(map.getZoom(), 15), { duration: 0.8 });
+        map.once("moveend", () => {
+          const marker = fireMailMarkers.get(fireDeepLink.id);
+          if (marker && marker._map) { marker.openPopup(); return; }
+          // 記録はあるが地図に無い＝すでに解除（終了）になっている
+          const k = FIRE_MAIL_KIND[inc.kind] || FIRE_MAIL_KIND.fire;
+          L.popup({ maxWidth: 260 }).setLatLng([inc.lat, inc.lon])
+            .setContent(`<strong>${k.emoji} ${escapeHtml(k.label)}（${escapeHtml(inc.addressText || "")}付近）</strong><br><span class="reference-warning">この件はすでに解除（終了）になっています</span>`)
+            .openOn(map);
+        });
+      }, wait);
+    }
+    renderFireWatchBadge();
+    return;
+  }
+  if (Date.now() - fireDeepLink.startedAt >= FIRE_DEEP_LINK_MAX_MS) {
+    fireDeepLink.done = true;
+    fireDeepLink.status = "通知の件はまだ地図に出ていません。公開が遅れているか、すでに解除された可能性があります。しばらくして開き直してください";
+    renderFireWatchBadge();
+    return;
+  }
+  fireDeepLink.status = "通知の件を地図に反映しています…（公開に1〜2分かかります）";
+  renderFireWatchBadge();
+  fireDeepLink.timer = setTimeout(() => refreshFireMail(), FIRE_DEEP_LINK_RETRY_MS);
+}
+
+// ── 開きっぱなしの地図でも新しい件が出るように（2026-11-06）──
+// 消防の層が ON で画面が表に出ているあいだは5分おきに読み直す（見張りの確認間隔と同じ）。
+// 裏に回っているタブはブラウザが間隔を伸ばすので、表に戻ったときに5分以上たっていればすぐ読み直す。
+function autoRefreshFireMail() {
+  if (document.visibilityState !== "visible") return;
+  if (![fireMailLayer, fireAccidentLayer, fireEmsLayer, fireHistoryLayer].some(layer => map.hasLayer(layer))) return;
+  if (Date.now() - fireMailFetchedAt < FIRE_MAIL_AUTO_REFRESH_MS - 5000) return;
+  refreshFireMail();
+}
+setInterval(autoRefreshFireMail, FIRE_MAIL_AUTO_REFRESH_MS);
+document.addEventListener("visibilitychange", autoRefreshFireMail);
 
 // 🔥 消防メールの見張りの最終確認（2026-10-21・事業主指示「『最終確認 ○分前』を表示」）。
 // 公開の fire-incidents.json の checkedAt は、変化がない間は約3時間ごとにしか書き換えない（見張りは5分ごとに確認している）ので、
@@ -5868,6 +5940,7 @@ function renderFireWatchBadge() {
         ? `<br><span>確認が届いていません。見張りが止まっている可能性があります。最新は消防本部（0476-45-5119）で確認してください</span>`
         : `<br><span>CBIの見張りがメールを確認した時刻です</span>`);
   }
+  if (fireDeepLink?.status) html += `<br><span class="fire-deep-link-status">${escapeHtml(fireDeepLink.status)}</span>`;
   el.classList.toggle("is-stale", stale);
   el.innerHTML = html;
   placeFireWatchBadge();
@@ -5905,9 +5978,12 @@ const FIRE_MAIL_KIND = {
 const FIRE_EMS_MAX_AGE_MS = 70 * 60 * 1000;
 
 function renderFireMail(data) {
+  // 読んでいる途中のポップアップが、5分おきの読み直しで閉じないよう、開いていた件を控えて描き直した後に開き直す
+  const openId = Array.from(fireMailMarkers).find(([, marker]) => marker.isPopupOpen?.())?.[0] || null;
   fireMailLayer.clearLayers();
   fireEmsLayer.clearLayers();
   fireAccidentLayer.clearLayers();
+  fireMailMarkers.clear();
   (data.incidents || []).forEach(inc => {
     if (inc.status !== "active") return;
     if (!Number.isFinite(inc.lat) || !Number.isFinite(inc.lon)) return;
@@ -5918,7 +5994,7 @@ function renderFireMail(data) {
     }
     const k = FIRE_MAIL_KIND[inc.kind] || FIRE_MAIL_KIND.fire;
     const received = roadClosureTime(inc.receivedAtIso, true);
-    L.marker([inc.lat, inc.lon], {
+    const marker = L.marker([inc.lat, inc.lon], {
       pane: "fireMailPane",
       icon: L.divIcon({ className: k.cls, html: k.emoji, iconSize: [26, 26], iconAnchor: [13, 13] }),
       title: `${k.label}：${inc.addressText || ""}`
@@ -5928,7 +6004,9 @@ function renderFireMail(data) {
       `<span class="reference-warning">${escapeHtml(k.warn)}</span><br>` +
       `<span style="font-size:11px;">出典：${escapeHtml(inc.source || "印西地区消防組合 災害案内メール配信サービス")}（テレガイド 0476-45-5119）</span>`
     ).addTo(isEms ? fireEmsLayer : inc.kind === "accident" ? fireAccidentLayer : fireMailLayer);
+    if (inc.id) fireMailMarkers.set(String(inc.id).toLowerCase(), marker);   // 通知リンクの件へ寄せるために控える
   });
+  if (openId && fireMailMarkers.get(openId)?._map) fireMailMarkers.get(openId).openPopup();
 }
 
 // 🚃 鉄道の運休・遅れ区間（2026-09-21追加）
@@ -8301,11 +8379,13 @@ function snsRoadPopupOptions() {
 
 // SNSの吹き出しを開いている間は、画面下の「通れない道／通れた道を追加」の帯を隠す（閉じれば戻る）。
 // 帯は地図の上に重なっているため、吹き出しの下半分（元の投稿の写真）が隠れていた（2026-09-25 事業主指摘・2回目）
+// ⚠ マーク由来でない吹き出し（L.popup().openOn(map)・_source なし）では hasLayer(undefined) が Leaflet 1.9.4 で例外になり、
+// 以後の吹き出しが開けなくなる。2026-11-06 通知リンクの「すでに解除」の吹き出しで当たったので _source の有無を先に見る
 map.on("popupopen", event => {
-  if (snsRoadsLayer.hasLayer(event.popup?._source)) document.body.classList.add("sns-popup-open");
+  if (event.popup?._source && snsRoadsLayer.hasLayer(event.popup._source)) document.body.classList.add("sns-popup-open");
 });
 map.on("popupclose", event => {
-  if (snsRoadsLayer.hasLayer(event.popup?._source)) document.body.classList.remove("sns-popup-open");
+  if (event.popup?._source && snsRoadsLayer.hasLayer(event.popup._source)) document.body.classList.remove("sns-popup-open");
 });
 
 function focusSnsRoad(id) {
