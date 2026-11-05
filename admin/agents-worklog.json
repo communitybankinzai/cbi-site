@@ -9023,6 +9023,20 @@
       ],
       "plans": [
         {
+          "due": "2026-11-06",
+          "title": "🚨 CiDAOがVercel無料枠超過で停止中（11/6 5:03〜）。Pro化か12/5の自動解除待ちかを決める",
+          "category": "保守",
+          "priority": "高",
+          "note": "原因：Vercel Hobby の Fluid Active CPU が無料枠 4時間の130%に達し、11/5 3:48 に「24時間後に停止」の警告→11/6 5:03 に「Your account has been paused」。本番は全ページ HTTP 402 DEPLOYMENT_DISABLED（11/6 朝に実測）。Vercel は「Pro にするか30日待つ（2026-12-05 に自動解除）」と案内。以前は272%でも止まらなかったが今回は止まった（理由は不明）。止まっている間は CiDAO 全体・3Dワールド受付・災害MAPのうち cidao を呼ぶ層が使えない（記録上）。選択肢：A Pro化（月20ドル・約3,600円・即再開・予算なし [[feedback-cbi-no-budget]]）／B 12/5まで待つ（無料）／C 別の置き場へ移す（大工事）。Pro化は課金のため事業主本人の操作。再開は手動で1つずつ（自動では戻らない）。"
+        },
+        {
+          "due": "2026-11-13",
+          "title": "🔧 vercel_monitor.py が「402 DEPLOYMENT_DISABLED」を停止と判定しない問題を直す（503 PAUSED だけを見ている）",
+          "category": "保守",
+          "priority": "高",
+          "note": "11/6 6:00 の見回りは status=402 を取ったのに paused=False のまま記録し、声も出さなかった。判定は scripts/vercel_monitor.py の check_site()（約201〜217行）。402・DEPLOYMENT_DISABLED も停止として扱い、Jarvis の cidao_vercel カードと声で知らせる。あわせて「Exceeded your limits（24時間後に停止）」メールを最優先の通知として拾う（11/5 3:48 の警告は丸1日気づかれなかった）。"
+        },
+        {
           "due": "未定",
           "title": "📄 卒論の4.2と参考文献(22)のフリーペーパーの記事を、発行後に発行元・発行日へ書き換える",
           "category": "レポート",
