@@ -5760,7 +5760,7 @@ const UNREAD_POLL_MS = 30000;
   const ORG_FIELDS = ['orgName', 'foundedDate', 'fiscalStartMonth', 'address', 'representative', 'viceRepresentative', 'treasurer', 'auditor'];
   // 活動報告書「主な活動（テーマ別）」の振り分け。更新履歴の target と title を上から順に照らし、最初に当たったテーマに入れる
   const ORG_THEMES = [
-    { name: '防災MAP（印西市 災害状況整合MAP）', desc: '避難所・ハザード・気象・通行止め・市民の冠水と「通れた道」の記録を1つの地図で確かめられる仕組み', re: /防災MAP|災害|disaster|冠水|被害マップ|通れた道|避難|水位|通行止め|内水/i },
+    { name: '防災マップ（印西市 災害状況整合マップ）', desc: '避難所・ハザード・気象・通行止め・市民の冠水と「通れた道」の記録を1つの地図で確かめられる仕組み', re: /防災MAP|防災マップ|災害|disaster|冠水|被害マップ|通れた道|避難|水位|通行止め|内水/i },
     { name: '3Dワールド（メタバース印西）', desc: '印西市の街並みを3Dで飛び回り、市の文化財50件を学べる仕組み', re: /メタバース|３D|3D|metaverse|文化財|夜景|鳶|白鳥|タイムトライアル|bunkazai|冒険|ずかん/i },
     { name: 'CiDAO（市民の提案・投票・人材バンク）', desc: '市民が地域の課題を提案し、投票し、担い手とつながる仕組み', re: /CiDAO|FreeFree|人材バンク|提案|投票|団体一覧|イベントカレンダー/i },
     { name: 'イベントへの参加・出展', desc: '', re: /イルミライ|武蔵屋|だんご|マルシェ|出展/ },

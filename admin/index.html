@@ -82,7 +82,7 @@ if (location.protocol === 'file:') {
       <button type="button" class="tab-btn" data-tab="bug-reports" role="tab" aria-selected="false">🐛 不具合レポート</button>
       <button type="button" class="tab-btn" data-tab="ledger" role="tab" aria-selected="false">💰 収支管理</button>
       <button type="button" class="tab-btn" data-tab="org" role="tab" aria-selected="false">📋 団体書類</button>
-      <button type="button" class="tab-btn" data-tab="metaverse" role="tab" aria-selected="false">🌐 ３D・防災MAP</button>
+      <button type="button" class="tab-btn" data-tab="metaverse" role="tab" aria-selected="false">🌐 ３D・防災マップ</button>
       <button type="button" class="tab-btn" data-tab="budget" role="tab" aria-selected="false">💰 予算</button>
       <button type="button" class="tab-btn" data-tab="apiusage" role="tab" aria-selected="false">📊 API・クラウド</button>
     </nav>
@@ -669,7 +669,7 @@ if (location.protocol === 'file:') {
       <!-- 2026-10-25 事業主指示：PCの画面の中の iPhone 15 で防災MAPを確認・プレゼンするページへの入口（メンバー向け。市民向けの防災MAPの入口には置かない）／2026-10-26 事業主指示で「3D・防災MAP」タブから「プレゼン」タブへ移動 -->
       <section class="panel" id="phone-preview-link" aria-labelledby="pres-phone-title">
         <h2 class="panel-title" id="pres-phone-title">📱 スマホ表示で見る（iPhone 15・プレゼン用）</h2>
-        <p class="panel-desc">PCの画面の中に iPhone 15 の枠を出し、防災MAPをスマホの表示のまま映します。外の会場では「プレゼン表示」が便利です（操作欄を隠して大きく表示。F キーで戻せます）。インターネット接続が必要です。</p>
+        <p class="panel-desc">PCの画面の中に iPhone 15 の枠を出し、防災マップをスマホの表示のまま映します。外の会場では「プレゼン表示」が便利です（操作欄を隠して大きく表示。F キーで戻せます）。インターネット接続が必要です。</p>
         <div role="group" aria-label="iPhone 15 表示の入口（新しいタブで開く）" style="display:flex; gap:8px; flex-wrap:wrap">
           <a class="btn btn-ghost btn-sm" href="../phone/" target="_blank" rel="noopener">開く（操作欄つき）</a>
           <a class="btn btn-ghost btn-sm" href="../phone/?present=1" target="_blank" rel="noopener">入口（プレゼン表示）</a>
@@ -1274,7 +1274,7 @@ if (location.protocol === 'file:') {
       <!-- 情報源の鮮度（2026-09-25）。古いデータが古いと気づかれないまま使われる事故が9/24に2件続いたため -->
       <section class="panel" id="source-health">
         <div class="panel-head-row">
-          <h2 class="panel-title">🩺 防災MAP 情報源の鮮度</h2>
+          <h2 class="panel-title">🩺 防災マップ 情報源の鮮度</h2>
           <span class="meta-note" id="sh-updated"></span>
           <button type="button" class="btn btn-ghost btn-sm" id="sh-refresh" aria-label="鮮度を更新" title="更新">↻</button>
         </div>
@@ -1298,11 +1298,11 @@ if (location.protocol === 'file:') {
       <!-- 2026-09-28 事業主決定A：防災MAPでよく使う機能（どの機能を残し、どれを減らすかを決めるため）。中身は cbi-feature-ranking.js -->
       <section class="panel" id="cbi-feature-ranking">
         <div class="panel-head-row">
-          <h2 class="panel-title">📊 防災MAP よく使う機能</h2>
+          <h2 class="panel-title">📊 防災マップ よく使う機能</h2>
           <label>期間 <select id="cbi-features-days"><option value="7">7日</option><option value="30" selected>30日</option><option value="90">90日</option></select></label>
           <button type="button" class="btn btn-ghost btn-sm" id="cbi-features-refresh" aria-label="よく使う機能を更新" title="更新">↻</button>
         </div>
-        <p class="panel-desc">防災MAPのボタン・レイヤー・見たいもの・吹き出しが、何回の訪問で使われたかの一覧（使われた訪問の多い順）。利用者が実際に押したものだけを数え、2026年9月28日から計測。押した場所や入力した文字は集めていません（防災MAPの「🔒 データの扱い」に記載）。</p>
+        <p class="panel-desc">防災マップのボタン・レイヤー・見たいもの・吹き出しが、何回の訪問で使われたかの一覧（使われた訪問の多い順）。利用者が実際に押したものだけを数え、2026年9月28日から計測。押した場所や入力した文字は集めていません（防災マップの「🔒 データの扱い」に記載）。</p>
         <p id="cbi-features-status" class="meta-note" role="status">読み込み待ち</p>
         <div id="cbi-features-table"></div>
       </section>
@@ -1312,7 +1312,7 @@ if (location.protocol === 'file:') {
           <span class="meta-note" id="mv-usage-updated"></span>
         </div>
         <p class="panel-desc">
-          3Dワールド画面の右上に出ている数字と、2Dの災害状況整合MAPの閲覧者数を、運営側で見やすく並べたものです（60秒ごとに自動更新）。
+          3Dワールド画面の右上に出ている数字と、2Dの災害状況整合マップの閲覧者数を、運営側で見やすく並べたものです（60秒ごとに自動更新）。
         </p>
         <p class="panel-desc mv-cost-note">
           <b>費用の見方</b>：Google への支払いが発生するのは「3Dワールドを開いた回数（root リクエスト）」だけです。
@@ -1329,8 +1329,8 @@ if (location.protocol === 'file:') {
         <div class="mv-kpi-grid" id="mv-kpi-grid">
           <div class="mv-kpi"><div class="mv-kpi-label">👥 いま参加中</div><div class="mv-kpi-value" id="mv-kpi-now">–</div><div class="mv-kpi-sub" id="mv-kpi-now-sub">直近90秒以内に合図のあった端末数</div></div>
           <div class="mv-kpi"><div class="mv-kpi-label">📅 本日の利用者</div><div class="mv-kpi-value" id="mv-kpi-visitors">–</div><div class="mv-kpi-sub" id="mv-kpi-visitors-sub">3Dワールドのみ・1ブラウザ＝1人として集計</div></div>
-          <div class="mv-kpi"><div class="mv-kpi-label">🗺 災害MAP いま</div><div class="mv-kpi-value" id="mv-kpi-dmap-now">–</div><div class="mv-kpi-sub">2Dの災害状況整合MAPを開いている端末数（直近90秒）</div></div>
-          <div class="mv-kpi"><div class="mv-kpi-label">🗺 災害MAP 本日</div><div class="mv-kpi-value" id="mv-kpi-dmap-today">–</div><div class="mv-kpi-sub">本日このMAPを見た人数（重複なし・日本時間）。3Dとは別集計で費用は発生しません</div></div>
+          <div class="mv-kpi"><div class="mv-kpi-label">🗺 災害マップ いま</div><div class="mv-kpi-value" id="mv-kpi-dmap-now">–</div><div class="mv-kpi-sub">2Dの災害状況整合マップを開いている端末数（直近90秒）</div></div>
+          <div class="mv-kpi"><div class="mv-kpi-label">🗺 災害マップ 本日</div><div class="mv-kpi-value" id="mv-kpi-dmap-today">–</div><div class="mv-kpi-sub">本日このマップを見た人数（重複なし・日本時間）。3Dとは別集計で費用は発生しません</div></div>
           <div class="mv-kpi"><div class="mv-kpi-label">🧱 本日のタイル取得</div><div class="mv-kpi-value" id="mv-kpi-tiles">–</div><div class="mv-kpi-sub" id="mv-kpi-tiles-sub">無償だが回数上限あり（50万回／日）。費用には影響しません</div></div>
           <div class="mv-kpi mv-kpi-cost"><div class="mv-kpi-label">💰 閲覧開始枠の消化<span class="mv-kpi-tag">費用が出るのはここだけ</span></div><div class="mv-kpi-value" id="mv-kpi-quota">–</div><div class="mv-kpi-sub"><div class="mv-bar"><div class="mv-bar-fill" id="mv-kpi-quota-bar"></div></div>3Dワールドを開いた回数／1日の上限</div></div>
         </div>

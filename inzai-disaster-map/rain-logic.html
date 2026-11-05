@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>雨の判定のしくみ｜印西市 災害状況整合MAP</title>
-<meta name="description" content="防災MAPの「通れない」「通れた」の記録に付けている雨の判定（冠水のおそれ・小雨・雨なし）の考え方・既定値の根拠・台風25号での当たり具合。数値を変えて誰でも試せます。">
+<title>雨の判定のしくみ｜印西市 災害状況整合マップ</title>
+<meta name="description" content="防災マップの「通れない」「通れた」の記録に付けている雨の判定（冠水のおそれ・小雨・雨なし）の考え方・既定値の根拠・台風25号での当たり具合。数値を変えて誰でも試せます。">
 <style>
 body{font:16px/1.85 system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;max-width:960px;margin:32px auto;padding:0 20px;color:#243546;background:#fff}
 h1{font-size:26px;margin-bottom:4px}
@@ -42,7 +42,7 @@ li{margin:5px 0}
 </head>
 <body>
 
-<p class="meta"><a href="./">← 防災MAPへ</a> ／ <a href="./kiroku-typhoon25.html">台風25号で、記録から分かったこと（やさしい説明）</a> ／ <a href="./data.html">データの扱い</a></p>
+<p class="meta"><a href="./">← 防災マップへ</a> ／ <a href="./kiroku-typhoon25.html">台風25号で、記録から分かったこと（やさしい説明）</a> ／ <a href="./data.html">データの扱い</a></p>
 
 <h1>雨の判定のしくみ</h1>
 <p class="lead">「通れない」「通れた」の記録に付けている「☔ 冠水のおそれ／🌦 小雨／🌤 雨なし」の決め方です。判定の版 <code>v2.1-2026-09-26</code>。作成：Community Bank INZAI（非営利・無償公開）</p>
@@ -148,12 +148,12 @@ li{margin:5px 0}
 <h2>5. 出典</h2>
 <ul>
   <li>雨量：気象庁 アメダス（10分値）。CBI が控えとして保存したもの。</li>
-  <li>記録：印西市 災害状況整合MAP の「通れない」「通れた」の記録（場所は約100m単位に丸めています）。</li>
+  <li>記録：印西市 災害状況整合マップ の「通れない」「通れた」の記録（場所は約100m単位に丸めています）。</li>
   <li>国土交通省「雨水管理総合計画策定ガイドライン（案）」令和3年11月。</li>
   <li>千葉市「雨水対策重点地区整備基本方針」。</li>
 </ul>
 <p class="meta">このページでは記録の場所を約100m単位に丸めているため、地図の判定とずれることがあります（台風25号の「通れない」記録では1件）。</p>
-<p class="meta">計算の中身は、防災MAPの記録に付けている判定と同じ式です（CiDAO <code>src/lib/disaster-rain-logic.ts</code>）。数値の誤りや改善点のご指摘は、防災MAPの「データの扱い」ページの連絡先までお願いします。</p>
+<p class="meta">計算の中身は、防災マップの記録に付けている判定と同じ式です（CiDAO <code>src/lib/disaster-rain-logic.ts</code>）。数値の誤りや改善点のご指摘は、防災マップの「データの扱い」ページの連絡先までお願いします。</p>
 
 <script>
 (function () {

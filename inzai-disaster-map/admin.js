@@ -356,7 +356,7 @@ function renderRecord(item) {
           <p class="record-meta">
             <span>${escapeHtml(formatDateTime(item.loggedAt))}</span>
             <span>${escapeHtml(item.owner || "担当未設定")}</span>
-            ${item.origin === "system" ? "<span>MAPから自動記録</span>" : ""}
+            ${item.origin === "system" ? "<span>マップから自動記録</span>" : ""}
           </p>
         </div>
         <span class="status-label">${escapeHtml(statusLabels[item.status])}</span>

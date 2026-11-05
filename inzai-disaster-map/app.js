@@ -14311,7 +14311,7 @@ function syncQuakeLatestCard() {
     ${latest.inzaiPending
       ? `<div class="quake-latest-hint">仮表示です。気象庁の詳細（震源・震度情報）が出ると、印西市の震度と正式な値に置き換わります。</div>`
       : latest.inzaiIntensity
-        ? `<div class="quake-latest-hint">印西市の周辺${QUAKE_SHINDO_RADIUS_KM}kmの震度MAPを地図に表示中${Number.isFinite(quakeShindoLayer.__count) ? `（${quakeShindoLayer.__count}地点）` : ""}。札を押すと${QUAKE_SHINDO_RADIUS_KM}km圏へ戻ります。</div>`
+        ? `<div class="quake-latest-hint">印西市の周辺${QUAKE_SHINDO_RADIUS_KM}kmの震度マップを地図に表示中${Number.isFinite(quakeShindoLayer.__count) ? `（${quakeShindoLayer.__count}地点）` : ""}。札を押すと${QUAKE_SHINDO_RADIUS_KM}km圏へ戻ります。</div>`
         : `<div class="quake-latest-hint">印西市では震度の記録がない地震です。札を押すと全国を拡大します。</div>`}
     <div class="quake-latest-step">
       <button type="button" id="quake-latest-prev" ${step.canPrev ? "" : "disabled"} title="1つ前（古い）の地震へ">◀ 前の地震</button>

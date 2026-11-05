@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>印西市 災害状況整合MAP</title>
-    <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況MAP">
+    <title>印西市 災害状況整合マップ</title>
+    <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況マップ">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="./styles.css?v=20261102d">
@@ -34,7 +34,7 @@
           <img src="../assets/cbi-logo.png" alt="CBI">
           <div>
             <p class="eyebrow">Community Bank INZAI / 防災情報支援</p>
-            <p class="view-gate-name">印西市 災害状況整合MAP</p>
+            <p class="view-gate-name">印西市 災害状況整合マップ</p>
           </div>
         </div>
         <h2 id="view-gate-title">何を見ますか？</h2>
@@ -70,7 +70,7 @@
           </a>
           <div>
             <p class="eyebrow">Community Bank INZAI / 防災情報支援</p>
-            <h1>印西市 災害状況整合MAP</h1>
+            <h1>印西市 災害状況整合マップ</h1>
             <!-- 用途を選んだあと、スマホでは見出しの代わりにいま見ている用途を出す（app.js の setView が文字を入れる） -->
             <p class="view-badge" id="view-badge" hidden></p>
           </div>
@@ -80,14 +80,14 @@
           <!-- 2026-09-28 事業主決定A：最上段の「対象日」は「⏱ 期間」の中（#range-panel の「別の日を見る」）へ移した。id は同じ -->
           <button class="tool-button" id="help-button" type="button">使い方</button>
           <!-- 2026-09-24: 「個人情報が抜かれるのでは」という不安で使われないため、何を送っていないか／送っているかを常時開けるようにした -->
-          <a class="tool-button top-data-link" href="./data.html" target="_blank" rel="noreferrer" title="このMAPが送るもの・送らないもの（氏名や連絡先は集めていません）">🔒 データの扱い</a>
+          <a class="tool-button top-data-link" href="./data.html" target="_blank" rel="noreferrer" title="このマップが送るもの・送らないもの（氏名や連絡先は集めていません）">🔒 データの扱い</a>
           <button class="tool-button official-button" id="official-links-button" type="button">公式情報</button>
           <button class="tool-button operator-toggle" id="operator-tools-toggle" type="button" aria-expanded="false" aria-controls="operator-tools" title="記録の登録・CSV出力など、運営・検証用の操作を出します">⚙ 運営用</button>
           <!-- 運営・検証用の操作。ふだんの利用者には見せない（⚙ 運営用 で開閉・端末に記憶・?ops=1 でも開く）。id と動作は変えていない -->
           <div class="operator-tools" id="operator-tools" hidden>
             <span class="connection-status" id="api-status">SNS API未接続</span>
             <span class="connection-status" id="operator-status">試作利用</span>
-            <span class="connection-status presence-chip" id="presence-chip" title="いまこのMAPを開いている人数（直近90秒）と、本日このMAPを見た人数（重複なし・日本時間）">👥 確認中</span>
+            <span class="connection-status presence-chip" id="presence-chip" title="いまこのマップを開いている人数（直近90秒）と、本日このマップを見た人数（重複なし・日本時間）">👥 確認中</span>
             <button class="tool-button primary" id="sns-collector-button" type="button">SNS投稿を登録</button>
             <button class="tool-button primary" id="add-point-button" type="button">地点追加</button>
             <button class="tool-button road-button" id="add-road-status-button" type="button">通行止め登録</button>
@@ -265,7 +265,7 @@
                     <span><span class="legend-line" style="background:#e07b39;height:10px"></span>高い</span>
                   </div>
 
-                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="roadRisk"> <span class="layer-name">🚗 道路の冠水リスク傾向（地形のみ・未校正）<span id="road-risk-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>国土地理院の標高から作った地形の指標を、OpenStreetMapの車道に割り当てて色分けしたものです。<strong>排水能力・路面高・アンダーパスは未考慮で、通行できるかどうかではありません。</strong>公式の通行止め情報が最優先です。</p><p>しきい値は実際の冠水実績と照合していません（未検証）。</p><p><a href="./simulation-spec.html" target="_blank" rel="noopener">技術仕様</a> · <a href="./LICENSE.md" target="_blank" rel="noopener">利用条件</a> · <a href="./naisui.html" target="_blank" rel="noopener">研究用MAPで詳しく見る</a></p></span></span></label>
+                  <label class="live-layer-label has-tip"><input type="checkbox" data-overlay="roadRisk"> <span class="layer-name">🚗 道路の冠水リスク傾向（地形のみ・未校正）<span id="road-risk-status">ONにすると読み込みます</span></span><span class="tip"><button class="tip-btn" type="button" aria-label="説明">ⓘ</button><span class="tip-body"><p>国土地理院の標高から作った地形の指標を、OpenStreetMapの車道に割り当てて色分けしたものです。<strong>排水能力・路面高・アンダーパスは未考慮で、通行できるかどうかではありません。</strong>公式の通行止め情報が最優先です。</p><p>しきい値は実際の冠水実績と照合していません（未検証）。</p><p><a href="./simulation-spec.html" target="_blank" rel="noopener">技術仕様</a> · <a href="./LICENSE.md" target="_blank" rel="noopener">利用条件</a> · <a href="./naisui.html" target="_blank" rel="noopener">研究用マップで詳しく見る</a></p></span></span></label>
                   <div class="jshis-layer-note road-risk-legend">
                     <span><span class="legend-line" style="background:#2f8ba3"></span>冠水リスク低</span>
                     <span><span class="legend-line" style="background:#e8b23a"></span>注意</span>
@@ -383,7 +383,7 @@
             <label class="range-label">CBIレイヤーの濃さ <input id="cbi-simulation-opacity" type="range" min="10" max="90" value="55" aria-label="CBIレイヤーの濃さ"></label>
             <div class="cbi-simulation-scale" aria-label="参考指標：0から100"></div>
             <div class="cbi-simulation-scale-label"><span>0：小さい</span><span>参考指標</span><span>100：大きい</span></div>
-            <p class="shelter-control-note"><a class="golink" href="./naisui.html" target="_blank" rel="noopener">▶ 道路ごとの冠水リスク傾向を見る（研究用MAP）</a><br>大雨のとき地形的に水がたまりやすい道を色分けした別画面です。排水能力は未考慮で、通行可否ではありません。</p>
+            <p class="shelter-control-note"><a class="golink" href="./naisui.html" target="_blank" rel="noopener">▶ 道路ごとの冠水リスク傾向を見る（研究用マップ）</a><br>大雨のとき地形的に水がたまりやすい道を色分けした別画面です。排水能力は未考慮で、通行可否ではありません。</p>
             <details class="mini">
               <summary>読み取るときの注意と出典</summary>
               <div class="mini-body">
@@ -509,7 +509,7 @@
           </details>
 
           <details class="acc vision-acc">
-            <summary>🏛 千葉県の大雨対策ビジョンとこのMAP<span class="cnt">11</span></summary>
+            <summary>🏛 千葉県の大雨対策ビジョンとこのマップ<span class="cnt">11</span></summary>
             <div class="acc-body">
               <div class="callout">
                 <span class="ico">📌</span>
@@ -675,7 +675,7 @@
                 </div>
               </details>
 
-              <p style="margin:10px 0 0"><a href="./naisui.html" target="_blank" rel="noopener">▶ 内水リスク推定（研究用MAP）にも同じ一覧があります</a></p>
+              <p style="margin:10px 0 0"><a href="./naisui.html" target="_blank" rel="noopener">▶ 内水リスク推定（研究用マップ）にも同じ一覧があります</a></p>
             </div>
           </details>
 
@@ -687,7 +687,7 @@
               <a href="https://www.city.inzai.lg.jp/bousaiportal/" target="_blank" rel="noreferrer">印西市防災ポータル</a>
               <!-- 2026-09-28 事業主決定A：土砂崩れ・り災証明・災害ごみ・応急修理などの市の案内は、個別ページでなく市のまとめページへ（市が追記していくため） -->
               <a href="https://www.city.inzai.lg.jp/bousaiportal/0000022580.html" target="_blank" rel="noreferrer">🏠 台風25号の被災者支援・手続き（市）</a>
-              <a href="https://www2.wagmap.jp/inzai/Portal" target="_blank" rel="noreferrer">印西市わが街ガイド（公式MAP）</a>
+              <a href="https://www2.wagmap.jp/inzai/Portal" target="_blank" rel="noreferrer">印西市わが街ガイド（公式マップ）</a>
               <a href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">印西市わが街ガイド オープンデータ</a>
               <a href="https://www.jma.go.jp/jma/kishou/know/bosai/riskmap.html" target="_blank" rel="noreferrer">気象庁キキクル</a>
               <a href="https://www.jma.go.jp/bosai/nowc/" target="_blank" rel="noreferrer">気象庁 雨雲の動き</a>
@@ -1841,7 +1841,7 @@
     <dialog id="help-dialog" class="modal help-modal">
       <form method="dialog">
         <div class="modal-header">
-          <h2>このMAPの使い方</h2>
+          <h2>このマップの使い方</h2>
           <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
         </div>
         <p class="modal-help">実際の運用を想定した操作を試せます。SNS投稿はリンクだけで先に登録し、場所が不明なときは投稿者へ確認してからピンを置く構想です。</p>
@@ -1851,7 +1851,7 @@
           <li><b>回答後にピン設定</b><span>分かった場所を地図上でクリックします。</span></li>
           <li><b>内容を確認して保存</b><span>分類、重要度、写真状態を確認します。</span></li>
         </ol>
-        <div class="help-note">CBIが自主的に試作している画面です（印西市の公式情報ではありません）。SNS投稿の登録や被害候補などの入力データは、このブラウザ内だけに保存され、印西市や運営者には送信されません。「通れない道を追加」「通れた道を追加」で記録した道だけは、匿名の位置が地図に送られ、ほかの人にも見えます。氏名・住所・電話・メールは集めていません（<a href="./data.html" target="_blank" rel="noreferrer">このMAPが送るもの・送らないもの</a>）。操作を試し、地域で役立ちそうか、心配な点は何か、どのような参加なら協力できそうかをご検討ください。</div>
+        <div class="help-note">CBIが自主的に試作している画面です（印西市の公式情報ではありません）。SNS投稿の登録や被害候補などの入力データは、このブラウザ内だけに保存され、印西市や運営者には送信されません。「通れない道を追加」「通れた道を追加」で記録した道だけは、匿名の位置が地図に送られ、ほかの人にも見えます。氏名・住所・電話・メールは集めていません（<a href="./data.html" target="_blank" rel="noreferrer">このマップが送るもの・送らないもの</a>）。操作を試し、地域で役立ちそうか、心配な点は何か、どのような参加なら協力できそうかをご検討ください。</div>
         <div class="modal-actions">
           <span></span><span></span>
           <button class="tool-button" type="button" data-close-dialog>閉じる</button>
@@ -1872,7 +1872,7 @@
 
         <div class="official-priority">
           <strong>避難や通行の判断は、必ず公式情報を優先してください。</strong>
-          <span>このMAPはCBIが自主的に試作しているもので、印西市の公式情報ではありません。市民が記録した冠水・通れた道は、公式に確認された通行止め・通行可ではありません。</span>
+          <span>このマップはCBIが自主的に試作しているもので、印西市の公式情報ではありません。市民が記録した冠水・通れた道は、公式に確認された通行止め・通行可ではありません。</span>
         </div>
 
         <div class="official-link-grid">
@@ -1891,8 +1891,8 @@
           <a class="official-link-card is-local" href="https://www2.wagmap.jp/inzai/Portal" target="_blank" rel="noreferrer">
             <span class="authority-label">印西市</span>
             <strong>印西市わが街ガイド</strong>
-            <small>洪水・土砂災害、内水など印西市の公式ハザードMAPを確認</small>
-            <span class="external-label">公式MAPを開く</span>
+            <small>洪水・土砂災害、内水など印西市の公式ハザードマップを確認</small>
+            <span class="external-label">公式マップを開く</span>
           </a>
           <a class="official-link-card is-local" href="https://www2.wagmap.jp/inzai/OpenData" target="_blank" rel="noreferrer">
             <span class="authority-label">印西市</span>
@@ -1927,25 +1927,25 @@
           <a class="official-link-card" href="https://teideninfo.tepco.co.jp/flash/12000000000.html" target="_blank" rel="noreferrer">
             <span class="authority-label">東京電力パワーグリッド</span>
             <strong>停電情報（千葉県）</strong>
-            <small>いま停電している地域と軒数を地図で確認。公式アプリ「TEPCO速報」に地域を登録すると停電の通知を受け取れます（このMAPへの重ね表示は許諾がないためリンクのみ）</small>
+            <small>いま停電している地域と軒数を地図で確認。公式アプリ「TEPCO速報」に地域を登録すると停電の通知を受け取れます（このマップへの重ね表示は許諾がないためリンクのみ）</small>
             <span class="external-label">停電情報を開く</span>
           </a>
           <a class="official-link-card" href="https://sip4dkit-web.bosai.go.jp/riskmap/index.html?appid=e327b28aea5447e983d87295e162aab9&amp;center=140.15,35.8&amp;level=11" target="_blank" rel="noreferrer">
             <span class="authority-label">防災科研（NIED）</span>
             <strong>リアルタイム洪水・土砂災害リスク情報マップ（β）</strong>
-            <small>実効雨量、洪水危険度、指定河川洪水予報を防災科研のページで確認（このMAPへの重ね表示は不可・リンクのみ）</small>
+            <small>実効雨量、洪水危険度、指定河川洪水予報を防災科研のページで確認（このマップへの重ね表示は不可・リンクのみ）</small>
             <span class="external-label">リスクマップを開く</span>
           </a>
           <a class="official-link-card" href="https://www.jartic.or.jp/" target="_blank" rel="noreferrer">
             <span class="authority-label">JARTIC</span>
             <strong>日本道路交通情報センター</strong>
-            <small>通行止め、規制、渋滞などを公式サイトで確認。現在このMAPへのデータ自動反映は未接続</small>
+            <small>通行止め、規制、渋滞などを公式サイトで確認。現在このマップへのデータ自動反映は未接続</small>
             <span class="external-label">道路交通情報を開く</span>
           </a>
           <a class="official-link-card" href="https://www.google.com/maps/@35.8325,140.1455,13z/data=!5m1!1e1" target="_blank" rel="noreferrer">
             <span class="authority-label">Google</span>
             <strong>Googleマップの渋滞状況（印西市周辺）</strong>
-            <small>道路の混み具合を色で確認（公式発表ではありません）。このMAPへの重ね表示は規約上できないためリンクのみ</small>
+            <small>道路の混み具合を色で確認（公式発表ではありません）。このマップへの重ね表示は規約上できないためリンクのみ</small>
             <span class="external-label">渋滞状況を開く</span>
           </a>
           <a class="official-link-card" href="https://www.mlit.go.jp/road/road_fr4_000208.html" target="_blank" rel="noreferrer">
@@ -2006,7 +2006,7 @@
 
         <div class="emergency-note">
           <strong>緊急時</strong>
-          <span>命の危険や救助は119、事件・事故は110へ。このMAPへの登録より通報を優先してください。</span>
+          <span>命の危険や救助は119、事件・事故は110へ。このマップへの登録より通報を優先してください。</span>
         </div>
 
         <div class="modal-actions">

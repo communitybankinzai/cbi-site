@@ -59,7 +59,7 @@
     svg.addEventListener('pointermove',e=>{const bounds=svg.getBoundingClientRect();const px=(e.clientX-bounds.left)*width/bounds.width;show(Math.max(0,Math.min(rows.length-1,Math.round((px-left)/(width-left-right)*(rows.length-1)))));});
     show(rows.length-1);return section;
   }
-  function drawCharts() {chartHost.replaceChildren(chart('world','３Dワールド'),chart('disaster-map','防災MAP'));}
+  function drawCharts() {chartHost.replaceChildren(chart('world','３Dワールド'),chart('disaster-map','防災マップ'));}
   new ResizeObserver(()=>{const width=chartHost.clientWidth;if(width>0&&width!==chartWidth){chartWidth=width;drawCharts();}}).observe(chartHost);
   function table(rows,key,title) {
     const days=[...new Set(rows.map(r=>r.day))].sort().reverse();
@@ -67,7 +67,7 @@
     const h=document.createElement('h3');h.textContent=title;wrapper.appendChild(h);
     const t=document.createElement('table');t.className='mv-fixes-table';
     const head=t.createTHead().insertRow();
-    ['日付','３Dワールド','防災MAP'].forEach(label=>{const th=document.createElement('th');th.textContent=label;head.appendChild(th);});
+    ['日付','３Dワールド','防災マップ'].forEach(label=>{const th=document.createElement('th');th.textContent=label;head.appendChild(th);});
     const body=t.createTBody();
     days.forEach(day=>{const tr=body.insertRow();tr.insertCell().textContent=day;
       ['world','disaster-map'].forEach(content=>tr.insertCell().textContent=number(rows.find(r=>r.day===day&&r.content===content)?.[key]));});
