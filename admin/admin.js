@@ -4967,9 +4967,33 @@ const UNREAD_POLL_MS = 30000;
     renderLedgerNotes();
   }
 
+  // 相殺に使える会費の残り（2026-11-06 会費は立替と相殺して精算する運用）
+  //   原資 ＝ 会費収入のうち支払方法「その他」で対象者＝立替者の記録（現金を受け取っていない会費）
+  //   原資は「精算済み」にした立替へ日付順に充当し、残った分だけを返す
+  //   （精算は1件まるごとで部分精算がないため、精算済みの立替に使った分は二重に引かない）
+  function ledgerOffsetPool(name) {
+    const ev = [];
+    state.ledger.entries.forEach(e => {
+      if (e.status !== 'active') return;
+      const amt = Number(e.amount) || 0;
+      if (e.type === 'income' && e.account === LEDGER_FEE_ACCOUNT && e.paymentMethod === 'その他' && e.feeMember === name) {
+        ev.push({ d: ledgerDateStr(e.date), k: 0, amt });
+      } else if (e.type === 'expense' && e.paidBy === name && String(e.settledDate || '')) {
+        ev.push({ d: ledgerDateStr(e.settledDate), k: 1, amt });
+      }
+    });
+    ev.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : a.k - b.k));
+    let pool = 0;
+    ev.forEach(x => { if (x.k === 0) pool += x.amt; else pool -= Math.min(pool, x.amt); });
+    return pool;
+  }
+
   // メンバー立替状況: 立替者ごとの件数・合計・精算済み・未精算残高（全期間、有効な支出のみ）
+  //   ＋ 相殺後の残額（未精算残高 − 相殺に使える会費の残り）と、次回の送金額の目安（月額 − 相殺後の残額）
+  //   会費を払う全員（LEDGER_MEMBERS）を並べる（立替のない人も「次回の送金額」を見られるように）
   function renderLedgerAdvances() {
     const stats = {};
+    LEDGER_MEMBERS.forEach(n => { stats[n] = { count: 0, total: 0, settled: 0, open: 0 }; });
     state.ledger.entries.forEach(e => {
       if (e.status !== 'active' || e.type !== 'expense' || !e.paidBy) return;
       const s = stats[e.paidBy] || (stats[e.paidBy] = { count: 0, total: 0, settled: 0, open: 0 });
@@ -4978,16 +5002,20 @@ const UNREAD_POLL_MS = 30000;
       s.total += amt;
       if (String(e.settledDate || '')) s.settled += amt; else s.open += amt;
     });
-    const names = Object.keys(stats).sort((a, b) => stats[b].open - stats[a].open);
+    const names = Object.keys(stats).sort((a, b) => (stats[b].open - stats[a].open) || a.localeCompare(b, 'ja'));
     $('ledger-advance-block').hidden = names.length === 0;
     $('ledger-advance-tbody').innerHTML = names.map(n => {
       const s = stats[n];
+      const remain = Math.max(0, s.open - ledgerOffsetPool(n));
+      const next = Math.max(0, LEDGER_MONTHLY_FEE - remain);
       return `<tr>
         <td>${escapeHtml(n)}</td>
         <td class="ledger-td-amount">${s.count}件</td>
         <td class="ledger-td-amount">¥${s.total.toLocaleString()}</td>
         <td class="ledger-td-amount">¥${s.settled.toLocaleString()}</td>
         <td class="ledger-td-amount">${s.open > 0 ? `<strong class="ledger-open-amount">¥${s.open.toLocaleString()}</strong>` : '¥0'}</td>
+        <td class="ledger-td-amount">${remain > 0 ? `<strong class="ledger-open-amount">¥${remain.toLocaleString()}</strong>` : '¥0'}</td>
+        <td class="ledger-td-amount">¥${next.toLocaleString()}</td>
       </tr>`;
     }).join('');
   }

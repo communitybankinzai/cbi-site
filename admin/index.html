@@ -894,12 +894,12 @@ if (location.protocol === 'file:') {
           <div class="ledger-table-wrap">
             <table class="ledger-table">
               <thead>
-                <tr><th>立替者</th><th class="ledger-th-amount">件数</th><th class="ledger-th-amount">立替合計</th><th class="ledger-th-amount">精算済み</th><th class="ledger-th-amount">未精算残高</th></tr>
+                <tr><th>立替者</th><th class="ledger-th-amount">件数</th><th class="ledger-th-amount">立替合計</th><th class="ledger-th-amount">精算済み</th><th class="ledger-th-amount">未精算残高</th><th class="ledger-th-amount">相殺後の残額</th><th class="ledger-th-amount">次回の送金額</th></tr>
               </thead>
               <tbody id="ledger-advance-tbody"></tbody>
             </table>
           </div>
-          <p class="meta-note">立替者が設定された支出（有効分）の集計です。精算の記録は各記録の「詳細」→「精算済みにする」から。</p>
+          <p class="meta-note">立替者が設定された支出（有効分）の集計です。精算の記録は各記録の「詳細」→「精算済みにする」から。「相殺後の残額」は未精算残高から、会費収入のうち支払方法「その他」（現金の受け取りなし＝立替と相殺）で登録した分を引いた額。「次回の送金額」は月額1,000円から相殺後の残額を引いた目安で、会費を払う全員を並べています。</p>
         </div>
         <p class="meta-note">証憑（レシート・領収書・電子メモ等）は Google Drive「CBI_収支証憑」に年度別保存。訂正・無効化はすべて履歴に自動記録され、物理削除はできません（税務調査対応）。</p>
       </section>
