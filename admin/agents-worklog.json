@@ -9068,12 +9068,12 @@
         },
         {
           "due": "未定",
-          "title": "🔐 Supabase の Database password 変更後に、Vercel の DATABASE_URL・.env.local・credentials.md・CBI の pg_cron 操作スクリプト8本を新しい値に更新する",
+          "title": "🔐 Vercel の環境変数 DATABASE_URL を新しい DB パスワードの値に貼り替える（実行時には未使用・急がない）",
           "category": "保守",
           "priority": "高",
           "status": "待ち",
-          "blockedBy": "事業主が Supabase ダッシュボード（Settings → Database）でパスワードを変更し、新しい値をパスワードノートの受け取り箱に入れる",
-          "note": "cidao の git 履歴（2026-06-27 scripts/seed-proposals.mjs・同日除去）にパスワード入り接続文字列が残っているため。スクリプトは apply-registry.py・cidao-sql.py・match-pdf-to-db.py・match-registry-to-db.py・route_snap.py・storage_watch.py・supabase-cron-list.py・vercel-cpu-cron-slow.py（DATABASE_URL を読む）"
+          "blockedBy": "事業主が Vercel（cidao → Settings → Environment Variables）を開くとき。値はパスワードノート「Supabase｜Database password（cidao…）｜2026-11-06」から",
+          "note": "2026-11-06 11:3x にパスワード変更済み（旧値は接続不可を確認）。.env.local・credentials.md・CBI のスクリプト8本（.env.local を読む）・パスワードノートの受け取り箱は更新済み。Vercel の値だけ旧いまま（実行時の cidao は Supabase の API 鍵で動くため影響なし。MCP 経由で値を渡すと会話記録に残るので事業主が貼る）。経緯：cidao の git 履歴（2026-06-27 scripts/seed-proposals.mjs・同日除去）にパスワード入り接続文字列が残っていたため。スクリプトは apply-registry.py・cidao-sql.py・match-pdf-to-db.py・match-registry-to-db.py・route_snap.py・storage_watch.py・supabase-cron-list.py・vercel-cpu-cron-slow.py（DATABASE_URL を読む）"
         },
         {
           "due": "未定",
