@@ -41,6 +41,7 @@ table.t { width: 100%; border-collapse: collapse; font-size: 14px; }
 table.t th, table.t td { padding: 9px 10px; border-bottom: 1px solid var(--c-line); text-align: left; vertical-align: top; }
 table.t th { font-size: 12px; color: var(--c-ink-sub); white-space: nowrap; background: var(--c-bg); }
 table.t td.n { white-space: nowrap; font-variant-numeric: tabular-nums; }
+table.t.kv td:first-child, table.t.kv th:first-child { white-space: nowrap; }
 .scroll-x { overflow-x: auto; }
 .note { font-size: 13px; color: var(--c-ink-sub); margin: 10px 0 0; }
 .ok { color: var(--c-green); font-weight: 700; }
@@ -55,6 +56,7 @@ ul.plain li { margin: 3px 0; }
   .section { padding: 18px 16px 16px; }
   table.t { font-size: 13px; }
   table.t th, table.t td { padding: 8px 8px; }
+  .scroll-x table.t { min-width: 540px; }
 }
 </style>
 </head>
@@ -101,13 +103,13 @@ ul.plain li { margin: 3px 0; }
     <h2>何を測ったか</h2>
     <p class="sub">対策を選ぶ前に、どこで量を使っているかを数字で確かめた</p>
     <h3>直近30日の使用量（Vercel の画面・11月2日）</h3>
-    <div class="scroll-x"><table class="t">
+    <div class="scroll-x"><table class="t kv">
       <tr><th>項目</th><th>使用量</th><th>無料枠</th></tr>
       <tr><td>CPU を使った時間</td><td class="n">5時間29分（平常日 約630秒/日）</td><td class="n">4時間（＝480秒/日）</td></tr>
       <tr><td>関数の呼び出し回数</td><td class="n">18.9万回（約6,300回/日）</td><td class="n">100万回</td></tr>
     </table></div>
     <h3>呼び出しはどこから来ているか（1日あたり・DBの記録から）</h3>
-    <div class="scroll-x"><table class="t">
+    <div class="scroll-x"><table class="t kv">
       <tr><th>呼び出し元</th><th>回数/日</th><th>備考</th></tr>
       <tr><td>防災マップを開いたとき</td><td class="n">約 400</td><td>1回開くと10〜13本のAPIを読む</td></tr>
       <tr><td>防災マップを開いたままの端末</td><td class="n">1台あたり 約1,400</td><td>在席の合図と定期の読み直し</td></tr>
@@ -116,7 +118,7 @@ ul.plain li { margin: 3px 0; }
       <tr><td><strong>説明できない分（検索ロボット等と推定）</strong></td><td class="n"><strong>約 2,400〜5,300</strong></td><td>ロボット向けの案内（robots.txt）が無く、全ページがサーバーで組み立てられていた</td></tr>
     </table></div>
     <h3>処理1回あたりの CPU 時間（本番と同じ構成を手元で起動して計測）</h3>
-    <div class="scroll-x"><table class="t">
+    <div class="scroll-x"><table class="t kv">
       <tr><th>種類</th><th>CPU（ミリ秒/回）</th><th>判断</th></tr>
       <tr><td>画面（トップ・イベント・団体・メンバーなど）</td><td class="n">22〜84</td><td>ロボットの回数を減らすのが効く</td></tr>
       <tr><td>軽いAPI（タイムライン・運休・消防見張りなど）</td><td class="n">0〜31</td><td>そのまま</td></tr>
@@ -128,7 +130,7 @@ ul.plain li { margin: 3px 0; }
 
   <section class="section" id="usage">
     <h2>1. 使う量を減らす（5つ）</h2>
-    <div class="scroll-x"><table class="t">
+    <div class="scroll-x"><table class="t kv">
       <tr><th>観点</th><th>前</th><th>後</th></tr>
       <tr><td>検索ロボットの巡回</td><td>制限なし。来るたびに CPU を使っていた</td><td>Google・Bing と SNS の見出し取得だけ許可。AI 学習用や SEO 業者のロボットは拒否。API・管理・本人の画面は全ロボット拒否</td></tr>
       <tr><td>重い処理（水位・冠水・通れた道・情報源の状態・避難所）</td><td>見るたびに毎回計算</td><td>1〜10分の間は前の結果を使い回す（県・市・外部サイトへ取りに行く間隔は変えていない）</td></tr>
@@ -141,7 +143,7 @@ ul.plain li { margin: 3px 0; }
 
   <section class="section" id="simplify">
     <h2>2. 余計なものを減らす</h2>
-    <div class="scroll-x"><table class="t">
+    <div class="scroll-x"><table class="t kv">
       <tr><th>対象</th><th>前</th><th>後</th></tr>
       <tr><td>使われていない API 4本</td><td>残っていた（うち1本は鍵なしで誰でもメールを送れた）</td><td>削除</td></tr>
       <tr><td>毎朝の自動取り込み</td><td>5本が毎日動き、下書きが118件たまっていた</td><td>号外NET は停止。Instagram のタグ検索と市のカレンダーは週1回（月曜朝）。団体アカウントと文化ホールは毎日のまま</td></tr>
@@ -175,7 +177,7 @@ ul.plain li { margin: 3px 0; }
 
   <section class="section" id="verify">
     <h2>確かめたこと</h2>
-    <div class="scroll-x"><table class="t">
+    <div class="scroll-x"><table class="t kv">
       <tr><th>確認</th><th>結果</th></tr>
       <tr><td>ビルドと自動テスト</td><td class="ok">成功（テスト645件すべて合格）</td></tr>
       <tr><td>本番の公開ページ13本・主要API</td><td class="ok">すべて正常（200）。削除した入口は404</td></tr>
