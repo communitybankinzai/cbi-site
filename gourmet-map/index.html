@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>印西 食レポマップ｜CBI</title>
+  <meta name="description" content="印西市と周辺の飲食店を店名で探して、SNSの食レポへ。食べた人が投稿のURLを貼ると、お店のピンに並びます。">
+  <meta property="og:title" content="印西 食レポマップ">
+  <meta property="og:description" content="印西市と周辺の飲食店を店名で探して、SNSの食レポへ。">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css?v=20261106a">
+</head>
+<body>
+  <header class="gm-header">
+    <div class="gm-title">
+      <h1>🍽 印西 食レポマップ</h1>
+      <p class="gm-lead">お店を探して、SNSの食レポへ。食べた人が投稿のURLを貼ると、お店のピンに並びます。</p>
+    </div>
+    <div class="gm-search">
+      <input id="gm-q" type="search" placeholder="店名・料理（ラーメン、カフェ…）で探す" autocomplete="off" aria-label="店名で探す">
+      <div id="gm-results" class="gm-results" hidden></div>
+    </div>
+    <div class="gm-filters">
+      <label class="gm-chip"><input type="checkbox" id="gm-only-reports"> 食レポのあるお店だけ</label>
+      <select id="gm-kind" aria-label="お店の種類"><option value="">すべての種類</option></select>
+      <button type="button" id="gm-latest-btn" class="gm-chip-btn">🆕 新着の食レポ</button>
+      <button type="button" id="gm-add-shop-btn" class="gm-chip-btn">＋ 地図に無いお店を足す</button>
+    </div>
+  </header>
+
+  <main class="gm-main">
+    <div id="gm-map" class="gm-map" aria-label="飲食店の地図"></div>
+    <div id="gm-status" class="gm-status" role="status">読み込んでいます…</div>
+    <div id="gm-pick-bar" class="gm-pick-bar" hidden>📍 お店の場所を地図でタップしてください <button type="button" id="gm-pick-cancel">やめる</button></div>
+
+    <aside id="gm-panel" class="gm-panel" hidden aria-live="polite">
+      <button type="button" class="gm-panel-close" id="gm-panel-close" aria-label="閉じる">✕</button>
+      <div id="gm-panel-body"></div>
+    </aside>
+  </main>
+
+  <dialog id="gm-dialog" class="gm-dialog">
+    <form id="gm-form" method="dialog" novalidate>
+      <h2 id="gm-form-title">食レポを貼る</h2>
+      <div id="gm-form-shop" class="gm-form-shop"></div>
+
+      <fieldset id="gm-new-shop" class="gm-new-shop" hidden>
+        <legend>新しいお店</legend>
+        <label>店名 <input id="gm-ns-name" maxlength="60" autocomplete="off" placeholder="例：〇〇食堂"></label>
+        <label>住所（わかる範囲で） <input id="gm-ns-address" maxlength="100" autocomplete="off" placeholder="例：印西市中央南1-1"></label>
+        <div class="gm-ns-pos">
+          <button type="button" id="gm-ns-geocode">住所から場所を探す</button>
+          <button type="button" id="gm-ns-pick">地図をタップして決める</button>
+        </div>
+        <p id="gm-ns-pos-text" class="gm-note">場所はまだ決まっていません</p>
+      </fieldset>
+
+      <label class="gm-field">SNSの投稿のURL（必須）
+        <input id="gm-url" type="url" inputmode="url" required maxlength="500" autocomplete="off" placeholder="https://www.instagram.com/p/…">
+      </label>
+      <p id="gm-url-hint" class="gm-note">Instagram・X・Threads・TikTok・YouTube・Facebook・Bluesky・Lemon8・note・アメブロ・はてなブログの投稿を貼れます</p>
+      <label class="gm-field">投稿した人の名前（@から・任意）
+        <input id="gm-handle" maxlength="41" autocomplete="off" placeholder="@example">
+      </label>
+      <label class="gm-field">ひとこと（任意・100字まで）
+        <input id="gm-comment" maxlength="100" autocomplete="off" placeholder="例：濃厚な味噌ラーメン。昼は混みます">
+      </label>
+
+      <label class="gm-check"><input type="checkbox" id="gm-own"> これは<strong>自分の投稿</strong>です（代表の写真を1枚のせられます）</label>
+      <div id="gm-photo-wrap" class="gm-photo-wrap" hidden>
+        <label class="gm-field">代表の写真（任意・1枚）
+          <input id="gm-photo" type="file" accept="image/*">
+        </label>
+        <p class="gm-warn">自分で撮った写真だけにしてください。ほかの人の顔・車のナンバーが写らないものを選んでください。写真は縮めて保存し、位置情報は消します。</p>
+      </div>
+
+      <p class="gm-note">登録すると、すぐ地図に出ます（名前やメールは要りません）。30分以内なら取り消せます。運営が不適切と判断したものは伏せます。</p>
+      <p id="gm-form-error" class="gm-error" role="alert"></p>
+      <div class="gm-form-actions">
+        <button type="button" id="gm-cancel" class="gm-btn-sub">やめる</button>
+        <button type="submit" id="gm-submit" class="gm-btn-main">登録する</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer class="gm-footer">
+    <p>CBI（Community Bank INZAI）の試作です。お店の一覧は <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>（ODbL）、FreeFree掲示板の掲載、市民が足したお店です。営業時間・休業日はお店の公式情報でご確認ください。</p>
+    <p>食レポは投稿した人のものです。詳しくは元の投稿でご覧ください。　<a href="../">CBIのトップへ</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js?v=20261106a"></script>
+</body>
+</html>
