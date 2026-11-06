@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-11-06",
+          "title": "CiDAO 使用量削減・機能簡素化・個人情報点検（計測→提案→承認→実装・公開・SQL適用）2.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao 307ac95・edfd6ed（next 16.4.5/sharp 0.35.5・未使用API4本削除・巡回POST4本に Bearer CRON_SECRET・members列権限に合わせた /me 3ファイル・memo-ttl で重いGET5本の使い回し・配信キャッシュ延長・robots.ts・vercel.json の cron 整理・メニュー整理・在席600秒）",
+            "cidao supabase/migrations 20261106100000（members 列権限）・20261106110000（通れた道の端末ID期限）を本番DBに適用。pg_cron 4本にヘッダー追加・2本の時刻を :01/:31・:02/:32 に",
+            "cbi-site 7bc765e（防災MAP app.js 平常時15分・警報中10分・在席300秒／携帯番号を伏せる／CLAUDE_HANDOFF・changelog）",
+            "cidao/2026-11-06_CiDAO使用量削減・簡素化・個人情報点検の提案.md（計測値・提案・追加点検 C6〜C10・実施結果）＋ MOC_CiDAO",
+            "C:\\Repos\\cidao\\.env.local の名前なし秘密キーの行を削除",
+            "memory: project-cidao-usage-privacy-20261106・reference-cidao-cpu-measure-local"
+          ],
+          "hours": 2.3,
+          "partnerApproved": true,
+          "note": "11/6 朝の停止（Pro化で復旧）直後に事業主指示。手元の本番ビルドでルート別CPUを計測（proxy.ts は1ms＝改修せず・重いのは水位112/冠水200/通れた道103/情報源131ms）。呼び出しの内訳は説明できる分が1,000〜3,900回/日でクローラー推定2,400〜5,300回/日。GMO・マネーフォワードの事例に合わせた追加点検で、cidao履歴にDBパスワード入り接続文字列（6/27）と公開サイトの携帯番号を発見。本番検証：公開ページ13本200・鍵なしPOST401・鍵付き200・pg_cron の11:00〜11:02 の巡回4本が200・会員のふりでのSQL検査OK・デプロイ後15分エラー0。未検証：会員ログインでの /me 表示と通知設定の保存（事業主の端末で要確認）。退会30日後の物理削除の予定は purge_deleted_members が毎日実行中と確認し完了扱い。session: 7ee96317-1a04-4f40-a29a-c5b166745455 / output: 231,712 / cost: $42.88"
+        },
+        {
+          "date": "2026-11-06",
           "title": "CiDAO停止（Vercel無料枠超過・5:03〜7:35）の原因調査と、Pro契約の案内による復旧、会費のLINE案、経理台帳へのVercel Pro記帳（証憑PDF2点付き） 1.2時間",
           "category": "保守",
           "outputs": [
@@ -9038,6 +9054,54 @@
       "plans": [
         {
           "due": "2026-11-07",
+          "title": "🧪 会員ログインで /me・/me/edit の表示と通知設定の保存が通るか確認（members の列権限を絞った直後）",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-11-06 に anon/authenticated が読める members の列を絞り、本人の画面はサービスロールで読む形にした。SQL で会員のふりをした検査は通ったが、実際のログイン画面では未確認。事業主の端末で /me → 編集 → 保存、通知設定のON/OFF を1回ずつ。失敗したら migration 20261106100000 の authenticated 側に contact_preferences/public_settings を戻せば元に戻る"
+        },
+        {
+          "due": "2026-11-13",
+          "title": "📉 CiDAO 使用量削減の効果確認（Usage の日別 Active CPU を書き写して 11/6 以前と比べる・目標 約470秒/日）",
+          "category": "分析",
+          "priority": "高",
+          "note": "事業主に Vercel Usage 画面（Fluid Active CPU 日別）の写真を1枚頼み、scripts/_vercel_daily_cpu.json に足す。足りなければ次の手：Vercel Firewall の AI ボット遮断・pg_cron 平常時の間隔延長・ページの静的化。実施内容は cidao/2026-11-06_CiDAO使用量削減・簡素化・個人情報点検の提案.md の7節"
+        },
+        {
+          "due": "未定",
+          "title": "🔐 Supabase の Database password 変更後に、Vercel の DATABASE_URL・.env.local・credentials.md・CBI の pg_cron 操作スクリプト8本を新しい値に更新する",
+          "category": "保守",
+          "priority": "高",
+          "status": "待ち",
+          "blockedBy": "事業主が Supabase ダッシュボード（Settings → Database）でパスワードを変更し、新しい値をパスワードノートの受け取り箱に入れる",
+          "note": "cidao の git 履歴（2026-06-27 scripts/seed-proposals.mjs・同日除去）にパスワード入り接続文字列が残っているため。スクリプトは apply-registry.py・cidao-sql.py・match-pdf-to-db.py・match-registry-to-db.py・route_snap.py・storage_watch.py・supabase-cron-list.py・vercel-cpu-cron-slow.py（DATABASE_URL を読む）"
+        },
+        {
+          "due": "未定",
+          "title": "🔑 Supabase 新形式の秘密キー（sb_secret・未使用）を失効させる",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "事業主が Supabase ダッシュボード（Settings → API Keys）に入れるとき",
+          "note": "LINE ログインの custom provider 登録時に1回使っただけで、アプリ・スクリプト・環境変数から参照なし（2026-11-06 確認）。.env.local の名前なしの行は削除済み。credentials.md に値が残る"
+        },
+        {
+          "due": "未定",
+          "title": "📧 公開リポジトリ cbi-site の個人メール（agents-worklog.json 5・changelog.json 2・docs/news-publish-setup.md 2）を伏せるか決める",
+          "category": "事務",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "事業主の判断（連絡先として載せている箇所と混在）",
+          "note": "携帯番号は 2026-11-06 に伏せ済み（cbi-site 7bc765e）。千葉県職員のアドレス1件（agents-worklog.json）も同様に要判断"
+        },
+        {
+          "due": "2026-11-13",
+          "title": "🔥 消防メール見張りの生存報告（fire-watch heartbeat）が 10/21 13:48 から CiDAO に届いていない原因を直す",
+          "category": "保守",
+          "priority": "中",
+          "note": "見張り（fire_mail_watch.py）は5分ごとに動いている（11/6 10:13 ログ）が app_settings.fire_mail_watch_heartbeat が更新されない。load_notify_token() が空で送信をスキップしている可能性（ログに失敗の記録なし）。11/6 の別セッションが防災MAP側を heartbeat 待ちにしない作りに変えている"
+        },
+        {
+          "due": "2026-11-07",
           "title": "🧾 領収証No.14（共用コピー代790円・2026-11-01）と支払書No.5（だんごまつり景品代1,000円・2026-10-24）を経理台帳に登録する",
           "category": "事務",
           "priority": "中",
@@ -11281,13 +11345,6 @@
           "category": "実装",
           "priority": "高",
           "note": "COCoLaサイト閉鎖に伴う恒久対応。cocola_topics GASの広報いんざいPDF巡回（Gemini抽出）・WEB巡回スクレイパーと、COCoLa コード.gs のDrive画像スキャン（Gemini Vision）を cbi-admin-gas へ移植し、CiDAO ingest APIへ直接送る構成にする。CBI専用Driveフォルダを新設。完了後は印西イベントシート・COCoLa GASトリガーを停止し、シート直読み版の syncWebEventsToCidao_ を除去。GEMINI_API_KEY はCBI GASに設定済み。設計メモは2026-07-20セッション参照。"
-        },
-        {
-          "due": "2026-08-31",
-          "title": "🗑 CiDAO退会30日後の物理削除（匿名化）バッチ実装",
-          "category": "実装",
-          "priority": "中",
-          "note": "退会（ソフトデリート）と再ログイン復元は2026-07-20実装済み。仕様書v2.1 §4.4「退会から30日で削除」を守るため、deleted_atから30日経過したmembersの匿名化バッチ（pg_cron）が必要。実装までは復元期限が事実上無期限になっている。"
         },
         {
           "due": "2026-08-31",
