@@ -11,7 +11,23 @@ const INZAI_CITY_CODE = "1223100";
 // ⚠ 2026-09-23 追加：CiDAO（Vercel）の関数呼び出しが無料枠 100万回/月 に達したため、
 // CiDAO から取る情報（公式発表・避難所・SNS巡回・水位・避難情報・通行止め）の取り直しを 2倍の間隔に延ばしている。
 // **次の災害のときは 1 に戻す**（気象庁から直接取る雨雲・キキクル・警報は対象外なので影響しない）。
+// CiDAO の API を読み直す間隔の倍率（基準は 5分）。注意報・警報が出ている間は 2（10分）、平常時は 3（15分）。
+// 2026-11-06: Vercel の使用量削減。警報中の間隔はこれまでどおり。判定は pg_cron の巡回モードと同じ
+// （雨・風・土砂の注意報か、いずれかの警報が出ていれば「警報中」）。在席の合図は 150→300 秒（CiDAO 側は 600 秒まで待つ）
 const CIDAO_POLL_SLOWDOWN = 2;
+const CIDAO_POLL_SLOWDOWN_CALM = 3;
+const CIDAO_FAST_ADVISORY_CODES = new Set(["10", "29", "18", "15", "19", "13"]);
+function cidaoPollFactor() {
+  const state = (typeof weatherWarnState !== "undefined" && weatherWarnState) ? weatherWarnState : null;
+  const active = (state && state.ok && Array.isArray(state.active)) ? state.active : [];
+  const alert = active.some(w => Number(w.level) >= 30 || CIDAO_FAST_ADVISORY_CODES.has(String(w.code)));
+  return alert ? CIDAO_POLL_SLOWDOWN : CIDAO_POLL_SLOWDOWN_CALM;
+}
+// baseMs ごとに数え、倍率に達した回だけ fn を呼ぶ（倍率は呼ぶたびに見直すので、警報が出たら次の区切りから10分間隔になる）
+function cidaoPollInterval(fn, baseMs) {
+  let count = 0;
+  return setInterval(() => { count += 1; if (count % cidaoPollFactor() !== 0) return; fn(); }, baseMs);
+}
 
 const weatherWarningDefinitions = {
   "33": { name: "レベル5大雨特別警報", element: "rain", level: 50, alertLevel: 5 },
@@ -2201,7 +2217,7 @@ function initSnsMonitor() {
   }
   refreshSnsMonitor(false);
   clearInterval(snsMonitorTimer);
-  snsMonitorTimer = setInterval(() => refreshSnsMonitor(true, true), 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
+  snsMonitorTimer = cidaoPollInterval(() => refreshSnsMonitor(true, true), 5 * 60 * 1000);
 }
 
 async function refreshSnsMonitor(runScan = false, quiet = false) {
@@ -2421,7 +2437,7 @@ function initShelters() {
   }
   refreshShelters(false);
   clearInterval(shelterTimer);
-  shelterTimer = setInterval(() => refreshShelters(false, true), 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
+  shelterTimer = cidaoPollInterval(() => refreshShelters(false, true), 5 * 60 * 1000);
   // 災害用井戸は静的データのため初回のみ取得する
   refreshWells();
   initPresence();
@@ -2590,12 +2606,12 @@ function initPresence() {
   sendPresence();
   clearInterval(presenceTimer);
   // 在席とみなされるのは直近300秒（CiDAO の ACTIVE_SEC）。その半分以下の間隔で合図を送る。
-  // 2026-09-23: Vercel の関数呼び出しが無料枠に達したため 40秒 → 150秒。
+  // 2026-09-23: Vercel の関数呼び出しが無料枠に達したため 40秒 → 150秒。2026-11-06: 使用量削減で 150→300秒（CiDAO 側の猶予は 600秒）。
   // 画面を見ていない間（別のタブ・最小化）は送らず、戻ってきたときに1回送る。
   presenceTimer = setInterval(() => {
     if (document.hidden) return;
     sendPresence();
-  }, 150 * 1000);
+  }, 300 * 1000);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) sendPresence();
   });
@@ -2953,7 +2969,7 @@ function initTimeline() {
   refreshTimeline(false);
   clearInterval(timelineTimer);
   // 巡回は10分ごとなので、表示側は5分ごとに追従すれば十分
-  timelineTimer = setInterval(() => refreshTimeline(false), 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
+  timelineTimer = cidaoPollInterval(() => refreshTimeline(false), 5 * 60 * 1000);
 }
 
 function getShelterFilters() {
@@ -6569,7 +6585,7 @@ function toggleOverlay(name, checked) {
       if (roadClosuresData) renderRoadClosures();
       refreshRoadClosures();
       clearInterval(roadClosuresTimer);
-      roadClosuresTimer = setInterval(refreshRoadClosures, ROAD_CLOSURE_REFRESH_MS * CIDAO_POLL_SLOWDOWN);
+      roadClosuresTimer = cidaoPollInterval(refreshRoadClosures, ROAD_CLOSURE_REFRESH_MS);
     } else {
       map.removeLayer(roadClosuresLayer);
       clearInterval(roadClosuresTimer);
@@ -8077,7 +8093,7 @@ async function ensureSnsRoadsLayer(force) {
     await snapSnsRoadPoints();
     renderSnsRoads(); // 件数の表示も renderSnsRoads が書く
     clearInterval(snsRoadsTimer);
-    snsRoadsTimer = setInterval(() => { if (map.hasLayer(snsRoadsLayer)) ensureSnsRoadsLayer(true); }, 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
+    snsRoadsTimer = cidaoPollInterval(() => { if (map.hasLayer(snsRoadsLayer)) ensureSnsRoadsLayer(true); }, 5 * 60 * 1000);
   } catch (error) {
     snsRoadsLoaded = false;
     if (status) status.textContent = "読み込めませんでした";
@@ -11466,8 +11482,8 @@ startQuakePushWatch();
 catchUpQuakeFlash(); // WebSocket は接続に約20秒かかる。開く前の30分に起きた地震は履歴から先に拾う
 
 setInterval(() => refreshAmedas(false), 5 * 60 * 1000);
-setInterval(() => refreshRiverLevel(false), 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
-setInterval(refreshEvacAlert, 5 * 60 * 1000 * CIDAO_POLL_SLOWDOWN);
+cidaoPollInterval(() => refreshRiverLevel(false), 5 * 60 * 1000);
+cidaoPollInterval(refreshEvacAlert, 5 * 60 * 1000);
 setInterval(() => {
   if (document.querySelector('[data-overlay="rainForecast"]')?.checked) refreshRainForecast(false);
 }, 10 * 60 * 1000);

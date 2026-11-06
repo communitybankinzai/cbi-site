@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-11-06",
+      "type": "fix",
+      "target": "inzai-disaster-map/ ほか（admin の作業記録）",
+      "title": "防災マップが CiDAO を読み直す間隔を、平常時は15分（警報中は10分のまま）にし、在席の合図を5分おきにした",
+      "detail": "CiDAO（Vercel）が 11/6 朝に無料枠の超過で止まったため、使用量（Active CPU）を減らす改修の一部。雨・風・土砂の注意報か、いずれかの警報が出ている間は従来どおり10分ごとに読み直す。地図の表示が最大で数分遅れることがある（CiDAO 側の配信キャッシュの延長も含む）。あわせて、管理画面の作業記録に残っていた担当者の携帯番号を伏せた。",
+      "author": "Claude（A1 Core）"
+    },
+    {
       "date": "2026-11-05",
       "type": "content",
       "target": "inzai-disaster-map/ ほか（トップ・プライバシー・３Dワールド・管理画面）",
