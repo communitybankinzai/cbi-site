@@ -30,7 +30,7 @@
           ],
           "hours": 2.3,
           "partnerApproved": true,
-          "note": "11/6 朝の停止（Pro化で復旧）直後に事業主指示。手元の本番ビルドでルート別CPUを計測（proxy.ts は1ms＝改修せず・重いのは水位112/冠水200/通れた道103/情報源131ms）。呼び出しの内訳は説明できる分が1,000〜3,900回/日でクローラー推定2,400〜5,300回/日。GMO・マネーフォワードの事例に合わせた追加点検で、cidao履歴にDBパスワード入り接続文字列（6/27）と公開サイトの携帯番号を発見。本番検証：公開ページ13本200・鍵なしPOST401・鍵付き200・pg_cron の11:00〜11:02 の巡回4本が200・会員のふりでのSQL検査OK・デプロイ後15分エラー0。未検証：会員ログインでの /me 表示と通知設定の保存（事業主の端末で要確認）。退会30日後の物理削除の予定は purge_deleted_members が毎日実行中と確認し完了扱い。session: 7ee96317-1a04-4f40-a29a-c5b166745455 / output: 231,712 / cost: $42.88"
+          "note": "11/6 朝の停止（Pro化で復旧）直後に事業主指示。手元の本番ビルドでルート別CPUを計測（proxy.ts は1ms＝改修せず・重いのは水位112/冠水200/通れた道103/情報源131ms）。呼び出しの内訳は説明できる分が1,000〜3,900回/日でクローラー推定2,400〜5,300回/日。GMO・マネーフォワードの事例に合わせた追加点検で、cidao履歴にDBパスワード入り接続文字列（6/27）と公開サイトの携帯番号を発見。本番検証：公開ページ13本200・鍵なしPOST401・鍵付き200・pg_cron の11:00〜11:02 の巡回4本が200・会員のふりでのSQL検査OK・デプロイ後15分エラー0。未検証：会員ログインでの /me 表示と通知設定の保存（事業主の端末で要確認）。退会30日後の物理削除の予定は purge_deleted_members が毎日実行中と確認し完了扱い。11:30〜11:45 に事業主が Supabase（InPrivate・GitHub communitybankinzai）で DB パスワードを変更→私が接続確認・.env.local・credentials.md・パスワードノートの受け取り箱へ反映（取り込み完了）・未使用の sb_secret を失効（本番API 200 を確認）。session: 7ee96317-1a04-4f40-a29a-c5b166745455 / output: 231,712 / cost: $42.88"
         },
         {
           "date": "2026-11-06",
@@ -9074,15 +9074,6 @@
           "status": "待ち",
           "blockedBy": "事業主が Vercel（cidao → Settings → Environment Variables）を開くとき。値はパスワードノート「Supabase｜Database password（cidao…）｜2026-11-06」から",
           "note": "2026-11-06 11:3x にパスワード変更済み（旧値は接続不可を確認）。.env.local・credentials.md・CBI のスクリプト8本（.env.local を読む）・パスワードノートの受け取り箱は更新済み。Vercel の値だけ旧いまま（実行時の cidao は Supabase の API 鍵で動くため影響なし。MCP 経由で値を渡すと会話記録に残るので事業主が貼る）。経緯：cidao の git 履歴（2026-06-27 scripts/seed-proposals.mjs・同日除去）にパスワード入り接続文字列が残っていたため。スクリプトは apply-registry.py・cidao-sql.py・match-pdf-to-db.py・match-registry-to-db.py・route_snap.py・storage_watch.py・supabase-cron-list.py・vercel-cpu-cron-slow.py（DATABASE_URL を読む）"
-        },
-        {
-          "due": "未定",
-          "title": "🔑 Supabase 新形式の秘密キー（sb_secret・未使用）を失効させる",
-          "category": "保守",
-          "priority": "中",
-          "status": "待ち",
-          "blockedBy": "事業主が Supabase ダッシュボード（Settings → API Keys）に入れるとき",
-          "note": "LINE ログインの custom provider 登録時に1回使っただけで、アプリ・スクリプト・環境変数から参照なし（2026-11-06 確認）。.env.local の名前なしの行は削除済み。credentials.md に値が残る"
         },
         {
           "due": "未定",
