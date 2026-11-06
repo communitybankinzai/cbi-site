@@ -18,6 +18,23 @@
       "actuals": [
         {
           "date": "2026-11-06",
+          "title": "食レポ飲食店マップ（2D・OSM＋市民の食レポ）の設計確認・CiDAO API・サイト新設・本番確認 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao src/lib/gourmet.ts — URL検査（SNS11種・追跡パラメータ除去・投稿者名の読み取り）と入力の整え方",
+            "C:\\Repos\\cidao src/app/api/gourmet/reports/route.ts — GET一覧／POST登録（multipart・写真は自分の投稿だけ）／DELETE本人取り消し30分／PATCH運営が伏せる",
+            "C:\\Repos\\cidao src/lib/__tests__/gourmet.test.ts — 8件",
+            "C:\\Repos\\cidao supabase/migrations/20261106200000_gourmet_reports.sql — gourmet_shops・gourmet_reports・バケット gourmet-images・30日で端末IDを消す pg_cron（本番適用済み）",
+            "site/gourmet-map/index.html・app.js・styles.css — 地図・検索・お店の欄・食レポの登録・新着一覧",
+            "site/gourmet-map/osm-shops.json・pipeline/build_shops.py — OpenStreetMap の飲食店1,049件（印西市と周辺）",
+            "site/admin/changelog.json — feature 1件"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "事業主の3択回答：2D新設／食べた市民が載せる／印西市と周辺／お店はOSM＋市民の登録／すぐ公開・運営が伏せる／匿名／写真は投稿者が1枚（自分の投稿のときだけ・他人の投稿はリンクだけ）／店名で探して選ぶ。2026-09-02 の3Dお店ピン（FreeFree）は別物として残した。検証：vitest 8件合格・tsc（src は0件）・本番DBに表とバケットを確認・本番APIで写真つき登録201と各種の断り（写真は自分の投稿だけ・SNS以外・範囲外・重複・連続送信429）を確認、試験行と写真は削除。⚠ 途中で credentials.md の DB パスワードがツール出力に表示された（11/6変更分・.env.local は古いまま）。site の git は OneDrive 経由で古く、一時コピーから自分の変更だけ push した。\nsession: 8bb3cd4a-1792-4a4c-bf3d-0fcdf5315179 / output: 98,043 / cost: $25.90"
+        },
+        {
+          "date": "2026-11-06",
           "title": "外部取り込みイベントの『行く予定』化（参加欄の文言・定員表示の整理）0.4時間",
           "category": "実装",
           "outputs": [
@@ -9128,6 +9145,34 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-13",
+          "title": "🍽 食レポマップの告知文（市民向け「食べた投稿のURLを貼って」・お店向け）を作り、事業主の確認後にSNSへ",
+          "category": "広報",
+          "priority": "中",
+          "note": "公開URL https://communitybankinzai.github.io/cbi-site/gourmet-map/ 。1枚目は見出しの帯（scripts/sns_headline.py）。投稿前に本文と画像を見せて承認を得る。トップページや FreeFree からのリンクを張るかも事業主判断"
+        },
+        {
+          "due": "未定",
+          "title": "🍽 食レポマップに新しい食レポが付いたら運営に知らせるか（伏せる判断を早くするため）",
+          "category": "実装",
+          "priority": "低",
+          "note": "今は管理画面に一覧が無く、運営は防災MAPの合言葉を入れた端末で地図から伏せる。件数が増えたら CiDAO の通知（disaster-notify と同じ仕組み）か管理画面の一覧を検討"
+        },
+        {
+          "due": "未定",
+          "title": "🍽 osm-shops.json（OpenStreetMap の飲食店一覧）の作り直しの頻度を決める",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-11-06 に1回作っただけ（1,049件）。閉店・開店を反映するなら site/gourmet-map/pipeline/_cache を消して build_shops.py を再実行し push。月1回の手作業か GitHub Actions かは件数の変化を見て判断"
+        },
+        {
+          "due": "2026-11-07",
+          "title": "🔐 CiDAO の DB パスワードの扱い：会話ログに表示された件の再変更要否と、C:\\Repos\\cidao\\.env.local の DATABASE_URL を新しい値へ",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-11-06 に credentials.md の行を grep した出力にパスワードが出た（外部送信なし）。.env.local は 9/25 のままで、scripts/cidao-sql.py --pooler も認証失敗する。再変更するなら Vercel の DATABASE_URL（使っていれば）・credentials.md・パスワードノートもそろえる"
+        },
         {
           "due": "未定",
           "title": "📰 新着イベントの通知を『毎朝まとめて1通』にするか：外部取り込み分（直近30日で96件）を通知に含めるか",
