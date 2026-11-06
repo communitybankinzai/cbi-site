@@ -26,7 +26,8 @@
             "cbi-site 7bc765e（防災MAP app.js 平常時15分・警報中10分・在席300秒／携帯番号を伏せる／CLAUDE_HANDOFF・changelog）",
             "cidao/2026-11-06_CiDAO使用量削減・簡素化・個人情報点検の提案.md（計測値・提案・追加点検 C6〜C10・実施結果）＋ MOC_CiDAO",
             "C:\\Repos\\cidao\\.env.local の名前なし秘密キーの行を削除",
-            "memory: project-cidao-usage-privacy-20261106・reference-cidao-cpu-measure-local"
+            "memory: project-cidao-usage-privacy-20261106・reference-cidao-cpu-measure-local",
+            "site/admin/proposals/cidao-usage-privacy-report-20261106.html（内部資料の報告ページ・documents.json と changelog.json に登録）"
           ],
           "hours": 2.3,
           "partnerApproved": true,

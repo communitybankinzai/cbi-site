@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>CiDAO 使用量削減・機能整理・個人情報対策の報告（2026-11-06）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c-navy: #1e3a5f; --c-navy-dark: #14283f; --c-gold: #c9a55c; --c-gold-soft: #d8b97a;
+  --c-green: #2d5a3d; --c-red: #c0392b; --c-bg: #faf8f3; --c-bg-alt: #f1ece0; --c-paper: #fff;
+  --c-ink: #1a2330; --c-ink-sub: #4a5663; --c-line: #e0d9c6;
+  --font-serif: "Noto Serif JP", "Yu Mincho", serif;
+  --font-sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: var(--font-sans); color: var(--c-ink); background: var(--c-bg-alt); line-height: 1.85; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+.hero { background: radial-gradient(ellipse at top right, rgba(201,165,92,.22), transparent 60%), linear-gradient(180deg, var(--c-navy-dark), var(--c-navy)); color: #fff; padding: 40px 0 34px; margin-bottom: 24px; }
+.eyebrow { font-family: var(--font-serif); font-size: 13px; letter-spacing: .28em; color: var(--c-gold-soft); margin: 0 0 12px; }
+.hero h1 { font-family: var(--font-serif); font-size: clamp(22px, 4vw, 34px); margin: 0 0 14px; line-height: 1.45; }
+.hero .lead { color: rgba(255,255,255,.93); font-size: clamp(15px, 1.8vw, 17px); margin: 0 0 6px; max-width: 800px; }
+.pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.pill { display: inline-block; padding: 6px 14px; border: 1px solid var(--c-gold); border-radius: 999px; font-size: 12px; letter-spacing: .1em; color: var(--c-gold-soft); }
+.pill strong { color: #fff; }
+.section { background: var(--c-paper); border: 1px solid var(--c-line); border-radius: 14px; padding: 22px 22px 20px; margin: 0 0 20px; }
+.section h2 { font-family: var(--font-serif); font-size: 20px; color: var(--c-navy); margin: 0 0 6px; padding-left: 12px; border-left: 5px solid var(--c-gold); line-height: 1.4; }
+.section h3 { font-size: 16px; color: var(--c-navy); margin: 18px 0 6px; }
+.section .sub { margin: 0 0 14px; color: var(--c-ink-sub); font-size: 14px; }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0 4px; }
+.kpi { border: 1px solid var(--c-line); border-radius: 12px; padding: 14px 16px; background: var(--c-bg); }
+.kpi .tag { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--c-ink-sub); }
+.kpi .big { font-family: var(--font-serif); font-size: 24px; font-weight: 700; color: var(--c-navy); line-height: 1.3; }
+.kpi .big small { font-size: 13px; font-weight: 500; color: var(--c-ink-sub); font-family: var(--font-sans); }
+.kpi p { margin: 6px 0 0; font-size: 13px; color: var(--c-ink-sub); line-height: 1.6; }
+table.t { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.t th, table.t td { padding: 9px 10px; border-bottom: 1px solid var(--c-line); text-align: left; vertical-align: top; }
+table.t th { font-size: 12px; color: var(--c-ink-sub); white-space: nowrap; background: var(--c-bg); }
+table.t td.n { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.scroll-x { overflow-x: auto; }
+.note { font-size: 13px; color: var(--c-ink-sub); margin: 10px 0 0; }
+.ok { color: var(--c-green); font-weight: 700; }
+.warn { color: var(--c-red); font-weight: 700; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.toc a { font-size: 13px; padding: 5px 12px; border: 1px solid var(--c-line); border-radius: 999px; background: #fff; color: var(--c-navy); text-decoration: none; }
+ul.plain { margin: 6px 0 0; padding-left: 1.3em; }
+ul.plain li { margin: 3px 0; }
+.foot { font-size: 12px; color: var(--c-ink-sub); margin-top: 24px; }
+@media (max-width: 720px) {
+  .kpis { grid-template-columns: 1fr; }
+  .section { padding: 18px 16px 16px; }
+  table.t { font-size: 13px; }
+  table.t th, table.t td { padding: 8px 8px; }
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">CBI 内部資料・報告</p>
+    <h1>CiDAO 使用量削減・機能整理・個人情報対策の報告</h1>
+    <p class="lead">2026年11月6日の朝に CiDAO（cidao.vercel.app）が無料枠の超過で停止したことを受け、同日に「使う量を4分の1減らす」「余計なものを減らす」「情報を漏れにくくする」の3つを実施した記録です。</p>
+    <div class="pills">
+      <span class="pill">実施日 <strong>2026-11-06</strong></span>
+      <span class="pill">対象 <strong>CiDAO・防災マップ</strong></span>
+      <span class="pill">作成 <strong>A1 Core（Claude）</strong>・承認 運営</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="toc" aria-label="目次">
+    <a href="#summary">要約</a><a href="#why">背景</a><a href="#measure">何を測ったか</a><a href="#usage">1. 使う量</a><a href="#simplify">2. 余計なもの</a><a href="#privacy">3. 個人情報・安全</a><a href="#users">利用者に見える変化</a><a href="#verify">確かめたこと</a><a href="#next">これから</a>
+  </nav>
+
+  <section class="section" id="summary">
+    <h2>要約</h2>
+    <div class="kpis">
+      <div class="kpi"><div class="tag">使う量（CPU時間）</div><div class="big">約 1/4 減 <small>の見込み</small></div><p>検索ロボットの制限・重い処理の使い回し・配信側の保存の延長・巡回の時刻集約・防災マップの読み直し間隔。効果は11月13日ごろに実測で確認。</p></div>
+      <div class="kpi"><div class="tag">余計なもの</div><div class="big">API 4本削除</div><p>使われていない入口を閉じ、成果の薄い自動取り込みを週1回に。利用の少ない3画面をメニューから外した。</p></div>
+      <div class="kpi"><div class="tag">個人情報・安全</div><div class="big">7 件の是正</div><p>会員情報の読み取り範囲、鍵なしの入口、位置記録の期限、土台ソフトの重大な欠陥、DBパスワードの変更ほか。</p></div>
+    </div>
+    <p class="note">利用者の見た目はほとんど変わりません。地図の情報が最大で数分遅れて出ることがある点と、メニューが少し減った点だけです。</p>
+  </section>
+
+  <section class="section" id="why">
+    <h2>背景</h2>
+    <p class="sub">なぜ急いで実施したか</p>
+    <ul class="plain">
+      <li>CiDAO は Vercel の無料プランで動いており、「CPU を使った時間」が月4時間の枠を8月末から超え続けていた。11月6日 5時03分に自動停止し、同日 7時35分に有料プラン（Pro・月20ドル）へ切り替えて復旧した。</li>
+      <li>有料にしても使う量が多いままでは費用がかさむため、運営の指示で「使う量を4分の1ほど減らす」改修を同日に行った。</li>
+      <li>あわせて、同時期に報道された不正アクセス事件（FXサービスの顧客情報流出、開発用リポジトリの認証情報漏えい）を踏まえ、個人情報の扱いを点検した。</li>
+    </ul>
+  </section>
+
+  <section class="section" id="measure">
+    <h2>何を測ったか</h2>
+    <p class="sub">対策を選ぶ前に、どこで量を使っているかを数字で確かめた</p>
+    <h3>直近30日の使用量（Vercel の画面・11月2日）</h3>
+    <div class="scroll-x"><table class="t">
+      <tr><th>項目</th><th>使用量</th><th>無料枠</th></tr>
+      <tr><td>CPU を使った時間</td><td class="n">5時間29分（平常日 約630秒/日）</td><td class="n">4時間（＝480秒/日）</td></tr>
+      <tr><td>関数の呼び出し回数</td><td class="n">18.9万回（約6,300回/日）</td><td class="n">100万回</td></tr>
+    </table></div>
+    <h3>呼び出しはどこから来ているか（1日あたり・DBの記録から）</h3>
+    <div class="scroll-x"><table class="t">
+      <tr><th>呼び出し元</th><th>回数/日</th><th>備考</th></tr>
+      <tr><td>防災マップを開いたとき</td><td class="n">約 400</td><td>1回開くと10〜13本のAPIを読む</td></tr>
+      <tr><td>防災マップを開いたままの端末</td><td class="n">1台あたり 約1,400</td><td>在席の合図と定期の読み直し</td></tr>
+      <tr><td>自動巡回（SNS監視・市の発表・通行止め・県の規制）</td><td class="n">168</td><td>注意報・警報の日は 280〜500</td></tr>
+      <tr><td>消防メールの見張り、朝の取り込み、人の閲覧</td><td class="n">約 380</td><td></td></tr>
+      <tr><td><strong>説明できない分（検索ロボット等と推定）</strong></td><td class="n"><strong>約 2,400〜5,300</strong></td><td>ロボット向けの案内（robots.txt）が無く、全ページがサーバーで組み立てられていた</td></tr>
+    </table></div>
+    <h3>処理1回あたりの CPU 時間（本番と同じ構成を手元で起動して計測）</h3>
+    <div class="scroll-x"><table class="t">
+      <tr><th>種類</th><th>CPU（ミリ秒/回）</th><th>判断</th></tr>
+      <tr><td>画面（トップ・イベント・団体・メンバーなど）</td><td class="n">22〜84</td><td>ロボットの回数を減らすのが効く</td></tr>
+      <tr><td>軽いAPI（タイムライン・運休・消防見張りなど）</td><td class="n">0〜31</td><td>そのまま</td></tr>
+      <tr><td><strong>重いAPI</strong>（冠水 200・情報源の状態 131・水位 112・通れた道 103）</td><td class="n">100〜200</td><td>結果を短時間使い回す</td></tr>
+      <tr><td>認証の前処理（全リクエストで動く）</td><td class="n">約 1</td><td>改修の効果なし＝触らない</td></tr>
+      <tr><td>起動（コールドスタート）</td><td class="n">約 2,500</td><td>起こす回数を減らす</td></tr>
+    </table></div>
+  </section>
+
+  <section class="section" id="usage">
+    <h2>1. 使う量を減らす（5つ）</h2>
+    <div class="scroll-x"><table class="t">
+      <tr><th>観点</th><th>前</th><th>後</th></tr>
+      <tr><td>検索ロボットの巡回</td><td>制限なし。来るたびに CPU を使っていた</td><td>Google・Bing と SNS の見出し取得だけ許可。AI 学習用や SEO 業者のロボットは拒否。API・管理・本人の画面は全ロボット拒否</td></tr>
+      <tr><td>重い処理（水位・冠水・通れた道・情報源の状態・避難所）</td><td>見るたびに毎回計算</td><td>1〜10分の間は前の結果を使い回す（県・市・外部サイトへ取りに行く間隔は変えていない）</td></tr>
+      <tr><td>配信側の保存</td><td>15秒〜2分</td><td>市の固定データや告知画像は1日、巡回系は5分、運休・消防見張りは1分</td></tr>
+      <tr><td>裏の巡回の起動時刻</td><td>1時間に6回ばらばら</td><td>1時間に2回（:00 と :30 の前後）にまとめ、起こす回数を減らした</td></tr>
+      <tr><td>防災マップの読み直し</td><td>常に10分ごと。在席の合図は2.5分ごと</td><td>平常時は15分ごと・合図は5分ごと。<strong>注意報・警報が出ている間は今までどおり10分ごと</strong></td></tr>
+    </table></div>
+    <p class="note">見込み：平常日 約630秒/日 → 約470秒/日（無料枠の水準）。検索ロボットの割合が推定のため、確信度は「中」。</p>
+  </section>
+
+  <section class="section" id="simplify">
+    <h2>2. 余計なものを減らす</h2>
+    <div class="scroll-x"><table class="t">
+      <tr><th>対象</th><th>前</th><th>後</th></tr>
+      <tr><td>使われていない API 4本</td><td>残っていた（うち1本は鍵なしで誰でもメールを送れた）</td><td>削除</td></tr>
+      <tr><td>毎朝の自動取り込み</td><td>5本が毎日動き、下書きが118件たまっていた</td><td>号外NET は停止。Instagram のタグ検索と市のカレンダーは週1回（月曜朝）。団体アカウントと文化ホールは毎日のまま</td></tr>
+      <tr><td>利用の少ない画面</td><td>ランキング・AIに相談・AIインタビューがメニューにあった（30日の閲覧 17・23・1回）</td><td>メニューから外した。URL を知っていれば今までどおり開ける</td></tr>
+    </table></div>
+  </section>
+
+  <section class="section" id="privacy">
+    <h2>3. 個人情報・安全</h2>
+    <p class="sub">漏れる経路を減らし、漏れても被害が広がらないようにした</p>
+    <div class="scroll-x"><table class="t">
+      <tr><th>前</th><th>後</th></tr>
+      <tr><td>会員テーブルの全28列を、ログインしていない人でも一括で読めた（通知の設定・最終アクセス・運営かどうか など。本名・メールは別に守られていた）</td><td>未ログインは表示名・自己紹介など公開項目だけ。会員同士も通知設定や認証方式は見えない。本人の画面は変わらない</td></tr>
+      <tr><td>裏の巡回を起動する入口 4本に鍵がなく、誰でも起動できた</td><td>合言葉がないと動かない</td></tr>
+      <tr><td>「通れた道」の記録に端末の識別子が無期限で残っていた</td><td>30日で消す。線のデータは残す</td></tr>
+      <tr><td>土台ソフト（Next.js）に、外から侵入される重大な欠陥が複数残っていた（修正版は出ていた）</td><td>最新版に更新（画像処理の部品も更新）</td></tr>
+      <tr><td>DB のパスワードが、過去の開発履歴に残っていた</td><td>パスワードを変更し、関係する設定をすべて新しい値に。古い値はもう使えない。未使用の秘密キーも失効</td></tr>
+      <tr><td>公開サイトの作業記録に担当者の携帯番号が残っていた</td><td>伏せた</td></tr>
+      <tr><td>（問題なしと確認）本名・メールの保護、受付・声がけ・通知の読み取り制限、書き込み時の IP の90日削除、非公開の写真・動画の保管、鍵の直書きなし</td><td>変更なし</td></tr>
+    </table></div>
+  </section>
+
+  <section class="section" id="users">
+    <h2>利用者に見える変化</h2>
+    <ul class="plain">
+      <li>防災マップの情報が、最大で数分遅れて出ることがある（警報中の避難情報は2分以内、避難所は5分以内）。</li>
+      <li>メニューから「ランキング」「AIに相談」「AIインタビュー」が消えた（URL は生きている）。</li>
+      <li>それ以外は同じ動き。会員のログイン・プロフィール保存・通知設定も変わらない。</li>
+    </ul>
+  </section>
+
+  <section class="section" id="verify">
+    <h2>確かめたこと</h2>
+    <div class="scroll-x"><table class="t">
+      <tr><th>確認</th><th>結果</th></tr>
+      <tr><td>ビルドと自動テスト</td><td class="ok">成功（テスト645件すべて合格）</td></tr>
+      <tr><td>本番の公開ページ13本・主要API</td><td class="ok">すべて正常（200）。削除した入口は404</td></tr>
+      <tr><td>鍵なしで巡回を起動</td><td class="ok">拒否（401）。正しい鍵では動作。定時の巡回4本も正常</td></tr>
+      <tr><td>会員の権限で他人の通知設定を読む</td><td class="ok">拒否。本人の更新は可能</td></tr>
+      <tr><td>会員ログインでの表示・保存・通知設定</td><td class="ok">運営の端末で確認済み</td></tr>
+      <tr><td>公開後40分の実行時エラー</td><td class="ok">0件</td></tr>
+    </table></div>
+  </section>
+
+  <section class="section" id="next">
+    <h2>これから</h2>
+    <ul class="plain">
+      <li><strong>11月13日ごろ</strong>：Vercel の画面で日別の CPU 時間を読み、11月6日の前後で比べる（目標 約470秒/日）。足りなければ、ロボット遮断の強化・巡回間隔の見直し・固定ページの静的化を検討する。</li>
+      <li>公開ファイルに載っている個人のメールアドレスを伏せるかは、運営の判断待ち。</li>
+      <li>プロフィール保存の「処理中」表示（押してから数秒なにも起きないように見える）は、優先度低で予定に登録。</li>
+    </ul>
+    <p class="foot">本資料には鍵・パスワード・会員名を載せていません。詳しい手順と数値の出典は保管庫のノート（2026-11-06 の提案・実施結果）にあります。</p>
+  </section>
+</main>
+</body>
+</html>

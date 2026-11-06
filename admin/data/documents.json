@@ -3,6 +3,15 @@
   "note": "資料コメントタブで管理する内部資料の一覧。HTMLを追加したらこのリストに登録する。id はファイルパスから独立した安定識別子（comments.targetId と一致）。",
   "documents": [
     {
+      "id": "cidao-usage-privacy-report-20261106",
+      "title": "CiDAO 使用量削減・機能整理・個人情報対策の報告（2026-11-06）",
+      "path": "proposals/cidao-usage-privacy-report-20261106.html",
+      "category": "報告・点検",
+      "description": "11/6 朝の無料枠超過による停止（Pro契約で復旧）を受けて同日に実施した3つの対策の記録。何を測ったか（直近30日の使用量・呼び出し元の内訳・処理1回あたりのCPU時間）、使う量を減らす5つの改修、未使用APIの削除と取り込み巡回の整理、個人情報・安全の7件の是正（会員情報の読み取り範囲・鍵なしの入口・位置記録の期限・Next.js の更新・DBパスワードの変更ほか）、利用者に見える変化、確かめたこと、11/13ごろの効果確認。鍵・会員名は載せていない。",
+      "createdAt": "2026-11-06",
+      "updatedAt": "2026-11-06"
+    },
+    {
       "id": "cidao-operating-costs",
       "title": "CiDAO運営継続の経費とVercel使用量の警告の経過｜Proに変えるかの判断資料",
       "path": "proposals/cidao-operating-costs-v1.html",
