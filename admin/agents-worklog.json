@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-11-07",
+          "title": "食レポマップの CiDAO 提案：提案文の作成と本人の提案としての代理登録（全会員へベル通知） 0.3時間",
+          "category": "事務",
+          "outputs": [
+            "site/assets/sns/2026-11-07_gourmet-map-howto/CiDAO提案文.md（入力欄の値＋本文1,125字）",
+            "CiDAO proposals 2985a002-6ce7-4372-a784-86ec3882bee3（ゆうさん・discussion→投票・締切 2026-11-30・関連リンク3本）／notifications 43件（broadcast d19ea2f1）／audit_logs proposal.create（代理登録の注記）",
+            "cidao/2026-11-07_食レポマップの通し試験と操作動画.md 4〜5節"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主「まずは提案でした。投票しながら実装したものをみてもらう流れにします」「CiDAOの提案に掲載したいので案を作って」「この案で載せる」。既存の提案（鳥になって印西を飛び回ろう・災害情報MAP・AIインタビュー）の書きぶりに合わせ、最後は投票とあわせて聞きたいこと5つ。登録はアプリの createProposal と同じ形で DB に直接（status=discussion・5分ごとの tick で投票へ）。アプリと違い Webプッシュは未送信（VAPID 鍵なし）・SNS 告知の下書きは未作成（sns_auto_post は全自動なので、アプリ経由なら即配信されていた。SNS は別に承認を取る）。⚠ app_settings の value を表示して sns_threads_app の app_secret が会話に出た（plans）。前回記録（output 178,258）からの差分 31,291。session: 03276a47-d363-4f76-8086-be4b86465a79 / output: 209,549 / cost: $61.47"
+        },
+        {
+          "date": "2026-11-07",
           "title": "食レポマップ お店の一覧に OpenPOI API（Overture Maps・食品営業許可）の飲食店 3,630件を追加（4,679件）＋CiDAO の参照 poi: 対応＋本番確認 0.6時間",
           "category": "実装",
           "outputs": [
@@ -9230,6 +9243,22 @@
       ],
       "plans": [
         {
+          "due": "2026-11-08",
+          "title": "🔐 Threads アプリ「スレッズ自動投稿」の app_secret（CiDAO app_settings.sns_threads_app）が 11/7 に会話の道具出力に出た件：再発行の要否",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-11-07、app_settings の value を先頭120文字表示したときに出た（外部送信なし）。再発行するなら Meta for Developers のアプリ設定で app secret をリセット → CiDAO /admin/sns（または app_settings.sns_threads_app）に貼り直す。合言葉（11/7）・DB パスワード（11/6）の件と一緒に判断"
+        },
+        {
+          "due": "未定",
+          "title": "📣 食レポマップの提案（2985a002）：Webプッシュと SNS 告知をどうするか（代理登録のため未送信）",
+          "category": "広報",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "事業主が『提案の SNS 告知を出す／出さない』『プッシュで知らせるか』を決めたら動ける。出すなら /admin/notice の一斉お知らせか、sns_post_logs に下書きを作って /admin/sns で承認",
+          "note": "2026-11-07 の代理登録ではベル通知43件だけ。アプリから登録した場合は Webプッシュ＋SNS 自動配信（sns_auto_post=true）まで出ていた。動画の SNS 投稿（11/8 11:30 の案）は提案の投票を見てからにするかも事業主判断"
+        },
+        {
           "due": "未定",
           "title": "🍽 食レポマップのお店一覧：英語名（Overture）と日本語名（OSM）で同じお店が2つ出る／閉店したお店が残る／食品営業許可の名前の質 — 直すか",
           "category": "実装",
@@ -9293,7 +9322,7 @@
           "title": "🍽 食レポマップの告知文（市民向け「食べた投稿のURLを貼って」・お店向け）を作り、事業主の確認後にSNSへ",
           "category": "広報",
           "priority": "中",
-          "note": "2026-11-07：市民向けは操作要領の動画（site/assets/sns/2026-11-07_gourmet-map-howto/video.mp4・cover.jpg・投稿文.md、ローカルのみ）を作って事業主へ提示済み・承認待ち。承認後に assets を push → 公開URLが200になってから branding/sns/tools/post_to_sns.py で3媒体へ（Threads は500字版）。11/7 にメンバー確認用の Drive フォルダ（151InqyhtQkNnvqtiAFw7yDN07E4ncjNF・リンク閲覧可）と メンバー確認文.md を用意、送るのは事業主（11/8 10:00 まで意見なしなら 11:30 に投稿の案）。お店向けの文案は未作成。トップページや FreeFree からのリンクを張るかも事業主判断"
+          "note": "2026-11-07：市民向けは操作要領の動画（site/assets/sns/2026-11-07_gourmet-map-howto/video.mp4・cover.jpg・投稿文.md、ローカルのみ）を作って事業主へ提示済み・承認待ち。承認後に assets を push → 公開URLが200になってから branding/sns/tools/post_to_sns.py で3媒体へ（Threads は500字版）。11/7 にメンバー確認用の Drive フォルダ（151InqyhtQkNnvqtiAFw7yDN07E4ncjNF・リンク閲覧可）を用意。LINE の確認文は使わず、CiDAO の提案 2985a002（12:20 代理登録・議論2日→投票・締切 11/30）で投票とコメントを募る流れに変更。動画の投稿時刻（11/8 11:30 の案）は提案の様子を見て事業主が決める。お店向けの文案は未作成。トップページや FreeFree からのリンクを張るかも事業主判断"
         },
         {
           "due": "未定",
