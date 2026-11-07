@@ -71,7 +71,8 @@ if (location.protocol === 'file:') {
 
     <!-- タブナビ -->
     <nav class="tab-nav" role="tablist" aria-label="管理画面セクション">
-      <button type="button" class="tab-btn active" data-tab="ideas" role="tab" aria-selected="true">💡 アイデア</button>
+      <button type="button" class="tab-btn active" data-tab="ledger" role="tab" aria-selected="true">💰 収支管理</button>
+      <button type="button" class="tab-btn" data-tab="ideas" role="tab" aria-selected="false">💡 アイデア</button>
       <button type="button" class="tab-btn" data-tab="mail" role="tab" aria-selected="false">📧 メール</button>
       <button type="button" class="tab-btn" data-tab="agents" role="tab" aria-selected="false">🤖 エージェント</button>
       <button type="button" class="tab-btn" data-tab="changelog" role="tab" aria-selected="false">📝 更新履歴</button>
@@ -80,7 +81,6 @@ if (location.protocol === 'file:') {
       <button type="button" class="tab-btn" id="tabbtn-presentations" data-tab="presentations" role="tab" aria-selected="false" aria-controls="tab-presentations">🎤 プレゼン</button>
       <button type="button" class="tab-btn" data-tab="sns" role="tab" aria-selected="false">📣 自動投稿</button>
       <button type="button" class="tab-btn" data-tab="bug-reports" role="tab" aria-selected="false">🐛 不具合レポート</button>
-      <button type="button" class="tab-btn" data-tab="ledger" role="tab" aria-selected="false">💰 収支管理</button>
       <button type="button" class="tab-btn" data-tab="org" role="tab" aria-selected="false">📋 団体書類</button>
       <button type="button" class="tab-btn" data-tab="metaverse" role="tab" aria-selected="false">🌐 ３D・防災マップ</button>
       <button type="button" class="tab-btn" data-tab="budget" role="tab" aria-selected="false">💰 予算</button>
@@ -88,7 +88,7 @@ if (location.protocol === 'file:') {
     </nav>
 
     <!-- ===== タブ: アイデア ===== -->
-    <div class="tab-panel" id="tab-ideas" role="tabpanel">
+    <div class="tab-panel" id="tab-ideas" role="tabpanel" hidden>
 
     <!-- 投稿フォーム -->
     <section class="panel panel-form">
@@ -874,7 +874,7 @@ if (location.protocol === 'file:') {
     </div><!-- /tab-bug-reports -->
 
     <!-- ===== タブ: 収支管理 ===== -->
-    <div class="tab-panel" id="tab-ledger" role="tabpanel" hidden>
+    <div class="tab-panel" id="tab-ledger" role="tabpanel">
 
       <!-- サマリー -->
       <section class="panel">

@@ -12744,6 +12744,19 @@
       "actuals": [
         {
           "date": "2026-11-07",
+          "title": "管理画面の初期表示を「収支管理」に変更（タブの先頭へ移動・ログイン直後に台帳を読み込む） 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "site/admin/index.html：タブの並びで収支管理を先頭に、初期の active とパネルの hidden を付け替え",
+            "site/admin/admin.js：enterAdmin の最後に switchTab('ledger')",
+            "site/admin/changelog.json に feature を1件追記"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "node --check で構文確認。公開版の目視は事業主に依頼（ログインが必要なため）。\nsession: 4613c6c9-3b56-42c1-be7d-c0d566d7eb46 / output: 133,893 / cost: $52.90（セッション合計のうちこの分）"
+        },
+        {
+          "date": "2026-11-07",
           "title": "新井さん・中司の11月分会費（全額相殺・送金なし）を記帳し相殺内訳書を証憑に添付。納入表は4名とも11月✔ 0.2時間",
           "category": "事務",
           "outputs": [

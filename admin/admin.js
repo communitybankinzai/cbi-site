@@ -176,6 +176,8 @@ const UNREAD_POLL_MS = 30000;
     if (!state.agentsLoaded) loadAgents();
     loadAll();
     startUnreadPolling();
+    // 最初に開くタブは収支管理（2026-11-07 事業主指示）。switchTab が台帳の読み込み（initLedger）も起動する
+    switchTab('ledger');
   }
 
   function logout() {
