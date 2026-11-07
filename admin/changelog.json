@@ -4,6 +4,14 @@
   "entries": [
     {
         "date": "2026-11-07",
+        "type": "fix",
+        "target": "admin/（収支管理・会費納入状況）＋ cbi-admin-gas/Ledger.gs",
+        "title": "収支管理の「会費納入状況」で、対象月を1か月だけ入れた会費収入が「未」のままになる不具合を直した（GASのデプロイ後に有効）",
+        "detail": "台帳シートが対象月「2026-11」を日付に自動変換し、納入表の照合（yyyy-MM）に合わなくなっていた。Ledger.gs の列書式に feeMonths を足して文字列のまま保存し、読み出し時に日付になった値を yyyy-MM へ戻す。clasp push 済み（cbi-admin-gas a5d316f）。GASエディタから新バージョンをデプロイした時点で有効。初回の該当記録は須田さんの11月分会費（L20261107114900-1・証憑付き）",
+        "author": "Claude（A8 Ledger）"
+    },
+    {
+        "date": "2026-11-07",
         "type": "content",
         "target": "assets/sns/2026-11-07_event-notify-benefits/",
         "title": "イベント登録の3つのメリット（その場で会員に通知・毎朝7時にThreadsでまとめて・FreeFreeは3つのSNSでくり返し）を44秒のSNS動画にした",
