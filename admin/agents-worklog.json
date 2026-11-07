@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-11-07",
+          "title": "食レポマップの提案の SNS 告知を Threads・Instagram へ投稿（アプリの定型文・事業主「いま出す」） 0.1時間",
+          "category": "広報",
+          "outputs": [
+            "Threads https://www.threads.com/@communitybankinzai/post/DfbSiYdjbLP（13:09）／Instagram https://www.instagram.com/p/DfbSltPjQ31/（13:09・提案ページの告知画像）",
+            "予約キュー q1794023893128・q1794023906155（branding/sns/tools/post_to_sns.py）",
+            "site/assets/sns/2026-11-07_gourmet-map-howto/提案告知文.md"
+          ],
+          "hours": 0.1,
+          "partnerApproved": true,
+          "note": "提案の代理登録では SNS 自動告知（sns_auto_post）が出なかったため、アプリの定型文（generateSnsContent の proposal・utm_campaign=proposal_announce）と同じ文面を CBI の予約キューで出した。Facebook はアプリの PROPOSAL_MEDIA に無いので出していない。投稿後に Threads・Instagram の一覧を鍵で読み戻し、実投稿を確認。動画の投稿は投票とコメントを見てから（変更なし）。前回記録（output 274,308）からの差分 12,798。session: 03276a47-d363-4f76-8086-be4b86465a79 / output: 287,106 / cost: $106.97"
+        },
+        {
+          "date": "2026-11-07",
           "title": "CiDAO：運営への連絡に「使い方の質問・相談」を足し、提案を書く画面とヘルプから相談できるようにした（事業主決定A） 0.4時間",
           "category": "実装",
           "outputs": [
@@ -9313,11 +9326,11 @@
         },
         {
           "due": "未定",
-          "title": "📣 食レポマップの提案（2985a002）：Webプッシュと SNS 告知をどうするか（代理登録のため未送信）",
+          "title": "📣 食レポマップの提案（2985a002）：Webプッシュ（購読6名）を出すか（SNS 告知は 11/7 13:09 に出した）",
           "category": "広報",
           "priority": "中",
           "status": "保留",
-          "blockedBy": "2026-11-07 事業主決定「投票を見てから」。提案の投票（11/9〜11/30）の様子とコメントを見て、事業主が『出す』と言ったら動く。出すなら /admin/notice の一斉お知らせか、sns_post_logs に下書きを作って /admin/sns で承認",
+          "blockedBy": "2026-11-07 13:09 事業主「いま出す」で SNS 告知（Threads・Instagram）は出した。残りは Webプッシュ（購読6名）だけ。出すなら /admin/notice の一斉お知らせ",
           "note": "2026-11-07 の代理登録ではベル通知43件だけ。アプリから登録した場合は Webプッシュ＋SNS 自動配信（sns_auto_post=true）まで出ていた。動画の SNS 投稿（11/8 11:30 の案）は提案の投票を見てからにするかも事業主判断"
         },
         {
