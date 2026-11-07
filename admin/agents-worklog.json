@@ -17,6 +17,31 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-08",
+          "title": "通知の受け取り方の動画を Threads・Instagram・Facebook の3媒体に予約（11/8 12:00・承認済みの本文のまま） 0.1時間",
+          "category": "広報",
+          "outputs": [
+            "site/assets/sns/2026-11-07_push-howto/video.mp4・cover.jpg を cbi-site へ push（d73c793）",
+            "予約キュー3行（Threads・Instagram・Facebook・2026-11-08 12:00・状態 scheduled）",
+            "site/assets/sns/2026-11-07_push-howto/投稿文.md（状態を予約済みへ）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主の指示「先に🎥投稿して」で登録。公開URL が 200・途中再生 206 になるのを待ち、媒体ごとに1行ずつ1回だけ登録し、読み戻しで本文・媒体・動画URL・時刻が元ファイルと一致することを確認。Facebook のリンクだけ媒体別 utm（?utm_source=facebook&utm_campaign=push_howto）を #アンカーの前に手で付けた（post_to_sns.py の --utm-campaign は #アンカー付きの URL だと # の後ろに付けてしまうため使わなかった）。未確認：実際に12:00に各媒体へ出たか（キューの『posted』は信用せず、12:00のあとに各媒体を読み戻す）。工数は次の調査の記録の session 行にまとめて数えている。"
+        },
+        {
+          "date": "2026-11-08",
+          "title": "CiDAO イベントカレンダーの『子どもの居場所版』の実現性調査（種別の有無・件数・方式A/Bの見積り）0.4時間",
+          "category": "調査",
+          "outputs": [
+            "phone-session-bridge：to-phone/2026-11-08_0545_返信_CiDAOカレンダーの子どもの居場所版.md（作れる・範囲と方式の3択つき）",
+            "依頼ファイルを to-pc/done/ へ移動（d76d5a2）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "スマホ側の依頼に対し、本番DBを読み取り専用で集計。events.category は居場所の判定に使えない（居場所型36件のうち『子ども』は15件・同じ催しでも時期で付け方が違う）。範囲別の公開中の件数は ①居場所型36／②＋親子が集まる場92／③既存の『子ども』種別65。参加登録は全体で11行しかなく、参加者数は実績として出せない。ページは他サイトへ埋め込める設定であることを応答ヘッダーで確認。方式は A（絞り込み）＋B（専用ページ）を推奨・目安2.5〜3.5時間。範囲と方式は事業主の判断待ちで、実装は未着手。補助金の制度は依頼どおり調べていない。前回記録（output 224,824）からの差分 47,079。session: 378ba89a-4483-45ed-9cf1-5e62919139cd / output: 271,903 / cost: $33.67"
+        },
+        {
           "date": "2026-11-07",
           "title": "CiDAO：通知の受け取り方の動画（約38秒）を作り、ヘルプ・ホーム画面に追加の案内・ホームの帯に置いた（iPhone の Safari に出ていなかった帯も直した） 1.2時間",
           "category": "実装",
@@ -9346,10 +9371,37 @@
       "plans": [
         {
           "due": "2026-11-08",
-          "title": "📣 通知の受け取り方の動画を SNS（Threads・Instagram・Facebook）に出す：本文と動画を事業主が見て承認 → 予約",
+          "title": "📣 通知の動画の SNS 3媒体が 12:00 に実際に出たか、各媒体を読み戻して確認する",
           "category": "広報",
           "priority": "中",
-          "note": "投稿文・動画（1080x1920・2.6MB）・表紙は site/assets/sns/2026-11-07_push-howto/ に下書きがあり、まだ push も予約もしていない。承認をもらったら assets を push して予約キューへ（Instagram は表紙が JPEG・動画は site の URL）。投稿前に assert_video_cover_ok で表紙を検査する（検査済み）。"
+          "note": "予約は 2026-11-08 12:00（予約キュー q1794084018818／q1794084034376／q1794084040350）。キューの『posted』は信用せず、Threads・Instagram・Facebook の一覧を読んで実投稿を数える。Instagram は動画の取り込みが最長100秒で失敗することがある。出ていなければ CiDAO 側の鍵で1媒体ずつ出し直す（二重投稿の確認つき・公開の再送はしない）。"
+        },
+        {
+          "due": "未定",
+          "title": "📅 CiDAO イベントカレンダーの『子どもの居場所版』：範囲と方式を決めて実装",
+          "category": "実装",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "事業主が範囲（①居場所型36件／②＋親子が集まる場92件／③既存の子ども種別65件）と方式（A 絞り込み／B 専用ページ／A＋B）を決める。調査結果は phone-session-bridge の to-phone 2026-11-08 に報告済み",
+          "note": "推奨は ②＋A＋B（目安2.5〜3.5時間）。events.category は居場所の判定に使えないので、新しい目印の列を足して仮付け→確認用の一覧→事業主が1回確認する。参加者数は出せず（参加登録は全体で11行）、開催回数は『掲載された開催日』で実施の証拠ではない。補助金の制度は未調査。"
+        },
+        {
+          "due": "未定",
+          "title": "🧮 イベントの『参加者数』を実績にできるようにする（主催者が終了後に人数を入れる任意欄）",
+          "category": "実装",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "子どもの居場所版の方式が決まり、補助金で参加者数が要件になるか分かったら（参加登録は全体で11行しかなく、いまは出せない）",
+          "note": "主催者の負担が増えるので任意欄にする案。出席記録の仕組み（event_participants.attended）はあるがほぼ使われていない。"
+        },
+        {
+          "due": "未定",
+          "title": "🔧 post_to_sns.py の --utm-campaign が、#アンカー付きの URL では utm を # の後ろに付けてしまう",
+          "category": "保守",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "事業主が改善を採用するか決める（依頼されていない変更のため未着手）",
+          "note": "例：https://cidao.vercel.app/help#push-howto が …#push-howto?utm_source=… になり、utm が効かずアンカーも壊れる。今回の Facebook は手で ?utm…#アンカー の順に直して登録した。直すなら add_utm で # の前に挿す。"
         },
         {
           "due": "2026-11-08",
