@@ -12744,6 +12744,19 @@
       "actuals": [
         {
           "date": "2026-11-07",
+          "title": "収支台帳の一覧に緑の「精算済み MM/DD」印を追加（事業主の指摘：90円の精算が一覧で分からない）＋立替表示と証憑の整合の説明 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "site/admin/admin.js：一覧の立替者欄で精算日がある行に緑の印（精算日は title 属性にも）",
+            "site/admin/admin.css：.ledger-badge-settled（赤の未精算と同じ形・緑）",
+            "site/admin/changelog.json に feature を1件追記"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主の質問2件に回答：会費を「その他」で記帳しても未精算残高は減らず、相殺後の残額と次回の送金額だけが動く（admin.js の ledgerOffsetPool/renderLedgerAdvances を読んで説明）。小林さんの会費収入1,000円に910円の受け取り画面が付いていて金額が合わない指摘は、3案（内訳書を証憑に追加／2件に分割／現状）を提示して判断待ち。node --check で構文確認。公開版の目視は事業主に依頼。\nsession: 4613c6c9-3b56-42c1-be7d-c0d566d7eb46 / output: 91,626 / cost: $28.92（セッション合計のうちこの分）"
+        },
+        {
+          "date": "2026-11-07",
           "title": "小林さんの11月分会費（PayPay 910円受領＝1,000円−立替90円）を記帳し立替を精算済みに＋収支報告のLINE案内文 0.2時間",
           "category": "事務",
           "outputs": [

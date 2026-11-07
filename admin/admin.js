@@ -5171,7 +5171,7 @@ const UNREAD_POLL_MS = 30000;
         <td>${escapeHtml(e.account)}</td>
         <td class="ledger-td-amount">¥${(Number(e.amount) || 0).toLocaleString()}</td>
         <td>${escapeHtml(e.counterparty)}</td>
-        <td>${escapeHtml(e.paidBy || '')}${e.paidBy && e.type === 'expense' && e.status === 'active' && !String(e.settledDate || '') ? ' <span class="ledger-badge-unsettled">未精算</span>' : ''}</td>
+        <td>${escapeHtml(e.paidBy || '')}${e.paidBy && e.type === 'expense' && e.status === 'active' ? (String(e.settledDate || '') ? ` <span class="ledger-badge-settled" title="精算日 ${escapeAttr(ledgerDateStr(e.settledDate))}">精算済み ${escapeHtml(ledgerDateStr(e.settledDate).slice(5).replace('-', '/'))}</span>` : ' <span class="ledger-badge-unsettled">未精算</span>') : ''}</td>
         <td class="ledger-td-desc">${escapeHtml(e.description)}</td>
         <td>${escapeHtml(e.project)}</td>
         <td>${evCell}</td>
