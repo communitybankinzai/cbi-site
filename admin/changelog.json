@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+        "date": "2026-11-07",
+        "type": "feature",
+        "target": "CiDAO（SNS告知・管理画面）",
+        "title": "SNS告知リンクに媒体別の utm が付き、どの媒体の告知から CiDAO を見て登録したかを /admin/analytics で数えられるようになった",
+        "detail": "FreeFree・イベント・団体・提案の自動投稿、掲示板トップ・ログイン・「お店の方へ」のリンク、毎朝7時の Threads まとめの「詳細はこちら」に utm_source=媒体&utm_campaign=種類 が付く。utm 付きのページに着いた人は登録経路として覚えられ、初回ログインで記録される（これまでは /login に直接来た人だけ）。/admin/analytics に「経路つきの新規登録（直近90日）」が増え、「Threads の FreeFree の告知」のように読める。手投稿は post_to_sns.py の --utm-campaign で同じ形になる。",
+        "author": "Claude（A1 Core）"
+      },
+    {
       "date": "2026-11-07",
       "type": "content",
       "target": "gourmet-map/（印西 食レポマップ）",

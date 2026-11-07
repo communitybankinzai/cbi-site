@@ -17,6 +17,25 @@
     "A1": {
       "actuals": [
         {
+            "date": "2026-11-07",
+            "title": "SNS告知リンクに媒体別の utm を付け、登録経路を全ページで覚える（CiDAO 2868e1e・GAS設定・post_to_sns.py）0.6時間",
+            "category": "実装",
+            "outputs": [
+              "C:/Repos/cidao src/lib/sns-template.ts（withUtm・全リンクに utm）",
+              "src/components/PageViewTracker.tsx（utm 付きで着いたページで登録経路の Cookie）",
+              "src/lib/sns-edit-compare.ts（utm の違いは出し直しにしない）",
+              "src/lib/signup-source.ts（表示名）",
+              "src/app/admin/analytics/page.tsx（経路つきの新規登録）",
+              "src/lib/__tests__/sns-template-utm.test.ts ほかテスト3本",
+              "cbi-admin-gas 設定 eventsPageUrl（WebApp saveSnsConfig・再デプロイなし）",
+              "branding/sns/tools/post_to_sns.py（--utm-campaign）",
+              "CLAUDE.md ルール15"
+            ],
+            "hours": 0.6,
+            "partnerApproved": true,
+            "note": "事業主「改善提案実施」（動画投稿の効果を登録数で測れない件）。utm_medium は付けない（Threads 500字対策・イベント文の上限も調整）。テスト44件・tsc・eslint 通過。本番の確認は utm 付きで /events を開き Cookie cidao_signup_src が入ることで行う。今日の3投稿は編集できないので次回から。2026-08-29 期限の A1 予定「utm_source をイベント・FreeFree告知にも付与」を完了として外した。session: c81286e8-fe13-4699-9999-e7b42bcc8b4f / output: 149,848 / cost: $55.77"
+          },
+        {
           "date": "2026-11-07",
           "title": "食レポマップの CiDAO 提案：提案文の作成と本人の提案としての代理登録（全会員へベル通知） 0.3時間",
           "category": "事務",
@@ -11773,13 +11792,6 @@
           "status": "保留",
           "blockedBy": "市・企業向け提出資料に内部の期限管理を載せる是非の方針決定",
           "note": "管理画面の openPrintView（提出用PDF）の予定テーブルは独自描画で、2026-08-22に追加した期限切れ強調・status（待ち/保留）・blockedBy が反映されない。市・企業への提出資料に内部の期限管理をどこまで載せるかは方針判断が要るため実装を保留している。載せない方が適切という結論なら、この予定は取り下げてよい。"
-        },
-        {
-          "due": "2026-08-29",
-          "title": "🔗 SNS告知リンクの utm_source をイベント・FreeFree告知にも付与",
-          "category": "実装",
-          "priority": "高",
-          "note": "2026-08-22 A2 週次アクセス分析 第1回で実測。sns_post_logs の投稿本文を確認したところ、utm_source=threads&utm_medium=social&utm_campaign=proposal_announce が付いているのは提案（proposal）告知のリンクだけで、イベント告知（/events/[id]）・FreeFree告知（/freefree/[id]・/freefree）のリンクには未付与。このため page_views.source が null になり、イベント告知経由の流入が「直接訪問」に混ざって効果測定が原理的にできない。投稿生成側（sns rotation）で target_type 別に utm を付ける。Instagram は本文リンク不可のためプロフィールリンク側（instagram / threads-profile）の扱いもあわせて確認。根拠: agents/a2-voice/knowledge/access-reports/2026-08-22_週次アクセス分析_第1回.md §5"
         },
         {
           "due": "2026-09-05",
