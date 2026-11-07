@@ -18,6 +18,32 @@
       "actuals": [
         {
           "date": "2026-11-07",
+          "title": "食レポマップ 操作要領のSNS動画（縦1080x1920・68秒・圭太のナレーション・BGM・表紙検査済み）と投稿文の作成 0.7時間",
+          "category": "広報",
+          "outputs": [
+            "scripts/promo/gourmet_map/gen_voice.py（圭太・7本）／record.mjs（公開ページをCDPで1コマずつ・登録POSTだけ差し替えて本番に書かない）／compose.py（スマホ枠・見出しの文字演出・BGM・効果音）／post_text.md",
+            "site/assets/sns/2026-11-07_gourmet-map-howto/video.mp4（6.6MB）・cover.jpg・投稿文.md（ローカルのみ・承認後に push して予約キューへ）",
+            "cidao/2026-11-07_食レポマップの通し試験と操作動画.md（作り方の節）"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "事業主の「チェックが終わっているなら操作要領を含めて動画にしてSNS投稿準備」を受けて製作。場面：表紙→01 店名で探す→02 SNSのURLを貼る→03 自分の投稿なら写真→04 ピンに付く（元の投稿を見る）→05 新着・お店の追加→締め（URL・注意書き・出典）。お店は千葉NT中央駅近くのプレストンカフェ（OSM）、投稿URLと名前は架空（@sample_user）、写真は Antigravity 生成の見本で、画面とナレーションに「見本」と明記。1コマ目は見出しと地図が出た表紙（assert_video_cover_ok 通過）。声は圭太（本人声は使わない）。BGM は甘茶の音楽工房「セビーリャの砦」。検証：3fps の試し撮り16コマと合成の確認画像16コマを目視（豆腐文字・はみ出しを直した）。投稿は承認待ち（Threads は500字以内の版を別に用意）。工数は1セッション1.1hを調査0.4／広報0.7に按分。session: 03276a47-d363-4f76-8086-be4b86465a79 / output: 105,923 / cost: $26.93"
+        },
+        {
+          "date": "2026-11-07",
+          "title": "食レポマップ 公開ページの通し試験（本番API・25項目中24 OK）・運営の伏せる確認・試験データの片付け 0.4時間",
+          "category": "調査",
+          "outputs": [
+            "scratchpad gourmet_test.mjs（ヘッドレスChrome・CDP・スマホ幅・検索→お店→URL→登録→ピン→新着→取り消し→写真つき→新しいお店）／gourmet_cleanup.py（運営PATCH・DB削除）",
+            "本番 DB：試験の行2件を削除、写真1枚をバケット gourmet-images から削除（.env.local の service_role）",
+            "cidao/2026-11-07_食レポマップの通し試験と操作動画.md（結果表・見つかったこと）・MOC_CiDAO.md に1行"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "前日の記録は API 単体と画面の一部だけだったので、利用者が押す入口から最後まで通した。唯一の NG（登録直後の一般GETが0件）は Cache-Control: public, max-age=30 の配信キャッシュで、不具合ではない。見つかったこと（未修正・plans）：取り消しは hidden=true にするだけで、同じURLを同じお店に貼り直すと「もう貼られています」になる／取り消しても写真がバケットに残る。⚠ 運営の合言葉（防災MAPと共通）を credentials.md の範囲表示で会話の道具出力に出した（外部送信なし・再変更要否は plans）。Storage API は新形式の Secret key を「Invalid Compact JWS」で拒み、.env.local の service_role（JWT）で通った（記憶に保存）。session: 03276a47-d363-4f76-8086-be4b86465a79 / output: 105,923 / cost: $26.93"
+        },
+        {
+          "date": "2026-11-07",
           "title": "『その都度』の通知に、外部から集めて公開されたイベントを含める（4か所に組み込み・まとめ方の規則）0.6時間",
           "category": "実装",
           "outputs": [
@@ -9179,6 +9205,22 @@
       ],
       "plans": [
         {
+          "due": "2026-11-08",
+          "title": "🔐 運営の合言葉（DISASTER_MODERATION_KEY・防災MAPと食レポマップ共通）が 11/7 に会話の道具出力に出た件：再変更の要否",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-11-07、credentials.md の合言葉の節を範囲表示したときに値の行がそのまま出た（11-01 と同じ失敗・外部送信なし）。変えるなら Vercel の環境変数 DISASTER_MODERATION_KEY → 再デプロイ → credentials.md の行 → 運営端末の localStorage（防災MAPの🗑市民記録の管理と食レポマップは同じ鍵）を入れ直す。11/6 の DB パスワードの件（別の plan）と一緒に判断する"
+        },
+        {
+          "due": "未定",
+          "title": "🍽 食レポマップ：取り消した食レポが hidden のまま残り、同じURLを同じお店に貼り直せない（重複判定）／取り消しても写真がバケットに残る",
+          "category": "実装",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "事業主が方針を決めたら着手（実装前に3行計画を出す）。案：(1) 重複判定を hidden=false に絞る（行は残す）／(2) 本人の取り消しは行と写真を消す／(3) 30日の匿名化 pg_cron で hidden の行と写真も消す",
+          "note": "2026-11-07 の通し試験で発見。route.ts の duplicate 判定（shop_ref＋url）が hidden を見ておらず、DELETE は hidden=true にするだけ。写真の公開URLは取り消し後も開ける（UUID 名で推測は困難）。運営が伏せた分は残す前提で考える"
+        },
+        {
           "due": "未定",
           "title": "📰 18時まとめが、下書きで入って後日『公開』された外部イベントを拾えない：公開した日を残すか",
           "category": "調査",
@@ -9217,7 +9259,7 @@
           "title": "🍽 食レポマップの告知文（市民向け「食べた投稿のURLを貼って」・お店向け）を作り、事業主の確認後にSNSへ",
           "category": "広報",
           "priority": "中",
-          "note": "公開URL https://communitybankinzai.github.io/cbi-site/gourmet-map/ 。1枚目は見出しの帯（scripts/sns_headline.py）。投稿前に本文と画像を見せて承認を得る。トップページや FreeFree からのリンクを張るかも事業主判断"
+          "note": "2026-11-07：市民向けは操作要領の動画（site/assets/sns/2026-11-07_gourmet-map-howto/video.mp4・cover.jpg・投稿文.md、ローカルのみ）を作って事業主へ提示済み・承認待ち。承認後に assets を push → 公開URLが200になってから branding/sns/tools/post_to_sns.py で3媒体へ（Threads は500字版）。お店向けの文案は未作成。トップページや FreeFree からのリンクを張るかも事業主判断"
         },
         {
           "due": "未定",
