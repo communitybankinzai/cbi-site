@@ -18,6 +18,31 @@
       "actuals": [
         {
           "date": "2026-11-07",
+          "title": "食レポマップ お店の一覧に OpenPOI API（Overture Maps・食品営業許可）の飲食店 3,630件を追加（4,679件）＋CiDAO の参照 poi: 対応＋本番確認 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "site f8b1c89：gourmet-map/pipeline/build_shops.py（OpenPOI を区画ごとに350回取得・飲食5区分・除外・OSMとの重複除去・ライセンス参照表）／osm-shops.json（4,679件・963KB・gzip 208KB）／index.html（出典表示）／admin/changelog.json 1件",
+            "cidao 78b528c：src/lib/gourmet.ts（parseShopRef に poi:<12桁>）／api/gourmet/reports/route.ts／gourmet.test.ts（+5件）。Vercel READY",
+            "cidao/2026-11-07_食レポマップの通し試験と操作動画.md 3節・記憶 openpoi-api-pitfalls.md"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "事業主「改善提案も実施」。案件ナレッジ 2026-11-02_OpenPOI API 導入検討 の提案を実装。調べたこと：1回200件の上限でページング無し→区画分割、食品営業許可はコンビニ・スーパー・給食等も restaurant→名前で除外（209件）、出典表示の必須文言（OpenPOI API／Overture Maps Foundation, overturemaps.org／Japan Food Facilities）。検証：ローカル 8767 で 4,680件・検索・出典・JSエラー0、本番で 4,680件を確認し、poi のお店へ登録201→取り消し200→一般GET 0件→DBの行を削除。限界：英語名（Starbucks）と日本語名（スターバックス）の同じお店が別に出る、閉店が残ることがある（plans）。前回記録（output 105,923）からの差分 72,335。session: 03276a47-d363-4f76-8086-be4b86465a79 / output: 178,258 / cost: $45.93"
+        },
+        {
+          "date": "2026-11-07",
+          "title": "食レポマップ動画のメンバー確認：Drive フォルダ（リンク閲覧可）と確認文の用意 0.1時間",
+          "category": "広報",
+          "outputs": [
+            "Drive CBI/2026-11-07_食レポマップ動画（投稿前の確認）151InqyhtQkNnvqtiAFw7yDN07E4ncjNF：video.mp4・cover.jpg・投稿文.md・投稿文（Google ドキュメント）",
+            "site/assets/sns/2026-11-07_gourmet-map-howto/メンバー確認文.md（LINE 用・事業主が送る）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主「メンバーに投稿していいか確認したい」。~/.clasprc.json の鍵（drive.file）で Drive API の再開可能アップロード→フォルダに anyone/reader→コネクタで CBI 共有フォルダへ移動（2026-10-21 の手順）。確認文は 11/8 10:00 までに意見がなければ 11:30 に投稿する案。送信は事業主。前回記録（output 105,923）からの差分 72,335。session: 03276a47-d363-4f76-8086-be4b86465a79 / output: 178,258 / cost: $45.93"
+        },
+        {
+          "date": "2026-11-07",
           "title": "食レポマップ 操作要領のSNS動画（縦1080x1920・68秒・圭太のナレーション・BGM・表紙検査済み）と投稿文の作成 0.7時間",
           "category": "広報",
           "outputs": [
@@ -9205,6 +9230,15 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "🍽 食レポマップのお店一覧：英語名（Overture）と日本語名（OSM）で同じお店が2つ出る／閉店したお店が残る／食品営業許可の名前の質 — 直すか",
+          "category": "実装",
+          "priority": "低",
+          "status": "保留",
+          "blockedBy": "利用者から指摘が出たら、または食レポが付き始めて重複が目立ったら（実装前に3行計画を出す）",
+          "note": "2026-11-07 に OpenPOI を足した副作用。文字種が違う名前は重複として検出できない（Starbucks 7件＋スターバックス 13件など）。案：(1) チェーン名の別名表（ローマ字→カナ）で重複を外す／(2) お店にも運営の『伏せる』を付ける（poi の id に対する hidden 表が要る）／(3) そのまま（検索で両方出るだけ）。閉店は OpenPOI の既知の制約で、ページに注記済み"
+        },
+        {
           "due": "2026-11-08",
           "title": "🔐 運営の合言葉（DISASTER_MODERATION_KEY・防災MAPと食レポマップ共通）が 11/7 に会話の道具出力に出た件：再変更の要否",
           "category": "保守",
@@ -9259,7 +9293,7 @@
           "title": "🍽 食レポマップの告知文（市民向け「食べた投稿のURLを貼って」・お店向け）を作り、事業主の確認後にSNSへ",
           "category": "広報",
           "priority": "中",
-          "note": "2026-11-07：市民向けは操作要領の動画（site/assets/sns/2026-11-07_gourmet-map-howto/video.mp4・cover.jpg・投稿文.md、ローカルのみ）を作って事業主へ提示済み・承認待ち。承認後に assets を push → 公開URLが200になってから branding/sns/tools/post_to_sns.py で3媒体へ（Threads は500字版）。お店向けの文案は未作成。トップページや FreeFree からのリンクを張るかも事業主判断"
+          "note": "2026-11-07：市民向けは操作要領の動画（site/assets/sns/2026-11-07_gourmet-map-howto/video.mp4・cover.jpg・投稿文.md、ローカルのみ）を作って事業主へ提示済み・承認待ち。承認後に assets を push → 公開URLが200になってから branding/sns/tools/post_to_sns.py で3媒体へ（Threads は500字版）。11/7 にメンバー確認用の Drive フォルダ（151InqyhtQkNnvqtiAFw7yDN07E4ncjNF・リンク閲覧可）と メンバー確認文.md を用意、送るのは事業主（11/8 10:00 まで意見なしなら 11:30 に投稿の案）。お店向けの文案は未作成。トップページや FreeFree からのリンクを張るかも事業主判断"
         },
         {
           "due": "未定",
@@ -9273,7 +9307,7 @@
           "title": "🍽 osm-shops.json（OpenStreetMap の飲食店一覧）の作り直しの頻度を決める",
           "category": "保守",
           "priority": "低",
-          "note": "2026-11-06 に1回作っただけ（1,049件）。閉店・開店を反映するなら site/gourmet-map/pipeline/_cache を消して build_shops.py を再実行し push。月1回の手作業か GitHub Actions かは件数の変化を見て判断"
+          "note": "2026-11-07 に OpenPOI API（Overture Maps＋食品営業許可）を足して 4,679件（OSM 1,049＋3,630）。作り直しは site/gourmet-map/pipeline/_cache の osm_raw.json と openpoi_raw.json を消して build_shops.py（OpenPOI は350回・約2分）→ push。閉店の反映は OpenPOI 側の更新（source_updated_at）次第。月1回の手作業か GitHub Actions かは件数の変化を見て判断"
         },
         {
           "due": "2026-11-07",
