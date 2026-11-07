@@ -17,6 +17,33 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-07",
+          "title": "CiDAO：運営への連絡に「使い方の質問・相談」を足し、提案を書く画面とヘルプから相談できるようにした（事業主決定A） 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "cidao 4fef724：src/app/bug-report/actions.ts・_components/BugReportForm.tsx・page.tsx（区分 question・題名「運営に相談・不具合を知らせる」・?category=question&about=proposal で話題つきで開く・送信後に「返事はベルに届く」）",
+            "cidao 4fef724：src/app/proposals/new/page.tsx（見出し下に「書き方に迷ったら運営に相談」「使い方ヘルプ」）・src/app/help/page.tsx（節「提案の出し方」と目次）・components/BottomNav.tsx・me/page.tsx・admin/bug-reports・admin/analytics（表示名）",
+            "supabase/migrations/20261107130000_bug_reports_question.sql（check 制約に question・本番適用済み）",
+            "cidao/2026-11-07_食レポマップの通し試験と操作動画.md 6節"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "事業主「提案の仕方がわからないときに運営に連絡できるルートがあるか」→実測では /bug-report（不具合を知らせる）だけで提案画面・ヘルプに導線なし→3案のうち A を選択。検証：tsc 0・vitest 756件・eslint は既存の <a> 2件のみ・本番で /help の新しい節、/bug-report?category=question&about=proposal の題名・話題の箱・種別の初期選択、下メニューの名前を確認。返事がベルに返る仕組み（/admin/bug-reports の返信）は変更なし。前回記録（output 209,549）からの差分 64,759。session: 03276a47-d363-4f76-8086-be4b86465a79 / output: 274,308 / cost: $97.91"
+        },
+        {
+          "date": "2026-11-07",
+          "title": "CiDAO の通知の実態（ベル・プッシュ・メール・SNS自動告知）の実測と、メール以外で会員に届く経路（LINE公式アカウント）の調査 0.2時間",
+          "category": "調査",
+          "outputs": [
+            "実測：ベル43名（提案はOFF設定なし）／プッシュ購読6名／提案メールは7/27から全行 宛先0・エラー1（会員41/44名にメール欄なし）／SNS自動告知は過去6件すべて成功／設定未操作10名／30日のベル既読118/632",
+            "LINE 公式アカウント：CiDAO に broadcast の実装あり・LINE_CHANNEL_ACCESS_TOKEN 未設定・無料200通/月・ライト5,000円/5,000通・スタンダード15,000円/30,000通（公式ページ）",
+            "plans 4件（通知の既定とOFF案内の3→4択・提案メール不達の調査・提案の通知の残り・相談の入口→本日完了）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主の問い「提案は何人に通知されたか」「既定ONがよいか」「メール以外の方法は」「LINEへの誘導が大変では」「有料だといくら」に実測と公式ページで回答。方針は未決（LINE で進めるかは plans）。⚠ app_settings の value 表示で Threads の app_secret が会話に出た（plans）。前回記録（output 209,549）からの差分 64,759。session: 03276a47-d363-4f76-8086-be4b86465a79 / output: 274,308 / cost: $97.91"
+        },
+        {
             "date": "2026-11-07",
             "title": "SNS告知リンクに媒体別の utm を付け、登録経路を全ページで覚える（CiDAO 2868e1e・GAS設定・post_to_sns.py）0.6時間",
             "category": "実装",
@@ -9261,15 +9288,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "未定",
-          "title": "💬 CiDAO：提案の仕方がわからない会員が運営に相談できる入口（いまは『不具合を知らせる』フォームしかなく、提案画面とヘルプに導線が無い）",
-          "category": "実装",
-          "priority": "中",
-          "status": "保留",
-          "blockedBy": "事業主が案を選んだら着手（実装前に3行計画を出す）。A 既存の /bug-report に『使い方の質問・相談』の区分を足し、名前を『運営に相談・不具合を知らせる』にして /proposals/new とヘルプの『提案の出し方』節から案内／B 提案の相談ボタン（件名を入れた状態で開く）＋運営が本人の名前で代理登録する運用を明記／C 今のまま、告知文に公式メールを書く",
-          "note": "2026-11-07 実測：運営への連絡は /bug-report（下メニュー『不具合を知らせる』・マイページ・ヘルプ・通知の各件から。種類は 不具合／要望／その他。公式メール＋管理者のベルに届き、/admin/bug-reports から返信するとベルに返る）だけ。ヘルプの『提案の出し方』は『順次追加』のまま未作成。/proposals/new に相談の導線なし"
-        },
         {
           "due": "2026-11-14",
           "title": "📧 CiDAO 提案のメール通知（/api/cron/notify・投票開始/締切前/結果）が 7/27 から一度も届いていない：宛先 0・エラー1 の原因と、メール欄のない会員（41/44）の扱い",
