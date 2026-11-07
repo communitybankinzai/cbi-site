@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-07",
+          "title": "卒論発表動画の Meet 共有対応：共有リンク動画を720p化→Driveで再生不可→標準形式で作り直し・再生検査の追加・音ずれの原因調査 0.7時間",
+          "category": "保守",
+          "outputs": [
+            "Drive 共有リンク 13J-CdSL… の中身を v720.mp4（30fps・H.264 High・96MB）へ差し替え",
+            "USB・デスクトップ（Driveの写し元）の 5_スライド_音声つき動画.mp4 を720p版に",
+            "scratchpad/mihon/rebuild_deck.ps1（v720 を作って書き出す）",
+            "scratchpad/drive_video_ready.py（ログインなしで再生できるかの検査）",
+            "memory/reference-drive-video-replace-transcode.md"
+          ],
+          "hours": 0.7,
+          "partnerApproved": false,
+          "note": "v_full（30.303fps・Baseline）へ差し替えた後、Meet本番で再生ボタンが出なかった（Drive変換の失敗と推定・確信度中）。音ずれは動画ファイル側では切替14か所すべて無音中で一致し、11/05からのGPUドライバー停止による再生落ちと推定（再起動でOK）。0.7時間は前回記録（2,241,574）からの増分。 session: 26c01732-37cf-4978-9efb-3d1d96160c96 / output: 2,316,077 / cost: $670.60"
+        },
+        {
+          "date": "2026-11-07",
           "title": "食レポマップの提案の SNS 告知を Threads・Instagram へ投稿（アプリの定型文・事業主「いま出す」） 0.1時間",
           "category": "広報",
           "outputs": [
