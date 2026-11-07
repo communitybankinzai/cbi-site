@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+        "date": "2026-11-07",
+        "type": "content",
+        "target": "assets/sns/2026-11-07_event-notify-benefits/",
+        "title": "イベント登録の3つのメリット（その場で会員に通知・毎朝7時にThreadsでまとめて・FreeFreeは3つのSNSでくり返し）を44秒のSNS動画にした",
+        "detail": "縦1080x1920・BGM（甘茶の音楽工房「セビーリャの砦」）と圭太のナレーション入り。登録画面をタップすると会員のスマホに通知が積み上がる場面、朝7時の時計と実際のThreads投稿の型、本物のFreeFree掲示板の画面から3つのSNSへ広がりカウントダウンでくり返す場面、「登録は1回。告知は、おまかせ。」のまとめ、CiDAO への誘導で構成。1コマ目が表紙（見出し＋絵）。投稿文は同じフォルダの 投稿文.md（事業主の承認後に3媒体へ予約）。作り方は scripts/promo/event_notify/README.md",
+        "author": "Claude（A4 Voice-Out）"
+      },
+    {
       "date": "2026-11-06",
       "type": "feature",
       "target": "gourmet-map/（印西 食レポマップ・新設）",

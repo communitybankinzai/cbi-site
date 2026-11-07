@@ -11808,6 +11808,21 @@
     "A4": {
       "actuals": [
         {
+            "date": "2026-11-07",
+            "title": "イベント通知3メリット（その場で通知・毎朝7時Threads・FreeFree3媒体）のSNS動画44秒・BGM付きの制作 0.7時間",
+            "category": "広報",
+            "outputs": [
+              "scripts/promo/event_notify/（gen_voice.py・compose.py・append_records.py・README.md）",
+              "site/assets/sns/2026-11-07_event-notify-benefits/video.mp4",
+              "site/assets/sns/2026-11-07_event-notify-benefits/cover.jpg",
+              "site/assets/sns/2026-11-07_event-notify-benefits/投稿文.md",
+              "site/admin/changelog.json"
+            ],
+            "hours": 0.7,
+            "partnerApproved": false,
+            "note": "事業主指示「3つのメリットが市民に浸透しない。SNS動画を作って投稿。演出を考えて製作。BGMも」。主張の根拠をコードで確認：即時通知＝events/actions.ts notifyAllMembers、Threads＝ThreadsDailyPost.gs（当日朝7時・offset 0。指示文の『前日』は実際には前日18時のプレビューメール）、FreeFree＝sns-announce.ts の3媒体＋定期紹介のカウントダウン。声は圭太（edge-tts）、BGMは甘茶の音楽工房「セビーリャの砦」、本物の掲示板の画面写しを使用。表紙は1コマ目から見出し＋絵（assert_video_cover_ok 通過・明るさ検査）。投稿は事業主の承認待ち（予約・読み戻しは plans）。session: c81286e8-fe13-4699-9999-e7b42bcc8b4f / output: 74,462 / cost: $22.51"
+          },
+        {
           "date": "2026-11-04",
           "title": "イルミライ点灯式 当日告知「本日点灯」16秒の制作と11/14 12:00の3媒体予約 0.44時間",
           "category": "広報",
@@ -12114,6 +12129,24 @@
         }
       ],
       "plans": [
+        {
+            "due": "2026-11-09",
+            "title": "📣 イベント通知3メリット動画の承認→3媒体へ予約投稿→読み戻し",
+            "category": "広報",
+            "priority": "高",
+            "status": "待ち",
+            "blockedBy": "事業主が動画と投稿文（site/assets/sns/2026-11-07_event-notify-benefits/投稿文.md）を承認すれば動ける",
+            "note": "承認後：video.mp4・cover.jpg を push → 公開URLが200 → branding/sns/tools/post_to_sns.py で Threads・Instagram・Facebook を別行で登録 → listSnsQueue で読み戻し → 投稿後に実投稿で確認し README に URL を書く"
+          },
+        {
+            "due": "未定",
+            "title": "🕖 Threads の当日まとめ投稿を「前日」に変えるか決める（ThreadsDailyPost.gs は当日朝7時）",
+            "category": "広報",
+            "priority": "中",
+            "status": "保留",
+            "blockedBy": "事業主の方針判断（当日朝7時のまま／前日夕方に変える／両方）。変えるなら GAS の offset と atHour、動画のナレーション v2 と場面2の文字を直す",
+            "note": "2026-11-07 の動画制作で判明。指示文の『前日にThreadsでまとめて』は実装と違い、前日18時は CBI 宛てのプレビューメール"
+          },
         {
           "due": "2026-11-14",
           "title": "📣 イルミライ点灯式 当日告知（11/14 12:00・3媒体）の公開を読み戻して確かめる",
