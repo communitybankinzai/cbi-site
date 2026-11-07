@@ -11809,7 +11809,7 @@
       "actuals": [
         {
             "date": "2026-11-07",
-            "title": "イベント通知3メリット（その場で通知・毎朝7時Threads・FreeFree3媒体）のSNS動画44秒・BGM付きの制作 0.7時間",
+            "title": "イベント通知3メリット（その場で通知・毎朝7時Threads・FreeFree3媒体）のSNS動画44秒・BGM付きの制作と3媒体の予約 0.9時間",
             "category": "広報",
             "outputs": [
               "scripts/promo/event_notify/（gen_voice.py・compose.py・append_records.py・README.md）",
@@ -11818,9 +11818,9 @@
               "site/assets/sns/2026-11-07_event-notify-benefits/投稿文.md",
               "site/admin/changelog.json"
             ],
-            "hours": 0.7,
-            "partnerApproved": false,
-            "note": "事業主指示「3つのメリットが市民に浸透しない。SNS動画を作って投稿。演出を考えて製作。BGMも」。主張の根拠をコードで確認：即時通知＝events/actions.ts notifyAllMembers、Threads＝ThreadsDailyPost.gs（当日朝7時・offset 0。指示文の『前日』は実際には前日18時のプレビューメール）、FreeFree＝sns-announce.ts の3媒体＋定期紹介のカウントダウン。声は圭太（edge-tts）、BGMは甘茶の音楽工房「セビーリャの砦」、本物の掲示板の画面写しを使用。表紙は1コマ目から見出し＋絵（assert_video_cover_ok 通過・明るさ検査）。投稿は事業主の承認待ち（予約・読み戻しは plans）。session: c81286e8-fe13-4699-9999-e7b42bcc8b4f / output: 74,462 / cost: $22.51"
+            "hours": 0.9,
+            "partnerApproved": true,
+            "note": "事業主指示「3つのメリットが市民に浸透しない。SNS動画を作って投稿。演出を考えて製作。BGMも」。主張の根拠をコードで確認：即時通知＝events/actions.ts notifyAllMembers、Threads＝ThreadsDailyPost.gs（当日朝7時・offset 0。指示文の『前日』は実際には前日18時のプレビューメール）、FreeFree＝sns-announce.ts の3媒体＋定期紹介のカウントダウン。声は圭太（edge-tts）、BGMは甘茶の音楽工房「セビーリャの砦」、本物の掲示板の画面写しを使用。表紙は1コマ目から見出し＋絵（assert_video_cover_ok 通過・明るさ検査）。11:35 事業主承認→12:00 に3媒体へ予約（q1794019052441 Threads・q1794019060260 Instagram・q1794019068380 Facebook）、読み戻しで本文・動画・日時が一致。実投稿の確認は plans。session: c81286e8-fe13-4699-9999-e7b42bcc8b4f / output: 91,216 / cost: $32.29"
           },
         {
           "date": "2026-11-04",
@@ -12130,13 +12130,11 @@
       ],
       "plans": [
         {
-            "due": "2026-11-09",
-            "title": "📣 イベント通知3メリット動画の承認→3媒体へ予約投稿→読み戻し",
+            "due": "2026-11-07",
+            "title": "📣 イベント通知3メリット動画（11/7 12:00・3媒体）の実投稿を読み戻して確かめる",
             "category": "広報",
             "priority": "高",
-            "status": "待ち",
-            "blockedBy": "事業主が動画と投稿文（site/assets/sns/2026-11-07_event-notify-benefits/投稿文.md）を承認すれば動ける",
-            "note": "承認後：video.mp4・cover.jpg を push → 公開URLが200 → branding/sns/tools/post_to_sns.py で Threads・Instagram・Facebook を別行で登録 → listSnsQueue で読み戻し → 投稿後に実投稿で確認し README に URL を書く"
+            "note": "予約 q1794019052441（Threads）・q1794019060260（Instagram）・q1794019068380（Facebook）。12:10以降に各媒体の投稿一覧を読み戻し（キューの posted は信用しない）、動画の再生と本文を確認して scripts/promo/event_notify/README.md に投稿URLを書く。Facebook の表紙は必要なら fb_set_thumbnail.py の要領で cover.jpg に差し替え（公開中の変更なので事業主に確認）"
           },
         {
             "due": "未定",
