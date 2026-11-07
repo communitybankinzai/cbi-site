@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-11-07",
+      "type": "content",
+      "target": "gourmet-map/（印西 食レポマップ）",
+      "title": "お店の一覧に OpenPOI API（Overture Maps・食品営業許可）の飲食店 3,630件を足し、4,679件から店名で探せるようにした",
+      "detail": "食レポマップのお店の一覧は OpenStreetMap の 1,049件だけで、載っていないお店は市民が足す前提だった。OpenPOI API（https://openpoiapi.com/attribution.html ・Overture Maps と食品営業許可（Japan Food Facilities）の施設・無料・商用可・出典表示が条件）から印西市と周辺の飲食店（レストラン・カフェ・ファストフード・パン・居酒屋/バー）を区画ごとに取り（1回200件の上限があるので4分割しながら350回）、コンビニ・スーパー・給食・福祉施設などを名前で除き、OpenStreetMap と80m以内で名前が似ているものは重複として外した。お店の id は poi:<12桁>（CiDAO 78b528c が受け付ける）。各件のライセンス・出典は JSON の参照表に残し、ページ下の出典表示に OpenPOI API・Overture Maps・Japan Food Facilities を足した。限界：閉店したお店が残ることがある、英語名のチェーン（Starbucks 等）が日本語名と別に出ることがある、JSON は 963KB（gzip 208KB）。作り直しは pipeline/build_shops.py（_cache を消して実行）。",
+      "author": "Claude（A1 Core）"
+    },
+    {
         "date": "2026-11-07",
         "type": "fix",
         "target": "admin/（収支管理・会費納入状況）＋ cbi-admin-gas/Ledger.gs",
