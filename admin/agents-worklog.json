@@ -9255,7 +9255,7 @@
           "category": "広報",
           "priority": "中",
           "status": "保留",
-          "blockedBy": "事業主が『提案の SNS 告知を出す／出さない』『プッシュで知らせるか』を決めたら動ける。出すなら /admin/notice の一斉お知らせか、sns_post_logs に下書きを作って /admin/sns で承認",
+          "blockedBy": "2026-11-07 事業主決定「投票を見てから」。提案の投票（11/9〜11/30）の様子とコメントを見て、事業主が『出す』と言ったら動く。出すなら /admin/notice の一斉お知らせか、sns_post_logs に下書きを作って /admin/sns で承認",
           "note": "2026-11-07 の代理登録ではベル通知43件だけ。アプリから登録した場合は Webプッシュ＋SNS 自動配信（sns_auto_post=true）まで出ていた。動画の SNS 投稿（11/8 11:30 の案）は提案の投票を見てからにするかも事業主判断"
         },
         {
@@ -9322,7 +9322,7 @@
           "title": "🍽 食レポマップの告知文（市民向け「食べた投稿のURLを貼って」・お店向け）を作り、事業主の確認後にSNSへ",
           "category": "広報",
           "priority": "中",
-          "note": "2026-11-07：市民向けは操作要領の動画（site/assets/sns/2026-11-07_gourmet-map-howto/video.mp4・cover.jpg・投稿文.md、ローカルのみ）を作って事業主へ提示済み・承認待ち。承認後に assets を push → 公開URLが200になってから branding/sns/tools/post_to_sns.py で3媒体へ（Threads は500字版）。11/7 にメンバー確認用の Drive フォルダ（151InqyhtQkNnvqtiAFw7yDN07E4ncjNF・リンク閲覧可）を用意。LINE の確認文は使わず、CiDAO の提案 2985a002（12:20 代理登録・議論2日→投票・締切 11/30）で投票とコメントを募る流れに変更。動画の投稿時刻（11/8 11:30 の案）は提案の様子を見て事業主が決める。お店向けの文案は未作成。トップページや FreeFree からのリンクを張るかも事業主判断"
+          "note": "2026-11-07：市民向けは操作要領の動画（site/assets/sns/2026-11-07_gourmet-map-howto/video.mp4・cover.jpg・投稿文.md、ローカルのみ）を作って事業主へ提示済み・承認待ち。承認後に assets を push → 公開URLが200になってから branding/sns/tools/post_to_sns.py で3媒体へ（Threads は500字版）。11/7 にメンバー確認用の Drive フォルダ（151InqyhtQkNnvqtiAFw7yDN07E4ncjNF・リンク閲覧可）を用意。LINE の確認文は使わず、CiDAO の提案 2985a002（12:20 代理登録・議論2日→投票・締切 11/30）で投票とコメントを募る流れに変更。動画の SNS 投稿は提案の投票とコメントを見てから（2026-11-07 事業主決定・提案の本文もその旨に直した）。お店向けの文案は未作成。トップページや FreeFree からのリンクを張るかも事業主判断"
         },
         {
           "due": "未定",
