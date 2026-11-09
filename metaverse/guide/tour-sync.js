@@ -7,7 +7,7 @@
  * 使い方：
  *   CbiTourSync.loadLib(function () {
  *     var h = CbiTourSync.connect({ tourId: "ABC234", role: "guide" | "tourist",
- *       onSpot: function (p) {}, onHello: function (p) {}, onSay: function (p) {},
+ *       onSpot: function (p) {}, onHello: function (p) {}, onSay: function (p) {}, onAsk: function (p) {},
  *       onPresence: function (counts) {}, onStatus: function (status) {} });
  *     h.send("spot", { id: "kioroshi-kaiso", name: "木下貝層", at: Date.now() });
  *     h.leave();
@@ -74,7 +74,8 @@ window.CbiTourSync = (function () {
     }
     ch.on("broadcast", { event: "spot" }, function (m) { if (opts.onSpot) opts.onSpot(m.payload || {}); })
       .on("broadcast", { event: "hello" }, function (m) { if (opts.onHello) opts.onHello(m.payload || {}); })
-      .on("broadcast", { event: "say" }, function (m) { if (opts.onSay) opts.onSay(m.payload || {}); })
+      .on("broadcast", { event: "say" }, function (m) { if (opts.onSay) opts.onSay(m.payload || {}); })       // ガイド→観光客：字幕（ja/en）・読み上げ（read）
+      .on("broadcast", { event: "ask" }, function (m) { if (opts.onAsk) opts.onAsk(m.payload || {}); })       // 観光客→ガイド：質問（en/ja）
       .on("presence", { event: "sync" }, function () { if (opts.onPresence) opts.onPresence(counts()); })
       .subscribe(function (s) {
         status = s;

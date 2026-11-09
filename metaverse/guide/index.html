@@ -87,6 +87,19 @@
   .tourBox .acts .stop { background: #fff3ec; color: var(--warn); border-color: #f0c9b3; }
   .tourBox .st { font-size: 13px; min-height: 1.3em; margin-top: 6px; }
   .hbtn.live { background: var(--accent); }
+  /* ツアー中の下の帯：話した日本語→英語の字幕を観光客へ */
+  .micBar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--ink); color: #fff; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); display: none; z-index: 40; box-shadow: 0 -4px 16px rgba(0,0,0,.25); }
+  .micBar.show { display: block; }
+  .micBar .row { display: flex; gap: 8px; align-items: center; max-width: 720px; margin: 0 auto; }
+  .micBar button { border: 0; border-radius: 10px; padding: 10px 12px; font-size: 15px; font-family: inherit; }
+  .micBar .mic { background: #e4b23c; color: #1f2a30; font-weight: 700; flex: 1; }
+  .micBar .mic.on { background: #e74c3c; color: #fff; }
+  .micBar .type { background: #35454d; color: #fff; }
+  .micBar .st { font-size: 12px; opacity: .85; margin-top: 4px; min-height: 1.2em; max-width: 720px; margin-left: auto; margin-right: auto; }
+  .micBar .log { font-size: 13px; margin-top: 4px; max-width: 720px; margin-left: auto; margin-right: auto; max-height: 4.5em; overflow: auto; }
+  .micBar .log .ja { color: #cfd8dc; } .micBar .log .en { color: #fff; }
+  .micBar .log .q { color: #ffd54f; }
+  body.micOn main { padding-bottom: 150px; }
 </style>
 </head>
 <body>
@@ -152,6 +165,14 @@
     </div>
   </div></div>
 </main>
+<div class="micBar" id="micBar">
+  <div class="row">
+    <button type="button" class="mic" id="micBtn">🎤 話す（英語の字幕を配信）</button>
+    <button type="button" class="type" id="typeBtn" title="声が使えないとき、文字で送る">✏️</button>
+  </div>
+  <div class="st" id="micSt"></div>
+  <div class="log" id="micLog"></div>
+</div>
 <footer>
   出典：各文化財の解説は印西市・千葉県教育委員会の公開情報（A4学習レポートの出典欄）。写真：印西市ホームページ。英語は下訳で、公開前に確認が要ります。
   この試作ページはサイトからリンクしていません。
@@ -161,7 +182,7 @@
 <script>
 (function () {
   "use strict";
-  var V = "20261109d";
+  var V = "20261109f";
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); };
@@ -263,6 +284,10 @@
     if (!current || !EN[current.reportId]) return;
     if (!window.speechSynthesis) { $("status").textContent = "この端末のブラウザは読み上げに対応していません。"; return; }
     var text = EN[current.reportId].speech || EN[current.reportId].intro;
+    if (tour) { // ツアー中は観光客のスマホ（音声ON の人）で読み上げる。ガイドの端末では鳴らさない
+      tour.send("say", { en: text, read: true, spot: current.reportId, at: Date.now() });
+      $("status").textContent = "観光客のスマホで英語を読み上げています（音声をONにしている人）。"; setLang("en"); return;
+    }
     speechSynthesis.cancel();
     var u = new SpeechSynthesisUtterance(text);
     u.lang = "en-US"; u.rate = 0.95; u.pitch = 1;
@@ -296,7 +321,7 @@
   }
 
   /* ---- ツアー同期（観光客のスマホの画面を、選んだ文化財に合わせる）。部品は tour-sync.js ---- */
-  var tour = null, tourCount = 0;
+  var tour = null, tourCount = 0, tourStarting = false;
   function tourRender() {
     var on = !!tour;
     $("tCode").textContent = on ? tour.tourId : "—";
@@ -312,12 +337,17 @@
   }
   function tourStart(existingId) {
     if (!window.CbiTourSync) { $("tSt").textContent = "同期の部品を読み込めませんでした。"; return; }
+    if (tourStarting) return;   // 接続中の二度押しは何もしない
+    tourStarting = true;
     $("tSt").textContent = "接続中…";
     CbiTourSync.loadLib(function (ok) {
+      tourStarting = false;
       if (!ok) { $("tSt").textContent = "通信部品（supabase-js）を読み込めませんでした。通信を確認してください。"; return; }
       var id = CbiTourSync.normalize(existingId) || CbiTourSync.newTourId();
+      if (tour) { try { tour.leave(); } catch (e) {} tour = null; }   // 既存の接続を閉じてから差し替える
       tour = CbiTourSync.connect({ tourId: id, role: "guide",
         onHello: function () { if (current) tourBroadcast(current.reportId); },
+        onAsk: onAskFromTourist,
         onPresence: function (c) { tourCount = c.tourists; tourRender(); $("tSt").textContent = "参加中の観光客：" + c.tourists + " 人"; },
         onStatus: function (st) {
           if (st === "SUBSCRIBED") { $("tSt").textContent = "接続しました。QRを観光客に見せてください。"; if (current) tourBroadcast(current.reportId); }
@@ -326,15 +356,66 @@
       });
       if (!tour) { $("tSt").textContent = "接続できませんでした。"; return; }
       try { sessionStorage.setItem("cbi-tour-guide", id); } catch (e) {}
-      tourRender();
+      tourRender(); micBarShow(true);
     });
   }
   function tourStop() {
-    if (tour) tour.leave();
+    if (tour) { try { tour.send("say", { stop: true, at: Date.now() }); } catch (e) {} tour.leave(); }   // 観光客の読み上げも止める
     tour = null; tourCount = 0;
     try { sessionStorage.removeItem("cbi-tour-guide"); } catch (e) {}
-    $("tSt").textContent = "ツアーを終えました。"; tourRender();
+    $("tSt").textContent = "ツアーを終えました。"; tourRender(); micBarShow(false);
+    if (recOn && rec) { try { rec.stop(); } catch (e) {} }
   }
+
+  /* ---- その場の翻訳（ガイドの日本語→英語の字幕を観光客へ・観光客の質問は英語→日本語で受ける） ---- */
+  var TRANSLATE_API = "https://cidao.vercel.app/api/rally-translate";
+  var rec = null, recOn = false;
+  function translate(text, from, to) {
+    return fetch(TRANSLATE_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text, from: from, to: to }) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d && d.error ? d.error : ("HTTP " + r.status)); return d.text; }); });
+  }
+  function micLog(cls, text) {
+    var log = $("micLog"); var div = document.createElement("div"); div.className = cls; div.textContent = text; log.appendChild(div);
+    while (log.children.length > 8) log.removeChild(log.firstChild);
+    log.scrollTop = log.scrollHeight;
+  }
+  function sayToTourists(ja) {
+    ja = String(ja || "").trim(); if (!ja || !tour) return;
+    $("micSt").textContent = "英語にしています…";
+    micLog("ja", "🗣 " + ja);
+    translate(ja, "ja", "en").then(function (en) {
+      tour.send("say", { ja: ja, en: en, at: Date.now() });
+      micLog("en", "→ " + en);
+      $("micSt").textContent = "観光客の画面に英語の字幕を出しました。";
+    }).catch(function (e) { $("micSt").textContent = "翻訳に失敗しました（" + e.message + "）。通信を確認してください。"; });
+  }
+  function micToggle() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { $("micSt").textContent = "この端末のブラウザは音声認識に対応していません。✏️ で文字を送ってください。"; return; }
+    if (recOn && rec) { try { rec.stop(); } catch (e) {} return; }
+    rec = new SR(); rec.lang = "ja-JP"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+    var finalText = "";
+    rec.onstart = function () { recOn = true; $("micBtn").classList.add("on"); $("micBtn").textContent = "⏹ 止める（話し終えたら）"; $("micSt").textContent = "聞いています…"; };
+    rec.onresult = function (ev) {
+      var interim = "";
+      for (var i = ev.resultIndex; i < ev.results.length; i++) { if (ev.results[i].isFinal) finalText += ev.results[i][0].transcript; else interim += ev.results[i][0].transcript; }
+      $("micSt").textContent = "聞いています… " + (finalText + interim);
+    };
+    rec.onerror = function (ev) { $("micSt").textContent = "音声認識のエラー：" + (ev.error || "") + "（✏️ で文字でも送れます）"; };
+    rec.onend = function () {
+      recOn = false; $("micBtn").classList.remove("on"); $("micBtn").textContent = "🎤 話す（英語の字幕を配信）";
+      if (finalText.trim()) sayToTourists(finalText); else if ($("micSt").textContent.indexOf("エラー") < 0) $("micSt").textContent = "聞き取れませんでした。もう一度どうぞ。";
+    };
+    try { rec.start(); } catch (e) { $("micSt").textContent = "音声認識を始められませんでした：" + e.message; }
+  }
+  function onAskFromTourist(p) {
+    if (!p) return;
+    var line = "❓ " + (p.ja || "") + (p.en ? "（" + p.en + "）" : "");
+    micLog("q", line);
+    $("status").textContent = "観光客からの質問：" + (p.ja || p.en || "");
+    try { if (navigator.vibrate) navigator.vibrate([80, 40, 80]); } catch (e) {}
+  }
+  function micBarShow(on) { $("micBar").classList.toggle("show", on); document.body.classList.toggle("micOn", on); }
 
   /* 起動 */
   Promise.all([
@@ -364,6 +445,8 @@
   $("tourBox").addEventListener("click", function (ev) { if (ev.target === $("tourBox")) $("tourBox").classList.remove("show"); });
   $("tStart").addEventListener("click", function () { tourStart(); });
   $("tStop").addEventListener("click", tourStop);
+  $("micBtn").addEventListener("click", micToggle);
+  $("typeBtn").addEventListener("click", function () { var tx = prompt("観光客に伝える日本語を入力（英語にして字幕で配信します）"); if (tx) sayToTourists(tx); });
   $("tCopy").addEventListener("click", function () {
     if (!tour) return; var u = CbiTourSync.tourUrl(tour.tourId, "en");
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(function () { $("tSt").textContent = "リンクをコピーしました。"; }, function () { $("tSt").textContent = u; });
