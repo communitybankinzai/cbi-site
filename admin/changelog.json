@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-11-09",
+      "type": "fix",
+      "target": "CiDAO（イベント詳細・SNS管理画面）",
+      "title": "イベント詳細の「📣 SNSで告知」で、Threads・Instagram に加えて Facebook にも告知の下書きができるようになった",
+      "detail": "Facebook ページは 2026-10-01 から接続済みで FreeFree の告知は Facebook に出ていたが、イベント告知の配信先に Facebook が入っておらず、ボタンを押しても Facebook の下書きができないため承認のしようがなかった。配信先に Facebook を加え、FreeFree と同じく承認してから配信する。ボタンの下に配信先（Threads・Facebook・Instagram。チラシ画像が無いイベントは Instagram を除く）を表示し、SNS管理画面の説明にあった Facebook「⏸ 見送り中（ページ未開設）」の古い記述を「✅ 稼働中」に直した。",
+      "author": "Claude（A1 Core）"
+    },
+    {
+      "date": "2026-11-09",
       "type": "feature",
       "target": "CiDAO（マイページ・イベント登録）",
       "title": "イベント登録の確認通知を、スマホには鳴らさずアプリ内のベルだけに届ける設定が、マイページでできるようになった",

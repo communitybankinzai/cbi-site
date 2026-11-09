@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-11-09",
+          "title": "CiDAO：イベント詳細の「SNSで告知」が Facebook の下書きを作らず承認できなかった原因を特定し、配信先に Facebook を追加（管理画面の古い記述も修正）＋だんごまつりの FB 下書きを手で1件作成 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao 881cc8e：src/lib/sns-announce.ts（EVENT_MEDIA に facebook を追加）／src/app/events/[id]/_components/AnnounceEventButton.tsx（配信先の注記）／src/app/admin/sns/page.tsx（イベントの配信先の説明・Facebook「⏸ 見送り中」→「✅ 稼働中」）",
+            "本番 sns_post_logs：だんごまつり＆交流館まつり（event 94081f58…）の facebook 行 1ab6a4ed… を手で追加（承認待ち・本文は Threads 版の utm_source を facebook に置換しただけ）",
+            "site/admin/changelog.json 1件・agents-worklog.json A1 actuals 1件・plans 2件"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "原因：Facebook ページは 2026-10-01 に接続済みで FreeFree の FB 配信は直近60日で17件成功していたが、イベント告知の配信先一覧（EVENT_MEDIA）が Threads・Instagram だけだった（10/6 のボタン追加時から）。承認できないのは FB の行が存在しないため。Threads・IG の2件は 13:56 に承認済みで 18時台に自動配信。検証：vitest 30件 pass・tsc exit 0・Vercel 本番 READY（881cc8e）。管理画面と詳細ページの表示は要ログインのため私の目では未確認。調査中に credentials.md を grep して DB パスワードの行が道具出力に出た（既存の予定「DB パスワードの扱い」に追記）。session: 75006819-db7d-4830-b1dc-588f73fa90c5 / output: 29,691 / cost: $7.55"
+        },
+        {
+          "date": "2026-11-09",
           "title": "CiDAO：イベント登録の確認通知を『ベルだけ』にする設定（マイページ）を実装・本番反映 0.3時間",
           "category": "実装",
           "outputs": [
@@ -9433,6 +9446,20 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "📘 /admin/sns「媒体の状況」表の Instagram 行が「提案告知のみ」のまま（実際は FreeFree・イベントも配信）→ 現状に合わせる",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-11-09 の Facebook 行の修正（cidao 881cc8e）で気づいた。同じ表の Threads 行「すべての対象を配信」は合っている。1行の文言直しのみ"
+        },
+        {
+          "due": "未定",
+          "title": "🔁 イベントがローテーション（rotation cycle）で Threads の承認待ち下書きに入っている（11/2・11/9）が、管理画面は「イベントはローテーション対象外」と案内 → どちらを正とするか決めて片方を直す",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-11-09 に sns_post_logs を調べて判明（error_message 'rotation cycle: awaiting approval'・target_type=event・medium=threads が 11/2 9:00 と 11/9 9:00 に1件ずつ）。run_sns_rotation_cycle（DB 関数）がイベントも候補にしている可能性。毎朝のまとめ配信（GAS）と二重になるなら除外、意図した仕様なら /admin/sns の説明文を直す"
+        },
+        {
           "due": "2026-11-16",
           "title": "⚙ マイページの『イベント登録の確認通知』の設定を実画面で確かめる（チェックを外すとベルだけに届くか）",
           "category": "保守",
@@ -9721,7 +9748,7 @@
           "title": "🔐 CiDAO の DB パスワードの扱い：会話ログに表示された件の再変更要否と、C:\\Repos\\cidao\\.env.local の DATABASE_URL を新しい値へ",
           "category": "保守",
           "priority": "高",
-          "note": "2026-11-06 に credentials.md の行を grep した出力にパスワードが出た（外部送信なし）。.env.local は 9/25 のままで、scripts/cidao-sql.py --pooler も認証失敗する。再変更するなら Vercel の DATABASE_URL（使っていれば）・credentials.md・パスワードノートもそろえる"
+          "note": "【11-09 再発】credentials.md を grep した道具出力に同じパスワードの行がそのまま出た（セッション 75006819）。 2026-11-06 に credentials.md の行を grep した出力にパスワードが出た（外部送信なし）。.env.local は 9/25 のままで、scripts/cidao-sql.py --pooler も認証失敗する。再変更するなら Vercel の DATABASE_URL（使っていれば）・credentials.md・パスワードノートもそろえる"
         },
         {
           "due": "未定",
