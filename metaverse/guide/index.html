@@ -206,7 +206,7 @@
 <script>
 (function () {
   "use strict";
-  var V = "20261109g";
+  var V = "20261109h";
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); };
@@ -391,7 +391,7 @@
     try { sessionStorage.removeItem("cbi-tour-guide"); } catch (e) {}
     $("tSt").textContent = "ツアーを終えました。"; tourRender(); micBarShow(false);
     if (recOn && rec) { try { rec.stop(); } catch (e) {} }
-    hideDraft(); draft.replyTo = null; draft.replyEl = null;
+    hideDraft(); draft.replyTo = null; draft.replySpot = null; draft.replyEl = null;
   }
 
   /* ---- その場の翻訳（ガイドの日本語→英語の字幕を観光客へ・観光客の質問は英語→日本語で受ける） ---- */
@@ -408,11 +408,11 @@
   }
   /* 録音（または入力）→ 認識した日本語を直せる → 英語の訳を確かめる → 🔊 伝える（この端末で再生＋全員に配信＋記録） */
   var LOG_API = "https://cidao.vercel.app/api/rally-log";
-  var draft = { ja: "", en: "", replyTo: null, replyEl: null, gen: 0 };
-  function logSave(kind, ja, en, replyTo) { // 学習用の記録（名前は持たない）。失敗しても配信は続ける
+  var draft = { ja: "", en: "", replyTo: null, replySpot: null, replyEl: null, gen: 0 };
+  function logSave(kind, ja, en, replyTo, spot) { // 学習用の記録（名前は持たない）。失敗しても配信は続ける。spot は回答のとき質問の地点を渡す
     if (!tour) return Promise.resolve(null);
     return fetch(LOG_API, { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tour: tour.tourId, spot: current ? current.reportId : null, kind: kind, ja: ja || null, en: en || null, replyTo: replyTo || null }) })
+      body: JSON.stringify({ tour: tour.tourId, spot: spot || (current ? current.reportId : null), kind: kind, ja: ja || null, en: en || null, replyTo: replyTo || null }) })
       .then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { return d && d.id ? d.id : null; }).catch(function () { return null; });
   }
   function showDraft(ja) {
@@ -437,21 +437,21 @@
     var ja = $("jaText").value.trim(), en = draft.en;
     if (!ja || !en || !tour) return;
     if (ja !== draft.ja) { translateDraft(++draft.gen); return; } // 訳したあとに日本語を直していたら、訳し直してから
-    var replyTo = draft.replyTo, replyEl = draft.replyEl;
-    draft.replyTo = null; draft.replyEl = null; if (replyEl) replyEl.classList.remove("answering");
+    var replyTo = draft.replyTo, replySpot = draft.replySpot, replyEl = draft.replyEl;
+    draft.replyTo = null; draft.replySpot = null; draft.replyEl = null; if (replyEl) replyEl.classList.remove("answering");
     tour.send("say", { ja: ja, en: en, replyTo: replyTo, at: Date.now() });
     speakLocal(en);
     micLog("ja", (replyTo ? "💬 回答：" : "🗣 ") + ja); micLog("en", "→ " + en);
     $("micSt").textContent = "伝えました（全員の画面に英語の字幕" + ($("localVoice").checked ? "・この端末で読み上げ" : "") + "）。";
     hideDraft();
-    logSave(replyTo ? "answer" : "say", ja, en, replyTo);
+    logSave(replyTo ? "answer" : "say", ja, en, replyTo, replyTo ? replySpot : null);
   }
   function micToggle() {
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { $("micSt").textContent = "この端末のブラウザは音声認識に対応していません。✏️ で文字を入力してください。"; return; }
     if (recOn && rec) { try { rec.stop(); } catch (e) {} return; }
     rec = new SR(); rec.lang = "ja-JP"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
-    var finalText = "";
+    var finalText = "", myGen = ++draft.gen;   // 録音の世代。✏️ の showDraft が進めたら、この録音の結果は捨てる
     rec.onstart = function () { recOn = true; $("micBtn").classList.add("on"); $("micBtn").textContent = "⏹ 止める（話し終えたら）"; $("micSt").textContent = "聞いています…"; $("draft").hidden = true; };
     rec.onresult = function (ev) {
       var interim = "";
@@ -461,6 +461,7 @@
     rec.onerror = function (ev) { $("micSt").textContent = "音声認識のエラー：" + (ev.error || "") + "（✏️ で文字でも送れます）"; };
     rec.onend = function () {
       recOn = false; $("micBtn").classList.remove("on"); $("micBtn").textContent = "🎤 録音（日本語で話す）";
+      if (myGen !== draft.gen) return;
       if (finalText.trim()) showDraft(finalText); else if ($("micSt").textContent.indexOf("エラー") < 0) $("micSt").textContent = "聞き取れませんでした。もう一度どうぞ。";
     };
     try { rec.start(); } catch (e) { $("micSt").textContent = "音声認識を始められませんでした：" + e.message; }
@@ -471,8 +472,9 @@
     var span = document.createElement("span"); span.textContent = "❓ " + (p.ja || "") + (p.en ? "（" + p.en + "）" : ""); div.appendChild(span);
     var btn = document.createElement("button"); btn.type = "button"; btn.textContent = "答える";
     btn.addEventListener("click", function () { // 次の「伝える」をこの質問への回答として記録する
+      draft.gen++; hideDraft();   // 作成済みの下書きは破棄（別の質問への回答に紐付けが変わらないように）
       if (draft.replyEl) draft.replyEl.classList.remove("answering");
-      draft.replyTo = p.id || null; draft.replyEl = div; div.classList.add("answering");
+      draft.replyTo = p.id || null; draft.replySpot = p.spot || null; draft.replyEl = div; div.classList.add("answering");
       $("micSt").textContent = "この質問への回答を 🎤 で録音するか、✏️ で入力してください。";
     });
     div.appendChild(btn); log.appendChild(div);

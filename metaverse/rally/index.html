@@ -164,7 +164,7 @@
 <script>
 (function () {
   "use strict";
-  var V = "20261109f";
+  var V = "20261109g";
   var RADIUS_M = 80;                        // この距離以内でスタンプが押せる
   var STALE_MS = 180000;                    // これより古い位置では押せない（押したときに取り直す）
   var API = "https://cidao.vercel.app/api/rally-book";
@@ -410,9 +410,13 @@
   }
   // 認識・入力した文を下書きパネルに出し、訳を取りに行く（送るのは adSend を押したとき）
   var adSeq = 0;   // 古い訳の返答で上書きしないための番号
-  function askDraftHide() { var d = $("askDraft"); d.hidden = true; d.classList.remove("show"); adSeq++; }
+  var adSrc = "";  // 今の訳の元にした原文（編集されたかの判定用）
+  var askRecGen = 0;  // 録音の世代。✏️の入力・Cancel・退出で進め、古い録音の結果を捨てる
+  var adHideGen = 0;  // 下書きを閉じた回数（送信中に閉じられたか判定する）
+  function askDraftHide() { var d = $("askDraft"); d.hidden = true; d.classList.remove("show"); adSeq++; askRecGen++; adHideGen++; }
   function askTranslateDraft() {
     var text = $("adText").value.trim(), n = ++adSeq;
+    adSrc = text;
     $("adSend").disabled = true;
     if (!text) { $("adTr").textContent = ""; return; }
     $("adTr").textContent = "…";
@@ -423,20 +427,25 @@
   }
   function askShowDraft(text) {
     text = String(text || "").trim(); if (!text || !tour) return;
+    askRecGen++;   // 手入力・認識結果の表示で、動いている録音の結果は古くなる
     var d = $("askDraft"); $("adText").value = text; d.hidden = false; d.classList.add("show");
     askTranslateDraft();
   }
   function askSendDraft() {
     var mine = $("adText").value.trim(), tr = $("adTr").textContent.trim();
     if (!mine || !tr || !tour) return;
+    if (mine !== adSrc) { askTranslateDraft(); return; }   // 訳したあとに原文を直していたら、訳し直してから
     var ja = lang === "en" ? tr : mine, en = lang === "en" ? mine : tr;
     var spot = current ? current.reportId : null;
+    var sentTour = tour, sentHide = adHideGen;   // 送信を始めた時点のツアーと下書きの世代
     $("adSend").disabled = true;
     // まず記録 API に保存（失敗しても送信は続ける）
     fetch("https://cidao.vercel.app/api/rally-log", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tour: tour.tourId, spot: spot, kind: "ask", ja: ja, en: en }) })
       .then(function (r) { return r.json().then(function (d) { return r.ok && d && d.id != null ? d.id : null; }); })
       .catch(function () { return null; })
       .then(function (id) {
+        if (tour !== sentTour) { toast(t("askErr"), 4000); return; }   // 保存中に退出・再参加していたら別ツアーへは送らない
+        if (sentHide !== adHideGen) return;   // 保存中に下書きを閉じていたら送らない
         tour.send("ask", { id: id, en: en, ja: ja, spot: spot, at: Date.now() });
         toast(t("askSent"), 3000); askDraftHide();
       });
@@ -447,10 +456,10 @@
     if (!SR) { var tx = prompt(t("askPrompt")); if (tx) askShowDraft(tx); return; }
     if (askRec) { try { askRec.stop(); } catch (e) {} return; }
     askRec = new SR(); askRec.lang = lang === "en" ? "en-US" : "ja-JP"; askRec.interimResults = false; askRec.continuous = false;
-    var got = "";
+    var got = "", myGen = ++askRecGen;
     askRec.onresult = function (ev) { for (var i = ev.resultIndex; i < ev.results.length; i++) if (ev.results[i].isFinal) got += ev.results[i][0].transcript; };
     askRec.onerror = function () { toast(t("noMic"), 3000); };
-    askRec.onend = function () { askRec = null; $("askBtn").textContent = t("ask"); if (got.trim()) askShowDraft(got); };
+    askRec.onend = function () { askRec = null; $("askBtn").textContent = t("ask"); if (myGen !== askRecGen) return; if (got.trim()) askShowDraft(got); };
     $("askBtn").textContent = "⏹"; toast(t("askListen"), 3000);
     try { askRec.start(); } catch (e) { askRec = null; $("askBtn").textContent = t("ask"); var tx2 = prompt(t("askPrompt")); if (tx2) askShowDraft(tx2); }
   }
