@@ -72,12 +72,28 @@
   .linkbox.show { display: block; }
   footer { max-width: 720px; margin: 0 auto; padding: 0 16px 32px; font-size: 11px; color: var(--sub); }
   .err { background: #fff3ec; color: var(--warn); border: 1px solid #f0c9b3; border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+  /* ツアー同期（観光客のスマホを、選んだ文化財に合わせる） */
+  .tourBox { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; align-items: flex-end; z-index: 60; }
+  .tourBox.show { display: flex; }
+  .tourBox .box { background: #fff; width: 100%; max-width: 720px; margin: 0 auto; border-radius: 18px 18px 0 0; padding: 16px 16px 24px; max-height: 85vh; overflow: auto; }
+  .tourBox h2 { font-size: 17px; margin: 0 0 6px; }
+  .tourBox p { font-size: 13px; color: var(--sub); margin: 0 0 8px; }
+  .tourBox .code { font-family: ui-monospace, Consolas, monospace; font-size: 26px; letter-spacing: 3px; background: #f3f1ea; border-radius: 10px; padding: 8px 12px; text-align: center; }
+  .tourBox .qr { display: flex; justify-content: center; margin: 8px 0; }
+  .tourBox .qr img { width: 180px; height: 180px; background: #fff; padding: 6px; border: 1px solid var(--line); border-radius: 10px; }
+  .tourBox .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .tourBox .acts button { padding: 12px 8px; border-radius: 12px; border: 1px solid var(--line); background: #fff; font-size: 14px; font-family: inherit; }
+  .tourBox .acts .pri { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tourBox .acts .stop { background: #fff3ec; color: var(--warn); border-color: #f0c9b3; }
+  .tourBox .st { font-size: 13px; min-height: 1.3em; margin-top: 6px; }
+  .hbtn.live { background: var(--accent); }
 </style>
 </head>
 <body>
 <header>
   <h1>🏛 文化財ガイド帳 <small>試作 — 印西市の文化財50件・英語は5件から</small></h1>
   <button class="hbtn" id="nearBtn" type="button" title="現在地から近い順に並べ替えます">📍 近い順</button>
+  <button class="hbtn" id="tourBtn" type="button" title="観光客のスマホを、あなたが選んだ文化財に合わせて切り替えるツアーを始めます">📡 ツアー</button>
 </header>
 <main>
   <section id="listSec">
@@ -122,15 +138,30 @@
     <div class="status" id="status"></div>
     <div class="linkbox" id="linkbox"></div>
   </section>
+  <div class="tourBox" id="tourBox"><div class="box">
+    <h2>📡 ツアー同期</h2>
+    <p>ツアーを始めると6文字のコードとQRが出ます。観光客がQRを読むと、スタンプラリーの画面が、あなたが選んだ文化財に合わせて切り替わります（英語で表示）。名前や位置は送りません。</p>
+    <div class="code" id="tCode">—</div>
+    <div class="qr" id="tQr"></div>
+    <div class="st" id="tSt"></div>
+    <div class="acts">
+      <button type="button" class="pri" id="tStart">ツアーを始める</button>
+      <button type="button" class="stop" id="tStop" style="display:none">ツアーを終える</button>
+      <button type="button" id="tCopy" style="display:none">リンクをコピー</button>
+      <button type="button" id="tClose">閉じる</button>
+    </div>
+  </div></div>
 </main>
 <footer>
   出典：各文化財の解説は印西市・千葉県教育委員会の公開情報（A4学習レポートの出典欄）。写真：印西市ホームページ。英語は下訳で、公開前に確認が要ります。
   この試作ページはサイトからリンクしていません。
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" crossorigin="anonymous"></script>
+<script src="tour-sync.js?v=20261109a"></script>
 <script>
 (function () {
   "use strict";
-  var V = "20261109c";
+  var V = "20261109d";
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); };
@@ -181,7 +212,7 @@
   function openDetail(id, push) {
     var s = SPOTS.filter(function (x) { return x.reportId === id; })[0];
     if (!s) return;
-    current = s; stopSpeak();
+    current = s; stopSpeak(); tourBroadcast(s.reportId);
     var en = EN[id];
     var img = $("dPhoto");
     if (s.photo) { img.src = "../" + s.photo; img.className = ""; img.alt = s.photoAlt || s.name; $("dCap").textContent = "写真：印西市ホームページ"; }
@@ -246,7 +277,7 @@
 
   function shareLink() {
     if (!current) return;
-    var url = location.origin + location.pathname.replace(/guide\/?$/, "rally/") + "?spot=" + encodeURIComponent(current.reportId) + "&lang=en";
+    var url = tour ? CbiTourSync.tourUrl(tour.tourId, "en") : location.origin + location.pathname.replace(/guide\/?$/, "rally/") + "?spot=" + encodeURIComponent(current.reportId) + "&lang=en";
     var box = $("linkbox"); box.textContent = url; box.className = "linkbox show";
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(function () { $("status").textContent = "観光客用リンクをコピーしました（スタンプラリーでこの文化財を英語で開きます）。"; },
@@ -262,6 +293,47 @@
       $("nearBtn").textContent = "📍 近い順"; $("nearBtn").classList.add("on"); renderList();
     }, function () { $("nearBtn").textContent = "📍 近い順"; alert("現在地を取得できませんでした。位置情報の許可を確認してください。"); },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+  }
+
+  /* ---- ツアー同期（観光客のスマホの画面を、選んだ文化財に合わせる）。部品は tour-sync.js ---- */
+  var tour = null, tourCount = 0;
+  function tourRender() {
+    var on = !!tour;
+    $("tCode").textContent = on ? tour.tourId : "—";
+    $("tStart").style.display = on ? "none" : ""; $("tStop").style.display = on ? "" : "none"; $("tCopy").style.display = on ? "" : "none";
+    $("tourBtn").classList.toggle("live", on); $("tourBtn").textContent = on ? "📡 ツアー中 " + tourCount + "人" : "📡 ツアー";
+    var q = $("tQr"); q.innerHTML = "";
+    if (on && window.qrcode) { try { var qr = qrcode(0, "M"); qr.addData(CbiTourSync.tourUrl(tour.tourId, "en")); qr.make(); q.innerHTML = qr.createImgTag(4, 8); q.firstChild.alt = "QR"; } catch (e) {} }
+  }
+  function tourBroadcast(id) {
+    if (!tour || !id) return;
+    var s = SPOTS.filter(function (x) { return x.reportId === id; })[0];
+    tour.send("spot", { id: id, name: s ? s.name : "", at: Date.now() });
+  }
+  function tourStart(existingId) {
+    if (!window.CbiTourSync) { $("tSt").textContent = "同期の部品を読み込めませんでした。"; return; }
+    $("tSt").textContent = "接続中…";
+    CbiTourSync.loadLib(function (ok) {
+      if (!ok) { $("tSt").textContent = "通信部品（supabase-js）を読み込めませんでした。通信を確認してください。"; return; }
+      var id = CbiTourSync.normalize(existingId) || CbiTourSync.newTourId();
+      tour = CbiTourSync.connect({ tourId: id, role: "guide",
+        onHello: function () { if (current) tourBroadcast(current.reportId); },
+        onPresence: function (c) { tourCount = c.tourists; tourRender(); $("tSt").textContent = "参加中の観光客：" + c.tourists + " 人"; },
+        onStatus: function (st) {
+          if (st === "SUBSCRIBED") { $("tSt").textContent = "接続しました。QRを観光客に見せてください。"; if (current) tourBroadcast(current.reportId); }
+          else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT") { $("tSt").textContent = "接続に失敗しました（" + st + "）。もう一度お試しください。"; }
+        }
+      });
+      if (!tour) { $("tSt").textContent = "接続できませんでした。"; return; }
+      try { sessionStorage.setItem("cbi-tour-guide", id); } catch (e) {}
+      tourRender();
+    });
+  }
+  function tourStop() {
+    if (tour) tour.leave();
+    tour = null; tourCount = 0;
+    try { sessionStorage.removeItem("cbi-tour-guide"); } catch (e) {}
+    $("tSt").textContent = "ツアーを終えました。"; tourRender();
   }
 
   /* 起動 */
@@ -287,6 +359,18 @@
   $("speakBtn").addEventListener("click", speakEn);
   $("stopBtn").addEventListener("click", function () { stopSpeak(); $("status").textContent = "停止しました。"; });
   $("shareBtn").addEventListener("click", shareLink);
+  $("tourBtn").addEventListener("click", function () { tourRender(); $("tourBox").classList.add("show"); });
+  $("tClose").addEventListener("click", function () { $("tourBox").classList.remove("show"); });
+  $("tourBox").addEventListener("click", function (ev) { if (ev.target === $("tourBox")) $("tourBox").classList.remove("show"); });
+  $("tStart").addEventListener("click", function () { tourStart(); });
+  $("tStop").addEventListener("click", tourStop);
+  $("tCopy").addEventListener("click", function () {
+    if (!tour) return; var u = CbiTourSync.tourUrl(tour.tourId, "en");
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(function () { $("tSt").textContent = "リンクをコピーしました。"; }, function () { $("tSt").textContent = u; });
+    else $("tSt").textContent = u;
+  });
+  setInterval(function () { if (tour && current) tourBroadcast(current.reportId); }, 30000); // 途中参加や取りこぼしに備えて、いまの文化財を送り直す
+  try { var savedTour = sessionStorage.getItem("cbi-tour-guide"); if (savedTour) tourStart(savedTour); } catch (e) {}
   window.addEventListener("popstate", function (ev) {
     var id = ev.state && ev.state.spot;
     if (id) openDetail(id, false); else closeDetail(false);
