@@ -99,7 +99,19 @@
   .micBar .log { font-size: 13px; margin-top: 4px; max-width: 720px; margin-left: auto; margin-right: auto; max-height: 4.5em; overflow: auto; }
   .micBar .log .ja { color: #cfd8dc; } .micBar .log .en { color: #fff; }
   .micBar .log .q { color: #ffd54f; }
-  body.micOn main { padding-bottom: 150px; }
+  .micBar .draft { background: #2b3a42; border-radius: 12px; padding: 10px; margin-top: 8px; max-width: 720px; margin-left: auto; margin-right: auto; }
+  .micBar .draft label { font-size: 12px; opacity: .85; display: block; margin-bottom: 4px; }
+  .micBar .draft textarea { width: 100%; font: inherit; font-size: 16px; border-radius: 8px; border: 1px solid #4a5a63; padding: 8px; background: #fff; color: var(--ink); resize: vertical; }
+  .micBar .draft .tr { font-size: 16px; line-height: 1.45; background: #10212b; border-radius: 8px; padding: 8px 10px; margin: 8px 0; min-height: 2.4em; color: #fff; }
+  .micBar .draft .row button { flex: none; }
+  .micBar .draft .go { background: var(--accent); color: #fff; font-weight: 700; flex: 1 1 auto; }
+  .micBar .draft .go:disabled { background: #607078; color: #cfd8dc; font-weight: normal; }
+  .micBar .tgl { font-size: 12px; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .micBar .log .q button { margin-left: 6px; font-size: 12px; padding: 2px 8px; border-radius: 8px; border: 1px solid #ffd54f; background: transparent; color: #ffd54f; }
+  .micBar .log .q.answering { outline: 1px solid #ffd54f; border-radius: 6px; }
+  .faq h3 { font-size: 14px; color: var(--sub); margin: 12px 0 6px; }
+  .faq ul { margin: 0; padding-left: 20px; font-size: 14px; } .faq li { margin-bottom: 6px; } .faq li .en { color: var(--sub); font-size: 13px; display: block; }
+  body.micOn main { padding-bottom: 300px; }
 </style>
 </head>
 <body>
@@ -136,6 +148,7 @@
       <p id="jaDesc"></p>
       <h3>見どころ（A4学習レポートより）</h3>
       <ul id="jaHi"><li class="muted">読み込み中…</li></ul>
+      <div class="faq" id="faqBox"><h3>📚 これまでの質問と回答（この文化財）</h3><ul id="faqList"><li class="muted">読み込み中…</li></ul></div>
     </div>
     <div class="pane" id="paneEn">
       <div id="enBody"></div>
@@ -167,10 +180,21 @@
 </main>
 <div class="micBar" id="micBar">
   <div class="row">
-    <button type="button" class="mic" id="micBtn">🎤 話す（英語の字幕を配信）</button>
-    <button type="button" class="type" id="typeBtn" title="声が使えないとき、文字で送る">✏️</button>
+    <button type="button" class="mic" id="micBtn">🎤 録音（日本語で話す）</button>
+    <button type="button" class="type" id="typeBtn" title="声が使えないとき、文字で入力する">✏️</button>
+    <label class="tgl"><input type="checkbox" id="localVoice" checked> この端末でも鳴らす</label>
   </div>
   <div class="st" id="micSt"></div>
+  <div class="draft" id="draft" hidden>
+    <label for="jaText">認識した日本語（直せます）</label>
+    <textarea id="jaText" rows="2"></textarea>
+    <div class="tr" id="enText">…</div>
+    <div class="row">
+      <button type="button" class="go" id="sendBtn" disabled>🔊 伝える</button>
+      <button type="button" class="type" id="retransBtn">訳し直す</button>
+      <button type="button" class="type" id="retryBtn">やり直す</button>
+    </div>
+  </div>
   <div class="log" id="micLog"></div>
 </div>
 <footer>
@@ -182,7 +206,7 @@
 <script>
 (function () {
   "use strict";
-  var V = "20261109f";
+  var V = "20261109g";
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); };
@@ -259,6 +283,7 @@
       $("enBody").innerHTML = "<p class=\"muted\">English text is not available yet for this site. 英語の案内文はまだありません（試作では5件のみ）。</p>";
       $("speakBtn").disabled = true;
     }
+    loadFaq(id);
     $("link3d").href = "../?mode=event&spot=" + encodeURIComponent(id);
     if (startLang === "en") { $("link3d").textContent = "🗺 3D: ask your guide"; $("link3d").removeAttribute("href"); $("link3d").title = "The 3D world is shown on the guide's device (CiDAO members only)."; }
     $("linkReport").href = "../report.html?id=" + encodeURIComponent(id);
@@ -284,9 +309,10 @@
     if (!current || !EN[current.reportId]) return;
     if (!window.speechSynthesis) { $("status").textContent = "この端末のブラウザは読み上げに対応していません。"; return; }
     var text = EN[current.reportId].speech || EN[current.reportId].intro;
-    if (tour) { // ツアー中は観光客のスマホ（音声ON の人）で読み上げる。ガイドの端末では鳴らさない
+    if (tour) { // ツアー中は観光客のスマホ（音声ON の人）にも配信する。手元で鳴らすかは「この端末でも鳴らす」
       tour.send("say", { en: text, read: true, spot: current.reportId, at: Date.now() });
-      $("status").textContent = "観光客のスマホで英語を読み上げています（音声をONにしている人）。"; setLang("en"); return;
+      if (!$("localVoice").checked) { $("status").textContent = "観光客のスマホで英語を読み上げています（音声をONにしている人）。"; setLang("en"); return; }
+      $("status").textContent = "この端末と、音声ONの観光客のスマホで英語を読み上げています。"; setLang("en");
     }
     speechSynthesis.cancel();
     var u = new SpeechSynthesisUtterance(text);
@@ -365,6 +391,7 @@
     try { sessionStorage.removeItem("cbi-tour-guide"); } catch (e) {}
     $("tSt").textContent = "ツアーを終えました。"; tourRender(); micBarShow(false);
     if (recOn && rec) { try { rec.stop(); } catch (e) {} }
+    hideDraft(); draft.replyTo = null; draft.replyEl = null;
   }
 
   /* ---- その場の翻訳（ガイドの日本語→英語の字幕を観光客へ・観光客の質問は英語→日本語で受ける） ---- */
@@ -379,23 +406,53 @@
     while (log.children.length > 8) log.removeChild(log.firstChild);
     log.scrollTop = log.scrollHeight;
   }
-  function sayToTourists(ja) {
-    ja = String(ja || "").trim(); if (!ja || !tour) return;
-    $("micSt").textContent = "英語にしています…";
-    micLog("ja", "🗣 " + ja);
-    translate(ja, "ja", "en").then(function (en) {
-      tour.send("say", { ja: ja, en: en, at: Date.now() });
-      micLog("en", "→ " + en);
-      $("micSt").textContent = "観光客の画面に英語の字幕を出しました。";
-    }).catch(function (e) { $("micSt").textContent = "翻訳に失敗しました（" + e.message + "）。通信を確認してください。"; });
+  /* 録音（または入力）→ 認識した日本語を直せる → 英語の訳を確かめる → 🔊 伝える（この端末で再生＋全員に配信＋記録） */
+  var LOG_API = "https://cidao.vercel.app/api/rally-log";
+  var draft = { ja: "", en: "", replyTo: null, replyEl: null, gen: 0 };
+  function logSave(kind, ja, en, replyTo) { // 学習用の記録（名前は持たない）。失敗しても配信は続ける
+    if (!tour) return Promise.resolve(null);
+    return fetch(LOG_API, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tour: tour.tourId, spot: current ? current.reportId : null, kind: kind, ja: ja || null, en: en || null, replyTo: replyTo || null }) })
+      .then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { return d && d.id ? d.id : null; }).catch(function () { return null; });
+  }
+  function showDraft(ja) {
+    draft.ja = String(ja || "").trim(); draft.en = ""; var gen = ++draft.gen;
+    $("jaText").value = draft.ja; $("draft").hidden = false;
+    $("micSt").textContent = draft.replyTo ? "質問への回答として伝えます。文を確かめて「伝える」を押してください。" : "文を確かめて「🔊 伝える」を押してください。";
+    translateDraft(gen);
+  }
+  function translateDraft(gen) {
+    var ja = $("jaText").value.trim();
+    if (!ja) { $("enText").textContent = "日本語の文が空です。"; $("sendBtn").disabled = true; return; }
+    draft.ja = ja; draft.en = ""; $("enText").textContent = "英語に訳しています…"; $("sendBtn").disabled = true;
+    translate(ja, "ja", "en").then(function (en) { if (gen !== draft.gen) return; draft.en = en; $("enText").textContent = en; $("sendBtn").disabled = false; })
+      .catch(function (e) { if (gen !== draft.gen) return; $("enText").textContent = "翻訳に失敗しました（" + e.message + "）。「訳し直す」でもう一度。"; });
+  }
+  function hideDraft() { $("draft").hidden = true; $("jaText").value = ""; $("enText").textContent = "…"; $("sendBtn").disabled = true; draft.en = ""; }
+  function speakLocal(en) {
+    if (!$("localVoice").checked || !window.speechSynthesis || !en) return;
+    try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(en); u.lang = "en-US"; u.rate = 0.95; var v = pickVoice(); if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {}
+  }
+  function sendDraft() {
+    var ja = $("jaText").value.trim(), en = draft.en;
+    if (!ja || !en || !tour) return;
+    if (ja !== draft.ja) { translateDraft(++draft.gen); return; } // 訳したあとに日本語を直していたら、訳し直してから
+    var replyTo = draft.replyTo, replyEl = draft.replyEl;
+    draft.replyTo = null; draft.replyEl = null; if (replyEl) replyEl.classList.remove("answering");
+    tour.send("say", { ja: ja, en: en, replyTo: replyTo, at: Date.now() });
+    speakLocal(en);
+    micLog("ja", (replyTo ? "💬 回答：" : "🗣 ") + ja); micLog("en", "→ " + en);
+    $("micSt").textContent = "伝えました（全員の画面に英語の字幕" + ($("localVoice").checked ? "・この端末で読み上げ" : "") + "）。";
+    hideDraft();
+    logSave(replyTo ? "answer" : "say", ja, en, replyTo);
   }
   function micToggle() {
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { $("micSt").textContent = "この端末のブラウザは音声認識に対応していません。✏️ で文字を送ってください。"; return; }
+    if (!SR) { $("micSt").textContent = "この端末のブラウザは音声認識に対応していません。✏️ で文字を入力してください。"; return; }
     if (recOn && rec) { try { rec.stop(); } catch (e) {} return; }
     rec = new SR(); rec.lang = "ja-JP"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
     var finalText = "";
-    rec.onstart = function () { recOn = true; $("micBtn").classList.add("on"); $("micBtn").textContent = "⏹ 止める（話し終えたら）"; $("micSt").textContent = "聞いています…"; };
+    rec.onstart = function () { recOn = true; $("micBtn").classList.add("on"); $("micBtn").textContent = "⏹ 止める（話し終えたら）"; $("micSt").textContent = "聞いています…"; $("draft").hidden = true; };
     rec.onresult = function (ev) {
       var interim = "";
       for (var i = ev.resultIndex; i < ev.results.length; i++) { if (ev.results[i].isFinal) finalText += ev.results[i][0].transcript; else interim += ev.results[i][0].transcript; }
@@ -403,17 +460,44 @@
     };
     rec.onerror = function (ev) { $("micSt").textContent = "音声認識のエラー：" + (ev.error || "") + "（✏️ で文字でも送れます）"; };
     rec.onend = function () {
-      recOn = false; $("micBtn").classList.remove("on"); $("micBtn").textContent = "🎤 話す（英語の字幕を配信）";
-      if (finalText.trim()) sayToTourists(finalText); else if ($("micSt").textContent.indexOf("エラー") < 0) $("micSt").textContent = "聞き取れませんでした。もう一度どうぞ。";
+      recOn = false; $("micBtn").classList.remove("on"); $("micBtn").textContent = "🎤 録音（日本語で話す）";
+      if (finalText.trim()) showDraft(finalText); else if ($("micSt").textContent.indexOf("エラー") < 0) $("micSt").textContent = "聞き取れませんでした。もう一度どうぞ。";
     };
     try { rec.start(); } catch (e) { $("micSt").textContent = "音声認識を始められませんでした：" + e.message; }
   }
   function onAskFromTourist(p) {
     if (!p) return;
-    var line = "❓ " + (p.ja || "") + (p.en ? "（" + p.en + "）" : "");
-    micLog("q", line);
+    var log = $("micLog"); var div = document.createElement("div"); div.className = "q";
+    var span = document.createElement("span"); span.textContent = "❓ " + (p.ja || "") + (p.en ? "（" + p.en + "）" : ""); div.appendChild(span);
+    var btn = document.createElement("button"); btn.type = "button"; btn.textContent = "答える";
+    btn.addEventListener("click", function () { // 次の「伝える」をこの質問への回答として記録する
+      if (draft.replyEl) draft.replyEl.classList.remove("answering");
+      draft.replyTo = p.id || null; draft.replyEl = div; div.classList.add("answering");
+      $("micSt").textContent = "この質問への回答を 🎤 で録音するか、✏️ で入力してください。";
+    });
+    div.appendChild(btn); log.appendChild(div);
+    while (log.children.length > 8) log.removeChild(log.firstChild);
+    log.scrollTop = log.scrollHeight;
     $("status").textContent = "観光客からの質問：" + (p.ja || p.en || "");
     try { if (navigator.vibrate) navigator.vibrate([80, 40, 80]); } catch (e) {}
+  }
+  /* 📚 この文化財で、これまでに出た質問と回答（記録 API から・ガイド育成の資料の元） */
+  function loadFaq(id) {
+    var ul = $("faqList"); ul.innerHTML = "<li class=\"muted\">読み込み中…</li>";
+    fetch(LOG_API + "?spot=" + encodeURIComponent(id) + "&limit=40").then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!current || current.reportId !== id) return;
+      var items = (d && d.items) || [];
+      var asks = items.filter(function (x) { return x.kind === "ask"; });
+      if (!asks.length) { ul.innerHTML = "<li class=\"muted\">まだ記録がありません。ツアー中の質問と回答がここに残ります。</li>"; return; }
+      ul.innerHTML = "";
+      asks.slice(0, 10).forEach(function (q) {
+        var ans = items.filter(function (x) { return x.kind === "answer" && x.replyTo === q.id; })[0];
+        var li = document.createElement("li"); li.textContent = "Q: " + (q.ja || q.en || "");
+        if (ans) { var a = document.createElement("span"); a.className = "en"; a.textContent = "A: " + (ans.ja || ans.en || ""); li.appendChild(a); }
+        var m = document.createElement("span"); m.className = "en"; m.textContent = new Date(q.createdAt).toLocaleDateString() + (q.tour ? "・ツアー " + q.tour : ""); li.appendChild(m);
+        ul.appendChild(li);
+      });
+    }).catch(function () { if (current && current.reportId === id) ul.innerHTML = "<li class=\"muted\">記録を読み込めませんでした。</li>"; });
   }
   function micBarShow(on) { $("micBar").classList.toggle("show", on); document.body.classList.toggle("micOn", on); }
 
@@ -446,7 +530,10 @@
   $("tStart").addEventListener("click", function () { tourStart(); });
   $("tStop").addEventListener("click", tourStop);
   $("micBtn").addEventListener("click", micToggle);
-  $("typeBtn").addEventListener("click", function () { var tx = prompt("観光客に伝える日本語を入力（英語にして字幕で配信します）"); if (tx) sayToTourists(tx); });
+  $("typeBtn").addEventListener("click", function () { var tx = prompt(draft.replyTo ? "質問への回答を日本語で入力" : "観光客に伝える日本語を入力（英語に訳して確かめてから伝えます）"); if (tx) showDraft(tx); });
+  $("sendBtn").addEventListener("click", sendDraft);
+  $("retransBtn").addEventListener("click", function () { translateDraft(++draft.gen); });
+  $("retryBtn").addEventListener("click", function () { hideDraft(); draft.gen++; $("micSt").textContent = "もう一度 🎤 で録音するか、✏️ で入力してください。"; });
   $("tCopy").addEventListener("click", function () {
     if (!tour) return; var u = CbiTourSync.tourUrl(tour.tourId, "en");
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(function () { $("tSt").textContent = "リンクをコピーしました。"; }, function () { $("tSt").textContent = u; });

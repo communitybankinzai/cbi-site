@@ -94,6 +94,16 @@
   .capBar.show { display:block; }
   .capBar .ja { font-size:12px; opacity:.75; display:block; }
   .capBar .hint { font-size:12px; opacity:.8; }
+  /* 質問の下書き（認識した文を直してから送る） */
+  .askDraft { background:#1f2a30; color:#fff; font-size:14px; padding:8px 12px; display:none; }
+  .askDraft.show { display:block; }
+  .askDraft .adLabel { font-size:12px; opacity:.8; margin-bottom:4px; }
+  .askDraft textarea { width:100%; box-sizing:border-box; background:#fff; color:#222; border:0; border-radius:8px; padding:8px; font-size:16px; font-family:inherit; resize:vertical; }
+  .askDraft .adTr { margin:6px 0; padding:6px 8px; background:rgba(255,255,255,.12); border-radius:8px; font-size:14px; line-height:1.4; min-height:1.4em; word-break:break-word; }
+  .askDraft .adActs { display:flex; flex-wrap:wrap; gap:8px; }
+  .askDraft .adActs button { background:rgba(255,255,255,.22); border:0; color:#fff; border-radius:8px; padding:7px 12px; font-size:13px; font-family:inherit; }
+  .askDraft .adActs button.pri { background:#2a7f62; }
+  .askDraft .adActs button:disabled { opacity:.4; }
 </style>
 </head>
 <body>
@@ -107,6 +117,12 @@
 <div class="prog"><span id="cnt">0 / 50</span><div class="bar"><i id="bar"></i></div><button class="hbtn" id="meBtn" type="button" title="現在地へ">📍</button></div>
 <div class="tourBar" id="tourBar"><span>📡</span><b id="tourTxt"></b><button type="button" class="voice" id="voiceBtn">🔈 音声 OFF</button><button type="button" id="askBtn">🎤 質問</button><button type="button" id="askTypeBtn" title="文字で質問">✏️</button><button type="button" id="tourLeave">退出</button></div>
 <div class="capBar" id="capBar"></div>
+<div class="askDraft" id="askDraft" hidden>
+  <div class="adLabel" id="adLabel">あなたの質問（直せます）</div>
+  <textarea id="adText" rows="2"></textarea>
+  <div class="adTr" id="adTr"></div>
+  <div class="adActs"><button type="button" class="pri" id="adSend" disabled>📨 ガイドに送る</button><button type="button" id="adRetrans">訳し直す</button><button type="button" id="adCancel">取り消す</button></div>
+</div>
 <div id="map" role="application" aria-label="文化財の地図"></div>
 <div id="list"></div>
 
@@ -148,7 +164,7 @@
 <script>
 (function () {
   "use strict";
-  var V = "20261109e";
+  var V = "20261109f";
   var RADIUS_M = 80;                        // この距離以内でスタンプが押せる
   var STALE_MS = 180000;                    // これより古い位置では押せない（押したときに取り直す）
   var API = "https://cidao.vercel.app/api/rally-book";
@@ -165,7 +181,7 @@
       bIssue: "コードを発行して保存", bCopy: "リンクをコピー", bResumeNote: "別の端末・前回のコードで続きから：", bResume: "このコードで続きから", bClose: "閉じる",
       saved: "保存しました", saveErr: "保存先に届きませんでした。端末には保存されています。通信のある所でもう一度お試しください。", resumed: "{n} 件のスタンプを読み込みました", notFound: "そのコードは見つかりません。", copied: "リンクをコピーしました", all: "50件すべて集めました！おめでとうございます。",
       tourOn: "ガイドのツアーに参加中（{c}）", tourSpot: "ガイド：{n}", leave: "退出", listen: "🔊 聞く（英語）", joinPrompt: "ガイドのツアーコード（6文字）を入れてください", tourErr: "ツアーに接続できませんでした。コードと通信を確認してください。", noVoice: "この端末のブラウザは読み上げに対応していません。",
-      voiceOn: "🔈 音声 ON", voiceOff: "🔈 音声 OFF", ask: "🎤 質問", askPrompt: "ガイドへの質問を入力（日本語に訳して届けます）", askListen: "聞いています…話し終えると送ります", askSent: "ガイドに質問を送りました", askErr: "質問を送れませんでした。通信を確認してください。", noMic: "この端末のブラウザは音声認識に対応していません。文字で入力してください。", capHint: "（🔈 音声 ON にすると読み上げます）" },
+      voiceOn: "🔈 音声 ON", voiceOff: "🔈 音声 OFF", ask: "🎤 質問", askPrompt: "ガイドへの質問を入力（日本語に訳して届けます）", askListen: "聞いています…話し終えると送ります", askSent: "ガイドに質問を送りました", askErr: "質問を送れませんでした。通信を確認してください。", adLabel: "あなたの質問（直せます）", adSend: "📨 ガイドに送る", adRetrans: "訳し直す", adCancel: "取り消す", noMic: "この端末のブラウザは音声認識に対応していません。文字で入力してください。", capHint: "（🔈 音声 ON にすると読み上げます）" },
     en: { ttl: "🏛 Inzai Heritage Stamp Rally", sub: "Walk up to a site to get its stamp (spirit card) · prototype", lang: "日本語", list: "☰ List", map: "🗺 Map", book: "📒 Stamp book",
       stamp: "✅ Stamp here", stamped: "✅ Visited", far: "Get {d} closer to stamp", here: "You can stamp here", noPos: "Getting your location… (please allow location access)",
       guide: "📖 Read more", city: "🏛 City page (JP)", got: "Got it!", near: "You are near {n}. You can stamp here", posErr: "Could not get your location. Please check location permission.",
@@ -173,7 +189,7 @@
       bIssue: "Issue a code and save", bCopy: "Copy link", bResumeNote: "Continue with a code from another device or a previous visit:", bResume: "Continue with this code", bClose: "Close",
       saved: "Saved", saveErr: "Could not reach the server. Your stamps are kept on this device. Try again when online.", resumed: "Loaded {n} stamps", notFound: "That code was not found.", copied: "Link copied", all: "You collected all 50! Congratulations.",
       tourOn: "Following your guide ({c})", tourSpot: "Guide: {n}", leave: "Leave", listen: "🔊 Listen (EN)", joinPrompt: "Enter the tour code from your guide (6 letters)", tourErr: "Could not join the tour. Check the code and your connection.", noVoice: "This browser cannot read aloud.",
-      voiceOn: "🔈 Voice ON", voiceOff: "🔈 Voice OFF", ask: "🎤 Ask", askPrompt: "Type your question for the guide (it will be translated into Japanese)", askListen: "Listening… release when you finish", askSent: "Your question was sent to the guide", askErr: "Could not send the question. Check your connection.", noMic: "This browser cannot recognize speech. Please type your question.", capHint: "(turn Voice ON to hear it)" }
+      voiceOn: "🔈 Voice ON", voiceOff: "🔈 Voice OFF", ask: "🎤 Ask", askPrompt: "Type your question for the guide (it will be translated into Japanese)", askListen: "Listening… release when you finish", askSent: "Your question was sent to the guide", askErr: "Could not send the question. Check your connection.", adLabel: "Your question (you can edit)", adSend: "📨 Send to guide", adRetrans: "Retranslate", adCancel: "Cancel", noMic: "This browser cannot recognize speech. Please type your question.", capHint: "(turn Voice ON to hear it)" }
   };
   var lang = params.get("lang") === "en" ? "en" : "ja";
   var t = function (k, vars) { var s = (T[lang][k] || T.ja[k] || k); return s.replace(/\{(\w+)\}/g, function (_, v) { return vars && vars[v] != null ? vars[v] : ""; }); };
@@ -202,6 +218,7 @@
     $("bTtl").textContent = t("bTtl"); $("bNote").textContent = t("bNote"); $("bIssue").textContent = t("bIssue"); $("bCopy").textContent = t("bCopy");
     $("bResumeNote").textContent = t("bResumeNote"); $("bResume").textContent = t("bResume"); $("bClose").textContent = t("bClose");
     $("listenBtn").textContent = t("listen"); $("tourLeave").textContent = t("leave"); $("askBtn").textContent = t("ask"); $("voiceBtn").textContent = voiceOn ? t("voiceOn") : t("voiceOff"); tourRenderBar();
+    $("adLabel").textContent = t("adLabel"); $("adSend").textContent = t("adSend"); $("adRetrans").textContent = t("adRetrans"); $("adCancel").textContent = t("adCancel");
     if (current) openSheet(current.reportId);
     renderList();
   }
@@ -391,25 +408,51 @@
     return fetch(TRANSLATE_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text, from: from, to: to }) })
       .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d && d.error ? d.error : ("HTTP " + r.status)); return d.text; }); });
   }
-  function askGuide(text) {
+  // 認識・入力した文を下書きパネルに出し、訳を取りに行く（送るのは adSend を押したとき）
+  var adSeq = 0;   // 古い訳の返答で上書きしないための番号
+  function askDraftHide() { var d = $("askDraft"); d.hidden = true; d.classList.remove("show"); adSeq++; }
+  function askTranslateDraft() {
+    var text = $("adText").value.trim(), n = ++adSeq;
+    $("adSend").disabled = true;
+    if (!text) { $("adTr").textContent = ""; return; }
+    $("adTr").textContent = "…";
+    translateTo(text, lang === "en" ? "en" : "ja", lang === "en" ? "ja" : "en").then(function (tr) {
+      if (n !== adSeq) return;
+      $("adTr").textContent = tr; $("adSend").disabled = !String(tr || "").trim();
+    }).catch(function () { if (n !== adSeq) return; $("adTr").textContent = ""; toast(t("askErr"), 4000); });
+  }
+  function askShowDraft(text) {
     text = String(text || "").trim(); if (!text || !tour) return;
-    toast("…", 2000);
-    var from = lang === "en" ? "en" : "ja";
-    var p = from === "en" ? translateTo(text, "en", "ja").then(function (ja) { return { en: text, ja: ja }; }) : Promise.resolve({ ja: text, en: "" });
-    p.then(function (q) { q.at = Date.now(); tour.send("ask", q); toast(t("askSent"), 3000); }).catch(function () { toast(t("askErr"), 4000); });
+    var d = $("askDraft"); $("adText").value = text; d.hidden = false; d.classList.add("show");
+    askTranslateDraft();
+  }
+  function askSendDraft() {
+    var mine = $("adText").value.trim(), tr = $("adTr").textContent.trim();
+    if (!mine || !tr || !tour) return;
+    var ja = lang === "en" ? tr : mine, en = lang === "en" ? mine : tr;
+    var spot = current ? current.reportId : null;
+    $("adSend").disabled = true;
+    // まず記録 API に保存（失敗しても送信は続ける）
+    fetch("https://cidao.vercel.app/api/rally-log", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tour: tour.tourId, spot: spot, kind: "ask", ja: ja, en: en }) })
+      .then(function (r) { return r.json().then(function (d) { return r.ok && d && d.id != null ? d.id : null; }); })
+      .catch(function () { return null; })
+      .then(function (id) {
+        tour.send("ask", { id: id, en: en, ja: ja, spot: spot, at: Date.now() });
+        toast(t("askSent"), 3000); askDraftHide();
+      });
   }
   function askToggle() {
     if (!tour) return;
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { var tx = prompt(t("askPrompt")); if (tx) askGuide(tx); return; }
+    if (!SR) { var tx = prompt(t("askPrompt")); if (tx) askShowDraft(tx); return; }
     if (askRec) { try { askRec.stop(); } catch (e) {} return; }
     askRec = new SR(); askRec.lang = lang === "en" ? "en-US" : "ja-JP"; askRec.interimResults = false; askRec.continuous = false;
     var got = "";
     askRec.onresult = function (ev) { for (var i = ev.resultIndex; i < ev.results.length; i++) if (ev.results[i].isFinal) got += ev.results[i][0].transcript; };
     askRec.onerror = function () { toast(t("noMic"), 3000); };
-    askRec.onend = function () { askRec = null; $("askBtn").textContent = t("ask"); if (got.trim()) askGuide(got); };
+    askRec.onend = function () { askRec = null; $("askBtn").textContent = t("ask"); if (got.trim()) askShowDraft(got); };
     $("askBtn").textContent = "⏹"; toast(t("askListen"), 3000);
-    try { askRec.start(); } catch (e) { askRec = null; $("askBtn").textContent = t("ask"); var tx2 = prompt(t("askPrompt")); if (tx2) askGuide(tx2); }
+    try { askRec.start(); } catch (e) { askRec = null; $("askBtn").textContent = t("ask"); var tx2 = prompt(t("askPrompt")); if (tx2) askShowDraft(tx2); }
   }
 
   /* ---- ガイドのツアーに参加（ガイドが選んだ文化財に画面を合わせる）。部品は ../guide/tour-sync.js ---- */
@@ -449,7 +492,7 @@
   function tourLeave() {
     if (tour) tour.leave(); tour = null; stopSpeech(); lastSpot = { id: null, at: 0 };
     try { sessionStorage.removeItem("cbi-tour-tourist"); } catch (e) {}
-    $("capBar").classList.remove("show"); tourRenderBar();
+    $("capBar").classList.remove("show"); askDraftHide(); tourRenderBar();
   }
 
   /* ---- 起動 ---- */
@@ -502,7 +545,10 @@
     if (voiceOn) { try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(lang === "en" ? "Voice on." : "音声をオンにしました"); u.lang = lang === "en" ? "en-US" : "ja-JP"; speechSynthesis.speak(u); } catch (e) {} } // 最初の操作で読み上げを許可させる
   });
   $("askBtn").addEventListener("click", askToggle);
-  $("askTypeBtn").addEventListener("click", function () { if (!tour) return; var tx = prompt(t("askPrompt")); if (tx) askGuide(tx); });
+  $("adSend").addEventListener("click", askSendDraft);
+  $("adRetrans").addEventListener("click", askTranslateDraft);
+  $("adCancel").addEventListener("click", askDraftHide);
+  $("askTypeBtn").addEventListener("click", function () { if (!tour) return; var tx = prompt(t("askPrompt")); if (tx) askShowDraft(tx); });
   $("joinBtn").addEventListener("click", function () { var c = prompt(t("joinPrompt")); if (c) tourJoin(c); });
   loadVoices();
   if (window.speechSynthesis && typeof speechSynthesis.onvoiceschanged !== "undefined") speechSynthesis.onvoiceschanged = loadVoices;
