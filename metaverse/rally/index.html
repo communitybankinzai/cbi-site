@@ -180,11 +180,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" crossorigin="anonymous"></script>
-<script src="../guide/tour-sync.js?v=20261109a"></script>
+<script src="../guide/tour-sync.js?v=20261109d"></script>
 <script>
 (function () {
   "use strict";
-  var V = "20261109h";
+  var V = "20261109j";
   var RADIUS_M = 80;                        // この距離以内でスタンプが押せる
   var STALE_MS = 180000;                    // これより古い位置では押せない（押したときに取り直す）
   var API = "https://cidao.vercel.app/api/rally-book";
@@ -200,7 +200,7 @@
       bTtl: "📒 スタンプ帳", bNote: "スタンプはこの端末に保存されます。「コードを発行」すると、別の端末や次の来訪でも、コードを入れれば続きから集められます（名前や連絡先は保存しません）。",
       bIssue: "コードを発行して保存", bCopy: "リンクをコピー", bResumeNote: "別の端末・前回のコードで続きから：", bResume: "このコードで続きから", bClose: "閉じる",
       saved: "保存しました", saveErr: "保存先に届きませんでした。端末には保存されています。通信のある所でもう一度お試しください。", resumed: "{n} 件のスタンプを読み込みました", notFound: "そのコードは見つかりません。", copied: "リンクをコピーしました", all: "50件すべて集めました！おめでとうございます。",
-      tourOn: "ガイドのツアーに参加中（{c}）", tourSpot: "ガイド：{n}", leave: "退出", listen: "🔊 聞く（英語）", joinPrompt: "ガイドのツアーコード（6文字）を入れてください", tourErr: "ツアーに接続できませんでした。コードと通信を確認してください。", noVoice: "この端末のブラウザは読み上げに対応していません。",
+      tourOn: "ガイドのツアーに参加中（{c}）", unverified: "（旧リンク・署名の確認なし）", tourSpot: "ガイド：{n}", leave: "退出", listen: "🔊 聞く（英語）", joinPrompt: "ガイドのツアーコード（6文字）を入れてください", tourErr: "ツアーに接続できませんでした。コードと通信を確認してください。", noVoice: "この端末のブラウザは読み上げに対応していません。",
       voiceOn: "🔈 音声 ON", voiceOff: "🔈 音声 OFF", ask: "🎤 質問", askPrompt: "ガイドへの質問を入力（日本語に訳して届けます）", askListen: "聞いています…話し終えると送ります", askSent: "ガイドに質問を送りました", askErr: "質問を送れませんでした。通信を確認してください。", adLabel: "あなたの質問（直せます）", adSend: "📨 ガイドに送る", adRetrans: "訳し直す", adCancel: "取り消す", noMic: "この端末のブラウザは音声認識に対応していません。文字で入力してください。", capHint: "（🔈 音声 ON にすると読み上げます）",
       galTtl: "🏛 集めた精霊 {n} / {total}", galEmpty: "まだありません。文化財の近くでスタンプを押すと、ここに精霊が並びます", certBtn: "🏅 達成証を作る", certRest: "あと {rest} 件で達成証", certAsk: "達成証に入れる名前を入力してください（空欄なら名前なし・保存されません）", certNote: "画像を長押しで保存できます" },
     en: { ttl: "🏛 Inzai Heritage Stamp Rally", sub: "Walk up to a site to get its stamp (spirit card) · prototype", lang: "日本語", list: "☰ List", map: "🗺 Map", book: "📒 Stamp book",
@@ -209,7 +209,7 @@
       bTtl: "📒 Stamp book", bNote: "Stamps are saved on this device. Issue a code to continue on another device or on your next visit. No name or contact is stored.",
       bIssue: "Issue a code and save", bCopy: "Copy link", bResumeNote: "Continue with a code from another device or a previous visit:", bResume: "Continue with this code", bClose: "Close",
       saved: "Saved", saveErr: "Could not reach the server. Your stamps are kept on this device. Try again when online.", resumed: "Loaded {n} stamps", notFound: "That code was not found.", copied: "Link copied", all: "You collected all 50! Congratulations.",
-      tourOn: "Following your guide ({c})", tourSpot: "Guide: {n}", leave: "Leave", listen: "🔊 Listen (EN)", joinPrompt: "Enter the tour code from your guide (6 letters)", tourErr: "Could not join the tour. Check the code and your connection.", noVoice: "This browser cannot read aloud.",
+      tourOn: "Following your guide ({c})", unverified: "(old link, unverified)", tourSpot: "Guide: {n}", leave: "Leave", listen: "🔊 Listen (EN)", joinPrompt: "Enter the tour code from your guide (6 letters)", tourErr: "Could not join the tour. Check the code and your connection.", noVoice: "This browser cannot read aloud.",
       voiceOn: "🔈 Voice ON", voiceOff: "🔈 Voice OFF", ask: "🎤 Ask", askPrompt: "Type your question for the guide (it will be translated into Japanese)", askListen: "Listening… release when you finish", askSent: "Your question was sent to the guide", askErr: "Could not send the question. Check your connection.", adLabel: "Your question (you can edit)", adSend: "📨 Send to guide", adRetrans: "Retranslate", adCancel: "Cancel", noMic: "This browser cannot recognize speech. Please type your question.", capHint: "(turn Voice ON to hear it)",
       galTtl: "🏛 Spirits collected {n} / {total}", galEmpty: "No spirits yet. Stamp near a heritage site to collect them.", certBtn: "🏅 Make my certificate", certRest: "{rest} more to go for the certificate", certAsk: "Enter a name for the certificate (leave blank for none; it is not saved)", certNote: "Press and hold the image to save it" }
   };
@@ -554,7 +554,7 @@
   function tourRenderBar() {
     var bar = $("tourBar");
     if (!tour) { bar.classList.remove("show"); return; }
-    $("tourTxt").textContent = t("tourOn", { c: tour.tourId }); bar.classList.add("show");
+    $("tourTxt").textContent = t("tourOn", { c: tour.tourId }) + (tour.verifying ? "" : " " + t("unverified")); bar.classList.add("show");   // 公開鍵 k の無い旧リンクは署名を確認できない
   }
   var lastSpot = { id: null, at: 0 };   // ガイドの spot 配信の重複排除用
   function tourJoin(id) {
@@ -563,7 +563,12 @@
     CbiTourSync.loadLib(function (ok) {
       if (!ok) { toast(t("tourErr"), 4000); return; }
       if (tour) tour.leave();
-      tour = CbiTourSync.connect({ tourId: code, role: "tourist",
+      // 公開鍵 k：URL の k は URL のツアーコードと同じときだけ使う（手入力で別のツアーに入るとき、古い鍵を持ち込まない）。無ければ保存したもの（同じコードのときだけ）
+      var pubKey = (CbiTourSync.normalize(params.get("tour")) === code) ? params.get("k") : null;
+      lastSpot = { id: null, at: 0 };   // 別のツアーに入るときは受信の履歴を初期化
+      if (!pubKey) { try { var kr = JSON.parse(sessionStorage.getItem("cbi-tour-tourist-key") || "null"); if (kr && kr.tour === code && kr.k) pubKey = kr.k; } catch (e) {} }
+      tour = CbiTourSync.connect({ tourId: code, role: "tourist", pubKey: pubKey || null,
+        onRejected: function (reason, p) { console.warn("tour message rejected", reason); },
         onSpot: function (p) {
           if (!p || !p.id || !markers[p.id]) return;
           if (p.at && p.at <= lastSpot.at) return;                       // 古い・同じ配信は無視
@@ -577,7 +582,7 @@
         },
         onSay: showCaption,
         onStatus: function (st) {
-          if (st === "SUBSCRIBED") { tourRenderBar(); try { sessionStorage.setItem("cbi-tour-tourist", code); } catch (e) {} }
+          if (st === "SUBSCRIBED") { tourRenderBar(); try { sessionStorage.setItem("cbi-tour-tourist", code); if (pubKey) sessionStorage.setItem("cbi-tour-tourist-key", JSON.stringify({ tour: code, k: pubKey })); } catch (e) {} }
           else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT") { toast(t("tourErr"), 4000); }
         }
       });
@@ -586,7 +591,7 @@
   }
   function tourLeave() {
     if (tour) tour.leave(); tour = null; stopSpeech(); lastSpot = { id: null, at: 0 };
-    try { sessionStorage.removeItem("cbi-tour-tourist"); } catch (e) {}
+    try { sessionStorage.removeItem("cbi-tour-tourist"); sessionStorage.removeItem("cbi-tour-tourist-key"); } catch (e) {}
     $("capBar").classList.remove("show"); askDraftHide(); tourRenderBar();
   }
 

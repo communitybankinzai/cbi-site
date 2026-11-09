@@ -166,7 +166,7 @@
   </section>
   <div class="tourBox" id="tourBox"><div class="box">
     <h2>📡 ツアー同期</h2>
-    <p>ツアーを始めると6文字のコードとQRが出ます。観光客がQRを読むと、スタンプラリーの画面が、あなたが選んだ文化財に合わせて切り替わります（英語で表示）。名前や位置は送りません。</p>
+    <p>ツアーを始めると6文字のコードとQRが出ます。観光客がQRを読むと、スタンプラリーの画面が、あなたが選んだ文化財に合わせて切り替わります（英語で表示）。名前や位置は送りません。配信には署名が付き、QR を読んだ人だけが本物の配信と見分けられます。</p>
     <div class="code" id="tCode">—</div>
     <div class="qr" id="tQr"></div>
     <div class="st" id="tSt"></div>
@@ -202,11 +202,11 @@
   この試作ページはサイトからリンクしていません。
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" crossorigin="anonymous"></script>
-<script src="tour-sync.js?v=20261109a"></script>
+<script src="tour-sync.js?v=20261109d"></script>
 <script>
 (function () {
   "use strict";
-  var V = "20261109h";
+  var V = "20261109j";
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); };
@@ -328,7 +328,7 @@
 
   function shareLink() {
     if (!current) return;
-    var url = tour ? CbiTourSync.tourUrl(tour.tourId, "en") : location.origin + location.pathname.replace(/guide\/?$/, "rally/") + "?spot=" + encodeURIComponent(current.reportId) + "&lang=en";
+    var url = tour ? CbiTourSync.tourUrl(tour.tourId, "en", tour.pub) : location.origin + location.pathname.replace(/guide\/?$/, "rally/") + "?spot=" + encodeURIComponent(current.reportId) + "&lang=en";
     var box = $("linkbox"); box.textContent = url; box.className = "linkbox show";
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(function () { $("status").textContent = "観光客用リンクをコピーしました（スタンプラリーでこの文化財を英語で開きます）。"; },
@@ -354,7 +354,7 @@
     $("tStart").style.display = on ? "none" : ""; $("tStop").style.display = on ? "" : "none"; $("tCopy").style.display = on ? "" : "none";
     $("tourBtn").classList.toggle("live", on); $("tourBtn").textContent = on ? "📡 ツアー中 " + tourCount + "人" : "📡 ツアー";
     var q = $("tQr"); q.innerHTML = "";
-    if (on && window.qrcode) { try { var qr = qrcode(0, "M"); qr.addData(CbiTourSync.tourUrl(tour.tourId, "en")); qr.make(); q.innerHTML = qr.createImgTag(4, 8); q.firstChild.alt = "QR"; } catch (e) {} }
+    if (on && window.qrcode) { try { var qr = qrcode(0, "M"); qr.addData(CbiTourSync.tourUrl(tour.tourId, "en", tour.pub)); qr.make(); q.innerHTML = qr.createImgTag(4, 8); q.firstChild.alt = "QR"; } catch (e) {} }
   }
   function tourBroadcast(id) {
     if (!tour || !id) return;
@@ -364,31 +364,45 @@
   function tourStart(existingId) {
     if (!window.CbiTourSync) { $("tSt").textContent = "同期の部品を読み込めませんでした。"; return; }
     if (tourStarting) return;   // 接続中の二度押しは何もしない
+    if (!CbiTourSync.hasCrypto) { $("tSt").textContent = "この端末のブラウザでは安全な配信ができません（WebCrypto なし）。"; return; }
     tourStarting = true;
     $("tSt").textContent = "接続中…";
     CbiTourSync.loadLib(function (ok) {
-      tourStarting = false;
-      if (!ok) { $("tSt").textContent = "通信部品（supabase-js）を読み込めませんでした。通信を確認してください。"; return; }
+      if (!ok) { tourStarting = false; $("tSt").textContent = "通信部品（supabase-js）を読み込めませんでした。通信を確認してください。"; return; }
       var id = CbiTourSync.normalize(existingId) || CbiTourSync.newTourId();
-      if (tour) { try { tour.leave(); } catch (e) {} tour = null; }   // 既存の接続を閉じてから差し替える
-      tour = CbiTourSync.connect({ tourId: id, role: "guide",
-        onHello: function () { if (current) tourBroadcast(current.reportId); },
-        onAsk: onAskFromTourist,
-        onPresence: function (c) { tourCount = c.tourists; tourRender(); $("tSt").textContent = "参加中の観光客：" + c.tourists + " 人"; },
-        onStatus: function (st) {
-          if (st === "SUBSCRIBED") { $("tSt").textContent = "接続しました。QRを観光客に見せてください。"; if (current) tourBroadcast(current.reportId); }
-          else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT") { $("tSt").textContent = "接続に失敗しました（" + st + "）。もう一度お試しください。"; }
-        }
+      // 署名用の鍵：同じコードで読み直したときは保存した秘密鍵を戻し、新しいツアーなら作る
+      var saved = null;
+      try { var raw = sessionStorage.getItem("cbi-tour-guide-key"); if (raw) saved = JSON.parse(raw); } catch (e) {}
+      var keyP = (saved && saved.tour === id && saved.jwk) ? CbiTourSync.restoreGuideKeys(saved.jwk) : CbiTourSync.makeGuideKeys();
+      keyP.then(function (keys) {
+        tourStarting = false;
+        if (tour) { try { tour.leave(); } catch (e) {} tour = null; }   // 既存の接続を閉じてから差し替える
+        tour = CbiTourSync.connect({ tourId: id, role: "guide", keys: keys,
+          onHello: function () { if (current) tourBroadcast(current.reportId); },
+          onAsk: onAskFromTourist,
+          onPresence: function (c) { tourCount = c.tourists; tourRender(); $("tSt").textContent = "参加中の観光客：" + c.tourists + " 人"; },
+          onStatus: function (st) {
+            if (st === "SUBSCRIBED") { $("tSt").textContent = "接続しました。QRを観光客に見せてください。"; if (current) tourBroadcast(current.reportId); }
+            else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT") { $("tSt").textContent = "接続に失敗しました（" + st + "）。もう一度お試しください。"; }
+          }
+        });
+        if (!tour) { $("tSt").textContent = "接続できませんでした。"; return; }
+        try { sessionStorage.setItem("cbi-tour-guide", id); sessionStorage.setItem("cbi-tour-guide-key", JSON.stringify({ tour: id, jwk: keys.jwk })); } catch (e) {}
+        tourRender(); micBarShow(true);
+      }, function (e) {
+        tourStarting = false;
+        $("tSt").textContent = "署名用の鍵を用意できませんでした。ツアーを始められません。";
       });
-      if (!tour) { $("tSt").textContent = "接続できませんでした。"; return; }
-      try { sessionStorage.setItem("cbi-tour-guide", id); } catch (e) {}
-      tourRender(); micBarShow(true);
     });
   }
   function tourStop() {
-    if (tour) { try { tour.send("say", { stop: true, at: Date.now() }); } catch (e) {} tour.leave(); }   // 観光客の読み上げも止める
-    tour = null; tourCount = 0;
-    try { sessionStorage.removeItem("cbi-tour-guide"); } catch (e) {}
+    var t = tour; tour = null; tourCount = 0;
+    if (t) { // 観光客の読み上げも止める：終了通知の署名・送信を待ってから閉じる（最長1.5秒）
+      var done = false; var finish = function () { if (done) return; done = true; try { t.leave(); } catch (e) {} };
+      try { Promise.resolve(t.send("say", { stop: true, at: Date.now() })).then(finish, finish); } catch (e) { finish(); }
+      setTimeout(finish, 1500);
+    }
+    try { sessionStorage.removeItem("cbi-tour-guide"); sessionStorage.removeItem("cbi-tour-guide-key"); } catch (e) {}
     $("tSt").textContent = "ツアーを終えました。"; tourRender(); micBarShow(false);
     if (recOn && rec) { try { rec.stop(); } catch (e) {} }
     hideDraft(); draft.replyTo = null; draft.replySpot = null; draft.replyEl = null;
@@ -537,7 +551,7 @@
   $("retransBtn").addEventListener("click", function () { translateDraft(++draft.gen); });
   $("retryBtn").addEventListener("click", function () { hideDraft(); draft.gen++; $("micSt").textContent = "もう一度 🎤 で録音するか、✏️ で入力してください。"; });
   $("tCopy").addEventListener("click", function () {
-    if (!tour) return; var u = CbiTourSync.tourUrl(tour.tourId, "en");
+    if (!tour) return; var u = CbiTourSync.tourUrl(tour.tourId, "en", tour.pub);
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(function () { $("tSt").textContent = "リンクをコピーしました。"; }, function () { $("tSt").textContent = u; });
     else $("tSt").textContent = u;
   });
