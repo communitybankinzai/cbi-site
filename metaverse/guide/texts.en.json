@@ -1,0 +1,62 @@
+{
+  "version": "2026-11-09a",
+  "lang": "en",
+  "note": "Prototype English texts for the heritage guide (metaverse/guide/). Written from bunkazai.json and reports/*.json, whose facts come from Inzai City and the Chiba Prefectural Board of Education. Draft: not yet reviewed by a native speaker or by the city. Not linked from the site.",
+  "spots": {
+    "iwaike-jutaku-omoya": {
+      "name": "Iwai Family Residence, Main House (former Musashiya shop)",
+      "designation": "Nationally Registered Tangible Cultural Property (2007)",
+      "intro": "This two-story wooden building in Kioroshi was once an inn. It stood on the embankment of the Tone River and was moved to this spot and remodeled around 1914, when the river embankment was rebuilt. It is the only nationally registered cultural property among the 50 designated and registered properties in Inzai City.",
+      "highlights": [
+        "Look at the wide earthen-floor room facing the street and the railed veranda on the second floor. They keep the feeling of an old roadside inn.",
+        "The plan is L-shaped: a two-story block along the street, with a one-story wing attached at a right angle behind it.",
+        "The Iwai family is said to have run an inn at the Kioroshi river port from the Edo period through the Meiji era. After the move, the building was used as a rice and fertilizer shop."
+      ],
+      "speech": "This two-story wooden building in Kioroshi was once an inn on the embankment of the Tone River. It was moved here and remodeled around 1914, when the embankment was rebuilt. It is the only nationally registered cultural property among the fifty cultural properties of Inzai City. Please look at the wide earthen-floor room facing the street, and the railed veranda on the second floor. They keep the feeling of an old roadside inn."
+    },
+    "kioroshi-kaiso": {
+      "name": "Kioroshi Shell Bed",
+      "designation": "National Natural Monument (2002)",
+      "intro": "About 120,000 years ago, this area was the bottom of a wide, shallow bay called Paleo-Tokyo Bay. Sand settled there, and the shells of the sea creatures living in it were preserved. Today you can see the exposed layer in Kioroshi Manyo Park: it is about 4.3 meters thick and 45 meters long, packed with fossil shells and sea urchins.",
+      "highlights": [
+        "More than 100 kinds of shells have been identified. Most are warm-current, shallow-water species, so Inzai was a warmer, shallow sea than it is today.",
+        "The surface of the layer hardens, so people once cut it for stone. It was used for the stone chamber of a tumulus and for stone lanterns in the area.",
+        "It is one of the Chiba Prefecture Stones (fossil) and one of the 10 Selected Strata of Chiba. Collecting fossils inside the designated area is prohibited by law."
+      ],
+      "speech": "About one hundred twenty thousand years ago, this place was the bottom of a wide, shallow bay called Paleo-Tokyo Bay. The layer you see is about four point three meters thick and forty-five meters long, packed with fossil shells and sea urchins. More than one hundred kinds of shells have been found, most of them warm-water species, so Inzai was a warmer, shallow sea than today. Please do not collect fossils here. It is protected by law."
+    },
+    "kamijuku-kofun": {
+      "name": "Kamijuku Tumulus",
+      "designation": "Inzai City Designated Historic Site (1973)",
+      "intro": "This ancient burial mound in Omori is thought to be a square tumulus from the 7th century. Its stone burial chamber, with a side entrance passage, remains in good condition. The stones were cut from the Kioroshi Shell Bed nearby, so a 120,000-year-old sea deposit became the walls of a tomb.",
+      "highlights": [
+        "The shape of the mound itself is unknown. The date is estimated from other tumuli with the same kind of stone chamber.",
+        "Here you can see with your own eyes how the local shell-bed stone was used by people in ancient times.",
+        "The Kioroshi Shell Bed, the source of the stone, was designated a National Natural Monument in 2002."
+      ],
+      "speech": "This burial mound is thought to be a square tumulus from the seventh century. Its stone burial chamber, with a side entrance, remains in good condition. The stones were cut from the Kioroshi Shell Bed nearby. So a sea deposit from one hundred twenty thousand years ago became the walls of a tomb. Here you can see how local stone was used in ancient times."
+    },
+    "houjuin-kannondo": {
+      "name": "Kannon Hall of Hojuin Temple",
+      "designation": "Important Cultural Property of Japan (1934)",
+      "intro": "This small Buddhist hall in Ogura dates from the late Muromachi period. An ink inscription found inside its altar shrine gives the year 1563. The temple itself is said to have been founded in 859 to 877, but this hall is the only old building that survives. From outside it looks plain, with a thatched hipped roof, but inside the altar, the shrine, the ceiling and the bracket work are painted in bright colors. That is why people call it Hikari-do, the Hall of Light.",
+      "highlights": [
+        "Compare the plain exterior with the colorful interior. The contrast is the main attraction.",
+        "The thatched roof was re-thatched in 2023, so the traditional craft is still alive here.",
+        "The details show the influence of the Zen style, simplified for a rural temple. A similar hall, the Yakushi Hall of Eifukuji, also stands in Inzai."
+      ],
+      "speech": "This small Buddhist hall dates from the late Muromachi period, around fifteen sixty-three. From outside it looks plain, with a thatched roof. But inside, the altar, the shrine, the ceiling and the bracket work are painted in bright colors. That is why people call it Hikari-do, the Hall of Light. The thatched roof was renewed in twenty twenty-three."
+    },
+    "magome-gato": {
+      "name": "Ceramic Pagodas from the Magome Site",
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (2008)",
+      "intro": "These are two ceramic pagodas, called gato, made of fired clay in the shape of a wooden pagoda. Both can be restored to seven-story pagodas. They were excavated from the Magome site in 1997 and 1998, and are kept at the Kioroshi Koryu-no-mori History Museum. Finding two seven-story ceramic pagodas at one site is unique in Japan.",
+      "highlights": [
+        "They came from a village site, not a temple. This shows that Buddhist faith had reached everyday communities in eastern Japan by the early Heian period, around the 8th to 9th century.",
+        "Look at the details copied from wooden architecture: doors on all four sides of the first story, the base, the bracket work, and the round eave tiles.",
+        "There are two kinds of clay: brownish haji ware and gray sue ware, fired in different ways."
+      ],
+      "speech": "These are two ceramic pagodas made of fired clay in the shape of a wooden pagoda. Both can be restored to seven stories. They were found at the Magome village site, not at a temple. This shows that Buddhist faith had reached everyday communities in eastern Japan by the ninth century. Finding two seven-story ceramic pagodas at one site is unique in Japan."
+    }
+  }
+}

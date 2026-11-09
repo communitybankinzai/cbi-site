@@ -5203,6 +5203,12 @@ async function loadBunkazai() {
     console.error("bunkazai.json の読み込みに失敗:", e);
     return;
   }
+  // ガイド帳（metaverse/guide/）からの飛び先：?spot=<reportId> で該当の文化財へワープ（2026-11-09）
+  try {
+    const spotId = new URLSearchParams(location.search).get("spot");
+    const spotTo = spotId ? BUNKAZAI.find(function (s) { return s.reportId === spotId; }) : null;
+    if (spotTo) setTimeout(function () { warpTo(spotTo.lat, spotTo.lon, spotTo.name); }, 1200);
+  } catch (e) { console.warn("spot パラメータの処理に失敗:", e); }
   try {
     const pres = await fetch("parque-links.json");
     if (pres.ok) {
