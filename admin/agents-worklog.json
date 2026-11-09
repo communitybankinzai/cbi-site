@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-11-09",
+          "title": "CiDAO：イベント登録の確認通知を『ベルだけ』にする設定（マイページ）を実装・本番反映 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao 150c00c（feat/register-confirm-bell-only → main）：src/lib/notify.ts（insertNotification に push:false を追加）／src/lib/register-confirm-pref.ts（新規・キーと判定）／src/lib/event-register-confirm.ts（本人の設定を読んで切り替え）／src/app/me/actions.ts（saveRegisterConfirmPref）／src/app/me/_components/RegisterConfirmSettings.tsx（新規）／src/app/me/page.tsx／テスト2ファイル（10件追加）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主「うるさければ、ベルだけにする変更もできるようにしてほしい」。解釈：個人ごとの設定（切り替え可能）として実装。置き場所は過去の指示（通知の希望設定は /me のプッシュ通知設定の隣・押した時点で保存。/me/edit には置かない）に従った。つまずき：設定の定数と判定を、サーバー専用部品（notify → web-push）を読み込むファイルに置いたまま、クライアント部品から読む構成にしかけた。ブラウザ用のビルドに web-push が混ざって壊れるため、依存のない register-confirm-pref.ts に分けた。検証：新規10件を含む全873テスト通過・型検査0・lint 0・ブランチと main の Vercel ビルド成功。main は cidao.vercel.app に反映済み（他セッションの1コミットの上に載せ替え、型検査と全テストを再実行）。未確認：マイページの実表示とチェックの保存・ベルだけで届くこと（ログインできないため）。前回記録（output 661,735）からの差分 32,887。session: 378ba89a-4483-45ed-9cf1-5e62919139cd / output: 694,622 / cost: $100.52"
+        },
+        {
+          "date": "2026-11-09",
           "title": "CiDAO：イベントを登録した本人への確認通知（何人へお知らせしたか）を実装・本番反映 0.9時間",
           "category": "実装",
           "outputs": [
@@ -9421,6 +9432,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-16",
+          "title": "⚙ マイページの『イベント登録の確認通知』の設定を実画面で確かめる（チェックを外すとベルだけに届くか）",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-11-09 に 150c00c を本番反映。assistant はログインできず、実画面と保存を見ていない。マイページ /me の災害情報の通知設定の下に、チェックが初期ONで出るか／外すと『保存しました（ベル🔔だけに届きます）』が出るか／再読み込みしても外れたままか／外した状態でイベントを登録すると、スマホは鳴らずベルだけに確認が届くか、を見る。あわせて、同じ日の確認通知の予定（登録した本人にN人にお知らせしましたが届くか）と一度に確かめられる。"
+        },
         {
           "due": "2026-11-16",
           "title": "🔔 次にイベントを登録したとき、登録した本人に確認通知（N人にお知らせしました）が届くことを確かめる",
