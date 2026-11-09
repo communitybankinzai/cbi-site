@@ -1,62 +1,557 @@
 {
-  "version": "2026-11-09a",
+  "version": "2026-11-09b",
   "lang": "en",
-  "note": "Prototype English texts for the heritage guide (metaverse/guide/). Written from bunkazai.json and reports/*.json, whose facts come from Inzai City and the Chiba Prefectural Board of Education. Draft: not yet reviewed by a native speaker or by the city. Not linked from the site.",
+  "note": "Prototype English texts for the heritage guide (metaverse/guide/). All 50 entries drafted by Muse (request 016, 2026-11-09) from bunkazai.json and reports/*.json, whose facts come from Inzai City and the Chiba Prefectural Board of Education; checked by Claude for format, numbers and facts against the Japanese source. Draft: not yet reviewed by a native speaker or by the city. Shrine name 鳥見神社 is romanized Tomi Shrine (city furigana とみ). Not linked from the site.",
   "spots": {
-    "iwaike-jutaku-omoya": {
-      "name": "Iwai Family Residence, Main House (former Musashiya shop)",
-      "designation": "Nationally Registered Tangible Cultural Property (2007)",
-      "intro": "This two-story wooden building in Kioroshi was once an inn. It stood on the embankment of the Tone River and was moved to this spot and remodeled around 1914, when the river embankment was rebuilt. It is the only nationally registered cultural property among the 50 designated and registered properties in Inzai City.",
+    "bessho-shishimai": {
+      "designation": "Inzai City Designated Intangible Folk Cultural Property (1966)",
       "highlights": [
-        "Look at the wide earthen-floor room facing the street and the railed veranda on the second floor. They keep the feeling of an old roadside inn.",
-        "The plan is L-shaped: a two-story block along the street, with a one-story wing attached at a right angle behind it.",
-        "The Iwai family is said to have run an inn at the Kioroshi river port from the Edo period through the Meiji era. After the move, the building was used as a rice and fertilizer shop."
+        "Watch the three lions - male, middle and female - dancing to the music of the flute players.",
+        "Listen for the five pieces, whose names carry Buddhist words: dances of reverence, of protection and of submission among them.",
+        "It was once performed three times a year, in spring, summer and autumn; now it fills two days each August."
       ],
-      "speech": "This two-story wooden building in Kioroshi was once an inn on the embankment of the Tone River. It was moved here and remodeled around 1914, when the embankment was rebuilt. It is the only nationally registered cultural property among the fifty cultural properties of Inzai City. Please look at the wide earthen-floor room facing the street, and the railed veranda on the second floor. They keep the feeling of an old roadside inn."
+      "intro": "The Bessho Lion Dance is a three-lion dance kept at Jizoji and Hosenin temples in Bessho. Tradition says it began about 800 years ago, with dancers wearing lion heads walking through the village to pray against epidemics. Today it is performed on August 23 at Hosenin and August 24 at Jizoji.",
+      "name": "Bessho Lion Dance",
+      "speech": "The Bessho Lion Dance is performed by three lions: a male, a middle lion and a female. Long ago, people wore lion heads and walked through the village, praying to drive away sickness. Later, elements of sarugaku and noh theatre joined the dance. You can see it on August twenty-third at Hosenin and August twenty-fourth at Jizoji."
     },
-    "kioroshi-kaiso": {
-      "name": "Kioroshi Shell Bed",
-      "designation": "National Natural Monument (2002)",
-      "intro": "About 120,000 years ago, this area was the bottom of a wide, shallow bay called Paleo-Tokyo Bay. Sand settled there, and the shells of the sea creatures living in it were preserved. Today you can see the exposed layer in Kioroshi Manyo Park: it is about 4.3 meters thick and 45 meters long, packed with fossil shells and sea urchins.",
+    "bishamonten-ryowakiji": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (1954)",
       "highlights": [
-        "More than 100 kinds of shells have been identified. Most are warm-current, shallow-water species, so Inzai was a warmer, shallow sea than it is today.",
-        "The surface of the layer hardens, so people once cut it for stone. It was used for the stone chamber of a tumulus and for stone lanterns in the area.",
-        "It is one of the Chiba Prefecture Stones (fossil) and one of the 10 Selected Strata of Chiba. Collecting fossils inside the designated area is prohibited by law."
+        "Bishamonten stands in the center, with his wife Kisshoten and son Zennishi Doji beside him — Bishamonten worshipped in family form.",
+        "We even know the makers: the sculptor was Kenko, and a nun named Horen and a monk named Myokan commissioned the statues.",
+        "The three statues use different techniques: Bishamonten and Kisshoten are split-and-joined wood, while Zennishi Doji is joined-block construction."
       ],
-      "speech": "About one hundred twenty thousand years ago, this place was the bottom of a wide, shallow bay called Paleo-Tokyo Bay. The layer you see is about four point three meters thick and forty-five meters long, packed with fossil shells and sea urchins. More than one hundred kinds of shells have been found, most of them warm-water species, so Inzai was a warmer, shallow sea than today. Please do not collect fossils here. It is protected by law."
+      "intro": "These three wooden statues at Tamon'in Temple in Matsuzaki show Bishamonten, a Buddhist guardian, as a family: his wife Kisshoten and their son Zennishi Doji stand beside him. An inscription inside the main statue says the sculptor Kenko made them in 1289, commissioned by a nun and a monk. Their carved eyes and lifelike bodies show the realism of Kamakura-period sculpture.",
+      "name": "Wooden Statues of Bishamonten, Kisshoten and Zennishi Doji",
+      "speech": "Here, the guardian Bishamonten is shown as a family, with his wife Kisshoten and their son Zennishi Doji. An inscription hidden inside the statue tells us the sculptor Kenko made them in twelve eighty-nine, for a nun and a monk who asked for them. Look at the carved eyes and the lifelike, moving bodies. This is the realism that Kamakura-period sculpture is known for."
     },
-    "kamijuku-kofun": {
-      "name": "Kamijuku Tumulus",
-      "designation": "Inzai City Designated Historic Site (1973)",
-      "intro": "This ancient burial mound in Omori is thought to be a square tumulus from the 7th century. Its stone burial chamber, with a side entrance passage, remains in good condition. The stones were cut from the Kioroshi Shell Bed nearby, so a 120,000-year-old sea deposit became the walls of a tomb.",
+    "bonsho-kenmu": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (1972)",
       "highlights": [
-        "The shape of the mound itself is unknown. The date is estimated from other tumuli with the same kind of stone chamber.",
-        "Here you can see with your own eyes how the local shell-bed stone was used by people in ancient times.",
-        "The Kioroshi Shell Bed, the source of the stone, was designated a National Natural Monument in 2002."
+        "Look at the inscription: it begins with the temple's name and gives the exact year, 1338.",
+        "Compare the two striking spots: one lotus has nine seeds, the other has seven. Unique in Chiba Prefecture.",
+        "Look over the whole surface: there are no casting flaws or holes anywhere on the bell."
       ],
-      "speech": "This burial mound is thought to be a square tumulus from the seventh century. Its stone burial chamber, with a side entrance, remains in good condition. The stones were cut from the Kioroshi Shell Bed nearby. So a sea deposit from one hundred twenty thousand years ago became the walls of a tomb. Here you can see how local stone was used in ancient times."
+      "intro": "This temple bell at Ryusuiji Temple in Taki carries a dated inscription, so we know it was cast in 1338. Its two striking spots are decorated with lotus flowers, but the number of lotus seeds differs on each side, a design found nowhere else in Chiba Prefecture. The casting is flawless.",
+      "name": "Bonsho, Temple Bell with Inscription of 1338",
+      "speech": "This temple bell was cast in thirteen thirty-eight, and we know the year for sure because it is carved in the inscription. Look at its two striking spots. Each has a lotus flower, but one lotus has nine seeds and the other has seven. No other bell in Chiba Prefecture is made this way. The bell is ninety-nine point six centimetres tall, and its casting has no flaws at all."
+    },
+    "bonsho-oan": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (1972)",
+      "highlights": [
+        "Look for the inscription: 107 characters in 15 lines, naming the temple, the maker, the donor, and the date in 1369.",
+        "Find the large scar on the vertical band, said to be a sword cut made while defeating a monster inside the bell.",
+        "Look at the striking spot: an eight-petalled lotus design with six lotus seeds and stamens."
+      ],
+      "intro": "This bronze temple bell, a bonsho, is kept at Chorakuji Temple in Omori. It was cast in 1369, and an inscription on its surface records the date, the maker, and the donor. A large scar on one band is said to be a sword cut from fighting a monster that hid inside the bell.",
+      "name": "Bonsho, Temple Bell with Inscription of 1369",
+      "speech": "This temple bell was cast in thirteen sixty-nine. Its inscription, one hundred seven characters long, tells us the date, the maker's name, and the donor's name. Look for the big scar on its side. People say it is a sword cut, made when someone defeated a monster hiding inside the bell. The bell is eighty point five centimetres tall. Also look at the striking spot, decorated with a lotus flower."
+    },
+    "bonsho-ryufukuji": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (1972)",
+      "highlights": [
+        "Try to find the striking spot: unlike most bells, this bell has only one. A very rare design.",
+        "Look at the inscription: it names the temple with the old place name, Shimosa Inzai-sho Ryufukuji.",
+        "The maker's name, Yatabe Saburobei, and a monk's name are also carved in the inscription."
+      ],
+      "intro": "This large temple bell belongs to Ryufukuji Temple. Most bells have two striking spots, the places where the bell is hit, but this one has only one, which is very rare. Its inscription preserves the old name of this area. With no date carved on it, experts date it by its style to the Nanbokucho period, the 1300s.",
+      "name": "Bonsho, Temple Bell of Ryufukuji Temple",
+      "speech": "This temple bell stands at Ryufukuji Temple. It is one hundred twenty-two point seven centimetres tall. Most temple bells have two striking spots, but this one has only one. That makes it very rare. Its inscription uses the old name of this area, Shimosa Inzai-sho, and names the maker, Yatabe Saburobei. No date is carved, so experts date it by style to the thirteen hundreds."
+    },
+    "chudo-kujakumon-kei": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (1985)",
+      "highlights": [
+        "Look at the peacock with its wings spread wide and tail lowered. The design is the same on the front and back.",
+        "Count the arcs: six along the top edge and five along the bottom, making the mountain-like outline.",
+        "Look at the two small holes at the top edge, where the kei was hung from its stand."
+      ],
+      "intro": "This small cast-bronze instrument is a kei, a metal gong struck during Buddhist rites. It hangs from a stand by the two holes at its top edge. A peacock with wide-spread wings decorates both sides in the same design. It is thought to date from the Nanbokucho period, in the 1300s.",
+      "name": "Cast Bronze Kei Gong with Peacock Design",
+      "speech": "This is a kei, a bronze gong used in Buddhist rites. It hung from a stand by the two holes along its top edge. A peacock with wide-spread wings is drawn on both sides, in exactly the same design. Count the curves: six arcs on top, five below. That is what gives it its mountain shape. It is thought to date from the thirteen hundreds, and it is only fourteen centimetres tall."
+    },
+    "chudo-waniguchi-matsumushi": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1976)",
+      "highlights": [
+        "Look for the caster's name and his kao, a stylized signature, in the inscription: Uzawa Shinano-no-kami Toshinobu, the only named maker among the three gongs.",
+        "Weigh the numbers: 36 centimetres across, 11 centimetres thick, and 8.9 kilograms - a rare case where a gong's weight is recorded.",
+        "Compare the dates: made in 1585, it is 95 years older than the Kannonji gong and 170 years older than the Takefukuro one."
+      ],
+      "intro": "This cast bronze waniguchi, a flat round gong hung at a temple, is thought to have been ordered in 1585 by Eisho, the head priest of Matsumushidera Temple, from the metal caster Uzawa Shinano-no-kami Toshinobu. It is the oldest of Inzai's three designated waniguchi, and the only one whose maker's name survives in its inscription.",
+      "name": "Cast Bronze Waniguchi Gong of Matsumushi",
+      "speech": "This bronze gong was made in fifteen eighty-five, the oldest of Inzai's three designated waniguchi. Eisho, the head priest of Matsumushidera Temple, ordered it from a caster named Uzawa Shinano-no-kami Toshinobu. His name and his kao, a stylized signature, are cut into the metal. The gong is thirty-six centimetres wide and weighs eight point nine kilograms."
+    },
+    "chudo-waniguchi-takefukuro": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1979)",
+      "highlights": [
+        "Compare the size: forty-five by fifty centimeters, far bigger than the city's other two gongs, at thirty-six and sixteen centimeters across.",
+        "Read the inscription: a prayer group of twenty-one people from Takefukuro Village paid together to offer this gong in seventeen fifty-five.",
+        "Look for the closing wish, 'for peace in this life and the next', recording the donors' hope in their own words."
+      ],
+      "intro": "A waniguchi is a flat bronze gong hung before a Buddhist altar and struck by worshippers. This cast bronze example, at Takefukuro Inari Shrine, is the largest in Inzai. In seventeen fifty-five, twenty-one members of a village prayer group offered it together.",
+      "name": "Chudo Waniguchi of Takefukuro (cast bronze gong)",
+      "speech": "This bronze gong hangs in the Kannon hall at Takefukuro Inari Shrine. At forty-five by fifty centimeters, it is the largest waniguchi in Inzai City. Its inscription tells the story: on December nineteenth, seventeen fifty-five, twenty-one members of the Takefukuro Village prayer group offered it to Nyoirin Kannon, praying for peace in this life and the next. It was a gift from a whole community, not one person."
+    },
+    "dosaku-kofungun": {
+      "designation": "Inzai City Designated Historic Site (2014)",
+      "highlights": [
+        "Mound No. 1 is 46 meters long and 4 meters high, the largest mound on the west shore of Lake Inba.",
+        "Mounds No. 4 and No. 5 share the same axis direction as No. 1, suggesting they were companion tombs for people closely connected.",
+        "A box-shaped stone coffin was found at the top of Mound No. 1 in a 2017 survey, a rare case in the Inba region."
+      ],
+      "intro": "This cluster of 22 ancient burial mounds in Kobayashi includes seven keyhole-shaped mounds, fourteen round mounds, and one square mound. Mound No. 1, 46 meters long, is the largest on the west shore of Lake Inba and is thought to date from the late 6th century. Mounds No. 1, 4, and 5 are the designated ones.",
+      "name": "Dosaku Kofun Group, a Cluster of Ancient Burial Mounds",
+      "speech": "Twenty-two burial mounds stand together here: seven keyhole-shaped, fourteen round, and one square. The largest, Mound Number One, is forty-six meters long and four meters high, and was probably built in the late sixth century. Mounds Four and Five line up with it and are thought to be companion tombs. In two thousand seventeen, a survey found a stone coffin at its top. Three mounds were designated in two thousand fourteen."
+    },
+    "dozo-fudo-myoo": {
+      "designation": "Important Cultural Property of Japan (1914)",
+      "highlights": [
+        "Look at the front of the skirt: the year 1303 is carved into the statue itself, which is rare for statues of this kind.",
+        "Look at the shoulders: both arms were cast separately and joined there, a clever technique for making a statue in metal.",
+        "The sword, rope, halo, rock base and gold on the eyes and fangs are later additions. Compare them with the body itself."
+      ],
+      "intro": "This small cast bronze statue of Fudo Myoo, a wrathful Buddhist guardian, stands 47 centimeters tall at Ketsuenji Temple. An inscription on its skirt says it was made in 1303 at the request of a monk named Takuson. Its arms were cast separately and joined at the shoulders, and its wide-open eyes and fangs biting its lips give it a powerful, angry face.",
+      "name": "Cast Bronze Standing Statue of Fudo Myoo",
+      "speech": "This bronze statue of Fudo Myoo is only forty-seven centimeters tall, but it looks very powerful. An inscription on its skirt says it was made in thirteen oh three, at the request of a monk named Takuson. Its arms were cast separately and joined at the shoulders. Look at its face: the eyes are wide open, and its fangs bite into its lips."
+    },
+    "dozo-juichimen-kannon": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (1994)",
+      "highlights": [
+        "The inscription on the back of the skirt dates the statue to March 16, 1297 — its age is known from the statue itself.",
+        "Head and body were cast in one pour; the inside is hollow to the very top, and the copper is only 3–4 millimeters thick.",
+        "For an Eleven-Faced Kannon, the small faces on top of the head are missing, and the wooden water bottle is a later replacement."
+      ],
+      "intro": "This cast bronze statue of the Eleven-Faced Kannon, a Buddhist deity of mercy, is the main image of the Kamimachi Kannon Hall in Kioroshi. It is 50.5 centimeters tall, and head and body were cast in a single pour, leaving it hollow right up to the top of the head. An inscription on the back of its skirt gives the exact date: March 16, 1297.",
+      "name": "Eleven-Faced Kannon, Cast Bronze Standing Statue",
+      "speech": "This bronze statue is the Eleven-Faced Kannon, and it was cast in one single pour, head and body together. Inside, it is hollow all the way to the top of the head. An inscription on the back of its skirt tells us it was made on March sixteenth, twelve ninety-seven. For a cast statue of its time, it is fairly large, and other statues are dated by comparing them with it."
+    },
+    "eifukuji-yakushido": {
+      "designation": "Important Cultural Property of Japan (1954)",
+      "highlights": [
+        "Look for the ridge plaque inside: it records the pillars raised in 1466, the ridge raised in 1469, and completion in 1472.",
+        "Look up in the outer hall: its ceiling is painted with celestial maidens, called tennyo, in rich colors — a surprise inside the plain exterior.",
+        "Notice the brightly painted altar platform in the inner sanctuary. The temple also shares its grounds with Kumano Shrine, mixing Shinto and Buddhism."
+      ],
+      "intro": "This Yakushi hall at Eifukuji Temple in Kakuda is the oldest building in Chiba Prefecture whose construction date is clearly known. Ink writing on its ridge plaque records that the pillars went up in 1466, the ridge in 1469, and the work was finished in 1472 — six years of building. The temple shares its grounds with Kumano Shrine, a survival of the old mix of Shinto and Buddhism.",
+      "name": "Yakushi Hall of Eifukuji Temple",
+      "speech": "This is the oldest building in Chiba Prefecture with a clearly known date. Ink writing on a plaque tells us the pillars went up in fourteen sixty-six, the ridge in fourteen sixty-nine, and the hall was completed in fourteen seventy-two. It took six years to build. Look up in the outer hall, where the ceiling is painted with celestial maidens in rich colors."
+    },
+    "enmei-jizo-senzoji": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (1955)",
+      "highlights": [
+        "Look for the sacred jewel and monk's staff in its hands, and the lowered left foot: together these mark this as an Enmei Jizo.",
+        "Even the unseen inside of the body is finished with gold leaf, a sign of the great care spent on this statue.",
+        "Notice the soft, rounded face and the thin, flowing robe. The Ii family is said to have given this statue to the temple in 1847."
+      ],
+      "intro": "This seated wooden statue of Jizo Bosatsu, a Buddhist figure of compassion, is 139 centimeters tall and kept at Senzoji Temple in Izumi. It holds a jewel and a monk's staff, one foot lowered — the form called Enmei Jizo, Jizo of long life. Carved in the late Heian to early Kamakura period, it has a gentle rounded face, and even its inside is covered in gold leaf.",
+      "name": "Enmei Jizo, Wooden Seated Statue",
+      "speech": "This is Jizo, a Buddhist figure of compassion, carved in the late Heian to early Kamakura period. It is one hundred thirty-nine centimeters tall. In its hands are a sacred jewel and a monk's staff, and one foot hangs down. That pose makes it an Enmei Jizo, linked with long life. Look at the gentle, round face. Even inside the body, where nobody can see, the makers laid gold leaf."
+    },
+    "entaigou": {
+      "designation": "Inzai City Designated Historic Site (2016)",
+      "highlights": [
+        "This is the open type of aircraft shelter: no roof, just earth piled and hardened into banks.",
+        "At about 30 meters wide and 3 meters high, it could shelter almost one small military aircraft.",
+        "It is a surviving trace of Inba Airfield, whose runways spread around Inzai-Makinohara Station from 1941 to 1945."
+      ],
+      "intro": "This roofless shelter of packed earth protected military aircraft from air raids at Inba Airfield in the final stage of the Pacific War. About 30 meters wide and 3 meters high, it could hold almost one small aircraft. It is the newest of the city's designated historic sites, added in 2016.",
+      "name": "Entaigo, an Open-Air Aircraft Shelter",
+      "speech": "This shelter protected parked military aircraft from air raids in the last stage of the Pacific War. Unlike concrete-roofed shelters, this open type is simply earth piled into banks. It is about thirty meters wide and three meters high, big enough for almost one small aircraft. It remains as a trace of Inba Airfield and was designated a historic site in two thousand sixteen."
+    },
+    "fudo-bishamon-saifukuji": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (2013)",
+      "highlights": [
+        "Look inside the story: both statues carry the name of their maker, the sculptor Kenko, written inside them.",
+        "Look at Fudo Myoo's fierce face, bared fangs, lasso in his left hand, and three-pronged sword in his right.",
+        "Look at Bishamonten standing on a demon's back, wearing a helmet topped with a jewel and detailed warrior's clothing."
+      ],
+      "intro": "These two wooden statues stand at Saifukuji Temple in Kobayashi. One is Fudo Myoo, a fierce guardian figure, and the other is Bishamonten, a guardian warrior god. Both were carved in the late Kamakura period, in the late 1200s. Inside each statue is the name of the sculptor, Kenko. Works by one medieval sculptor rarely survive together like this.",
+      "name": "Wooden Standing Statues of Fudo Myoo and Bishamonten",
+      "speech": "These two wooden statues stand at Saifukuji Temple. They were carved in the late twelve hundreds by a sculptor named Kenko. His name is written inside both statues. It is rare for so many works by one medieval sculptor to survive together. Fudo Myoo glares with bared fangs, holding a lasso and a three-pronged sword. Bishamonten stands on a demon's back, wearing a helmet with a jewel on top. Look closely at their fierce faces and detailed clothing."
+    },
+    "fuji-no-ki-nakane": {
+      "designation": "Inzai City Designated Natural Monument (1979)",
+      "highlights": [
+        "The tree gave the area its name: the old name 'Fuji no Kata' still survives as the place name Fujikata.",
+        "It is about 15 meters tall, with a trunk just over 1 meter around at the base, slender like a climbing vine.",
+        "Together with the great cherry tree of Yoshitaka, it is one of only two city-designated natural monuments in Inzai."
+      ],
+      "intro": "This wisteria tree in Nakane is said to be about 1,000 years old. Tradition says it was planted as the sacred tree of Kumano Daigongen when the settlement began. The place was once called 'Fuji no Kata' after this tree, and the name survives today in the place name Fujikata.",
+      "name": "Fuji no Ki, the Ancient Wisteria of Nakane",
+      "speech": "This wisteria is said to be about one thousand years old and about fifteen meters tall. People say it was planted as a sacred tree when the settlement began. The area took its old name from this tree, and that name, Fujikata, is still used today. The tree stands at a private home. The city designated it a natural monument in nineteen seventy-nine."
+    },
+    "fukujuin-amida-sanzon": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1993)",
+      "highlights": [
+        "Look at the robe folds: complex and deeply carved, they are one of the main clues to the statues' early Kamakura date.",
+        "Compare the earlobes and faces: small details like these, not documents, suggest to specialists that the statues came from the Kei school.",
+        "Look for the repaired parts: four repairs by nineteen twenty-six replaced parts such as the hands of Amida and the hands and feet of Kannon."
+      ],
+      "intro": "These three standing statues at Fukujuin Temple in Nakane show Amida Buddha with two attendant bodhisattvas. No inscription or record names their maker or date. From the carving technique, the faces, and the deep folds of the robes, experts place them in the early Kamakura period.",
+      "name": "Fukujuin Amida Triad (three standing statues)",
+      "speech": "At Fukujuin Temple in Nakane stand three statues: Amida Buddha between two bodhisattvas. Nobody knows who carved them or when, because there is no inscription. Instead, experts read the statues themselves. The carving technique, the shape of the ears, and the deep, complex folds of the robes point to the early Kamakura period and to the Kei school, the famous sculptors around Unkei and Kaikei."
+    },
+    "hachiman-jinja-shishimai": {
+      "designation": "Inzai City Designated Intangible Folk Cultural Property (1974)",
+      "highlights": [
+        "Watch the three dancers: a father, a mother, and a young man, a lion dance whose cast is one family.",
+        "Look at the lion masks. Their hair is made of hemp fiber, a material clearly recorded for this dance.",
+        "Each dancer beats a small drum held against the belly while dancing powerfully to the sound of the flute."
+      ],
+      "intro": "This lion dance is performed every year in late April at Hachiman Shrine in Nakane. Three dancers — a father, a mother, and a young man — wear lion masks with manes of hemp fiber and beat small drums as they dance. The dance celebrates the end of rice seed sowing and prays for a rich harvest.",
+      "name": "Hachiman Shrine Lion Dance",
+      "speech": "Every year in late April, three dancers perform this lion dance at Hachiman Shrine. They play a father, a mother, and a young man, wearing lion masks with manes of hemp. Each dancer beats a small drum held against the belly while dancing to the flute. The dance marks the end of rice seed sowing and prays for a rich harvest. It was designated an intangible folk cultural property in nineteen seventy-four."
     },
     "houjuin-kannondo": {
-      "name": "Kannon Hall of Hojuin Temple",
       "designation": "Important Cultural Property of Japan (1934)",
-      "intro": "This small Buddhist hall in Ogura dates from the late Muromachi period. An ink inscription found inside its altar shrine gives the year 1563. The temple itself is said to have been founded in 859 to 877, but this hall is the only old building that survives. From outside it looks plain, with a thatched hipped roof, but inside the altar, the shrine, the ceiling and the bracket work are painted in bright colors. That is why people call it Hikari-do, the Hall of Light.",
       "highlights": [
-        "Compare the plain exterior with the colorful interior. The contrast is the main attraction.",
-        "The thatched roof was re-thatched in 2023, so the traditional craft is still alive here.",
-        "The details show the influence of the Zen style, simplified for a rural temple. A similar hall, the Yakushi Hall of Eifukuji, also stands in Inzai."
+        "Compare the plain exterior with the colorful interior: altar, shrine, ceiling and bracket work all carry bright painted decoration.",
+        "Look for the Zen style in the details, simplified for a rural temple. It shows how styles from great central temples spread to the countryside.",
+        "The thatched hipped roof was re-thatched in 2023, so the traditional craft is still alive here."
       ],
-      "speech": "This small Buddhist hall dates from the late Muromachi period, around fifteen sixty-three. From outside it looks plain, with a thatched roof. But inside, the altar, the shrine, the ceiling and the bracket work are painted in bright colors. That is why people call it Hikari-do, the Hall of Light. The thatched roof was renewed in twenty twenty-three."
+      "intro": "This small Buddhist hall at Hojuin Temple in Ogura dates from the late Muromachi period, and an ink inscription inside its altar shrine gives the year 1563. Outside it looks plain under a thatched hipped roof, but inside the altar, shrine and ceiling are painted in bright colors, which is why people call it Hikari-do, the Hall of Light.",
+      "name": "Kannon Hall of Hojuin Temple",
+      "speech": "This small Buddhist hall dates from the late Muromachi period, around fifteen sixty-three. From outside it looks plain, with a thatched roof. But inside, the altar, the shrine, the ceiling and the bracket work are painted in bright colors. That is why people call it Hikari-do, the Hall of Light. Its thatched roof was renewed in twenty twenty-three."
+    },
+    "inazaki-shishimai": {
+      "designation": "Inzai City Designated Intangible Folk Cultural Property (1966)",
+      "highlights": [
+        "Look for the clown dancing with the three lions - none of Inzai's other lion dances is recorded with one.",
+        "In the clown's dance, the clown's movements are said to mean hopes for many descendants.",
+        "It is performed on the autumn equinox day, while Inzai's other lion dances fall in spring or in August."
+      ],
+      "intro": "The Inazaki Lion Dance is offered at Tomi Shrine in Izumi on the autumn equinox day. Three lions - big, middle and female - dance with a clown, a line-up not recorded for Inzai's other lion dances. 'Inazaki' means 'before the rice harvest,' and the dance expresses thanks for the autumn harvest.",
+      "name": "Inazaki Lion Dance",
+      "speech": "The Inazaki Lion Dance is performed at Tomi Shrine on the autumn equinox day. Three lions dance together with a clown, something not recorded for Inzai's other lion dances. The clown's movements are said to wish for many descendants. The name Inazaki means before the rice harvest, a dance of thanks for the crop."
+    },
+    "itaishi-toba-iwato": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1991)",
+      "highlights": [
+        "Look for the single syllable kiriku at the top: one symbol stands for Amida Buddha, the one-figure arrangement.",
+        "Read the date, July thirteen fifty-three, from the middle of the fourteenth century, when these tablets were made in the greatest numbers.",
+        "Note the puzzle in the records: the city calls this slate tablet Musashi style, while the prefecture links that style to chlorite schist."
+      ],
+      "intro": "This small slate tablet from Iwato carries a date of July thirteen fifty-three, right in the busiest century for such monuments. A single sacred syllable stands for Amida Buddha. Today it is kept safely at the Inba Museum of History and Folklore.",
+      "name": "Itaishi Toba of Iwato (stone memorial tablet)",
+      "speech": "This small tablet, sixty-four centimeters long, once stood in Iwato and is now kept at the Inba Museum of History and Folklore. It is classed as Musashi style, though it is made of slate, and the prefecture usually ties that style to green chlorite schist. One sacred syllable, kiriku, stands for Amida Buddha, and the carving is dated July of thirteen fifty-three, in the peak century for such tablets."
+    },
+    "itaishi-toba-yoshitaka": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1976)",
+      "highlights": [
+        "Count the seed syllables: thirteen Buddhas, each watching over a memorial year after a person's death, are lined up on the stone.",
+        "Look for the inscription of purpose: the couple Domyo and Myoichi set this up for their own future memorial rites.",
+        "Note the size: one hundred seventeen centimeters long and ninety-three wide, large and early for a Shimousa-style tablet with thirteen Buddhas."
+      ],
+      "intro": "This large stone tablet in Yoshitaka was made in thirteen seventy-eight by a married couple, the monk Domyo and his wife Myoichi. They made it for themselves, praying in advance for their own peace after death. Thirteen sacred syllables for thirteen Buddhas cover its face.",
+      "name": "Itaishi Toba of Yoshitaka (stone memorial tablet)",
+      "speech": "This stone tablet in Yoshitaka is one hundred seventeen centimeters long and ninety-three centimeters wide, large and old for its Shimousa style. It was made in thirteen seventy-eight by a couple, Domyo and Myoichi. Most tablets pray for someone who has died, but this pair prayed in advance for themselves, a practice called gyakushu. Thirteen sacred syllables on the stone stand for the thirteen Buddhas who watch over the years after death."
+    },
+    "iwaike-jutaku-omoya": {
+      "designation": "Nationally Registered Tangible Cultural Property (2007)",
+      "highlights": [
+        "Look at the wide earthen-floor room facing the street and the railed veranda upstairs; both keep the feeling of an old inn.",
+        "The plan is L-shaped: a two-story block along the street, with a one-story wing attached at a right angle behind it.",
+        "The Iwai family is said to have run an inn at the Kioroshi river port from the Edo period through the Meiji era."
+      ],
+      "intro": "This two-story wooden building in Kioroshi was once an inn on the embankment of the Tone River. Around 1914, when the embankment was rebuilt, it was moved to this spot and remodeled. It is the only nationally registered cultural property among Inzai City's 50 designated and registered properties.",
+      "name": "Iwai Family Residence, Main House (former Musashiya shop)",
+      "speech": "This two-story wooden building in Kioroshi was once an inn on the embankment of the Tone River. It was moved here and remodeled around nineteen fourteen, when the embankment was rebuilt. It is the only nationally registered cultural property among the fifty cultural properties of Inzai City. Look at the wide earthen-floor room facing the street and the railed veranda on the second floor. They keep the feeling of an old inn."
+    },
+    "izumishinden-nomabori-iseki": {
+      "designation": "Inzai City Designated Historic Site (2005)",
+      "highlights": [
+        "Two banks run side by side with a hollow moat between them, the shape that gives the site its nickname, the wild-horse moat.",
+        "The remains run about 200 meters long and 10 to 20 meters wide.",
+        "The Kioroshi road once crossed here, and two large gates stood where it passed: the 'Okido' in the name."
+      ],
+      "intro": "These long earthworks are banks and a moat built to guard Inzai Pasture, a horse ranch run directly by the shogunate in the Edo period. They were made during land development between 1673 and 1681, both to stop horses escaping and to mark the boundary between pasture and new fields.",
+      "name": "Izumishinden Okido Nomabori Site, Earthworks of the Inzai Horse Pasture",
+      "speech": "In the Edo period, this area was part of Inzai Pasture, a shogunate horse ranch. Between sixteen seventy-three and sixteen eighty-one, workers built two long banks with a moat between them. The banks kept horses in, kept intruders out, and marked the pasture boundary. The remains run about two hundred meters long. The city designated them a historic site in two thousand five."
+    },
+    "jizo-bosatsu-ryuzo-bessho": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (1995)",
+      "highlights": [
+        "Head and body were carved mostly from one block of hinoki, hollowed from the back and joined at both shoulders — look for the joins.",
+        "The crystal eyes were added later, by splitting the face open. They are a clue for telling original work from later repairs.",
+        "Look at the robe: cut gold forms a diagonal lattice on red, with patterns in malachite green, ultramarine, vermilion and white."
+      ],
+      "intro": "This standing wooden statue of Jizo Bosatsu at Jizoji Temple in Bessho is 97.5 centimeters tall and was carved in the early Kamakura period. Most of it comes from a single block of hinoki cypress, hollowed from the back and joined at the shoulders. Its robe still shows the original splendor: cut-gold diagonal patterns on a red ground, painted in green, blue, vermilion and white.",
+      "name": "Standing Statue of Jizo Bosatsu at Jizoji",
+      "speech": "This standing Jizo was carved in the early Kamakura period, mostly from one block of hinoki wood. The body was hollowed from the back and joined at the shoulders. Look at the face, with its high forehead and slightly raised eyes, and at the robe, where cut gold makes a diagonal pattern on red. The bright colors you see are close to how it looked when new."
+    },
+    "kamijuku-kofun": {
+      "designation": "Inzai City Designated Historic Site (1973)",
+      "highlights": [
+        "Look at the stone chamber: it was built by stacking stones cut from the Kioroshi Shell Bed.",
+        "The chamber is a side-entrance type and survives in good condition, its most notable feature.",
+        "The mound's own shape is unknown; its 7th-century date is estimated from other mounds with similar chambers."
+      ],
+      "intro": "This burial mound in Omori is thought to be a square kofun, an ancient tomb mound, from the 7th century. Its stone chamber, entered through a side passage, survives in good condition. The stones were cut from the Kioroshi Shell Bed, so rock formed in the sea about 120,000 years ago became the walls of a tomb.",
+      "name": "Kamijuku Tumulus, a Burial Mound of Local Stone",
+      "speech": "This mound is thought to be a square tomb from the seventh century. Its stone chamber, with a side entrance, survives in good condition. The stones were cut from the Kioroshi Shell Bed nearby, so a sea deposit from one hundred twenty thousand years ago became the walls of a tomb. The shell bed itself became a National Natural Monument in two thousand two."
+    },
+    "kannonji-chuzo-waniguchi": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1982)",
+      "highlights": [
+        "At 16 centimetres across and 5 centimetres thick, it is the smallest of the three waniguchi designated by Inzai City.",
+        "Read the inscription: unusually, it gives one person's name, Shirai Kaemon, rather than a group of donors.",
+        "Notice the date written with both the era name and the zodiac cycle: 'Enpo 8, year of the metal monkey, ninth month.'"
+      ],
+      "intro": "This small cast-metal waniguchi, a flat round gong hung at a temple, was offered at Kannonji Temple in Urabe in 1680. An inscription names the donor, Shirai Kaemon of Iwatomi Village, and the old place name 'Shimousa Shirai-sho.' It is the smallest of Inzai's three designated waniguchi.",
+      "name": "Cast Waniguchi Gong of Kannonji Temple",
+      "speech": "This little gong, called a waniguchi, hangs at Kannonji Temple. It was offered in sixteen eighty by one man, Shirai Kaemon of Iwatomi Village. His name is cut into the metal, along with the old name of this area, Shimousa Shirai-sho. At sixteen centimetres wide, it is the smallest of Inzai's three designated waniguchi gongs."
+    },
+    "kioroshi-kaiso": {
+      "designation": "National Natural Monument (2002)",
+      "highlights": [
+        "Over 100 kinds of shells have been identified, most from warm, shallow water — proof that Inzai was once a warmer, shallow sea.",
+        "The layer's surface hardens, so people once cut it as stone for a tumulus chamber and for stone lanterns in the area.",
+        "It is a Chiba Prefecture Stone (fossil) and one of the 10 Selected Strata of Chiba. Never collect fossils here; the law forbids it."
+      ],
+      "intro": "About 120,000 years ago, this area lay at the bottom of a wide, shallow bay called Paleo-Tokyo Bay. Sand settled there, and the shells of the sea creatures living in it were preserved. Today you can see the exposed layer in Kioroshi Manyo Park, about 4.3 meters thick and 45 meters long, packed with fossil shells and sea urchins.",
+      "name": "Kioroshi Shell Bed",
+      "speech": "About one hundred twenty thousand years ago, this place was the bottom of a wide, shallow bay called Paleo-Tokyo Bay. The layer you see is about four point three meters thick and forty-five meters long, packed with fossil shells and sea urchins. More than one hundred kinds of shells have been found, most of them warm-water species, so Inzai was a warmer, shallow sea than today. Please do not collect fossils here. It is protected by law."
+    },
+    "koganemaki-murakobata": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1991)",
+      "highlights": [
+        "Read the dyed-out white letters: they record that ten labourers were assigned to Bessho Village for the hunt.",
+        "Compare other villages' banners: Shirai City's says nine labourers, Narashino City's says twelve - each village had its own number.",
+        "The shogun's deer hunts at Kogane Pasture were held only four times - twice under Yoshimune, then in 1795 and 1849."
+      ],
+      "intro": "This flag, called a murakobata or village small banner, was used in the shogun's deer hunts at the Kogane Pasture. Dyed letters on it show that Bessho Village had to supply ten labourers for a hunt. Kept by the Asano family, the village headman's house, it was probably used from the 1795 hunt onwards.",
+      "name": "Murakobata Village Banner of the Kogane Pasture Hunts",
+      "speech": "This small village banner was used when the shogun hunted deer at the Kogane Pasture. White letters dyed into the cloth say that Bessho Village had to send ten labourers to help drive the animals. The banner stayed with the Asano family, the village headman's house. The hunts were held only four times in all."
+    },
+    "kongo-rikishi-ryusuiji": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (1991)",
+      "highlights": [
+        "Both statues are over two metres tall: the open-mouthed one is 230 centimetres, the closed-mouthed one 235 centimetres.",
+        "The pair are built differently: one is carved from a single block, the other is joined from several pieces of wood.",
+        "Look at the closed-mouthed statue's calm strength: its angry face and muscles are powerful without being exaggerated."
+      ],
+      "intro": "These two huge wooden guardian statues stand at Ryusuiji Temple in Taki. They are Kongorikishi, powerful protectors placed at temple gates. One has its mouth open, the other closed. Carved from pine at the end of the Kamakura period, around 1320, they are the third oldest pair of their kind known in Chiba Prefecture.",
+      "name": "Wooden Kongorikishi Guardian Statues",
+      "speech": "These two giant wooden guardians stand at Ryusuiji Temple. They are Kongorikishi, protectors of the temple. One has its mouth wide open; the other keeps its mouth firmly closed. Both are over two metres tall. They were carved from pine at the end of the Kamakura period, around thirteen twenty. One is made from a single block, the other from joined pieces. They are the third oldest pair known in Chiba Prefecture."
+    },
+    "kosatsu-gobo-keiji": {
+      "designation": "Inzai City Designated Tangible Cultural Property (2005)",
+      "highlights": [
+        "Only boards one and two remain here; the third was donated to a local elementary school, and the fourth and fifth are lost.",
+        "Read what each board orders: traditional morals on the first; bans on gangs, violent petitions and desertion on the second.",
+        "In March 1868 the Meiji government had the shogunate's old boards removed and these five new boards put up in their place."
+      ],
+      "intro": "These two wooden notice boards are the first and second of the 'Gobo no Keiji,' the five boards the new Meiji government ordered posted in March 1868 in place of the shogunate's boards. The first orders people to follow traditional morals; the second bans forming gangs, violent petitions and fleeing the village. A village headman's family kept them.",
+      "name": "Kosatsu Notice Boards of the Gobo Proclamation",
+      "speech": "These wooden boards are called kosatsu, public notice boards. In March eighteen sixty-eight, the new Meiji government ordered five boards, the Gobo no Keiji, posted in place of the shogunate's. The first tells people to keep traditional morals. The second bans gangs, violent petitions and running away. Only these two boards survive here."
     },
     "magome-gato": {
-      "name": "Ceramic Pagodas from the Magome Site",
       "designation": "Chiba Prefecture Designated Tangible Cultural Property (2008)",
-      "intro": "These are two ceramic pagodas, called gato, made of fired clay in the shape of a wooden pagoda. Both can be restored to seven-story pagodas. They were excavated from the Magome site in 1997 and 1998, and are kept at the Kioroshi Koryu-no-mori History Museum. Finding two seven-story ceramic pagodas at one site is unique in Japan.",
       "highlights": [
-        "They came from a village site, not a temple. This shows that Buddhist faith had reached everyday communities in eastern Japan by the early Heian period, around the 8th to 9th century.",
-        "Look at the details copied from wooden architecture: doors on all four sides of the first story, the base, the bracket work, and the round eave tiles.",
+        "They came from a village site, not a temple, showing Buddhism had reached everyday communities in eastern Japan by around the year 800.",
+        "Look at the wooden details copied in clay: doors on all four sides of the first story, the base, brackets, and round eave tiles.",
         "There are two kinds of clay: brownish haji ware and gray sue ware, fired in different ways."
       ],
-      "speech": "These are two ceramic pagodas made of fired clay in the shape of a wooden pagoda. Both can be restored to seven stories. They were found at the Magome village site, not at a temple. This shows that Buddhist faith had reached everyday communities in eastern Japan by the ninth century. Finding two seven-story ceramic pagodas at one site is unique in Japan."
+      "intro": "These two ceramic pagodas, called gato, are fired-clay models of wooden pagodas, and both can be rebuilt as seven-story towers. They were dug up at the Magome site in 1997 and 1998 and are now kept at the Kioroshi Koryu-no-mori History Museum. No other site in Japan has produced two restorable seven-story ceramic pagodas.",
+      "name": "Ceramic Pagodas from the Magome Site",
+      "speech": "These are two ceramic pagodas made of fired clay, shaped like wooden pagodas. Both can be rebuilt to seven stories. They were found at the Magome village site, not at a temple. This shows that Buddhism had reached everyday communities in eastern Japan by around the year eight hundred. Finding two seven-story ceramic pagodas at one site is unique in Japan."
+    },
+    "mandara-kakejiku": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1979)",
+      "highlights": [
+        "Count the figures: three in the top row, then five in each of the next five rows - twenty-eight in all.",
+        "Look at how the orderly rows themselves show the fixed pattern that defines a mandala.",
+        "Notice the hanging-scroll format: the painting was made to hang on a wall for worship."
+      ],
+      "intro": "This hanging scroll at Nanyoin Temple is a Buddhist painting known as a Taizokai mandala. A mandala arranges Buddhas and other sacred figures on paper or cloth following a fixed pattern. Here, twenty-eight figures are painted in neat rows, but who painted it, and when, is unknown.",
+      "name": "Taizokai Mandala Hanging Scroll",
+      "speech": "This hanging scroll, kept at Nanyoin Temple, is a mandala painting. A mandala lines up Buddhas and sacred figures by a fixed rule. Here, three figures stand in the top row, and five in each row below, twenty-eight in all. Nobody knows who painted it or when, but the city praises its quiet dignity."
+    },
+    "mida-isson-musashi-itabi": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1982)",
+      "highlights": [
+        "Look for the single seed syllable 'kiriku' under the carved canopy: one symbol represents Amida Buddha alone, the one-figure style.",
+        "Check the two horizontal lines near the top, one of the features that define a Musashi-style tablet.",
+        "Read the date line: December of twelve seventy-five, earlier than the fourteenth century, when most tablets of this kind were made."
+      ],
+      "intro": "This narrow stone tablet at Kannonji Temple in Urabe dates to December twelve seventy-five. It is carved from green chlorite schist, the stone that marks the Musashi style of tablet. A single Sanskrit seed syllable near the top stands for Amida Buddha.",
+      "name": "Mida Isson Musashi-gata Itabi (Musashi-style stone memorial tablet)",
+      "speech": "This stone tablet stands at Kannonji Temple in Urabe. Tablets like this are flat stone monuments carved with sacred syllables and the date they were set up. This one is seventy centimeters long and was carved in December of twelve seventy-five. Near the top, two lines and a single syllable, called kiriku, stand for Amida Buddha. Its green chlorite schist stone gives it the name Musashi style."
+    },
+    "mida-sanzon-shimousa-itabi": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1982)",
+      "highlights": [
+        "Find the three seed syllables: Amida in the center, Seishi on the left, and Kannon on the right.",
+        "Look below the square frame for the inscription recording that this tablet was made for the maker's mother in thirteen forty-one.",
+        "Notice the stone: black mica schist, the material that gives these tablets their Shimousa style name, common along the lower Tone River."
+      ],
+      "intro": "This stone tablet at Komyoji Temple in Kobayashi was set up in April thirteen forty-one. Its inscription says plainly that it was made to honor the maker's mother. Three sacred syllables in the center stand for Amida Buddha and his two attendants.",
+      "name": "Mida Sanzon Shimousa-gata Itabi (Shimousa-style stone memorial tablet)",
+      "speech": "At Komyoji Temple in Kobayashi stands a stone tablet from April of thirteen forty-one. In the center, three sacred syllables represent Amida Buddha with the bodhisattvas Seishi and Kannon. Around them are further mantras, sacred formulas, of esoteric Buddhism. Below, the inscription explains the purpose in plain words: it was made to honor the maker's mother. The tablet is about ninety-seven centimeters tall and carved from black mica schist."
+    },
+    "oshitsuke-mizuka": {
+      "designation": "Chiba Prefecture Designated Tangible Folk Cultural Property (1978)",
+      "highlights": [
+        "The idea is height, not walls: earth is piled above the flat land, and buildings stand on top.",
+        "It was built against floods from three rivers, the Tone, Nagato, and Shomon, around Lake Inba.",
+        "Similar mounds survive in three Inzai districts: Motono, Hossaku, and Rokken. Please view this one from outside only."
+      ],
+      "intro": "A mizuka is a mound of raised earth with a storehouse or house on top, built to escape floodwater rather than block it. This one at Oshitsuke dates from the mid-Edo period. The design came from Gunma Prefecture, upstream on the Tone River. It is a private home today, so visitors cannot enter the grounds.",
+      "name": "Oshitsuke Mizuka Flood Mound",
+      "speech": "A mizuka is a flood mound. Instead of blocking the water, people piled earth high and built storehouses and houses on top. This mound at Oshitsuke was built in the middle of the Edo period. Its design came from Gunma Prefecture, far upstream on the Tone River. The mound guards against floods from three rivers around Lake Inba. It is still a private home, so please look from outside."
+    },
+    "ryukoji-ema": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1993)",
+      "highlights": [
+        "Check the size: every one of the eleven panels is over one metre wide, made to be hung and worshipped in the hall.",
+        "These are 'worship ema': the painted master himself is the object of prayer, unlike small plaques that carry written wishes.",
+        "Compare panels across nearly two hundred years of offerings to see how women's clothing and painting styles changed."
+      ],
+      "intro": "These eleven large votive paintings, called ema, hang at Ryukoji Temple. Local women formed prayer groups and offered them to the temple's founder, Zen master Kakukai Sangen, believed to help with safe childbirth and child raising. They were offered from the mid-Edo period to the mid-Meiji period.",
+      "name": "Ema Votive Paintings of Ryukoji Temple",
+      "speech": "At Ryukoji Temple you can see eleven big paintings called ema. Each is over one metre wide. Local women formed groups and offered them to the temple's founder, Zen master Kakukai Sangen, praying for safe childbirth and healthy children. The offerings continued from the middle of the Edo period to the middle of the Meiji period."
+    },
+    "senpukuji-yakushido": {
+      "designation": "Important Cultural Property of Japan (1977)",
+      "highlights": [
+        "Look at the pillars: every one is round, keeping traces of the original building. Round pillars are also a feature of the Hojuin Kannon Hall.",
+        "Look inside for the raigo-bashira posts and the wall between them, which separate the main image's space from the worshippers' space.",
+        "Inzai has three medieval halls like this one, all three bays square with thatched hipped roofs. Visit all three to compare their differences."
+      ],
+      "intro": "This Yakushi hall (a hall for Yakushi, the Buddha of healing) at Senpukuji Temple in Iwato is thought to date from the late Muromachi period, judged from its building methods, since no records of the temple survive. It has a thatched hipped roof and blends two styles: the older Japanese Wayo and the Zen style that came from China. In 1685 it was moved to its present site.",
+      "name": "Yakushi Hall of Senpukuji Temple",
+      "speech": "This hall is for Yakushi, the Buddha of healing. Nobody knows when the temple was founded, because no records survive. From the way it was built, experts think it is from the late Muromachi period. It mixes the old Japanese style with the Zen style from China, and every pillar is round. In sixteen eighty-five, the hall was moved here, to its present site."
+    },
+    "shichibutsu-yakushi": {
+      "designation": "Important Cultural Property of Japan (1959)",
+      "highlights": [
+        "One seated figure in the center, three standing on each side. No other Seven Yakushi set mixes seated and standing figures like this.",
+        "Each statue is carved from a single block of kaya wood, a technique called ichiboku-zukuri, typical of Heian-period carving.",
+        "The surfaces are bare wood, unpainted — except the central figure, whose lips are vermilion and whose brows, eyes and beard carry black ink."
+      ],
+      "intro": "This set of seven wooden statues of Yakushi, the Buddha of healing, is kept at Matsumushidera Temple. One seated figure sits in the middle, with three standing figures on each side — a combination of seated and standing found nowhere else. They were carved in the late Heian period, each from a single block of kaya wood, and are normally hidden, shown only once every 33 years.",
+      "name": "The Seven Yakushi Buddhas (Shichibutsu Yakushi)",
+      "speech": "These are the Seven Yakushi Buddhas, seven statues of the Buddha of healing. One sits in the center, and three stand on each side. No other set mixes seated and standing figures like this. Each one was carved from a single block of kaya wood in the late Heian period, and the wood is left bare and unpainted. They are secret images, shown only once every thirty-three years."
+    },
+    "shogen-onibasu": {
+      "designation": "Chiba Prefecture Designated Natural Monument (1977)",
+      "highlights": [
+        "Imagine the leaves: they spread across the water from thirty centimeters to two meters wide, among the largest of any Japanese water plant.",
+        "Sharp, hard spines cover the leaves and the whole plant; they are the reason for the 'oni', or demon, in its name.",
+        "In twenty ten, seeds buried in the soil sprouted, a success for the revival project of the Chiba Prefectural Central Museum."
+      ],
+      "intro": "This site in Shogen, Inzai, is protected not for a building but for a plant: onibasu, a water lily with huge spiny leaves. The plant has not been seen here since nineteen eighty-two, but work continues to grow it again from seeds sleeping in the soil.",
+      "name": "Shogen Onibasu Site (prickly water lily habitat)",
+      "speech": "This quiet site in Shogen once held onibasu, a water lily whose spiny leaves can reach two meters across. The plant is a survivor from millions of years ago, and most of its relatives died out in the ice age. It was last seen here in nineteen eighty-two. Since then, the Chiba Prefectural Central Museum has worked to revive it from seeds buried in the soil, and sprouts were confirmed in twenty ten."
+    },
+    "takenishi-hyakukoshin-zuka": {
+      "designation": "Inzai City Designated Historic Site (1999)",
+      "highlights": [
+        "All ten carved towers show Shomen Kongo, one face and six arms: six press their palms together, four hold a sword and other objects.",
+        "The ninety inscribed towers split evenly: forty-five in standard script on the southwest side, forty-five in running script on the northeast.",
+        "Look for tower number ninety-nine: it is in standard script but stands on the northeast side, a clue to the towers' original arrangement."
+      ],
+      "intro": "This group of 100 stone towers in Muzai was set up in 1863 for the Koshin faith, a folk belief in which building more towers was thought to bring more merit. Ten towers carry carved images of the blue-faced deity Shomen Kongo, and ninety are inscribed with the words 'Koshin-to'.",
+      "name": "Muzai Hyakukoshin-zuka, the Hundred Koshin Towers of Muzai",
+      "speech": "In eighteen sixty-three, people here set up one hundred stone towers for the Koshin faith, hoping that more towers would bring more merit. Ten towers carry a carving of Shomen Kongo, a deity with one face and six arms. The other ninety are inscribed towers, half in standard script and half in running script, arranged around a central memorial tower. The city designated the group in nineteen ninety-nine."
+    },
+    "tokoname-otsubo": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1976)",
+      "highlights": [
+        "Note the shape: a wide, swelling body 52 centimetres across, narrowing to a base of only 17.4 centimetres.",
+        "The mouth measures 33.2 centimetres across - compare it with the body and base to read the jar's proportions.",
+        "It was found by chance during farm work around 1887, not by an excavation, so no detailed record of its discovery survives."
+      ],
+      "intro": "This large Tokoname ware jar, 60.5 centimetres tall, was dug up around 1887 inside the main enclosure of Shito Castle while a field was being tilled. It is thought to date to the 15th century, the same period as the castle. The castle site is now Inbanuma Park, and the jar is kept at the Inba History and Folk Museum.",
+      "name": "Large Tokoname Ware Jar",
+      "speech": "This big jar is Tokoname ware, sixty point five centimetres tall. It was found around eighteen eighty-seven, when a field was being tilled inside the main enclosure of Shito Castle. It is thought to date from the fifteenth century, when the castle was in use. Today the castle site is a park."
+    },
+    "tomi-jinja-kagura": {
+      "designation": "Chiba Prefecture Designated Intangible Folk Cultural Property (1961)",
+      "highlights": [
+        "Look at the masks: most of the sixteen still in use bear an inscription saying they were made in seventeen fifty-one.",
+        "Count the dances: the name promises twelve, but the full set has sixteen, a mismatch that is part of its long history.",
+        "Only about seven of the sixteen dances are performed at the festival on October seventeenth each year."
+      ],
+      "intro": "This kagura, a sacred shrine dance, is performed by fourteen dancers at Tomi Shrine in Nakane, Inzai. Tradition says it began in the fourteen forties. Although it is called the Twelve Dances, it actually has sixteen pieces, and most of its masks carry inscriptions from seventeen fifty-one.",
+      "name": "Tomi Shrine Kagura (sacred shrine dance and music)",
+      "speech": "This is the kagura of Tomi Shrine in Nakane, a sacred dance performed by fourteen dancers. People say it began in the fourteen forties. It is called the Twelve Dances, yet the full set has sixteen pieces, mixing stories of the gods with scenes of farm work like sowing seeds. Most masks still used today were made in seventeen fifty-one. About seven dances are shown at the shrine festival every October seventeenth."
+    },
+    "tomi-jinja-shishimai": {
+      "designation": "Chiba Prefecture Designated Intangible Folk Cultural Property (1955)",
+      "highlights": [
+        "Watch the lion family: Jiji the parent, Sena the young lion, and Kaka the female, dancing together.",
+        "The acts tell a story: sleeping, picking up earthworms, a quarrel, then making peace, ending with the Kuji dance.",
+        "The dance began as Okoto, a farm rite celebrating the end of rice seed sowing and praying for a good harvest."
+      ],
+      "intro": "This is a shishimai, a lion dance, performed by three lions: a parent, a young lion, and a female. The dancers act out a story, from sleep and quarrels to making up again. The dance drives away evil and prays for a good harvest. It is said to have come to Hiraoka in 1678, and it is now performed on May 3.",
+      "name": "Shishimai Lion Dance of Tomi Shrine",
+      "speech": "This lion dance, a shishimai, is danced by three lions: Jiji the parent, Sena the young one, and Kaka the female. Their acts tell a story, from sleeping and picking up earthworms to a quarrel and making peace. The dance began as a farm rite to drive away evil and pray for a good harvest. It is said to have come to Hiraoka in sixteen seventy-eight, and it is performed every year on May third."
+    },
+    "tsukikage-no-i": {
+      "designation": "Inzai City Designated Historic Site (1968)",
+      "highlights": [
+        "Counted as one of the Three Great Wells of Japan, with the Star Shadow Well in Kamakura and the Sun Shadow Well in Nihonmatsu.",
+        "A local preservation society looks after the well and keeps the site today.",
+        "What is designated here is the legend itself; the records give no size, structure, or digging date for the well."
+      ],
+      "intro": "This well in Urabe is tied to a legend from the Kamakura period. Local tradition says that Osuga Bungo-no-kami, a powerful lord in this area, drew water here for a newborn's first bath and for his own bathing. Together with two other famous wells, it is counted as one of the Three Great Wells of Japan.",
+      "name": "Tsukikage no I, the Moon Shadow Well",
+      "speech": "This well carries a legend from the Kamakura period, around the year twelve hundred. People say a powerful local lord drew water here for a baby's first bath and for bathing. With wells in Kamakura and Nihonmatsu, it forms the Three Great Wells of Japan, named for moonlight, starlight, and sunlight. A local preservation society protects it, and the city designated it a historic site in nineteen sixty-eight."
+    },
+    "urabe-kagura": {
+      "designation": "Chiba Prefecture Designated Intangible Folk Cultural Property (1967)",
+      "highlights": [
+        "Watch all twelve dances in sequence, from the Dance of the Shrine Maiden to the fiery Dance of the Fire Man.",
+        "Performances happen twice a year: at Tomi Shrine on the third Sunday of October and at Afuri Shrine on the last Sunday of July.",
+        "Stories vary widely: myth dances like the Heavenly Rock Cave sit beside a blacksmith's dance and a dramatic great serpent dance."
+      ],
+      "intro": "Urabe Kagura is a set of twelve sacred dances kept by the people of Urabe in Inzai. Said to date from the early Edo period, it is performed at two shrine festivals each year. Its twelve pieces range from myths to scenes of everyday work.",
+      "name": "Urabe Kagura (sacred shrine dance and music)",
+      "speech": "Welcome to Urabe Kagura, a sacred dance tradition of Urabe in Inzai City. Twelve dances are performed at shrine festivals twice a year, once in July and once in October. The program mixes old myths, such as the heavenly rock cave, with scenes of daily work, like a blacksmith at his forge. Tradition says the dance arrived in the early Edo period, and in nineteen sixty-seven it became a Chiba Prefecture designated intangible folk cultural property."
+    },
+    "yakushi-nyorai-raifukuji": {
+      "designation": "Chiba Prefecture Designated Tangible Cultural Property (1967)",
+      "highlights": [
+        "The ink inscription hidden inside the chest records the year 1285 and the sculptor's name, Kenko, with his kao, a stylized signature.",
+        "Look at the bare, unpainted wood: the kaya grain and the carver's tool marks are still visible.",
+        "Look at the strong wave of the hairline, a fashion that came from Song-dynasty China in the late Kamakura period."
+      ],
+      "intro": "This seated wooden statue of Yakushi Nyorai, the Buddha of healing, comes from Raifukuji Temple in Hiraga and is now kept at a museum in Inzai City. It is carved from a single block of kaya wood, with no paint or lacquer. An ink inscription inside the body shows the sculptor Kenko made it in 1285. It is unveiled once a year, on July 7.",
+      "name": "Wooden Seated Statue of Yakushi Nyorai",
+      "speech": "This is Yakushi Nyorai, the Buddha of healing, carved from one block of kaya wood in twelve eighty-five. The sculptor, Kenko, wrote his name and the date in ink inside the statue's chest. The wood has no paint or lacquer, so you can see the grain and the tool marks. Notice the strong wave along the hairline, a style from Song-dynasty China. The statue is unveiled once a year, on July seventh."
+    },
+    "yakushi-nyorai-takisuiji": {
+      "designation": "Inzai City Designated Tangible Cultural Property (2010)",
+      "highlights": [
+        "Notice the height, ninety-six point five centimeters: the statue is slightly smaller than life size and carved from a single piece of conifer wood.",
+        "Look at the calm, rounded face: it follows the Jocho style created by the sculptor Jocho in the early eleventh century.",
+        "Think about its making: the carved figure was split open, hollowed inside, and joined again, a technique called warihagi-zukuri."
+      ],
+      "intro": "This standing statue of Yakushi, the Buddha of healing, is kept at Ryusuiji Temple. It is a little under one meter tall and was probably carved in the twelfth century. Its rounded forms and gentle face follow the graceful Jocho style of Buddhist sculpture.",
+      "name": "Yakushi Nyorai Standing Statue (Buddha of healing)",
+      "speech": "This is Yakushi, the Buddha of healing, standing at Ryusuiji Temple. The statue is ninety-six point five centimeters tall, carved from one piece of conifer wood. It was split open, hollowed out, and rejoined, a method called warihagi-zukuri. No one knows its maker or exact year, but its soft, rounded face follows the Jocho style, so experts date it to the twelfth century, the late Heian period."
+    },
+    "yoshiokake-kashi-monjo": {
+      "designation": "Inzai City Designated Tangible Cultural Property (1991)",
+      "highlights": [
+        "All 176 documents survive together, covering the Keicho years (1596-1615) to the early Meiji period.",
+        "The port stood on the Tone River where the Teganuma outlet channel flows in, and linked with the Kioroshi road.",
+        "At its peak, about 4,000 boats a year reportedly left this port, carrying fresh fish from Choshi and passengers on pilgrimages."
+      ],
+      "intro": "This set of 176 documents belonged to the Yoshioka family, who ran a wholesale business at Kioroshi river port for generations. The record books, certificates and letters, from the Keicho years (1596-1615) to the early Meiji period, record daily life at the port, a busy junction of river and road traffic.",
+      "name": "Documents of the Yoshioka Family, River-Port Merchants",
+      "speech": "These one hundred seventy-six documents belonged to the Yoshioka family, wholesale merchants at Kioroshi river port. They run from fifteen ninety-six to the early Meiji period. The port joined the Tone River and the Kioroshi road, and at its peak about four thousand boats a year set out, carrying fresh fish and pilgrims."
+    },
+    "yoshitaka-no-ozakura": {
+      "designation": "Inzai City Designated Natural Monument (1981)",
+      "highlights": [
+        "Compare the numbers: the branches spread 24.5 meters, over twice the tree's height of 11.7 meters.",
+        "The base of the trunk measures 6.65 meters around, and the tree is estimated to be over 500 years old.",
+        "Look at the low mound under the tree, about one meter high, where the owner's household deity is enshrined."
+      ],
+      "intro": "This great wild cherry tree stands alone in the fields of Yoshitaka and is thought to be more than 500 years old. Its branches spread 24.5 meters wide, more than twice its height of 11.7 meters, giving it a soft, rounded shape covered in pale pink blossoms in spring.",
+      "name": "Yoshitaka no Ozakura, the Great Cherry Tree of Yoshitaka",
+      "speech": "This wild cherry tree is thought to be more than five hundred years old. Its base measures six point six five meters around. It stands eleven point seven meters tall, but its branches spread twenty-four point five meters, more than twice as wide. In spring, pale pink blossoms cover its rounded shape. The city designated it a natural monument in nineteen eighty-one."
     }
   }
 }
