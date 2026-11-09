@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1f2a30">
+<title>印西 文化財スタンプラリー（試作）｜Inzai Heritage Stamp Rally</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous">
+<style>
+  :root { --ink:#1f2a30; --sub:#5d6b73; --line:#e3ded4; --bg:#f5f3ee; --card:#fff; --gold:#d4a017; --got:#2a7f62; --warn:#b4561c; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink);
+    font-family:"Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif; line-height:1.5; }
+  body { display:flex; flex-direction:column; }
+  header { background:var(--ink); color:#fff; padding:8px 12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  header h1 { font-size:16px; margin:0; flex:1 1 auto; }
+  header h1 small { display:block; font-size:11px; font-weight:normal; opacity:.8; }
+  .hbtn { background:#35454d; color:#fff; border:0; border-radius:8px; padding:7px 10px; font-size:13px; }
+  .hbtn.on { background:var(--got); }
+  .prog { background:#fff; border-bottom:1px solid var(--line); padding:6px 12px; font-size:13px; display:flex; align-items:center; gap:10px; }
+  .prog .bar { flex:1; height:8px; background:#e8e4db; border-radius:999px; overflow:hidden; }
+  .prog .bar i { display:block; height:100%; width:0; background:linear-gradient(90deg,var(--gold),var(--got)); transition:width .4s; }
+  #map { flex:1; min-height:300px; }
+  #list { flex:1; overflow:auto; display:none; padding:8px 12px 80px; }
+  body.listMode #map { display:none; } body.listMode #list { display:block; }
+  #list button { width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:6px; font:inherit; color:inherit; display:flex; gap:10px; align-items:center; }
+  #list .dot { width:14px; height:14px; border-radius:50%; background:var(--gold); flex:none; box-shadow:0 0 0 3px rgba(212,160,23,.25); }
+  #list .dot.got { background:var(--got); box-shadow:none; }
+  #list .nm { flex:1; font-size:15px; }
+  #list .ds { font-size:12px; color:var(--sub); white-space:nowrap; }
+  /* ピン */
+  .rPin { position:relative; width:26px; height:26px; }
+  .rPin .core { position:absolute; inset:4px; border-radius:50%; background:#c9a227; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.4); }
+  .rPin .ring { position:absolute; inset:-4px; border-radius:50%; border:3px solid rgba(255,200,40,.85); animation:rPulse 1.6s ease-out infinite; }
+  @keyframes rPulse { 0% { transform:scale(.7); opacity:.9; } 100% { transform:scale(1.8); opacity:0; } }
+  .rPin.got .ring { display:none; }
+  .rPin.got .core { background:#fff url() center/80% no-repeat; border-color:var(--got); box-shadow:0 0 0 2px var(--got); }
+  .rPin.sel .core { outline:3px solid #1f6fd6; outline-offset:1px; }
+  .me { width:16px; height:16px; border-radius:50%; background:#1f6fd6; border:3px solid #fff; box-shadow:0 0 0 2px #1f6fd6; }
+  /* 下のカード */
+  .sheet { position:fixed; left:0; right:0; bottom:0; background:var(--card); border-radius:18px 18px 0 0; box-shadow:0 -6px 24px rgba(0,0,0,.18); padding:12px 16px calc(16px + env(safe-area-inset-bottom)); transform:translateY(105%); transition:transform .25s; z-index:1000; max-height:72vh; overflow:auto; }
+  .sheet.show { transform:none; }
+  .sheet .grip { width:40px; height:4px; background:#ccc; border-radius:2px; margin:0 auto 8px; }
+  .sheet h2 { font-size:18px; margin:0; }
+  .sheet .en { color:var(--got); font-size:14px; }
+  .sheet .meta { font-size:12px; color:var(--sub); margin:2px 0 8px; }
+  .sheet .row { display:flex; gap:10px; align-items:flex-start; }
+  .sheet .row img { width:84px; height:84px; object-fit:contain; background:#eef3f1; border-radius:12px; flex:none; }
+  .sheet p { font-size:14px; margin:0 0 6px; }
+  .sheet .dist { font-size:14px; font-weight:600; }
+  .sheet .acts { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .sheet .acts button, .sheet .acts a { padding:12px 8px; border-radius:12px; border:1px solid var(--line); background:#fff; font-size:15px; text-align:center; color:var(--ink); text-decoration:none; font-family:inherit; }
+  .sheet .acts .stamp { background:var(--gold); color:#1f2a30; border-color:var(--gold); font-weight:700; grid-column:1 / -1; }
+  .sheet .acts .stamp:disabled { background:#eee; color:#888; border-color:#ddd; font-weight:normal; }
+  .sheet .acts .stamp.got { background:var(--got); color:#fff; border-color:var(--got); }
+  .sheet .close { position:absolute; right:10px; top:8px; background:none; border:0; font-size:22px; color:var(--sub); }
+  .toast { position:fixed; left:50%; top:calc(92px + env(safe-area-inset-top)); transform:translateX(-50%); background:rgba(31,42,48,.92); color:#fff; padding:8px 14px; border-radius:999px; font-size:13px; z-index:1200; display:none; max-width:92vw; }
+  .toast.show { display:block; }
+  /* ゲット演出 */
+  .pop { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:1300; padding:16px; }
+  .pop.show { display:flex; }
+  .pop .box { background:#fff; border-radius:18px; padding:18px; text-align:center; max-width:360px; width:100%; }
+  .pop img { width:200px; height:200px; object-fit:contain; animation:popIn .5s cubic-bezier(.2,1.4,.4,1); }
+  @keyframes popIn { from { transform:scale(.3) rotate(-10deg); opacity:0; } to { transform:none; opacity:1; } }
+  .pop h3 { margin:8px 0 2px; font-size:20px; }
+  .pop .sp { color:var(--sub); font-size:13px; }
+  .pop button { margin-top:12px; padding:12px 24px; border-radius:12px; border:0; background:var(--got); color:#fff; font-size:16px; }
+  /* スタンプ帳 */
+  .book { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:flex-end; z-index:1250; }
+  .book.show { display:flex; }
+  .book .box { background:#fff; width:100%; border-radius:18px 18px 0 0; padding:16px 16px calc(20px + env(safe-area-inset-bottom)); max-height:85vh; overflow:auto; }
+  .book h2 { font-size:17px; margin:0 0 6px; }
+  .book p { font-size:13px; color:var(--sub); margin:0 0 8px; }
+  .book .code { font-family:ui-monospace,Consolas,monospace; font-size:24px; letter-spacing:2px; background:#f3f1ea; border-radius:10px; padding:8px 12px; text-align:center; }
+  .book .qr { display:flex; justify-content:center; margin:8px 0; }
+  .book .qr canvas, .book .qr img { width:160px; height:160px; background:#fff; padding:6px; border:1px solid var(--line); border-radius:10px; }
+  .book .acts { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .book .acts button { padding:12px 8px; border-radius:12px; border:1px solid var(--line); background:#fff; font-size:14px; font-family:inherit; }
+  .book .acts .pri { background:var(--got); color:#fff; border-color:var(--got); }
+  .book input { width:100%; padding:10px; font-size:18px; letter-spacing:2px; text-transform:uppercase; border:1px solid var(--line); border-radius:10px; font-family:ui-monospace,Consolas,monospace; }
+  .book .st { font-size:13px; min-height:1.3em; margin-top:6px; }
+  .book .st.err { color:var(--warn); }
+  .leaflet-control-attribution { font-size:10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="ttl">🏛 文化財スタンプラリー <small id="sub">近くに行くとスタンプ（精霊カード）がもらえます・試作</small></h1>
+  <button class="hbtn" id="langBtn" type="button">English</button>
+  <button class="hbtn" id="viewBtn" type="button">☰ 一覧</button>
+  <button class="hbtn" id="bookBtn" type="button">📒 スタンプ帳</button>
+</header>
+<div class="prog"><span id="cnt">0 / 50</span><div class="bar"><i id="bar"></i></div><button class="hbtn" id="meBtn" type="button" title="現在地へ">📍</button></div>
+<div id="map" role="application" aria-label="文化財の地図"></div>
+<div id="list"></div>
+
+<div class="sheet" id="sheet">
+  <div class="grip"></div>
+  <button class="close" id="sheetClose" type="button" aria-label="閉じる">×</button>
+  <h2 id="sName"></h2>
+  <div class="en" id="sEn"></div>
+  <div class="meta" id="sMeta"></div>
+  <div class="row"><img id="sImg" alt=""><div><p id="sText"></p><div class="dist" id="sDist"></div></div></div>
+  <div class="acts">
+    <button type="button" class="stamp" id="stampBtn">✅ スタンプを押す</button>
+    <a id="sGuide" target="_blank" rel="noopener">📖 くわしく</a>
+    <a id="sCity" target="_blank" rel="noopener">🏛 市の解説</a>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="pop" id="pop"><div class="box"><img id="popImg" alt=""><h3 id="popTtl"></h3><div class="sp" id="popSp"></div><button type="button" id="popOk">OK</button></div></div>
+
+<div class="book" id="book"><div class="box">
+  <h2 id="bTtl">📒 スタンプ帳</h2>
+  <p id="bNote">スタンプはこの端末に保存されます。「コードを発行」すると、別の端末や次の来訪でも、コードを入れれば続きから集められます（名前や連絡先は保存しません）。</p>
+  <div class="code" id="bCode">—</div>
+  <div class="qr" id="bQr"></div>
+  <div class="acts">
+    <button type="button" class="pri" id="bIssue">コードを発行して保存</button>
+    <button type="button" id="bCopy">リンクをコピー</button>
+  </div>
+  <p style="margin-top:12px" id="bResumeNote">別の端末・前回のコードで続きから：</p>
+  <input id="bInput" maxlength="12" placeholder="例 7K3M-Q9ZT" autocapitalize="characters" autocomplete="off">
+  <div class="acts"><button type="button" id="bResume">このコードで続きから</button><button type="button" id="bClose">閉じる</button></div>
+  <div class="st" id="bSt"></div>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" crossorigin="anonymous"></script>
+<script>
+(function () {
+  "use strict";
+  var V = "20261109b";
+  var RADIUS_M = 80;                        // この距離以内でスタンプが押せる
+  var API = "https://cidao.vercel.app/api/rally-book";
+  var STORE = "cbi-rally-v1";
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); };
+  var params = new URLSearchParams(location.search);
+
+  var T = {
+    ja: { ttl: "🏛 文化財スタンプラリー", sub: "近くに行くとスタンプ（精霊カード）がもらえます・試作", lang: "English", list: "☰ 一覧", map: "🗺 地図", book: "📒 スタンプ帳",
+      stamp: "✅ スタンプを押す", stamped: "✅ 訪問済み", far: "あと {d} 近づくと押せます", here: "ここでスタンプが押せます", noPos: "現在地を取得中…（位置情報を許可してください）",
+      guide: "📖 くわしく", city: "🏛 市の解説", got: "ゲット！", near: "{n} の近くです。スタンプを押せます", posErr: "現在地を取得できません。位置情報の許可を確認してください。",
+      bTtl: "📒 スタンプ帳", bNote: "スタンプはこの端末に保存されます。「コードを発行」すると、別の端末や次の来訪でも、コードを入れれば続きから集められます（名前や連絡先は保存しません）。",
+      bIssue: "コードを発行して保存", bCopy: "リンクをコピー", bResumeNote: "別の端末・前回のコードで続きから：", bResume: "このコードで続きから", bClose: "閉じる",
+      saved: "保存しました", saveErr: "保存先に届きませんでした。端末には保存されています。通信のある所でもう一度お試しください。", resumed: "{n} 件のスタンプを読み込みました", notFound: "そのコードは見つかりません。", copied: "リンクをコピーしました", all: "50件すべて集めました！おめでとうございます。" },
+    en: { ttl: "🏛 Inzai Heritage Stamp Rally", sub: "Walk up to a site to get its stamp (spirit card) · prototype", lang: "日本語", list: "☰ List", map: "🗺 Map", book: "📒 Stamp book",
+      stamp: "✅ Stamp here", stamped: "✅ Visited", far: "Get {d} closer to stamp", here: "You can stamp here", noPos: "Getting your location… (please allow location access)",
+      guide: "📖 Read more", city: "🏛 City page (JP)", got: "Got it!", near: "You are near {n}. You can stamp here", posErr: "Could not get your location. Please check location permission.",
+      bTtl: "📒 Stamp book", bNote: "Stamps are saved on this device. Issue a code to continue on another device or on your next visit. No name or contact is stored.",
+      bIssue: "Issue a code and save", bCopy: "Copy link", bResumeNote: "Continue with a code from another device or a previous visit:", bResume: "Continue with this code", bClose: "Close",
+      saved: "Saved", saveErr: "Could not reach the server. Your stamps are kept on this device. Try again when online.", resumed: "Loaded {n} stamps", notFound: "That code was not found.", copied: "Link copied", all: "You collected all 50! Congratulations." }
+  };
+  var lang = params.get("lang") === "en" ? "en" : "ja";
+  var t = function (k, vars) { var s = (T[lang][k] || T.ja[k] || k); return s.replace(/\{(\w+)\}/g, function (_, v) { return vars && vars[v] != null ? vars[v] : ""; }); };
+
+  var SPOTS = [], EN = {}, map, markers = {}, meMarker = null, meCircle = null, pos = null, current = null, watchId = null, nearShownFor = {};
+  var store = load();
+  function load() { try { var d = JSON.parse(localStorage.getItem(STORE) || "{}"); d.stamps = d.stamps || {}; return d; } catch (e) { return { stamps: {} }; } }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(store)); } catch (e) {} }
+  function count() { return Object.keys(store.stamps).filter(function (k) { return SPOTS.some(function (s) { return s.reportId === k; }); }).length; }
+
+  function distM(a, b) {
+    var R = 6371000, toR = Math.PI / 180, dLat = (b.lat - a.lat) * toR, dLon = (b.lon - a.lon) * toR;
+    var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * toR) * Math.cos(b.lat * toR) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+  }
+  function fmtD(m) { return m < 1000 ? Math.round(m) + " m" : (m / 1000).toFixed(1) + " km"; }
+  function toast(msg, ms) { var el = $("toast"); el.textContent = msg; el.className = "toast show"; clearTimeout(toast.tm); toast.tm = setTimeout(function () { el.className = "toast"; }, ms || 2500); }
+
+  function applyLang() {
+    document.documentElement.lang = lang;
+    $("ttl").childNodes[0].nodeValue = t("ttl") + " "; $("sub").textContent = t("sub");
+    $("langBtn").textContent = t("lang"); $("viewBtn").textContent = document.body.classList.contains("listMode") ? t("map") : t("list"); $("bookBtn").textContent = t("book");
+    $("sGuide").textContent = t("guide"); $("sCity").textContent = t("city");
+    $("bTtl").textContent = t("bTtl"); $("bNote").textContent = t("bNote"); $("bIssue").textContent = t("bIssue"); $("bCopy").textContent = t("bCopy");
+    $("bResumeNote").textContent = t("bResumeNote"); $("bResume").textContent = t("bResume"); $("bClose").textContent = t("bClose");
+    if (current) openSheet(current.reportId);
+    renderList();
+  }
+
+  function icon(s) {
+    var got = !!store.stamps[s.reportId];
+    var sel = current && current.reportId === s.reportId;
+    var html = '<div class="rPin' + (got ? " got" : "") + (sel ? " sel" : "") + '"><div class="ring"></div><div class="core"' +
+      (got && s.cardImage ? ' style="background-image:url(\'../' + esc(s.cardImage) + '\')"' : "") + '></div></div>';
+    return L.divIcon({ className: "", html: html, iconSize: [26, 26], iconAnchor: [13, 13] });
+  }
+  function refreshPin(s) { if (markers[s.reportId]) markers[s.reportId].setIcon(icon(s)); }
+  function refreshProgress() {
+    var n = count(); $("cnt").textContent = n + " / " + SPOTS.length; $("bar").style.width = (SPOTS.length ? (100 * n / SPOTS.length) : 0) + "%";
+  }
+
+  function spotName(s) { var e = EN[s.reportId]; return lang === "en" && e ? e.name : s.name; }
+  function renderList() {
+    var el = $("list"); el.innerHTML = "";
+    var list = SPOTS.slice();
+    if (pos) list.sort(function (a, b) { return distM(pos, a) - distM(pos, b); });
+    list.forEach(function (s) {
+      var b = document.createElement("button"); b.type = "button";
+      var got = !!store.stamps[s.reportId];
+      b.innerHTML = '<span class="dot' + (got ? " got" : "") + '"></span><span class="nm">' + esc(spotName(s)) + (lang === "en" && EN[s.reportId] ? "" : "") + '</span>' +
+        '<span class="ds">' + (pos ? esc(fmtD(distM(pos, s))) : esc(s.designation || "")) + '</span>';
+      b.addEventListener("click", function () { document.body.classList.remove("listMode"); $("viewBtn").textContent = t("list"); map.invalidateSize(); openSheet(s.reportId, true); });
+      el.appendChild(b);
+    });
+  }
+
+  function openSheet(id, pan) {
+    var s = SPOTS.filter(function (x) { return x.reportId === id; })[0]; if (!s) return;
+    var prev = current; current = s; if (prev) refreshPin(prev); refreshPin(s);
+    var e = EN[id], got = store.stamps[id];
+    $("sName").textContent = s.name; $("sEn").textContent = e ? e.name : (lang === "en" ? "" : "");
+    $("sMeta").textContent = [s.designation, s.type, s.address ? "印西市" + s.address : ""].filter(Boolean).join("・") + (got ? "　✅ " + new Date(got.at).toLocaleDateString() : "");
+    $("sImg").src = "../" + (s.cardImage || s.photo || ""); $("sImg").alt = s.spiritName || s.name;
+    $("sText").textContent = lang === "en" ? (e ? e.intro : "") : (s.description || "");
+    $("sGuide").href = "../guide/?spot=" + encodeURIComponent(id) + (lang === "en" ? "&lang=en" : "");
+    $("sCity").href = s.detailUrl || "#";
+    updateDist();
+    $("sheet").classList.add("show");
+    if (pan && map) map.panTo([s.lat, s.lon]);
+  }
+  function closeSheet() { $("sheet").classList.remove("show"); var p = current; current = null; if (p) refreshPin(p); }
+
+  function canStamp(s) {
+    if (!pos) return false;
+    var d = distM(pos, s), tol = Math.min(pos.acc || 0, 40);   // 精度が悪いときは最大40mだけ甘くする
+    return d <= RADIUS_M + tol;
+  }
+  function updateDist() {
+    if (!current) return;
+    var btn = $("stampBtn"), got = store.stamps[current.reportId];
+    if (got) { btn.textContent = t("stamped"); btn.className = "stamp got"; btn.disabled = true; $("sDist").textContent = pos ? fmtD(distM(pos, current)) : ""; return; }
+    btn.className = "stamp";
+    if (!pos) { btn.disabled = true; btn.textContent = t("stamp"); $("sDist").textContent = t("noPos"); return; }
+    var d = distM(pos, current);
+    if (canStamp(current)) { btn.disabled = false; btn.textContent = t("stamp"); $("sDist").textContent = t("here") + "（" + fmtD(d) + "）"; }
+    else { btn.disabled = true; btn.textContent = t("stamp"); $("sDist").textContent = t("far", { d: fmtD(Math.max(0, d - RADIUS_M)) }); }
+  }
+
+  function doStamp() {
+    if (!current || store.stamps[current.reportId] || !canStamp(current)) return;
+    var s = current;
+    store.stamps[s.reportId] = { at: new Date().toISOString(), lat: pos ? Math.round(pos.lat * 1e4) / 1e4 : null, lon: pos ? Math.round(pos.lon * 1e4) / 1e4 : null };
+    store.dirty = true; save(); refreshPin(s); refreshProgress(); updateDist(); renderList();
+    $("popImg").src = "../" + (s.cardImage || s.photo || ""); $("popTtl").textContent = t("got"); $("popSp").textContent = (s.spiritName ? s.spiritName + "・" : "") + spotName(s);
+    $("pop").classList.add("show");
+    try { if (navigator.vibrate) navigator.vibrate([60, 40, 60]); } catch (e) {}
+    if (count() === SPOTS.length) setTimeout(function () { toast(t("all"), 5000); }, 800);
+    sync();
+  }
+
+  /* ---- 現在地 ---- */
+  function onPos(p) {
+    pos = { lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy || 0 };
+    if (!meMarker) {
+      meMarker = L.marker([pos.lat, pos.lon], { icon: L.divIcon({ className: "", html: '<div class="me"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }), zIndexOffset: 1000 }).addTo(map);
+      meCircle = L.circle([pos.lat, pos.lon], { radius: pos.acc, color: "#1f6fd6", weight: 1, fillOpacity: .08 }).addTo(map);
+      if (!params.get("spot")) map.setView([pos.lat, pos.lon], Math.max(map.getZoom(), 15));
+    } else { meMarker.setLatLng([pos.lat, pos.lon]); meCircle.setLatLng([pos.lat, pos.lon]); meCircle.setRadius(pos.acc); }
+    updateDist();
+    // 近くの未訪問の文化財を1回だけ知らせる
+    SPOTS.forEach(function (s) {
+      if (store.stamps[s.reportId] || nearShownFor[s.reportId]) return;
+      if (canStamp(s)) { nearShownFor[s.reportId] = true; toast(t("near", { n: spotName(s) }), 4000); if (!current) openSheet(s.reportId, false); }
+    });
+    if (document.body.classList.contains("listMode")) renderList();
+  }
+  function startWatch() {
+    // 動作確認用（localhost だけ）：?fakepos=緯度,経度 で現在地を差し替える。本番の URL では無視する
+    var fake = params.get("fakepos");
+    if (fake && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+      var fp = fake.split(",").map(parseFloat);
+      if (fp.length === 2 && isFinite(fp[0]) && isFinite(fp[1])) { watchId = -1; onPos({ coords: { latitude: fp[0], longitude: fp[1], accuracy: 15 } }); return; }
+    }
+    if (!navigator.geolocation) { toast(t("posErr"), 4000); return; }
+    if (watchId != null) return;
+    watchId = navigator.geolocation.watchPosition(onPos, function () { toast(t("posErr"), 4000); }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+  }
+
+  /* ---- スタンプ帳コード（CiDAO の API に保存・個人情報なし） ---- */
+  function resumeUrl() { return location.origin + location.pathname + "?book=" + encodeURIComponent(store.code || "") + (lang === "en" ? "&lang=en" : ""); }
+  function renderBook() {
+    $("bCode").textContent = store.code || "—";
+    var q = $("bQr"); q.innerHTML = "";
+    if (store.code && window.qrcode) { try { var qr = qrcode(0, "M"); qr.addData(resumeUrl()); qr.make(); q.innerHTML = qr.createImgTag(4, 8); q.firstChild.alt = "QR"; } catch (e) {} }
+    $("bIssue").style.display = store.code ? "none" : ""; $("bCopy").style.display = store.code ? "" : "none";
+  }
+  function mergeStamps(remote) {
+    var n = 0; Object.keys(remote || {}).forEach(function (k) { if (!store.stamps[k]) { store.stamps[k] = remote[k]; n++; } });
+    return n;
+  }
+  function sync(cb) {
+    // コードが無い＝まだ発行していない。端末保存だけで終える（発行は利用者がボタンで選ぶ）
+    if (!store.code) { if (cb) cb(false); return; }
+    fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: store.code, stamps: store.stamps }) })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)); })
+      .then(function (d) { if (d && d.stamps) mergeStamps(d.stamps); store.dirty = false; save(); refreshProgress(); SPOTS.forEach(refreshPin); if (cb) cb(true); })
+      .catch(function () { if (cb) cb(false); });
+  }
+  function issueCode() {
+    $("bSt").className = "st"; $("bSt").textContent = "…";
+    fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ stamps: store.stamps }) })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)); })
+      .then(function (d) { if (!d || !d.code) throw new Error("no code"); store.code = d.code; store.dirty = false; save(); renderBook(); $("bSt").textContent = t("saved"); })
+      .catch(function () { $("bSt").className = "st err"; $("bSt").textContent = t("saveErr"); });
+  }
+  function resumeCode(code) {
+    code = String(code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (code.length < 6) return;
+    $("bSt").className = "st"; $("bSt").textContent = "…";
+    fetch(API + "?code=" + encodeURIComponent(code)).then(function (r) { if (r.status === 404) throw new Error("notFound"); return r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)); })
+      .then(function (d) { var n = mergeStamps(d && d.stamps); store.code = d.code || code; save(); renderBook(); refreshProgress(); SPOTS.forEach(refreshPin); renderList(); if (current) updateDist();
+        $("bSt").textContent = t("resumed", { n: n }); if (Object.keys(store.stamps).length) sync(); })
+      .catch(function (e) { $("bSt").className = "st err"; $("bSt").textContent = e.message === "notFound" ? t("notFound") : t("saveErr"); });
+  }
+
+  /* ---- 起動 ---- */
+  function boot() {
+    map = L.map("map", { zoomControl: false, attributionControl: true }).setView([35.832, 140.145], 12);
+    L.control.zoom({ position: "bottomright" }).addTo(map);
+    L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", { attribution: "地理院タイル", maxZoom: 18 }).addTo(map);
+    Promise.all([
+      fetch("../bunkazai.json?v=" + V).then(function (r) { if (!r.ok) throw new Error("bunkazai " + r.status); return r.json(); }),
+      fetch("../guide/texts.en.json?v=" + V).then(function (r) { return r.ok ? r.json() : { spots: {} }; }).catch(function () { return { spots: {} }; })
+    ]).then(function (res) {
+      SPOTS = (res[0].spots || []).filter(function (s) { return isFinite(s.lat) && isFinite(s.lon) && s.reportId; });
+      EN = (res[1] && res[1].spots) || {};
+      SPOTS.forEach(function (s) {
+        var m = L.marker([s.lat, s.lon], { icon: icon(s), title: s.name }).addTo(map);
+        m.on("click", function () { openSheet(s.reportId, false); });
+        markers[s.reportId] = m;
+      });
+      refreshProgress(); renderList(); renderBook(); applyLang();
+      var book = params.get("book"); if (book) resumeCode(book);
+      var sp = params.get("spot"); if (sp && markers[sp]) { map.setView([markers[sp].getLatLng().lat, markers[sp].getLatLng().lng], 16); openSheet(sp, false); }
+      startWatch();
+      if (store.dirty && store.code) sync();
+    }).catch(function (e) { toast("データを読み込めませんでした: " + e.message, 6000); });
+  }
+
+  $("langBtn").addEventListener("click", function () { lang = lang === "ja" ? "en" : "ja"; try { history.replaceState(null, "", location.pathname + (lang === "en" ? "?lang=en" : "")); } catch (e) {} applyLang(); });
+  $("viewBtn").addEventListener("click", function () { document.body.classList.toggle("listMode"); $("viewBtn").textContent = document.body.classList.contains("listMode") ? t("map") : t("list"); if (!document.body.classList.contains("listMode")) map.invalidateSize(); else renderList(); });
+  $("meBtn").addEventListener("click", function () { if (pos) map.setView([pos.lat, pos.lon], Math.max(map.getZoom(), 16)); else { startWatch(); toast(t("noPos"), 3000); } });
+  $("sheetClose").addEventListener("click", closeSheet);
+  $("stampBtn").addEventListener("click", doStamp);
+  $("popOk").addEventListener("click", function () { $("pop").classList.remove("show"); });
+  $("bookBtn").addEventListener("click", function () { renderBook(); $("bSt").textContent = ""; $("book").classList.add("show"); });
+  $("bClose").addEventListener("click", function () { $("book").classList.remove("show"); });
+  $("book").addEventListener("click", function (ev) { if (ev.target === $("book")) $("book").classList.remove("show"); });
+  $("bIssue").addEventListener("click", issueCode);
+  $("bResume").addEventListener("click", function () { resumeCode($("bInput").value); });
+  $("bCopy").addEventListener("click", function () {
+    var u = resumeUrl();
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(function () { $("bSt").className = "st"; $("bSt").textContent = t("copied"); }, function () { $("bSt").textContent = u; });
+    else $("bSt").textContent = u;
+  });
+  window.addEventListener("online", function () { if (store.dirty && store.code) sync(); });
+  boot();
+})();
+</script>
+</body>
+</html>

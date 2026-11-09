@@ -81,7 +81,7 @@
 </header>
 <main>
   <section id="listSec">
-    <p class="note">ガイド用の日本語の台本と、観光客向けの英語の案内文・読み上げ。文化財を選んでください。<span id="enCount"></span></p>
+    <p class="note">ガイド用の日本語の台本と、観光客向けの英語の案内文・読み上げ。文化財を選んでください。<span id="enCount"></span><br>観光客のスマホには <a href="../rally/?lang=en">🎯 スタンプラリー（GPS・英語）</a> を案内します。</p>
     <input class="search" id="q" type="search" placeholder="名前で絞り込み（例：貝層、観音堂）" aria-label="名前で絞り込み">
     <ul class="spots" id="spots"><li><button type="button" disabled>読み込み中…</button></li></ul>
   </section>
@@ -130,7 +130,7 @@
 <script>
 (function () {
   "use strict";
-  var V = "20261109b";
+  var V = "20261109c";
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); };
@@ -208,6 +208,7 @@
       $("speakBtn").disabled = true;
     }
     $("link3d").href = "../?mode=event&spot=" + encodeURIComponent(id);
+    if (startLang === "en") { $("link3d").textContent = "🗺 3D: ask your guide"; $("link3d").removeAttribute("href"); $("link3d").title = "The 3D world is shown on the guide's device (CiDAO members only)."; }
     $("linkReport").href = "../report.html?id=" + encodeURIComponent(id);
     $("linkCity").href = s.detailUrl || "#"; $("linkCity").style.visibility = s.detailUrl ? "visible" : "hidden";
     $("status").textContent = ""; $("linkbox").className = "linkbox";
@@ -245,10 +246,10 @@
 
   function shareLink() {
     if (!current) return;
-    var url = location.origin + location.pathname + "?spot=" + encodeURIComponent(current.reportId) + "&lang=en";
+    var url = location.origin + location.pathname.replace(/guide\/?$/, "rally/") + "?spot=" + encodeURIComponent(current.reportId) + "&lang=en";
     var box = $("linkbox"); box.textContent = url; box.className = "linkbox show";
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(function () { $("status").textContent = "観光客用リンクをコピーしました（この文化財を英語で開きます）。"; },
+      navigator.clipboard.writeText(url).then(function () { $("status").textContent = "観光客用リンクをコピーしました（スタンプラリーでこの文化財を英語で開きます）。"; },
         function () { $("status").textContent = "リンクを表示しました。長押しでコピーしてください。"; });
     } else { $("status").textContent = "リンクを表示しました。長押しでコピーしてください。"; }
   }
