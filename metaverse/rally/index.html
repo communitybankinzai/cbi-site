@@ -81,6 +81,20 @@
   .book input { width:100%; padding:10px; font-size:18px; letter-spacing:2px; text-transform:uppercase; border:1px solid var(--line); border-radius:10px; font-family:ui-monospace,Consolas,monospace; }
   .book .st { font-size:13px; min-height:1.3em; margin-top:6px; }
   .book .st.err { color:var(--warn); }
+  .book .bGallery { margin:0 0 10px; }
+  .book .bGallery h3 { font-size:15px; margin:0 0 6px; }
+  .book .bGallery .galEmpty { margin:0; }
+  .book .gGrid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+  @media (max-width:340px) { .book .gGrid { grid-template-columns:repeat(3,1fr); } }
+  .book .gCard { border:0; background:none; padding:0; font-family:inherit; text-align:center; min-width:0; }
+  .book .gCard .gImg { display:block; aspect-ratio:1/1; background:#eef3f1; border-radius:10px; overflow:hidden; }
+  .book .gCard .gImg img { width:100%; height:100%; object-fit:contain; display:block; }
+  .book .gCard .gNm { display:block; font-size:10px; line-height:1.25; color:var(--sub); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .book .bCertWrap { margin:0 0 10px; text-align:center; }
+  .book .bCertBtn { width:100%; padding:12px 8px; border-radius:12px; border:1px solid #c9a227; background:#c9a227; color:#fff; font-size:15px; font-family:inherit; }
+  .book .certRest { font-size:12px; color:var(--sub); }
+  .book #bCertImg { width:100%; border:1px solid var(--line); border-radius:10px; margin-top:8px; }
+  .book .certNote { font-size:12px; color:var(--sub); margin-top:4px; }
   .leaflet-control-attribution { font-size:10px; }
   /* ガイドのツアーに参加中の帯 */
   .tourBar { background:#1f6fd6; color:#fff; font-size:13px; padding:6px 12px; display:none; align-items:center; gap:8px; }
@@ -146,6 +160,12 @@
 <div class="book" id="book"><div class="box">
   <h2 id="bTtl">📒 スタンプ帳</h2>
   <p id="bNote">スタンプはこの端末に保存されます。「コードを発行」すると、別の端末や次の来訪でも、コードを入れれば続きから集められます（名前や連絡先は保存しません）。</p>
+  <div class="bGallery" id="bGallery"></div>
+  <div class="bCertWrap">
+    <button type="button" class="bCertBtn" id="bCert" style="display:none">🏅 達成証を作る</button>
+    <div class="certRest" id="bCertRest"></div>
+    <div id="bCertOut" style="display:none"><img id="bCertImg" alt=""><div class="certNote" id="bCertNote"></div></div>
+  </div>
   <div class="code" id="bCode">—</div>
   <div class="qr" id="bQr"></div>
   <div class="acts">
@@ -164,7 +184,7 @@
 <script>
 (function () {
   "use strict";
-  var V = "20261109g";
+  var V = "20261109h";
   var RADIUS_M = 80;                        // この距離以内でスタンプが押せる
   var STALE_MS = 180000;                    // これより古い位置では押せない（押したときに取り直す）
   var API = "https://cidao.vercel.app/api/rally-book";
@@ -181,7 +201,8 @@
       bIssue: "コードを発行して保存", bCopy: "リンクをコピー", bResumeNote: "別の端末・前回のコードで続きから：", bResume: "このコードで続きから", bClose: "閉じる",
       saved: "保存しました", saveErr: "保存先に届きませんでした。端末には保存されています。通信のある所でもう一度お試しください。", resumed: "{n} 件のスタンプを読み込みました", notFound: "そのコードは見つかりません。", copied: "リンクをコピーしました", all: "50件すべて集めました！おめでとうございます。",
       tourOn: "ガイドのツアーに参加中（{c}）", tourSpot: "ガイド：{n}", leave: "退出", listen: "🔊 聞く（英語）", joinPrompt: "ガイドのツアーコード（6文字）を入れてください", tourErr: "ツアーに接続できませんでした。コードと通信を確認してください。", noVoice: "この端末のブラウザは読み上げに対応していません。",
-      voiceOn: "🔈 音声 ON", voiceOff: "🔈 音声 OFF", ask: "🎤 質問", askPrompt: "ガイドへの質問を入力（日本語に訳して届けます）", askListen: "聞いています…話し終えると送ります", askSent: "ガイドに質問を送りました", askErr: "質問を送れませんでした。通信を確認してください。", adLabel: "あなたの質問（直せます）", adSend: "📨 ガイドに送る", adRetrans: "訳し直す", adCancel: "取り消す", noMic: "この端末のブラウザは音声認識に対応していません。文字で入力してください。", capHint: "（🔈 音声 ON にすると読み上げます）" },
+      voiceOn: "🔈 音声 ON", voiceOff: "🔈 音声 OFF", ask: "🎤 質問", askPrompt: "ガイドへの質問を入力（日本語に訳して届けます）", askListen: "聞いています…話し終えると送ります", askSent: "ガイドに質問を送りました", askErr: "質問を送れませんでした。通信を確認してください。", adLabel: "あなたの質問（直せます）", adSend: "📨 ガイドに送る", adRetrans: "訳し直す", adCancel: "取り消す", noMic: "この端末のブラウザは音声認識に対応していません。文字で入力してください。", capHint: "（🔈 音声 ON にすると読み上げます）",
+      galTtl: "🏛 集めた精霊 {n} / {total}", galEmpty: "まだありません。文化財の近くでスタンプを押すと、ここに精霊が並びます", certBtn: "🏅 達成証を作る", certRest: "あと {rest} 件で達成証", certAsk: "達成証に入れる名前を入力してください（空欄なら名前なし・保存されません）", certNote: "画像を長押しで保存できます" },
     en: { ttl: "🏛 Inzai Heritage Stamp Rally", sub: "Walk up to a site to get its stamp (spirit card) · prototype", lang: "日本語", list: "☰ List", map: "🗺 Map", book: "📒 Stamp book",
       stamp: "✅ Stamp here", stamped: "✅ Visited", far: "Get {d} closer to stamp", here: "You can stamp here", noPos: "Getting your location… (please allow location access)",
       guide: "📖 Read more", city: "🏛 City page (JP)", got: "Got it!", near: "You are near {n}. You can stamp here", posErr: "Could not get your location. Please check location permission.",
@@ -189,7 +210,8 @@
       bIssue: "Issue a code and save", bCopy: "Copy link", bResumeNote: "Continue with a code from another device or a previous visit:", bResume: "Continue with this code", bClose: "Close",
       saved: "Saved", saveErr: "Could not reach the server. Your stamps are kept on this device. Try again when online.", resumed: "Loaded {n} stamps", notFound: "That code was not found.", copied: "Link copied", all: "You collected all 50! Congratulations.",
       tourOn: "Following your guide ({c})", tourSpot: "Guide: {n}", leave: "Leave", listen: "🔊 Listen (EN)", joinPrompt: "Enter the tour code from your guide (6 letters)", tourErr: "Could not join the tour. Check the code and your connection.", noVoice: "This browser cannot read aloud.",
-      voiceOn: "🔈 Voice ON", voiceOff: "🔈 Voice OFF", ask: "🎤 Ask", askPrompt: "Type your question for the guide (it will be translated into Japanese)", askListen: "Listening… release when you finish", askSent: "Your question was sent to the guide", askErr: "Could not send the question. Check your connection.", adLabel: "Your question (you can edit)", adSend: "📨 Send to guide", adRetrans: "Retranslate", adCancel: "Cancel", noMic: "This browser cannot recognize speech. Please type your question.", capHint: "(turn Voice ON to hear it)" }
+      voiceOn: "🔈 Voice ON", voiceOff: "🔈 Voice OFF", ask: "🎤 Ask", askPrompt: "Type your question for the guide (it will be translated into Japanese)", askListen: "Listening… release when you finish", askSent: "Your question was sent to the guide", askErr: "Could not send the question. Check your connection.", adLabel: "Your question (you can edit)", adSend: "📨 Send to guide", adRetrans: "Retranslate", adCancel: "Cancel", noMic: "This browser cannot recognize speech. Please type your question.", capHint: "(turn Voice ON to hear it)",
+      galTtl: "🏛 Spirits collected {n} / {total}", galEmpty: "No spirits yet. Stamp near a heritage site to collect them.", certBtn: "🏅 Make my certificate", certRest: "{rest} more to go for the certificate", certAsk: "Enter a name for the certificate (leave blank for none; it is not saved)", certNote: "Press and hold the image to save it" }
   };
   var lang = params.get("lang") === "en" ? "en" : "ja";
   var t = function (k, vars) { var s = (T[lang][k] || T.ja[k] || k); return s.replace(/\{(\w+)\}/g, function (_, v) { return vars && vars[v] != null ? vars[v] : ""; }); };
@@ -220,7 +242,7 @@
     $("listenBtn").textContent = t("listen"); $("tourLeave").textContent = t("leave"); $("askBtn").textContent = t("ask"); $("voiceBtn").textContent = voiceOn ? t("voiceOn") : t("voiceOff"); tourRenderBar();
     $("adLabel").textContent = t("adLabel"); $("adSend").textContent = t("adSend"); $("adRetrans").textContent = t("adRetrans"); $("adCancel").textContent = t("adCancel");
     if (current) openSheet(current.reportId);
-    renderList();
+    renderList(); renderBook();
   }
 
   function icon(s) {
@@ -332,7 +354,71 @@
 
   /* ---- スタンプ帳コード（CiDAO の API に保存・個人情報なし） ---- */
   function resumeUrl() { return location.origin + location.pathname + "?book=" + encodeURIComponent(store.code || "") + (lang === "en" ? "&lang=en" : ""); }
+  // 取ったスポットを新しい順に（at は ISO 文字列なので文字列比較でよい）
+  function stampedSpots() {
+    return SPOTS.filter(function (s) { return store.stamps[s.reportId]; })
+      .sort(function (a, b) { return String(store.stamps[b.reportId].at).localeCompare(String(store.stamps[a.reportId].at)); });
+  }
+  function renderGallery() {
+    var got = stampedSpots(), html = '<h3 id="bGalTtl">' + esc(t("galTtl", { n: got.length, total: SPOTS.length })) + '</h3>';
+    if (!got.length) html += '<p class="galEmpty">' + esc(t("galEmpty")) + '</p>';
+    else {
+      html += '<div class="gGrid">' + got.map(function (s) {
+        var e = EN[s.reportId], nm = lang === "en" ? ((e && e.name) || s.name) : s.name;
+        return '<button type="button" class="gCard" data-id="' + esc(s.reportId) + '"><span class="gImg">' + (s.cardImage ? '<img src="../' + esc(s.cardImage) + '" alt="" loading="lazy">' : "") + '</span><span class="gNm">' + esc(nm) + '</span></button>';
+      }).join("") + '</div>';
+    }
+    $("bGallery").innerHTML = html;
+  }
+  function clearCert() { $("bCertImg").removeAttribute("src"); $("bCertOut").style.display = "none"; }
+  // 達成証（名前は端末にも保存しない・その場限り）
+  function loadImg(src) {
+    return new Promise(function (res) { var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = src; });
+  }
+  function rrect(c, x, y, w, h, r) {
+    c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+  }
+  function makeCert() {
+    var name = prompt(t("certAsk"), "");
+    if (name === null) return;
+    name = String(name).replace(/^\s+|\s+$/g, "").slice(0, 40);
+    var cards = stampedSpots().slice(0, 12);
+    var lastAt = 0; SPOTS.forEach(function (s) { var g = store.stamps[s.reportId]; if (g) { var d = new Date(g.at).getTime(); if (isFinite(d) && d > lastAt) lastAt = d; } });
+    Promise.all(cards.map(function (s) { return s.cardImage ? loadImg("../" + s.cardImage) : Promise.resolve(null); })).then(function (imgs) {
+      var W = 1200, H = 1700, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+      var c = cv.getContext("2d"), FF = "'Hiragino Sans','Yu Gothic UI',sans-serif", GOLD = "#c9a227";
+      function txt(s, x, y, size, weight, color, align, maxW) {
+        c.font = weight + " " + size + "px " + FF; c.fillStyle = color; c.textAlign = align || "center";
+        while (maxW && size > 12 && c.measureText(s).width > maxW) { size -= 2; c.font = weight + " " + size + "px " + FF; }
+        c.fillText(s, x, y);
+      }
+      c.fillStyle = "#f7f3ea"; c.fillRect(0, 0, W, H);
+      c.strokeStyle = GOLD; c.lineWidth = 10; c.strokeRect(40, 40, W - 80, H - 80);
+      c.lineWidth = 3; c.strokeRect(66, 66, W - 132, H - 132);
+      txt("印西 文化財スタンプラリー 達成証", W / 2, 200, 60, "bold", "#1f2a30", "center", 1000);
+      txt("Inzai Heritage Stamp Rally — Certificate of Completion", W / 2, 270, 30, "normal", "#6b7a80", "center", 1000);
+      c.fillStyle = GOLD; c.fillRect(W / 2 - 120, 310, 240, 4);
+      if (name) { txt(name, W / 2, 450, 76, "bold", "#1f2a30", "center", 900); c.fillStyle = "#1f2a30"; c.fillRect(W / 2 - 400, 480, 800, 2); }
+      txt("印西市の指定・登録文化財 " + SPOTS.length + "件をすべて訪ねました", W / 2, 590, 40, "normal", "#1f2a30", "center", 1000);
+      txt("Visited all " + SPOTS.length + " designated and registered heritage sites in Inzai City", W / 2, 650, 28, "normal", "#6b7a80", "center", 1000);
+      if (lastAt) txt(new Date(lastAt).toLocaleDateString(lang === "en" ? "en-US" : "ja-JP", { year: "numeric", month: "long", day: "numeric" }), W / 2, 740, 34, "normal", "#1f2a30", "center", 900);
+      var sz = 200, gap = 28, x0 = (W - (4 * sz + 3 * gap)) / 2, y0 = 840;
+      imgs.forEach(function (im, i) {
+        var x = x0 + (i % 4) * (sz + gap), y = y0 + Math.floor(i / 4) * (sz + gap);
+        c.fillStyle = "#eef3f1"; rrect(c, x, y, sz, sz, 16); c.fill();
+        if (im && im.width) { var r = Math.min((sz - 16) / im.width, (sz - 16) / im.height), w = im.width * r, h = im.height * r; c.drawImage(im, x + (sz - w) / 2, y + (sz - h) / 2, w, h); }
+      });
+      txt("Community Bank Inzai", W - 100, H - 100, 28, "normal", "#6b7a80", "right");
+      var url = cv.toDataURL("image/png");
+      $("bCertImg").src = url; $("bCertNote").textContent = t("certNote"); $("bCertOut").style.display = "";
+      var a = document.createElement("a"); a.href = url; a.download = "inzai-stamp-rally-certificate.png"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    });
+  }
   function renderBook() {
+    renderGallery();
+    var full = SPOTS.length > 0 && count() === SPOTS.length;
+    $("bCert").textContent = t("certBtn"); $("bCert").style.display = full ? "" : "none";
+    $("bCertRest").textContent = (!full && SPOTS.length) ? t("certRest", { rest: SPOTS.length - count() }) : ""; $("bCertNote").textContent = t("certNote");
     $("bCode").textContent = store.code || "—";
     var q = $("bQr"); q.innerHTML = "";
     if (store.code && window.qrcode) { try { var qr = qrcode(0, "M"); qr.addData(resumeUrl()); qr.make(); q.innerHTML = qr.createImgTag(4, 8); q.firstChild.alt = "QR"; } catch (e) {} }
@@ -536,8 +622,13 @@
   $("sheetClose").addEventListener("click", closeSheet);
   $("stampBtn").addEventListener("click", doStamp);
   $("popOk").addEventListener("click", function () { $("pop").classList.remove("show"); });
-  $("bookBtn").addEventListener("click", function () { renderBook(); $("bSt").textContent = ""; $("book").classList.add("show"); });
-  $("bClose").addEventListener("click", function () { $("book").classList.remove("show"); });
+  $("bGallery").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest(".gCard") : null; if (!b) return;
+    $("book").classList.remove("show"); document.body.classList.remove("listMode"); $("viewBtn").textContent = t("list"); map.invalidateSize(); openSheet(b.getAttribute("data-id"), true);
+  });
+  $("bCert").addEventListener("click", makeCert);
+  $("bookBtn").addEventListener("click", function () { clearCert(); renderBook(); $("bSt").textContent = ""; $("book").classList.add("show"); });
+  $("bClose").addEventListener("click", function () { $("book").classList.remove("show"); clearCert(); });
   $("book").addEventListener("click", function (ev) { if (ev.target === $("book")) $("book").classList.remove("show"); });
   $("bIssue").addEventListener("click", issueCode);
   $("bResume").addEventListener("click", function () { resumeCode($("bInput").value); });
