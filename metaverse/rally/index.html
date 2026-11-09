@@ -184,7 +184,7 @@
 <script>
 (function () {
   "use strict";
-  var V = "20261109k";
+  var V = "20261109l";
   var RADIUS_M = 80;                        // この距離以内でスタンプが押せる
   var STALE_MS = 180000;                    // これより古い位置では押せない（押したときに取り直す）
   var API = "https://cidao.vercel.app/api/rally-book";
@@ -455,12 +455,35 @@
       .catch(function (e) { $("bSt").className = "st err"; $("bSt").textContent = e.message === "notFound" ? t("notFound") : t("saveErr"); });
   }
 
+  var AUDIO_BASE = "../guide/audio/en/";
+  /* ---- 録音済みの英語音声（audio/en/<id>.mp3・edge-tts）。あれば再生、無ければ端末の読み上げに戻る ---- */
+  var AUDIO = {}, audioEl = null;
+  function audioUrl(id) { return (AUDIO[id] && AUDIO[id].sha) ? AUDIO_BASE + id + ".mp3?v=" + AUDIO[id].sha : null; }
+  function playAudio(url, onStart, onEnd, onErr) {
+    try {
+      if (!audioEl) audioEl = new Audio();
+      audioEl.pause(); audioEl.volume = 1; audioEl.src = url;
+      audioEl.onplay = onStart || null; audioEl.onended = onEnd || null; audioEl.onerror = onErr || null;
+      var p = audioEl.play(); if (p && p.catch) p.catch(function (e) { if (onErr) onErr(e); });
+      return true;
+    } catch (e) { if (onErr) onErr(e); return false; }
+  }
+  function stopAudio() { try { if (audioEl) { audioEl.onended = null; audioEl.onerror = null; audioEl.pause(); audioEl.currentTime = 0; } } catch (e) {} }
+  function loadAudioList() {
+    fetch(AUDIO_BASE + "manifest.json?v=" + V).then(function (r) { return r.ok ? r.json() : { spots: {} }; }).catch(function () { return { spots: {} }; })
+      .then(function (m) { AUDIO = (m && m.spots) || {}; });
+  }
   /* ---- 読み上げ（英語・ブラウザ標準） ---- */
   function loadVoices() { try { voices = window.speechSynthesis ? speechSynthesis.getVoices() : []; } catch (e) { voices = []; } }
   function speakEn() {
     if (!current || !EN[current.reportId]) return;
-    if (!window.speechSynthesis) { toast(t("noVoice"), 3000); return; }
     var en = EN[current.reportId];
+    var url = audioUrl(current.reportId);
+    if (url) { stopSpeech(); playAudio(url, null, null, function () { speakSynth(en); }); return; }   // 録音済みの音声を優先
+    speakSynth(en);
+  }
+  function speakSynth(en) {
+    if (!window.speechSynthesis) { toast(t("noVoice"), 3000); return; }
     speechSynthesis.cancel();
     var u = new SpeechSynthesisUtterance(en.speech || en.intro);
     u.lang = "en-US"; u.rate = 0.95;
@@ -478,7 +501,7 @@
     if (v && /^en/.test(u.lang)) u.voice = v;
     speechSynthesis.speak(u);
   }
-  function stopSpeech() { try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} }
+  function stopSpeech() { stopAudio(); try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} }
   function showCaption(p) {
     var cap = $("capBar"); cap.innerHTML = "";
     if (p && p.stop === true) { stopSpeech(); cap.classList.remove("show"); return; }   // ガイドがツアーを終えた
@@ -488,7 +511,11 @@
     if (lang === "en" && ja && !p.read) { var sub = document.createElement("span"); sub.className = "ja"; sub.textContent = ja; cap.appendChild(sub); }
     if (!voiceOn && en) { var h = document.createElement("span"); h.className = "hint"; h.textContent = " " + t("capHint"); cap.appendChild(h); }
     cap.classList.add("show");
-    if (voiceOn && en) speakText(en, "en-US");
+    if (voiceOn && en) {
+      var url = (p.read && p.spot) ? audioUrl(p.spot) : null;
+      if (!url) { speakText(en, "en-US"); return; }
+      stopSpeech(); playAudio(url, null, null, function () { speakText(en, "en-US"); });
+    }
   }
   function translateTo(text, from, to) {
     return fetch(TRANSLATE_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text, from: from, to: to }) })
@@ -648,6 +675,10 @@
     voiceOn = !voiceOn; $("voiceBtn").textContent = voiceOn ? t("voiceOn") : t("voiceOff"); $("voiceBtn").classList.toggle("on", voiceOn);
     if (!voiceOn) stopSpeech();
     if (voiceOn) { try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(lang === "en" ? "Voice on." : "音声をオンにしました"); u.lang = lang === "en" ? "en-US" : "ja-JP"; speechSynthesis.speak(u); } catch (e) {} } // 最初の操作で読み上げを許可させる
+    if (voiceOn) { try {   // 録音済み音声の再生も、この操作で許可させておく（無音で一瞬だけ鳴らして止める）
+      var first = Object.keys(AUDIO)[0];
+      if (first) { if (!audioEl) audioEl = new Audio(); audioEl.volume = 0; audioEl.src = audioUrl(first); var pp = audioEl.play(); if (pp && pp.then) pp.then(function () { audioEl.pause(); audioEl.volume = 1; }, function () { audioEl.volume = 1; }); }
+    } catch (e) {} }
   });
   $("askBtn").addEventListener("click", askToggle);
   $("adSend").addEventListener("click", askSendDraft);
@@ -656,6 +687,7 @@
   $("askTypeBtn").addEventListener("click", function () { if (!tour) return; var tx = prompt(t("askPrompt")); if (tx) askShowDraft(tx); });
   $("joinBtn").addEventListener("click", function () { var c = prompt(t("joinPrompt")); if (c) tourJoin(c); });
   loadVoices();
+  loadAudioList();   // 録音済みの英語音声の一覧
   if (window.speechSynthesis && typeof speechSynthesis.onvoiceschanged !== "undefined") speechSynthesis.onvoiceschanged = loadVoices;
   window.addEventListener("online", function () { if (store.dirty && store.code) sync(); });
   boot();

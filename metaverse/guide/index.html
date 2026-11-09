@@ -206,7 +206,7 @@
 <script>
 (function () {
   "use strict";
-  var V = "20261109k";
+  var V = "20261109l";
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); };
@@ -300,6 +300,24 @@
   }
 
   /* 読み上げ（ブラウザ標準） */
+  var AUDIO_BASE = "audio/en/";
+  /* ---- 録音済みの英語音声（audio/en/<id>.mp3・edge-tts）。あれば再生、無ければ端末の読み上げに戻る ---- */
+  var AUDIO = {}, audioEl = null;
+  function audioUrl(id) { return (AUDIO[id] && AUDIO[id].sha) ? AUDIO_BASE + id + ".mp3?v=" + AUDIO[id].sha : null; }
+  function playAudio(url, onStart, onEnd, onErr) {
+    try {
+      if (!audioEl) audioEl = new Audio();
+      audioEl.pause(); audioEl.volume = 1; audioEl.src = url;
+      audioEl.onplay = onStart || null; audioEl.onended = onEnd || null; audioEl.onerror = onErr || null;
+      var p = audioEl.play(); if (p && p.catch) p.catch(function (e) { if (onErr) onErr(e); });
+      return true;
+    } catch (e) { if (onErr) onErr(e); return false; }
+  }
+  function stopAudio() { try { if (audioEl) { audioEl.onended = null; audioEl.onerror = null; audioEl.pause(); audioEl.currentTime = 0; } } catch (e) {} }
+  function loadAudioList() {
+    fetch(AUDIO_BASE + "manifest.json?v=" + V).then(function (r) { return r.ok ? r.json() : { spots: {} }; }).catch(function () { return { spots: {} }; })
+      .then(function (m) { AUDIO = (m && m.spots) || {}; });
+  }
   function loadVoices() { try { voices = window.speechSynthesis ? speechSynthesis.getVoices() : []; } catch (e) { voices = []; } }
   function pickVoice() {
     var v = voices.filter(function (x) { return /^en[-_](US|GB)/i.test(x.lang); })[0] || voices.filter(function (x) { return /^en/i.test(x.lang); })[0];
@@ -307,13 +325,26 @@
   }
   function speakEn() {
     if (!current || !EN[current.reportId]) return;
-    if (!window.speechSynthesis) { $("status").textContent = "この端末のブラウザは読み上げに対応していません。"; return; }
     var text = EN[current.reportId].speech || EN[current.reportId].intro;
     if (tour) { // ツアー中は観光客のスマホ（音声ON の人）にも配信する。手元で鳴らすかは「この端末でも鳴らす」
       tour.send("say", { en: text, read: true, spot: current.reportId, at: Date.now() });
       if (!$("localVoice").checked) { $("status").textContent = "観光客のスマホで英語を読み上げています（音声をONにしている人）。"; setLang("en"); return; }
       $("status").textContent = "この端末と、音声ONの観光客のスマホで英語を読み上げています。"; setLang("en");
     }
+    setLang("en");
+    var url = audioUrl(current.reportId);
+    if (url) {   // 録音済みの音声（端末に英語の声が無くても同じ品質で鳴る）
+      stopSpeak();
+      playAudio(url,
+        function () { $("status").textContent = "再生中…（録音済みの英語音声）"; },
+        function () { $("status").textContent = "読み上げを終えました。"; },
+        function () { speakSynth(text); });
+      return;
+    }
+    speakSynth(text);
+  }
+  function speakSynth(text) {   // 端末の読み上げ（録音が無い・再生できないとき）
+    if (!window.speechSynthesis) { $("status").textContent = "この端末のブラウザは読み上げに対応していません。"; return; }
     speechSynthesis.cancel();
     var u = new SpeechSynthesisUtterance(text);
     u.lang = "en-US"; u.rate = 0.95; u.pitch = 1;
@@ -321,10 +352,9 @@
     u.onstart = function () { $("status").textContent = "読み上げ中… (" + (v ? v.name : "en-US") + ")"; };
     u.onend = function () { $("status").textContent = "読み上げを終えました。"; };
     u.onerror = function (e) { $("status").textContent = "読み上げに失敗しました: " + (e.error || ""); };
-    setLang("en");
     speechSynthesis.speak(u);
   }
-  function stopSpeak() { try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} }
+  function stopSpeak() { stopAudio(); try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} }
 
   function shareLink() {
     if (!current) return;
@@ -562,6 +592,7 @@
     if (id) openDetail(id, false); else closeDetail(false);
   });
   loadVoices();
+  loadAudioList();   // 録音済みの英語音声の一覧
   if (window.speechSynthesis && typeof speechSynthesis.onvoiceschanged !== "undefined") speechSynthesis.onvoiceschanged = loadVoices;
 })();
 </script>

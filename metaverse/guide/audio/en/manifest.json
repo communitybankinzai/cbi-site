@@ -1,0 +1,260 @@
+{
+ "spots": {
+  "kioroshi-kaiso": {
+   "sha": "a00ca659124aeb65",
+   "bytes": 179856,
+   "words": 77
+  },
+  "bessho-shishimai": {
+   "sha": "9063d323634b8c5b",
+   "bytes": 135648,
+   "words": 57
+  },
+  "bishamonten-ryowakiji": {
+   "sha": "510540fca1ffdb5a",
+   "bytes": 148464,
+   "words": 64
+  },
+  "bonsho-kenmu": {
+   "sha": "8ecae0274ab20d4b",
+   "bytes": 153936,
+   "words": 70
+  },
+  "bonsho-oan": {
+   "sha": "d4ce6ee611e54e96",
+   "bytes": 168624,
+   "words": 70
+  },
+  "bonsho-ryufukuji": {
+   "sha": "a83e388b2c3513ac",
+   "bytes": 169344,
+   "words": 65
+  },
+  "chudo-kujakumon-kei": {
+   "sha": "16de860925439007",
+   "bytes": 162720,
+   "words": 72
+  },
+  "chudo-waniguchi-matsumushi": {
+   "sha": "bb78624f79c7ec5d",
+   "bytes": 149184,
+   "words": 56
+  },
+  "dosaku-kofungun": {
+   "sha": "2f14d2cde959da05",
+   "bytes": 175104,
+   "words": 71
+  },
+  "dozo-fudo-myoo": {
+   "sha": "a4f411014b8a0488",
+   "bytes": 140256,
+   "words": 63
+  },
+  "dozo-juichimen-kannon": {
+   "sha": "b4a0d527254cbed1",
+   "bytes": 150912,
+   "words": 71
+  },
+  "eifukuji-yakushido": {
+   "sha": "d0a9389b081052fb",
+   "bytes": 141696,
+   "words": 63
+  },
+  "enmei-jizo-senzoji": {
+   "sha": "9b5856c7d5fb4a59",
+   "bytes": 170784,
+   "words": 70
+  },
+  "entaigou": {
+   "sha": "3b7b43700f73b59d",
+   "bytes": 151776,
+   "words": 64
+  },
+  "fudo-bishamon-saifukuji": {
+   "sha": "ebb6fe596a15bb8d",
+   "bytes": 188208,
+   "words": 78
+  },
+  "fuji-no-ki-nakane": {
+   "sha": "dbc41850b327facc",
+   "bytes": 144720,
+   "words": 63
+  },
+  "fukujuin-amida-sanzon": {
+   "sha": "cbb1bde5d1512540",
+   "bytes": 164016,
+   "words": 65
+  },
+  "hachiman-jinja-shishimai": {
+   "sha": "d95cf7ecb791e931",
+   "bytes": 165888,
+   "words": 72
+  },
+  "houjuin-kannondo": {
+   "sha": "28c04ddc187a20ce",
+   "bytes": 145296,
+   "words": 58
+  },
+  "inazaki-shishimai": {
+   "sha": "8d2ea925f933d4c9",
+   "bytes": 126288,
+   "words": 54
+  },
+  "itaishi-toba-iwato": {
+   "sha": "a2793b63981a85c2",
+   "bytes": 162864,
+   "words": 69
+  },
+  "itaishi-toba-yoshitaka": {
+   "sha": "4916adf3af519f43",
+   "bytes": 174384,
+   "words": 72
+  },
+  "iwaike-jutaku-omoya": {
+   "sha": "4073a697140f89df",
+   "bytes": 160272,
+   "words": 72
+  },
+  "izumishinden-nomabori-iseki": {
+   "sha": "976d9c3876b09c53",
+   "bytes": 159840,
+   "words": 63
+  },
+  "jizo-bosatsu-ryuzo-bessho": {
+   "sha": "ff3200517668d87d",
+   "bytes": 139392,
+   "words": 67
+  },
+  "kamijuku-kofun": {
+   "sha": "ac4ac00d7ec35ccd",
+   "bytes": 138816,
+   "words": 64
+  },
+  "kannonji-chuzo-waniguchi": {
+   "sha": "27f0bbf51de4edd3",
+   "bytes": 137376,
+   "words": 55
+  },
+  "koganemaki-murakobata": {
+   "sha": "bf022ce3eb0f51c5",
+   "bytes": 119088,
+   "words": 55
+  },
+  "kongo-rikishi-ryusuiji": {
+   "sha": "51d43620e2c59cc6",
+   "bytes": 175968,
+   "words": 72
+  },
+  "kosatsu-gobo-keiji": {
+   "sha": "7368ea0f0b15932e",
+   "bytes": 145872,
+   "words": 53
+  },
+  "magome-gato": {
+   "sha": "c534df163de1dc7f",
+   "bytes": 145584,
+   "words": 61
+  },
+  "mandara-kakejiku": {
+   "sha": "39d2d4a6c0603cd8",
+   "bytes": 127008,
+   "words": 54
+  },
+  "mida-isson-musashi-itabi": {
+   "sha": "bb1fdf71c3011f91",
+   "bytes": 162144,
+   "words": 67
+  },
+  "mida-sanzon-shimousa-itabi": {
+   "sha": "f31fa87b6fd175ea",
+   "bytes": 182448,
+   "words": 69
+  },
+  "oshitsuke-mizuka": {
+   "sha": "c04ca0a36a3af121",
+   "bytes": 160416,
+   "words": 69
+  },
+  "ryukoji-ema": {
+   "sha": "3ccb63a9265bc9fb",
+   "bytes": 132048,
+   "words": 56
+  },
+  "senpukuji-yakushido": {
+   "sha": "018189f6bbce0065",
+   "bytes": 148608,
+   "words": 64
+  },
+  "shichibutsu-yakushi": {
+   "sha": "75c8a3872a1cd172",
+   "bytes": 152784,
+   "words": 68
+  },
+  "shogen-onibasu": {
+   "sha": "90904db61ecb8f4f",
+   "bytes": 160992,
+   "words": 73
+  },
+  "takenishi-hyakukoshin-zuka": {
+   "sha": "eea0e12f3bcb3de9",
+   "bytes": 164016,
+   "words": 68
+  },
+  "tokoname-otsubo": {
+   "sha": "db10b7dd8ccc4480",
+   "bytes": 120096,
+   "words": 52
+  },
+  "tomi-jinja-kagura": {
+   "sha": "5e76c9b7fbfd201b",
+   "bytes": 174096,
+   "words": 72
+  },
+  "tomi-jinja-shishimai": {
+   "sha": "23f2d9f4041e8ca5",
+   "bytes": 158688,
+   "words": 75
+  },
+  "tsukikage-no-i": {
+   "sha": "0f86a117aacfd64b",
+   "bytes": 165312,
+   "words": 68
+  },
+  "urabe-kagura": {
+   "sha": "60669ca3588ead39",
+   "bytes": 183744,
+   "words": 76
+  },
+  "yakushi-nyorai-raifukuji": {
+   "sha": "f64444bf35e02d40",
+   "bytes": 161568,
+   "words": 72
+  },
+  "yakushi-nyorai-takisuiji": {
+   "sha": "aaee83dc99310897",
+   "bytes": 168768,
+   "words": 67
+  },
+  "yoshiokake-kashi-monjo": {
+   "sha": "41421917d8b21db4",
+   "bytes": 128304,
+   "words": 53
+  },
+  "yoshitaka-no-ozakura": {
+   "sha": "dea8ac7c1eb862a8",
+   "bytes": 152928,
+   "words": 62
+  },
+  "chudo-waniguchi-takefukuro": {
+   "sha": "123edde817ea3f7f",
+   "bytes": 166176,
+   "words": 68
+  }
+ },
+ "textsVersion": "2026-11-09b",
+ "voice": "en-US-JennyNeural",
+ "rate": "-5%",
+ "generatedAt": "2026-11-09 17:48",
+ "engine": "edge-tts",
+ "note": "Pre-generated English narration (draft texts). Regenerate with CBI/scripts/gen_en_audio.py after the texts are reviewed."
+}
