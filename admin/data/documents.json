@@ -3,6 +3,15 @@
   "note": "資料コメントタブで管理する内部資料の一覧。HTMLを追加したらこのリストに登録する。id はファイルパスから独立した安定識別子（comments.targetId と一致）。",
   "documents": [
     {
+      "id": "bunkazai-distribution-kinoshita",
+      "title": "印西市の文化財の分布｜木下駅からの距離と半径ごとの件数",
+      "path": "proposals/bunkazai-distribution-kinoshita-v1.html",
+      "category": "調査資料",
+      "description": "市の文化財一覧の50件を木下駅からの直線距離で色分けした地図（市全体・木下周辺）と、半径1・2・3・5・10kmごとの件数表（区分別・現地で見られるもの）。1km以内7件・3km以内13件・5km以内27件・10km以内49件。駅に近い15件の一覧つき。木下駅の位置は Wikipedia の転載値で数百メートルの誤差があり、距離は直線距離。市の一覧にない未指定の文化財は含まない。",
+      "createdAt": "2026-11-09",
+      "updatedAt": "2026-11-09"
+    },
+    {
       "id": "cidao-usage-privacy-report-20261106",
       "title": "CiDAO 使用量削減・機能整理・個人情報対策の報告（2026-11-06）",
       "path": "proposals/cidao-usage-privacy-report-20261106.html",

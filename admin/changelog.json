@@ -4,6 +4,13 @@
   "entries": [
     {
       "date": "2026-11-10",
+      "type": "content",
+      "target": "管理画面（資料タブ）",
+      "title": "資料「印西市の文化財の分布｜木下駅からの距離と半径ごとの件数」を追加",
+      "detail": "市の文化財一覧50件を木下駅からの距離で色分けした地図と、半径ごとの件数表。site/admin/proposals/bunkazai-distribution-kinoshita-v1.html を配置し、資料タブのカードと data/documents.json（資料コメント用）に登録した。木下駅の位置は Wikipedia の転載値で誤差あり、距離は直線。"
+    },
+    {
+      "date": "2026-11-10",
       "type": "fix",
       "target": "管理画面（収支管理）",
       "title": "「監事の確認待ち」に、会計が承認した支出すべてが出るようになった（以前は立替えた本人が承認した分だけで、他人の立替の精算分が出なかった）",
