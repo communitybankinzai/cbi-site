@@ -5,6 +5,13 @@
     {
       "date": "2026-11-10",
       "type": "content",
+      "target": "管理画面（資料タブ）",
+      "title": "資料に「統合A 創業塾4シート・6W3H・確認が必要な事項（個人として）」の下書きを追加",
+      "detail": "いんざい創業塾の4シートを個人名義で埋めた下書きと、6W3H・確認事項の一覧。site/admin/proposals/sogyojuku-plan-integrated-a-v1.html を配置し、資料タブにカードを追加、コメント対象に登録。未確認の項目が多い下書き。"
+    },
+    {
+      "date": "2026-11-10",
+      "type": "content",
       "target": "SNS素材（assets/sns/2026-11-10_kodomo-calendar/）",
       "title": "「親子のおでかけカレンダー」の紹介動画（約42秒・BGM付き）と投稿文の素材を追加",
       "detail": "CiDAO の「親子で行ける催しを集めたカレンダー」を紹介する縦型動画（1080x1920・4.6MB）・表紙・Threads／Instagram／Facebook の投稿文。BGMは自作、ナレーションは女性の声。団体名は出していない。作り方は scripts/promo/kodomo_calendar/README.md。"

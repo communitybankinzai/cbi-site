@@ -3,6 +3,15 @@
   "note": "資料コメントタブで管理する内部資料の一覧。HTMLを追加したらこのリストに登録する。id はファイルパスから独立した安定識別子（comments.targetId と一致）。",
   "documents": [
     {
+      "id": "sogyojuku-plan-integrated-a",
+      "title": "統合A「文化財を入口にした市民ガイドと学びの循環」｜創業塾4シート・6W3H・確認が必要な事項（個人として）",
+      "path": "proposals/sogyojuku-plan-integrated-a-v1.html",
+      "category": "事業計画",
+      "description": "いんざい創業塾の4シートを、個人（祐樹）が事業主体・CBI が協力先として埋めた下書き。6W3H と、確認が必要な事項（了承・制度とお金・現地と実務・公開と名義・本人が書く欄・数字の根拠）を優先度つきで整理。拠点の結論は徒歩のまち歩きの起点＝木下。未確認が多く、本人が書く欄が残る下書き。",
+      "createdAt": "2026-11-10",
+      "updatedAt": "2026-11-10"
+    },
+    {
       "id": "bunkazai-distribution-kinoshita",
       "title": "印西市の文化財の分布｜木下駅からの距離と半径ごとの件数",
       "path": "proposals/bunkazai-distribution-kinoshita-v1.html",
