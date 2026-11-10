@@ -9470,10 +9470,10 @@
       "plans": [
         {
           "due": "2026-11-11",
-          "title": "📣 親子のおでかけカレンダーのSNS動画を、承認後に3媒体へ予約投稿する",
+          "title": "📣 親子のおでかけカレンダー動画の実投稿（3媒体・11/10 13:49予約）を確認し、反応と流入を見る",
           "category": "広報",
           "priority": "中",
-          "note": "動画・表紙・投稿文は site/assets/sns/2026-11-10_kodomo-calendar/ に置いてある（未公開・未push）。事業主が動画と本文を確認して承認したら、素材を site に push → 予約キューへ Threads・Instagram・Facebook の順に登録（IG宛ては表紙の検査を通す）。リンクには utm（utm_campaign=kodomoibasho）を付けてある。投稿の日が11/10からずれるなら、動画と本文の『83回・これから19回』を直す。投稿後は /admin/analytics の流入元別で見る。"
+          "note": "2026-11-10 に Threads・Instagram・Facebook へ予約（q1794285630333／q1794285638543／q1794285645800。投稿は15分ごとの処理の回で出る）。各媒体の一覧で実投稿を読み戻して確認する（キューの posted は信用しない）。リンクには utm（utm_campaign=kodomoibasho）を付けてあるので、CiDAO /admin/analytics の『SNS流入元別』で見る。動画の数字（83回・これから19回）は11/10時点。"
         },
         {
           "due": "2026-11-16",
