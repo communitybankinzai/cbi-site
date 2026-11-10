@@ -4797,11 +4797,13 @@ const UNREAD_POLL_MS = 30000;
   const ledgerNeedsApproval = e => e.status === 'active' && e.type === 'expense';
   // 本人の立替を本人が承認したもの（監事の確認を勧める）
   const ledgerSelfApproved = e => e.approval === 'approved' && sameName(e.paidBy, e.approvedBy);
+  // 監事の確認の対象＝会計が承認した支出すべて（本人承認に限らない。2026-11-10 事業主決定：他人の立替を精算する分も監事が見る）
+  const ledgerAuditNeeded = e => e.type === 'expense' && e.status === 'active' && e.approval === 'approved';
   function ledgerApprovalCell(e) {
     if (e.type !== 'expense') return '';
     const ai = e.aiVerdict ? `<span class="ledger-ai ledger-ai-${escapeAttr(e.aiVerdict)}" title="${escapeAttr(e.aiReason || '')}">${LEDGER_AI_LABEL[e.aiVerdict] || escapeHtml(e.aiVerdict)}</span>` : '<span class="ledger-ai">🤖 未判定</span>';
     const ap = `<span class="ledger-approval ledger-approval-${escapeAttr(e.approval || 'none')}">${LEDGER_APPROVAL_LABEL[e.approval || ''] || escapeHtml(e.approval)}</span>`;
-    const audit = ledgerSelfApproved(e) ? (e.auditBy ? ' <span class="ledger-audit" title="監事の確認済み">👁</span>' : ' <span class="ledger-audit is-todo" title="本人の立替を本人が承認。監事の確認待ち">👁?</span>') : '';
+    const audit = ledgerAuditNeeded(e) ? (e.auditBy ? ' <span class="ledger-audit" title="監事の確認済み">👁</span>' : ' <span class="ledger-audit is-todo" title="会計が承認済み。監事の確認待ち">👁?</span>') : '';
     return `${ai}<br>${ap}${audit}`;
   }
 
@@ -5097,7 +5099,7 @@ const UNREAD_POLL_MS = 30000;
         if (approval === 'pending' && e.approval) return false;
         if (approval === 'attention' && (e.approval || !['check', 'ng', 'error'].includes(e.aiVerdict))) return false;
         if (approval === 'rejected' && e.approval !== 'rejected') return false;
-        if (approval === 'audit' && !(ledgerSelfApproved(e) && !e.auditBy)) return false;
+        if (approval === 'audit' && !(ledgerAuditNeeded(e) && !e.auditBy)) return false;
       }
       if (from && ledgerDateStr(e.date) < from) return false;
       if (to && ledgerDateStr(e.date) > to) return false;
@@ -5119,7 +5121,7 @@ const UNREAD_POLL_MS = 30000;
     const pending = exp.filter(e => !e.approval);
     const attention = pending.filter(e => ['check', 'ng', 'error'].includes(e.aiVerdict));
     const rejected = exp.filter(e => e.approval === 'rejected');
-    const auditTodo = exp.filter(e => ledgerSelfApproved(e) && !e.auditBy);
+    const auditTodo = exp.filter(e => ledgerAuditNeeded(e) && !e.auditBy);
     const unjudged = exp.filter(e => !e.aiVerdict || e.aiVerdict === 'error');
     $('ledger-approval-summary').innerHTML = exp.length === 0 ? '' :
       `経費の承認：未承認 <strong>${pending.length}件</strong>（うちAIが要確認 ${attention.length}件）／差し戻し ${rejected.length}件／監事の確認待ち ${auditTodo.length}件` +
@@ -5274,10 +5276,10 @@ const UNREAD_POLL_MS = 30000;
       else if (e.approval === 'rejected') apLine = `<p><span class="ledger-approval ledger-approval-rejected">↩ 差し戻し</span>　${escapeHtml(e.approvedBy)}（${escapeHtml(at(e.approvedAt))}）｜理由: ${escapeHtml(e.approvalNote)}</p><p class="meta-note">内容を「訂正」すると、AIが判定し直し、承認待ちに戻ります。</p>`;
       else apLine = `<p><span class="ledger-approval ledger-approval-none">⏳ 未承認</span>　会計（${escapeHtml(approver)}）の承認待ち</p>`;
       let auditLine = '';
-      if (ledgerSelfApproved(e)) {
+      if (ledgerAuditNeeded(e)) {
         auditLine = e.auditBy
           ? `<p>👁 監事の確認：${escapeHtml(e.auditBy)}（${escapeHtml(at(e.auditAt))}）</p>`
-          : `<p class="ledger-audit-todo">👁 立替えた本人が承認しています。監事（${escapeHtml(auditor)}）の確認をおすすめします</p>`;
+          : `<p class="ledger-audit-todo">👁 監事（${escapeHtml(auditor)}）の確認待ちです${ledgerSelfApproved(e) ? '（立替えた本人が承認しています）' : ''}</p>`;
       }
       const btns = [];
       if (isApprover) {
@@ -6074,10 +6076,10 @@ const UNREAD_POLL_MS = 30000;
       ...(() => {
         const fyExp = fyLedger.filter(e => e.type === 'expense');
         const notApproved = fyExp.filter(e => e.approval !== 'approved');
-        const auditTodo = fyExp.filter(e => ledgerSelfApproved(e) && !e.auditBy);
+        const auditTodo = fyExp.filter(e => ledgerAuditNeeded(e) && !e.auditBy);
         return [
           [notApproved.length === 0, notApproved.length ? `${fy}年度の支出で、会計が承認していないものが${notApproved.length}件あります（報告書に「未承認」として載ります）` : `${fy}年度の支出はすべて会計が承認済み`],
-          [auditTodo.length === 0, auditTodo.length ? `立替えた本人が承認した支出が${auditTodo.length}件、監事の確認待ちです` : '本人承認の支出は監事の確認済み（または該当なし）'],
+          [auditTodo.length === 0, auditTodo.length ? `会計が承認した支出のうち${auditTodo.length}件が、監事の確認待ちです` : '承認済みの支出は監事の確認済み（または該当なし）'],
         ];
       })(),
       [orgActivitiesOf(fy).length > 0, `${fy}年度の活動の記録`],
