@@ -1,7 +1,14 @@
 {
-  "updatedAt": "2026-11-10T22:30:00+09:00",
+  "updatedAt": "2026-11-11T07:00:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-11-11",
+      "type": "content",
+      "target": "管理画面（資料タブ）",
+      "title": "統合Aの4シートのページに「拠点の案：木下駅前にぎわい広場のコンテナ運営」（配置図・7棟・現状）を追加。コンテナ運営の資料に委託販売・棚貸し事業（詳細版 §19・概要版 §14）を追加",
+      "detail": "sogyojuku-plan-integrated-a-v1.html に節 s7（配置図・7棟の割り当て・現状と判断に要る点・概要版／詳細版／質問票へのリンク）とナビを追加。kinoshita-container-detail-v1.html に §19、kinoshita-container-business-v1.html に §14 を追加。委託販売の相場は未取得で、いんザイ君の使用承認・インボイスの扱いは確認が要ると明記。"
+    },
     {
       "date": "2026-11-10",
       "type": "feature",
