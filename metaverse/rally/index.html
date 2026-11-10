@@ -118,6 +118,7 @@
   .askDraft .adActs button { background:rgba(255,255,255,.22); border:0; color:#fff; border-radius:8px; padding:7px 12px; font-size:13px; font-family:inherit; }
   .askDraft .adActs button.pri { background:#2a7f62; }
   .askDraft .adActs button:disabled { opacity:.4; }
+  .listen.playing { background: #b23a3a; color: #fff; }
 </style>
 </head>
 <body>
@@ -184,7 +185,7 @@
 <script>
 (function () {
   "use strict";
-  var V = "20261109l";
+  var V = "20261110a";
   var RADIUS_M = 80;                        // この距離以内でスタンプが押せる
   var STALE_MS = 180000;                    // これより古い位置では押せない（押したときに取り直す）
   var API = "https://cidao.vercel.app/api/rally-book";
@@ -200,7 +201,7 @@
       bTtl: "📒 スタンプ帳", bNote: "スタンプはこの端末に保存されます。「コードを発行」すると、別の端末や次の来訪でも、コードを入れれば続きから集められます（名前や連絡先は保存しません）。",
       bIssue: "コードを発行して保存", bCopy: "リンクをコピー", bResumeNote: "別の端末・前回のコードで続きから：", bResume: "このコードで続きから", bClose: "閉じる",
       saved: "保存しました", saveErr: "保存先に届きませんでした。端末には保存されています。通信のある所でもう一度お試しください。", resumed: "{n} 件のスタンプを読み込みました", notFound: "そのコードは見つかりません。", copied: "リンクをコピーしました", all: "50件すべて集めました！おめでとうございます。",
-      tourOn: "ガイドのツアーに参加中（{c}）", unverified: "（旧リンク・署名の確認なし）", tourSpot: "ガイド：{n}", leave: "退出", listen: "🔊 聞く（英語）", joinPrompt: "ガイドのツアーコード（6文字）を入れてください", tourErr: "ツアーに接続できませんでした。コードと通信を確認してください。", noVoice: "この端末のブラウザは読み上げに対応していません。",
+      tourOn: "ガイドのツアーに参加中（{c}）", unverified: "（旧リンク・署名の確認なし）", tourSpot: "ガイド：{n}", leave: "退出", listen: "🔊 聞く（英語）", stop: "⏹ 止める", joinPrompt: "ガイドのツアーコード（6文字）を入れてください", tourErr: "ツアーに接続できませんでした。コードと通信を確認してください。", noVoice: "この端末のブラウザは読み上げに対応していません。",
       voiceOn: "🔈 音声 ON", voiceOff: "🔈 音声 OFF", ask: "🎤 質問", askPrompt: "ガイドへの質問を入力（日本語に訳して届けます）", askListen: "聞いています…話し終えると送ります", askSent: "ガイドに質問を送りました", askErr: "質問を送れませんでした。通信を確認してください。", adLabel: "あなたの質問（直せます）", adSend: "📨 ガイドに送る", adRetrans: "訳し直す", adCancel: "取り消す", noMic: "この端末のブラウザは音声認識に対応していません。文字で入力してください。", capHint: "（🔈 音声 ON にすると読み上げます）",
       galTtl: "🏛 集めた精霊 {n} / {total}", galEmpty: "まだありません。文化財の近くでスタンプを押すと、ここに精霊が並びます", certBtn: "🏅 達成証を作る", certRest: "あと {rest} 件で達成証", certAsk: "達成証に入れる名前を入力してください（空欄なら名前なし・保存されません）", certNote: "画像を長押しで保存できます" },
     en: { ttl: "🏛 Inzai Heritage Stamp Rally", sub: "Walk up to a site to get its stamp (spirit card) · prototype", lang: "日本語", list: "☰ List", map: "🗺 Map", book: "📒 Stamp book",
@@ -209,7 +210,7 @@
       bTtl: "📒 Stamp book", bNote: "Stamps are saved on this device. Issue a code to continue on another device or on your next visit. No name or contact is stored.",
       bIssue: "Issue a code and save", bCopy: "Copy link", bResumeNote: "Continue with a code from another device or a previous visit:", bResume: "Continue with this code", bClose: "Close",
       saved: "Saved", saveErr: "Could not reach the server. Your stamps are kept on this device. Try again when online.", resumed: "Loaded {n} stamps", notFound: "That code was not found.", copied: "Link copied", all: "You collected all 50! Congratulations.",
-      tourOn: "Following your guide ({c})", unverified: "(old link, unverified)", tourSpot: "Guide: {n}", leave: "Leave", listen: "🔊 Listen (EN)", joinPrompt: "Enter the tour code from your guide (6 letters)", tourErr: "Could not join the tour. Check the code and your connection.", noVoice: "This browser cannot read aloud.",
+      tourOn: "Following your guide ({c})", unverified: "(old link, unverified)", tourSpot: "Guide: {n}", leave: "Leave", listen: "🔊 Listen (EN)", stop: "⏹ Stop", joinPrompt: "Enter the tour code from your guide (6 letters)", tourErr: "Could not join the tour. Check the code and your connection.", noVoice: "This browser cannot read aloud.",
       voiceOn: "🔈 Voice ON", voiceOff: "🔈 Voice OFF", ask: "🎤 Ask", askPrompt: "Type your question for the guide (it will be translated into Japanese)", askListen: "Listening… release when you finish", askSent: "Your question was sent to the guide", askErr: "Could not send the question. Check your connection.", adLabel: "Your question (you can edit)", adSend: "📨 Send to guide", adRetrans: "Retranslate", adCancel: "Cancel", noMic: "This browser cannot recognize speech. Please type your question.", capHint: "(turn Voice ON to hear it)",
       galTtl: "🏛 Spirits collected {n} / {total}", galEmpty: "No spirits yet. Stamp near a heritage site to collect them.", certBtn: "🏅 Make my certificate", certRest: "{rest} more to go for the certificate", certAsk: "Enter a name for the certificate (leave blank for none; it is not saved)", certNote: "Press and hold the image to save it" }
   };
@@ -274,6 +275,7 @@
 
   function openSheet(id, pan) {
     var s = SPOTS.filter(function (x) { return x.reportId === id; })[0]; if (!s) return;
+    if (current && current.reportId !== id) stopSpeech();   // 別の文化財に移ったら読み上げを止める
     var prev = current; current = s; if (prev) refreshPin(prev); refreshPin(s);
     var e = EN[id], got = store.stamps[id];
     $("sName").textContent = s.name; $("sEn").textContent = e ? e.name : (lang === "en" ? "" : "");
@@ -287,7 +289,7 @@
     $("sheet").classList.add("show");
     if (pan && map) map.panTo([s.lat, s.lon]);
   }
-  function closeSheet() { $("sheet").classList.remove("show"); var p = current; current = null; if (p) refreshPin(p); }
+  function closeSheet() { stopSpeech(); $("sheet").classList.remove("show"); var p = current; current = null; if (p) refreshPin(p); }
 
   function canStamp(s) {
     if (!pos) return false;
@@ -475,18 +477,23 @@
   }
   /* ---- 読み上げ（英語・ブラウザ標準） ---- */
   function loadVoices() { try { voices = window.speechSynthesis ? speechSynthesis.getVoices() : []; } catch (e) { voices = []; } }
+  var listening = false;   // 「聞く」の再生中か（ボタンを ⏹ 止める に変える）
+  function listenLabel() { $("listenBtn").textContent = listening ? t("stop") : t("listen"); $("listenBtn").classList.toggle("playing", listening); }
+  function listenDone() { listening = false; listenLabel(); }
   function speakEn() {
+    if (listening) { stopSpeech(); return; }   // 再生中に押したら止める
     if (!current || !EN[current.reportId]) return;
     var en = EN[current.reportId];
+    listening = true; listenLabel();
     var url = audioUrl(current.reportId);
-    if (url) { stopSpeech(); playAudio(url, null, null, function () { speakSynth(en); }); return; }   // 録音済みの音声を優先
+    if (url) { stopAudio(); try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} playAudio(url, null, listenDone, function () { speakSynth(en); }); return; }   // 録音済みの音声を優先
     speakSynth(en);
   }
   function speakSynth(en) {
     if (!window.speechSynthesis) { toast(t("noVoice"), 3000); return; }
     speechSynthesis.cancel();
     var u = new SpeechSynthesisUtterance(en.speech || en.intro);
-    u.lang = "en-US"; u.rate = 0.95;
+    u.lang = "en-US"; u.rate = 0.95; u.onend = listenDone; u.onerror = listenDone;
     var v = voices.filter(function (x) { return /^en[-_](US|GB)/i.test(x.lang); })[0] || voices.filter(function (x) { return /^en/i.test(x.lang); })[0];
     if (v) u.voice = v;
     speechSynthesis.speak(u);
@@ -501,7 +508,7 @@
     if (v && /^en/.test(u.lang)) u.voice = v;
     speechSynthesis.speak(u);
   }
-  function stopSpeech() { stopAudio(); try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} }
+  function stopSpeech() { stopAudio(); try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} listenDone(); }
   function showCaption(p) {
     var cap = $("capBar"); cap.innerHTML = "";
     if (p && p.stop === true) { stopSpeech(); cap.classList.remove("show"); return; }   // ガイドがツアーを終えた
