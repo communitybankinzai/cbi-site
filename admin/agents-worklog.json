@@ -9470,10 +9470,10 @@
       "plans": [
         {
           "due": "2026-11-11",
-          "title": "📣 親子のおでかけカレンダー動画の実投稿（3媒体・11/10 13:49予約）を確認し、反応と流入を見る",
+          "title": "📈 親子のおでかけカレンダー動画（3媒体に11/10 13:54投稿済み）の反応と流入を見る",
           "category": "広報",
           "priority": "中",
-          "note": "2026-11-10 に Threads・Instagram・Facebook へ予約（q1794285630333／q1794285638543／q1794285645800。投稿は15分ごとの処理の回で出る）。各媒体の一覧で実投稿を読み戻して確認する（キューの posted は信用しない）。リンクには utm（utm_campaign=kodomoibasho）を付けてあるので、CiDAO /admin/analytics の『SNS流入元別』で見る。動画の数字（83回・これから19回）は11/10時点。"
+          "note": "2026-11-10 13:54〜13:55 に Threads・Instagram（リール）・Facebook（リール）へ投稿済み。各媒体の一覧で実投稿を読み戻して確認した。Threads https://www.threads.com/@communitybankinzai/post/DfjGFAdPhMb ／ Instagram https://www.instagram.com/reel/DfjGJxVDWaR/ ／ Facebook https://www.facebook.com/reel/1074399645644198/ 。リンクには utm（utm_campaign=kodomoibasho）を付けてあるので、CiDAO /admin/analytics の『SNS流入元別』で閲覧を見る。動画の数字（83回・これから19回）は11/10時点。"
         },
         {
           "due": "2026-11-16",
