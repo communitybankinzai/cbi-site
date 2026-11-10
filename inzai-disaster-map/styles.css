@@ -4309,6 +4309,24 @@ body.view-focus .legend-more { height: var(--legend-h, 37px); }
 .rain-slider-legend { display: flex; flex-direction: column; gap: 2px; margin: 4px 0 0; font-size: 12px; }
 .rain-slider-legend .rs-red { color: #b8322c; }
 .rain-slider-legend .rs-blue { color: #1565c0; }
+/* 2026-11-10 いまの雨量の帯（冠水の用途だけ・#rain-now-bar）。状態は data-state：loading／dry／rain／past／error（app.js の renderRainNowBar） */
+.rain-now-bar { padding: 6px 10px 7px; background: #f4f6f9; border-bottom: 1px solid var(--border); color: #16324f; font-size: 12.5px; line-height: 1.45; }
+.rain-now-bar[data-state="dry"] { background: #edf7f3; }
+.rain-now-bar[data-state="rain"] { background: #fff3e0; }
+.rain-now-bar[data-state="error"] { background: #fde8e6; color: #8f1d17; }
+.rain-now-nums { margin: 0; font-size: 13.5px; }
+.rain-now-src { margin-left: 4px; font-size: 11.5px; color: #5a6675; }
+.rain-now-text { margin: 1px 0 0; }
+.rain-now-text:empty { display: none; }
+.rain-now-bar[data-state="past"] .rain-now-text { font-weight: 700; }
+.rain-now-steps { display: flex; align-items: center; gap: 5px; margin-top: 5px; overflow-x: auto; scrollbar-width: none; }
+.rain-now-steps::-webkit-scrollbar { display: none; }
+.rain-now-steps button { flex: 0 0 auto; min-height: 34px; padding: 3px 11px; border: 1px solid #b9c4d3; border-radius: 17px; background: #fff; color: #16324f; font: inherit; font-size: 12.5px; cursor: pointer; }
+.rain-now-steps button[aria-pressed="true"] { background: #16324f; border-color: #16324f; color: #fff; font-weight: 700; }
+@media (max-width: 639px) {
+  .rain-now-src-long { display: none; }
+  .rain-now-nums { font-size: 13px; }
+}
 .rain-slider-hint { margin: 4px 0 0; font-size: 12px; color: #5a6675; }
 .rain-more { margin: 8px 0 4px; }
 .rain-more > summary { cursor: pointer; font-size: 12.5px; color: #16324f; padding: 4px 0; }

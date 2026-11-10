@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況マップ">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261102d">
+    <link rel="stylesheet" href="./styles.css?v=20261110b">
   </head>
   <body data-view="gate">
     <!-- 2026-10-24 事業主指示「スマホで使いにくい」：開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
@@ -139,6 +139,21 @@
 
       <!-- 2026-10-25 状況の帯：どの用途でも、警報・避難情報・避難所の状況を1行で。取得できないときは「取得できません」と出す（app.js の renderStatusStrip） -->
       <div class="status-strip" id="status-strip" role="status" aria-live="polite"><span class="status-chip is-muted">状況を確認中…</span></div>
+
+      <!-- 2026-11-10 いまの雨量の帯（冠水の用途だけ）：開いたときの雨量に合わせて通れない道（赤）を出す。雨が降っていない日は赤を出さない。
+           段階ボタンで「もし3日間でこれだけ降ったら」の過去の記録を見られる（app.js の renderRainNowBar・setRainStep） -->
+      <div class="rain-now-bar" id="rain-now-bar" data-views="rain" data-state="loading">
+        <p class="rain-now-nums" id="rain-now-nums" role="status" aria-live="polite">いまの雨量を確認中…</p>
+        <p class="rain-now-text" id="rain-now-text"></p>
+        <div class="rain-now-steps" role="group" aria-label="いまの雨量で見るか、もし雨が降ったらの過去の記録を見るか">
+          <button type="button" data-rain-step="now" aria-pressed="true" title="いまの雨量（過去3日間の合計）に合わせて表示する">いま</button>
+          <!-- スマホ幅（375px）で5つが1行に収まるよう、「もし」は最初のボタンにだけ付ける -->
+          <button type="button" data-rain-step="100" aria-pressed="false" aria-label="もし3日間で100ミリ降ったら" title="もし3日間で100ミリ降ったら：3日間の雨量が100ミリまでのときに通れなくなった道（過去の記録）">もし100ミリ</button>
+          <button type="button" data-rain-step="200" aria-pressed="false" aria-label="もし3日間で200ミリ降ったら" title="もし3日間で200ミリ降ったら：3日間の雨量が200ミリまでのときに通れなくなった道（過去の記録）">200ミリ</button>
+          <button type="button" data-rain-step="300" aria-pressed="false" aria-label="もし3日間で300ミリ降ったら" title="もし3日間で300ミリ降ったら：3日間の雨量が300ミリまでのときに通れなくなった道（過去の記録）">300ミリ</button>
+          <button type="button" data-rain-step="all" aria-pressed="false" aria-label="過去の記録をすべて見る" title="これまでに通れなくなった記録のある道すべて（台風25号は3日間で300〜418ミリ）">すべて</button>
+        </div>
+      </div>
 
       <nav class="quick-nav" id="quick-nav" aria-label="画面内の移動">
         <span class="quick-nav-label">見たい情報へ</span>
@@ -857,11 +872,12 @@
             <div class="rain-window" role="group" aria-label="どの時間の雨量で見るか">
               <button type="button" data-rain-window="r1h" aria-pressed="false">1時間</button>
               <button type="button" data-rain-window="r3h" aria-pressed="false">3時間</button>
-              <button type="button" data-rain-window="r24h" aria-pressed="true">24時間</button>
+              <button type="button" data-rain-window="r24h" aria-pressed="false">24時間</button>
+              <button type="button" data-rain-window="r72h" aria-pressed="true">3日間</button>
             </div>
             <div class="rain-slider">
               <input type="range" id="rain-slider" min="0" max="320" step="5" value="0" aria-label="雨量（記録した時刻までの積算）">
-              <div class="rain-slider-read"><strong id="rain-slider-value">24時間雨量：最大</strong><span id="rain-slider-count"></span></div>
+              <div class="rain-slider-read"><strong id="rain-slider-value">3日間雨量：最大</strong><span id="rain-slider-count"></span></div>
               <p class="rain-slider-legend" id="rain-slider-legend"><span class="rs-red">🔴 冠水実績のある道（すべて）</span><span class="rs-blue">🔵 大雨でも通れていた道</span></p>
             </div>
             
@@ -2036,7 +2052,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261029a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261106d"></script>
+    <script src="./app.js?v=20261110c"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>

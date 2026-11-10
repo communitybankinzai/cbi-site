@@ -7936,7 +7936,10 @@ function renderKansuiLayer() {
   kansuiHiddenImplausible = 0;
   // 雨量でしぼり込み中は出さない。みんつくの投稿は雨量を持たず、出したままだと雨量で選ばれた線に見えるため（2026-09-29 中司さん指摘）
   // rainVerdictFilter の代入はファイル後方なので、初期化の早い段階では未定義（その間はしぼり込みなし）
-  if (typeof rainVerdictFilter !== "undefined" && rainVerdictFilter && rainFilterActive()) {
+  const rainFiltered = typeof rainVerdictFilter !== "undefined" && rainVerdictFilter && rainFilterActive();
+  // いまの雨量に連動中（2026-11-10）は、直近3日間の投稿だけを出す（いま起きている冠水の投稿を、雨量の比較で消さない）
+  const recentOnly = rainFiltered && Boolean(rainLive) && rainLive.mode === "now";
+  if (rainFiltered && !recentOnly) {
     setKansuiStatus(`雨量でしぼり込み中のため非表示（投稿に雨量が無いため）・全${kansuiData.length}件`);
     return;
   }
@@ -7945,6 +7948,7 @@ function renderKansuiLayer() {
     const isToday = isTargetDayRecord(road.createdAt);
     if (isToday) todayCount += 1;
     if (!passesWhenFilter(road.createdAt)) return;
+    if (recentOnly && !isRecentRainIso(road.createdAt)) return;
     shown += 1;
     if (!road.bounds) road.bounds = L.latLngBounds(road.path);
     if (!view.intersects(road.bounds)) return;
@@ -7977,7 +7981,8 @@ function renderKansuiLayer() {
   });
   const filtered = shown !== kansuiData.length ? `${shown}件表示 / 全${kansuiData.length}件` : `${kansuiData.length}件`;
   const skipped = kansuiHiddenImplausible ? `・道路をなぞっていない線 ${kansuiHiddenImplausible}件は非表示` : "";
-  const partial = todayOnly ? `・縮小中は対象日の投稿だけ表示（拡大すると過去の投稿も出ます）` : `・画面の範囲の${drawn}件を表示中`;
+  const partial = (recentOnly ? "・いまの雨量に連動中は直近3日間の投稿だけ表示" : "")
+    + (todayOnly ? `・縮小中は対象日の投稿だけ表示（拡大すると過去の投稿も出ます）` : `・画面の範囲の${drawn}件を表示中`);
   setKansuiStatus(`${filtered}（対象日 ${todayCount}件）${skipped}${partial}・ ${formatDateTime(toDateTimeLocal(kansuiGeneratedAt)) || ""}時点`);
 }
 
@@ -9932,11 +9937,23 @@ function rainVerdictOf(road) {
 // みんつくの投稿（kansui）は雨量を持たないため、しぼり込み中は地図に出さない（注記を凡例に出す）。
 var rainVerdictFilter = { flood_likely: true, light_rain: true, no_rain: true };
 // 💧 積算雨量のしぼり込み（2026-09-23 追加指示）。window は r1h／r3h／r24h、min は mm（null＝未指定）
-var rainAmountFilter = { window: "r24h", at: null };   // at＝雨量スライダーの位置（mm）。null＝使っていない（2026-10-25：以前の min「◯mm以上」から変更）
-const RAIN_WINDOW_LABELS = { r1h: "1時間", r3h: "3時間", r24h: "24時間" };
+// 2026-11-10：物差しの既定を「3日間（r72h）」に。「通れない」記録の9割は台風25号で、多くは雨が止んだ後に記録された
+// （1時間雨量が1mm未満の記録が 111件中91件・24時間雨量が50mm未満が46件）。1時間・24時間で比べると、少ない雨で多くの道が
+// 通れなくなったように見える。dry＝いま（過去3日間）ほぼ雨が降っていない＝赤い線を1本も出さない（冠水の用途を開いたとき）
+var rainAmountFilter = { window: "r72h", at: null, dry: false };   // at＝雨量スライダーの位置（mm）。null＝使っていない（2026-10-25：以前の min「◯mm以上」から変更）
+// ☔ いまの雨量への連動（中身は initRainPanel の下）。mode："now"＝いまの雨量に合わせている／"past"＝過去の記録を見ている（段階ボタン・スライダー）
+var rainLive = { mode: "past", data: null, error: null, fetchedAt: 0, loading: null };
+const RAIN_WINDOW_LABELS = { r1h: "1時間", r3h: "3時間", r24h: "24時間", r72h: "3日間" };
 // 「大雨」の目安（雨量スライダーの🔵＝大雨でも通れていた道に使う）。1時間20mmは排水が追いつく強さ（判定 v2.1 の基準）、
-// 24時間100mmは台風25号級の大雨の目安（記録の24時間雨量は最大約320mm）。3時間は間をとった値
-const RAIN_HEAVY = { r1h: 20, r3h: 50, r24h: 100 };
+// 24時間100mmは台風25号級の大雨の目安（記録の24時間雨量は最大約320mm）。3時間は間をとった値。
+// 3日間200mmは仮の値（台風25号は3日間300〜418mm。通れた記録274件のうち195件が200mm以上）
+const RAIN_HEAVY = { r1h: 20, r3h: 50, r24h: 100, r72h: 200 };
+
+// 直近3日間（72時間）の記録・投稿か。いまの雨量に連動中は、これらを雨量の比較から外して必ず出す
+function isRecentRainIso(iso) {
+  const time = Date.parse(iso || "");
+  return Number.isFinite(time) && Date.now() - time < 72 * 60 * 60 * 1000;
+}
 
 function rainFilterActive() {
   return Object.values(rainVerdictFilter).some(on => !on) || rainAmountFilter.at !== null;
@@ -9950,9 +9967,13 @@ function passesRainFilter(road) {
   if (Object.values(rainVerdictFilter).some(on => !on)) {
     if (!rain || !rain.verdict || !rainVerdictFilter[rain.verdict]) return false;
   }
+  // いまの雨量に連動中は、直近3日間の記録を雨量にかかわらず出す（いま起きていること＝今日の「通れない」「通れた」を、
+  // 過去との雨量の比較で消さない。雨なしの日でも、今日記録された通れない道は赤で出る・2026-11-10）
+  if (rainLive && rainLive.mode === "now" && isRecentRainIso(road?.endedAt)) return true;
   if (passedRoadKindOf(road) === "blocked") {
     // 🔴通れない道＝その雨量「までに」通れなくなっていた記録（記録した時刻の雨量 ≦ スライダー。右へ動かすほど増える）。
     // 最大のときは、雨量が無い記録も含めてすべて（冠水実績）
+    if (rainAmountFilter.dry) return false;   // いま雨が降っていない日は、赤い線を出さない（いま通れないと錯覚させない・2026-11-10）
     return at === null || (typeof value === "number" && value <= at);
   }
   // 🔵通れた道＝その雨量「でも」通れていた記録（記録した時刻の雨量 ≧ スライダー。右へ動かすほど減る）。
@@ -9974,7 +9995,7 @@ function syncRainFilterNote() {
   if (Object.values(rainVerdictFilter).some(on => !on)) {
     parts.push(Object.keys(rainVerdictFilter).filter(key => rainVerdictFilter[key]).map(key => RAIN_VERDICTS[key].icon).join("") || "該当なし");
   }
-  if (rainAmountFilter.at !== null) parts.push(`${RAIN_WINDOW_LABELS[rainAmountFilter.window]}${rainAmountFilter.at}mm`);
+  if (rainAmountFilter.at !== null) parts.push(rainAmountFilter.dry ? (rainLive.data ? "いま雨なし" : "いまの雨量を確認中") : `${RAIN_WINDOW_LABELS[rainAmountFilter.window]}${rainAmountFilter.at}mm`);
   chip.textContent = active ? `💧 ${parts.join(" ／ ")}` : "💧 雨量";
   chip.setAttribute("aria-pressed", String(active));
   chip.title = active
@@ -9993,7 +10014,9 @@ function applyRainFilter() {
 function resetRainFilter() {
   Object.keys(rainVerdictFilter).forEach(key => { rainVerdictFilter[key] = true; });
   rainAmountFilter.at = null;
-  rainAmountFilter.window = "r24h";   // 解除＝初期（24時間・最大）へ
+  rainAmountFilter.dry = false;
+  rainAmountFilter.window = "r72h";   // 解除＝3日間・最大（これまでの記録すべて）へ。帯の「すべて」と同じ
+  rainLive.mode = "past";
   syncRainSlider();
   applyRainFilter();
 }
@@ -10007,7 +10030,7 @@ function resetRainFilter() {
 function rainWindowMax(win) {
   const values = (typeof passedRoadsData !== "undefined" && Array.isArray(passedRoadsData) ? passedRoadsData : [])
     .map(road => road.rain && road.rain[win]).filter(value => typeof value === "number");
-  const step = win === "r24h" ? 5 : 1;
+  const step = win === "r24h" || win === "r72h" ? 5 : 1;
   const max = values.length ? Math.max(...values) : 0;
   return Math.max(10, Math.ceil(max / step) * step);
 }
@@ -10019,7 +10042,7 @@ function syncRainSlider() {
   document.querySelectorAll("#rain-panel [data-rain-window]").forEach(button => {
     button.setAttribute("aria-pressed", String(button.dataset.rainWindow === win));
   });
-  slider.step = win === "r24h" ? "5" : "1";
+  slider.step = win === "r24h" || win === "r72h" ? "5" : "1";
   slider.max = String(rainWindowMax(win));
   slider.value = rainAmountFilter.at === null ? slider.max : String(Math.min(rainAmountFilter.at, Number(slider.max)));
   syncRainSliderText();
@@ -10034,9 +10057,12 @@ function syncRainSliderText() {
   const win = rainAmountFilter.window;
   const at = rainAmountFilter.at;
   const heavy = `大雨（${RAIN_WINDOW_LABELS[win]}${RAIN_HEAVY[win]}mm以上）`;
-  valueNode.textContent = at === null ? `${RAIN_WINDOW_LABELS[win]}雨量：最大` : `${RAIN_WINDOW_LABELS[win]}雨量 ${at}mm`;
+  const dry = Boolean(rainAmountFilter.dry);
+  valueNode.textContent = at === null ? `${RAIN_WINDOW_LABELS[win]}雨量：最大` : `${RAIN_WINDOW_LABELS[win]}雨量 ${at}mm${dry ? "（いま・雨なし）" : ""}`;
   if (legendNode) {
-    legendNode.innerHTML = at === null
+    legendNode.innerHTML = dry
+      ? `<span class="rs-red">🔴 出していません（この3日間ほぼ雨が降っていないため）</span><span class="rs-blue">🔵 これまでに通れた記録のある道</span>`
+      : at === null
       ? `<span class="rs-red">🔴 冠水実績のある道（すべて）</span><span class="rs-blue">🔵 ${heavy}でも通れていた道</span>`
       : `<span class="rs-red">🔴 この雨量までに通れなくなっていた道</span><span class="rs-blue">🔵 ${at >= RAIN_HEAVY[win] ? `${heavy}でも` : "この雨量でも"}通れていた道</span>`;
   }
@@ -10048,6 +10074,7 @@ function syncRainSliderText() {
   const shown = passedRoadsData.filter(road => passesWhenFilter(road.endedAt) && passedKindFilter[passedRoadKindOf(road)] && passesRainFilter(road));
   const red = shown.filter(road => passedRoadKindOf(road) === "blocked").length;
   countNode.textContent = `　この地図の記録 🔴 ${red}件　🔵 ${shown.length - red}件`;
+  renderRainNowBar(red);   // 地図の上の帯（いまの雨量・表示中の内容）も同じ件数でそろえる
 }
 
 function initRainPanel() {
@@ -10056,7 +10083,7 @@ function initRainPanel() {
   if (!panel || !chip) return;
   // ⚠ この初期化はファイル前半から呼ばれ、rainAmountFilter の代入（後方）はまだ走っていない。
   // var の巻き上げで宣言だけがあり値は undefined なので、既定値で読む（2026-09-23 に踏んだ）
-  const state = () => (typeof rainAmountFilter !== "undefined" && rainAmountFilter) || { window: "r24h", at: null };
+  const state = () => (typeof rainAmountFilter !== "undefined" && rainAmountFilter) || { window: "r72h", at: null };
   const syncWindowButtons = () => {
     panel.querySelectorAll("[data-rain-window]").forEach(button => {
       button.setAttribute("aria-pressed", String(button.dataset.rainWindow === state().window));
@@ -10082,6 +10109,8 @@ function initRainPanel() {
     const win = event.target.closest("[data-rain-window]");
     if (win) {
       rainAmountFilter.window = win.dataset.rainWindow;
+      rainAmountFilter.dry = false;   // 手で測り方を変えたら「いまの雨量に連動」をやめる（帯の「いま」で戻せる）
+      rainLive.mode = "past";
       syncWindowButtons();
       syncRainSlider();   // 測り方が変わると雨量の目盛りも変わる（1時間は最大31mm、24時間は約320mm）
       if (rainAmountFilter.at !== null) {
@@ -10105,6 +10134,8 @@ function initRainPanel() {
   panel.addEventListener("input", event => {
     if (event.target.id !== "rain-slider") return;
     rainAmountFilter.at = Number(event.target.value) >= Number(event.target.max) ? null : Number(event.target.value);   // 最大の位置は「最大（初期）」
+    rainAmountFilter.dry = false;   // スライダーを手で動かしたら「いまの雨量に連動」をやめる（帯の「いま」で戻せる）
+    rainLive.mode = "past";
     syncRainSliderText();
     clearTimeout(rainSliderTimer);
     rainSliderTimer = setTimeout(applyRainFilter, 60);
@@ -10116,6 +10147,163 @@ function initRainPanel() {
   });
   syncWindowButtons();
 }
+
+// ─────────────────────────────────────────────────────────────
+// ☔ いまの雨量に合わせて開く（2026-11-10 事業主指示「開いたらその時の雨量で過去の冠水、通れた道路を表示」）
+// 冠水の用途（?mode=rain）に入るたびに、周辺4か所のアメダス（AMEDAS_STATIONS）の平均を取り、
+//   過去3日間の合計が1mm未満 → 赤い線（通れない道・みんつくの冠水）を出さない（晴れの日に「いま通れない」と錯覚させない）
+//   1mm以上               → 記録した時刻の3日間雨量が、いまの値以下の「通れない道」だけを赤で出す
+//   取得できない           → これまでどおり全部を出し、帯に赤字で「取得できません」
+// 地図の上の帯 #rain-now-bar に「いまの雨（1時間）／過去3日間の合計」と、段階ボタン（いま／もし3日間で100・200・300ミリ／すべて）。
+// 3日間の合計＝いま・24時間前・48時間前の「24時間雨量」の和（アメダスに3日間雨量の項目は無い）。
+// 記録側の雨量は場所ごとの重み付け平均、こちらは4か所の単純平均（市全体の目安）なので、数mmずれることがある。
+// ─────────────────────────────────────────────────────────────
+const RAIN_DRY_MM = 1;                       // 過去3日間の合計がこれ未満なら「雨なし」
+const RAIN_NOW_TTL_MS = 5 * 60 * 1000;       // 取り直しの最短間隔（アメダスは10分ごとに更新）
+const RAIN_NOW_STALE_MS = 30 * 60 * 1000;    // 取得に失敗したとき、これより古い値は使わない
+
+function rainNowStamp(date) {
+  // 気象庁のファイル名は日本時間。端末の時計の地域に左右されないよう、UTC に9時間を足して作る
+  return new Date(date.getTime() + 9 * 3600 * 1000).toISOString().replace(/[-:T]/g, "").slice(0, 14);
+}
+
+// 失敗しても例外にしない（rainLive.error に理由を入れる）。同時に2回は取りに行かない
+function fetchRainNow(force) {
+  if (!force && rainLive.data && Date.now() - rainLive.fetchedAt < RAIN_NOW_TTL_MS) return Promise.resolve(rainLive.data);
+  if (rainLive.loading) return rainLive.loading;
+  rainLive.loading = (async () => {
+    try {
+      const timeText = (await (await fetch(`https://www.jma.go.jp/bosai/amedas/data/latest_time.txt?_=${Date.now()}`, { cache: "no-store" })).text()).trim();
+      const latest = new Date(timeText);
+      if (Number.isNaN(latest.getTime())) throw new Error("観測時刻を取得できません");
+      const maps = await Promise.all([0, 24, 48].map(async back => {
+        const response = await fetch(`https://www.jma.go.jp/bosai/amedas/data/map/${rainNowStamp(new Date(latest.getTime() - back * 3600 * 1000))}.json`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      }));
+      const mean = (data, key) => {
+        const values = AMEDAS_STATIONS.map(station => amedasValue(data[station.code], key)).filter(value => value !== null);
+        return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+      };
+      const days = maps.map(data => mean(data, "precipitation24h"));
+      if (days.some(value => value === null)) throw new Error("観測値がありません");
+      rainLive.data = { at: latest.toISOString(), r1h: mean(maps[0], "precipitation1h"), r24h: days[0], r72h: days[0] + days[1] + days[2] };
+      rainLive.error = null;
+      rainLive.fetchedAt = Date.now();
+    } catch (error) {
+      rainLive.error = error?.message || "接続エラー";
+      if (Date.now() - rainLive.fetchedAt > RAIN_NOW_STALE_MS) rainLive.data = null;
+    } finally {
+      rainLive.loading = null;
+    }
+    return rainLive.data;
+  })();
+  return rainLive.loading;
+}
+
+// いまの雨量を、雨量のしぼり込み（rainAmountFilter）へ写す。冠水の用途で「いま」を選んでいるときだけ
+function applyRainNow() {
+  if (rainLive.mode !== "now" || currentView !== "rain") return;
+  const data = rainLive.data;
+  rainAmountFilter.window = "r72h";
+  if (!data) {
+    // 取得中は赤を出さずに待つ。取得できないときは、これまでどおり全部を出す（帯に赤字で理由を出す）
+    rainAmountFilter.at = rainLive.error ? null : 0;
+    rainAmountFilter.dry = !rainLive.error;
+  } else if (data.r72h < RAIN_DRY_MM) {
+    rainAmountFilter.at = 0;
+    rainAmountFilter.dry = true;
+  } else {
+    const at = Math.ceil(data.r72h);
+    // 記録の最大以上の雨は「最大」と同じ＝これまでの記録すべて（記録をまだ読み込んでいないときは比べない）
+    rainAmountFilter.at = passedRoadsData.length && at >= rainWindowMax("r72h") ? null : at;
+    rainAmountFilter.dry = false;
+  }
+  syncRainSlider();
+  applyRainFilter();
+}
+
+function enterRainNow(force) {
+  // 期間（⏱ 期間・台風25号など）を選んでいる間は、過去の記録を見ているので連動しない（applyRecordRange と対）
+  if (recordWhenFilter.from !== null || recordWhenFilter.to !== null) { rainLive.autoPast = true; setRainStep("all"); return; }
+  rainLive.mode = "now";
+  applyRainNow();   // 手元の値ですぐ描く（まだ無ければ「確認中」＝赤なし）
+  fetchRainNow(force).then(() => applyRainNow());
+}
+
+// 帯の段階ボタン：now＝いまの雨量へ戻す／100・200・300＝もし3日間でそれだけ降ったら／all＝これまでの記録すべて
+function setRainStep(step) {
+  if (step === "now") { enterRainNow(false); return; }
+  rainLive.mode = "past";
+  rainAmountFilter.window = "r72h";
+  rainAmountFilter.at = step === "all" ? null : Number(step);
+  rainAmountFilter.dry = false;
+  syncRainSlider();
+  applyRainFilter();
+}
+
+function rainMmText(value) {
+  if (typeof value !== "number") return "—";
+  return value > 0 && value < 1 ? String(Math.round(value * 10) / 10) : String(Math.round(value));
+}
+
+// 地図の上の帯。⚠ 過去の記録を出しているときは、必ず「いま通れないわけではありません」を添える
+function renderRainNowBar(red) {
+  const bar = document.getElementById("rain-now-bar");
+  if (!bar || !rainLive) return;
+  const data = rainLive.data;
+  const win = rainAmountFilter.window;
+  const at = rainAmountFilter.at;
+  const live = rainLive.mode === "now";
+  let state = "past";
+  let text = "";
+  if (live && !data) {
+    state = rainLive.error ? "error" : "loading";
+    text = rainLive.error ? "これまでに通れなくなった記録のある道を、すべて赤で出しています。いま通れないとは限りません。" : "";
+  } else if (live && rainAmountFilter.dry) {
+    state = "dry";
+    text = red > 0
+      ? `この3日間ほぼ雨が降っていないため、過去の赤い線は出していません。直近3日間に記録された通れない道（🔴 ${red}件）だけを出しています。`
+      : "この3日間ほぼ雨が降っていないため、赤い線（過去に通れなくなった道）は出していません。";
+  } else if (live) {
+    state = "rain";
+    text = at === null
+      ? "過去のどの記録よりも多い雨です。これまでに通れなくなった道を、すべて赤で出しています。"
+      : `過去に、3日間の雨量がここまでのときに通れなくなった道を赤で表示中（🔴 ${red}件・直近3日間の記録を含む）。`;
+  } else {
+    text = at === null
+      ? "過去の記録を表示中：これまでに通れなくなった記録のある道すべて。いま通れないわけではありません。"
+      : `過去の記録を表示中：${RAIN_WINDOW_LABELS[win]}の雨量が${at}ミリまでのときに通れなくなった道（🔴 ${red}件）。いま通れないわけではありません。`;
+  }
+  bar.dataset.state = state;
+  const numsNode = document.getElementById("rain-now-nums");
+  if (numsNode) {
+    if (data) {
+      const time = new Date(data.at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tokyo" });
+      // スマホでは1行に収める（出どころの長い説明は幅のある画面だけ。title にも入れる）
+      numsNode.innerHTML = `<strong>いまの雨：1時間に${escapeHtml(rainMmText(data.r1h))}ミリ／過去3日間：${escapeHtml(rainMmText(data.r72h))}ミリ</strong><span class="rain-now-src">（${escapeHtml(time)}時点<span class="rain-now-src-long">・周辺4か所のアメダスの平均</span>）</span>`;
+      numsNode.title = "印西市内に気象庁の観測点がないため、周辺4か所（我孫子・佐倉・成田・船橋）のアメダスの平均です。過去3日間＝直近72時間の合計";
+    } else {
+      numsNode.textContent = rainLive.error ? `⚠ いまの雨量を取得できません（${rainLive.error}）` : "いまの雨量を確認中…";
+    }
+  }
+  const textNode = document.getElementById("rain-now-text");
+  if (textNode) textNode.textContent = text;
+  bar.querySelectorAll("[data-rain-step]").forEach(button => {
+    const step = button.dataset.rainStep;
+    const pressed = step === "now" ? live : !live && win === "r72h" && (step === "all" ? at === null : at === Number(step));
+    button.setAttribute("aria-pressed", String(pressed));
+  });
+}
+
+document.getElementById("rain-now-bar")?.addEventListener("click", event => {
+  const button = event.target.closest("[data-rain-step]");
+  if (button) setRainStep(button.dataset.rainStep);
+});
+// 開いたままの画面も、雨が強まれば赤が増えるように、10分ごとに取り直す（冠水の用途で「いま」を選んでいる間だけ）
+setInterval(() => {
+  if (currentView === "rain" && rainLive.mode === "now" && !document.hidden) fetchRainNow(true).then(() => applyRainNow());
+}, 10 * 60 * 1000);
 
 function rainVerdictHtml(road) {
   const rain = road?.rain;
@@ -10294,6 +10482,12 @@ function applyRecordRange(from, to, label) {
   recordWhenFilter.from = from;
   recordWhenFilter.to = to;
   recordWhenFilter.label = label || "";
+  // 期間を選ぶのは過去の記録を見るとき。いまの雨量に連動したままだと赤が出ないので、期間を選んだら「すべて」へ切り替え、
+  // 期間を外したら「いま」へ戻す（冠水の用途のときだけ・2026-11-10）
+  if (currentView === "rain") {
+    if ((from !== null || to !== null) && rainLive.mode === "now") { rainLive.autoPast = true; setRainStep("all"); }
+    else if (from === null && to === null && rainLive.autoPast) { rainLive.autoPast = false; enterRainNow(false); }
+  }
   const chip = document.getElementById("legend-range");
   if (chip) {
     chip.textContent = label ? `⏱ ${label}` : "⏱ 期間";
@@ -10769,6 +10963,7 @@ async function ensurePassedRoadsLayer(force) {
     renderPassedRoadsLayer();
     renderPassedRoadsList();
     syncRainSlider();   // 雨量スライダーの範囲を、読み込んだ記録の最大雨量に合わせる（2026-10-25）
+    applyRainNow();     // いまの雨量に連動中なら、読み込んだ記録で描き直す（2026-11-10。連動していなければ何もしない）
     const recent = roads.filter(road => passedRoadTier(road.endedAt).maxHours !== Infinity).length;
     const blocked = roads.filter(road => road.kind === "blocked").length;
     setPassedRoadsStatus(`通れた ${roads.length - blocked}件・通れない ${blocked}件（6時間以内 ${recent}件）・ ${formatDateTime(toDateTimeLocal(payload.generatedAt)) || ""}時点`);
@@ -15534,7 +15729,8 @@ const VIEWS = {
   // 2026-10-25 外部レビュー：避難は最上位の目的。避難所のピン（市の公式データ・取れないときは予備の静的データ）だけを出し、
   // 「浸水の想定」ボタンで想定区域を重ねられる
   shelter: { label: "🏫 避難・避難所", layers: ["boundary", "shelters"] },
-  rain: { label: "🌧 雨・冠水・浸水・土砂", layers: ["boundary", "rainNowcast", "kansui", "passedRoads", "snsRoads"] },
+  // 2026-11-10：入るたびに、いまの雨量（周辺4か所のアメダス）に合わせて通れない道・通れた道を出す（enterRainNow）
+  rain: { label: "🌧 雨・冠水・浸水・土砂", layers: ["boundary", "rainNowcast", "kansui", "passedRoads", "snsRoads"], onShow: () => enterRainNow() },
   // SNSの通行情報（snsRoads）は 2026-10-24 事業主指示で通行止めの用途にも出す（通れた/通れない系だが、役所の発表を補う情報として）
   road: { label: "🚧 通行止め", layers: ["boundary", "roadClosures", "prefKisei", "snsRoads"] },
   fire: { label: "🔥 消防", layers: ["boundary", "fireMail", "fireAccident"] },

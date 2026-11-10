@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-10",
+          "title": "防災MAP：冠水の用途をいまの雨量に連動（雨なしの日は赤なし・3日間雨量・段階ボタン）＋記録386件の雨量分布の集計 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "site/inzai-disaster-map/app.js（fetchRainNow・applyRainNow・enterRainNow・setRainStep・renderRainNowBar・isRecentRainIso、passesRainFilter に dry と直近3日間の例外、renderKansuiLayer、applyRecordRange、VIEWS.rain.onShow、r72h の測り方）",
+            "site/inzai-disaster-map/index.html（帯 #rain-now-bar・「3日間」ボタン・版 app 20261110c／css 20261110b）",
+            "site/inzai-disaster-map/styles.css（.rain-now-bar ほか）",
+            "site/inzai-disaster-map/CLAUDE_HANDOFF.md（2026-11-10 の節）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "事業主指示「開いたらその時の雨量で過去の冠水、通れた道路を表示」。対話で決めたこと：雨なしの日は赤を出さない／過去の実績は段階ボタン／帯は「いまの雨（1時間）」と「過去3日間の合計」。本番の記録386件を集計し、通れない112件のうち98件が台風25号（3日間300〜418mm）・1時間雨量1mm未満が91件と分かったため、物差しを24時間から3日間に変更（事業主了承）。検証はローカルで本番の記録を読ませ、雨量を差し替えて 0mm＝赤0／実測24mm＝赤4／100・200・300・すべて＝5・10・14・112／取得失敗＝全件＋赤字／直近の記録は雨なしでも赤、を確認。実機スマホと雨なしの日の本番確認は未（plans 登録）。 session: bd2d574f-202a-4c15-90a5-14fddd56d6bf / output: 96,254 / cost: $22.36"
+        },
+        {
+          "date": "2026-11-10",
           "title": "CiDAO：Instagram巡回で、本文に日付が無い告知投稿（日付が画像の中だけ）も読むように変更（登録済みの巡回先のみ）0.2時間",
           "category": "保守",
           "outputs": [
@@ -9492,6 +9507,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-17",
+          "title": "☔ 冠水MAPの「いまの雨量に連動」を本番・実機スマホで確認（雨なしの日に赤が出ない／帯の見え方）",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-11-10 公開。公開日は3日間の合計が約24mmで「雨あり」の表示だった。3日間の合計が1mm未満の日に ?mode=rain を開き、赤い線が出ず帯に「この3日間ほぼ雨が降っていないため…」と出ることを確認する。実機スマホで帯（高さ約109px）が地図を狭めすぎていないかも見る。仕様は inzai-disaster-map/CLAUDE_HANDOFF.md の 2026-11-10 の節。"
+        },
+        {
+          "due": "未定",
+          "title": "☔ 検討：雨が止んで3日を過ぎても水が引いていない時期の「通れない」記録の扱い（3日間雨量では拾えない）",
+          "category": "分析",
+          "priority": "低",
+          "note": "2026-11-10 の集計：9/25・9/27 の「通れない」記録は3日間雨量が5〜17mm（台風25号の水が残っていた時期と見られる・確信度 中）。このため小雨の日にも赤で出る。7日間の雨量や、記録に付いている先行降雨の指標（rain.api・rain.bucket）で比べる案がある。あわせて🔵「大雨でも通れた」の目安 RAIN_HEAVY.r72h=200mm は仮の値で、根拠の確認が要る。"
+        },
         {
           "due": "2026-11-17",
           "title": "🔍 Instagram巡回の取りこぼし：さかのぼり（14→45日）と『本文に日付なし』は対処済み。明朝の取り込みを確認し、『リール』を読むか決める",
