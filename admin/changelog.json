@@ -1,7 +1,14 @@
 {
-  "updatedAt": "2026-11-10T13:30:00+09:00",
+  "updatedAt": "2026-11-10T20:30:00+09:00",
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
+    {
+      "date": "2026-11-10",
+      "type": "content",
+      "target": "管理画面（資料タブ）",
+      "title": "資料に「木下駅前 コンテナ運営の事業概要（配置イメージ・価格帯・市の負担・飲食の制約）」を追加",
+      "detail": "創業塾の統合A・案1の概要版。site/admin/proposals/kinoshita-container-business-v1.html と配置図 assets/kinoshita-container-layout-v1.jpg（国土地理院の地図を加工）を配置し、資料タブのカードと data/documents.json（資料コメント用）に登録した。個人としての検討案で CBI の決定ではない。金額は調べた範囲の相場から立てた案で、公募・市の負担・敷地の詳細は未確認。"
+    },
     {
       "date": "2026-11-10",
       "type": "content",
