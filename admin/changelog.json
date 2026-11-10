@@ -5,6 +5,13 @@
     {
       "date": "2026-11-10",
       "type": "content",
+      "target": "SNS素材（assets/sns/2026-11-10_kodomo-calendar/）",
+      "title": "「親子のおでかけカレンダー」の紹介動画（約42秒・BGM付き）と投稿文の素材を追加",
+      "detail": "CiDAO の「親子で行ける催しを集めたカレンダー」を紹介する縦型動画（1080x1920・4.6MB）・表紙・Threads／Instagram／Facebook の投稿文。BGMは自作、ナレーションは女性の声。団体名は出していない。作り方は scripts/promo/kodomo_calendar/README.md。"
+    },
+    {
+      "date": "2026-11-10",
+      "type": "content",
       "target": "管理画面（プレゼンタブ）・metaverse/guide/intro/",
       "title": "プレゼンに「文化財ガイドマップ」アプリ紹介の音声つきスライド10枚を追加（公開側の未リンクURL）",
       "detail": "創業塾で検討中の観光案内アプリ（ガイド帳・スタンプラリー・3Dワールド・ツアー同期・その場の翻訳・英語音声）を外部に説明するスライド。女性ナレーション（edge-tts Nanami）と BGM つきで約4分半、自動再生。site/metaverse/guide/intro/index.html（noindex・未リンク）に置き、プレゼンタブにカードを追加。生成は CBI/創業塾/ガイドアプリ紹介スライド/build_slides.py。英語は英語話者の確認前の下訳。"
