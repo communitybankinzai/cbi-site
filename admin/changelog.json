@@ -5,6 +5,13 @@
     {
       "date": "2026-11-10",
       "type": "content",
+      "target": "管理画面（プレゼンタブ）",
+      "title": "プレゼンに「印西市の文化財は、どこに多い？（木下駅からの距離）」の音声つきスライド9枚を追加",
+      "detail": "文化財の分布の資料を外部向けに説明するスライド。女性ナレーション（edge-tts Nanami）と BGM つきで約3分半、自動再生。site/admin/proposals/bunkazai-distribution-slides-v1.html を配置し、プレゼンタブにカードを追加。音声は edge-tts のため公開利用の扱いは規約上あいまい。"
+    },
+    {
+      "date": "2026-11-10",
+      "type": "content",
       "target": "管理画面（資料タブ）",
       "title": "資料「印西市の文化財の分布｜木下駅からの距離と半径ごとの件数」を追加",
       "detail": "市の文化財一覧50件を木下駅からの距離で色分けした地図と、半径ごとの件数表。site/admin/proposals/bunkazai-distribution-kinoshita-v1.html を配置し、資料タブのカードと data/documents.json（資料コメント用）に登録した。木下駅の位置は Wikipedia の転載値で誤差あり、距離は直線。"
