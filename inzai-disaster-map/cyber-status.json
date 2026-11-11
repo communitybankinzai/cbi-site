@@ -1,7 +1,14 @@
 {
   "jpcert": {
-    "checkedAt": "2026-11-11T06:22:41+09:00",
+    "checkedAt": "2026-11-11T20:17:21+09:00",
     "items": [
+      {
+        "kind": "注意喚起",
+        "title": "2026年11月マイクロソフトセキュリティ更新プログラムに関する注意喚起",
+        "state": "公開",
+        "url": "https://www.jpcert.or.jp/at/2026/at260035.html",
+        "date": "2026-11-11T11:20+09:00"
+      },
       {
         "kind": "注意喚起",
         "title": "PHPにおける複数の脆弱性（CVE-2026-109618、CVE-2026-109619）に関する注意喚起",
@@ -36,21 +43,14 @@
         "state": "公開",
         "url": "https://www.jpcert.or.jp/at/2026/at260031.html",
         "date": "2026-10-14T11:25+09:00"
-      },
-      {
-        "kind": "注意喚起",
-        "title": "NetScaler ADCおよびNetScaler Gatewayにおける複数の脆弱性（CVE-2026-88771、CVE-2026-88772等）に関する注意喚起",
-        "state": "更新",
-        "url": "https://www.jpcert.or.jp/at/2026/at260029.html",
-        "date": "2026-10-02T14:15+09:00"
       }
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-11T06:22:41+09:00"
+    "lastSuccessAt": "2026-11-11T20:17:21+09:00"
   },
   "soumu": {
-    "checkedAt": "2026-11-11T06:22:42+09:00",
+    "checkedAt": "2026-11-11T20:17:21+09:00",
     "pageUrl": "https://www.soumu.go.jp/menu_seisaku/ictseisaku/net_anzen/jiko/result.html",
     "excelUrl": "https://www.soumu.go.jp/main_content/001089876.xlsx",
     "reports": [
@@ -72,7 +72,7 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-11T06:22:42+09:00",
+    "lastSuccessAt": "2026-11-11T20:17:21+09:00",
     "incidents": {
       "total": 91,
       "items": [
@@ -186,45 +186,45 @@
     "incidentsError": ""
   },
   "docomo": {
-    "checkedAt": "2026-11-11T06:22:43+09:00",
+    "checkedAt": "2026-11-11T20:17:23+09:00",
     "items": [
       {
-        "title": "【お詫び/復旧】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月6日午前1時20分時点）",
-        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261106_00_m.html",
-        "date": "2026-11-06T00:00:00+09:00"
+        "title": "【第十報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月11日午後7時15分時点）",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261111_10_m.html",
+        "date": "2026-11-11T00:00:00+09:00"
       },
       {
-        "title": "【第十二報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月5日午後11時00分時点）",
-        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261105_13_m.html",
-        "date": "2026-11-05T00:00:00+09:00"
+        "title": "【第九報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月11日午後6時15分時点）",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261111_09_m.html",
+        "date": "2026-11-11T00:00:00+09:00"
       },
       {
-        "title": "【第十一報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月5日午後10時00分時点）",
-        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261105_12_m.html",
-        "date": "2026-11-05T00:00:00+09:00"
+        "title": "【第八報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月11日午後5時15分時点）",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261111_07_m.html",
+        "date": "2026-11-11T00:00:00+09:00"
       },
       {
-        "title": "【第十報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月5日午後9時00分時点）",
-        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261105_11_m.html",
-        "date": "2026-11-05T00:00:00+09:00"
+        "title": "【第七報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月11日午後4時30分時点）",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261111_06_m.html",
+        "date": "2026-11-11T00:00:00+09:00"
       },
       {
-        "title": "【第九報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月5日午後8時00分時点）",
-        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261105_10_m.html",
-        "date": "2026-11-05T00:00:00+09:00"
+        "title": "【第六報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月11日午後3時30分時点）",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261111_05_m.html",
+        "date": "2026-11-11T00:00:00+09:00"
       },
       {
-        "title": "【第八報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月5日午後7時00分時点）",
-        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261105_09_m.html",
-        "date": "2026-11-05T00:00:00+09:00"
+        "title": "【第五報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月11日午後2時30分時点）",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261111_04_m.html",
+        "date": "2026-11-11T00:00:00+09:00"
       }
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-11T06:22:43+09:00"
+    "lastSuccessAt": "2026-11-11T20:17:23+09:00"
   },
   "fsa": {
-    "checkedAt": "2026-11-11T06:22:43+09:00",
+    "checkedAt": "2026-11-11T20:17:24+09:00",
     "items": [
       {
         "category": "その他",
@@ -236,7 +236,7 @@
     "scanned": 15,
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-11T06:22:43+09:00"
+    "lastSuccessAt": "2026-11-11T20:17:24+09:00"
   },
-  "generatedAt": "2026-11-11T06:22:44+09:00"
+  "generatedAt": "2026-11-11T20:17:24+09:00"
 }
