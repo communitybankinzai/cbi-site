@@ -13,6 +13,7 @@ const OWN_KEY = "cbi-gourmet-own-v1"; // 自分が貼った食レポ（取り消
 const MODERATION_KEY_STORAGE = "cbi-disaster-moderation-key-v1"; // 防災MAPと同じ合言葉を使う
 const STEPS_CLOSED_KEY = "cbi-gourmet-steps-closed-v1"; // 最初の画面の3ステップの説明を閉じたか（2026-11-13）
 const UNDO_MS = 30 * 60 * 1000;
+const CRAWL_CONTACT = "https://cidao.vercel.app/bug-report?category=question"; // 巡回で載った食レポの取り下げの連絡先（2026-11-13）
 const PHOTO_MAX_PX = 1600;
 const PHOTO_QUALITY = 0.85;
 const AREA = { south: 35.70, west: 140.02, north: 35.90, east: 140.32 }; // CiDAO の GOURMET_BBOX と揃える
@@ -311,8 +312,10 @@ function reportCard(r) {
   return `<article class="gm-report${r.hidden ? " is-hidden" : ""}">
     ${photo}
     <div class="gm-report-body">
-      <div class="gm-report-head">${who}・${esc(r.platformLabel)}・${fmtDate(r.createdAt)}${r.isOwn ? "" : "（見つけた人が紹介）"}</div>
+      <div class="gm-report-head">${who}・${esc(r.platformLabel)}・${fmtDate(r.createdAt)}${r.isOwn ? "" : r.source === "crawl" ? "（巡回で見つけた投稿）" : "（見つけた人が紹介）"}</div>
       ${r.comment ? `<p class="gm-report-comment">${esc(r.comment)}</p>` : ""}
+      ${r.multiShop ? '<p class="gm-report-note">この投稿は、複数のお店を紹介しています（リンク先で、このお店を探してください）</p>' : ""}
+      ${r.source === "crawl" ? `<p class="gm-report-note">CBI がSNSの巡回で見つけた投稿です。載せたくない場合は <a href="${CRAWL_CONTACT}" target="_blank" rel="noopener">運営にご連絡ください</a>（地図から外します）。</p>` : ""}
       <a class="gm-report-go" href="${esc(r.url)}" target="_blank" rel="noopener">📱 ${esc(r.platformLabel)}で元の投稿を見る ↗</a>
       ${tools.length ? `<div class="gm-report-tools">${tools.join("")}</div>` : ""}
     </div>

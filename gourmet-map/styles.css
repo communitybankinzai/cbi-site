@@ -88,6 +88,7 @@ a { color: #1c64c2; }
 .gm-report-head { font-size: .85rem; color: var(--gm-sub); }
 .gm-report-head strong { color: var(--gm-ink); }
 .gm-report-comment { margin: 6px 0 8px; font-size: .95rem; }
+.gm-report-note { margin: 4px 0 8px; font-size: .78rem; color: var(--gm-sub); background: #f8f9fa; border-radius: 8px; padding: 6px 8px; }
 .gm-report-go {
   display: block; text-align: center; background: var(--gm-ink); color: #fff; text-decoration: none; padding: 9px; border-radius: 9px;
   font-weight: bold; font-size: .9rem;
