@@ -401,6 +401,8 @@ async function submitForm(e) {
   fd.set("handle", document.getElementById("gm-handle").value.trim());
   fd.set("comment", document.getElementById("gm-comment").value.trim());
   const own = document.getElementById("gm-own").checked;
+  // 「CBIのSNSで紹介してよい」（2026-11-12）。同意つきだけ CiDAO が SNS の下書きを作る（運営の承認制）
+  if (document.getElementById("gm-sns-ok").checked) fd.set("snsOk", "1");
   if (own) fd.set("isOwn", "1");
   if (formShop) {
     fd.set("shopRef", formShop.ref);

@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-12",
+          "title": "食レポ登録の運営通知と、同意つき食レポのSNS紹介（承認制）を実装 0.8時間",
+          "category": "実装",
+          "outputs": [
+            "cidao 58c31db：supabase/migrations/20261112220000_gourmet_sns_share.sql（本番適用済み）・src/lib/sns-template.ts・sns-target.ts・sns-announce.ts・sns-dispatch.ts・src/app/api/og/gourmet/[id]/route.ts・src/app/api/gourmet/reports/route.ts・admin/sns（種別「🍽 食レポ」）・src/lib/__tests__/sns-gourmet.test.ts",
+            "site/gourmet-map/index.html・app.js（同意チェック・snsOk）・site/admin/changelog.json"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "事業主提案（食レポに気づく仕組みとSNSでのPR）を3案で提示→A。別セッション(4234866e)の申し送りと食い違ったため再確認し『合体』に決定：通知＝ベル・プッシュ・メール／同意チェック／同意つきだけ1件ごとに下書き→承認で配信／件数が増えたら週のまとめへ（plans）。検証：tsc（src）0件・vitest 880件・新規テスト5件・eslint 0、カード画像は見本データで書き出して目視、食レポマップは375px幅で同意あり=snsOk=1／なし=送らない／開き直すと未チェック（POSTは差し替えて本番に送らず）。本番の食レポを使った通しの確認は未（食レポ0件のため）。DBは .env.local の DATABASE_URL が古く認証失敗、credentials.md の 11/06 のパスワード＋pooler で適用。 session: d3b7e50d-eb11-483c-a5c9-06061df311b4 / output: 137,012 / cost: $40.57（このセッション全体。前の実績0.6時間分を含む）"
+        },
+        {
+          "date": "2026-11-12",
           "title": "食レポマップ紹介動画30秒版（縦・38秒・CiDAO提案中の試作として）と投稿文の作成 0.6時間",
           "category": "広報",
           "outputs": [
@@ -9521,12 +9533,10 @@
       "plans": [
         {
           "due": "未定",
-          "title": "🍽 検討：食レポが登録されたら運営が気づく仕組みと、SNSでさらにPRする仕組み（案A〜Cを提示・事業主判断待ち）",
-          "category": "調査",
-          "priority": "中",
-          "status": "保留",
-          "blockedBy": "事業主が案A（通知＋週1まとめ下書き・承認制）／B（1件ごと下書き・承認制）／C（1件ごと全自動投稿）から選ぶこと",
-          "note": "2026-11-12 事業主提案。現状 gourmet_reports の POST は保存のみで通知なし。使える部品：insertNotification（ベル）・sns_post_logs→/admin/sns 承認→配信・/api/og 系のカード画像・CBI公式メールの要対応仕分け（ルール12）。注意：sns_auto_post が全自動のままだと新しい告知種別も即配信になるので、食レポは常に下書き止まりにする。他人の写真は SNS に転載しない（カード画像は自前）。@メンションは自分の投稿（is_own）のときだけ。"
+          "title": "🍽 食レポのSNS紹介を、件数が増えたら『週のまとめ』に切り替える（承認の手間と投稿の多さを見て判断）",
+          "category": "実装",
+          "priority": "低",
+          "note": "2026-11-12 に1件ごとの下書き（承認制）で開始。週に数件を超えて承認が手間・投稿が多すぎると感じたら、週1回『今週の新しい食レポ N件』の下書きを作る形へ（pg_cron で週1回・sns_post_logs に1件）。最初の実データが来たら、通知メールの届き方・下書きの文面・Instagram のカード画像の表示も本番で確かめる。"
         },
         {
           "due": "未定",
