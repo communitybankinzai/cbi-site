@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-11-12",
+          "title": "食レポの通知と同意つき紹介下書きの通し試験（本番・公開ページから2件登録→取り消し）0.2時間",
+          "category": "保守",
+          "outputs": [
+            "本番：gourmet_reports に [試験] 2件（d628729e…＝同意あり／ab4d1420…＝同意なし）を登録→画面の取り消しで hidden。sns_post_logs の試験の下書き3件は未承認のまま削除"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主承認済み（親セッション経由）。確かめた：A＝下書き3媒体（pending・未承認・posted_id なし）＋管理者5人にベル『承認待ち3件』／B＝下書き0件＋ベル5人／取り消し200×2／公開APIは約1分の使い回しの後0件。未確認：Webプッシュの到着（管理者の登録6件・配信記録なし）。メールは送られていない：Vercel に ADMIN_NOTIFY_EMAIL が未設定（FreeFree・提案の承認待ちメールも同じで、公式メールに90日間1通も無い）。ベル通知10件は残している。SNSへの承認・投稿はしていない。"
+        },
+        {
+          "date": "2026-11-12",
           "title": "食レポ登録の運営通知と、同意つき食レポのSNS紹介（承認制）を実装 0.8時間",
           "category": "実装",
           "outputs": [
@@ -9531,6 +9542,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📧 CiDAO の管理者宛てメール（ADMIN_NOTIFY_EMAIL）が Vercel に未設定で、承認待ち・食レポのメール通知が一度も送られていない",
+          "category": "保守",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "事業主が宛先（CBI公式メール communitybankinzai@gmail.com か別のアドレスか）を決めること",
+          "note": "2026-11-12 の通し試験で判明。sns-announce.ts の notifyAdminsOfPendingDrafts／notifyAdminsOfGourmet は宛先が空だと何もせず終わる。設定すれば Resend（RESEND_API_KEY・MAIL_FROM は設定済み）で送られる見込み。公式メールにするなら gas-mail-share の仕分けで『要対応』に入るルールも足す（ルール12でセッション開始時に拾える）。Resend の送信元ドメインの検証状態によっては特定の宛先にしか送れない可能性あり（未確認）。"
+        },
         {
           "due": "未定",
           "title": "🍽 食レポのSNS紹介を、件数が増えたら『週のまとめ』に切り替える（承認の手間と投稿の多さを見て判断）",
