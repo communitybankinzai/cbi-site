@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "CiDAO のトップに「防災」タイル（防災マップ・先頭）、下のメニューに「防災」「ぐるめ」を追加 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "cidao 4ca6134：src/lib/cbi-site-urls.ts（新規・2つのURL）・src/app/page.tsx・src/components/BottomNav.tsx（external の項目）・src/lib/disaster-notify.ts・src/lib/sns-template.ts（同じ名前で出し直し）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主の希望（親セッション経由）。タイル『防災』は ShieldAlert・cyan（他と重ならない）・並びの先頭・新しいタブ。タイルに説明文の欄は無いので『CBIの試作』は付けず、下のメニューの説明文に『防災マップ（CBIの試作）・新しいタブで開く』と書いた。下タブ4枠は変えていない。確認：tsc(src)0・eslint 0・vitest 880・本番でタイルを座標タップ→新しいタブで防災マップが開く・メニューの画面を撮影。名前を『防災マップ』にする案は報告に記載。"
+        },
+        {
+          "date": "2026-11-13",
           "title": "食レポマップの言葉を『地域のお店の応援』が主役に／CiDAO のタイル名を『ぐるめ』に 0.1時間",
           "category": "実装",
           "outputs": [
