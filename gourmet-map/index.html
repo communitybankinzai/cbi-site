@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>印西 食レポマップ｜CBI</title>
-  <meta name="description" content="印西市と周辺の飲食店を店名で探して、SNSの食レポへ。食べた人が投稿のURLを貼ると、お店のピンに並びます。">
+  <meta name="description" content="印西のお店を、食べて・投稿して、応援しよう。食べた投稿（食レポ）のURLを貼ると、お店のピンに並びます。CBI（市民団体）の試作。">
   <meta property="og:title" content="印西 食レポマップ">
   <meta property="og:description" content="印西市と周辺の飲食店を店名で探して、SNSの食レポへ。">
   <meta property="og:type" content="website">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=20261113a">
+  <link rel="stylesheet" href="styles.css?v=20261113b">
 </head>
 <body>
   <header class="gm-header">
@@ -19,17 +19,18 @@
     </div>
     <!-- 最初の画面の入り口（2026-11-13）：一言・2つのボタン・3ステップ（閉じられる）・食レポが0件のときの見本 -->
     <section class="gm-welcome" aria-label="食レポマップの使い方">
-      <p class="gm-welcome-lead">食べた投稿を、地図にのせよう。</p>
+      <p class="gm-welcome-lead">印西のお店を、<br>食べて・投稿して、応援しよう。</p>
+      <p class="gm-welcome-sub">食レポのURLを貼ると、お店のピンに並びます。</p>
       <div class="gm-welcome-btns">
-        <button type="button" id="gm-start-paste" class="gm-big gm-big-main">📮 食レポを貼る<small>食べた人</small></button>
-        <button type="button" id="gm-start-find" class="gm-big">🔍 お店を探す<small>これから行く人</small></button>
+        <button type="button" id="gm-start-paste" class="gm-big gm-big-main">📮 食べたお店を<br>応援する<small>投稿を貼る</small></button>
+        <button type="button" id="gm-start-find" class="gm-big">🔍 応援したい<br>お店を探す<small>これから行く人</small></button>
       </div>
       <div id="gm-steps" class="gm-steps">
         <button type="button" id="gm-steps-close" class="gm-steps-close" aria-label="使い方を閉じる">✕</button>
         <ol>
           <li><b>1</b><span>投稿のURL<br>をコピー</span></li>
           <li><b>2</b><span>貼って<br>お店を選ぶ</span></li>
-          <li><b>3</b><span>地図に<br>のる</span></li>
+          <li><b>3</b><span>お店の<br>応援になる</span></li>
         </ol>
         <div id="gm-sample" class="gm-sample" hidden>
           <span class="gm-sample-badge">見本</span>
@@ -63,7 +64,7 @@
 
   <dialog id="gm-dialog" class="gm-dialog">
     <form id="gm-form" method="dialog" novalidate>
-      <h2 id="gm-form-title">食レポを貼る</h2>
+      <h2 id="gm-form-title">お店を応援する（食レポを貼る）</h2>
 
       <!-- ① URL が先（2026-11-13・SNS の投稿を持っている人の流れに合わせる） -->
       <p class="gm-step-h"><b>1</b>SNSの投稿のURLを貼る</p>
@@ -98,7 +99,7 @@
         <label class="gm-field">投稿した人の名前（@から）
           <input id="gm-handle" maxlength="41" autocomplete="off" placeholder="@example">
         </label>
-        <p class="gm-handle-why">名前を入れると、投稿を見た人があなたのSNSに来ます。Instagramの共有リンクには名前が入らないので、ぜひ入れてください。</p>
+        <p class="gm-handle-why">名前があると、だれが応援したかが分かって、お店も読む人もうれしくなります。投稿を見た人が、あなたのSNSにも来てくれます。Instagramの共有リンクには名前が入らないので、ぜひ入れてください。</p>
       </div>
       <label class="gm-field">ひとこと（任意・100字まで）
         <input id="gm-comment" maxlength="100" autocomplete="off" placeholder="例：濃厚な味噌ラーメン。昼は混みます">
@@ -123,11 +124,11 @@
   </dialog>
 
   <footer class="gm-footer">
-    <p>CBI（Community Bank INZAI）の試作です。お店の一覧は <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>（ODbL）、<a href="https://openpoiapi.com/attribution.html" target="_blank" rel="noopener">OpenPOI API</a>（Overture Maps Foundation, overturemaps.org／出典：Japan Food Facilities（各自治体・厚生労働省のオープンデータを加工して作成）のデータを加工して作成）、FreeFree掲示板の掲載、市民が足したお店です。閉店したお店が残っていることがあります。営業時間・休業日はお店の公式情報でご確認ください。</p>
+    <p>CBI（Community Bank INZAI・市民団体）の試作です。お店の一覧は <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>（ODbL）、<a href="https://openpoiapi.com/attribution.html" target="_blank" rel="noopener">OpenPOI API</a>（Overture Maps Foundation, overturemaps.org／出典：Japan Food Facilities（各自治体・厚生労働省のオープンデータを加工して作成）のデータを加工して作成）、FreeFree掲示板の掲載、市民が足したお店です。閉店したお店が残っていることがあります。営業時間・休業日はお店の公式情報でご確認ください。</p>
     <p>食レポは投稿した人のものです。詳しくは元の投稿でご覧ください。　<a href="../">CBIのトップへ</a></p>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=20261113a"></script>
+  <script src="app.js?v=20261113b"></script>
 </body>
 </html>

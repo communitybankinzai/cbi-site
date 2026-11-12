@@ -332,7 +332,7 @@ function openForm(ref, newName = "", { newShop = false } = {}) {
   f.reset();
   document.getElementById("gm-form-error").textContent = "";
   document.getElementById("gm-photo-wrap").hidden = true;
-  document.getElementById("gm-form-title").textContent = addingNewShop ? "地図に無いお店を足して、食レポを貼る" : "食レポを貼る";
+  document.getElementById("gm-form-title").textContent = addingNewShop ? "地図に無いお店を足して、応援する" : "お店を応援する（食レポを貼る）";
   document.getElementById("gm-ns-name").value = newName;
   document.getElementById("gm-ns-pos-text").textContent = "場所はまだ決まっていません";
   document.getElementById("gm-url-hint").textContent = "Instagram・X・Threads・TikTok・YouTube・Facebook・Bluesky・Lemon8・note・アメブロ・はてなブログの投稿を貼れます";
@@ -536,7 +536,7 @@ function bind() {
       return;
     }
     if (t.dataset.pickShop) { formShop = shops.get(t.dataset.pickShop) || null; addingNewShop = false; renderFormShop(); document.getElementById("gm-handle").focus(); }
-    else if (t.dataset.pickNew) { addingNewShop = true; formShop = null; document.getElementById("gm-ns-name").value = document.getElementById("gm-form-q").value.trim(); document.getElementById("gm-form-title").textContent = "地図に無いお店を足して、食レポを貼る"; renderFormShop(); }
+    else if (t.dataset.pickNew) { addingNewShop = true; formShop = null; document.getElementById("gm-ns-name").value = document.getElementById("gm-form-q").value.trim(); document.getElementById("gm-form-title").textContent = "地図に無いお店を足して、応援する"; renderFormShop(); }
     else if (t.dataset.changeShop) { formShop = null; addingNewShop = false; renderFormShop(); document.getElementById("gm-form-q").focus(); }
     else if (t.dataset.ref) { document.getElementById("gm-results").hidden = true; openShop(t.dataset.ref, { fly: true }); }
     else if (t.dataset.add) openForm(t.dataset.add);

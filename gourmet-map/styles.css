@@ -122,10 +122,11 @@ a { color: #1c64c2; }
 .gm-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .gm-howto { font-size: .8rem; padding: 4px 10px; border: 1px solid var(--gm-line); border-radius: 999px; background: #fff; color: var(--gm-sub); cursor: pointer; }
 .gm-welcome { margin: 4px 0 8px; }
-.gm-welcome-lead { margin: 0 0 8px; font-size: 1.02rem; font-weight: bold; }
+.gm-welcome-lead { margin: 0 0 2px; font-size: 1.02rem; font-weight: bold; }
+.gm-welcome-sub { margin: 0 0 8px; font-size: .8rem; color: var(--gm-sub); }
 .gm-welcome-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .gm-big {
-  font-size: 1.05rem; font-weight: bold; padding: 12px 6px 10px; border-radius: 12px; cursor: pointer; line-height: 1.25;
+  font-size: 1rem; font-weight: bold; padding: 10px 6px 9px; border-radius: 12px; cursor: pointer; line-height: 1.3;
   border: 2px solid var(--gm-accent); background: #fff; color: var(--gm-accent);
 }
 .gm-big small { display: block; font-size: .76rem; font-weight: normal; color: var(--gm-sub); margin-top: 2px; }
