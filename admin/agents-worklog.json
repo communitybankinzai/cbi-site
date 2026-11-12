@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "食レポの SNS 巡回（A案）を実装・書き込みなしの試験で精度を採点・承認／却下／取り下げを通し試験（スイッチはオフで納品）1.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao 55c45b5・1ed7717：src/lib/gourmet-crawl.ts・gourmet-crawl-run.ts・gourmet-candidates.ts・src/app/admin/gourmet/*・migration 20261113040000_gourmet_crawl.sql（本番適用済み）・instagram-events（use_events／use_gourmet）・cron 2本・一覧API（source／multiShop）・テスト10件・scripts/dry-run-gourmet-crawl.ts・check-gourmet-tone.ts・e2e-gourmet-candidates.ts",
+            "site/gourmet-map/app.js・styles.css・index.html（巡回のカードの印・?v=20261113d）・site/admin/changelog.json",
+            "cidao/2026-11-13_食レポのSNS巡回A案.md（新規）・MOC_CiDAO.md"
+          ],
+          "hours": 1.2,
+          "partnerApproved": false,
+          "note": "事業主決定A（親セッション経由）。chiba_mogu は business_discovery で読めた（237投稿）→ 食レポだけ・らいさんの確認待ちで登録。試験：#印西29件＋ちばモグ25件＝54件・約27円。取り違えは直す前1/9→直した後0/8、範囲外10店を除外、複数店の投稿は7/7・3/3店、批判の混入は実投稿に批判が無く見本3件で確認。通し試験：承認1件→地図のカードに印→伏せる→公開API0件→試験行を削除。ちばモグの行は、新しいコードの反映前は一時的に無効にし、反映後に戻した（旧コードはイベント側に入れてしまうため）。管理画面の見た目は管理者ログインが要るので未確認。 session: d3b7e50d-eb11-483c-a5c9-06061df311b4 / output: 364,929 / cost: $127.86（このセッション全体）"
+        },
+        {
+          "date": "2026-11-13",
           "title": "食レポマップの範囲を市域で分ける（既定は市内・周辺6市町はスイッチ）／CiDAO の登録範囲もそろえる／紹介文の名前を両方に 0.8時間",
           "category": "実装",
           "outputs": [
@@ -9605,6 +9618,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🍽 食レポの SNS 巡回を有効にするか事業主が判断（/admin/gourmet の「有効にする」）",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "事業主の OK（試験の精度の報告を見て判断）",
+          "note": "2026-11-13 納品。有効にすると翌朝 06:32・06:35 の同期から読む。AI は1日40回まで（約0.5円/件）。最初の1週間は候補の質（食レポの誤検出・取り違え）を見て、プロンプトや照合を直す。"
+        },
+        {
+          "due": "未定",
+          "title": "🍽 管理画面 /admin/gourmet の見た目と操作を、管理者でログインして確かめる（承認・お店を変えて承認・却下・スイッチ）",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-11-13 は管理者でログインできないため、ボタンが呼ぶ処理（src/lib/gourmet-candidates.ts）を本番 DB で直接動かして確かめた。画面の表示・クリックは未確認。"
+        },
         {
           "due": "未定",
           "title": "🍽 食レポマップ：周辺6市町のうち、取得の四角形の外の部分（成田の東側・柏の西側・佐倉の南側など）のお店も入れるか判断",
