@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "Muse 作のぬりえノートPDFの確認（56ページ）→ 表紙・見本の縮小画像づくり → 文化財ずかんへの掲載 → PC・スマホ幅の表示確認 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "site/bunkazai/index.html（ぬりえノートの節 #nurie と書式）",
+            "site/bunkazai/nurie/inzai-bunkazai-seirei-nurie-note.pdf（Drive 精霊_刻印用 から写し）",
+            "site/bunkazai/nurie/cover.jpg・sample1.jpg",
+            "site/admin/changelog.json・agents-worklog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主指示『文化財の精霊ぬりえノートを Muse に作ってもらったので、CBIのサイトに掲載して』。PDF は全ページが画像（文字は取り出せない）。ローカル（8767）で幅1280・375とも横はみ出しなし、PDF は 200・12,597,818 バイト。sample2.jpg は置いただけで未使用。気になる点：あとがきの『印西このゆびとまれ』の表記（協働事業は提案段階）は事業主に報告。session: 78972f45-1bad-4fbe-8d4f-0f40960bfa2d / output: 12,281 / cost: $9.81（記録時点）"
+        },
+        {
+          "date": "2026-11-13",
           "title": "印西のぐるめ系 Instagram アカウントの洗い出し（ハッシュタグ12語・hamoni 160ページ・Web検索・推測名）→ business_discovery で約100件を判定 → 基準を満たした ら〜ばんNAVI を食レポ専用で登録・負荷の実測・書き込みなしの試験 0.39時間",
           "category": "調査",
           "outputs": [
@@ -9643,6 +9657,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🎨 精霊ぬりえ50体に色をぬっていく動画を作る（課金なし・線画の領域を自動で塗り分けて ffmpeg で動画に）",
+          "category": "広報",
+          "priority": "中",
+          "note": "2026-11-13 事業主『この塗り絵50体に色の塗る動画を作りたい。課金しないやり方でできますか？』。素材は G:\\マイドライブ\\精霊_刻印用\\*_line.png（50体）と、色の手本になる元の精霊カード（site/metaverse/spirits/）。長さ・用途（SNS用の短い版か、50体通しか）・色の決め方は事業主と決めてから着手。"
+        },
         {
           "due": "未定",
           "title": "🍽 食レポの SNS 巡回で、印西の個人のグルメ投稿をどう拾うか事業主が判断（ハッシュタグ4語の追加／基準を緩めて千葉の大手を入れる／いまの2件のまま）",

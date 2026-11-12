@@ -75,8 +75,22 @@
   .bz-notes li { margin-bottom: 10px; }
   .bz-back { text-align: center; margin-top: 40px; }
 
+  /* ぬりえノート（2026-11-13） */
+  .section-nurie { background: var(--c-bg-alt); }
+  .nurie-box { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 34px; align-items: center; max-width: 900px; margin: 0 auto; }
+  .nurie-pages { display: flex; gap: 10px; }
+  .nurie-pages img { display: block; width: 100%; min-width: 0; flex: 1 1 0; height: auto; background: #fff; border: 1px solid var(--c-line); border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+  .nurie-text p { line-height: 2; font-size: 15px; margin: 0 0 14px; }
+  .nurie-meta { font-size: 12px; color: var(--c-ink-sub); line-height: 1.9; }
+  .nurie-btns { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 12px; }
+  .nurie-btn { display: inline-block; padding: 12px 22px; border-radius: 999px; font-weight: 700; font-size: 14px; text-decoration: none; background: var(--c-navy); color: #fff; border: 1px solid var(--c-navy); }
+  .nurie-btn.is-sub { background: transparent; color: var(--c-navy); }
+  .nurie-btn:hover { text-decoration: none; opacity: .88; }
+
   @media (max-width: 860px) {
     .bz-stats { grid-template-columns: repeat(2, 1fr); }
+    .nurie-box { grid-template-columns: 1fr; gap: 22px; }
+    .nurie-pages { max-width: 420px; margin: 0 auto; }
   }
 </style>
 </head>
@@ -171,6 +185,38 @@
           <span class="way-shot"><img src="../assets/screens/reports_list.jpg" alt="学習レポート一覧の画面。文化財ごとに読む・印刷・PDFのボタンが並ぶ" loading="lazy"></span>
           <span class="way-shot-cap">画面イメージ：一覧から「読む」「印刷」「PDF」を選べます</span>
         </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ぬりえノート ===== -->
+  <section class="section section-nurie" id="nurie">
+    <div class="container">
+      <p class="section-eyebrow">COLORING</p>
+      <h2 class="section-title">文化財の精霊 ぬりえノート</h2>
+      <p class="section-lead">
+        50件の文化財それぞれの精霊を、ぬりえにしました。印刷して、色をぬって楽しめます。
+      </p>
+      <div class="nurie-box">
+        <div class="nurie-pages">
+          <img src="nurie/cover.jpg" alt="ぬりえノートの表紙。「文化財の精霊 ぬりえノート」の題字と6体の精霊の線画" loading="lazy" width="700" height="990">
+          <img src="nurie/sample1.jpg" alt="ぬりえの見本ページ。No.1 ムサシヤ（岩井家住宅主屋）の精霊の線画と短い説明" loading="lazy" width="700" height="990">
+        </div>
+        <div class="nurie-text">
+          <p>
+            太い線だけで描いているので、小さなお子さんでもぬりやすくなっています。
+            精霊の名前の文字も白抜きなので、絵といっしょにぬれます。
+            1ページに1体で、その文化財の短い説明がついています。
+          </p>
+          <div class="nurie-btns">
+            <a class="nurie-btn" href="nurie/inzai-bunkazai-seirei-nurie-note.pdf" target="_blank" rel="noopener">▶ ぬりえノートを開く（PDF）</a>
+            <a class="nurie-btn is-sub" href="nurie/inzai-bunkazai-seirei-nurie-note.pdf" download="印西市文化財_精霊ぬりえノート.pdf">ダウンロード</a>
+          </div>
+          <p class="nurie-meta">
+            A4・56ページ（表紙、精霊の一覧、ぬりえ50枚、あとがき）／PDF 約12.6MB<br>
+            無料／ご家庭や学校などで、印刷して自由にお使いください
+          </p>
+        </div>
       </div>
     </div>
   </section>
