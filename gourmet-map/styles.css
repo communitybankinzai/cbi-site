@@ -117,8 +117,60 @@ a { color: #1c64c2; }
 .gm-footer { font-size: .74rem; color: var(--gm-sub); padding: 8px 14px 14px; background: #fff; border-top: 1px solid var(--gm-line); }
 .gm-footer p { margin: 3px 0; }
 
+/* ---------- 最初の画面の入り口・URL が先の登録画面（2026-11-13） ---------- */
+[hidden] { display: none !important; } /* display を指定した部品でも hidden で必ず消す */
+.gm-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.gm-howto { font-size: .8rem; padding: 4px 10px; border: 1px solid var(--gm-line); border-radius: 999px; background: #fff; color: var(--gm-sub); cursor: pointer; }
+.gm-welcome { margin: 4px 0 8px; }
+.gm-welcome-lead { margin: 0 0 8px; font-size: 1.02rem; font-weight: bold; }
+.gm-welcome-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gm-big {
+  font-size: 1.05rem; font-weight: bold; padding: 12px 6px 10px; border-radius: 12px; cursor: pointer; line-height: 1.25;
+  border: 2px solid var(--gm-accent); background: #fff; color: var(--gm-accent);
+}
+.gm-big small { display: block; font-size: .76rem; font-weight: normal; color: var(--gm-sub); margin-top: 2px; }
+.gm-big-main { background: var(--gm-accent); color: #fff; }
+.gm-big-main small { color: #ffe3d1; }
+.gm-steps { position: relative; margin-top: 8px; background: var(--gm-accent-weak); border-radius: 10px; padding: 8px 34px 8px 10px; }
+.gm-steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.gm-steps li { font-size: .8rem; line-height: 1.35; display: flex; gap: 5px; align-items: flex-start; }
+.gm-steps li b, .gm-step-h b {
+  flex: 0 0 20px; width: 20px; height: 20px; border-radius: 50%; background: var(--gm-accent); color: #fff; font-size: .75rem;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.gm-steps-close { position: absolute; top: 4px; right: 4px; border: 0; background: none; font-size: .95rem; color: var(--gm-sub); cursor: pointer; width: 28px; height: 28px; }
+.gm-sample {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 6px 8px; background: #fff;
+  border: 1px dashed #e8a37f; border-radius: 10px; font-size: .78rem; color: var(--gm-sub);
+}
+.gm-sample-badge { flex: 0 0 auto; font-size: .7rem; font-weight: bold; color: #fff; background: #868e96; border-radius: 6px; padding: 2px 6px; }
+.gm-sample-pin { flex: 0 0 auto; background: var(--gm-accent); color: #fff; border: 2px solid #fff; border-radius: 16px; font-size: 12px; font-weight: bold; padding: 1px 7px; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.gm-sample-text b { color: var(--gm-ink); margin-right: 4px; }
+
+.gm-step-h { display: flex; align-items: center; gap: 6px; margin: 14px 0 4px; font-weight: bold; font-size: .95rem; }
+.gm-dialog h2 + .gm-step-h { margin-top: 6px; }
+.gm-url-row { display: flex; gap: 6px; }
+.gm-url-row input, .gm-shop-pick input { flex: 1; min-width: 0; font-size: 1rem; padding: 9px 10px; border: 2px solid var(--gm-accent); border-radius: 8px; width: 100%; }
+.gm-url-row .gm-btn-sub { flex: 0 0 auto; font-size: .85rem; padding: 8px 10px; }
+.gm-form-results { margin-top: 4px; }
+.gm-form-results button {
+  display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid #eef0f2; background: #fff; padding: 9px 8px; font-size: .95rem; cursor: pointer;
+}
+.gm-form-results button:hover, .gm-form-results button:focus { background: var(--gm-accent-weak); }
+.gm-form-results small { display: block; color: var(--gm-sub); font-size: .76rem; }
+.gm-form-results .gm-count { color: var(--gm-accent); font-weight: bold; font-size: .8rem; }
+.gm-form-results .gm-pick-new { color: var(--gm-accent); font-size: .88rem; border-bottom: 0; }
+.gm-form-shop { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gm-change-shop { font-size: .78rem; font-weight: normal; padding: 3px 9px; border: 1px solid var(--gm-line); border-radius: 999px; background: #fff; color: var(--gm-ink); cursor: pointer; }
+.gm-handle-box { border: 2px solid #f4b48f; background: var(--gm-accent-weak); border-radius: 10px; padding: 2px 10px 8px; }
+.gm-handle-box .gm-field { margin-top: 6px; font-weight: bold; }
+.gm-handle-why { margin: 4px 0 0; font-size: .82rem; color: #8a3a0c; }
+
 @media (max-width: 760px) {
-  .gm-lead { display: none; }
   .gm-main { min-height: 70vh; }
+  /* 絞り込みは1行に詰めて横に送る（入り口と地図の場所を空ける） */
+  .gm-filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .gm-filters::-webkit-scrollbar { display: none; }
+  .gm-chip, .gm-chip-btn, .gm-filters select { flex: 0 0 auto; white-space: nowrap; }
   .gm-panel { top: auto; left: 0; right: 0; width: auto; max-height: 62%; border-radius: 16px 16px 0 0; }
 }

@@ -10,6 +10,7 @@ const OSM_URL = "osm-shops.json";
 const DEVICE_KEY = "cbi-gourmet-device-v1";
 const OWN_KEY = "cbi-gourmet-own-v1"; // 自分が貼った食レポ（取り消し用・30分）
 const MODERATION_KEY_STORAGE = "cbi-disaster-moderation-key-v1"; // 防災MAPと同じ合言葉を使う
+const STEPS_CLOSED_KEY = "cbi-gourmet-steps-closed-v1"; // 最初の画面の3ステップの説明を閉じたか（2026-11-13）
 const UNDO_MS = 30 * 60 * 1000;
 const PHOTO_MAX_PX = 1600;
 const PHOTO_QUALITY = 0.85;
@@ -52,7 +53,8 @@ const shops = new Map(); // ref → { ref, name, lat, lon, kind, address, websit
 let reports = []; // CiDAO の食レポ（新しい順）
 const reportsByShop = new Map();
 let currentShopRef = null;
-let formShop = null; // 食レポを貼るお店（新しいお店のときは null）
+let formShop = null; // 食レポを貼るお店（まだ選んでいない・新しいお店のときは null）
+let addingNewShop = false; // 「地図に無いお店を足す」で貼っているとき true
 let newShopPos = null;
 let picking = false;
 let pickMarker = null;
@@ -161,7 +163,10 @@ function render() {
     }
   }
   const withReports = [...reportsByShop.keys()].length;
-  setStatus(`お店 ${shown.toLocaleString()}件を表示中（食レポのあるお店 ${withReports}件・食レポ ${reports.filter((r) => !r.hidden).length}件）`);
+  const visibleReports = reports.filter((r) => !r.hidden).length;
+  setStatus(`お店 ${shown.toLocaleString()}件を表示中（食レポのあるお店 ${withReports}件・食レポ ${visibleReports}件）`);
+  // 食レポが0件のときだけ、のったあとの姿を「見本」で見せる（データベースには入れない）
+  document.getElementById("gm-sample").hidden = visibleReports > 0;
 }
 
 // ---------- 読み込み ----------
@@ -220,10 +225,10 @@ function indexReports() {
 }
 
 // ---------- 検索 ----------
-function search(q) {
-  const box = document.getElementById("gm-results");
+// 店名などで探す（上の検索欄と、食レポを貼る画面の「② お店を選ぶ」で共通）
+function shopHits(q) {
   const key = norm(q);
-  if (!key) { box.hidden = true; box.innerHTML = ""; return; }
+  if (!key) return [];
   const hits = [];
   for (const s of shops.values()) {
     const hay = norm(`${s.name} ${s.branch || ""} ${s.nameEn || ""} ${s.kind || ""} ${s.cuisine || ""} ${s.address || ""}`);
@@ -233,6 +238,13 @@ function search(q) {
     hits.push({ s, n, score: n * 10 + starts * 5 });
   }
   hits.sort((a, b) => b.score - a.score || a.s.name.localeCompare(b.s.name, "ja"));
+  return hits;
+}
+
+function search(q) {
+  const box = document.getElementById("gm-results");
+  if (!norm(q)) { box.hidden = true; box.innerHTML = ""; return; }
+  const hits = shopHits(q);
   const top = hits.slice(0, 30);
   box.innerHTML = top.length
     ? top.map(({ s, n }) => `<button type="button" data-ref="${esc(s.ref)}">${esc(s.name)}${s.branch ? ` ${esc(s.branch)}` : ""}<small>${esc(s.kind || "")}</small>${n ? `<span class="gm-count">食レポ ${n}</span>` : ""}</button>`).join("")
@@ -308,21 +320,48 @@ function openLatest() {
 }
 
 // ---------- 食レポを貼る ----------
-function openForm(ref, newName = "") {
-  formShop = ref ? shops.get(ref) : null;
+// 食レポを貼る画面を開く（2026-11-13 から URL が先・お店が後の順）。
+//   openForm(ref)        … お店の欄の「このお店の食レポを貼る」から。② はそのお店が選ばれた状態
+//   openForm(null, name, { newShop: true }) … 「地図に無いお店を足す」から。② は新しいお店の欄
+//   openForm(null)       … 最初の画面の「食レポを貼る」から。② でお店を探して選ぶ
+function openForm(ref, newName = "", { newShop = false } = {}) {
+  formShop = ref ? shops.get(ref) || null : null;
+  addingNewShop = !formShop && newShop;
   newShopPos = null;
   const f = document.getElementById("gm-form");
   f.reset();
   document.getElementById("gm-form-error").textContent = "";
   document.getElementById("gm-photo-wrap").hidden = true;
-  document.getElementById("gm-new-shop").hidden = Boolean(formShop);
-  document.getElementById("gm-form-title").textContent = formShop ? "食レポを貼る" : "地図に無いお店を足して、食レポを貼る";
-  document.getElementById("gm-form-shop").textContent = formShop ? `お店：${formShop.name}` : "";
+  document.getElementById("gm-form-title").textContent = addingNewShop ? "地図に無いお店を足して、食レポを貼る" : "食レポを貼る";
   document.getElementById("gm-ns-name").value = newName;
   document.getElementById("gm-ns-pos-text").textContent = "場所はまだ決まっていません";
   document.getElementById("gm-url-hint").textContent = "Instagram・X・Threads・TikTok・YouTube・Facebook・Bluesky・Lemon8・note・アメブロ・はてなブログの投稿を貼れます";
+  document.getElementById("gm-form-results").innerHTML = "";
   document.getElementById("gm-submit").disabled = false;
+  renderFormShop();
   document.getElementById("gm-dialog").showModal();
+  // 最初の画面から来たときは URL から入れてもらう（スマホでキーボードがすぐ出る）
+  if (!formShop && !addingNewShop) document.getElementById("gm-url").focus();
+}
+
+// ② の表示：選んだお店／お店を探す欄／新しいお店の欄のどれか1つ
+function renderFormShop() {
+  const chosen = document.getElementById("gm-form-shop");
+  chosen.hidden = !formShop;
+  chosen.innerHTML = formShop
+    ? `お店：${esc(formShop.name)}${formShop.branch ? ` ${esc(formShop.branch)}` : ""} <button type="button" class="gm-change-shop" data-change-shop="1">変える</button>`
+    : "";
+  document.getElementById("gm-shop-pick").hidden = Boolean(formShop) || addingNewShop;
+  document.getElementById("gm-new-shop").hidden = !addingNewShop;
+}
+
+// ② でお店の候補をその場で出す（上の検索欄と同じ探し方）
+function formSearch(q) {
+  const box = document.getElementById("gm-form-results");
+  if (!norm(q)) { box.innerHTML = ""; return; }
+  const hits = shopHits(q).slice(0, 8);
+  box.innerHTML = hits.map(({ s, n }) => `<button type="button" data-pick-shop="${esc(s.ref)}">${esc(s.name)}${s.branch ? ` ${esc(s.branch)}` : ""}<small>${esc(s.address || s.kind || "")}</small>${n ? `<span class="gm-count">食レポ ${n}</span>` : ""}</button>`).join("")
+    + `<button type="button" class="gm-pick-new" data-pick-new="1">＋ 見つからないときは「${esc(q.trim())}」を新しいお店として足す</button>`;
 }
 
 function setNewShopPos(lat, lon, how) {
@@ -409,6 +448,10 @@ async function submitForm(e) {
     fd.set("shopName", formShop.name);
     fd.set("shopLat", String(formShop.lat));
     fd.set("shopLon", String(formShop.lon));
+  } else if (!addingNewShop) {
+    err.textContent = "② でお店を選んでください（店名を入れると候補が出ます）";
+    document.getElementById("gm-form-q").focus();
+    return;
   } else {
     const name = document.getElementById("gm-ns-name").value.trim();
     if (!name) { err.textContent = ERRORS.invalid_shop; return; }
@@ -487,14 +530,17 @@ function bind() {
   q.addEventListener("input", () => search(q.value));
   q.addEventListener("focus", () => q.value && search(q.value));
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-ref],[data-add],[data-new],[data-undo],[data-hide],[data-hide-shop]");
+    const t = e.target.closest("[data-ref],[data-add],[data-new],[data-undo],[data-hide],[data-hide-shop],[data-pick-shop],[data-pick-new],[data-change-shop]");
     if (!t) {
       if (!e.target.closest(".gm-search")) document.getElementById("gm-results").hidden = true;
       return;
     }
-    if (t.dataset.ref) { document.getElementById("gm-results").hidden = true; openShop(t.dataset.ref, { fly: true }); }
+    if (t.dataset.pickShop) { formShop = shops.get(t.dataset.pickShop) || null; addingNewShop = false; renderFormShop(); document.getElementById("gm-handle").focus(); }
+    else if (t.dataset.pickNew) { addingNewShop = true; formShop = null; document.getElementById("gm-ns-name").value = document.getElementById("gm-form-q").value.trim(); document.getElementById("gm-form-title").textContent = "地図に無いお店を足して、食レポを貼る"; renderFormShop(); }
+    else if (t.dataset.changeShop) { formShop = null; addingNewShop = false; renderFormShop(); document.getElementById("gm-form-q").focus(); }
+    else if (t.dataset.ref) { document.getElementById("gm-results").hidden = true; openShop(t.dataset.ref, { fly: true }); }
     else if (t.dataset.add) openForm(t.dataset.add);
-    else if (t.dataset.new) { document.getElementById("gm-results").hidden = true; openForm(null, q.value.trim()); }
+    else if (t.dataset.new) { document.getElementById("gm-results").hidden = true; openForm(null, q.value.trim(), { newShop: true }); }
     else if (t.dataset.undo) undo(t.dataset.undo);
     else if (t.dataset.hide) moderate(t.dataset.hide, t.dataset.hidden === "1");
     else if (t.dataset.hideShop) moderate(t.dataset.hideShop, t.dataset.hidden === "1", "shop");
@@ -502,7 +548,36 @@ function bind() {
   document.getElementById("gm-only-reports").addEventListener("change", render);
   document.getElementById("gm-kind").addEventListener("change", render);
   document.getElementById("gm-latest-btn").addEventListener("click", openLatest);
-  document.getElementById("gm-add-shop-btn").addEventListener("click", () => openForm(null));
+  document.getElementById("gm-add-shop-btn").addEventListener("click", () => openForm(null, "", { newShop: true }));
+  // 最初の画面の入り口（2026-11-13）
+  document.getElementById("gm-start-paste").addEventListener("click", () => openForm(null));
+  document.getElementById("gm-start-find").addEventListener("click", () => {
+    q.scrollIntoView({ block: "center", behavior: "smooth" });
+    q.focus();
+  });
+  const setSteps = (closed) => {
+    document.getElementById("gm-steps").hidden = closed;
+    document.getElementById("gm-howto").hidden = !closed;
+    save(STEPS_CLOSED_KEY, closed);
+  };
+  document.getElementById("gm-steps-close").addEventListener("click", () => setSteps(true));
+  document.getElementById("gm-howto").addEventListener("click", () => setSteps(false));
+  setSteps(store(STEPS_CLOSED_KEY, false) === true);
+  const formQ = document.getElementById("gm-form-q");
+  formQ.addEventListener("input", () => formSearch(formQ.value));
+  // コピーした URL をそのまま貼る（読めない端末では、欄を長押しして貼ってもらう）
+  document.getElementById("gm-paste").addEventListener("click", async () => {
+    const url = document.getElementById("gm-url");
+    try {
+      const text = (await navigator.clipboard.readText()).trim();
+      if (!text) throw new Error("empty");
+      url.value = text;
+      url.dispatchEvent(new Event("input", { bubbles: true }));
+    } catch {
+      document.getElementById("gm-url-hint").textContent = "貼り付けできませんでした。URLの欄を長押しして「ペースト」を選んでください";
+      url.focus();
+    }
+  });
   document.getElementById("gm-panel-close").addEventListener("click", closePanel);
   document.getElementById("gm-form").addEventListener("submit", submitForm);
   document.getElementById("gm-cancel").addEventListener("click", () => {

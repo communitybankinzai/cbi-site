@@ -9,14 +9,35 @@
   <meta property="og:description" content="印西市と周辺の飲食店を店名で探して、SNSの食レポへ。">
   <meta property="og:type" content="website">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=20261106a">
+  <link rel="stylesheet" href="styles.css?v=20261113a">
 </head>
 <body>
   <header class="gm-header">
     <div class="gm-title">
       <h1>🍽 印西 食レポマップ</h1>
-      <p class="gm-lead">お店を探して、SNSの食レポへ。食べた人が投稿のURLを貼ると、お店のピンに並びます。</p>
+      <button type="button" id="gm-howto" class="gm-howto" hidden>❓ 使い方</button>
     </div>
+    <!-- 最初の画面の入り口（2026-11-13）：一言・2つのボタン・3ステップ（閉じられる）・食レポが0件のときの見本 -->
+    <section class="gm-welcome" aria-label="食レポマップの使い方">
+      <p class="gm-welcome-lead">食べた投稿を、地図にのせよう。</p>
+      <div class="gm-welcome-btns">
+        <button type="button" id="gm-start-paste" class="gm-big gm-big-main">📮 食レポを貼る<small>食べた人</small></button>
+        <button type="button" id="gm-start-find" class="gm-big">🔍 お店を探す<small>これから行く人</small></button>
+      </div>
+      <div id="gm-steps" class="gm-steps">
+        <button type="button" id="gm-steps-close" class="gm-steps-close" aria-label="使い方を閉じる">✕</button>
+        <ol>
+          <li><b>1</b><span>投稿のURL<br>をコピー</span></li>
+          <li><b>2</b><span>貼って<br>お店を選ぶ</span></li>
+          <li><b>3</b><span>地図に<br>のる</span></li>
+        </ol>
+        <div id="gm-sample" class="gm-sample" hidden>
+          <span class="gm-sample-badge">見本</span>
+          <span class="gm-sample-pin">🍽 1</span>
+          <span class="gm-sample-text"><b>（見本）〇〇食堂</b>@sample_user・Instagram<br>「スープが絶品！」</span>
+        </div>
+      </div>
+    </section>
     <div class="gm-search">
       <input id="gm-q" type="search" placeholder="店名・料理（ラーメン、カフェ…）で探す" autocomplete="off" aria-label="店名で探す">
       <div id="gm-results" class="gm-results" hidden></div>
@@ -43,7 +64,22 @@
   <dialog id="gm-dialog" class="gm-dialog">
     <form id="gm-form" method="dialog" novalidate>
       <h2 id="gm-form-title">食レポを貼る</h2>
-      <div id="gm-form-shop" class="gm-form-shop"></div>
+
+      <!-- ① URL が先（2026-11-13・SNS の投稿を持っている人の流れに合わせる） -->
+      <p class="gm-step-h"><b>1</b>SNSの投稿のURLを貼る</p>
+      <div class="gm-url-row">
+        <input id="gm-url" type="url" inputmode="url" required maxlength="500" autocomplete="off" placeholder="https://www.instagram.com/p/…" aria-label="SNSの投稿のURL">
+        <button type="button" id="gm-paste" class="gm-btn-sub">📋 貼り付け</button>
+      </div>
+      <p id="gm-url-hint" class="gm-note">Instagram・X・Threads・TikTok・YouTube・Facebook・Bluesky・Lemon8・note・アメブロ・はてなブログの投稿を貼れます</p>
+
+      <!-- ② お店を選ぶ（店名の候補をその場で出す。無ければ新しいお店を足す） -->
+      <p class="gm-step-h"><b>2</b>お店を選ぶ</p>
+      <div id="gm-form-shop" class="gm-form-shop" hidden></div>
+      <div id="gm-shop-pick" class="gm-shop-pick">
+        <input id="gm-form-q" type="search" autocomplete="off" placeholder="店名を入れる（例：ラーメン、〇〇食堂）" aria-label="お店を店名で探す">
+        <div id="gm-form-results" class="gm-form-results"></div>
+      </div>
 
       <fieldset id="gm-new-shop" class="gm-new-shop" hidden>
         <legend>新しいお店</legend>
@@ -56,13 +92,14 @@
         <p id="gm-ns-pos-text" class="gm-note">場所はまだ決まっていません</p>
       </fieldset>
 
-      <label class="gm-field">SNSの投稿のURL（必須）
-        <input id="gm-url" type="url" inputmode="url" required maxlength="500" autocomplete="off" placeholder="https://www.instagram.com/p/…">
-      </label>
-      <p id="gm-url-hint" class="gm-note">Instagram・X・Threads・TikTok・YouTube・Facebook・Bluesky・Lemon8・note・アメブロ・はてなブログの投稿を貼れます</p>
-      <label class="gm-field">投稿した人の名前（@から・任意）
-        <input id="gm-handle" maxlength="41" autocomplete="off" placeholder="@example">
-      </label>
+      <!-- ③ 名前など（名前欄は目立たせて理由を書く） -->
+      <p class="gm-step-h"><b>3</b>名前とひとこと</p>
+      <div class="gm-handle-box">
+        <label class="gm-field">投稿した人の名前（@から）
+          <input id="gm-handle" maxlength="41" autocomplete="off" placeholder="@example">
+        </label>
+        <p class="gm-handle-why">名前を入れると、投稿を見た人があなたのSNSに来ます。Instagramの共有リンクには名前が入らないので、ぜひ入れてください。</p>
+      </div>
       <label class="gm-field">ひとこと（任意・100字まで）
         <input id="gm-comment" maxlength="100" autocomplete="off" placeholder="例：濃厚な味噌ラーメン。昼は混みます">
       </label>
@@ -91,6 +128,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=20261112a"></script>
+  <script src="app.js?v=20261113a"></script>
 </body>
 </html>
