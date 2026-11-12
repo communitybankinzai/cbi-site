@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "食レポマップの全会員向けお知らせ（ベル45名・Webプッシュ11件）を送信",
+          "category": "広報",
+          "outputs": [
+            "本番DB: notifications 45件（broadcast 4b2d4d6a）",
+            "文面は事業主が確認のうえ送信（リンク先は CiDAO トップの「ぐるめ」）"
+          ],
+          "hours": 0.05,
+          "partnerApproved": false,
+          "note": "管理画面の一斉お知らせと同じ notifyAllMembers を直接呼んだ（管理者ログインができないため）。プッシュ購読は11件で、前回の想定（6名）より増えていた。"
+        },
+        {
+          "date": "2026-11-13",
           "title": "食レポSNS巡回を有効化：ハッシュタグ4語（#印西グルメ・ランチ・ディナー・カフェ）を食レポ専用で追加／千葉の大手7アカウントを条件語つきで登録／候補の「チェックが入らない」を修正／本番で巡回を1回実行",
           "category": "実装",
           "outputs": [
@@ -9989,15 +10001,6 @@
           "category": "保守",
           "priority": "高",
           "note": "2026-11-07、app_settings の value を先頭120文字表示したときに出た（外部送信なし）。再発行するなら Meta for Developers のアプリ設定で app secret をリセット → CiDAO /admin/sns（または app_settings.sns_threads_app）に貼り直す。合言葉（11/7）・DB パスワード（11/6）の件と一緒に判断"
-        },
-        {
-          "due": "未定",
-          "title": "📣 食レポマップの提案（2985a002）：Webプッシュ（購読6名）を出すか（SNS 告知は 11/7 13:09 に出した）",
-          "category": "広報",
-          "priority": "中",
-          "status": "保留",
-          "blockedBy": "2026-11-07 13:09 事業主「いま出す」で SNS 告知（Threads・Instagram）は出した。残りは Webプッシュ（購読6名）だけ。出すなら /admin/notice の一斉お知らせ",
-          "note": "2026-11-07 の代理登録ではベル通知43件だけ。アプリから登録した場合は Webプッシュ＋SNS 自動配信（sns_auto_post=true）まで出ていた。動画の SNS 投稿（11/8 11:30 の案）は提案の投票を見てからにするかも事業主判断"
         },
         {
           "due": "未定",
