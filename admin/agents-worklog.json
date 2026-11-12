@@ -17,6 +17,18 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-12",
+          "title": "食レポマップ紹介動画30秒版（縦・38秒・CiDAO提案中の試作として）と投稿文の作成 0.6時間",
+          "category": "広報",
+          "outputs": [
+            "scripts/promo/gourmet_map/gen_voice30.py（圭太・edge-tts 7.3.1・文の間を0.3秒に詰める）／record30.mjs（公開ページをCDPで1コマずつ・登録POSTだけ差し替えて本番に書かない）／compose30.py（表紙の CiDAO 帯・締めの投票案内）／post_text30.md",
+            "scripts/promo/out/食レポマップ_紹介30秒_2026-11-12/（video.mp4・cover.jpg・投稿文.md）"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "事業主決定（3択）：11/07の仕組みで短く作り直す／狙いは使い方の紹介／約30秒・BGM＋ナレーション／名前欄の呼びかけを入れる／見せ方は「CiDAOで提案中のアイデアを、試作でカタチに」（地図の公開11/06・提案11/07のため『提案から生まれた』とは書かない）。件数は公開データで4,680軒、出典に OpenPOI API を追加。検証：H.264・yuv420p・tv範囲・1080x1920・30fps・38.4秒、1コマ目の平均輝度89.5（黒でない）、1秒超の無音なし、表紙・03・締めの字幕を等倍で確認。投稿はしていない（承認待ち・plans）。 session: d3b7e50d-eb11-483c-a5c9-06061df311b4 / output: 59,324 / cost: $13.41"
+        },
+        {
           "date": "2026-11-10",
           "title": "防災MAP：冠水の用途をいまの雨量に連動（雨なしの日は赤なし・3日間雨量・段階ボタン）＋記録386件の雨量分布の集計 1.0時間",
           "category": "実装",
@@ -9507,6 +9519,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "📣 食レポマップ紹介動画30秒版を、事業主の承認後に Threads・Instagram・Facebook へ予約投稿する",
+          "category": "広報",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "事業主が動画（scripts/promo/out/食レポマップ_紹介30秒_2026-11-12/video.mp4）と投稿文を承認すること",
+          "note": "投稿は branding/sns/tools/post_to_sns.py --utm-campaign gourmet30（CiDAO の提案リンクにだけ utm が付く）。IG は JPEG の cover.jpg。11/07の66秒版（約1,000軒の古い数字）は使わない。CiDAO 提案（2985a002…・投票中・締切11/30・11/12時点で票なし）の本文は『動画の投稿は投票とコメントを見てから』と書いているので、出す前にその扱いも事業主に確認する。"
+        },
+        {
+          "due": "未定",
+          "title": "🧹 Nucbox_G3S の OneDrive\\CBI\\site が公開版から868コミット遅れ・未コミットの変更ありの状態を整理する",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-11-12 に確認（main...origin/main ahead 26, behind 868・admin/admin.js などに未コミットの変更）。このPCから site へ push すると古い内容で上書きする恐れがあるため、11/12 の記録は一時フォルダへ取り直して push した。整理は、どのPCの変更が正かを事業主と確かめてから（勝手に reset しない）。"
+        },
         {
           "due": "2026-11-17",
           "title": "☔ 冠水MAPの「いまの雨量に連動」を本番・実機スマホで確認（雨なしの日に赤が出ない／帯の見え方）",
