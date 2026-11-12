@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-12",
+          "title": "CiDAO の管理者宛てメールの宛先（ADMIN_NOTIFY_EMAIL）を CBI 公式メールに設定し、食レポの通知メールの着信を確認 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "Vercel cidao の環境変数 ADMIN_NOTIFY_EMAIL（production・preview）＝communitybankinzai@gmail.com・本番を再デプロイ（dpl_F7ypjRTrnPNQwEkdfE4H8abtJJbN・READY）",
+            "本番：[試験] 食レポ1件（09ba5ecc…・同意なし）を登録→取り消し"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主「直す」（親セッション経由）。影響範囲：この値を読むのは4か所。不具合報告（bug-report）とSNSトークン失効の警告は未設定時も既定で公式メール宛て＝宛先は変わらない。SNS告知の承認待ち・自動配信の結果（提案・団体・FreeFree・食レポ）と SNS 削除待ちのメールは、これまで未設定で送られていなかった→今後は公式メールに届く（過去30日の実績で月4通ほど＋食レポの件数分）。量が少なく宛先も同じなので食レポだけ別宛先にはしなかった。確認：22:29:53 登録→22:30:00 公式メールに『【食レポマップ】食レポが届きました：みろべラーメン』（送信者 CiDAO・本文に同意なし・元の投稿URL）を GAS の list で読み戻した。取り消し200・公開API 0件・gourmet の下書き0件。今回のベル通知5件は残す。SNS への承認・投稿なし。"
+        },
+        {
+          "date": "2026-11-12",
           "title": "食レポの通知と同意つき紹介下書きの通し試験（本番・公開ページから2件登録→取り消し）0.2時間",
           "category": "保守",
           "outputs": [
@@ -9542,15 +9554,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "未定",
-          "title": "📧 CiDAO の管理者宛てメール（ADMIN_NOTIFY_EMAIL）が Vercel に未設定で、承認待ち・食レポのメール通知が一度も送られていない",
-          "category": "保守",
-          "priority": "中",
-          "status": "保留",
-          "blockedBy": "事業主が宛先（CBI公式メール communitybankinzai@gmail.com か別のアドレスか）を決めること",
-          "note": "2026-11-12 の通し試験で判明。sns-announce.ts の notifyAdminsOfPendingDrafts／notifyAdminsOfGourmet は宛先が空だと何もせず終わる。設定すれば Resend（RESEND_API_KEY・MAIL_FROM は設定済み）で送られる見込み。公式メールにするなら gas-mail-share の仕分けで『要対応』に入るルールも足す（ルール12でセッション開始時に拾える）。Resend の送信元ドメインの検証状態によっては特定の宛先にしか送れない可能性あり（未確認）。"
-        },
         {
           "due": "未定",
           "title": "🍽 食レポのSNS紹介を、件数が増えたら『週のまとめ』に切り替える（承認の手間と投稿の多さを見て判断）",
