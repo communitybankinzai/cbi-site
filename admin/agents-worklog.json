@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "食レポ候補の画面に「地図に足して承認」を追加（住所検索→ピンで位置を決める→足して承認）／本番DBで通し試験",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/gourmet-candidates.ts（addShopAndApprove・checkNewShop・findSameShop）",
+            "cidao: src/app/admin/gourmet/actions.ts・_components/NewShopPanel.tsx（新規）・CandidateCard.tsx",
+            "cidao: src/lib/__tests__/gourmet-candidates.test.ts（7件・全900件通過）",
+            "cidao 8e5b7f5（本番反映済み）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "位置は運営が確かめる前提（確定は位置を決めてから）。同名100m以内は既存のお店に付け、範囲外・保留中・処理済みは断り、承認に失敗したら作ったお店を消す。本番DBの通し試験10項目はすべて通り、試験データは削除済み。小窓の地図・住所検索・ピン・確定ボタンの有効化は開発サーバーの一時ページで確認。管理者ログインが要る本番画面での実機確認は未実施。\nsession: 4a8fee9a-27a0-4fca-b0e5-faff58d0f4fa / output: 76,217 / cost: $23.95"
+        },
+        {
+          "date": "2026-11-13",
           "title": "食レポマップの全会員向けお知らせ（ベル45名・Webプッシュ11件）を送信",
           "category": "広報",
           "outputs": [
@@ -9684,6 +9698,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-16",
+          "title": "🍽 食レポ候補の「地図に足して承認」を、管理者でログインした本番の画面で押して確かめる（住所検索・ピン・承認後に地図へ出るまで）",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-11-13 実装・本番反映済み。画面部品の確認は一時ページ、処理の確認は本番DBの通し試験で済み。管理者ログインが要る実画面の確認だけ未了。"
+        },
         {
           "due": "2026-11-20",
           "title": "🍽 食レポ巡回の1週間レビュー：ハッシュタグ4語と千葉の大手7件の当たり率（食レポの割合・お店自身の宣伝の混入・地図にない店の多さ）と費用を見て、語・条件語・1日上限を調整する",
