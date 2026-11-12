@@ -57,6 +57,10 @@ a { color: #1c64c2; }
   display: inline-block; line-height: 18px;
 }
 .gm-pin.is-ff { background: #2b8a3e; }
+.gm-pin.is-near { background: #fff; color: var(--gm-accent); border-color: var(--gm-accent); } /* 周辺の市町のお店（市内と見分ける） */
+.gm-chip-near { border-color: #8c9bab; }
+.gm-near-hint { padding: 10px 12px; font-size: .88rem; color: var(--gm-ink); background: #f1f3f5; }
+.gm-near-hint button { margin-left: 6px; font-size: .85rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--gm-accent); background: #fff; color: var(--gm-accent); cursor: pointer; }
 
 .gm-panel {
   position: absolute; z-index: 1050; background: #fff; overflow-y: auto; box-shadow: 0 0 24px rgba(0,0,0,.2);

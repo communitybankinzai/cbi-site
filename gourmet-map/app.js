@@ -7,6 +7,7 @@
 const API = "https://cidao.vercel.app/api/gourmet/reports";
 const FREEFREE_API = "https://cidao.vercel.app/api/metaverse-shops";
 const OSM_URL = "osm-shops.json";
+const AREAS_URL = "areas-lite.json"; // 印西市（inzai）＋周辺の市町（near）の市域・画面用に間引いた形（pipeline/make_areas.py が作る・2026-11-13）
 const DEVICE_KEY = "cbi-gourmet-device-v1";
 const OWN_KEY = "cbi-gourmet-own-v1"; // 自分が貼った食レポ（取り消し用・30分）
 const MODERATION_KEY_STORAGE = "cbi-disaster-moderation-key-v1"; // 防災MAPと同じ合言葉を使う
@@ -59,6 +60,8 @@ let newShopPos = null;
 let picking = false;
 let pickMarker = null;
 let moderation = false;
+let areas = []; // [{ area: "inzai"|"near", name, polygons, box }]
+let showNear = false; // 「周辺も見る」（既定は市内だけ・2026-11-13 事業主決定）
 
 // ---------- 小さな道具 ----------
 function esc(v) {
@@ -88,8 +91,26 @@ function moderationKey() {
 function norm(s) {
   return String(s || "").normalize("NFKC").toLowerCase().replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60)).replace(/\s+/g, "");
 }
+function inRing(lon, lat, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]; const [xj, yj] = ring[j];
+    if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+// 市内（inzai）・周辺の市町（near）・範囲外（null）。お店の一覧には area が付いているので、これは一覧の外から来るお店（市民が足したお店・FreeFree）と新しいお店の場所に使う
+function areaOf(lat, lon) {
+  if (!areas.length) return lat >= AREA.south && lat <= AREA.north && lon >= AREA.west && lon <= AREA.east ? "near" : null; // 境界を読めないときの仮の判定
+  for (const a of areas) {
+    const [w, s, e, n] = a.box;
+    if (lon < w || lon > e || lat < s || lat > n) continue;
+    if (a.polygons.some((p) => inRing(lon, lat, p[0]) && !p.slice(1).some((h) => inRing(lon, lat, h)))) return a.area;
+  }
+  return null;
+}
 function insideArea(lat, lon) {
-  return lat >= AREA.south && lat <= AREA.north && lon >= AREA.west && lon <= AREA.east;
+  return areaOf(lat, lon) !== null;
 }
 function setStatus(text) { document.getElementById("gm-status").textContent = text; }
 function fmtDate(iso) {
@@ -138,6 +159,8 @@ function shopKinds() {
 function visibleShop(s) {
   const only = document.getElementById("gm-only-reports").checked;
   const kind = document.getElementById("gm-kind").value;
+  if (!s.area) return false;
+  if (s.area === "near" && !showNear) return false;
   if (only && !reportsByShop.get(s.ref)?.length) return false;
   if (kind && s.kind !== kind) return false;
   return true;
@@ -153,18 +176,19 @@ function render() {
     const n = reportsByShop.get(s.ref)?.length || 0;
     if (n > 0 || s.source === "ff") {
       const label = n > 0 ? `🍽 ${n}` : "🍽";
-      const icon = L.divIcon({ className: "", html: `<span class="gm-pin${s.source === "ff" ? " is-ff" : ""}">${label}</span>`, iconSize: null });
+      const icon = L.divIcon({ className: "", html: `<span class="gm-pin${s.source === "ff" ? " is-ff" : ""}${s.area === "near" ? " is-near" : ""}">${label}</span>`, iconSize: null });
       L.marker([s.lat, s.lon], { icon, title: s.name, riseOnHover: true })
         .on("click", () => openShop(s.ref)).addTo(pinLayer);
     } else {
-      L.circleMarker([s.lat, s.lon], { radius: 6, color: "#fff", weight: 1.5, fillColor: "#7a4b2a", fillOpacity: 0.9 })
+      const near = s.area === "near";
+      L.circleMarker([s.lat, s.lon], { radius: near ? 5 : 6, color: "#fff", weight: 1.5, fillColor: near ? "#8c9bab" : "#7a4b2a", fillOpacity: near ? 0.8 : 0.9 })
         .bindTooltip(esc(s.name), { direction: "top" })
         .on("click", () => openShop(s.ref)).addTo(osmLayer);
     }
   }
   const withReports = [...reportsByShop.keys()].length;
   const visibleReports = reports.filter((r) => !r.hidden).length;
-  setStatus(`お店 ${shown.toLocaleString()}件を表示中（食レポのあるお店 ${withReports}件・食レポ ${visibleReports}件）`);
+  setStatus(`お店 ${shown.toLocaleString()}件を表示中（${showNear ? "市内と周辺" : "印西市内"}・食レポのあるお店 ${withReports}件・食レポ ${visibleReports}件）`);
   // 食レポが0件のときだけ、のったあとの姿を「見本」で見せる（データベースには入れない）
   document.getElementById("gm-sample").hidden = visibleReports > 0;
 }
@@ -177,6 +201,18 @@ async function loadOsm() {
   for (const s of data.shops || []) shops.set(s.id, { ...s, ref: s.id, source: "osm" });
 }
 
+async function loadAreas() {
+  try {
+    const res = await fetch(AREAS_URL);
+    if (!res.ok) return;
+    const data = await res.json();
+    areas = (data.areas || []).map((a) => {
+      const xs = a.polygons.flatMap((p) => p[0].map((c) => c[0])); const ys = a.polygons.flatMap((p) => p[0].map((c) => c[1]));
+      return { ...a, box: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] };
+    }).sort((x, y) => (x.area === "inzai" ? -1 : 0) - (y.area === "inzai" ? -1 : 0));
+  } catch { /* 読めなければ四角形の仮の判定 */ }
+}
+
 async function loadFreefree() {
   try {
     const res = await fetch(FREEFREE_API);
@@ -186,7 +222,7 @@ async function loadFreefree() {
       if (s.category !== "food" || typeof s.lat !== "number" || !insideArea(s.lat, s.lon)) continue;
       const ref = `ff:${String(s.id).toLowerCase()}`;
       shops.set(ref, {
-        ref, source: "ff", name: s.shop || s.title, lat: s.lat, lon: s.lon, kind: "FreeFree掲載", address: s.address || s.location || "",
+        ref, source: "ff", area: areaOf(s.lat, s.lon), name: s.shop || s.title, lat: s.lat, lon: s.lon, kind: "FreeFree掲載", address: s.address || s.location || "",
         title: s.title, detailUrl: s.detailUrl, links: Array.isArray(s.links) ? s.links : [],
       });
     }
@@ -207,7 +243,7 @@ async function loadReports() {
   const data = await res.json();
   for (const s of data.shops || []) {
     if (s.hidden && !moderation) continue;
-    shops.set(s.ref, { ...s, source: "shop", kind: "市民が登録", hidden: Boolean(s.hidden) });
+    shops.set(s.ref, { ...s, source: "shop", kind: "市民が登録", hidden: Boolean(s.hidden), area: areaOf(s.lat, s.lon) });
   }
   reports = data.reports || [];
   indexReports();
@@ -220,17 +256,18 @@ function indexReports() {
     if (!reportsByShop.has(r.shopRef)) reportsByShop.set(r.shopRef, []);
     reportsByShop.get(r.shopRef).push(r);
     // 一覧から消えたお店（FreeFree の掲載終了など）でも、食レポが付いていれば残す
-    if (!shops.has(r.shopRef)) shops.set(r.shopRef, { ref: r.shopRef, name: r.shopName, lat: r.lat, lon: r.lon, kind: "", source: "report" });
+    if (!shops.has(r.shopRef)) shops.set(r.shopRef, { ref: r.shopRef, name: r.shopName, lat: r.lat, lon: r.lon, kind: "", source: "report", area: areaOf(r.lat, r.lon) });
   }
 }
 
 // ---------- 検索 ----------
 // 店名などで探す（上の検索欄と、食レポを貼る画面の「② お店を選ぶ」で共通）
-function shopHits(q) {
+function shopHits(q, { near = showNear } = {}) {
   const key = norm(q);
   if (!key) return [];
   const hits = [];
   for (const s of shops.values()) {
+    if (!s.area || (s.area === "near" && !near)) continue;
     const hay = norm(`${s.name} ${s.branch || ""} ${s.nameEn || ""} ${s.kind || ""} ${s.cuisine || ""} ${s.address || ""}`);
     if (!hay.includes(key)) continue;
     const n = reportsByShop.get(s.ref)?.length || 0;
@@ -241,6 +278,13 @@ function shopHits(q) {
   return hits;
 }
 
+// 市内に見つからず、周辺にあるときの案内（「周辺も見る」を1回押せば出る）
+function nearHint(q) {
+  if (showNear) return "";
+  const n = shopHits(q, { near: true }).length;
+  return n ? `<div class="gm-near-hint">周辺のお店に ${n}件あります。<button type="button" data-show-near="1">「周辺も見る」で表示</button></div>` : "";
+}
+
 function search(q) {
   const box = document.getElementById("gm-results");
   if (!norm(q)) { box.hidden = true; box.innerHTML = ""; return; }
@@ -249,7 +293,7 @@ function search(q) {
   box.innerHTML = top.length
     ? top.map(({ s, n }) => `<button type="button" data-ref="${esc(s.ref)}">${esc(s.name)}${s.branch ? ` ${esc(s.branch)}` : ""}<small>${esc(s.kind || "")}</small>${n ? `<span class="gm-count">食レポ ${n}</span>` : ""}</button>`).join("")
       + (hits.length > top.length ? `<div class="gm-empty">ほか ${hits.length - top.length}件。もう少しくわしく入れてください</div>` : "")
-    : `<div class="gm-empty">見つかりませんでした。<button type="button" data-new="1">＋「${esc(q)}」を新しいお店として足す</button></div>`;
+    : nearHint(q) || `<div class="gm-empty">見つかりませんでした。<button type="button" data-new="1">＋「${esc(q)}」を新しいお店として足す</button></div>`;
   box.hidden = false;
 }
 
@@ -360,7 +404,7 @@ function formSearch(q) {
   const box = document.getElementById("gm-form-results");
   if (!norm(q)) { box.innerHTML = ""; return; }
   const hits = shopHits(q).slice(0, 8);
-  box.innerHTML = hits.map(({ s, n }) => `<button type="button" data-pick-shop="${esc(s.ref)}">${esc(s.name)}${s.branch ? ` ${esc(s.branch)}` : ""}<small>${esc(s.address || s.kind || "")}</small>${n ? `<span class="gm-count">食レポ ${n}</span>` : ""}</button>`).join("")
+  box.innerHTML = (hits.length ? "" : nearHint(q)) + hits.map(({ s, n }) => `<button type="button" data-pick-shop="${esc(s.ref)}">${esc(s.name)}${s.branch ? ` ${esc(s.branch)}` : ""}<small>${esc(s.address || s.kind || "")}</small>${n ? `<span class="gm-count">食レポ ${n}</span>` : ""}</button>`).join("")
     + `<button type="button" class="gm-pick-new" data-pick-new="1">＋ 見つからないときは「${esc(q.trim())}」を新しいお店として足す</button>`;
 }
 
@@ -530,11 +574,12 @@ function bind() {
   q.addEventListener("input", () => search(q.value));
   q.addEventListener("focus", () => q.value && search(q.value));
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-ref],[data-add],[data-new],[data-undo],[data-hide],[data-hide-shop],[data-pick-shop],[data-pick-new],[data-change-shop]");
+    const t = e.target.closest("[data-ref],[data-add],[data-new],[data-undo],[data-hide],[data-hide-shop],[data-pick-shop],[data-pick-new],[data-change-shop],[data-show-near]");
     if (!t) {
       if (!e.target.closest(".gm-search")) document.getElementById("gm-results").hidden = true;
       return;
     }
+    if (t.dataset.showNear) { setShowNear(true); if (document.getElementById("gm-dialog").open) formSearch(document.getElementById("gm-form-q").value); else search(q.value); return; }
     if (t.dataset.pickShop) { formShop = shops.get(t.dataset.pickShop) || null; addingNewShop = false; renderFormShop(); document.getElementById("gm-handle").focus(); }
     else if (t.dataset.pickNew) { addingNewShop = true; formShop = null; document.getElementById("gm-ns-name").value = document.getElementById("gm-form-q").value.trim(); document.getElementById("gm-form-title").textContent = "地図に無いお店を足して、応援する"; renderFormShop(); }
     else if (t.dataset.changeShop) { formShop = null; addingNewShop = false; renderFormShop(); document.getElementById("gm-form-q").focus(); }
@@ -546,6 +591,7 @@ function bind() {
     else if (t.dataset.hideShop) moderate(t.dataset.hideShop, t.dataset.hidden === "1", "shop");
   });
   document.getElementById("gm-only-reports").addEventListener("change", render);
+  document.getElementById("gm-near").addEventListener("change", (e) => setShowNear(e.target.checked));
   document.getElementById("gm-kind").addEventListener("change", render);
   document.getElementById("gm-latest-btn").addEventListener("click", openLatest);
   document.getElementById("gm-add-shop-btn").addEventListener("click", () => openForm(null, "", { newShop: true }));
@@ -601,11 +647,17 @@ function bind() {
   document.getElementById("gm-pick-cancel").addEventListener("click", stopPicking);
 }
 
+function setShowNear(on) {
+  showNear = Boolean(on);
+  document.getElementById("gm-near").checked = showNear;
+  render();
+}
+
 async function main() {
   initMap();
   bind();
   try {
-    await loadOsm();
+    await Promise.all([loadOsm(), loadAreas()]);
   } catch {
     setStatus("お店の一覧を読めませんでした。ページを読み込み直してください。");
   }
@@ -615,7 +667,8 @@ async function main() {
   render();
   if (results[0].status === "rejected") setStatus(`${document.getElementById("gm-status").textContent}　※食レポを読めませんでした`);
   const ref = new URLSearchParams(location.search).get("shop");
-  if (ref && shops.has(ref)) openShop(ref, { fly: true });
+  // 直リンクのお店が周辺なら、周辺も見る状態で開く
+  if (ref && shops.has(ref)) { if (shops.get(ref).area === "near") setShowNear(true); openShop(ref, { fly: true }); }
 }
 
 main();

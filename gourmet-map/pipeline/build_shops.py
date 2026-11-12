@@ -280,6 +280,11 @@ def main():
             if r[k] is None:
                 del r[k]
     shops.sort(key=lambda s: (s['lat'], s['lon']))
+    # 範囲を印西市（inzai）＋周辺の市町（near）の市域に絞る（2026-11-13 事業主決定・案2）。
+    # BBOX は取得のための四角形で、その中の 7市町の外（八千代・船橋・富里・鎌ケ谷など）は外す。周辺の市町は make_areas.py の NEAR
+    from apply_area import tag_shops
+    shops, dropped = tag_shops(shops)
+    print('範囲の外として外した:', sum(dropped.values()), '件 / 市内', sum(1 for s in shops if s['area'] == 'inzai'), '件・周辺', sum(1 for s in shops if s['area'] == 'near'), '件')
     jst = timezone(timedelta(hours=9))
     out = {
         'attribution': '© OpenStreetMap contributors（ODbL 1.0）／ OpenPOI API（https://openpoiapi.com/attribution.html）: Overture Maps Foundation, overturemaps.org（CDLA-Permissive-2.0 ほか）・Japan Food Facilities（各自治体・厚生労働省のオープンデータを加工して作成）のデータを加工して作成',

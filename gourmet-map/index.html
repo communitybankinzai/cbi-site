@@ -9,7 +9,7 @@
   <meta property="og:description" content="印西市と周辺の飲食店を店名で探して、SNSの食レポへ。">
   <meta property="og:type" content="website">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=20261113b">
+  <link rel="stylesheet" href="styles.css?v=20261113c">
 </head>
 <body>
   <header class="gm-header">
@@ -44,6 +44,7 @@
       <div id="gm-results" class="gm-results" hidden></div>
     </div>
     <div class="gm-filters">
+      <label class="gm-chip gm-chip-near"><input type="checkbox" id="gm-near"> 周辺（白井・栄町・柏・我孫子・成田・佐倉）も見る</label>
       <label class="gm-chip"><input type="checkbox" id="gm-only-reports"> 食レポのあるお店だけ</label>
       <select id="gm-kind" aria-label="お店の種類"><option value="">すべての種類</option></select>
       <button type="button" id="gm-latest-btn" class="gm-chip-btn">🆕 新着の食レポ</button>
@@ -129,6 +130,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=20261113b"></script>
+  <script src="app.js?v=20261113c"></script>
 </body>
 </html>
