@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "食レポ：@inzaibase・@inzaiparque を巡回に登録→候補5店を承認／Muse依頼029の住所で23店を地図に追加して承認",
+          "category": "保守",
+          "outputs": [
+            "DB: sns_monitor_accounts に inzaibase・inzaiparque（食レポのみ・条件語なし）／app_settings.gourmet_crawl.daily_ai_limit 40→100",
+            "DB: gourmet_shops に22店を新規登録（スナヲ飯の重複1件は既存へ付け替え）・gourmet_candidates 28件を承認（巡回由来5＋依頼029由来23）",
+            "Drive: Claude連絡/成果/029_お店の住所.json（Muse 回答 10:25）を使用",
+            "使い捨てスクリプトは消去済み（コミットなし）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "位置は国土地理院の住所検索（Nominatim は全件ヒットなしで二重確認できず）。丁目止まりの3店（馬喰ろう・インダスレイ・スナヲ飯）は数百mの誤差があり得る。らんどね 空と海（船橋市）は範囲外で未登録。ジェラート店告知・38店まとめは食レポでないため見送り。\nsession: 4a8fee9a-27a0-4fca-b0e5-faff58d0f4fa / output: 213,298 / cost: $43.49"
+        },
+        {
+          "date": "2026-11-13",
           "title": "ぬりえノートのあとがきから「印西このゆびとまれ」を削除（PDF作り直し・差し替え・公開確認） 0.1時間",
           "category": "保守",
           "outputs": [
@@ -9863,13 +9877,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-11-14",
-          "title": "🍽 Muse の依頼029（地図にないお店24店の住所）の結果を受け取り、事業主の指示で一括して足して承認する",
-          "category": "保守",
-          "priority": "中",
-          "note": "2026-11-13 に Drive の Claude連絡/依頼/029_お店の住所を調べてください.md を置いた。Muse が夜に処理（他の単発が先に積まれていると届かない場合あり・事業主が Muse に直接頼めば即実行）。11/14 07:30 の予約タスク（gourmet-address-029-receive）が、結果を国土地理院と Nominatim で位置に変換して検証し、表で報告する（登録・承認はしない）。登録は事業主の指示を受けてから。"
-        },
         {
           "due": "2026-11-16",
           "title": "🍽 食レポ候補の最初の1件を実際に承認し、食レポマップに出ること（カードの印・リンク）を確かめる",
