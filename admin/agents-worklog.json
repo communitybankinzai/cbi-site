@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "管理画面『SNS巡回アカウント』に使い道（イベント／食レポ）の表示・絞り込み・追加・変更を追加",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao\\src\\app\\admin\\sns-monitor\\actions.ts（コミット 3035732）",
+            "C:\\Repos\\cidao\\src\\app\\admin\\sns-monitor\\page.tsx（同上）"
+          ],
+          "hours": 0.15,
+          "partnerApproved": false,
+          "note": "食レポ専門アカウントの登録一覧を画面で管理できるようにした（use_events・use_gourmet・gourmet_hold を一覧に出し、絞り込み・追加欄のチェック・行ごとの変更。両方外す変更は拒否）。型検査・lint はエラーなし。管理者ログインが必要なため画面の実表示は未確認（事業主の確認待ち）。\nsession: 4a8fee9a-27a0-4fca-b0e5-faff58d0f4fa / output: 281,013（今回分 約15,000）/ cost: $55.33"
+        },
+        {
+          "date": "2026-11-13",
           "title": "依頼030の結果を地図へ反映（7店）／営業上の問題がある店は自動登録しない仕組み／あて劇場を却下／新しいお店を足すときの「もしかして」確認",
           "category": "実装",
           "outputs": [
