@@ -378,6 +378,7 @@ function openForm(ref, newName = "", { newShop = false } = {}) {
   const f = document.getElementById("gm-form");
   f.reset();
   document.getElementById("gm-form-error").textContent = "";
+  hideSimilarShops();
   document.getElementById("gm-photo-wrap").hidden = true;
   document.getElementById("gm-form-title").textContent = addingNewShop ? "地図に無いお店を足して、応援する" : "お店を応援する（食レポを貼る）";
   document.getElementById("gm-ns-name").value = newName;
@@ -409,6 +410,59 @@ function formSearch(q) {
   const hits = shopHits(q).slice(0, 8);
   box.innerHTML = (hits.length ? "" : nearHint(q)) + hits.map(({ s, n }) => `<button type="button" data-pick-shop="${esc(s.ref)}">${esc(s.name)}${s.branch ? ` ${esc(s.branch)}` : ""}<small>${esc(s.address || s.kind || "")}</small>${n ? `<span class="gm-count">食レポ ${n}</span>` : ""}</button>`).join("")
     + `<button type="button" class="gm-pick-new" data-pick-new="1">＋ 見つからないときは「${esc(q.trim())}」を新しいお店として足す</button>`;
+}
+
+// 新しいお店を足す前に、近くで名前が似ているお店を探す（綴りの違いで二重にならないように・2026-11-13）
+const SIMILAR_RADIUS_M = 300;
+let skipSimilarCheck = false;
+function metersBetween(aLat, aLon, bLat, bLon) {
+  const r = 6371008.8, rad = Math.PI / 180;
+  const dLat = (bLat - aLat) * rad, dLon = (bLon - aLon) * rad;
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * rad) * Math.cos(bLat * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(s));
+}
+function bigrams(s) {
+  const out = new Map();
+  for (let i = 0; i < s.length - 1; i++) { const g = s.slice(i, i + 2); out.set(g, (out.get(g) || 0) + 1); }
+  return out;
+}
+// 似ている度（0〜1）。片方がもう一方を含む（支店名つきなど）は 0.9、それ以外は2文字ずつの重なり（Dice）
+function nameSimilarity(a, b) {
+  const x = norm(a), y = norm(b);
+  if (!x || !y) return 0;
+  if (x === y) return 1;
+  if (Math.min(x.length, y.length) >= 2 && (x.includes(y) || y.includes(x))) return 0.9;
+  const gx = bigrams(x), gy = bigrams(y);
+  let common = 0, total = 0;
+  for (const [g, n] of gx) { common += Math.min(n, gy.get(g) || 0); total += n; }
+  for (const n of gy.values()) total += n;
+  return total ? (2 * common) / total : 0;
+}
+function similarShops(name, lat, lon) {
+  const out = [];
+  for (const s of shops.values()) {
+    if (typeof s.lat !== "number" || typeof s.lon !== "number") continue;
+    const d = metersBetween(lat, lon, s.lat, s.lon);
+    if (d > SIMILAR_RADIUS_M) continue;
+    const sim = nameSimilarity(name, `${s.name}${s.branch ? ` ${s.branch}` : ""}`) || 0;
+    const simName = nameSimilarity(name, s.name);
+    const best = Math.max(sim, simName);
+    if (best >= 0.5) out.push({ s, d, best });
+  }
+  return out.sort((a, b) => b.best - a.best || a.d - b.d).slice(0, 3);
+}
+function showSimilarShops(name, list) {
+  const box = document.getElementById("gm-similar");
+  box.innerHTML = `<p><b>もしかして、すでにある次のお店ですか？</b><br>近くに名前の似たお店があります。同じお店なら、そちらに付けると二重になりません。</p>`
+    + list.map(({ s, d }) => `<button type="button" data-use-similar="${esc(s.ref)}">${esc(s.name)}${s.branch ? ` ${esc(s.branch)}` : ""}<small>${esc(s.address || s.kind || "")}・約${Math.round(d / 10) * 10}m先</small></button>`).join("")
+    + `<button type="button" class="gm-similar-new" data-similar-new="1">別のお店です。「${esc(name)}」として登録する</button>`;
+  box.hidden = false;
+}
+function hideSimilarShops() {
+  const box = document.getElementById("gm-similar");
+  box.hidden = true;
+  box.innerHTML = "";
+  skipSimilarCheck = false;
 }
 
 function setNewShopPos(lat, lon, how) {
@@ -503,6 +557,10 @@ async function submitForm(e) {
     const name = document.getElementById("gm-ns-name").value.trim();
     if (!name) { err.textContent = ERRORS.invalid_shop; return; }
     if (!newShopPos) { err.textContent = "お店の場所を決めてください（住所から探すか、地図をタップ）"; return; }
+    if (!skipSimilarCheck) {
+      const similar = similarShops(name, newShopPos.lat, newShopPos.lon);
+      if (similar.length) { showSimilarShops(name, similar); return; }
+    }
     fd.set("newShopName", name);
     fd.set("newShopAddress", document.getElementById("gm-ns-address").value.trim());
     fd.set("newShopLat", String(newShopPos.lat));
@@ -598,6 +656,26 @@ function bind() {
   document.getElementById("gm-kind").addEventListener("change", render);
   document.getElementById("gm-latest-btn").addEventListener("click", openLatest);
   document.getElementById("gm-add-shop-btn").addEventListener("click", () => openForm(null, "", { newShop: true }));
+  // 「もしかして」の確認（似たお店があるとき）：既存のお店に付ける／別のお店として登録
+  document.getElementById("gm-similar").addEventListener("click", (e) => {
+    const t = e.target.closest("[data-use-similar],[data-similar-new]");
+    if (!t) return;
+    if (t.dataset.useSimilar) {
+      formShop = shops.get(t.dataset.useSimilar) || null;
+      if (!formShop) return;
+      addingNewShop = false;
+      hideSimilarShops();
+      renderFormShop();
+      document.getElementById("gm-form-title").textContent = "お店を応援する（食レポを貼る）";
+      document.getElementById("gm-form-error").textContent = "";
+      document.getElementById("gm-form").requestSubmit();
+    } else {
+      skipSimilarCheck = true;
+      document.getElementById("gm-form").requestSubmit();
+    }
+  });
+  // 名前・住所を直したら、確認はやり直し
+  for (const id of ["gm-ns-name", "gm-ns-address"]) document.getElementById(id).addEventListener("input", hideSimilarShops);
   // 最初の画面の入り口（2026-11-13）
   document.getElementById("gm-start-paste").addEventListener("click", () => openForm(null));
   document.getElementById("gm-start-find").addEventListener("click", () => {

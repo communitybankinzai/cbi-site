@@ -110,6 +110,12 @@ a { color: #1c64c2; }
 .gm-field input, .gm-new-shop input { display: block; width: 100%; font-size: 1rem; padding: 9px 10px; border: 1px solid #bcc3ca; border-radius: 8px; margin-top: 3px; }
 .gm-new-shop { border: 1px solid var(--gm-line); border-radius: 10px; padding: 6px 10px 8px; margin: 0 0 6px; }
 .gm-new-shop label { display: block; font-size: .88rem; margin: 6px 0; }
+.gm-similar { margin-top: 8px; padding: 8px 10px; border: 2px solid #e8a317; border-radius: 10px; background: #fff8e6; }
+.gm-similar p { margin: 0 0 6px; font-size: .88rem; }
+.gm-similar button { display: block; width: 100%; text-align: left; font-size: .95rem; padding: 9px 10px; margin-top: 6px; border: 1px solid #bcc3ca; border-radius: 8px; background: #fff; cursor: pointer; }
+.gm-similar button:hover, .gm-similar button:focus { background: var(--gm-accent-weak); }
+.gm-similar small { display: block; color: var(--gm-sub); font-size: .76rem; }
+.gm-similar .gm-similar-new { color: var(--gm-accent); font-size: .88rem; }
 .gm-ns-pos { display: flex; gap: 6px; flex-wrap: wrap; }
 .gm-ns-pos button { font-size: .85rem; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--gm-line); background: #fff; cursor: pointer; }
 .gm-check { display: block; margin: 14px 0 4px; font-size: .92rem; }
