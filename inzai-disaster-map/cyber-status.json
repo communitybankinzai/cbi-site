@@ -1,6 +1,6 @@
 {
   "jpcert": {
-    "checkedAt": "2026-11-13T05:11:41+09:00",
+    "checkedAt": "2026-11-13T20:18:54+09:00",
     "items": [
       {
         "kind": "注意喚起",
@@ -47,10 +47,10 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-13T05:11:41+09:00"
+    "lastSuccessAt": "2026-11-13T20:18:54+09:00"
   },
   "soumu": {
-    "checkedAt": "2026-11-13T05:11:42+09:00",
+    "checkedAt": "2026-11-13T20:18:54+09:00",
     "pageUrl": "https://www.soumu.go.jp/menu_seisaku/ictseisaku/net_anzen/jiko/result.html",
     "excelUrl": "https://www.soumu.go.jp/main_content/001089876.xlsx",
     "reports": [
@@ -72,7 +72,7 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-13T05:11:42+09:00",
+    "lastSuccessAt": "2026-11-13T20:18:54+09:00",
     "incidents": {
       "total": 91,
       "items": [
@@ -186,7 +186,7 @@
     "incidentsError": ""
   },
   "docomo": {
-    "checkedAt": "2026-11-13T05:11:43+09:00",
+    "checkedAt": "2026-11-13T20:18:56+09:00",
     "items": [
       {
         "title": "【お詫び/復旧】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月11日午後8時45分時点）",
@@ -221,11 +221,17 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-13T05:11:43+09:00"
+    "lastSuccessAt": "2026-11-13T20:18:56+09:00"
   },
   "fsa": {
-    "checkedAt": "2026-11-13T05:11:44+09:00",
+    "checkedAt": "2026-11-13T20:18:57+09:00",
     "items": [
+      {
+        "category": "",
+        "title": "「インターネット取引サービスへの不正アクセス・不正取引にご注意ください」のページを更新しました。",
+        "url": "https://www.fsa.go.jp/ordinary/chuui/chuui_phishing.html",
+        "date": "2026-11-13T16:00:00+09:00"
+      },
       {
         "category": "その他",
         "title": "個人情報流出の被害に遭われた方・ご心配のある方向けの相談窓口について掲載しました。",
@@ -236,7 +242,7 @@
     "scanned": 15,
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-13T05:11:44+09:00"
+    "lastSuccessAt": "2026-11-13T20:18:57+09:00"
   },
-  "generatedAt": "2026-11-13T05:11:45+09:00"
+  "generatedAt": "2026-11-13T20:18:57+09:00"
 }
