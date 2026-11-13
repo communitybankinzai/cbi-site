@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "ぬりえノートのあとがきの書き替え（刻印の由来の文を削り、作った目的の文へ）→ PDF 組み直し・サイト差し替え 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "scripts/promo/nurie_coloring/rebuild_note.py（page_about）",
+            "site/bunkazai/nurie/inzai-bunkazai-seirei-nurie-note.pdf・site/bunkazai/index.html（版 v=3）",
+            "scripts/promo/nurie_coloring/ぬりえノート_字体変更版/印西市文化財_精霊ぬりえノート_太ゴシック版.pdf",
+            "site/admin/changelog.json・agents-worklog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主指示『精霊たちは、革のキーホルダーに押す刻印のデザインとして生まれました。は削除。小さなお子さんに文化財の名前と概要を知ってもらうために作りましたというストーリーで』。あとがきのページを画像で確認。session: 78972f45-1bad-4fbe-8d4f-0f40960bfa2d（通算の数値は終了時に記録）"
+        },
+        {
+          "date": "2026-11-13",
           "title": "精霊ぬりえの色ぬり動画（音つき）を文化財ずかんのぬりえの節に掲載 0.1時間",
           "category": "実装",
           "outputs": [
