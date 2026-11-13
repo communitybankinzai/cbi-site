@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-14",
+          "title": "CiDAOイベントカレンダーに「高齢者の居場所」の目印・絞り込み・登録欄を追加（DB適用＋本番反映）0.3時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao\\supabase\\migrations\\20261114100000_events_senior_place.sql（コミット 792f50d・1e7dbbb・本番DBに適用済み）",
+            "C:\\Repos\\cidao\\src\\lib\\senior-place.ts／src\\lib\\__tests__\\senior-place.test.ts（792f50d）",
+            "C:\\Repos\\cidao\\src\\app\\events\\_components\\SeniorPlaceField.tsx・EventsBrowser.tsx（同上）",
+            "C:\\Repos\\cidao\\src\\app\\events\\page.tsx・new\\page.tsx・[id]\\edit\\page.tsx・actions.ts（同上）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "リアンカフェの台所さんのInstagram DM（高齢者の居場所・コミュニティカフェの分野がほしい）を受けた事業主指示。events.senior_place／senior_place_checked を子どもの居場所とは別の列で追加（両方付けられる）。題名・主催名の自動判定は新規登録のときだけで、「介護」と Lien／リアン（印西介護リアン）はもれなく拾い、イタリアン・client などは拾わない。登録・編集フォームの選択が自動判定より優先。検証：判定の見本が期待どおり・関連テスト37件合格・型検査は src にエラーなし・本番 /events?tag=senior が200で絞り込みチップが出ることを確認。ログイン後のフォームの実画面と、既存の催し（候補17種類・70回）への付け直しは未実施（事業主の確認待ち）。\nsession: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 26,938 / cost: $7.37"
+        },
+        {
           "date": "2026-11-13",
           "title": "管理画面『SNS巡回アカウント』に使い道（イベント／食レポ）の表示・絞り込み・追加・変更を追加",
           "category": "実装",
@@ -9917,6 +9931,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-17",
+          "title": "🧓 高齢者の居場所：既存の催しへの目印の付け直し（確認リスト17種類・70回を事業主が見てから適用）と、ログイン後の登録・編集フォームの実画面確認",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "事業主が確認リスト（2026-11-14 提示）に OK を出したら適用できる",
+          "note": "適用は public.suggest_senior_place が true の行に senior_place=true を入れる（senior_place_checked は false のまま）。「高齢者の居場所」という題名が子どもの居場所（ibasho）にも判定される点（suggest_child_place の『居場所』）は別途判断。専用ページ（/events/kodomo のような趣旨・数字・CSV）と SNS 告知は未着手。"
+        },
         {
           "due": "2026-11-16",
           "title": "🍽 食レポ候補の最初の1件を実際に承認し、食レポマップに出ること（カードの印・リンク）を確かめる",
