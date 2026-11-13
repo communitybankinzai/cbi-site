@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "食レポ『地図にないお店』の住所調べを自動化（依頼書をMuseへ自動で置く→成果を位置に変換→地図に追加して承認）／依頼030を発行",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao\\scripts\\gourmet-address-auto.ts（コミット 47ba4e4）",
+            "CBI/scripts/run_gourmet_address_auto.vbs・gourmet_address_auto_speak.ps1・register_gourmet_address_auto.ps1",
+            "Windows タスク CBI-食レポ住所自動（30分ごと）を登録",
+            "Drive: Claude連絡/依頼/030_お店の住所を調べてください.md（9店）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "登録しない条件：閉店・移転・住所なし・範囲外・確度低。開いている依頼がある間は次を作らない。dry-run で依頼029の成果から23店が登録できる判定になることと、タスク経由の1回実行（動きなし・エラーなし）を確認。実際の登録は依頼030の成果が届いてから。\nsession: 4a8fee9a-27a0-4fca-b0e5-faff58d0f4fa / output: 238,328 / cost: $45.97"
+        },
+        {
+          "date": "2026-11-13",
           "title": "食レポ：@inzaibase・@inzaiparque を巡回に登録→候補5店を承認／Muse依頼029の住所で23店を地図に追加して承認",
           "category": "保守",
           "outputs": [
@@ -9877,6 +9891,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-14",
+          "title": "🍽 Muse の依頼030（食レポの地図にないお店9店）の結果を自動処理が地図に載せたか確認する",
+          "category": "保守",
+          "priority": "中",
+          "note": "Windows タスク CBI-食レポ住所自動（30分ごと）が、Drive の成果/030_お店の住所.json を見つけると位置に変換して承認し、声で知らせる。確認は CBI/scripts/_gourmet_address_auto.log。Muse は夜に処理するため今夜〜明朝に届く見込み（事業主が Muse に直接頼めば即実行）。"
+        },
         {
           "due": "2026-11-16",
           "title": "🍽 食レポ候補の最初の1件を実際に承認し、食レポマップに出ること（カードの印・リンク）を確かめる",
