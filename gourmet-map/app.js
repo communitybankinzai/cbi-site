@@ -113,6 +113,13 @@ function areaOf(lat, lon) {
 function insideArea(lat, lon) {
   return areaOf(lat, lon) !== null;
 }
+// CiDAO の運営が承認で足した千葉県内のお店（市内・周辺の外）は "pref"。「周辺も見る」と一緒に出す（2026-11-14）。新しいお店の場所の検査（insideArea）は従来どおり
+const CHIBA_BOX = { south: 34.89, west: 139.72, north: 36.13, east: 140.88 };
+function listedAreaOf(lat, lon) {
+  const a = areaOf(lat, lon);
+  if (a) return a;
+  return lat >= CHIBA_BOX.south && lat <= CHIBA_BOX.north && lon >= CHIBA_BOX.west && lon <= CHIBA_BOX.east ? "pref" : null;
+}
 function setStatus(text) { document.getElementById("gm-status").textContent = text; }
 function fmtDate(iso) {
   const d = new Date(iso);
@@ -161,7 +168,7 @@ function visibleShop(s) {
   const only = document.getElementById("gm-only-reports").checked;
   const kind = document.getElementById("gm-kind").value;
   if (!s.area) return false;
-  if (s.area === "near" && !showNear) return false;
+  if ((s.area === "near" || s.area === "pref") && !showNear) return false;
   if (only && !reportsByShop.get(s.ref)?.length) return false;
   if (kind && s.kind !== kind) return false;
   return true;
@@ -177,11 +184,11 @@ function render() {
     const n = reportsByShop.get(s.ref)?.length || 0;
     if (n > 0 || s.source === "ff") {
       const label = n > 0 ? `🍽 ${n}` : "🍽";
-      const icon = L.divIcon({ className: "", html: `<span class="gm-pin${s.source === "ff" ? " is-ff" : ""}${s.area === "near" ? " is-near" : ""}">${label}</span>`, iconSize: null });
+      const icon = L.divIcon({ className: "", html: `<span class="gm-pin${s.source === "ff" ? " is-ff" : ""}${s.area === "near" || s.area === "pref" ? " is-near" : ""}">${label}</span>`, iconSize: null });
       L.marker([s.lat, s.lon], { icon, title: s.name, riseOnHover: true })
         .on("click", () => openShop(s.ref)).addTo(pinLayer);
     } else {
-      const near = s.area === "near";
+      const near = s.area === "near" || s.area === "pref";
       L.circleMarker([s.lat, s.lon], { radius: near ? 5 : 6, color: "#fff", weight: 1.5, fillColor: near ? "#8c9bab" : "#7a4b2a", fillOpacity: near ? 0.8 : 0.9 })
         .bindTooltip(esc(s.name), { direction: "top" })
         .on("click", () => openShop(s.ref)).addTo(osmLayer);
@@ -244,7 +251,7 @@ async function loadReports() {
   const data = await res.json();
   for (const s of data.shops || []) {
     if (s.hidden && !moderation) continue;
-    shops.set(s.ref, { ...s, source: "shop", kind: "市民が登録", hidden: Boolean(s.hidden), area: areaOf(s.lat, s.lon) });
+    shops.set(s.ref, { ...s, source: "shop", kind: "市民が登録", hidden: Boolean(s.hidden), area: listedAreaOf(s.lat, s.lon) });
   }
   reports = data.reports || [];
   indexReports();
@@ -257,7 +264,7 @@ function indexReports() {
     if (!reportsByShop.has(r.shopRef)) reportsByShop.set(r.shopRef, []);
     reportsByShop.get(r.shopRef).push(r);
     // 一覧から消えたお店（FreeFree の掲載終了など）でも、食レポが付いていれば残す
-    if (!shops.has(r.shopRef)) shops.set(r.shopRef, { ref: r.shopRef, name: r.shopName, lat: r.lat, lon: r.lon, kind: "", source: "report", area: areaOf(r.lat, r.lon) });
+    if (!shops.has(r.shopRef)) shops.set(r.shopRef, { ref: r.shopRef, name: r.shopName, lat: r.lat, lon: r.lon, kind: "", source: "report", area: listedAreaOf(r.lat, r.lon) });
   }
 }
 
@@ -268,7 +275,7 @@ function shopHits(q, { near = showNear } = {}) {
   if (!key) return [];
   const hits = [];
   for (const s of shops.values()) {
-    if (!s.area || (s.area === "near" && !near)) continue;
+    if (!s.area || ((s.area === "near" || s.area === "pref") && !near)) continue;
     const hay = norm(`${s.name} ${s.branch || ""} ${s.nameEn || ""} ${s.kind || ""} ${s.cuisine || ""} ${s.address || ""}`);
     if (!hay.includes(key)) continue;
     const n = reportsByShop.get(s.ref)?.length || 0;
@@ -749,7 +756,7 @@ async function main() {
   if (results[0].status === "rejected") setStatus(`${document.getElementById("gm-status").textContent}　※食レポを読めませんでした`);
   const ref = new URLSearchParams(location.search).get("shop");
   // 直リンクのお店が周辺なら、周辺も見る状態で開く
-  if (ref && shops.has(ref)) { if (shops.get(ref).area === "near") setShowNear(true); openShop(ref, { fly: true }); }
+  if (ref && shops.has(ref)) { if (shops.get(ref).area === "near" || shops.get(ref).area === "pref") setShowNear(true); openShop(ref, { fly: true }); }
 }
 
 main();
