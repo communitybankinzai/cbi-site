@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "ぬりえノートのSNS告知（短い動画56秒＋本文・3媒体に投稿・実投稿を確認）／市の許可の要否の検討と「公式ではない」の明記／文化振興課への一報メールの下書き 0.2時間",
+          "category": "広報",
+          "outputs": [
+            "site/assets/sns/2026-11-13_seirei-nurie/（video.mp4・cover.jpg・post_instagram_facebook.txt・post_threads.txt）",
+            "scripts/promo/nurie_coloring/nurie_short.py・mix_short.py・readback_posts.py",
+            "site/bunkazai/index.html・bunkazai/nurie/inzai-bunkazai-seirei-nurie-note.pdf（公式ではない旨・版 v=4）",
+            "scripts/nurie_bunka_draft.py（文化振興課への一報の下書き）",
+            "調整経緯/2026-11-13_文化振興課_ぬりえノート公開の一報.md・MOC_行政調整.md",
+            "site/admin/changelog.json・agents-worklog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主指示『SNSにも投稿して サムネイルも忘れずに』『なんのためにやっているのかをしっかり伝えること』『市に許可を取る必要性はあるか？』→ A案（公式ではない旨を足して投稿・文化振興課へ一報）。投稿：予約キュー3行（q1794534413378 Threads／q1794534427547 Instagram／q1794534438295 Facebook・予定10:55→11:09〜11:12 に実投稿）。実投稿：Threads …/post/Dfqhl0xBt9z、Instagram …/reel/DfqhvG4gmEv/、Facebook …/reel/1107323362278125/。Instagram の表紙画像を取り出して見出し入りの画面であることを確認（平均の明るさ190・暗い画素2.9%）。投稿前に assert_video_cover_ok も通過。文化振興課への一報は Claude が下書き、中司さんが送信済み。読み上げの読み間違いは耳で未確認。session: 78972f45-1bad-4fbe-8d4f-0f40960bfa2d / output: 222,742 / cost: $87.25（このセッション通算）"
+        },
+        {
+          "date": "2026-11-13",
           "title": "ぬりえノートのあとがきの書き替え（刻印の由来の文を削り、作った目的の文へ）→ PDF 組み直し・サイト差し替え 0.1時間",
           "category": "保守",
           "outputs": [
@@ -9885,7 +9901,7 @@
         },
         {
           "due": "未定",
-          "title": "🎨 精霊ぬりえ動画（サイト掲載済み）の残り：事業主が聞いて読み間違いを確認（直す体は声だけ作り直して差し替え）／SNS用の短い版を作るか",
+          "title": "🎨 精霊ぬりえ（サイト掲載・SNS 3媒体に11/13投稿済み）の残り：動画の読み間違いを事業主が聞いて確認（直す体は声だけ作り直し）／文化振興課・所有者から意見が来たら対応（調整経緯/2026-11-13_文化振興課_ぬりえノート公開の一報.md に追記）／投稿の反応を数日後に見る／あとがきの『印西このゆびとまれ』の表記を残すか決める",
           "category": "広報",
           "priority": "中",
           "note": "2026-11-13 事業主『この塗り絵50体に色の塗る動画を作りたい。課金しないやり方でできますか？』。素材は G:\\マイドライブ\\精霊_刻印用\\*_line.png（50体）と、色の手本になる元の精霊カード（site/metaverse/spirits/）。長さ・用途（SNS用の短い版か、50体通しか）・色の決め方は事業主と決めてから着手。"
