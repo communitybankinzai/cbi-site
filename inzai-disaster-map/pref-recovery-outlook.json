@@ -2,25 +2,25 @@
  "source": {
   "name": "千葉県 県管理道路の被災箇所の状況と復旧見込み（位置図付き）",
   "url": "https://www.pref.chiba.lg.jp/doukan/douroiji/kiseijyouhou.html",
-  "pdf": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkymitoshi38.pdf",
-  "asOf": "2026-11-12",
-  "published": "2026-11-12",
-  "pdfSha256": "ac7f5a6bdb06e0457496046594467104fcb24b2dc2fe4c9e0aaaa61bdbf02f6e",
-  "asOfIso": "2026-11-12T14:00:00+09:00"
+  "pdf": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkymitoshi39.pdf",
+  "asOf": "2026-11-13",
+  "published": "2026-11-13",
+  "pdfSha256": "6896f1ce7987ea405d807bbdd4ce20c8a0d6287d944fada3bbe170b1ca923f26",
+  "asOfIso": "2026-11-13T14:00:00+09:00"
  },
  "event": {
   "name": "2026年9月22日の大雨（台風25号）",
   "closedFrom": "2026-09-22",
   "basis": "県の発表「全面通行止め箇所の推移」の起点（9月22日 133区間）。区間ごとの開始日は県の資料に無いため、全区間の開始を9/22として扱う"
  },
- "pdfPagesFor": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkymitoshi38.pdf",
+ "pdfPagesFor": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkymitoshi39.pdf",
  "note": "県の発表PDF（写真に路線・場所・復旧見込みを焼き込んだもの）からCBIが書き起こした。位置は市町村＋地名を国土地理院の住所検索で引いた町名の代表点で、被災箇所そのものではない（数百m〜数kmずれる）。scale: large=大規模（復旧まで1か月以上）/medium=中規模（1か月程度）/small=小規模（1〜3週間・土砂撤去中など）。status と clearedAt は毎時の見張り（pipeline/build_pref_recovery.py）が県の規制状況図の赤線と突き合わせて更新する。closedFrom は通行止めの開始日で、2026年9月22日の大雨で全面通行止めとなった時点（県の「全面通行止め箇所の推移」の起点）を全区間に当てており、県の資料に開始日が無い区間は null（不明）とした。firstSeen は、CBIがその区間を県の発表で最初に確認した日で、通行止めの開始日ではない。pdfPage は、その区間の写真と位置図が載っている県のPDF（10/8版 fukkyumitoshi5.pdf）のページ番号で、写真は転載せずこのページへのリンクで案内する。",
  "legend": {
   "large": "大規模（復旧までに1か月以上）",
   "medium": "中規模（復旧までに1か月程度）",
   "small": "小規模（復旧までに1〜3週間程度）"
  },
- "updatedAt": "2026-11-12T18:47:18+09:00",
+ "updatedAt": "2026-11-13T18:58:15+09:00",
  "watch": {
   "pdfUrl": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/kisei10.pdf",
   "pdfSha256": "1b486e6ce9c7e37ebb7cf8a5c4736b79c2322c88e11894fb2ce5de6ab3bb3875",
@@ -32,9 +32,9 @@
   "lastSuccessAsOfIso": "2026-10-03T17:00:00+09:00",
   "judgeStoppedSince": "2026-10-04T14:42:28+09:00",
   "press": {
-   "sha256": "ac7f5a6bdb06e0457496046594467104fcb24b2dc2fe4c9e0aaaa61bdbf02f6e",
-   "checkedAt": "2026-11-12T18:46:19+09:00",
-   "autoAppliedAt": "2026-11-12T18:46:19+09:00"
+   "sha256": "6896f1ce7987ea405d807bbdd4ce20c8a0d6287d944fada3bbe170b1ca923f26",
+   "checkedAt": "2026-11-13T18:57:15+09:00",
+   "autoAppliedAt": "2026-11-13T18:57:15+09:00"
   },
   "figures": [
    {
@@ -86,8 +86,8 @@
    "ok": false,
    "reason": "位置図を読めませんでした（分割図（1/3）：図が見つかりません／分割図（2/3）：図が見つかりません／分割図（3/3）：図が見つかりません）",
    "figures": [],
-   "sha256": "ac7f5a6bdb06e0457496046594467104fcb24b2dc2fe4c9e0aaaa61bdbf02f6e",
-   "checkedAt": "2026-11-12T18:47:18+09:00"
+   "sha256": "6896f1ce7987ea405d807bbdd4ce20c8a0d6287d944fada3bbe170b1ca923f26",
+   "checkedAt": "2026-11-13T18:58:15+09:00"
   },
   "pressAuto": {
    "cards": 59,
@@ -124,13 +124,13 @@
     "33 袖浦市潼の口 → 袖ケ浦市滝の口（0.77）"
    ],
    "ocr": true,
-   "asOfIso": "2026-11-12T14:00:00+09:00",
+   "asOfIso": "2026-11-13T14:00:00+09:00",
    "ok": true,
    "reason": null,
-   "changes": 1,
-   "sha256": "ac7f5a6bdb06e0457496046594467104fcb24b2dc2fe4c9e0aaaa61bdbf02f6e",
-   "url": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkymitoshi38.pdf",
-   "checkedAt": "2026-11-12T18:46:19+09:00"
+   "changes": 4,
+   "sha256": "6896f1ce7987ea405d807bbdd4ce20c8a0d6287d944fada3bbe170b1ca923f26",
+   "url": "https://www.pref.chiba.lg.jp/doukan/douroiji/documents/fukkymitoshi39.pdf",
+   "checkedAt": "2026-11-13T18:57:15+09:00"
   }
  },
  "items": [
@@ -242,7 +242,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.3885,
@@ -363,7 +363,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.48806,
@@ -612,7 +612,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.52577,
@@ -642,7 +642,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.37354,
@@ -672,7 +672,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.26903,
@@ -798,7 +798,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.35407,
@@ -828,7 +828,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.34657,
@@ -858,7 +858,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.27777,
@@ -888,7 +888,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.46636,
@@ -950,7 +950,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.42649,
@@ -997,8 +997,8 @@
    "municipality": "市原市",
    "place": "中高根",
    "work": "中規模",
-   "outlook": "1カ月程度",
-   "scale": "medium",
+   "outlook": "1週間程度",
+   "scale": "small",
    "traffic": "5,000台以上",
    "lat": 35.43471,
    "lon": 140.09805,
@@ -1007,7 +1007,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.42698,
@@ -1069,7 +1069,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.44217,
@@ -1099,7 +1099,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.35168,
@@ -1129,7 +1129,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.32364,
@@ -1159,7 +1159,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.26518,
@@ -1221,7 +1221,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.28118,
@@ -1283,7 +1283,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.36682,
@@ -1312,7 +1312,7 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "mark": {
     "lat": 35.3493,
     "lon": 140.12151,
@@ -1341,7 +1341,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.38912,
@@ -1371,7 +1371,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.33814,
@@ -1460,7 +1460,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.31116,
@@ -1522,7 +1522,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.18058,
@@ -1583,7 +1583,7 @@
    "status": "active",
    "clearedAt": null,
    "clearedFigure": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "mark": {
     "lat": 35.07126,
     "lon": 139.88635,
@@ -1602,8 +1602,8 @@
    "municipality": "君津市",
    "place": "大鷲新田",
    "work": "中規模",
-   "outlook": "1カ月程度",
-   "scale": "medium",
+   "outlook": "2週間程度",
+   "scale": "small",
    "traffic": "10,000台以上",
    "lat": 35.32617,
    "lon": 139.96005,
@@ -1612,7 +1612,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.32545,
@@ -1632,8 +1632,8 @@
    "municipality": "木更津市",
    "place": "上烏田",
    "work": "中規模",
-   "outlook": "1カ月程度",
-   "scale": "medium",
+   "outlook": "2週間程度",
+   "scale": "small",
    "traffic": "10,000台以上",
    "lat": 35.34167,
    "lon": 139.95935,
@@ -1642,7 +1642,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.33523,
@@ -1699,7 +1699,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.46353,
@@ -1729,7 +1729,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.45587,
@@ -1749,8 +1749,8 @@
    "municipality": "袖ケ浦市",
    "place": "蔵波",
    "work": "中規模",
-   "outlook": "1カ月程度",
-   "scale": "medium",
+   "outlook": "2週間程度",
+   "scale": "small",
    "traffic": "10,000台以上",
    "lat": 35.43426,
    "lon": 140.01242,
@@ -1759,7 +1759,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 3500,
    "mark": {
     "lat": 35.4368,
@@ -1821,7 +1821,7 @@
    "clearedAt": null,
    "clearedFigure": null,
    "nearestRedLineM": null,
-   "watch": "県の発表（11月12日14時時点）で規制中",
+   "watch": "県の発表（11月13日14時時点）で規制中",
    "watchRadiusM": 800,
    "mark": {
     "lat": 35.47272,
