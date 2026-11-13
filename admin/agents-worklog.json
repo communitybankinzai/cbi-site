@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-13",
+          "title": "依頼030の結果を地図へ反映（7店）／営業上の問題がある店は自動登録しない仕組み／あて劇場を却下／新しいお店を足すときの「もしかして」確認",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao\\scripts\\gourmet-address-auto.ts（コミット 8123e89：成果の note・business_issue に食中毒などがあれば保留）",
+            "site/gourmet-map/app.js・index.html・styles.css（コミット 0349cb6：近くの似た名前のお店を確認）",
+            "site/admin/changelog.json",
+            "DB: gourmet_candidates（あて劇場 ろまん坐を却下）・gourmet_shops/gourmet_reports（依頼030の7店を追加・承認）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "依頼030は9店中7店を承認（東京油組総本店は所在不明で未登録・あて劇場は食中毒の報道で保留→事業主指示で却下）。保留の判定語は食中毒・営業停止・行政処分など。『もしかして』は約300m以内・名前の類似0.5以上で最大3件、選ばせてから登録。確認は実データ2,602件の画面で候補表示と送信内容を検証（送信は差し替えで本番へは未送信）。スマホ幅の見た目は未確認。SNSの店名検索は事業主決定C（実装しない）。\nsession: 4a8fee9a-27a0-4fca-b0e5-faff58d0f4fa / output: 265,518（今回分 約27,000）/ cost: $52.66"
+        },
+        {
+          "date": "2026-11-13",
           "title": "食レポ『地図にないお店』の住所調べを自動化（依頼書をMuseへ自動で置く→成果を位置に変換→地図に追加して承認）／依頼030を発行",
           "category": "実装",
           "outputs": [
@@ -9891,13 +9905,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "2026-11-14",
-          "title": "🍽 Muse の依頼030（食レポの地図にないお店9店）の結果を自動処理が地図に載せたか確認する",
-          "category": "保守",
-          "priority": "中",
-          "note": "Windows タスク CBI-食レポ住所自動（30分ごと）が、Drive の成果/030_お店の住所.json を見つけると位置に変換して承認し、声で知らせる。確認は CBI/scripts/_gourmet_address_auto.log。Muse は夜に処理するため今夜〜明朝に届く見込み（事業主が Muse に直接頼めば即実行）。"
-        },
         {
           "due": "2026-11-16",
           "title": "🍽 食レポ候補の最初の1件を実際に承認し、食レポマップに出ること（カードの印・リンク）を確かめる",
