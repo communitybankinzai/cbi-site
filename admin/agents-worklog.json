@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-14",
+          "title": "CiDAOイベントカレンダーに「コミュニティカフェ」の目印・絞り込み・登録欄を追加、絞り込みボタンを1行に整理、高齢者の目印を既存の催しへ適用 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "C:\\Repos\\cidao\\supabase\\migrations\\20261114110000_events_cafe_place.sql（コミット fdfce5b・本番DBに適用済み）",
+            "C:\\Repos\\cidao\\src\\lib\\cafe-place.ts／src\\lib\\__tests__\\cafe-place.test.ts／src\\lib\\senior-place.ts（同上）",
+            "C:\\Repos\\cidao\\src\\app\\events\\_components\\CafePlaceField.tsx・EventsBrowser.tsx（同上）",
+            "C:\\Repos\\cidao\\src\\app\\events\\page.tsx・new\\page.tsx・[id]\\edit\\page.tsx・actions.ts（同上）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "事業主指示（コミュニティカフェは高齢者だけではない・おやこカフェも含む／案Aで足す／機能が増えて見づらいのでシンプルに）。定義は長寿社会文化協会の資料（地域のたまり場・居場所の総称）と船橋市の資料で確認。events.cafe_place／cafe_place_checked を別の列で追加し、子ども・高齢者と重ねて付く。イベントカレンダーの絞り込みは2行6個から1行4個（すべて／子ども／高齢者／コミュニティカフェ）へ。子どもの細かい分け方は子どもを選んだときだけ出す。専用ページ /events/kodomo は変更なし。検証：判定の見本12例が期待どおり・関連テスト40件合格・型検査は src にエラーなし。既存の催しでカフェの条件に合うもの（14種類・49回）への目印は未適用（事業主の確認待ち）。ログイン後のフォームの実画面は未確認。途中、作業記録ファイルの改行が全行変わるコミット（6efa7ca）を出し、6df8bba で元の形へ戻した。\nsession: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 67,418（今回分 約40,000）/ cost: $24.16"
+        },
+        {
+          "date": "2026-11-14",
           "title": "CiDAOイベントカレンダーに「高齢者の居場所」の目印・絞り込み・登録欄を追加（DB適用＋本番反映）0.3時間",
           "category": "実装",
           "outputs": [
@@ -9931,6 +9945,15 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-17",
+          "title": "☕ コミュニティカフェ：既存の催しへの目印の付け直し（確認リスト14種類・49回を事業主が見てから適用）と、イベントカレンダーをさらにシンプルにする案の検討",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "事業主が確認リスト（2026-11-14 提示）に OK を出したら適用できる",
+          "note": "適用は public.suggest_cafe_place が true で cafe_place_checked が false の行に cafe_place=true を入れる。「ご縁が広がるカフェ会」「夜カフェ」「あめちゃんカフェ ワークショップ」「縁側まるしぇ」を入れるかは事業主判断。シンプル化は事業主の 2026-11-14 の感想（機能が多くなりカレンダーが見づらい）を受けたもの。"
+        },
         {
           "due": "2026-11-17",
           "title": "🧓 高齢者の居場所：ログイン後の登録・編集フォームの実画面確認と、やり方のSNS告知",
