@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-11-14",
+          "title": "イベントカレンダーの「しぼり込む」の告知動画（42秒）を製作し、Threads・Instagram・Facebook に投稿 1.05時間",
+          "category": "広報",
+          "outputs": [
+            "site/assets/sns/2026-11-14_calendar-filter/（video.mp4・cover.jpg・投稿文.md・threads.txt・instagram.txt・facebook.txt。cbi-site 3e9646b）",
+            "scripts/promo/calendar_filter/（gen_voice.py・bgm.py・compose.py・README.md・PROGRESS.md）",
+            "Threads https://www.threads.com/@communitybankinzai/post/Dfs9y4pJtGL",
+            "Instagram https://www.instagram.com/reel/Dfs96kyghhn/",
+            "Facebook https://www.facebook.com/reel/1022130910932599/",
+            "site/admin/changelog.json（告知素材の1件）"
+          ],
+          "hours": 1.05,
+          "partnerApproved": false,
+          "note": "事業主指示（機能改善をSNSで告知・特定の団体を推測できる語は入れない・あたたかい感じの動画）。動画の製作は動画担当（Fable 5.2 の下請け）に依頼し、表紙と5場面・投稿文を依頼元が確かめてから事業主に見せ、「投稿する」の返事で予約登録（09:50・09:53・09:56）。3媒体とも実際の投稿を読み戻して確認（Threads 09:55・Instagram 09:56・Facebook 10:09）。Instagram の表紙は見出しの絵。「ママ」の独立したボタンは無いので「子ども・親子（ママ・パパ）」と表した。声とBGMは依頼元では聞けておらず、事業主の確認に委ねた。リンクの utm は utm_campaign=calfilter。途中、changelog.json の改行が全行変わるコミット（3e9646b）を出し、fca2917 で元の形へ戻した（このファイルは索引が LF・作業フォルダが CRLF なので、通常の git add で扱う。agents-worklog.json とは逆）。\nsession: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 191,588（今回分 約105,000・下請けを含む）/ cost: $73.07"
+        },
+        {
+          "date": "2026-11-14",
           "title": "CiDAOイベントカレンダーの絞り込みを「しぼり込む」ボタン1つに畳む＋コミュニティカフェの目印を既存の催しへ適用 0.15時間",
           "category": "実装",
           "outputs": [
@@ -9957,6 +9973,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-21",
+          "title": "📈 カレンダー絞り込みの告知（utm_campaign=calfilter）の効果を確認する（CiDAO /admin/analytics の SNS流入元別・?tag=cafe／senior の閲覧）",
+          "category": "分析",
+          "priority": "低",
+          "note": "投稿は 2026-11-14（Threads・Instagram・Facebook）。問い合わせの方（Instagram DM）へは事業主がリールのリンクを添えて知らせる。"
+        },
         {
           "due": "2026-11-17",
           "title": "🧓 高齢者の居場所：ログイン後の登録・編集フォームの実画面確認と、やり方のSNS告知",
