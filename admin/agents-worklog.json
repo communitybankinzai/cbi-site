@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-14",
+          "title": "団体向けの案内（自動掲載の条件）：ヘルプのページ追加＋登録画面の注記＋SNS告知素材 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/help/auto-listing/page.tsx（新規）",
+            "cidao: src/app/help/page.tsx",
+            "cidao: src/app/events/new/page.tsx",
+            "site/assets/sns/2026-11-14_auto-listing/cover.jpg・threads.txt・instagram.txt・facebook.txt",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "事業主の指摘「自動で掲載されない催しはプロアカウントでないことが原因、という案内が要るのでは」を受け、案B（ヘルプ＋登録画面の注記＋SNS告知）で実施。Instagram 公式ヘルプ（プロアカウントの設定）で、いつでも個人用に戻せる・非公開は公開になる・カテゴリラベルは隠せる、を確認して書いた（費用の有無は公式で確認できず書いていない）。cidao 8175ebd を本番反映し、幅375の実画面でヘルプの新ページ・目次の項目・登録画面の注記を確認。SNS は表紙と3媒体の文を作成し、投稿は事業主の確認待ち。session: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 230,772 / cost: $96.21（セッション全体。うち本件は約0.4時間）"
+        },
+        {
+          "date": "2026-11-14",
           "title": "イベントカレンダーの「しぼり込む」の告知動画（42秒）を製作し、Threads・Instagram・Facebook に投稿 1.05時間",
           "category": "広報",
           "outputs": [
@@ -9973,6 +9988,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-21",
+          "title": "📅 自動掲載の案内（団体向け）：SNS告知の投稿と、団体からの連絡・直接登録の件数の確認",
+          "category": "広報",
+          "priority": "中",
+          "note": "素材は site/assets/sns/2026-11-14_auto-listing（utm_campaign=autolisting）。事業主の確認後に3媒体へ投稿。1週間後に CiDAO /admin/analytics の流入と、運営への連絡（プロアカウントに切り替えた団体）・催しの直接登録の件数を見る。連絡が来た団体は sns_monitor_accounts に登録する。"
+        },
         {
           "due": "未定",
           "title": "🌳 みんなのおにわ（プレーパーク）への案内は保留：プロアカウントへの切り替え・CiDAO への直接登録の案内文は送らない",
