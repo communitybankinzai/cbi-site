@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-15",
+          "title": "夜景3Dの告知の反応の確認＋手元の操作を見せる動画の制作と3媒体への投稿 0.5時間",
+          "category": "広報",
+          "outputs": [
+            "scripts/promo/night_trial/（record.mjs・gen_voice.py・compose.py）",
+            "events/irumirai/告知_登録なしで試せる動画_20261115/（video.mp4・cover.jpg・本文2本・README.md）",
+            "events/irumirai/2026-11-15_点灯式の告知結果と導線の見直し.md（4.10節）",
+            "site/assets/sns/2026-11-15_night-trial-video/（ab45491）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "告知から約10時間の数字を本番DBと事業主のインサイト画面で確認（入場は試験と実機確認の6回だけ・告知後0／11/14 のリール 417回・307人／訂正の投稿（Threads）8人・クリック0）。事業主が3案から「スマホを操作する手元」を選び、公開版をスマホ幅で1コマずつ録って10.2秒の動画にした（録画で登録なしの入場1回を使用＝市民アカデミーの数字から除く）。本文と動画を見せて承認→3媒体に登録（キュー q1794746533926／q1794746541281／q1794746549064）。11/15 21:54 に Threads・Instagram・Facebook へ投稿し、3件ともキューの結果は成功。Threads は公開ページで本文を読み戻した（post/Dfw0-9whTF2）。Instagram・Facebook はキューの結果のみ。 同じセッションの先の記録（0.8時間）と合わせて 1.3時間。session: 3c593b0d-9fbc-4731-bfae-dd2a748152c1 / output: 127,829 / cost: $69.52"
+        },
+        {
+          "date": "2026-11-15",
           "title": "夜景3Dの訂正の告知：画像と本文の作成＋3媒体への投稿と読み戻し 0.3時間",
           "category": "広報",
           "outputs": [
@@ -10023,7 +10038,7 @@
           "title": "🌃 登録なしで試せる枠：1週間の入場数・新規登録数を確かめ、枠の数（1日10回）を見直す",
           "category": "分析",
           "priority": "高",
-          "note": "入場数は app_settings の metaverse_admissions_<太平洋日付> の guests の件数（launches が全員）。登録は members.signup_source（metaverse:reception:entry／trial_full）。11/15 9:39 の訂正の告知（Threads post/Dfvg3tUDoPO・Instagram・Facebook）の閲覧数も合わせて見る。市民アカデミーで使う数字なので、11/15 の試験（公開後の確認で入れた分）は除いて数える。3Dを開いた人は metaverse_presence_daily。"
+          "note": "入場数は app_settings の metaverse_admissions_<太平洋日付> の guests の件数（launches が全員）。登録は members.signup_source（metaverse:reception:entry／trial_full）。11/15 9:39 の訂正の告知（Threads post/Dfvg3tUDoPO・Instagram・Facebook）の閲覧数も合わせて見る。11/15 21:50 の動画「登録なし。押すだけで飛べます」（3媒体）の閲覧数・リンクのクリックも見る。11/15 21:22 の録画の入場1回（登録なし）も試験として除く。市民アカデミーで使う数字なので、11/15 の試験（公開後の確認で入れた分）は除いて数える。3Dを開いた人は metaverse_presence_daily。"
         },
         {
           "due": "2026-11-18",
