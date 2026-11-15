@@ -36,11 +36,20 @@
   const LOGIN_TOKEN_KEY = "cbi-meta-cidao-token-v1"; // 1人目（P1）：CiDAO ログイン済みの署名トークン（/api/metaverse-auth が #mtoken= で渡す）
   const LOGIN_TOKEN_KEY_P2 = "cbi-meta-cidao-token-p2-v1"; // 2人目（P2）：2人対戦の相手。会員証QR／表示名の照合のみ（LINE は1人目だけ）
   const ENTRY_PARAM = q.get("entry") === "1";   // 入場時に参加受付を出す（会場向け）
-  const NIGHT_VERSION = "2026-11-03a";          // 参加画面に出す版。反映されているかを一目で確かめるため
+  const NIGHT_VERSION = "2026-11-15a";          // 参加画面に出す版。反映されているかを一目で確かめるため
   // 入場受付の必須化（2026-09-06 中司さん指示）：CiDAO 登録者の確認が済むまで 3D都市データを読み込まない。
   // 撮影モード（cinema）と検証モード（notiles）は対象外。index.html の loadTileset() が ensureMetaverseReception() を待つ
   // 録画（scripts/promo/record_musashiya.mjs がページ読み込み前に window.cbiRec を入れる）も受付を求めない。URL だけでは外せない（2026-09-14）
   const RECEPTION_REQUIRED = !q.get("cinema") && q.get("notiles") !== "1" && !window.cbiRec;
+  // 登録なしで試せる枠（2026-11-15 事業主決定①）：夜景（イルミライ）にかぎり、受付で「登録なしで試す」を押すと
+  // CiDAO の登録なしで入れる。1端末1日1回（端末に日付を残す）・全体で1日10回（CiDAO の入場枠API が数える）。
+  // 入ったあとは短縮コースの遊覧を自動で始める。タイムレース・2人対戦は今までどおり登録が要る
+  const TRIAL_DAY_KEY = "cbi-meta-trial-day-v1";   // admission.js が、入場できたときに今日の日付（日本時間）を書く
+  let trialPass = false;                            // このページで「登録なしで試す」を押した
+  function trialToday() { return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" }); }
+  function trialUsedToday() { try { return localStorage.getItem(TRIAL_DAY_KEY) === trialToday(); } catch (e) { return false; } }
+  function trialOffered() { return RECEPTION_REQUIRED && (NIGHT_PARAM || document.body.classList.contains("modeNight")); }
+  function entered() { return !!getLogin(1) || trialPass; }   // 受付を通った（登録者の確認、または登録なしで試す）
   const CIDAO_ORIGIN = "https://cidao.vercel.app";
   const SIGNUP_URL = CIDAO_ORIGIN + "/login?utm_source=metaverse&utm_medium=reception&utm_campaign=entry"; // 未登録者の登録導線（LINE ログイン＝登録）
   const NIGHT_FLOOR_HEIGHT = 70;            // 地中ロックの下限（楕円体高・標高約34m。コース一帯の地表は約60〜70m）
@@ -1221,7 +1230,7 @@
     const l1 = getLogin(1), l2 = getLogin(2);
     entryChip.innerHTML = window.vsRaceModeEnabled && l1
       ? "👤 受付　1人目：<b>" + (l1 ? ttEsc(l1.nick) : "未") + "</b>　2人目：<b>" + (l2 ? ttEsc(l2.nick) : "未") + "</b>"
-      : "👤 受付：<b>" + (l1 ? ttEsc(l1.nick) : "未") + "</b>";
+      : (!l1 && trialPass ? "🌃 登録なしでお試し中　<b>▶ 登録する</b>" : "👤 受付：<b>" + (l1 ? ttEsc(l1.nick) : "未") + "</b>");
   }
   function openEntryModal(slot) {
     claimRevision++;
@@ -1232,16 +1241,25 @@
     const inner = document.getElementById("nightTtInner");
     const l1 = getLogin(1), l2 = getLogin(2);
     const cur = getLogin(claimSlot);
+    const must = RECEPTION_REQUIRED && !l1 && !trialPass;   // 受付が必須の状態（閉じられない）
     inner.innerHTML =
       "<h2>👤 " + (claimSlot === 2 ? "2Pの参加受付" : "参加受付（CiDAO 登録者の確認）") + "</h2>" +
       (twoPlayer ? '<div class="tabs"><button id="nightEntryTab1"' + (claimSlot === 1 ? ' class="on"' : "") + ">1人目：" + ttEsc(l1.nick) + "</button>" +
         '<button id="nightEntryTab2"' + (claimSlot === 2 ? ' class="on"' : "") + ">2人目" + (l2 ? "：" + ttEsc(l2.nick) : "（未）") + "</button></div>"
-        : "<p>印西市３Dワールドは <b>CiDAO（市民DAO）の登録者</b> が使えます。会員証QR、表示名、LINEログインのいずれかで参加してください。</p>") +
+        : (must && trialOffered() && !trialUsedToday()
+          ? "<p>夜景の3Dは、<b>登録なしで1日1回</b>試せます。<b>CiDAO（市民DAO）に登録</b>（無料）すると、何度でも入れて、タイムレースにも参加できます。</p>"
+          : "<p>印西市３Dワールドは <b>CiDAO（市民DAO）の登録者</b> が使えます。会員証QR、表示名、LINEログインのいずれかで参加してください。</p>")) +
       (cur ? '<p>✅ <b>' + ttEsc(cur.nick) + '</b> さん　<button class="sub" id="nightEntryClear">この人を外す</button></p>' : "") +
+      (must && trialOffered()
+        ? (trialUsedToday()
+          ? '<div class="box"><b>🌃 登録なしで試せるのは1日1回です</b><br>きょうの分は使いました。あすまた試せます。CiDAO に登録（無料）すると、何度でも入れます。</div>'
+          : '<div class="box" style="border-color:#ffd166"><b>🌃 まずは登録なしで試す</b><br>印西の夜空を飛ぶ遊覧（約1分半）が始まります。そのあとは自分で操縦できます。<br><small>通信量が大きい（遊覧1回で約100MB）ので、Wi-Fi をおすすめします。</small><br>' +
+            '<button class="go" id="nightTrialBtn">▶ 登録なしで試す（1日1回）</button></div>')
+        : "") +
       (claimSlot === 2 ? '<p><button class="go" id="nightEntryFamily">1人目と同じ登録で2Pにも参加</button></p>' +
         '<details id="nightEntryOther"><summary style="cursor:pointer;color:#8fe9ff;padding:10px 0">別の人が2Pとしてログイン（会員証QR・表示名）</summary>' + claimSectionHtml("2人目") + '</details>'
         : claimSectionHtml("")) +
-      (RECEPTION_REQUIRED && !l1
+      (must
         ? '<div class="box" id="nightSignupBox"><b>🆕 まだ CiDAO に登録していない方</b><br>スマホで下の QR を読んで CiDAO に登録（無料・LINE でログイン）し、表示名を決めたら、この画面で「表示名」か「会員証QR」で入場してください。<br>' +
           '<div id="nightSignupQr" style="display:inline-block;background:#fff;padding:8px;border-radius:8px;margin:8px 0"></div><br><a href="' + SIGNUP_URL + '" target="_blank" rel="noopener" style="color:#8fe9ff">' + CIDAO_ORIGIN + '/login</a></div>' +
           '<p class="note">⛔ CiDAO登録の確認が済むまで、3Dの街並みは読み込みません。</p>'
@@ -1253,6 +1271,14 @@
     if (tab1) tab1.onclick = function () { stopQrScan(); openEntryModal(1); };
     if (tab2) tab2.onclick = function () { stopQrScan(); openEntryModal(2); };
     if (document.getElementById("nightSignupQr")) drawSignupQr();
+    const trialBtn = document.getElementById("nightTrialBtn");
+    if (trialBtn) trialBtn.onclick = function () {
+      trialPass = true; window.cbiTrial = true;   // admission.js が登録なしの枠で数える
+      stopQrScan(); closeTtModal();
+      if (courseKey !== "short" && !tt.active) setCourse("short");
+      resolveReception();
+      startTour();   // 街並みが読めるまで中で待つ。枠が埋まっていたら admission.js がお断りを出す
+    };
     const family = document.getElementById("nightEntryFamily");
     if (family) family.onclick = function () {
       const parent = getLogin(1);
@@ -1304,14 +1330,14 @@
   // 入場ゲート：index.html の loadTileset() が呼ぶ。1人目の確認が済んでいれば即 true、未確認なら受付を出して確認まで待つ
   let receptionWaiters = [];
   window.ensureMetaverseReception = function () {
-    if (!RECEPTION_REQUIRED || getLogin(1)) return Promise.resolve(true);
+    if (!RECEPTION_REQUIRED || entered()) return Promise.resolve(true);
     return new Promise(function (resolve) {
       receptionWaiters.push(resolve);
       openEntryModal(1);
     });
   };
   function resolveReception() {
-    if (!getLogin(1)) return;
+    if (!entered()) return;
     const w = receptionWaiters; receptionWaiters = [];
     w.forEach(function (r) { r(true); });
   }
@@ -1639,7 +1665,7 @@
     if (e.key === "t" || e.key === "T") { if (!tt.active) openTtModal(); }
     if ((e.key === " " || e.key === "Enter") && tt.active && tt.waiting) { e.preventDefault(); ttReadyGo(); }
     if (e.key === "Escape") {
-      if (RECEPTION_REQUIRED && !getLogin(1) && claimFrom === "entry" && document.getElementById("nightTtModal").classList.contains("show")) return; // 入場受付は必須
+      if (RECEPTION_REQUIRED && !entered() && claimFrom === "entry" && document.getElementById("nightTtModal").classList.contains("show")) return; // 入場受付は必須
       if (document.getElementById("nightTtModal").classList.contains("show")) closeTtModal();
       else if (tt.active) ttAbortNight("Esc キー");
     }
@@ -1656,7 +1682,7 @@
     return false;
   }
   setInterval(function () {
-    if (RECEPTION_REQUIRED && !getLogin(1) && receptionWaiters.length && !document.getElementById("nightTtModal").classList.contains("show")) openEntryModal(1);
+    if (RECEPTION_REQUIRED && !entered() && receptionWaiters.length && !document.getElementById("nightTtModal").classList.contains("show")) openEntryModal(1);
     if (!window.nightOn) return;
     const anyKey = Object.keys(keys).some(function (k) { return keys[k]; });
     if (anyKey || (joyState && joyState.active) || gamepadActive()) noteInput();
