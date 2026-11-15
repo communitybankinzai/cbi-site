@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-16",
+          "title": "運営の画面に団体の公開・非公開の切り替え（/admin/orgs）を追加 0.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20261116090000_organizations_hidden_by_admin.sql（新規・本番適用済み）",
+            "cidao: src/lib/org-visibility.ts・src/lib/__tests__/org-visibility.test.ts（新規）",
+            "cidao: src/app/admin/orgs/page.tsx・actions.ts（新規）",
+            "cidao: src/app/orgs/actions.ts（approveClaim・rejectClaim）",
+            "cidao: src/app/admin/page.tsx（入口のタイル）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主決定A。団体から申し出があったときに運営が画面から外せるようにした。organizations に hidden_by_admin・hidden_reason・hidden_at を足し、申告中の新しい団体（承認待ち）と区別。運営が非公開にした団体は、代表者の申告を承認しても自動で公開に戻らず、却下しても団体ごと削除されない。切り替えは運営委員・統括のみ・非公開は理由が必須・削除はしない。検証：単体テスト13件、全体932件が通過、型検査・eslint エラーなし。cidao 334cfd7 を本番反映。本番で確認用の団体を1件作り、画面から非公開→公開に戻す操作を行って DB の値と公開ページ（200）を確認し、確認用の団体は削除（団体の総数260に戻った）。あめちゃんの3件は非公開のまま。session: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 303,620 / cost: $128.10（セッション全体。うち本件は約0.3時間）"
+        },
+        {
+          "date": "2026-11-16",
           "title": "だがしや あめちゃんの自動読み取りを再開（取り込みは下書きのまま公開しない） 0.1時間",
           "category": "保守",
           "outputs": [
