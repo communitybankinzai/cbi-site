@@ -17,6 +17,23 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-15",
+          "title": "イルミライ夜景3Dの導線見直し：プロフィールのリンク付け替えの確認＋登録なしで試せる枠の実装＋タイル消費の実測 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/api/metaverse-admission/route.ts（bb4c3e4）",
+            "site/metaverse/night.js",
+            "site/metaverse/admission.js",
+            "site/metaverse/index.html（版番号）",
+            "site/metaverse/CLAUDE_HANDOFF.md",
+            "site/admin/changelog.json",
+            "events/irumirai/2026-11-15_点灯式の告知結果と導線の見直し.md（4.6〜4.9節）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "事業主が Instagram・Threads・Facebook のプロフィールのリンクを夜景3Dへ貼り替え（Threads は64文字のURLを受け付けず、末尾の / を省いた63文字のURLを案内）。事業主決定①＝登録なしで試せる枠を1日10回取り置き。実測：短縮コースの遊覧1回でタイル要求2,827件・約100MB・約105秒（Chrome 1264x705・描画精度12）。10か所コースは測定中に Chrome が落ちて未測定。session: 3c593b0d-9fbc-4731-bfae-dd2a748152c1 / output: 48,857 / cost: $22.02"
+        },
+        {
           "date": "2026-11-14",
           "title": "団体向けの案内（自動掲載の条件）：ヘルプのページ追加＋登録画面の注記＋SNS告知素材 0.4時間",
           "category": "実装",
@@ -9988,6 +10005,36 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-22",
+          "title": "🌃 登録なしで試せる枠：1週間の入場数・新規登録数を確かめ、枠の数（1日10回）を見直す",
+          "category": "分析",
+          "priority": "高",
+          "note": "入場数は app_settings の metaverse_admissions_<太平洋日付> の guests の件数（launches が全員）。登録は members.signup_source（metaverse:reception:entry／trial_full）。市民アカデミーで使う数字なので、11/15 の試験（公開後の確認で入れた分）は除いて数える。3Dを開いた人は metaverse_presence_daily。"
+        },
+        {
+          "due": "2026-11-18",
+          "title": "🌃 登録なしで試せる枠をスマホ実機で通す（Instagram のアプリ内ブラウザから）",
+          "category": "保守",
+          "priority": "高",
+          "note": "プロフィールのリンク→受付→「登録なしで試す」→遊覧→操縦まで。11/15 は PC の手元画面（枠の応答は差し替え）と本番 API の応答だけ確認。スマホでの通信量・描画の重さは未確認。受付の文「スマホで下の QR を読んで」はスマホで開いた人に合わないので、ボタンへ直すか判断する。"
+        },
+        {
+          "due": "未定",
+          "title": "🌃 夜景10か所コースの遊覧1回のタイル消費を測り直す",
+          "category": "調査",
+          "priority": "低",
+          "note": "11/15 は短縮コース（2,827件・約100MB）だけ測れた。10か所は測定中に Chrome が2回落ちた（原因未特定）。道具はセッションの scratchpad にあったので、測るときは作り直す（Chrome を画面つきで開き CDP の Network で tile.googleapis.com を数える。組み込みブラウザは画面が裏だと描画が止まり測れない）。"
+        },
+        {
+          "due": "未定",
+          "title": "📣 点灯式の告知の訂正（リンクを直した・登録なしで試せる）を SNS に出すか決める",
+          "category": "広報",
+          "priority": "中",
+          "status": "保留",
+          "blockedBy": "事業主が、出すか・いつ出すか（すぐ／実機確認のあと）を決める。問い合わせが実際に来ているかの確認も要る（来ていなければ「問い合わせが多く」とは書かない）",
+          "note": "11/14 の投稿は閲覧330回・3Dを開いた人0。11/15 にリンクを貼り替え、登録なしで試せる枠を公開した。"
+        },
         {
           "due": "2026-11-21",
           "title": "📅 自動掲載の案内（団体向け）：SNS告知の投稿と、団体からの連絡・直接登録の件数の確認",
