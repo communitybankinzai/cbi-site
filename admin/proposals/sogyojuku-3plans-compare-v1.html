@@ -1,0 +1,649 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>創業塾 4シート 3案の見比べと6W3H（個人検討資料）</title><style>
+:root{--ink:#1a2330;--mut:#4a5663;--line:#d8dee9}
+*{box-sizing:border-box}
+body{overflow-wrap:anywhere;font-family:"Yu Gothic","Hiragino Sans","Meiryo",sans-serif;color:var(--ink);margin:0;background:#fff;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 40px}
+header.top{padding:18px 0 8px;border-bottom:2px solid #1f3a6e;margin-bottom:12px}
+header.top h1{font-size:21px;margin:0 0 4px;color:#1f3a6e}
+.badges span{display:inline-block;font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px;margin-right:6px;color:#fff;background:#c0392b}
+.badges span.b2{background:#4a5663}
+.note{font-size:12.5px;color:var(--mut);margin:6px 0}
+.nav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.nav a{font-size:12.5px;border:1px solid var(--line);padding:3px 10px;border-radius:999px;text-decoration:none;color:#1f3a6e;background:#f4f6fb}
+.btn{font-size:12.5px;border:1px solid #1f3a6e;background:#1f3a6e;color:#fff;border-radius:999px;padding:4px 12px;cursor:pointer}
+h2.sec{font-size:17px;margin:26px 0 8px;padding-left:9px;border-left:5px solid #1f3a6e;color:#1f3a6e}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{border-radius:8px;padding:10px 12px;border:1px solid var(--line);border-top-width:5px}
+.card .chip{display:inline-block;color:#fff;font-weight:700;font-size:12px;padding:1px 9px;border-radius:999px}
+.card .ext{font-size:12px;color:var(--mut);margin-left:6px}
+.card h3{font-size:14.5px;margin:6px 0 2px}
+.card p{font-size:12.5px;margin:0;color:var(--mut)}
+.cA{border-top-color:#1f3a6e;background:#f4f7fc}.cA .chip{background:#1f3a6e}
+.cB{border-top-color:#2d5a3d;background:#f2f8f4}.cB .chip{background:#2d5a3d}
+.cC{border-top-color:#a8480a;background:#fdf5ec}.cC .chip{background:#a8480a}
+table.c3{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+table.c3 th,table.c3 td{border-bottom:1px solid var(--line);padding:7px 9px;vertical-align:top}
+table.c3 thead th{position:sticky;top:0;z-index:2;color:#fff;text-align:left;border-bottom:0}
+table.c3 thead th.it{background:#fff;color:var(--ink);width:112px}
+table.c3 thead th.pA{background:#1f3a6e}table.c3 thead th.pB{background:#2d5a3d}table.c3 thead th.pC{background:#a8480a}
+table.c3 th .chip{display:inline-block;background:rgba(255,255,255,.25);font-weight:700;font-size:12px;padding:0 8px;border-radius:999px;margin-right:6px}
+table.c3 th .ext{font-size:11.5px;display:block;opacity:.9;margin-top:2px}
+table.c3 th .ttl{font-size:12.5px;display:block;font-weight:700}
+td.it{background:#f4f6fb;font-weight:700;color:#1f3a6e;font-size:12.5px}
+td.pA{border-left:3px solid #1f3a6e;background:#fbfcff}td.pB{border-left:3px solid #2d5a3d;background:#fafdfb}td.pC{border-left:3px solid #a8480a;background:#fffaf4}
+td .k{font-weight:700;font-size:13.5px}
+td .d{font-size:12px;color:var(--mut);margin-top:2px}
+tr.diff td.it{background:#fff1c9}
+tr.diff td.it::after{content:"差が大きい";display:block;font-size:10px;font-weight:700;color:#8a5a00;margin-top:2px}
+td.mg{background:#f7f7f7;text-align:center}
+.legend{font-size:12px;color:var(--mut);margin:4px 0 8px}
+.legend b.s{display:inline-block;width:12px;height:12px;vertical-align:-2px;margin-right:3px}
+/* シート（A4横の印刷ページ） */
+.sheets .pg{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:12px 0;background:#fff}
+.pg .hd{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;border-bottom:2px solid #1f3a6e;margin-bottom:8px;padding-bottom:3px}
+.pg .hd h1{font-size:16px;margin:0;color:#1f3a6e}
+.pg .hd .who{font-size:12px}
+.pg .tag{font-size:11.5px;color:#444;margin-bottom:6px}
+.pg .row{display:flex;gap:10px;flex-wrap:wrap}
+.pg .col{flex:1;min-width:260px;display:flex;flex-direction:column;gap:10px}
+.pg .row>.box{flex:1;min-width:250px}
+.pg .box{border:1.5px solid #1f3a6e;padding:6px 9px;border-radius:4px}
+.pg .box h2{font-size:13.5px;margin:0 0 3px;color:#1f3a6e;text-align:center}
+.pg .cut{font-size:11px;color:#555;margin-bottom:3px}
+.pg ul{margin:0 0 0 18px;padding:0;font-size:13px}.pg li{margin-bottom:3px}
+.pg .lab{font-weight:700;color:#1f3a6e;font-size:13px}
+.pg .sub{border-top:1px dashed #889;margin-top:5px;padding-top:4px}
+.pg .me{background:#fff4c2;padding:0 3px}
+.pg .foot{font-size:11px;color:#555;margin-top:6px}
+details.plan{border:1px solid var(--line);border-radius:8px;margin:12px 0;padding:0 10px}
+details.plan>summary{cursor:pointer;font-weight:700;font-size:15px;padding:10px 0;color:#1f3a6e}
+.fine{font-size:12px;color:var(--mut)}
+@media screen and (max-width:820px){
+  .cards{grid-template-columns:1fr}
+  table.c3 thead{display:none}
+  table.c3,table.c3 tbody,table.c3 tr,table.c3 td{display:block;width:100%}
+  table.c3 tr{margin:0 0 12px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  td.it{font-size:13px}
+  tr.diff td.it::after{display:inline;margin-left:8px}
+  td[data-p]::before{content:attr(data-p);display:inline-block;color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:0 9px;margin-bottom:3px}
+  td.pA::before{background:#1f3a6e}td.pB::before{background:#2d5a3d}td.pC::before{background:#a8480a}
+}
+@media print{
+  @page{size:A4 landscape;margin:8mm 10mm}
+  body{font-size:10pt}
+  .wrap{max-width:none;padding:0}
+  .nav,.btn,.screen-only{display:none!important}
+  header.top{padding-top:0}
+  details.plan{border:0;padding:0}details.plan>summary{display:none}
+  details.plan:not([open])>*:not(summary){display:block}
+  table.c3{font-size:8.6pt}
+  table.c3 th,table.c3 td{padding:3px 6px}
+  td .k{font-size:8.8pt}td .d{font-size:7.6pt}
+  table.c3 thead th{position:static}
+  .pbk{page-break-before:always}
+  .sheets .pg{border:0;padding:0;margin:0;page-break-after:always;height:185mm;display:flex;flex-direction:column}
+  .sheets .pg:last-child{page-break-after:auto}
+  .pg .row{flex:1;flex-wrap:nowrap;min-height:0}
+  .pg .box{overflow:hidden}
+  .pg .hd{margin-bottom:3px}.pg .tag{margin-bottom:3px}.pg .foot{margin-top:2px}
+  .pg li{margin-bottom:.6mm}
+  .pg .col{min-width:0}.pg .row>.box{min-width:0}
+  .pg ul{font-size:9.3pt;line-height:1.36}.pg .box h2{font-size:10.5pt}
+  h2.sec{margin:6px 0}
+  .cards{gap:6px}
+}
+</style></head><body><div class="wrap">
+<header class="top"><h1>創業塾 4シート：3つの案の見比べと6W3H</h1><div class="badges"><span>下書き（確認前）</span><span class="b2">個人検討資料</span><span class="b2">2026-11-15 作成</span></div><p class="note">いんざい創業塾 第2回（11/15）に向けた、事業主個人の検討資料。<b>どの案にするかは決めていません</b>（決めるのは事業主）。金額・単価・回数は仮。黄色の〔 〕は本人が書く欄。</p><div class="nav screen-only"><a href="#one">3案の一言</a><a href="#cmp">②見比べ</a><a href="#w3h">6W3H</a><a href="#sA">案A 4シート</a><a href="#sB">案B 4シート</a><a href="#sC">案C 4シート</a><button class="btn" onclick="window.print()">印刷（A4横）</button></div></header>
+<h2 class="sec" id="one">3つの案</h2><div class="cards">
+<div class="card cA"><span class="chip">案A</span><span class="ext">CBI 活動の延長</span><h3>文化財を入口にした市民ガイドと学びの循環</h3><p>木下のまち歩きと、ガイド体験。CiDAO を道具に。個人が事業主・CBI は協力先</p></div>
+<div class="card cB"><span class="chip">案B</span><span class="ext">N's factory の延長</span><h3>デジタルファブリックの工房・体験場</h3><p>地元の大人が、贈りたい相手の話をしながら設計し、自分で作って贈る体験</p></div>
+<div class="card cC"><span class="chip">案C</span><span class="ext">COCoLa 起源の常設マルシェ</span><h3>駅前常設マルシェを CBI が受けたら</h3><p>元は COCoLa 有志の提案。市・受託者が設置した箱の運営（貸出・管理・広告）を受け持つ</p></div>
+</div>
+<h2 class="sec" id="cmp">②創業計画シートの見比べ</h2>
+<p class="legend">読み方：<b>太字＝要点</b>、小さな字＝補足。色は案ごと（青＝A・緑＝B・橙＝C）。黄色の見出し＝案の差が大きい行。</p>
+<table class="c3" id="cmp3">
+<thead><tr><th class='it'>項目</th>
+<th class="pA"><span class="chip">案A</span><span class="ext">CBI 活動の延長</span><span class="ttl">文化財を入口にした市民ガイドと学びの循環</span></th>
+<th class="pB"><span class="chip">案B</span><span class="ext">N's factory の延長</span><span class="ttl">デジタルファブリックの工房・体験場</span></th>
+<th class="pC"><span class="chip">案C</span><span class="ext">COCoLa 起源の常設マルシェ</span><span class="ttl">CBI が受けたら（木下駅前にぎわい広場）</span></th>
+</tr></thead><tbody>
+<tr><td class="it">創業の動機</td>
+<td class="pA" data-p="案A"><div class="k">「50の文化財を知る」市民が0人</div><div class="d">市のガイド制度は見つからず、民間の協会が実在。CBI の事業名に合う</div></td>
+<td class="pB" data-p="案B"><div class="k">設計の相談つきで試せる場が地元に少ない</div><div class="d">贈り物を「相手のための物語」にして、自分の手で作って渡したい</div></td>
+<td class="pC" data-p="案C"><div class="k">元は COCoLa 有志の提案を CBI で受けたら</div><div class="d">旧観光情報館の閉館（2026-03-31）で案内に空白。市は公民連携を推進</div></td>
+</tr>
+<tr class="merge"><td class="it">略歴（私ができる理由）</td><td colspan="3" class="mg"><div class="k">元海上自衛官（防衛大学校 航空宇宙工学科 → 勤続25年・2024年4月退職）。N's factory の運営・講師・CBI 会計担当</div></td></tr>
+<tr><td class="it">資金・設備・場所</td>
+<td class="pA" data-p="案A"><div class="k">試行1回 約300〜6,000円を自己資金</div><div class="d">A4レポート（CBI の資産）・スマホ・地図。場所は木下</div></td>
+<td class="pB" data-p="案B"><div class="k">既存レーザー・ハンドプレス・PC</div><div class="d">金属対応レーザー（約83万円）は融資を先に相談。場所は工房かコンテナ</div></td>
+<td class="pC" data-p="案C"><div class="k">設置費は市の負担・所有が前提</div><div class="d">当方は運営の人手・保険・予約の仕組み。入口3棟で約420〜1,070万円（仮）</div></td>
+</tr>
+<tr><td class="it">協力者・サポーター</td>
+<td class="pA" data-p="案A"><div class="k">CBI・印西ふるさと案内人協会</div><div class="d">武蔵屋の関係者・寺院・文化振興課・市民活動推進課（了承は未確認）</div></td>
+<td class="pB" data-p="案B"><div class="k">商工会・創業塾・市の窓口</div><div class="d">〔家族・友人〕</div></td>
+<td class="pC" data-p="案C"><div class="k">市の各課・受託者・商店街</div><div class="d">資産経営課 公民連携推進室が窓口。受託候補者は JTB千葉西支店（特定済み）</div></td>
+</tr>
+<tr><td class="it">時間と情報</td>
+<td class="pA" data-p="案A"><div class="k">12/2 個別相談 → 12〜1月 試行1回目</div><div class="d">試行3〜5回（2〜6月）→ 助成金・協働事業（2027年度〜）</div></td>
+<td class="pB" data-p="案B"><div class="k">12/2 個別相談 → 1月以降 試験開催</div><div class="d">12月に見積と場所を調べる → 定例化 → 設備</div></td>
+<td class="pC" data-p="案C"><div class="k">12/2 個別相談 → 12〜2月 模擬</div><div class="d">2〜6月 運営パートナーの1枚提案</div></td>
+</tr>
+<tr><td class="it">① 誰に</td>
+<td class="pA" data-p="案A"><div class="k">文化財を知らない大人・子ども、観光客</div><div class="d">ガイド役の市民（18歳以上）</div></td>
+<td class="pB" data-p="案B"><div class="k">地元の大人</div><div class="d">贈りたい相手がいる人</div></td>
+<td class="pC" data-p="案C"><div class="k">出店者と来訪者</div><div class="d">作り手・団体・企業・キッチンカー。市の課も</div></td>
+</tr>
+<tr class="diff"><td class="it">② 何を</td>
+<td class="pA" data-p="案A"><div class="k">木下のまち歩き 約90分＋ガイド体験</div><div class="d">知識が無くても始められ、案内された人が次の担い手に</div></td>
+<td class="pB" data-p="案B"><div class="k">相手の話をしながら設計し、自分で作って贈る</div><div class="d">レーザー加工もその場で、当日完成</div></td>
+<td class="pC" data-p="案C"><div class="k">駅前コンテナの運営（貸出・管理・広告）</div><div class="d">入口3棟から。飲食は許可持ちに貸す</div></td>
+</tr>
+<tr class="diff"><td class="it">③ いくらで</td>
+<td class="pA" data-p="案A"><div class="k">試行は無料</div><div class="d">将来は1人500〜1,000円（案）</div></td>
+<td class="pB" data-p="案B"><div class="k">5,000〜8,000円帯（仮）</div><div class="d">メニュー別は2,500〜6,500円（仮）</div></td>
+<td class="pC" data-p="案C"><div class="k">日3,000〜10,000円・月30,000〜80,000円（仮）</div><div class="d">週・半年もあり。相場は未取得</div></td>
+</tr>
+<tr><td class="it">④ どこで・どう売る</td>
+<td class="pA" data-p="案A"><div class="k">木下のまち歩きで直販</div><div class="d">雨天は武蔵屋の屋内。申込は CiDAO の提案ページ経由</div></td>
+<td class="pB" data-p="案B"><div class="k">予約制・1〜2組ずつ（90〜120分）</div><div class="d">工房、またはにぎわい広場のコンテナ</div></td>
+<td class="pC" data-p="案C"><div class="k">公募の運営パートナーに入る（形は未確認）</div><div class="d">まず広場内行為許可で模擬</div></td>
+</tr>
+<tr><td class="it">⑤ 販売促進</td>
+<td class="pA" data-p="案A"><div class="k">CiDAO 提案ページ・CBI の SNS</div><div class="d">木下WS・人材バンク</div></td>
+<td class="pB" data-p="案B"><div class="k">SNS・自社サイト</div><div class="d">講師先の受講生・地域のイベント（案）</div></td>
+<td class="pC" data-p="案C"><div class="k">市の広報・CiDAO・SNS</div><div class="d">広告・協賛（外壁・モニター・スポンサー）</div></td>
+</tr>
+<tr class="diff"><td class="it">事業主体</td>
+<td class="pA" data-p="案A"><div class="k">個人（CBI は協力先）</div><div class="d">個人名義でファンド・協働事業に申請できるかは未確認</div></td>
+<td class="pB" data-p="案B"><div class="k">N's factory（個人事業）</div><div class="d">名義の問題は小さい（私の見立て）</div></td>
+<td class="pC" data-p="案C"><div class="k">CBI（任意団体・代表は別の方）</div><div class="d">公募は法人が対象 → 法人化か共同事業体を検討。利益相反の手続きも</div></td>
+</tr>
+<tr class="diff"><td class="it">収益のめど</td>
+<td class="pA" data-p="案A"><div class="k">柱になりにくい</div><div class="d">市民型ガイドは90分3〜5人で年7万円台の規模（全国の例）</div></td>
+<td class="pB" data-p="案B"><div class="k">月約4.8万円（仮）</div><div class="d">4名×3,000円×月4回。材料費と場所代は別</div></td>
+<td class="pC" data-p="案C"><div class="k">貸出は年約80〜100万円（仮）</div><div class="d">回収は約4〜12年。設置費が市負担の前提</div></td>
+</tr>
+<tr><td class="it">初期の費用</td>
+<td class="pA" data-p="案A"><div class="k">1回 数百〜6,000円</div></td>
+<td class="pB" data-p="案B"><div class="k">試験開催は数万円</div><div class="d">金属対応レーザー約83万円は融資後</div></td>
+<td class="pC" data-p="案C"><div class="k">入口3棟で約420〜1,070万円（仮・低）</div><div class="d">設置は市。当方の持ち出しは運営費</div></td>
+</tr>
+<tr class="diff"><td class="it">最初に確かめること</td>
+<td class="pA" data-p="案A"><div class="k">見学の了承・個人名義の可否</div><div class="d">旅行業・収益事業の扱い</div></td>
+<td class="pB" data-p="案B"><div class="k">場所と安全・融資の見立て</div><div class="d">排気・電源・消防。試験開催の申込数</div></td>
+<td class="pC" data-p="案C"><div class="k">公募の形・使用料・転貸の可否</div><div class="d">設置費の持ち方。法人格の要否</div></td>
+</tr>
+</tbody></table>
+<h2 class="sec pbk" id="w3h">6W3H（3案を並べて）</h2>
+<p class="legend">6W＝誰が・誰に・何を・なぜ・いつ・どこで／3H＝どのように・いくらで・どれだけ。別用紙として印刷できます。</p>
+<table class="c3" id="w3h3">
+<thead><tr><th class='it'>項目</th>
+<th class="pA"><span class="chip">案A</span><span class="ext">CBI 活動の延長</span><span class="ttl">文化財を入口にした市民ガイドと学びの循環</span></th>
+<th class="pB"><span class="chip">案B</span><span class="ext">N's factory の延長</span><span class="ttl">デジタルファブリックの工房・体験場</span></th>
+<th class="pC"><span class="chip">案C</span><span class="ext">COCoLa 起源の常設マルシェ</span><span class="ttl">CBI が受けたら（木下駅前にぎわい広場）</span></th>
+</tr></thead><tbody>
+<tr><td class="it">Who 誰が</td>
+<td class="pA" data-p="案A"><div class="k">個人（祐樹）が事業主</div><div class="d">CBI は協力先。協力：印西ふるさと案内人協会・武蔵屋の関係者・文化振興課</div></td>
+<td class="pB" data-p="案B"><div class="k">N's factory（個人事業）</div><div class="d">設計・進行・加工は事業主。機械の操作は安全のため主催者</div></td>
+<td class="pC" data-p="案C"><div class="k">CBI が運営側（案）</div><div class="d">任意団体・代表は別の方。公募は法人が対象 → 法人化か共同事業体。設置は市／受託者</div></td>
+</tr>
+<tr><td class="it">Whom 誰に</td>
+<td class="pA" data-p="案A"><div class="k">文化財を知らない大人・子ども、観光客</div><div class="d">ガイド役の市民（18歳以上）、所有者・文化振興課</div></td>
+<td class="pB" data-p="案B"><div class="k">地元の大人（贈りたい相手がいる人）</div><div class="d">印西市周辺。1〜2組ずつの予約制</div></td>
+<td class="pC" data-p="案C"><div class="k">出店者と来訪者</div><div class="d">試し出店の創業者・キッチンカー・団体。市の課（案内・PR・防災）</div></td>
+</tr>
+<tr class="diff"><td class="it">What 何を</td>
+<td class="pA" data-p="案A"><div class="k">木下のまち歩き 約90分＋ガイド体験</div><div class="d">A4レポート・地図・翻訳アプリ。来訪の記録を残す</div></td>
+<td class="pB" data-p="案B"><div class="k">相手の話をしながら設計し、自分で作って贈る</div><div class="d">レーザー刻印・金属タグ・アクリル刻印。当日完成</div></td>
+<td class="pC" data-p="案C"><div class="k">駅前コンテナの運営（貸出・管理・広告）</div><div class="d">入口3棟（案内・PR／物販・棚貸し／備品庫）から。飲食は許可持ちに貸す</div></td>
+</tr>
+<tr><td class="it">Why なぜ</td>
+<td class="pA" data-p="案A"><div class="k">11/3 の催しで「50の文化財を知る」人が0人</div><div class="d">市のガイド制度は見つからず。CBI の事業名に合う</div></td>
+<td class="pB" data-p="案B"><div class="k">業務用の機器を、設計の相談つきで試せる場が少ない</div><div class="d">贈り物を「相手のための物語」にしたい（仮説）</div></td>
+<td class="pC" data-p="案C"><div class="k">市が公民連携で駅前の活用を進める</div><div class="d">旧観光情報館は2026-03-31閉館。元は COCoLa 有志の提案（2025-03-25）</div></td>
+</tr>
+<tr><td class="it">When いつ</td>
+<td class="pA" data-p="案A"><div class="k">試行1回目 12〜1月</div><div class="d">試行3〜5回（2〜6月）→ 助成金（2027年度）→ 協働事業（開始2028年4月）</div></td>
+<td class="pB" data-p="案B"><div class="k">試験開催 1月以降（1〜2回）</div><div class="d">12/2 個別相談 → 12月に見積・場所 → 定例化 → 設備</div></td>
+<td class="pC" data-p="案C"><div class="k">模擬 12〜2月 → 提案 2〜6月</div><div class="d">市の広場の試行運用 R8.8〜R9.3。公約ロードマップでは R9 に公募・暫定利用の開始</div></td>
+</tr>
+<tr><td class="it">Where どこで</td>
+<td class="pA" data-p="案A"><div class="k">木下のまち歩き</div><div class="d">武蔵屋・十一面観音・木下貝層・木下河岸跡・吉岡まちかど博物館</div></td>
+<td class="pB" data-p="案B"><div class="k">工房、またはにぎわい広場のコンテナ</div><div class="d">今の作業場は使えない。貸室は期待できない</div></td>
+<td class="pC" data-p="案C"><div class="k">木下駅前にぎわい広場</div><div class="d">駅の南約80〜100m・約2.5ha。洪水浸水想定区域内・避難場所は未指定</div></td>
+</tr>
+<tr><td class="it">How どのように</td>
+<td class="pA" data-p="案A"><div class="k">受付 → 地図 → レポートを手に歩く → 参加者が1項目を案内</div><div class="d">雨天は武蔵屋の屋内。広報は CiDAO・CBI の SNS</div></td>
+<td class="pB" data-p="案B"><div class="k">聞く → 設計 → 作る → 渡す（90〜120分）</div><div class="d">レーザー加工はその場で。参加者は設計と仕上げを担当</div></td>
+<td class="pC" data-p="案C"><div class="k">市・受託者が設置した箱の運営パートナー</div><div class="d">貸出は日・週・月・半年。設置なしの試行 → 3棟 → 7棟の段階式</div></td>
+</tr>
+<tr class="diff"><td class="it">How much いくらで</td>
+<td class="pA" data-p="案A"><div class="k">試行は無料。実費は約300〜6,000円（仮）</div><div class="d">将来は1人500〜1,000円の想定</div></td>
+<td class="pB" data-p="案B"><div class="k">5,000〜8,000円帯（仮）</div><div class="d">試験開催は数万円。金属対応レーザー（約83万円）は融資後</div></td>
+<td class="pC" data-p="案C"><div class="k">入口3棟で概算 約420〜1,070万円（仮・低）</div><div class="d">設置は市の負担・所有が前提。当方は運営の人手・保険・予約の仕組み</div></td>
+</tr>
+<tr><td class="it">How many どれだけ</td>
+<td class="pA" data-p="案A"><div class="k">試行1回 参加3〜5人＋ガイド1〜2人</div><div class="d">次へ進む目安：参加3人以上、「次は案内したい」人が1人以上</div></td>
+<td class="pB" data-p="案B"><div class="k">1回 1〜2組（最大4名・仮）</div><div class="d">月4回で月約4.8万円（仮）。定員の半分以上が埋まれば定例化</div></td>
+<td class="pC" data-p="案C"><div class="k">入口3棟 → 最大7棟、棚貸し約15区画</div><div class="d">貸出は年約80〜100万円（仮）。回収は約4〜12年</div></td>
+</tr>
+</tbody></table>
+<h2 class="sec screen-only" id="sA">案A　CBI 活動の延長（文化財を入口にした市民ガイド）：4シート</h2><details class="plan" open><summary>案A　CBI 活動の延長（文化財を入口にした市民ガイド） の4シートを開く／閉じる</summary><div class="sheets"><!-- ① ビジョン -->
+<div class="pg">
+<div class="hd"><h1>① 私のビジョンシート（案A）</h1><div class="who">氏名　祐樹（個人として）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">黄色の〔 〕＝本人しか書けない欄　／　（案）＝これからの予定・想定　／　案Aの題：<b>文化財を入口にした市民ガイドと学びの循環</b>（CiDAOを道具に）</div>
+<div class="row">
+ <div class="box" style="flex:1"><h2>〜現在の状態〜</h2><div class="cut">○今までの経験や経歴／興味や価値観／スキルや資格</div>
+ <ul>
+ <li>元海上自衛官（防衛大学校 航空宇宙工学科 → 海上自衛隊・勤続25年、2024年4月退職）</li>
+ <li>屋号 N's factory でレザークラフトの製作・販売（個人事業・青色申告）。カルチャースクール講師も兼ねる</li>
+ <li>第27期印西市民アカデミー学生。CBI メンバーで会計担当</li>
+ <li>市民アカデミー講座2「木下地区歴史散策」で、武蔵屋・木下河岸跡・吉岡まちかど博物館・木下貝層を歩いた</li>
+ <li>CiDAO（人材バンク・3D地図・A4レポート50件）の運用に関わる</li>
+ <li>11/3 の催しで「50の文化財を知る」来場者は0人（分母は未確認）</li>
+ <li><span class="me">〔価値観：なぜ文化財か／なぜ市民が案内する形か／11/3 への自分の関わり〕</span></li>
+ </ul></div>
+ <div class="box" style="flex:1"><h2>〜これから何をする〜</h2><div class="cut">○今できていることの伸びしろ／将来に必要な知識・スキル・経験／経営資源の確保</div>
+ <ul>
+ <li><b>伸びしろ：</b>A4レポート50件は完成済み。現地で使った記録がまだ無い → <b>12〜1月に木下で試行ガイドを1回</b>（約90分・3〜5人）（案）</li>
+ <li><b>足りない知識：</b>有料にする場合の許認可と税（旅行業の登録／収益事業）→ 個別相談で聞く／歩く順・距離・所要時間・安全・保険／既存のガイド団体の実態 → 印西ふるさと案内人協会へ聞き取り（個人名義・未送信）</li>
+ <li><b>資源の確保：</b>人＝CBI の了承と協力／カネ＝自己資金／モノ＝A4レポート・地図・スマホ／時間と情報＝④参照</li>
+ </ul></div>
+ <div class="box" style="flex:1"><h2>〜目指したい姿〜</h2><div class="cut">○どんな仕事をしたいのか？／どんな状態が楽しい・満足か？／生き甲斐を感じるために（貢献・仲間・自画像）</div>
+ <ul>
+ <li>「50の文化財を知っている」と言える市民が増える</li>
+ <li>ニュータウンの住民が、旧市街（木下）へ出かける</li>
+ <li>案内された人が次の案内役になる。人材バンクに「案内した回数」が記録として残る</li>
+ <li><b>道のり（案）：</b>試行3〜5回（2〜6月）→ 助成金（2027年度）→ 協働事業の提案（2027年4〜6月）→ 開始 2028年4月</li>
+ <li><span class="me">〔自画像：何がうれしいか／誰と・どんな毎日か〕</span></li>
+ </ul></div>
+</div>
+<div class="foot">出典：創業塾_4シート_統合A_個人.html（2026-11-13 更新）。「私」は個人（祐樹）。CBI は実施の場・協力先として書く（2026-11-09 決定）。</div>
+</div>
+
+<!-- ② 創業計画シート -->
+<div class="pg">
+<div class="hd"><h1>② 創業計画シート（案A）</h1><div class="who">氏名　祐樹（個人として）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">①③④を1枚にまとめたもの。黄色の〔 〕＝本人が書く欄／「未確認」は調べておらず断定しない項目。</div>
+<div class="row">
+ <div class="col" style="flex:1">
+  <div class="box"><h2 style="text-align:left">○創業への動機</h2>
+   <div class="lab">創業の動機【創業を思い立った理由】</div>
+   <ul><li>11/3 の催しで「50の文化財を知る」市民が0人だった（分母は未確認）</li>
+   <li>市が運営するガイド制度は調べた範囲で見つからず、民間の印西ふるさと案内人協会が実在する</li>
+   <li>CBI の事業名「人材の発掘・育成と活躍の場」と合う</li>
+   <li><span class="me">〔本人の思い〕</span></li></ul>
+   <div class="lab sub">経営者の略歴等【私ができる理由】</div>
+   <ul><li>元海上自衛官（勤続25年・2024年4月退職）。N's factory の運営（製作・販売・経理）、カルチャースクール講師、市民アカデミー受講、CBI 会計担当</li>
+   <li>CiDAO とA4レポート50件が手元にある。個人として書く（CBI では会計担当で代表ではない）</li></ul></div>
+  <div class="box"><h2 style="text-align:left">○事業への資源</h2>
+   <div class="lab">資金や設備、等【資金や設備や活動場所】</div>
+   <ul><li>試行1回の実費は仮で約300〜6,000円を自己資金で。設備はA4レポート（CBI の資産）・スマホ・地図</li>
+   <li>場所は木下（武蔵屋ほか）。拠点の構想（案・未確認）：木下南口の骨董市の通りの店舗、または木下駅前にぎわい広場のコンテナ</li></ul>
+   <div class="lab sub">協力者やサポーター</div>
+   <ul><li>CBI／印西ふるさと案内人協会／武蔵屋の関係者／寺院／文化振興課／市民活動推進課（いずれも了承は未確認）／<span class="me">〔家族・友人〕</span></li></ul>
+   <div class="lab sub">時間と情報【創業に必要な作戦】</div>
+   <ul><li>創業塾 11/15・12/6・12/13、個別相談 12/2、11/14 木下WS、12〜1月に試行1回目</li></ul></div>
+ </div>
+ <div class="box" style="flex:1.1"><h2 style="text-align:left">○ビジネスモデル（マーケティング戦略）</h2>
+  <div class="lab">① ターゲット【誰に】</div>
+  <ul><li>印西市の文化財を知らない大人と子ども、海外からのインバウンド観光客。ガイド役の市民（18歳以上）</li></ul>
+  <div class="lab sub">② 商品の特徴【何を　特徴や差別化】</div>
+  <ul><li>市民ガイドがA4レポートを手に木下を歩く約90分と、ガイド体験。知識が無くても始められ、案内された人が次の担い手になる</li>
+  <li>差別化：既存の協会は経験者の案内。こちらは「知識が無い人が、教材を手にやりながら担い手になる入口」。競わず、協力先として聞き取りから始める</li></ul>
+  <div class="lab sub">③ 価格や価格帯【どうやって　①いくらで】</div>
+  <ul><li>試行は無料。将来は1人500〜1,000円の想定（案）。有料化は許認可・税の確認後</li></ul>
+  <div class="lab sub">④ 販売方法・販売ルート【どうやって　②立地やルート】</div>
+  <ul><li>木下のまち歩きで直販。雨天は武蔵屋の屋内。申込は CiDAO の提案ページや告知経由</li></ul>
+  <div class="lab sub">⑤ 販売促進策【どうやって　③アピールの仕方】</div>
+  <ul><li>CiDAO の提案ページ、CBI の SNS、市の場（木下WS）、人材バンク。試行の記録を次の告知に使う</li></ul></div>
+</div>
+<div class="foot">出典：創業塾_4シート_統合A_個人.html（②）。個人名義でファンド・協働事業に申請できるかは未確認（個別相談で）。</div>
+</div>
+
+<!-- ③ ビジネスモデル -->
+<div class="pg">
+<div class="hd"><h1>③ 私のビジネスモデル（案A）</h1><div class="who">氏名　祐樹（個人として）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">誰に → 何を → どうやって（いくらで・どこで）→ 販売促進</div>
+<div class="row">
+ <div class="box" style="flex:1"><h2>〜誰に（主なターゲット）〜</h2><div class="cut">属性／ターゲットの「不」</div>
+  <ul><li><b>① 参加者：</b>印西市の文化財を知らない大人と子ども／海外からのインバウンド観光客（ニュータウン住民と旧市街の市民を含む）。年齢・性別・人数は未確認<br>「不」：文化財を知らない（50件を知る人0人）／どこにあるか・どう行くか分からない</li>
+  <li><b>② ガイド役の市民（18歳以上）：</b>「不」＝知識が無いと案内できない不安／活躍の場が無い</li>
+  <li><b>③ 所有者・文化振興課：</b>「不」＝見学者が増えると建物や保存会に負担／来訪の記録が無い</li></ul></div>
+ <div class="box" style="flex:1"><h2>〜何を（商品やサービス）〜</h2><div class="cut">提供する価値と買う理由／競合との差別化</div>
+  <ul><li><b>提供するもの：</b>まち歩き（約90分）／ガイド体験（参加者が1項目を案内）／A4レポート（手元で読み、現地で確かめる）／来訪の記録（人数・認知の変化）</li>
+  <li><b>参加する理由：</b>知らなかったものを現地で確かめられる／知識が無くても案内役になれる／案内した記録が残る</li>
+  <li><b>差別化：</b>印西ふるさと案内人協会（1999年設立・会員約20名）は経験者による案内。ここは知識が無い人の入口。競わず協力先として聞き取りから</li></ul></div>
+ <div class="col" style="flex:1.1">
+  <div class="box"><h2>〜どうやって〜　いくらで（価格）</h2><div class="cut">価値とのバランス／価格戦略</div>
+   <ul><li>試行（12〜1月）は<b>無料</b>。実費は仮で約300〜6,000円（印刷約300円／会場0〜5,000円／保険0〜700円）。謝礼なし</li>
+   <li>将来：1人500〜1,000円の想定（案）。参考：宮島の公認ガイド 2時間以内で5,000円／京都の民間 90分4,403円/人〜（出典は再確認）</li>
+   <li>戦略：無料の試行で「いくらなら払うか」を3問で聞く。有料化は旅行業・収益事業の確認後</li></ul></div>
+  <div class="box"><h2>どこで（立地や流通経路）</h2><div class="cut">どんな場所／直販か代理店か</div>
+   <ul><li>木下のまち歩き。候補：武蔵屋・銅造十一面観音立像・木下貝層・木下河岸跡・吉岡まちかど博物館（上宿古墳は大森のため除外）</li>
+   <li>直販（自分で案内）。協会や市の窓口は紹介・橋渡し。歩く順・距離・所要時間は未確認</li></ul></div>
+ </div>
+ <div class="box" style="flex:1"><h2>〜販売促進〜</h2><div class="cut">知ってもらう作戦／かかる労力・費用・時間</div>
+  <ul><li>CiDAO の提案ページ（登録済み・費用0円）</li>
+  <li>11/14 木下駅前ワークショップで市の担当者・参加者に話す（参加の時間のみ）</li>
+  <li>協会への聞き取り（20〜30分／回・費用0円・個人名義・未送信）</li>
+  <li>CBI の SNS・人材バンク（既存の仕組み）</li>
+  <li>試行の記録（人数・感想）を次の告知に使う（記録用紙1枚＋集計・時間は未確認）</li></ul></div>
+</div>
+<div class="foot">出典：創業塾_4シート_統合A_個人.html（③）、統合A_収益性と市場調査。観光客の支払い意思の調査は見つからなかった。</div>
+</div>
+
+<!-- ④ シーズ -->
+<div class="pg">
+<div class="hd"><h1>④ 私のシーズシート（案A）</h1><div class="who">氏名　祐樹（個人として）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">ヒト・カネ・モノ・時間と情報</div>
+<div class="row" style="flex-direction:column">
+ <div class="row">
+  <div class="box" style="flex:1"><h2>〜ヒト（協力者・サポーター）〜</h2><div class="cut">家族や友人の理解／サポートしてもらう内容／仕入先や提供元</div>
+   <ul><li><b>CBI：</b>CiDAO・A4レポート・3D地図の使用の了承、試行への参加、人材バンクの案内（了承は未確認）</li>
+   <li><b>印西ふるさと案内人協会（会員約20名）：</b>現地の知識・ベテランガイド・見学了承の通り道（聞き取り文は下書き済み・未送信）</li>
+   <li><b>武蔵屋の関係者／寺院（十一面観音）：</b>見学・拝観の了承（未確認。寺院は文化振興課との調整が要る）</li>
+   <li><b>文化振興課／市民活動推進課・公民連携推進室：</b>写真・解説の利用許可、協働事業の事前相談</li>
+   <li><b>仕入先：</b>印刷（コンビニ）。<span class="me">〔家族・友人の理解〕</span></li></ul></div>
+  <div class="box" style="flex:1"><h2>〜カネ（自己資金・借入）〜</h2><div class="cut">必要資金と自己資金の目標額／借入先／返済のイメージ</div>
+   <ul><li><b>必要：</b>試行1回は仮で約300〜6,000円。2回目以降は場所と回数で決まる（未定）</li>
+   <li><b>自己資金：</b>個人として行うので、当面は自己資金で支出。<span class="me">〔目標額〕</span></li>
+   <li><b>借入：</b>予定なし。<span class="me">〔借入の有無・返済のイメージ〕</span></li>
+   <li><b>助成の順序（案）：</b>自主事業の試行（自己資金）→ まちづくりファンド（個人名義の可否は未確認）→ 企画提案型協働事業（次の提案は2027年4〜6月・開始2028年4月）</li>
+   <li>有料にする場合：旅行業の登録／収益事業の扱いを確認</li></ul></div>
+ </div>
+ <div class="row">
+  <div class="box" style="flex:1"><h2>〜モノ（拠点・設備・道具）〜</h2><div class="cut">事業の拠点（自宅や賃貸）／必要な設備や道具</div>
+   <ul><li><b>現場：</b>木下のまち歩き。屋内は武蔵屋（aebe が借りて営業中）</li>
+   <li><b>拠点の構想（案・貸主・賃料・条件は未確認）：</b>①木下南口の骨董市の通りの店舗を借りる／②木下駅前にぎわい広場にコンテナを置く（併用も可）</li>
+   <li><b>道具：</b>A4学習レポート50件（CBI の資産）／2D・3D地図（3Dは混雑時に粗くなる → 試行は2Dと紙が主）／スマホの翻訳アプリ／ガイド支援アプリ（別セッションが開発中）</li>
+   <li>追加の設備：試行では無い見込み</li></ul></div>
+  <div class="box" style="flex:1"><h2>〜時間と情報（調査と準備）〜</h2><div class="cut">短・中・長期／1日や1週間で費やす時間／調べる内容と濃淡／スキルアップ</div>
+   <ul><li><b>短期（〜2月）：</b>11/14 木下WS／創業塾 11/15・12/6・12/13／個別相談 12/2（旅行業・収益事業・個人名義の申請可否）／協会へ聞き取り／試行1回目（12〜1月）</li>
+   <li><b>中期（2〜6月）：</b>試行3〜5回（場所を変える）／ファンドの手引き確認／協働事業の事前相談</li>
+   <li><b>長期（2027年度〜）：</b>助成金に応募／協働事業の提案（2027年4〜6月）／開始 2028年4月</li>
+   <li><b>時間：</b><span class="me">〔1日・1週間に使える時間／ガイドの進め方の勉強時間〕</span></li>
+   <li><b>調べる内容（濃い順）：</b>①見学の了承（武蔵屋・寺院・文化振興課）②木下の距離と所要時間 ③有料ガイドの許認可・税 ④協会の実態 ⑤観光客の支払い意思</li></ul></div>
+ </div>
+</div>
+<div class="foot">出典：創業塾_4シート_統合A_個人.html（④）。拠点の貸主・賃料・使用条件、助成金の個人名義での応募可否は未確認。</div>
+</div>
+</div></details>
+<h2 class="sec screen-only" id="sB">案B　N's factory の延長（デジタルファブリックの工房・体験場）：4シート</h2><details class="plan" open><summary>案B　N's factory の延長（デジタルファブリックの工房・体験場） の4シートを開く／閉じる</summary><div class="sheets"><!-- ① ビジョン -->
+<div class="pg">
+<div class="hd"><h1>① 私のビジョンシート（案B）</h1><div class="who">氏名　祐樹（N's factory）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">黄色の〔 〕＝本人しか書けない欄　／　（仮）＝試験開催で確かめる項目　／　案Bの題：<b>デジタルファブリックの工房・体験場</b>（自分で作って贈る体験）</div>
+<div class="row">
+ <div class="box" style="flex:1"><h2>〜現在の状態〜</h2><div class="cut">○今までの経験や経歴／興味や価値観／スキルや資格</div>
+ <ul>
+ <li>元海上自衛官（防衛大学校 航空宇宙工学科 → 海上自衛隊・勤続25年、2024年4月退職）</li>
+ <li>2025年2月に開業。屋号 N's factory で、レザークラフトの製作・販売（システム手帳が主力）。青色申告</li>
+ <li>カルチャースクール講師（教える経験）</li>
+ <li>道具：レーザー加工機（FLUX Beambox II）、自作の革CAD「N's CAD」、刻印の設計ノウハウ</li>
+  <li><span class="me">〔価値観：なぜ「贈る」「手で作る」が大事か ／ 自衛官を経て、なぜ今ものづくりか〕</span></li>
+ </ul></div>
+ <div class="box" style="flex:1"><h2>〜これから何をする〜</h2><div class="cut">○今できていることの伸びしろ／将来に必要な知識・スキル・経験／経営資源（人・モノ・カネ・時間・情報）の確保</div>
+ <ul>
+ <li><b>伸びしろ：</b>今あるレーザー＋N's CADで「設計から一緒に作る」体験は、すぐ小さく試せる → <b>1月以降に試験開催1〜2回</b></li>
+ <li><b>足りない知識：</b>安全・排気（アクリルは煙とにおいが出る）／場所の条件（排気・電源・消防・建築）／保険・許認可（未確認）／集客と単価</li>
+ <li><b>資源の確保：</b></li>
+ <li style="list-style:none;margin-left:-1mm">人＝商工会（経営指導）・創業塾・〔家族・協力者〕<br>モノ＝既存レーザー・ハンドプレス（数万円）<br>カネ＝<b>融資を先に相談</b><br>時間と情報＝④参照</li>
+ </ul></div>
+ <div class="box" style="flex:1"><h2>〜目指したい姿〜</h2><div class="cut">○どんな仕事をしたいのか？／どんな状態が楽しい・満足か？／生き甲斐を感じるために（貢献・仲間・自画像）</div>
+ <ul>
+ <li><b>仕事：</b>地元の大人が、贈りたい相手の話をしながらデザインを設計し、自分の手で作ってプレゼントする場を持つ</li>
+ <li><b>貢献：</b>レーザー・CAD・プレス・将来はCNCなど高額な設備を、起業したい人も試せる場にする（<b>起業の選択肢を広げ、地域の経済を活性化</b>）</li>
+ <li><b>道のり（案）：</b>試験開催 → 定例化 → 金属対応レーザー導入 → CNC（木材・3Dエンボス）→ 場所を広げる</li>
+ <li><span class="me">〔自画像：何がうれしいか／誰と・どんな毎日か〕</span></li>
+ </ul></div>
+</div>
+<div class="foot">出典：デジタルファブリック_工房・体験場_たたき台_20261114.md §1・§2-b・§6／統合A（個人）の略歴の記載に揃えた。</div>
+</div>
+
+<!-- ② 創業計画シート -->
+<div class="pg">
+<div class="hd"><h1>② 創業計画シート（案B）</h1><div class="who">氏名　祐樹（N's factory）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">①③④を1枚にまとめたもの。黄色の〔 〕＝本人が書く欄／（仮）＝試験開催で確かめる。</div>
+<div class="row">
+ <div class="col" style="flex:1">
+  <div class="box"><h2 style="text-align:left">○創業への動機</h2>
+   <div class="lab">創業の動機【創業を思い立った理由】</div>
+   <ul><li>刻印機・CAD・プレスなど、業務用の道具は一般の人が買えない。<b>設計の相談つきで使える場</b>が身近に少ない（仮説）</li>
+   <li>贈り物を「相手のための物語」として、自分の手で作って渡す体験を地元に作りたい</li>
+   <li><span class="me">〔本人の思い〕</span></li></ul>
+   <div class="lab sub">経営者の略歴等【私ができる理由】</div>
+   <ul><li>元海上自衛官（防衛大学校 航空宇宙工学科 → 勤続25年・2024年4月退職）</li>
+   <li>2025年2月開業。レザークラフトの製作・販売、カルチャースクール講師。自作CAD・レーザー・刻印の設計ができる</li></ul></div>
+  <div class="box"><h2 style="text-align:left">○事業への資源</h2>
+   <div class="lab">資金や設備、等【資金や設備や活動場所】</div>
+   <ul><li>設備：レーザー加工機（既存）・ハンドプレス・PC。将来：金属対応レーザー（昨年の見積で約83万円）・CNC</li>
+   <li>資金：試験開催は自己資金で小さく。設備増は<b>融資を先に</b>相談（補助金は後払い）</li>
+   <li>場所：工房の設置、またはにぎわい広場のコンテナ（今の作業場は使えない）</li></ul>
+   <div class="lab sub">協力者やサポーター</div>
+   <ul><li>商工会（マル経の経営指導）／創業塾／市の窓口（広場＝資産経営課 公民連携推進室）／<span class="me">〔家族・友人〕</span></li></ul>
+   <div class="lab sub">時間と情報【創業に必要な作戦】</div>
+   <ul><li>創業塾 11/15・12/6・12/13、個別相談 12/2、12/14 受講証明書の申請</li>
+   <li>12月：見積の更新・場所の調査・商工会へ連絡　／　<b>1月以降：試験開催</b></li></ul></div>
+ </div>
+ <div class="box" style="flex:1.15"><h2 style="text-align:left">○ビジネスモデル（マーケティング戦略）</h2>
+  <div class="lab">① ターゲット【誰に】</div>
+  <ul><li>印西市周辺の<b>地元の大人</b>。贈りたい相手がいる人</li></ul>
+  <div class="lab sub">② 商品の特徴【何を　特徴や差別化】</div>
+  <ul><li>贈りたい相手の話をしながら、デザインを<b>その場で一緒に設計</b>し、自分の手で作ってプレゼント。レーザー加工もその場で行い<b>当日完成</b></li>
+  <li>差別化：定型の名入れ体験と違い、設計から参加者が関わる／業務用の設計・加工機を設計相談つきで体験できる</li></ul>
+  <div class="lab sub">③ 価格や価格帯【どうやって　①いくらで】</div>
+  <ul><li>5,000〜8,000円帯（仮）。メニュー別は2,500〜6,500円（仮）。試験開催の反応で決める</li></ul>
+  <div class="lab sub">④ 販売方法・販売ルート【どうやって　②立地やルート】</div>
+  <ul><li>予約制・1〜2組ずつ（90〜120分）。場所は工房またはにぎわい広場のコンテナ。<span class="me">〔申込の方法〕</span></li></ul>
+  <div class="lab sub">⑤ 販売促進策【どうやって　③アピールの仕方】</div>
+  <ul><li>SNS・自社サイト・作品の写真、講師先の受講生、地域のイベント（案）。終了後に簡単なアンケートで改善</li></ul></div>
+</div>
+<div class="foot">出典：たたき台 §2-b・§2-c・§3・§5・§6、融資の検討メモ。金額・単価・回数はすべて仮。</div>
+</div>
+
+<!-- ③ ビジネスモデル -->
+<div class="pg">
+<div class="hd"><h1>③ 私のビジネスモデル（案B）</h1><div class="who">氏名　祐樹（N's factory）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">誰に → 何を → どうやって（いくらで・どこで）→ 販売促進</div>
+<div class="row">
+ <div class="box" style="flex:1"><h2>〜誰に（主なターゲット）〜</h2><div class="cut">属性（年齢・性別・ライフスタイル）／ターゲットの「不」</div>
+  <ul><li><b>属性：</b>印西市周辺の大人。贈りたい相手（家族・友人・お世話になった人）がいて、手作りの気持ちを大事にしたい人</li>
+  <li><b>「不」：</b></li>
+  <li style="list-style:none;margin-left:-1mm">・既製品では「相手のため」の物にならない<br>・刻印機・CAD・プレスは高額で買えない<br>・入門用のレーザーを買っても、設計と使い方が分からない<br>（いずれも仮説。試験開催で確かめる）</li></ul></div>
+ <div class="box" style="flex:1"><h2>〜何を（商品やサービス）〜</h2><div class="cut">提供する価値と、買う理由（「不」の解消）／競合との差別化</div>
+  <ul><li><b>価値：</b>相手の話を聞き、設計し、自分の手で作って贈る体験。<b>その日のうちに完成</b>して持ち帰れる</li>
+  <li><b>メニュー（仮）：</b>革小物のレーザー刻印／金属タグの刻印／自分でデザイン→刻印／アクリル刻印（自作スタンプ・名入れ）。将来：木材・3Dエンボス</li>
+  <li><b>差別化：</b>設計から一緒に作る点。業務用の道具を使える点。教える経験</li></ul></div>
+ <div class="col" style="flex:1.1">
+  <div class="box"><h2>〜どうやって〜　いくらで（価格）</h2><div class="cut">価値とのバランス／価格戦略</div>
+   <ul><li>5,000〜8,000円帯（仮）。根拠：東京の手縫い小物体験が2〜3時間で6,000〜7,000円</li>
+   <li>例：4名×3,000円＝12,000円／回。月4回で月約4.8万円（仮・材料費と場所代は別）</li></ul></div>
+  <div class="box"><h2>どこで（立地や流通経路）</h2><div class="cut">どんな場所／直販か代理店か</div>
+   <ul><li>直販・予約制。工房の設置、またはにぎわい広場のコンテナ。静かに話せ、机2〜3台が置ける広さ</li>
+   <li>試験開催は場所を借りて小さく（広場の試行運用を市に確認）</li></ul></div>
+ </div>
+ <div class="box" style="flex:1"><h2>〜販売促進〜</h2><div class="cut">知ってもらう作戦／かかる労力・費用・時間</div>
+  <ul><li>SNSと自社サイトで、体験の様子と完成品（本人の同意の範囲）を発信（案）</li>
+  <li>講師先・創業塾・地域のつながりでの口コミ</li>
+  <li>終了後に3問のアンケート（誰に贈ったか・価格は妥当か・また来たいか）</li>
+  <li><b>労力・費用：</b>投稿と問い合わせ対応が中心。費用は小さく（<span class="me">〔月いくらまで・週何時間〕</span>）</li></ul></div>
+</div>
+<div class="foot">出典：たたき台 §2-b・§2-c・§3。需要は仮説。試験開催で、申込数・年代と目的・単価への反応・材料費を記録する。</div>
+</div>
+
+<!-- ④ シーズ -->
+<div class="pg">
+<div class="hd"><h1>④ 私のシーズシート（案B）</h1><div class="who">氏名　祐樹（N's factory）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">ヒト・カネ・モノ・時間と情報</div>
+<div class="row" style="flex-direction:column">
+ <div class="row">
+  <div class="box" style="flex:1"><h2>〜ヒト（協力者・サポーター）〜</h2><div class="cut">家族や友人の理解／サポートしてもらう内容／仕入先や提供元</div>
+   <ul><li><span class="me">〔家族・友人の理解〕</span></li>
+   <li>商工会：マル経融資の経営指導（原則6か月以上）。創業塾・個別相談で事業計画を磨く</li>
+   <li>市：広場の使い方は資産経営課 公民連携推進室・公園緑地課に相談</li>
+   <li>仕入先：革・金属タグ・アクリル材の仕入先<span class="me">〔既存の取引先を記入〕</span></li></ul></div>
+  <div class="box" style="flex:1"><h2>〜カネ（自己資金・借入）〜</h2><div class="cut">必要資金と自己資金の目標額／借入先／返済のイメージ</div>
+   <ul><li><b>必要：</b>試験開催＝数万円（ハンドプレス・材料）／金属対応レーザー＝約83万円（昨年の見積・税込）／将来：CNC・場所の費用</li>
+   <li><b>自己資金：</b><span class="me">〔目標額〕</span></li>
+   <li><b>借入：</b>融資を先に相談（日本政策金融公庫・マル経）。補助金は後払いなので、併用か後から</li>
+</ul></div>
+ </div>
+ <div class="row">
+  <div class="box" style="flex:1"><h2>〜モノ（拠点・設備・道具）〜</h2><div class="cut">事業の拠点（自宅や賃貸）／必要な設備や道具</div>
+   <ul><li><b>拠点：</b>工房の設置、またはにぎわい広場のコンテナ（今の作業場は使えない。貸室は期待できない）</li>
+   <li><b>今ある物：</b>レーザー加工機（FLUX Beambox II）・N's CAD・PC</li>
+   <li><b>これから：</b>ハンドプレス、集煙機（アクリルは煙とにおいが出る）→ 金属対応レーザー → CNC</li></ul></div>
+  <div class="box" style="flex:1"><h2>〜時間と情報（調査と準備）〜</h2><div class="cut">短・中・長期／1日や1週間で費やす時間／調べる内容と濃淡／スキルアップ</div>
+   <ul><li><b>短期（〜12月）：</b>創業塾・個別相談 12/2・見積の更新・場所の調査・商工会へ連絡</li>
+   <li><b>中期（1月〜）：</b>試験開催1〜2回 → 数字を事業計画へ（持続化補助金 第21回の確認は 1/15）</li>
+   <li><b>長期：</b>融資 → 金属対応レーザー → CNC → 場所を広げる</li>
+   <li><b>時間：</b><span class="me">〔1日・1週間に使える時間〕</span></li>
+   <li><b>調べる内容（濃い順）：</b>①場所と安全（排気・電源・消防・建築）②融資・補助金 ③集客と単価 ④許認可・保険（未確認）</li></ul></div>
+ </div>
+</div>
+<div class="foot">出典：たたき台 §4-c・§5・§6・§6-b、融資の検討メモ §8・§9。法令・許認可の扱いは未確認で、個別相談で聞く。</div>
+</div>
+
+</div></details>
+<h2 class="sec screen-only" id="sC">案C　COCoLa 起源の常設マルシェを CBI が受けたら：4シート</h2><details class="plan" open><summary>案C　COCoLa 起源の常設マルシェを CBI が受けたら の4シートを開く／閉じる</summary><div class="sheets"><!-- ① ビジョン -->
+<div class="pg">
+<div class="hd"><h1>① 私のビジョンシート（案C）</h1><div class="who">氏名　祐樹（CBI の一員として検討）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">黄色の〔 〕＝本人しか書けない欄　／　（案）（仮）＝これからの予定・想定　／　案Cの題：<b>駅前常設マルシェ（木下駅前にぎわい広場）を CBI が受けた場合</b></div>
+<div class="row">
+ <div class="box" style="flex:1"><h2>〜現在の状態〜</h2><div class="cut">○今までの経験や経歴／興味や価値観／スキルや資格</div>
+ <ul>
+ <li>もとは COCoLa 有志が、2025年3月の市長タウンミーティングで提案した「駅前常設マルシェ」（コンテナ7棟・参画者組合・使用料の分担）</li>
+ <li>CBI（印西市市民活動団体・任意団体）は、CiDAO・A4レポート50件・精霊50体・3D地図を持つ。事業主は CBI の会計担当（代表ではない）</li>
+ <li>11/3 に武蔵屋でマルシェを実施した実績（会場は1日5,000円の前例）</li>
+ <li>11/14 木下駅前にぎわい広場ワークショップに参加。N's factory の運営、講師の経験</li>
+ <li><span class="me">〔価値観：なぜ「常設の場」か／なぜ団体で受けるか〕</span></li>
+ </ul></div>
+ <div class="box" style="flex:1"><h2>〜これから何をする〜</h2><div class="cut">○今できていることの伸びしろ／将来に必要な知識・スキル・経験／経営資源の確保</div>
+ <ul>
+ <li><b>伸びしろ：</b>提案の「型」（7棟・参画者組合・使用料）が既にある → <b>設置なしの模擬</b>（12〜2月、作り手3〜5組の日貸し・週貸し）で、稼働・単価・手間を測る（案）</li>
+ <li><b>足りない知識：</b>公募の有無・枠・使用料の水準／転貸（又貸し）の可否／設置費を誰が持つか／法人格が要るか／飲食の許可・排気・消防／保険</li>
+ <li><b>資源の確保：</b>人＝CBI の了承と、利益相反の手続き（事業主は会計担当）／カネ＝設置費は<b>市の負担・所有が前提</b>／モノ＝当面なし（設置なしの試行）／時間と情報＝④参照</li>
+ </ul></div>
+ <div class="box" style="flex:1"><h2>〜目指したい姿〜</h2><div class="cut">○どんな仕事をしたいのか？／どんな状態が楽しい・満足か？／生き甲斐を感じるために（貢献・仲間・自画像）</div>
+ <ul>
+ <li>駅前に、文化財の案内・作り手の物販・学び・創業の試し出店が集まる常設の場がある</li>
+ <li>案内・PR・防災・イベント支援の拠点として、市の課の目的にも役立つ</li>
+ <li>作り手が試し出店から創業へ進める（創業塾の卒業生の受け皿）</li>
+ <li><b>道のり（案）：</b>設置なしの模擬 → 入口に3棟（案内・PR／物販・棚貸し／備品庫）→ 需要に応じて最大7棟</li>
+ <li><span class="me">〔自画像：何がうれしいか／誰と・どんな毎日か〕</span></li>
+ </ul></div>
+</div>
+<div class="foot">出典：案1の具体化（駅前常設マルシェ型のコンテナ運営）§1〜§3・§10・§22、案B 常設マルシェ たたき台 §1。市の方針・金額は未確認または仮置き。</div>
+</div>
+
+<!-- ② 創業計画シート -->
+<div class="pg">
+<div class="hd"><h1>② 創業計画シート（案C）</h1><div class="who">氏名　祐樹（CBI の一員として検討）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">①③④を1枚にまとめたもの。黄色の〔 〕＝本人が書く欄／「未確認」は調べておらず断定しない項目。</div>
+<div class="row">
+ <div class="col" style="flex:1">
+  <div class="box"><h2 style="text-align:left">○創業への動機</h2>
+   <div class="lab">創業の動機【創業を思い立った理由】</div>
+   <ul><li>元は COCoLa 有志の提案。<b>CBI で受けたらどうなるか</b>の検討</li>
+   <li>旧「観光情報館」が2026-03-31 に閉館し、案内の窓口に空白がある</li>
+   <li>市は公民連携で、木下駅前にぎわい広場の活用を進める方針（R8 施政方針・公約ロードマップ No.114）</li>
+   <li><span class="me">〔本人の思い〕</span></li></ul>
+   <div class="lab sub">経営者の略歴等【私ができる理由】</div>
+   <ul><li>CBI の会計担当（代表ではない）。N's factory の運営（製作・販売・経理）、講師</li>
+   <li>CiDAO・A4レポート・精霊・3D地図は CBI の資産。個人の事業として使う場合は CBI の了承と手続きが先</li></ul></div>
+  <div class="box"><h2 style="text-align:left">○事業への資源</h2>
+   <div class="lab">資金や設備、等【資金や設備や活動場所】</div>
+   <ul><li>設置費（入口3棟で概算約420〜1,070万円・仮）は、<b>市の負担・所有が前提</b>。事業者が負うと回収できない</li>
+   <li>当方が負うのは、運営の人手・保険・予約の仕組み・清掃・広告営業</li>
+   <li>場所：木下駅前にぎわい広場（広場内行為許可で、設置なしの試行から）</li></ul>
+   <div class="lab sub">協力者やサポーター</div>
+   <ul><li>市（資産経営課 公民連携推進室・経済振興課・文化振興課・防災課）／広場の活用事業の受託候補者（JTB千葉西支店）／商店街／CBI／<span class="me">〔家族・友人〕</span>（いずれも了承は未確認）</li></ul>
+   <div class="lab sub">時間と情報【創業に必要な作戦】</div>
+   <ul><li>11/14 木下WS → 12/2 個別相談 → 12〜2月 模擬 → 2〜6月 運営パートナーの1枚提案</li></ul></div>
+ </div>
+ <div class="box" style="flex:1.1"><h2 style="text-align:left">○ビジネスモデル（マーケティング戦略）</h2>
+  <div class="lab">① ターゲット【誰に】</div>
+  <ul><li>出店者（作り手・団体・企業・キッチンカー・創業塾の卒業生）／来訪者（市民・観光客）／市の課（案内・PR・防災の目的）</li></ul>
+  <div class="lab sub">② 商品の特徴【何を　特徴や差別化】</div>
+  <ul><li>市・受託者が設置した箱の<b>運営（貸出・管理・広告）を受け持つ</b>。自分で建てて貸す形は避ける</li>
+  <li>飲食は自営せず、許可を持つ事業者に月・半年で貸す（または、キッチンカーを乗り入れ）</li></ul>
+  <div class="lab sub">③ 価格や価格帯【どうやって　①いくらで】</div>
+  <ul><li>日 3,000〜10,000円／週 15,000〜50,000円／月 30,000〜80,000円／半年は月額の1割引（仮置き・相場は未取得）</li></ul>
+  <div class="lab sub">④ 販売方法・販売ルート【どうやって　②立地やルート】</div>
+  <ul><li>市・受託者の公募で、運営パートナーまたは参画者組合の事務局に入る（形は未確認）。まずは広場内行為許可の模擬</li></ul>
+  <div class="lab sub">⑤ 販売促進策【どうやって　③アピールの仕方】</div>
+  <ul><li>市の広報・CiDAO・CBI の SNS。広告・協賛（外壁・館内モニター・スポンサー）も収入に</li></ul></div>
+</div>
+<div class="foot">出典：案1の具体化 §2〜§6・§9・§10・§17・§22。法人格の要否、使用料、転貸の可否は市に確認する。</div>
+</div>
+
+<!-- ③ ビジネスモデル -->
+<div class="pg">
+<div class="hd"><h1>③ 私のビジネスモデル（案C）</h1><div class="who">氏名　祐樹（CBI の一員として検討）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">誰に → 何を → どうやって（いくらで・どこで）→ 販売促進</div>
+<div class="row">
+ <div class="box" style="flex:1"><h2>〜誰に（主なターゲット）〜</h2><div class="cut">属性／ターゲットの「不」</div>
+  <ul><li><b>① 出店者：</b>作り手・団体・企業・キッチンカー・創業塾の卒業生<br>「不」：試しに出せる常設の場が無い／毎回の場所探し・準備の手間</li>
+  <li><b>② 来訪者：</b>市民・観光客<br>「不」：旧観光情報館の閉館後、案内の窓口が無い</li>
+  <li><b>③ 市の課：</b>経済振興課・文化振興課・防災課など<br>「不」：案内・PR・イベント支援の場と運営の人手が足りない（仮説）</li></ul></div>
+ <div class="box" style="flex:1"><h2>〜何を（商品やサービス）〜</h2><div class="cut">提供する価値と買う理由／競合との差別化</div>
+  <ul><li><b>提供するもの：</b>棟の貸出（日・週・月・半年）／管理・清掃・予約／イベントの運営／広告・協賛の取りまとめ</li>
+  <li><b>入口に3棟（案）：</b>① 案内・PR（ツアー拠点）② 物販・委託販売・棚貸し ③ 備品庫（机・椅子・テントの保管）</li>
+  <li><b>差別化：</b>設置は市、運営は当方。飲食は自営せず許可持ちに貸す。<b>設置なしの試行から、段階式</b>で進めて各段階で止められる</li></ul></div>
+ <div class="col" style="flex:1.1">
+  <div class="box"><h2>〜どうやって〜　いくらで（価格）</h2><div class="cut">価値とのバランス／価格戦略</div>
+   <ul><li>貸出の単価は仮置き：日 3,000〜10,000円／週 15,000〜50,000円／月 30,000〜80,000円／半年は月額の1割引</li>
+   <li>例：日1・週1・月1・半年1＋自営1の5棟で月約22.7万円（総額・固定費を引く前）</li>
+   <li>最大の注意：市が決める使用料が高いと、貸出の差額は残らない。<b>使用料と転貸の可否を先に聞く</b></li></ul></div>
+  <div class="box"><h2>どこで（立地や流通経路）</h2><div class="cut">どんな場所／直販か代理店か</div>
+   <ul><li>木下駅前にぎわい広場（駅の南約80〜100m・約2.5ha）。入口の角に3棟（約90㎡・広場の約0.4%）</li>
+   <li>元提案は千葉NT中央駅 北口歩道（約8m×60m）。洪水浸水想定区域内で、避難場所は未指定</li></ul></div>
+ </div>
+ <div class="box" style="flex:1"><h2>〜販売促進〜</h2><div class="cut">知ってもらう作戦／かかる労力・費用・時間</div>
+  <ul><li>市の広報・CiDAO・CBI の SNS・人材バンク</li>
+  <li>広場のイベント日に、出店者の募集と告知</li>
+  <li>広告・協賛：外壁・館内モニター・スポンサー・アプリ内の協賛枠（屋外広告物の許可は未確認）</li>
+  <li><b>労力・費用：</b>出店者募集・契約・清掃・巡回・予約管理・広告営業の人手。<span class="me">〔週何時間・誰が担うか〕</span></li></ul></div>
+</div>
+<div class="foot">出典：案1の具体化 §3〜§6・§22。金額は仮置きで、貸出の相場・固定費は未取得。</div>
+</div>
+
+<!-- ④ シーズ -->
+<div class="pg">
+<div class="hd"><h1>④ 私のシーズシート（案C）</h1><div class="who">氏名　祐樹（CBI の一員として検討）　作成日　2026年11月15日（案・下書き）</div></div>
+<div class="tag">ヒト・カネ・モノ・時間と情報</div>
+<div class="row" style="flex-direction:column">
+ <div class="row">
+  <div class="box" style="flex:1"><h2>〜ヒト（協力者・サポーター）〜</h2><div class="cut">家族や友人の理解／サポートしてもらう内容／仕入先や提供元</div>
+   <ul><li><b>CBI：</b>メンバー・代表の了承。事業主は会計担当で、CBI への発注・使用許諾は<b>利益相反の手続き</b>が先</li>
+   <li><b>市：</b>資産経営課 公民連携推進室（窓口）・経済振興課・文化振興課・防災課・生涯学習課</li>
+   <li><b>受託者：</b>広場の活用事業は 2026-06-30 に JTB千葉西支店が受託候補者に特定済み。協力事業者として入れるか未確認</li>
+   <li><b>出店者・商店街：</b>周辺商店街（骨董市の通り）。仕込み拠点は既存の許可施設（印旛公民館の調理実習室など）</li>
+   <li><span class="me">〔家族・友人の理解〕</span></li></ul></div>
+  <div class="box" style="flex:1"><h2>〜カネ（自己資金・借入）〜</h2><div class="cut">必要資金と自己資金の目標額／借入先／返済のイメージ</div>
+   <ul><li><b>必要：</b>入口3棟で概算約420〜1,070万円（仮・低）。<b>設置費は市の負担・所有が前提</b>（撤退後は市が転用）</li>
+   <li><b>当方の費用：</b>運営の人手・保険・予約の仕組み・清掃・広告営業</li>
+   <li><b>収入：</b>運営委託費（金額不明）＋貸出の差額＋広告・協賛＋自営棟の売上。貸出は年約80〜100万円とみる（仮）</li>
+   <li><b>法人：</b>公募は法人（のグループ）が対象。運営会社は合同会社が現実的（設立約6〜10万円）。<b>設立は公募の資格を見てから</b></li>
+   <li><span class="me">〔自己資金の目標額・借入の有無〕</span></li></ul></div>
+ </div>
+ <div class="row">
+  <div class="box" style="flex:1"><h2>〜モノ（拠点・設備・道具）〜</h2><div class="cut">事業の拠点（自宅や賃貸）／必要な設備や道具</div>
+   <ul><li><b>拠点：</b>木下駅前にぎわい広場（市の土地）。広場の使用は「広場内行為許可」で、前月1日から先着</li>
+   <li><b>入口3棟（案）：</b>案内・PR／物販・棚貸し／備品庫。内装・什器は出店者持ち、机・椅子は会場に保管</li>
+   <li><b>仮設：</b>テント・ステージはレンタル。飲食棟は置かず、キッチンカーを乗り入れ</li>
+   <li>電気・給排水・トイレは市の整備を前提（未確認）</li></ul></div>
+  <div class="box" style="flex:1"><h2>〜時間と情報（調査と準備）〜</h2><div class="cut">短・中・長期／1日や1週間で費やす時間／調べる内容と濃淡／スキルアップ</div>
+   <ul><li><b>短期（〜2月）：</b>11/14 木下WS／12/2 個別相談／12〜2月 設置なしの模擬（作り手3〜5組の日貸し・週貸し）</li>
+   <li><b>中期（2〜6月）：</b>受託者・参画者組合に「運営パートナー」の1枚提案。文化振興課の意向確認</li>
+   <li><b>長期：</b>契約前に、法人化の判断・保険・CBI との使用許諾。市の試行運用 R8.8〜R9.3、公約ロードマップでは R9 に公募・暫定利用の開始</li>
+   <li><b>時間：</b><span class="me">〔1日・1週間に使える時間〕</span></li>
+   <li><b>調べる内容（濃い順）：</b>①公募の有無・枠・使用料・転貸 ②設置費の持ち方 ③飲食の許可・排気・消防 ④許認可・保険 ⑤法人格</li></ul></div>
+ </div>
+</div>
+<div class="foot">出典：案1の具体化 §6・§9・§10・§17・§22・§26。市の公募の形・使用料・転貸の可否は未確認。</div>
+</div>
+</div></details>
+<p class="fine" style="margin-top:22px">出典：統合A（個人）4シート（11-13）、デジタルファブリック たたき台・案B 常設マルシェ たたき台、案1の具体化（駅前常設マルシェ型のコンテナ運営）§1〜§32。市の方針・使用料・転貸の可否・法人格の要否は未確認。</p>
+</div></body></html>
