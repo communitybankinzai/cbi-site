@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-11-15",
+          "title": "夜景3Dの訂正の告知：画像と本文の作成＋3媒体への投稿と読み戻し 0.3時間",
+          "category": "広報",
+          "outputs": [
+            "events/irumirai/告知_登録なしで試せる_20261115/（cover.jpg・本文_Threads.txt・本文_Instagram_Facebook.txt・README.md）",
+            "site/assets/sns/2026-11-15_night-trial/cover.jpg（ee0cfd8）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主がスマホ実機で登録なしの体験が動くことを確認→本文と画像を見せて承認→ 9:39 に3媒体とも成功（キュー q1794702327066／q1794702334484／q1794702342256）。Threads は公開ページで本文を読み戻した（post/Dfvg3tUDoPO）。Instagram・Facebook はキューの結果のみ。同じセッションの先の記録（0.5時間）と合わせて 0.8時間。session: 3c593b0d-9fbc-4731-bfae-dd2a748152c1 / output: 76,030 / cost: $38.59"
+        },
+        {
+          "date": "2026-11-15",
           "title": "イルミライ夜景3Dの導線見直し：プロフィールのリンク付け替えの確認＋登録なしで試せる枠の実装＋タイル消費の実測 0.5時間",
           "category": "実装",
           "outputs": [
@@ -10010,7 +10023,7 @@
           "title": "🌃 登録なしで試せる枠：1週間の入場数・新規登録数を確かめ、枠の数（1日10回）を見直す",
           "category": "分析",
           "priority": "高",
-          "note": "入場数は app_settings の metaverse_admissions_<太平洋日付> の guests の件数（launches が全員）。登録は members.signup_source（metaverse:reception:entry／trial_full）。市民アカデミーで使う数字なので、11/15 の試験（公開後の確認で入れた分）は除いて数える。3Dを開いた人は metaverse_presence_daily。"
+          "note": "入場数は app_settings の metaverse_admissions_<太平洋日付> の guests の件数（launches が全員）。登録は members.signup_source（metaverse:reception:entry／trial_full）。11/15 9:39 の訂正の告知（Threads post/Dfvg3tUDoPO・Instagram・Facebook）の閲覧数も合わせて見る。市民アカデミーで使う数字なので、11/15 の試験（公開後の確認で入れた分）は除いて数える。3Dを開いた人は metaverse_presence_daily。"
         },
         {
           "due": "2026-11-18",
@@ -10025,15 +10038,6 @@
           "category": "調査",
           "priority": "低",
           "note": "11/15 は短縮コース（2,827件・約100MB）だけ測れた。10か所は測定中に Chrome が2回落ちた（原因未特定）。道具はセッションの scratchpad にあったので、測るときは作り直す（Chrome を画面つきで開き CDP の Network で tile.googleapis.com を数える。組み込みブラウザは画面が裏だと描画が止まり測れない）。"
-        },
-        {
-          "due": "未定",
-          "title": "📣 点灯式の告知の訂正（リンクを直した・登録なしで試せる）を SNS に出すか決める",
-          "category": "広報",
-          "priority": "中",
-          "status": "保留",
-          "blockedBy": "事業主が、出すか・いつ出すか（すぐ／実機確認のあと）を決める。問い合わせが実際に来ているかの確認も要る（来ていなければ「問い合わせが多く」とは書かない）",
-          "note": "11/14 の投稿は閲覧330回・3Dを開いた人0。11/15 にリンクを貼り替え、登録なしで試せる枠を公開した。"
         },
         {
           "due": "2026-11-21",

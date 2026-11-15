@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-11-15",
+      "type": "content",
+      "target": "SNS素材（assets/sns/2026-11-15_night-trial）",
+      "title": "夜景3Dを登録なしで試せることを知らせる告知の画像を追加",
+      "detail": "見出し「登録なしで飛べます」の画像（cover.jpg 1080x1350）を置いた。11/14 の投稿で案内したプロフィールのリンクが3Dにつながっていなかったことの訂正と、登録なしで1日1回試せるようになったことを、Threads・Instagram・Facebook に 11/15 9:39 に投稿した。",
+      "author": "Claude (A1 Core)"
+    },
+    {
+      "date": "2026-11-15",
       "type": "feature",
       "target": "3Dワールド（metaverse/night.js・admission.js）",
       "title": "夜景の3Dを、登録なしで1日1回試せるようになった",
