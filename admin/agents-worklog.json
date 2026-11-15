@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-16",
+          "title": "だがしや あめちゃんの自動読み取りを再開（取り込みは下書きのまま公開しない） 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "cidao DB: sns_monitor_accounts（dagashiya.amechan を enabled=true・note に理由）",
+            "cidao/proposals/2026-11-09_居場所カレンダー掲載許可の依頼_送付先.md（5番に追記）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主指示「自動読み取りして非公開」。11/15 に止めた読み取りを戻した。取り込みは下書きで入る（src/lib/instagram-events/sync.ts の status draft を確認）。面談でOKが出るまで、あめちゃんの下書きは承認しない。読み戻しで enabled=true、あめちゃんの催しは下書き5件・公開0件。session: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 276,011 / cost: $118.18（セッション全体。うち本件は約0.1時間）"
+        },
+        {
+          "date": "2026-11-16",
           "title": "だがしや あめちゃんの団体ページ3件を非公開にし、本番で確認 0.1時間",
           "category": "保守",
           "outputs": [
