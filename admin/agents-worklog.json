@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-16",
+          "title": "夜景3Dの告知の反応の再確認＋過去の投稿との比較＋事業主決定の記録 0.2時間",
+          "category": "分析",
+          "outputs": [
+            "events/irumirai/2026-11-15_点灯式の告知結果と導線の見直し.md（4.12節）",
+            "site/admin/agents-worklog.json（予定2件の見直し）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "動画の投稿（11/15 21:54）のあとの入場は1回だけ・11/16 の受付は0。事業主の指摘（内容に魅力がない・夜景の灯りは本物でない）を受け、直近30日の閲覧（3D 20人／防災MAP 516人／イベント詳細 354人）と9〜10月の投稿の反応を比べた。事業主決定A：SNSで3Dへ呼ぶ告知は終了・夜景の新しい開発は停止・公開は残し対面の催し専用。同じセッションの先の記録（1.3時間）と合わせて 1.5時間。session: 3c593b0d-9fbc-4731-bfae-dd2a748152c1 / output: 153,163 / cost: $93.87"
+        },
+        {
+          "date": "2026-11-16",
           "title": "Serend Project の登録者へ、公開が遅れたおわびと SNS 紹介の希望確認を個別に送信 0.1時間",
           "category": "事務",
           "outputs": [
@@ -10223,7 +10235,7 @@
           "title": "🌃 登録なしで試せる枠：1週間の入場数・新規登録数を確かめ、枠の数（1日10回）を見直す",
           "category": "分析",
           "priority": "高",
-          "note": "入場数は app_settings の metaverse_admissions_<太平洋日付> の guests の件数（launches が全員）。登録は members.signup_source（metaverse:reception:entry／trial_full）。11/15 9:39 の訂正の告知（Threads post/Dfvg3tUDoPO・Instagram・Facebook）の閲覧数も合わせて見る。11/15 21:50 の動画「登録なし。押すだけで飛べます」（3媒体）の閲覧数・リンクのクリックも見る。11/15 21:22 の録画の入場1回（登録なし）も試験として除く。市民アカデミーで使う数字なので、11/15 の試験（公開後の確認で入れた分）は除いて数える。3Dを開いた人は metaverse_presence_daily。"
+          "note": "【2026-11-16 事業主決定】3DのSNS発信は終了。この確認は最後の数字の記録としてだけ行い、追加の告知はしない。入場数は app_settings の metaverse_admissions_<太平洋日付> の guests の件数（launches が全員）。登録は members.signup_source（metaverse:reception:entry／trial_full）。11/15 9:39 の訂正の告知（Threads post/Dfvg3tUDoPO・Instagram・Facebook）の閲覧数も合わせて見る。11/15 21:50 の動画「登録なし。押すだけで飛べます」（3媒体）の閲覧数・リンクのクリックも見る。11/15 21:22 の録画の入場1回（登録なし）も試験として除く。市民アカデミーで使う数字なので、11/15 の試験（公開後の確認で入れた分）は除いて数える。3Dを開いた人は metaverse_presence_daily。"
         },
         {
           "due": "2026-11-18",
@@ -10237,6 +10249,8 @@
           "title": "🌃 夜景10か所コースの遊覧1回のタイル消費を測り直す",
           "category": "調査",
           "priority": "低",
+          "status": "保留",
+          "blockedBy": "事業主が夜景3Dの開発の再開を決めたとき（2026-11-16 に新しい開発の停止を決定）",
           "note": "11/15 は短縮コース（2,827件・約100MB）だけ測れた。10か所は測定中に Chrome が2回落ちた（原因未特定）。道具はセッションの scratchpad にあったので、測るときは作り直す（Chrome を画面つきで開き CDP の Network で tile.googleapis.com を数える。組み込みブラウザは画面が裏だと描画が止まり測れない）。"
         },
         {
