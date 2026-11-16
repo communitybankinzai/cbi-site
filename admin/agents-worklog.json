@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-16",
+          "title": "参加者数の入力を任意にし、団体への毎日の自動の依頼を停止 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: vercel.json（/api/cron/attendance-ask を予定から外す）",
+            "cidao: src/app/me/attendance/page.tsx・src/app/events/kodomo/page.tsx・src/app/api/cron/attendance-ask/route.ts"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主の指摘「これは各団体負担ではないですか？」→仕組みのうえでは、催しを登録した人・団体の代表と役員に、催しのたびに入力を頼む通知が届く作りだった（実績は 66件中 依頼3件・受け取った人1人・入力0件）。掲載依頼文の「お手間は増えません」と食い違うため、事業主決定Aで毎日の自動の依頼を止め、入力は任意にした。画面の題は「参加者数の記録（任意）」。検証：全体965件のテスト通過・型検査エラーなし。cidao 66b280a を本番反映。公開ページ /events/kodomo の案内文が変わったこと、origin/main の vercel.json に attendance-ask が無いことを確認。未検証：/me/attendance の表示（ログインが要る）。session: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 391,928 / cost: $169.94（セッション全体。うち本件は約0.1時間）"
+        },
+        {
+          "date": "2026-11-16",
           "title": "定期紹介の不具合で作られたSNS下書き10件を却下 0.1時間",
           "category": "保守",
           "outputs": [
