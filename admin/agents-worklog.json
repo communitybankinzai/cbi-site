@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-18",
+          "title": "提案の成立の判定に light の会員の票も入れる 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao：supabase/migrations/20261118110000_finalize_voting_include_light.sql（本番適用済み）",
+            "cidao/proposals/2026-11-18_承認待ちで止まる機能の洗い出し.md（5章を追記）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主の指示「light の会員が投票できるか確かめて」→「入れる」。castVote と votes の RLS に区分の条件は無く、票の重みは calc_vote_weight で light 0.1 と決めてあり、light の会員は投票できる設計だった。けさの修正は light を数に入れておらず、投票できるのに結果に反映されない食い違いがあった（light は投票できないと思い込んで外した・確認不足）。数える対象を退会していない会員全員に変更。取り消し前提の試験：2名が投票した提案に light の賛成を1票足すと、直す前は定足数不足のまま、直した後は3名・賛成側0.7で成立。light の実際の票はまだ0。session: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 785,100 / cost: $306.32（セッション全体。うち本件は約0.2時間）"
+        },
+        {
+          "date": "2026-11-18",
           "title": "投票中の提案4件を会員へ知らせる通知を1通送信（宛先52名・プッシュ11台） 0.1時間",
           "category": "広報",
           "outputs": [
