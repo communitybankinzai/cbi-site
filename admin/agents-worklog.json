@@ -17,6 +17,21 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-18",
+          "title": "巡回先の催しの自動公開（欠けがないものだけ）の実装・本番反映と、ここのわの12/14の催しの公開 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao d09db3d：supabase/migrations/20261118070000_sns_monitor_accounts_auto_publish.sql",
+            "src/lib/instagram-events/auto-publish.ts（新規）・sync.ts・accounts.ts・hashtag.ts・db-supabase.ts・report-mail.ts",
+            "src/app/api/cron/instagram-accounts-sync/route.ts",
+            "テスト：auto-publish.test.ts（新規）・sync.test.ts・accounts.test.ts",
+            "本番DB：events 9290ca56（クリスマスここのわカフェ）を draft→open"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "事業主の指摘「自動で公開されていない」。原因は不具合でなく、取り込みを必ず下書きで入れる作り。事業主決定A：巡回先の投稿で、題名と会場があり、時刻が仮置きでなく、開催日が183日以内のものは自動で公開。欠けがあるもの・ハッシュタグ検索の投稿・auto_publish=false の巡回先（だがしや あめちゃん）は下書きのまま。自動で公開した催しは手で公開した時と同じ新着の通知を出す。全テスト977件合格・Vercel の反映は READY。ここのわの1件はDBで直接公開したため、会員への新着の通知は出ていない。実際の巡回での動きは未確認（次は 11/19 6:32）。session: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 611,877 / cost: $255.94（セッション全体。うち本件は約0.5時間）"
+        },
+        {
           "date": "2026-11-17",
           "title": "法令点検を11/23の運営会議の議題に：予定4件を結論待ちへ・動画への指摘を動画担当へ申し送り 0.1時間",
           "category": "事務",
@@ -10220,6 +10235,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-19",
+          "title": "🔎 巡回先の催しの自動公開が、朝6:32の巡回で実際に動いたかを確かめる（公開・下書きの内訳と、新着の通知）",
+          "category": "保守",
+          "priority": "高",
+          "note": "cidao d09db3d。event_sync_runs の instagram-account の行で、inserted のラベルに〔公開〕／〔下書き：理由〕の印が付いているか。公開された催しの内容が元の投稿と合っているか。新しい投稿が無い日は確かめられないので、出た日まで続ける。あわせて、止まっている下書き（Baby Story Time の 12/1 など）を公開するかを事業主に聞く。"
+        },
         {
           "due": "2026-11-19",
           "title": "🔒 法令点検①：会員情報に関わる窓口3点を閉じる（会員さがしAIをログイン必須に／災害SNS候補を運営だけに／受付の実名検索を絞る）",
