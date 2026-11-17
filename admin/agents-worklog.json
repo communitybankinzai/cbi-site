@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-18",
+          "title": "市カレンダー・コスモスパレットの自動公開、溜まった下書きの整理と通知、名称でまとめて情報元の内訳を出す表示 1.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao dd1fe62：src/lib/inzai-city/calendar.ts・sync.ts、src/lib/goguynet/sync.ts、src/lib/event-external-notify.ts、api/cron/inzai-city-sync・goguynet-cosmos-sync",
+            "cidao f081c53：src/lib/event-name-groups.ts（新規）、src/app/events/_components/EventsBrowser.tsx、events/page.tsx、events/kodomo/page.tsx",
+            "テスト：event-name-groups.test.ts（新規）・calendar.test.ts・cosmos.test.ts（全992件合格）",
+            "本番DB：市・コスモスの下書き10件を公開（駅前利活用とイルミライは会期つきの1件、運慶の講演会は12/5の1日）",
+            "cidao/backups/2026-11-18_city_cosmos_drafts_before.json（整理前の控え）"
+          ],
+          "hours": 1.2,
+          "partnerApproved": false,
+          "note": "事業主決定A（市とコスモスは自動公開・毎日並ぶものは1件に・ハッシュタグは下書き）と、追加の指示「イベント名称をもとに情報元を分けてブレイクダウンする形に」。①ほぼ毎日（7割以上）開かれる催しは会期つきの1件にまとめる。新規は公開で入り、新着の通知を出す。②表示は、同じ日・同じ名称を1件にまとめ、下に情報元（印西市のカレンダー・広報いんざい・CiDAOへの登録 など）のリンクを出す。データは消さない。③通知は「新しいイベントが6件」1通・宛先42名・プッシュ10台。【失敗と是正】毎日の行を「見送り（cancelled）」にしたところ、この仕組みでは cancelled が「中止」として公開のカレンダーに出る扱いで、数分のあいだ毎日の行が公開側に並んだ。気づいてすぐ下書きに戻した（113行）。status の意味を確かめずに使ったのが原因。毎日の行の下書き（これからの日付で約87行）の扱いは事業主に確認中。運慶の講演会は市のカレンダーが告知期間じゅう毎日載せていたもので、市のページで 12/5 13:30〜16:00 と確かめて直した。session: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 670,182 / cost: $272.12（セッション全体。うち本件は約1.2時間）"
+        },
+        {
+          "date": "2026-11-18",
           "title": "11/23 運営会議の議題4点を整理したHTML資料の作成と資料タブへの掲載 0.2時間",
           "category": "事務",
           "outputs": [
@@ -10260,6 +10275,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-19",
+          "title": "🔎 市カレンダー・コスモスパレットの自動公開が、朝の巡回で実際に動いたかを確かめる（会期つきの1件にまとまるか・新着の通知）",
+          "category": "保守",
+          "priority": "高",
+          "note": "cidao dd1fe62。event_sync_runs の inzai-city-calendar・goguynet-cosmos の行を読む。イルミライは city:0000013351:period の行を手で作ったので、巡回が同じ行を指すか（二重に入らないか）を見る。公開済みの行は巡回が更新しない作りのため、会期が延びたときに反映されない点も確認する。"
+        },
+        {
+          "due": "2026-11-21",
+          "title": "🧩 名称でまとめる表示の取りこぼしと、まとめすぎを実データで点検する",
+          "category": "保守",
+          "priority": "中",
+          "note": "cidao f081c53・src/lib/event-name-groups.ts。公開中の催しを日ごとに並べ、まとまらなかった同じ催し（言い換えた題名）と、別の催しがまとまった例を拾う。期間イベントの帯（開催中の期間イベント）は、まだ名称でまとめていない。"
+        },
         {
           "due": "2026-11-24",
           "title": "📋 11/23 運営会議の結果（決定・保留・担当と期限）を資料の結果版にまとめ、資料タブに載せる",
