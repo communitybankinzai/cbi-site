@@ -1,6 +1,6 @@
 {
   "jpcert": {
-    "checkedAt": "2026-11-17T13:02:13+09:00",
+    "checkedAt": "2026-11-18T01:18:49+09:00",
     "items": [
       {
         "kind": "注意喚起",
@@ -47,10 +47,10 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-17T13:02:13+09:00"
+    "lastSuccessAt": "2026-11-18T01:18:49+09:00"
   },
   "soumu": {
-    "checkedAt": "2026-11-17T13:02:14+09:00",
+    "checkedAt": "2026-11-18T01:18:49+09:00",
     "pageUrl": "https://www.soumu.go.jp/menu_seisaku/ictseisaku/net_anzen/jiko/result.html",
     "excelUrl": "https://www.soumu.go.jp/main_content/001089876.xlsx",
     "reports": [
@@ -72,7 +72,7 @@
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-17T13:02:14+09:00",
+    "lastSuccessAt": "2026-11-18T01:18:49+09:00",
     "incidents": {
       "total": 91,
       "items": [
@@ -186,8 +186,13 @@
     "incidentsError": ""
   },
   "docomo": {
-    "checkedAt": "2026-11-17T13:02:15+09:00",
+    "checkedAt": "2026-11-18T01:18:51+09:00",
     "items": [
+      {
+        "title": "【お詫び/復旧】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月16日午後3時58分時点）",
+        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261116_07_m.html",
+        "date": "2026-11-16T00:00:00+09:00"
+      },
       {
         "title": "【第四報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月16日午後1時00分時点）",
         "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261116_03_m.html",
@@ -212,19 +217,14 @@
         "title": "【お詫び/復旧】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月11日午後8時45分時点）",
         "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261111_13_m.html",
         "date": "2026-11-11T00:00:00+09:00"
-      },
-      {
-        "title": "【第十一報】携帯電話サービス（5G SA（Standalone）の音声通話・データ通信・SMS）がご利用しづらい状況について（11月11日午後8時15分時点）",
-        "url": "https://www.docomo.ne.jp/info/network/kanto/pages/261111_12_m.html",
-        "date": "2026-11-11T00:00:00+09:00"
       }
     ],
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-17T13:02:15+09:00"
+    "lastSuccessAt": "2026-11-18T01:18:51+09:00"
   },
   "fsa": {
-    "checkedAt": "2026-11-17T13:02:15+09:00",
+    "checkedAt": "2026-11-18T01:18:51+09:00",
     "items": [
       {
         "category": "",
@@ -242,7 +242,7 @@
     "scanned": 15,
     "ok": true,
     "error": "",
-    "lastSuccessAt": "2026-11-17T13:02:15+09:00"
+    "lastSuccessAt": "2026-11-18T01:18:51+09:00"
   },
-  "generatedAt": "2026-11-17T13:02:16+09:00"
+  "generatedAt": "2026-11-18T01:18:51+09:00"
 }
