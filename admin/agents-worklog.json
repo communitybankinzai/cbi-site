@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-18",
+          "title": "催しの説明の言い回しの修正（代表の指摘）＋運営会議の議題に2件追加 0.4時間",
+          "category": "保守",
+          "outputs": [
+            "cidao 0482258：src/lib/inzai-city/calendar.ts・goguynet/cosmos.ts・instagram-events/sync.ts（説明文の出だし・末尾の文言）",
+            "本番DB：events 154行の description を置き換え（市72・コスモスパレット3・Instagram 79）。控え cidao/backups/2026-11-18_event_wording_before.json",
+            "site/admin/proposals/meeting-20261123-agenda-v1.html（議題⑤⑥を追加）",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "代表が LINE で「自動で拾った候補です」の「拾った」に丸を付け「言葉を変えたい」と指摘。事業主が案A（「…に掲載された情報をもとに、自動でご紹介しています」）と、Instagram 由来の「AI が読み取った候補です」→「情報です」を選択。自動公開にしたので「候補」も合わなくなっていた。関係テスト108件合格。議題は代表の追加（組合・サーバー費用）。「組合」が何を指すかは資料から分からず、会議前の確認事項に入れた。サーバー費用の数字は10/18の見積もりで、直近の請求実績での確認は未。session: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 801,112 / cost: $317.26（セッション全体。うち本件は約0.4時間）"
+        },
+        {
+          "date": "2026-11-18",
           "title": "食レポマップの提案の投票の締切を 11/30 から 12/31 へ延長 0.1時間",
           "category": "保守",
           "outputs": [
