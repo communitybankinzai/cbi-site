@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-20",
+          "title": "3Dワールドの操作説明まわり2件（ポップアップ下切れ修正＋設定に操作説明の隠すボタン）と公開作業 0.3時間",
+          "category": "保守",
+          "outputs": [
+            "site metaverse/controls-guide.js（縦並びレイアウト・低い画面用の縮小・版 20261120-1）",
+            "site metaverse/index.html（読み込みの版番号／⚙設定に helpToggleBtn・記憶キー cbi-meta-help-hidden-v1）",
+            "site admin/changelog.json・agents-worklog.json（本記録）",
+            "origin/main 5afae6c・9d6ffeb"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主の報告「画面が下の方が切れている（Edge）」と「設定メニューで左下の操作画面を消したい」。手元の site/ が origin/main より1029コミット遅れていたため、最新の別作業コピーで変更を載せて公開した（手元の site/ は未更新のまま）。画面高600/820/1000px・スマホ幅で数値確認。実機Edgeは未確認。session: e463c0ec-9c20-4d24-a6af-d6cbac77c592 / output: 25,466 / cost: $5.77"
+        },
+        {
           "date": "2026-11-19",
           "title": "けさの巡回の結果の確認と、コスモスパレットの巡回を週1回の定期実行に戻す 0.4時間",
           "category": "保守",
