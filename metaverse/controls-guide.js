@@ -7,7 +7,7 @@
 // 開いたときに端末で自動で選び（パッドあり→🎮、指で触る画面→📱、それ以外→⌨）、上のタブで切り替えられる。お手本の動き（DEMO）は3版で共用
 (function () {
   "use strict";
-  const VER = "20260915-1";
+  const VER = "20261120-1";
   // 声と手順データの版。文を変えて音声を作り直したときだけ上げる（上げると端末に保存済みの声も取り直しになる。JS を直しただけでは上げない）
   const VOICE_VER = "20260913-1";
   // 手順データ（controls-guide.json）の版。JSON を変えたら必ず上げる（上げないと端末に保存済みの古い JSON が使われ続ける。2026-09-14 実際に起きた）
@@ -55,7 +55,9 @@
   css.textContent =
     "#cgModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:129;font-family:system-ui,sans-serif}" +
     "#cgModal.show{display:flex}" +
-    "#cgModal .cgBox{background:#0e2238;color:#fff;border:2px solid #4a90d9;border-radius:14px;width:min(980px,96vw);max-height:94vh;overflow:auto;padding:14px 16px;box-shadow:0 10px 40px rgba(0,0,0,.5)}" +
+    "#cgModal .cgBox{background:#0e2238;color:#fff;border:2px solid #4a90d9;border-radius:14px;width:min(980px,96vw);max-height:94vh;max-height:94dvh;overflow:hidden;display:flex;flex-direction:column;padding:14px 16px;box-shadow:0 10px 40px rgba(0,0,0,.5)}" +
+    // 見出し・送りボタン・足元は常に見せ、足りない高さは中身（cgMain）だけがスクロールで受ける
+    "#cgModal .cgHead,#cgModal .cgNav,#cgModal .cgFoot,#cgModal .cgCredit{flex:none}" +
     "#cgModal .cgHead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}" +
     "#cgModal .cgHead b{font-size:22px;color:#ffd166;margin-right:auto}" +
     "#cgModal button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid #6a9fd8;background:#1c3a5c;color:#fff;padding:6px 12px}" +
@@ -65,7 +67,7 @@
     // キーボード・スマホ版は、鳥の画面をドラッグ（指でなぞる）すると向きの練習になる。スクロールと取り合わないように
     "#cgModal[data-dev=kbd] .cgStage{cursor:grab}" +
     "#cgModal[data-dev=phone] .cgStage,#cgModal[data-dev=phone] .cgPad svg,#cgModal[data-dev=kbd] .cgPad svg{touch-action:none;cursor:pointer}" +
-    "#cgModal .cgMain{display:flex;gap:14px;margin-top:10px}" +
+    "#cgModal .cgMain{display:flex;gap:14px;margin-top:10px;flex:1 1 auto;min-height:0;overflow:auto}" +
     "#cgModal .cgStage{position:relative;flex:1.25;min-height:340px;border-radius:10px;overflow:hidden;background:linear-gradient(#8fc3ee,#dcefff)}" +
     "#cgModal .cgStage canvas{display:block;width:100%;height:100%;position:absolute;inset:0}" +
     "#cgModal .cgStageMsg{position:absolute;inset:auto 0 44%;text-align:center;color:#24476a;font-size:15px}" +
@@ -94,6 +96,8 @@
     "#cgModal .k text{fill:#fff;font:bold 15px system-ui;text-anchor:middle;dominant-baseline:central;pointer-events:none}" +
     "#cgModal .k .fill{fill:#3fbf6f}" +
     "@keyframes cgBlink{50%{stroke:#fff3c4}}" +
+    // 画面が低いとき（ノートPCのEdgeなど）：鳥の画面・コントローラー図・文字を小さくして1画面に収める
+    "@media (max-height:900px){#cgModal .cgBox{padding:10px 14px}#cgModal .cgHead b{font-size:19px}#cgModal .cgMain{margin-top:6px}#cgModal .cgStage{min-height:180px}#cgModal .cgPad svg{max-height:34vh;margin:0 auto}#cgModal .cgStepTitle{font-size:17px}#cgModal .cgSub{font-size:16px;line-height:1.5;min-height:3em}#cgModal .cgNav,#cgModal .cgFoot{margin-top:6px}#cgModal .cgFoot{padding-top:6px}#cgModal .cgGo{padding:6px 14px;font-size:16px}}" +
     "@media (max-width:760px){#cgModal .cgMain{flex-direction:column}#cgModal .cgStage{min-height:240px}#cgModal .cgSub{font-size:16px;min-height:0}}";
   document.head.appendChild(css);
 
