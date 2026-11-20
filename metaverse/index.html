@@ -279,6 +279,8 @@ if (location.protocol === "file:") {
     padding: 8px 12px; font-size: 11px; line-height: 1.6; max-width: 270px;
   }
   #helpBox b { color: #ffd166; }
+  /* ⚙設定の「操作説明を隠す」：左下の操作説明（#helpBody）だけ隠し、高さの表示（#altLine）は残す */
+  body.helpHidden #helpBody { display: none; }
 
   /* スポット情報 */
   #spotInfo {
@@ -1086,6 +1088,7 @@ if (location.protocol === "file:") {
     <div class="tbMenu">
       <button id="ctlGuideMenuBtn" type="button" onclick="window.CbiControlsGuide&&CbiControlsGuide.open()" title="コントローラー・キーボード・スマホの操作を、ずんだもんの声と鳥の動きで説明します">🎮 操作のしかた</button>
       <button id="locMapBtn" type="button" title="いま飛んでいる場所を、平面の地図で見ます。迷ったときに。もう一度押すと閉じます">📍 現在地を地図で表示</button>
+      <button id="helpToggleBtn" type="button" title="左下の操作説明（コントローラー・キーボードの使い方）を隠す／表示します。この端末に覚えておきます。くわしい説明は「🎮 操作のしかた」からいつでも開けます">🙈 操作説明を隠す</button>
       <button id="liteBtn" class="off" title="動きが重い端末向け。描画の解像度を下げ、街並みを粗めに読み、空の表現やトンビを止めて軽くします（もう一度押すと元に戻ります）">🪶 軽量モード</button>
       <button id="trafficBtn" class="off" title="テザリングで使うときの見張り。今日この端末がダウンロードした3D都市データの推定量を表示し、上限を決めておくと8割で注意、超えたら自動で軽量モードに切り替えます">📶 通信量</button>
       <button id="padToggleBtn" title="コントローラーの入力を受け付けるかどうかを切り替えます。動きのおかしいコントローラーを挿したままでもマウスで操作できます">🎮 コントローラー</button>
@@ -2012,7 +2015,7 @@ try {
   const bar = document.getElementById("topLeftBar");
   const groups = Array.from(bar.querySelectorAll(".tbGroup"));
   // 押すと別の画面や別タブが開く項目は、押した時点でメニューを畳む（切替系は状態が見えるよう開いたまま）
-  const CLOSE_AFTER = ["ctlGuideMenuBtn", "locMapBtn", "reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
+  const CLOSE_AFTER = ["ctlGuideMenuBtn", "locMapBtn", "helpToggleBtn", "reportsBtn", "mapBtn", "vsRaceBtn", "pickModeBtn", "bgmPickBtn", "padDebugBtn", "shotBtn", "recBtn"];
   function closeAll(except) {
     groups.forEach((g) => {
       if (g === except) return;
@@ -2725,6 +2728,26 @@ function liteSuggest() {
   setTimeout(function () { el.style.display = "none"; }, 20000);
 }
 document.getElementById("liteBtn").addEventListener("click", function () { applyLite(!liteOn); });
+
+// 左下の操作説明を隠す／表示する（⚙設定・端末ごとに記憶）。高さの表示（#altLine）は消さない
+(function () {
+  const KEY = "cbi-meta-help-hidden-v1";
+  const btn = document.getElementById("helpToggleBtn");
+  if (!btn) return;
+  function apply(hidden) {
+    document.body.classList.toggle("helpHidden", hidden);
+    btn.textContent = hidden ? "👁 操作説明を表示" : "🙈 操作説明を隠す";
+    btn.classList.toggle("on", hidden);
+  }
+  let hidden = false;
+  try { hidden = localStorage.getItem(KEY) === "1"; } catch (e) { /* 記憶できなくても動く */ }
+  apply(hidden);
+  btn.addEventListener("click", function () {
+    hidden = !hidden;
+    apply(hidden);
+    try { localStorage.setItem(KEY, hidden ? "1" : "0"); } catch (e) { /* 記憶できなくても動く */ }
+  });
+})();
 
 // ============================================================
 // 🎵 BGM（2026-09-04・ユーザー要望「３Dワールドプレイ時にも BGM を流したい」）
