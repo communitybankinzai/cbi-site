@@ -619,6 +619,14 @@ if (location.protocol === "file:") {
     display: none; user-select: text;
   }
   #pickResult.show { display: block; }
+  /* 十字キーで主要施設へ飛んだあと、元の場所へ戻る（2026-11-21）。飛んだ直後だけ出る */
+  #spotReturnBtn {
+    position: absolute; bottom: 96px; left: 50%; transform: translateX(-50%);
+    z-index: 41; display: none; cursor: pointer;
+    background: rgba(20, 30, 40, 0.94); color: #fff; font-size: 13px; font-weight: bold;
+    border: 1px solid rgba(230, 162, 60, 0.9); border-radius: 20px; padding: 8px 18px;
+  }
+  #spotReturnBtn.show { display: block; }
   #puzzleBtn .badge {
     background: #e67e22; border-radius: 10px; padding: 1px 7px;
     font-size: 11px; margin-left: 4px; font-weight: bold;
@@ -1253,6 +1261,7 @@ if (location.protocol === "file:") {
 </div>
 
 <div id="pickResult"></div>
+<button type="button" id="spotReturnBtn" title="十字キーで飛ぶ前にいた場所へ戻ります">↩ 元の場所へ戻る</button>
 <div id="puzzlePanel">
   <h3><span>🏛 印西市文化財ずかん</span><button id="puzzleCloseBtn" title="ずかんを閉じます">✕ 閉じる</button></h3>
   <div class="tabRow">
@@ -1321,7 +1330,7 @@ if (location.protocol === "file:") {
       <li><b>旋回（左／右に傾く）</b>：<span class="keybox">LB</span>／<span class="keybox">RB</span>（PS は <span class="keybox">L1</span>／<span class="keybox">R1</span>）。離すと水平に戻ります</li>
       <li><b>速く飛ぶ</b>：<span class="keybox">X</span>（PS は <span class="keybox">□</span>）を押している間は4倍速。<span class="keybox">Y</span>（PS は <span class="keybox">△</span>）を押すと ×1→×2→×4 に切り替わります（いまの速さは画面の下中央に出ます）</li>
       <li><b>精霊をゲットする</b>：精霊が出てきたら <span class="keybox">A</span>（PS は <span class="keybox">○</span>）</li>
-      <li><b>主要施設へ飛ぶ</b>：<b>十字キー左右</b>（駅・モール・公民館など17か所を順にめぐります）</li>
+      <li><b>主要施設へ飛ぶ</b>：<b>十字キー左右を1秒長押し</b>（駅・モール・公民館など17か所を順にめぐります。誤って触れても飛ばないよう長押しにしています）。飛んだ直後に元の場所へ戻る：<span class="keybox">View</span>（PS は <span class="keybox">SHARE</span>／<span class="keybox">CREATE</span>）または画面の「↩ 元の場所へ戻る」</li>
       <li>文化財を開く：<span class="keybox">A</span>（PS は <span class="keybox">○</span>。精霊が出ていないとき・画面中央の照準に入れてから）／閉じる：<span class="keybox">B</span>（PS は <span class="keybox">×</span>）</li>
       <li><b>手を離しているのに勝手に動くとき</b>：スティックから手を離した状態で、画面の「<b>🎯 中心合わせ</b>」ボタンか<span class="keybox">≡</span>（メニュー。PS は <span class="keybox">OPTIONS</span>）を押してください。その位置を「手を離した状態」として覚え直します</li>
       <li><b>くわしい操作説明</b>：<span class="keybox">≡</span>（PS は <span class="keybox">OPTIONS</span>）を1秒長押しすると、ずんだもんの声と鳥の動きで説明します</li>
@@ -1439,7 +1448,7 @@ if (location.protocol === "file:") {
 </div>
 
 <script src="flight-input.js?v=20260909-1"></script>
-<script src="flight-ground.js?v=20260913-1"></script>
+<script src="flight-ground.js?v=20261121-1"></script>
 <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
 <div id="tonbiLayer"><div id="tonbiInner"><div id="tonbiViewport"><img id="tonbiSheet" src="assets/tonbi/tonbi_flap_sheet12.webp" alt=""></div></div></div>
 
@@ -2155,6 +2164,7 @@ const PAD_LOOK_SPEED = 2.2; // 視点の回転速度（ラジアン/秒）
 const PAD_AIM_RADIUS = 160; // ○ボタンでピンを拾う範囲（画面中央から何ピクセルまで許すか）
 let padPrevButtons = [];    // 「押した瞬間」だけ反応させるための前フレーム状態
 let padSeen = false;        // 直前のフレームでパッドが見えていたか（つなぎ直しの検知に使う）
+const padSpotHold = {};     // 十字キー（14＝左・15＝右）ごとの長押し状態 {t:押し始め, hinted, fired}。null＝押していない（padSpotHoldTick）
 
 // 見張るのは左右スティックの4軸（0〜3）と L2・R2（4=L2, 5=R2）の計6つ
 const PAD_CH = 6;
@@ -2375,8 +2385,8 @@ const HELP_KEYBOARD =
 // ボタン名はつないでいるコントローラーの種類で変える（2026-09-13 中司さん「GameSir T3 Lite には○ボタンがない」）。
 // PlayStation 系＝R1/R2/○/×/□/OPTIONS、Xbox 配列（GameSir T3 Lite・Xbox 360/One 等）＝RB/RT/A/B/X/≡。ボタン番号は標準配列で同じ
 const PAD_LABELS = {
-  ps:   { R2: "R2", L2: "L2", ROLL: "L1 ／ R1", BOOST: "□", SPD: "△", O: "○", X: "×", OPT: "OPTIONS" },
-  xbox: { R2: "RT", L2: "LT", ROLL: "LB ／ RB", BOOST: "X", SPD: "Y", O: "A", X: "B", OPT: "≡（メニュー）" },
+  ps:   { R2: "R2", L2: "L2", ROLL: "L1 ／ R1", BOOST: "□", SPD: "△", O: "○", X: "×", OPT: "OPTIONS", BACK: "SHARE／CREATE" },
+  xbox: { R2: "RT", L2: "LT", ROLL: "LB ／ RB", BOOST: "X", SPD: "Y", O: "A", X: "B", OPT: "≡（メニュー）", BACK: "View（⧉）" },
 };
 function padKindForHelp() {
   const pads = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -2408,7 +2418,7 @@ function helpGamepadHtml(kind) {
     "旋回（左／右に傾く）：<b>" + L.ROLL + "</b><br>" +
     "速く飛ぶ：<b>" + L.BOOST + "</b>を押している間（<b>" + L.SPD + "</b>で速度切替）<br>" +
     "精霊をゲット：<b>" + L.O + "</b> ／ 閉じる：<b>" + L.X + "</b><br>" +
-    "主要施設へ飛ぶ：<b>十字キー左右</b><br>" +
+    "主要施設へ飛ぶ：<b>十字キー左右を1秒長押し</b>（戻る：<b>" + L.BACK + "</b>）<br>" +
     "勝手に動くとき：手を離して<b>" + L.OPT + "</b><br>" +
     // 「🎮 操作のしかた」（controls-guide.js）。どのモードでも開ける（2026-09-14 中司さん）
     "くわしい説明：<b>" + L.OPT + "</b>を長押し " +
@@ -2435,7 +2445,8 @@ setInterval(function () {
     let agl = null;
     if (viewer.scene.sampleHeightSupported) {
       const g = viewer.scene.sampleHeight(carto);
-      if (g !== undefined && g !== null && g > -200 && g < 1000) agl = carto.height - g; // 読み込み前の外れ値（数千m）は出さない
+      // 読み込み前の外れ値（数千m）は出さない。山岳地（富士山など）を妨げないよう、判定は flight-ground.js と共通
+      if (window.CbiFlightGround && CbiFlightGround.groundPlausible(carto.longitude, carto.latitude, g)) agl = carto.height - g;
     }
     const t = "⛰ 高さ " + Math.round(Math.max(0, msl)) + "m（海抜）"
       + (agl !== null ? " ／ 地上から " + Math.round(Math.max(0, agl)) + "m" : "");
@@ -3204,8 +3215,10 @@ viewer.clock.onTick.addEventListener(function () {
     }
     // 十字キーの左右で主要施設をめぐる。コントローラーだけで遊ぶときは画面右の
     // 「📍スポットへ移動」を押せないため、遠くへ行く手段がこれしかない
-    if (isDownNow(pad, 14) && !padPrevButtons[14]) padGoSpot(-1);
-    if (isDownNow(pad, 15) && !padPrevButtons[15]) padGoSpot(1);
+    // 十字キー上下で昇降するときに左右が触れて、富士山上空から印西へ突然飛ばされた（2026-11-21）ので、1秒長押しで発動にする。
+    // View／SHARE（8）は、飛んだ直前の場所へ戻る
+    padSpotHoldTick(pad);
+    if (isDownNow(pad, 8) && !padPrevButtons[8]) returnFromSpotJump();
     up += padUp;
 
     // 決定（精霊ゲット・画面中央のピン）と閉じる（押した瞬間のみ）。PS＝○（1）で決定・×（0）で閉じる、
@@ -3239,6 +3252,7 @@ viewer.clock.onTick.addEventListener(function () {
     soloLookInput.x = soloLookInput.y = 0;
     padRollInput = 0;
     padPrevButtons = [];
+    padSpotHold[14] = padSpotHold[15] = null; // 抜いた・替えたときに長押しの途中経過を残さない
     padSeen = false; // 挿し直し・別のコントローラーに替えたら測り直す
   }
   // 鳥は後ろへは飛べないので、飛行中は後退の入力（S・↓・左スティック下）を受け付けない
@@ -3771,16 +3785,77 @@ window.addEventListener("storage", function (e) {
   showPickResult("地図から「" + BUNKAZAI[d.idx].name + "」の近くへ移動します。", 3000);
 });
 
-// コントローラーの十字キー左右で主要施設をめぐる。押すたびに次／前のスポットへ飛ぶ
+// コントローラーの十字キー左右（1秒長押し）で主要施設をめぐる。発動のたびに次／前のスポットへ飛ぶ
 let padSpotIdx = 0;
 function isDownNow(pad, i) { return !!(pad.buttons[i] && pad.buttons[i].pressed); }
+const PAD_SPOT_HOLD_MS = 1000;
+const PAD_SPOT_HINT_MS = 300;   // これだけ押し続けたら「長押しで移動」と知らせる
+const SPOT_RETURN_CHAIN_MS = 15000; // 続けて飛ぶあいだは、最初にいた場所を戻り先として残す
+const SPOT_RETURN_SHOW_MS = 60000;  // 戻るボタンを出しておく時間
+let spotReturnPoint = null;     // 飛ぶ直前のカメラ {position, direction, up}
+let spotReturnSetAt = 0;
+let spotReturnTimer = null;
+function padSpotHoldTick(pad) {
+  const now = performance.now();
+  // 左右が同時に押されているのは、上下で昇降するときに斜めに触れただけなので数えない
+  const both = isDownNow(pad, 14) && isDownNow(pad, 15);
+  [14, 15].forEach(function (i) {
+    if (!isDownNow(pad, i) || both) { padSpotHold[i] = null; return; }
+    const h = padSpotHold[i] || (padSpotHold[i] = { t: now, hinted: false, fired: false });
+    if (h.fired) return; // 離すまで再発動しない
+    const step = i === 14 ? -1 : 1;
+    const held = now - h.t;
+    if (held >= PAD_SPOT_HOLD_MS) {
+      h.fired = true;
+      padGoSpot(step);
+    } else if (held >= PAD_SPOT_HINT_MS && !h.hinted) {
+      h.hinted = true;
+      showPickResult("📍 「" + SPOTS[(padSpotIdx + step + SPOTS.length) % SPOTS.length].name + "」へ移動します。そのまま押し続けてください（やめるときは指を離す）", 1200);
+    }
+  });
+}
 function padGoSpot(step) {
   // 主要施設への移動は競技中も許している（そこから先は自力で文化財を探す運用のため）
   padSpotIdx = (padSpotIdx + step + SPOTS.length) % SPOTS.length;
   const spot = SPOTS[padSpotIdx];
+  rememberSpotReturn();
   flyToSpot(spot);
   showPickResult("📍 " + spot.name + "（" + (padSpotIdx + 1) + "/" + SPOTS.length + "）へ移動します。十字キー左右で次の場所へ。", 3000);
 }
+// 飛ぶ直前の場所を覚え、「↩ 元の場所へ戻る」を出す。続けて飛ぶとき（15秒以内）は最初の場所を残す
+function rememberSpotReturn() {
+  const now = performance.now();
+  const cam = viewer.camera;
+  if (!spotReturnPoint || now - spotReturnSetAt > SPOT_RETURN_CHAIN_MS) {
+    spotReturnPoint = {
+      position: Cesium.Cartesian3.clone(cam.positionWC),
+      direction: Cesium.Cartesian3.clone(cam.directionWC),
+      up: Cesium.Cartesian3.clone(cam.upWC),
+    };
+  }
+  spotReturnSetAt = now;
+  const btn = document.getElementById("spotReturnBtn");
+  if (btn) btn.classList.add("show");
+  clearTimeout(spotReturnTimer);
+  spotReturnTimer = setTimeout(hideSpotReturn, SPOT_RETURN_SHOW_MS);
+}
+function hideSpotReturn() {
+  spotReturnPoint = null;
+  clearTimeout(spotReturnTimer);
+  const btn = document.getElementById("spotReturnBtn");
+  if (btn) btn.classList.remove("show");
+}
+function returnFromSpotJump() {
+  if (!spotReturnPoint) { showPickResult("戻る場所がありません（十字キーで飛んだ直後の1分間だけ戻れます）。", 2500); return; }
+  const p = spotReturnPoint;
+  hideSpotReturn();
+  viewer.camera.flyTo({ destination: p.position, orientation: { direction: p.direction, up: p.up }, duration: 3 });
+  showPickResult("元の場所へ戻ります。", 2500);
+}
+(function setupSpotReturnBtn() {
+  const btn = document.getElementById("spotReturnBtn");
+  if (btn) btn.addEventListener("click", returnFromSpotJump);
+})();
 
 // 文化財の約300m南・上空200mへテレポート（最後の接近は自分で）
 function teleportNear(b) {

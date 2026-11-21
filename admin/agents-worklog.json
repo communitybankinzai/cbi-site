@@ -17,6 +17,19 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-21",
+          "title": "3Dワールドの富士山上空の地面判定を修正＋十字キー誤操作で印西へ飛ぶ件の再発防止 0.4時間",
+          "category": "保守",
+          "outputs": [
+            "site/metaverse/flight-ground.js",
+            "site/metaverse/index.html",
+            "site/admin/changelog.json"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "原因は2つ。①地表の高さの上限1000m（印西で起きた『高さ7777m』の対策）が富士山（約3,800m）にも効き、上空が『不明』扱いで直前位置へ押し戻された。②十字キー左右の押した瞬間に主要施設へ即ワープする仕様で、上下（昇降）の操作中に左右が触れて印西へ飛んだ（事業主がコントローラー使用と確認）。直し＝印西から50km超は上限4000m（判定関数 groundPlausible を公開し高度表示と共通化）／十字キー左右を1秒長押しに（同時押しは無視）／飛ぶ直前の場所へ戻る（View／SHARE・画面ボタン）。検証＝判定関数をNodeで8件、偽ゲームパッドで『0.5秒＝飛ばない・左右同時＝飛ばない・1.3秒＝1回だけ発動・離して押し直し＝再発動・連続で飛んでも最初の場所へ戻る』を確認、構文OK。未検証＝実際の3D街並みでの富士山上空の飛行（ローカルは3Dタイル403）。手元PCの site/ の git が origin から乖離（ahead 29・behind 1032）していたため、origin の最新から作った別クローンへ変更だけを適用して push した。session: d0dfc92d-c76b-4624-9d05-a4333efef30e / output: 37,542 / cost: $5.28"
+        },
+        {
           "date": "2026-11-20",
           "title": "3Dワールドの操作説明まわり2件（ポップアップ下切れ修正＋設定に操作説明の隠すボタン）と公開作業 0.3時間",
           "category": "保守",
@@ -10411,6 +10424,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-23",
+          "title": "🏔 3Dワールド：富士山の上空を本番の街並みで飛んで確かめる（地表の高さの上限を遠方4000mへ緩めた件）",
+          "category": "保守",
+          "priority": "高",
+          "note": "ローカルは3Dタイルが403で、実際の富士山では未確認（確信度：中）。確認点＝富士山の上空を通れる／印西付近で『高さ7777m』が再発しない／十字キー左右は1秒長押しで飛び、View（PS は SHARE／CREATE）か画面の『↩ 元の場所へ戻る』で戻れる。直したのは flight-ground.js の groundPlausible と index.html の padSpotHoldTick。公開は plans の次の項目（git の整理）が先。"
+        },
+        {
+          "due": "未定",
+          "title": "🔧 手元PCの site/ の git が origin から乖離している（ahead 29・behind 1032）：手元を origin に合わせる方法を決める",
+          "category": "保守",
+          "priority": "高",
+          "status": "保留",
+          "blockedBy": "手元の gitdir（C:/dev/gitdir/cbi-site）を origin に合わせる方法の判断待ち（pull で1032件を取り込むか、作り直すか）",
+          "note": "2026-11-21 調査。.git は C:/dev/gitdir/cbi-site を指すファイル（OneDrive の外）で、HEAD は 9/27 のまま、origin/main は 11/20 夜。作業ツリーのファイルは新しい（他PC側の作業が OneDrive で同期されている可能性）。3Dワールドの修正（flight-ground.js・index.html）は、origin の最新から作った別クローンへ適用して push 済み。手元の作業ツリーには同じ変更が未コミットで残っているので、手元を origin に合わせるときは、先にその2ファイルの差分を捨てるか退避する（捨てないと pull が止まる）。他セッションの未完成の変更が index.html などに混在するため、git add -A は使わない。"
+        },
         {
           "due": "未定",
           "title": "🍙 食レポ：過去に対象外にした投稿87件を、新しい読み方で読み直す（保留）",

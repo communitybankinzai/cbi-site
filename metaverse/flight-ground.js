@@ -1,5 +1,17 @@
 (function(root) {
   'use strict';
+  // 地表の高さ（楕円体高）として信じてよい範囲。
+  // 印西の周辺（中心から50km以内）の地表は35〜80mなので、1000mを超える値は街並み読み込み前の外れ値
+  // （2026-09-13「高さ7777m」）として捨てる。それより遠い場所は山岳地を飛べるよう 4000m まで受け付ける
+  // （2026-11-21 富士山（約3,800m）の上空を飛べず、地面の中と扱われた）
+  const NEAR_CENTER = {lon: 140.15 * Math.PI / 180, lat: 35.805 * Math.PI / 180};
+  const NEAR_RADIUS_M = 50000, NEAR_MAX_M = 1000, FAR_MAX_M = 4000, MIN_M = -200, EARTH_R = 6371000;
+  function groundPlausible(lonRad, latRad, g) {
+    if (!Number.isFinite(g) || g <= MIN_M) return false;
+    const dx = (lonRad - NEAR_CENTER.lon) * Math.cos(NEAR_CENTER.lat) * EARTH_R;
+    const dy = (latRad - NEAR_CENTER.lat) * EARTH_R;
+    return g < (Math.hypot(dx, dy) <= NEAR_RADIUS_M ? NEAR_MAX_M : FAR_MAX_M);
+  }
   function enforce(viewer, state, options) {
     if (options.disabled) { state.position = null; return false; }
     const C = root.Cesium, cam = viewer.camera;
@@ -23,8 +35,9 @@
       let ground;
       try { if (viewer.scene.sampleHeightSupported) ground = viewer.scene.sampleHeight(point, options.exclude || []); } catch (_) {}
       // 街並みの読み込み前は sampleHeight が数千mの値を返すことがあり、そのまま信じるとカメラが上空へ押し上げられる
-      // （2026-09-13「高さ7777m」）。印西の地表は楕円体高35〜80mなので、明らかに外れた値は「不明」として扱う
-      if (Number.isFinite(ground) && ground > -200 && ground < 1000) height = Math.max(height, ground + options.clearance);
+      // （2026-09-13「高さ7777m」）。印西の周辺は地表が楕円体高35〜80mなので、明らかに外れた値は「不明」として扱う。
+      // 遠方は山岳地もあるので上限を緩める（groundPlausible）
+      if (groundPlausible(point.longitude, point.latitude, ground)) height = Math.max(height, ground + options.clearance);
       else unknown = true;
     }
     // Missing terrain is not permission to descend or advance into an unseen slope.
@@ -41,5 +54,5 @@
     state.position = current.clone();
     return changed;
   }
-  root.CbiFlightGround = {enforce};
+  root.CbiFlightGround = {enforce, groundPlausible};
 })(typeof window === 'undefined' ? globalThis : window);
