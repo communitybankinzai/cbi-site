@@ -1,5 +1,6 @@
 /* 会議メモ：議題ページの各議題の下に、その場で結果を入力する欄を出す。
- *   - 合言葉つきのリンク（#k=…）で開いた人にだけ欄が出る。合言葉は端末に覚える。
+ *   - 管理画面にログインした端末にだけ欄が出る（同じサイトなので、管理画面が覚えた
+ *     共通パスワード cbi_admin_pw と、選んだ名前 cbi_admin_me をそのまま使う）。
  *   - 入力は「種類＋一言」を積み上げる形（同時に書いても消し合わない）。
  *   - 5秒ごとに読み直して、ほかの人の入力を出す。
  * 設定は window.MEETING_NOTES = { base, anon, meeting, sections:[{id,label}] }。
@@ -19,10 +20,11 @@
   function lsGet(k) { try { return localStorage.getItem(LS(k)) || ''; } catch (e) { return ''; } }
   function lsSet(k, v) { try { v ? localStorage.setItem(LS(k), v) : localStorage.removeItem(LS(k)); } catch (e) {} }
 
-  // 合言葉：リンクの #k=… を優先し、端末に覚える
-  var m = (location.hash || '').match(/[#&]k=([A-Za-z0-9_-]{6,64})/);
-  if (m) lsSet('key', m[1]);
-  var KEY = lsGet('key');
+  // 鍵と名前は、管理画面のログインが端末に覚えたものを使う
+  function adminGet(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
+  var ADMIN_URL = CFG.adminUrl || '../index.html';
+  var KEY = adminGet('cbi_admin_pw');
+  var ME = adminGet('cbi_admin_me');
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -35,6 +37,9 @@
   css.textContent = [
     '.mn-bar{position:sticky;top:0;z-index:5;background:#1f3a6e;color:#fff;padding:7px 10px;margin:0 -16px 10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}',
     '.mn-bar input{font-size:16px;padding:4px 8px;border:0;border-radius:6px;width:9em}',
+    '.mn-bar input[readonly]{background:#dfe6f3;font-weight:700}',
+    '.mn-guide{background:#fff7e0;border:1px solid #e6c766;border-radius:8px;padding:8px 12px;margin:0 0 12px;font-size:13.5px}',
+    '.mn-guide a{display:inline-block;margin-left:8px;font-weight:700}',
     '.mn-bar .st{margin-left:auto;font-size:12px;opacity:.9}',
     '.mn-bar .st.bad{background:#c0392b;border-radius:999px;padding:1px 10px;opacity:1}',
     '.mn-box{border:2px solid #1f3a6e;border-radius:10px;padding:10px 12px;margin:14px 0 6px;background:#fbfcff}',
@@ -55,24 +60,21 @@
     '.mn-row .send{font-size:15px;font-weight:700;border:0;background:#1f3a6e;color:#fff;border-radius:8px;padding:10px 16px;cursor:pointer;white-space:nowrap}',
     '.mn-row .send[disabled]{opacity:.5}',
     '.mn-err{color:#c0392b;font-size:13px;margin-top:4px}',
-    '@media print{.mn-bar,.mn-kinds,.mn-row,.mn-list .del,.mn-err{display:none!important}.mn-box{border-width:1px;break-inside:avoid}}'
+    '@media print{.mn-guide,.mn-bar,.mn-kinds,.mn-row,.mn-list .del,.mn-err{display:none!important}.mn-box{border-width:1px;break-inside:avoid}}'
   ].join('\n');
   document.head.appendChild(css);
 
   var wrap = document.querySelector('.wrap') || document.body;
 
-  // 合言葉がない人：資料はそのまま。入口の小さなボタンだけ足す
+  // ログインしていない端末：資料はそのまま。管理画面への案内だけ出す
   if (!KEY) {
-    var nav = document.querySelector('.nav');
-    if (nav) {
-      var b = el('button', 'btn', '会議の記録を入力する');
-      b.type = 'button';
-      b.addEventListener('click', function () {
-        var k = (window.prompt('合言葉を入力してください（運営メンバーに配ったリンクの末尾）') || '').trim();
-        if (/^[A-Za-z0-9_-]{6,64}$/.test(k)) { lsSet('key', k); location.reload(); }
-      });
-      nav.appendChild(b);
-    }
+    var guide = el('div', 'mn-guide');
+    guide.appendChild(el('span', null, '会議の記録を入力するには、先に管理画面にログインしてください（「この端末で記憶する」にチェックを入れたまま）。ログインのあと、このページを開き直します。'));
+    var ga = el('a', null, '管理画面を開く'); ga.href = ADMIN_URL;
+    guide.appendChild(ga);
+    var top = document.querySelector('header.top');
+    if (top && top.parentNode) top.parentNode.insertBefore(guide, top.nextSibling);
+    else wrap.insertBefore(guide, wrap.firstChild);
     return;
   }
 
@@ -96,8 +98,17 @@
   bar.appendChild(el('span', null, '会議の記録　名前'));
   var nameIn = el('input'); nameIn.type = 'text'; nameIn.maxLength = 30; nameIn.placeholder = '名前を入れる';
   nameIn.setAttribute('aria-label', '入力する人の名前');
-  nameIn.value = lsGet('name');
-  nameIn.addEventListener('input', function () { lsSet('name', nameIn.value.trim()); });
+  nameIn.value = ME;
+  if (ME) {
+    // 管理画面で選んだ名前をそのまま使う（ここでは変えない）
+    nameIn.readOnly = true;
+    nameIn.title = '管理画面で選んだ名前です。変えるときは管理画面の右上から。';
+  } else {
+    // 管理画面でまだ名前を選んでいない人：ここで入れた名前を、管理画面の名前としても覚える
+    nameIn.addEventListener('input', function () {
+      try { var v = nameIn.value.trim(); v ? localStorage.setItem('cbi_admin_me', v) : localStorage.removeItem('cbi_admin_me'); } catch (e) {}
+    });
+  }
   bar.appendChild(nameIn);
   var st = el('span', 'st', '読み込み中…');
   bar.appendChild(st);
@@ -214,8 +225,7 @@
     }).catch(function (e) {
       st.className = 'st bad';
       if (e.status === 403) {
-        st.textContent = '合言葉が違います';
-        lsSet('key', '');
+        st.textContent = '管理画面に入り直してください';
       } else {
         st.textContent = 'つながっていません（入力は残ります）';
       }
