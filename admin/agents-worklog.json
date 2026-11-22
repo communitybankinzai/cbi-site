@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-23",
+          "title": "運営会議の議題ページに、同時入力できる会議の記録欄を追加 1.0時間",
+          "category": "実装",
+          "outputs": [
+            "cbi-site：admin/proposals/meeting-notes.js（新規）",
+            "cbi-site：admin/proposals/meeting-20261123-agenda-v1.html（設定と読み込みの2行）",
+            "cbi-site：admin/changelog.json・admin/agents-worklog.json",
+            "cidao：supabase/migrations/20261123000000_meeting_notes.sql（表 meeting_keys・meeting_notes、関数 meeting_notes_list／_add／_delete。本番に適用済み）"
+          ],
+          "hours": 1.0,
+          "partnerApproved": false,
+          "note": "事業主の依頼「サイトの資料を見ながら、その場で結果を入力。誰でも同時に。あとで議事録に」。保存先（CiDAOのデータベース）と入力の形（種類を選んで一言）は事業主が選択。表は外から直接読めず（直接読みは 401 を確認）、合言葉が合ったときだけ関数で読み書きできる（違う合言葉は 403）。600字を超える文は 400。スマホ幅375pxで、画面からの入力と別の端末相当（API）の入力が互いに5秒ほどで出ること、取り消しが反映されることを確認。実機のスマホ2台では未確認。hours は見積もり（このセッションは別件の会話から分かれた続きで、session-stats の値は元の会話を含むため使わない）。 session: d80f3209-9d3f-493c-acd7-933370575666"
+        },
+        {
           "date": "2026-11-22",
           "title": "武蔵屋ひなまつりに向けた企画整理と、ひなまつり物語クイズ（第1部）の試作 0.8時間",
           "category": "実装",
