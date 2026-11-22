@@ -94,7 +94,7 @@
   // 上の帯：名前と、つながり具合
   var bar = el('div', 'mn-bar');
   bar.appendChild(el('span', null, '会議の記録　名前'));
-  var nameIn = el('input'); nameIn.type = 'text'; nameIn.maxLength = 30; nameIn.placeholder = '（任意）';
+  var nameIn = el('input'); nameIn.type = 'text'; nameIn.maxLength = 30; nameIn.placeholder = '名前を入れる';
   nameIn.setAttribute('aria-label', '入力する人の名前');
   nameIn.value = lsGet('name');
   nameIn.addEventListener('input', function () { lsSet('name', nameIn.value.trim()); });
@@ -143,6 +143,7 @@
     send.addEventListener('click', function () {
       var body = ta.value.trim();
       if (!body) { ta.focus(); return; }
+      if (!nameIn.value.trim()) { err.textContent = '先に、画面のいちばん上の名前欄に、名前を入れてください。'; nameIn.focus(); return; }
       send.disabled = true; err.textContent = '';
       rpc('meeting_notes_add', { p_agenda: sec.id, p_kind: kind, p_body: body, p_author: nameIn.value.trim() || null })
         .then(function () { ta.value = ''; lsSet('draft_' + sec.id, ''); return load(); })
