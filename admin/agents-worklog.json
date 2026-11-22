@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-23",
+          "title": "病院マップのお知らせ（ベル送信・SNS3媒体の予約）と、食レポの巡回先の追加 0.1時間",
+          "category": "広報",
+          "outputs": [
+            "ベル：notifications 75件（broadcast fc368d5a-9b74-48b6-bb8e-9fc1f1bd60bb・プッシュ9台・リンク /hospitals）",
+            "SNS：CBI予約投稿キュー q1795386894789（Threads・Instagram・Facebook・07:42 指定・utm_campaign=hospital_map）",
+            "cbi-site b77587a：assets/sns/20261123_hospital_map/cover.jpg",
+            "本番DB：sns_monitor_accounts に @_mimi.official.33（id 3f7c29c2-1660-43a8-abad-0e4e081b0d2e・use_gourmet=true・use_events=false）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主が文案と画像を承認（A）。ベルは会員全員へ送信（75名・プッシュ9台）。SNS は post_to_sns.py で3媒体を1件の予約にまとめて登録したため、リンクの utm_source が3媒体とも threads になった（表示には影響なし・流入の集計で Facebook が Threads に数えられる。二重投稿を避けるため登録し直していない）。07:46 の時点で予約はまだ scheduled で、投稿の結果は未確認。食レポの巡回先：事業主指示で Instagram @_mimi.official.33 を食レポだけに使う設定で追加（食レポ用は15件に）。投稿が読めるかは次の巡回（朝 06:32 ごろ）で分かる。アカウントの中身は当方では見ていない。session: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 1,335,246 / cost: $551.56"
+        },
+        {
+          "date": "2026-11-23",
           "title": "病院マップに土曜午後・日曜・祝日の印を追加・本番反映、SNSとベルの文案と画像の案 0.2時間",
           "category": "実装",
           "outputs": [
@@ -10629,12 +10643,19 @@
       ],
       "plans": [
         {
+          "due": "2026-11-24",
+          "title": "🍜 食レポの巡回先 @_mimi.official.33 が読めたかを確かめる",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-11-23 に追加。次の巡回のあと sns_monitor_accounts の last_checked_at・last_error を見る（ビジネス／クリエイターのアカウントでないと読めない）。読めなければ事業主へ知らせる。"
+        },
+        {
           "due": "未定",
-          "title": "🏥 病院マップを SNS とベルで知らせる（文案の承認待ち）",
+          "title": "🏥 病院マップのSNS投稿の結果と反応を確かめる（ベルは 11/23 送信済み）",
           "category": "その他",
           "priority": "中",
           "status": "保留",
-          "blockedBy": "事業主の承認（SNS とベルの文案・画像の案を 2026-11-23 に提示済み。ホームのタイル・歯科・土日祝の印は追加済み）",
+          "blockedBy": "投稿の係が予約（q1795386894789）を処理するのを待つ。処理後に結果メモと、/admin/analytics の utm_campaign=hospital_map の流入を読む",
           "note": "いまの入口は使い方ヘルプのタイルだけ。検討：ホームに『病院』のタイルを足すか／歯科（市の一覧に39件）を足すか／市の一覧にある土曜午後・日曜・祝日の診療の印を載せるか（事業主は 11/23 に『診療時間は載せない』を選択）／SNS・ベルでの周知。"
         },
         {
