@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-22",
+          "title": "🍡 だんごまつり御礼リールの製作と3媒体への投稿 0.5時間",
+          "category": "広報",
+          "outputs": [
+            "scripts/promo/dango_thanks/make.py",
+            "scripts/promo/dango_thanks/README.md",
+            "site/assets/sns/2026-11-22_dango-thanks/video.mp4",
+            "site/assets/sns/2026-11-22_dango-thanks/cover.jpg",
+            "site/assets/sns/2026-11-22_dango-thanks/投稿文.md"
+          ],
+          "hours": 0.5,
+          "partnerApproved": true,
+          "note": "登録者数を本番DBで実測（71名・11/21に10名・11/22に10名・前夜1名）→ PILでコマを描く道具を新規作成 → 表紙検査合格 → 事業主の指摘で「このゆびとまれ（提案・投票）」の場面を追加 → 承認後に3媒体へ登録（予約 q1795339006522／q1795339017564／q1795339027821）→ Threads・Instagram・Facebook の実投稿を読み戻して確認。hours は見積もり：このセッションは元のセッションから分かれた続きで、session-stats の値（11.3時間）は元のセッションの履歴を含むため使っていない。 session: d80f3209-9d3f-493c-acd7-933370575666 / output: 1,126,077 / cost: $445.66"
+        },
+        {
+          "date": "2026-11-22",
           "title": "チラシの読み取りで分野を AI が選ぶようにし、QRコードのリンクを申込フォームの欄へ入れる／会議の議題⑦の追加 0.8時間",
           "category": "実装",
           "outputs": [
