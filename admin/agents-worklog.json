@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-23",
+          "title": "Vercel の運用データ30日分を取り、グラフの資料ページを作成 0.8時間",
+          "category": "分析",
+          "outputs": [
+            "cbi-site：admin/proposals/vercel-usage.html（新規）",
+            "cbi-site：admin/changelog.json・admin/agents-worklog.json",
+            "CBI：scripts/build_vercel_usage.py・scripts/vercel_usage_template.html（作り直しの道具）",
+            "CBI：scripts/_vercel_ops_daily.json（運用データ30日分）・scripts/_vercel_billing_daily.json（請求データ 11/5〜11/22・未使用）"
+          ],
+          "hours": 0.8,
+          "partnerApproved": false,
+          "note": "事業主の依頼「Vercel運用状況を見える化して、グラフにしたい」。はじめ請求データ（金額）で作りかけ、事業主の指摘「請求データではなく、サーバーの運用データ」で切り替えた。有料プランになって Observability の問い合わせが通るようになった（10/18 は 402 だった）。取り方：Vercel コネクタ create_observability_query・scope は owner＋チームID・granularity {days:1}・bucketTimezone Asia/Tokyo。30日の範囲で p75 の応答時間は時間切れ（408）になり、14日分しか取れなかったので載せていない。CPUの時間は30日で2時間38分で、10/26 に Usage 画面で読んだ 6時間24分と合わない＝計測の対象が請求と違う可能性（未確認）。ページには「目安」と書いた。PC幅・スマホ幅375pxで表示を確認。自動更新は未整備（データ取得は Claude の手作業）。hours は見積もり。 session: d80f3209-9d3f-493c-acd7-933370575666"
+        },
+        {
+          "date": "2026-11-23",
           "title": "運営会議の議題ページに、同時入力できる会議の記録欄を追加 1.0時間",
           "category": "実装",
           "outputs": [
