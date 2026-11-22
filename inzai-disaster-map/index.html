@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況マップ">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261110b">
+    <link rel="stylesheet" href="./styles.css?v=20261122a">
   </head>
   <body data-view="gate">
     <!-- 2026-10-24 事業主指示「スマホで使いにくい」：開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
@@ -897,8 +897,8 @@
             <div class="quick-record-buttons">
               <button type="button" class="quick-record-btn is-blocked" id="quick-blocked-btn">🚫 通れない道を追加</button>
               <button type="button" class="quick-record-btn is-passed" id="quick-passed-btn">🔵 通れた道を追加</button>
-              <button type="button" class="quick-record-btn is-list" id="quick-profile-btn" aria-label="標高の断面図（道をなぞる）" title="道をなぞって標高の断面図を見る">⛰</button>
-              <button type="button" class="quick-record-btn is-list" id="quick-list-btn" aria-label="記録の一覧（時間順）">📋</button>
+              <button type="button" class="quick-record-btn is-list" id="quick-profile-btn" aria-label="標高の断面図（道をなぞる）" title="道をなぞって標高の断面図を見る"><span class="qr-ico" aria-hidden="true">⛰</span><span class="qr-lbl">道の高さ</span></button>
+              <button type="button" class="quick-record-btn is-list" id="quick-list-btn" aria-label="記録の一覧（時間順）"><span class="qr-ico" aria-hidden="true">📋</span><span class="qr-lbl">記録一覧</span></button>
             </div>
             <p class="quick-record-status" id="quick-record-status" role="status">地図の道をタップしてなぞる → 完了（GPS不要）</p>
             <p class="quick-undo" id="quick-undo" hidden></p>

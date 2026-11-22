@@ -4,6 +4,14 @@
   "entries": [
     {
       "date": "2026-11-22",
+      "type": "fix",
+      "target": "inzai-disaster-map/index.html, styles.css",
+      "title": "🗺 冠水マップの下のボタン2つに言葉が付いた（⛰ 道の高さ／📋 記録一覧）",
+      "detail": "利用者の声「断面と履歴は見ても分かりづらい」。絵だけだった2つのボタンに、絵の下の短い言葉を付けた。スマホ幅（375px）で4つのボタンがはみ出さないことを確認。押したときの動きは変えていない。",
+      "author": "A1 Core（Claude Code・中司）"
+    },
+    {
+      "date": "2026-11-22",
       "type": "content",
       "target": "assets/sns/2026-11-22_dango-thanks/",
       "title": "🍡 だんごまつり御礼リール（登録メンバー71名）が Threads・Instagram・Facebook に出た",

@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-22",
+          "title": "一斉お知らせの送信（今日の改善5点）／冠水マップの下のボタンに言葉を付ける 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "本番：notifications 73件（題名「みなさんの声から、5つ直しました（11月22日）」・リンク /help/faq・プッシュ9台）",
+            "site：inzai-disaster-map/index.html（quick-profile-btn・quick-list-btn に言葉）・styles.css（末尾に追記・v=20261122a）・admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主の指示（2026-11-22 夜）：「運営からベル通知でメンバーに連絡したい」「本日の要望を受けての改善です」→ 文面を見せて「OK」をもらってから送信（notifyAllMembers・19:58）。DB で73人分を読み戻し。「冠水マップのボタンで断面と履歴は見ても分かりづらい」→ 絵だけの2つに「道の高さ」「記録一覧」を付け、組み込みブラウザのスマホ幅で4つが収まることを確認（99・99・58・58px）。session: 2f6408f2-c1e8-4253-b60b-0c0d4c7a8782 / output: 1,214,345 / cost: $492.66（セッション全体。うち本件は約0.1時間）"
+        },
+        {
+          "date": "2026-11-22",
           "title": "使い方に「よくある質問（Q&A）」を新設／ログイン画面に LINE の4けたの数字の案内／催しのチラシ登録にカメラのボタン 0.2時間",
           "category": "実装",
           "outputs": [
