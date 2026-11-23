@@ -17,6 +17,20 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-24",
+          "title": "食レポ住所の自動調べからキッチンカーを除外（判定関数・巡回スクリプト・管理画面の表示・テスト）0.1時間",
+          "category": "保守",
+          "outputs": [
+            "cidao/src/lib/gourmet-area-class.ts",
+            "cidao/scripts/gourmet-address-auto.ts",
+            "cidao/src/app/admin/gourmet/_components/CandidateCard.tsx",
+            "cidao/src/lib/__tests__/gourmet-area-class.test.ts"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主指示「キッチンカーは住所が出てこないので最初から巡回の対象外に」。未処理9店のうち2店（既知のキッチンカー）だけが該当することを本番データで確認。CiDAO f889b8b。session: c321b04f-baf3-468f-b744-1ea2b90f3434 / output: 9,736 / cost: $2.86"
+        },
+        {
           "date": "2026-11-23",
           "title": "CiDAOホーム：中段を濃い塗り・下段を線だけの丸へ（色の強弱の入れ替え） 0.2時間",
           "category": "実装",
