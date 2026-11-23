@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-23",
+          "title": "11/23 運営会議の結果のまとめページを作成・公開 0.6時間",
+          "category": "事務",
+          "outputs": [
+            "cbi-site：admin/proposals/meeting-20261123-minutes-v1.html（新規）",
+            "cbi-site：admin/proposals/meeting-20261123-agenda-v1.html（結果へのリンク）",
+            "cbi-site：admin/index.html（資料タブのカード）",
+            "cbi-site：admin/changelog.json・admin/agents-worklog.json"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "事業主の依頼「議事録をサイトに反映して下さい」。録音の文字起こし（92ページ）と、会議中に議題ページへ入力されたメモ21件から、議題ごとに決定・要点・持ち越しを整理した。出席者の名前は新井代表と中司だけ出し、ほかは「メンバー」とした。第三者の個人の話・家庭の話・未納額・録音に入った合言葉は載せていない。担当と期限は、会議で言われたものだけ書いた。メンバー確認前の案。hours は見積もり。 session: d80f3209-9d3f-493c-acd7-933370575666"
+        },
+        {
+          "date": "2026-11-23",
           "title": "11/23 運営会議の文字起こしを読み、団体紹介冊子の原稿「団体の自慢」を書き換え 0.4時間",
           "category": "事務",
           "outputs": [
