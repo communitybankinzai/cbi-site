@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況マップ">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261124b">
+    <link rel="stylesheet" href="./styles.css?v=20261124c">
   </head>
   <body data-view="gate">
     <!-- 2026-10-24 事業主指示「スマホで使いにくい」：開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
@@ -1865,6 +1865,12 @@
           <h2>このマップの使い方</h2>
           <button type="button" class="icon-button" data-close-dialog aria-label="閉じる">×</button>
         </div>
+        <!-- 冠水した道の記録のしかた・直し方の動画（2026-11-24・CiDAO の /help/bousai-map と同じ動画） -->
+        <section class="help-video" aria-label="冠水した道の記録のしかた・直し方（動画）">
+          <h3>🎬 冠水した道の記録のしかた・直し方（約1分30秒・字幕つき）</h3>
+          <video controls playsinline preload="none" poster="../assets/help/bousai-road-record.jpg" src="../assets/help/bousai-road-record.mp4"></video>
+          <p>「🚫 通れない道」「🔵 通れた道」で地図の道をなぞり、「いつの状況？」で通った時刻を入れて「完了」。送ったあと24時間は、送ったスマホから線・時刻・メモを直せます（地図の線を押して「✏ この記録を直す」）。</p>
+        </section>
         <p class="modal-help">実際の運用を想定した操作を試せます。SNS投稿はリンクだけで先に登録し、場所が不明なときは投稿者へ確認してからピンを置く構想です。</p>
         <ol class="help-steps">
           <li><b>投稿リンクを登録</b><span>Instagramなどの投稿URLを貼ります。場所は空欄で構いません。</span></li>
@@ -2057,7 +2063,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261029a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261124b"></script>
+    <script src="./app.js?v=20261124c"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>

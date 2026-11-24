@@ -9776,6 +9776,51 @@ function setUndoLink(id) {
   });
 }
 
+// ---- スマホ：画面下に固定した記録の帯と、地図の重なりを避ける（2026-11-24）----
+// ① 地図の出典（Leaflet の部品・z-index 1000）が帯（900）の文字にかぶっていた → 下の部品を帯の高さ分だけ持ち上げる（CSS の --quick-bar-space）
+// ② 吹き出しが地図の上端に収まるよう地図が動くと、吹き出しの下（「✏ この記録を直す」など）が帯の裏に入っていた → 帯の上に収める
+function quickRecordBarRect() {
+  const bar = document.getElementById("quick-record-bar");
+  if (!bar || bar.hidden || bar.classList.contains("view-off") || getComputedStyle(bar).position !== "fixed") return null;
+  const rect = bar.getBoundingClientRect();
+  return rect.height > 0 ? rect : null;
+}
+function syncQuickBarSpace() {
+  // 地図の下端が帯より下にあるぶんだけ持ち上げる（ページを送ると変わるので、スクロールのたびに測り直す）
+  const rect = quickRecordBarRect();
+  const mapRect = map.getContainer().getBoundingClientRect();
+  const space = rect ? Math.max(0, Math.min(mapRect.height - 80, Math.ceil(mapRect.bottom - rect.top + 6))) : 0;
+  document.getElementById("map-pane")?.style.setProperty("--quick-bar-space", `${space}px`);
+}
+(() => {
+  const bar = document.getElementById("quick-record-bar");
+  if (bar && typeof ResizeObserver === "function") new ResizeObserver(syncQuickBarSpace).observe(bar);
+  if (bar && typeof MutationObserver === "function") new MutationObserver(syncQuickBarSpace).observe(bar, { attributes: true, attributeFilter: ["hidden", "class"] });
+  window.addEventListener("resize", syncQuickBarSpace);
+  document.addEventListener("scroll", syncQuickBarSpace, { passive: true, capture: true });   // ページ・中の枠のどちらのスクロールも拾う
+  syncQuickBarSpace();
+  map.on("popupopen", event => {
+    // Leaflet の自動の位置合わせ（autoPan）が終わってから測る
+    setTimeout(() => {
+      const el = event.popup?.getElement?.();
+      const bar = quickRecordBarRect();
+      if (!el || !bar || !map.hasLayer(event.popup)) return;
+      const overflow = el.getBoundingClientRect().bottom - (bar.top - 8);
+      if (overflow <= 0) return;
+      // まずページを上へ送る（地図の上に余白があるうちは、地図を動かさずに済む）
+      const mapTop = map.getContainer().getBoundingClientRect().top;
+      const scroll = Math.min(overflow, Math.max(0, Math.floor(mapTop)));
+      if (scroll > 0) window.scrollBy({ top: scroll, behavior: "auto" });
+      const rest = el.getBoundingClientRect().bottom - (bar.top - 8);
+      if (rest <= 0) return;
+      // それでも足りなければ、吹き出しの上端が地図の上端を越えない範囲で地図を動かす
+      const room = el.getBoundingClientRect().top - Math.max(0, map.getContainer().getBoundingClientRect().top) - 8;
+      const dy = Math.min(rest, Math.max(0, Math.floor(room)));
+      if (dy > 0) map.panBy([0, dy], { animate: false });
+    }, 350);
+  });
+})();
+
 // 記録を1件送る共通処理（GPSの現在地・軌跡・地図の長押しのいずれも同じ）
 // ============================================================
 // 🛣 記録した道を、道路に沿わせる（2026-09-24）

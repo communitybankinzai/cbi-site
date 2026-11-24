@@ -18,6 +18,27 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "防災MAP「直せない」不具合の修正・使い方動画2本（SNS・ヘルプ）・ヘルプ2か所掲載・スマホ表示3件修正 2.2時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/src/app/api/disaster/passed-roads/route.ts",
+            "C:/Repos/cidao/src/app/help/bousai-map/page.tsx",
+            "C:/Repos/cidao/src/app/help/page.tsx",
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/index.html",
+            "inzai-disaster-map/styles.css",
+            "inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "assets/help/bousai-road-record.mp4",
+            "assets/sns/2026-11-24_road-record-edit/",
+            "C:/Users/you08/OneDrive/CBI/scripts/promo/road_record_edit/",
+            "admin/changelog.json"
+          ],
+          "hours": 2.2,
+          "partnerApproved": false,
+          "note": "事業主「実際に直せない」→更新前の記録に✏が出ない原因を特定しサーバー問い合わせ（?own=）に変更。動画は Fable 5.2（汎用担当）に委譲して SNS版66秒・ヘルプ版89秒、自分で静止画を点検。掲載先は3択で「両方」、前からの不具合3件は3択で「直してから掲載」、SNSは11/25 12:00に3媒体で承認。前回記録（93,080）からの差分 220,227（動画担当を含む）。session: 5f83fd1c-857c-4f41-b1f8-f5f2760451b7 / output: 313,307 / cost: $91.76"
+        },
+        {
+          "date": "2026-11-24",
           "title": "防災MAP 本人の記録修正（24時間）と時刻指定の実装・本番API検証 0.48時間",
           "category": "実装",
           "outputs": [

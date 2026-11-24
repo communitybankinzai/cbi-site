@@ -3760,6 +3760,10 @@ body.embed-mode .cbi-home-link {
 .road-gps-options summary { cursor: pointer; font-size: 12px; color: #526477; margin-bottom: 6px; }
 body.citizen-road-editing { overflow: hidden; }
 .map-pane.is-citizen-drawing { position: fixed; inset: 0; z-index: 2000; height: 100dvh; background: #dfe8ec; }
+/* 用途の画面（body.view-focus）の地図の高さ指定（下の @media）より強くして、線を引く画面を本当に全画面にする（2026-11-24。以前は下に元のページが見えていた） */
+body.view-focus .map-pane.is-citizen-drawing { height: 100vh; height: 100dvh; min-height: 0; }
+/* スマホで記録の帯（画面下に固定）が出ている間は、地図の出典などの下の部品を帯の上へ持ち上げる（--quick-bar-space は app.js が帯の高さから入れる） */
+@media (max-width: 820px) { .map-pane .leaflet-bottom { margin-bottom: var(--quick-bar-space, 0px); } }
 .map-pane.is-citizen-drawing #map { height: 100%; cursor: crosshair; }
 .is-citizen-drawing .quick-record-bar, .is-citizen-drawing .map-status, .is-citizen-drawing .map-disclaimer, .is-citizen-drawing .map-legend { display: none; }
 /* 運営用：市民記録の管理（いたずらを地図から伏せる・2026-09-21） */
@@ -4388,3 +4392,9 @@ body.view-focus .legend-more { height: var(--legend-h, 37px); }
 /* 2026-11-22 事業主「断面と履歴は見ても分かりづらい」：絵だけだった2つのボタン（道の高さ・記録一覧）に、絵の下の言葉を付ける */
 .quick-record-btn.is-list { flex: 0 0 58px; padding: 4px 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 19px; line-height: 1; }
 .quick-record-btn.is-list .qr-lbl { font-size: 10px; font-weight: 700; line-height: 1.1; white-space: nowrap; letter-spacing: 0; }
+
+/* 使い方の画面の動画（冠水した道の記録のしかた・直し方・2026-11-24） */
+.help-video { margin: 0 0 12px; padding: 10px; border: 1px solid #d5dde6; border-radius: 10px; background: #f6f9fb; }
+.help-video h3 { margin: 0 0 8px; font-size: 14px; color: #16324f; }
+.help-video video { display: block; width: 100%; max-height: 60vh; border-radius: 8px; background: #000; }
+.help-video p { margin: 8px 0 0; font-size: 12px; line-height: 1.6; color: #526477; }

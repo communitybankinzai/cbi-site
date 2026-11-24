@@ -1,3 +1,12 @@
+## 2026-11-24 🎬 使い方の動画・スマホの記録の帯まわりの不具合3つ
+
+- **動画**：「使い方」（#help-dialog）の先頭に `.help-video`（`../assets/help/bousai-road-record.mp4`・表紙 `.jpg`・89秒・字幕焼き込み・preload none）。同じ動画を CiDAO の /help/bousai-map にも載せた（GitHub Pages から読む）。作り直しは `CBI\scripts\promo\road_record_edit\`（README.md）。**画面の文言・手順を変えたら動画も古くなる**ので作り直すこと。SNS版（66秒）は `site/assets/sns/2026-11-24_road-record-edit/`。
+- **線を引く画面が用途の画面で全画面にならなかった**（10/24 の用途の入口から）：`body.view-focus .map-pane`（≤820px の高さ指定）が `.map-pane.is-citizen-drawing` より強く、高さ693pxで止まり下に元のページが見えた。`body.view-focus .map-pane.is-citizen-drawing { height:100dvh }` を足した。
+- **スマホで地図の出典が記録の帯の文字にかぶった**：出典（Leaflet・z-index 1000）が帯（fixed・900）の上。`syncQuickBarSpace()` が地図の下端と帯の上端の差を `--quick-bar-space` に入れ、CSS で `.map-pane .leaflet-bottom` をその分持ち上げる（帯の大きさ・表示・スクロールのたびに測り直す。帯が fixed でない PC では0）。
+- **吹き出しの下が帯の裏に入った**：`map.on("popupopen")` の350ms後（autoPan の後）に、吹き出しの下端が帯の上端を越えていれば、まずページを上へ送り、足りなければ吹き出しの上端が地図の上端を越えない範囲で `map.panBy`。
+- **本人の直しで写真・SNS欄が隠れていなかった**：`#citizen-road-options label { display:flex }` が `hidden` に勝っていた。`label[hidden]` と `.citizen-photo-warn[hidden]` を `display:none` に（site ff262e5）。
+- **検証**：ローカル（幅375・`?notiles=1`）で、線を引く画面＝0〜812px、出典の下端が帯の上端より上（スクロール後も）、背の高い吹き出しの下端が帯の上端より上、本人の直しで写真・SNS・注意書きが display:none・普通の記録では表示、使い方の動画が読み込める（89.3秒）。**実機スマホは未確認**。版 app/styles 20261124c。
+
 ## 2026-11-24 ✏ 記録した本人が24時間は直せる／「いつの状況？」を畳まずに出し時刻を指定できる
 
 - **経緯**：事業主「引いた本人なら微調整できるようにした方が良いのでは？」「時間を遡って入れる場合、○分前か○時頃と入力できないと正確にアメダスと紐付けできないのでは？」→ 3択で **本人が24時間は直せる**・**欄を常に表示＋時刻指定** を選択。それまで本人は10分以内の取り消しだけ、線を引く画面の時刻は「いま〜12時間前」から選ぶだけ（しかも畳まれた中・既定は「いま」）で、時刻を指定できたのは長押しの記録だけだった。
