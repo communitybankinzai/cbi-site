@@ -147,6 +147,15 @@
         },
         {
           "date": "2026-11-24",
+          "title": "@casey.358 の長来を手登録＋Meta 開発者画面の確認（技術提供者は取り消せないと判明・保留）＋技術提供者の義務とビジネス認証の書類の調査 0.3時間",
+          "category": "調査",
+          "outputs": ["CiDAO gourmet_reports（手打ラーメン長来・Threads・manual）", "cidao/2026-11-24_Threadsアカウント巡回（食レポ）の権限申請の準備.md", "site/admin/agents-worklog.json"],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主がスマホで開発者画面を操作し threads_profile_discovery を標準アクセスまで追加。アプリレビューへの追加は技術提供者化（取り消し不可）が前提と分かり止めた。Meta の書類一覧と 2026-10-09 のブログで義務を確認。session: c321b04f-baf3-468f-b744-1ea2b90f3434 / output: 72,654 / cost: $20.42"
+        },
+        {
+          "date": "2026-11-24",
           "title": "Threads の食レポアカウント巡回の可否調査（実トークンで4種の API を試験）＋友和亭の手登録＋権限申請の準備ノート 0.3時間",
           "category": "調査",
           "outputs": [
@@ -11008,7 +11017,9 @@
           "title": "🧵 Threads の食レポアカウント巡回：threads_profile_discovery の上位権限を申請する（ビジネス認証→最小の巡回を作る→録画→申請）",
           "category": "実装",
           "priority": "中",
-          "note": "2026-11-24 事業主決定A（申請＋審査の間は手登録）。発端は Threads の @casey.358（Instagram 側は business_discovery 不可）。順番＝(1)プライバシーポリシーへ食レポの用途を追記（案はノート・公開前に事業主の確認）(2)CBI災害検索アプリのビジネス認証（任意団体で通るか不明・団体登録決定通知書を試す）(3)sns_monitor_accounts と gourmet_candidates に threads を許し、profile_posts で読む最小の巡回を作る (4)録画して threads_keyword_search と一緒に申請。手順と英語の用途説明は cidao/2026-11-24_Threadsアカウント巡回（食レポ）の権限申請の準備.md"
+          "note": "2026-11-24 事業主決定A（申請＋審査の間は手登録）。発端は Threads の @casey.358（Instagram 側は business_discovery 不可）。順番＝(1)プライバシーポリシーへ食レポの用途を追記（案はノート・公開前に事業主の確認）(2)CBI災害検索アプリのビジネス認証（任意団体で通るか不明・団体登録決定通知書を試す）(3)sns_monitor_accounts と gourmet_candidates に threads を許し、profile_posts で読む最小の巡回を作る (4)録画して threads_keyword_search と一緒に申請。手順と英語の用途説明は cidao/2026-11-24_Threadsアカウント巡回（食レポ）の権限申請の準備.md。11-24夕：アプリレビューに入れるには「技術提供者」になる必要があり、取り消せない（毎年のデータ利用確認などの義務つき）と分かり事業主決定Bで保留。threads_profile_discovery は標準アクセス（テスト準備完了）まで追加済み",
+          "status": "保留",
+          "blockedBy": "事業主の判断：ビジネス認証だけ先に試す／一般社団法人の登記まで待つ／申請をやめる"
         },
         {
           "due": "2026-12-10",
