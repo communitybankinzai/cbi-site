@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "主催者の開催実績に「別の団体です」の記録機能（新テーブル・候補の除外・取り消し一覧）0.2時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/supabase/migrations/20261124140000_organizer_distinct_pairs.sql",
+            "C:/Repos/cidao/src/lib/organizer-groups.ts",
+            "C:/Repos/cidao/src/lib/organizer-report-data.ts",
+            "C:/Repos/cidao/src/lib/__tests__/organizer-groups.test.ts",
+            "C:/Repos/cidao/src/app/admin/organizers/actions.ts",
+            "C:/Repos/cidao/src/app/admin/organizers/page.tsx"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "plans の「別の団体です」を実施して actuals へ移動。migration は pooler で適用（2回流して通る・RLS 有効・ポリシー4つ・GRANT 3ロール確認）。vitest 1123件・build exit 0。本番の管理画面で残り2件（千葉県男女共同参画センター・みんなのおうち らんか）を記録し候補0件、取り消し→再記録を確認。前回記録（output 119,231）からの差分。\nsession: 2e5df4de-440e-4931-9b21-457cbc040dea / output: 139,834 / cost: $23.79"
+        },
+        {
+          "date": "2026-11-24",
           "title": "CiDAO：トップページ刷新の一斉お知らせを会員76人へ送信（ベルだけ） 0.2時間",
           "category": "広報",
           "outputs": [
@@ -10945,13 +10961,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "未定",
-          "title": "📇 主催者の開催実績：似ている候補に「別の団体です」を記録して、次から出さないようにする",
-          "category": "実装",
-          "priority": "低",
-          "note": "2026-11-24 /admin/organizers 公開時の残り。今は押さなければ変わらないが、開くたびに同じ候補（最大150件）が出る。例：印西市商工会と『千葉県商工会連合会・印西市商工会』。"
-        },
         {
           "due": "未定",
           "title": "📇 主催者の開催実績：まとめ先を登録団体（organizations）に手で対応づける画面",
