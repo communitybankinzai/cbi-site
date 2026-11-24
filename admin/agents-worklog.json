@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "SNS告知→承認の直行リンク＋承認欄を最上部へ（commit 417f2cb） 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/src/app/events/[id]/_components/AnnounceEventButton.tsx",
+            "C:/Repos/cidao/src/app/admin/sns/page.tsx",
+            "C:/Repos/cidao/src/app/admin/sns/_components/AwaitingList.tsx",
+            "C:/Repos/cidao/src/lib/__tests__/awaiting-list-focus.test.ts"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主指摘「告知ボタン後の承認までスクロールが長い」。原因＝承認欄がページ7番目。A（?event=＆#approve で該当イベントだけ表示）＋B（承認欄を上部へ）を実施。tsc 0・vitest 1094件合格・Vercel READY。session: ac206554-ac2b-4311-a0d3-a59d8112d1f1 / output: 18,926 / cost: $7.02"
+        },
+        {
+          "date": "2026-11-24",
           "title": "主催者の開催実績に「別の団体です」の記録機能（新テーブル・候補の除外・取り消し一覧）0.2時間",
           "category": "実装",
           "outputs": [
