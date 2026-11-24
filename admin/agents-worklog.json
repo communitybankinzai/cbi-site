@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "イベントカレンダー上部の新着帯の追加・本番反映 0.15時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/src/app/events/_components/EventsBrowser.tsx",
+            "C:/Repos/cidao/src/app/events/page.tsx",
+            "C:/Repos/cidao/src/app/events/kodomo/page.tsx",
+            "admin/changelog.json"
+          ],
+          "hours": 0.15,
+          "partnerApproved": false,
+          "note": "事業主の指摘「どこにも新着表示がない」（スマホのカレンダー・11/24）を受け、3択から「上に新着の帯」を選択。ローカル（幅375px）で帯6件・子どもカレンダー0件を確認。前回記録（30,130）からの差分 14,674。session: 5f83fd1c-857c-4f41-b1f8-f5f2760451b7 / output: 44,804 / cost: $13.43"
+        },
+        {
+          "date": "2026-11-24",
           "title": "SNS告知→承認の直行リンク＋承認欄を最上部へ（commit 417f2cb） 0.2時間",
           "category": "実装",
           "outputs": [
