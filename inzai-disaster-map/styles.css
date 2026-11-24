@@ -3873,6 +3873,8 @@ body.sns-popup-open #quick-record-bar { display: none; }
 #citizen-road-options { margin-top: 10px; }
 #citizen-road-options summary { cursor: pointer; color: #526477; font-size: 13px; }
 #citizen-road-options label { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+/* 本人の直し（✏）では写真・SNSの欄を隠す。上の display:flex が hidden 属性に勝つので明示する（2026-11-24） */
+#citizen-road-options label[hidden], #citizen-road-editor .citizen-photo-warn[hidden] { display: none; }
 #citizen-road-options input, #citizen-road-options select { min-width: 0; flex: 1; padding: 8px; border: 1px solid #bac9d5; border-radius: 6px; font-size: 16px; }
 .citizen-road-notice { font-size: 11px; color: #526477; line-height: 1.5; margin: 8px 0 0; }
 .citizen-road-point span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 2px solid white; color: white; font-size: 12px; font-weight: bold; box-shadow: 0 1px 5px #0005; }
