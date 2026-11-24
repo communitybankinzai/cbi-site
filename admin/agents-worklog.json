@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "「New」札を同じ題名・同じ主催の回ごとに1件へ絞る修正・画面確認・本番反映 0.1時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/src/app/events/_components/EventsBrowser.tsx",
+            "admin/changelog.json"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主の「クライミング教室は1件だけに札を付けて」による。同じ規則でジョイフル本田 健康DAYS（2回）も1件になった。この行は同じセッションの2件目（1件目 0.2時間）。session: 5f83fd1c-857c-4f41-b1f8-f5f2760451b7 / output: 30,130 / cost: $8.90（セッション累計）"
+        },
+        {
+          "date": "2026-11-24",
           "title": "主催者名の似ている候補19件の仕分け・本番の名寄せ表へ反映 0.2時間",
           "category": "保守",
           "outputs": [
