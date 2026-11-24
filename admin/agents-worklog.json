@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "イベント一覧の「New」札（登録72時間以内）の実装・DB照合・本番反映 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/src/app/events/_components/EventsBrowser.tsx",
+            "C:/Repos/cidao/src/app/events/page.tsx",
+            "C:/Repos/cidao/src/app/events/kodomo/page.tsx",
+            "C:/Repos/cidao/src/lib/events-calendar.ts",
+            "admin/changelog.json"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "表示場所（リスト＋日の詳細）と判定（72時間）は事業主が3択から決定。ローカルで札16件＝DB の72時間以内の登録16件と一致を確認。調査と方針確認は元セッション 2e5df4de 側。session: 5f83fd1c-857c-4f41-b1f8-f5f2760451b7 / output: 18,421 / cost: $5.79"
+        },
+        {
+          "date": "2026-11-24",
           "title": "Threads の食レポアカウント巡回の可否調査（実トークンで4種の API を試験）＋友和亭の手登録＋権限申請の準備ノート 0.3時間",
           "category": "調査",
           "outputs": [

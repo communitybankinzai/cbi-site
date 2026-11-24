@@ -3,6 +3,14 @@
   "note": "サイト・管理画面への変更履歴。サイトに変更を加えるたびに先頭へ1件追記する（新しい順）。type は feature / fix / content / docs / deploy のいずれか。",
   "entries": [
     {
+      "date": "2026-11-24",
+      "type": "feature",
+      "target": "CiDAO イベント（/events・/events/kodomo）",
+      "title": "🆕 登録から72時間以内のイベントに「New」の札が付き、新しく載った催しがひと目で分かるようになった",
+      "detail": "リスト表示の各行と、カレンダーで日付を押したときの日の詳細一覧で、タイトルの前に赤い「New」の札が出る。登録（created_at）から72時間たつと自動で消える。カレンダーのマス目は狭いので付けない。子どもの居場所カレンダー（/events/kodomo）にも同じく出る。cidao 72120b2。",
+      "author": "中司（Claude Code）"
+    },
+    {
       "date": "2026-11-23",
       "type": "content",
       "target": "admin/proposals/meeting-20261123-agenda-v1.html",
