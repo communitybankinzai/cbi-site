@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "Threads の食レポアカウント巡回の可否調査（実トークンで4種の API を試験）＋友和亭の手登録＋権限申請の準備ノート 0.3時間",
+          "category": "調査",
+          "outputs": [
+            "cidao/2026-11-24_Threadsアカウント巡回（食レポ）の権限申請の準備.md",
+            "MOC_CiDAO.md",
+            "CiDAO gourmet_reports（友和亭・Threads・approval_route=manual）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "管理画面でキッチンカー2店の表示確認と却下、@_mimi.official.33 の巡回状況の確認も含む。この行は同じセッションの2件目（1件目 0.1時間）。session: c321b04f-baf3-468f-b744-1ea2b90f3434 / output: 41,186 / cost: $12.49（セッション累計）"
+        },
+        {
+          "date": "2026-11-24",
           "title": "通行止めの見張りの誤報（県の復旧見込み 48時間→8日）＋掲載中の通行止め40件の出典確認 0.2時間",
           "category": "保守",
           "outputs": [
@@ -10847,6 +10860,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🧵 Threads の食レポアカウント巡回：threads_profile_discovery の上位権限を申請する（ビジネス認証→最小の巡回を作る→録画→申請）",
+          "category": "実装",
+          "priority": "中",
+          "note": "2026-11-24 事業主決定A（申請＋審査の間は手登録）。発端は Threads の @casey.358（Instagram 側は business_discovery 不可）。順番＝(1)プライバシーポリシーへ食レポの用途を追記（案はノート・公開前に事業主の確認）(2)CBI災害検索アプリのビジネス認証（任意団体で通るか不明・団体登録決定通知書を試す）(3)sns_monitor_accounts と gourmet_candidates に threads を許し、profile_posts で読む最小の巡回を作る (4)録画して threads_keyword_search と一緒に申請。手順と英語の用途説明は cidao/2026-11-24_Threadsアカウント巡回（食レポ）の権限申請の準備.md"
+        },
         {
           "due": "2026-12-10",
           "title": "🖋 Museの社印の下絵3枚（依頼082）を受け取り、文字の紛れを拡大で確かめて良い案をSVGの線画に起こす",
