@@ -18,6 +18,26 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "主催者名の名寄せ＋団体別開催実績ページ（/admin/organizers・CSV）の設計・実装・本番確認 0.9時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/src/lib/organizer-names.ts",
+            "C:/Repos/cidao/src/lib/organizer-groups.ts",
+            "C:/Repos/cidao/src/lib/organizer-report-data.ts",
+            "C:/Repos/cidao/src/app/admin/organizers/page.tsx",
+            "C:/Repos/cidao/src/app/admin/organizers/actions.ts",
+            "C:/Repos/cidao/src/app/admin/organizers/csv/route.ts",
+            "C:/Repos/cidao/src/app/admin/page.tsx",
+            "C:/Repos/cidao/supabase/migrations/20261124090000_organizer_aliases.sql",
+            "C:/Repos/cidao/src/lib/__tests__/organizer-names.test.ts",
+            "C:/Repos/cidao/src/lib/__tests__/organizer-groups.test.ts"
+          ],
+          "hours": 0.9,
+          "partnerApproved": false,
+          "note": "本番743件の表記ゆれを実測→事業主決定（管理画面の実績表・名寄せ表方式・市の部署は課単位）→task-high に実装委譲→本番で管理者画面のまとめ・解除・CSVを確認、都市計画課の誤判定を修正。コスモスパレット／Cosmos Palette は本番でまとめ済み。同セッションで「New」表示を別セッションへ引き継ぎ（工数は引き継ぎ先で記録）。\nsession: 2e5df4de-440e-4931-9b21-457cbc040dea / output: 89,302 / cost: $12.16"
+        },
+        {
+          "date": "2026-11-24",
           "title": "イベント一覧の「New」札（登録72時間以内）の実装・DB照合・本番反映 0.2時間",
           "category": "実装",
           "outputs": [
