@@ -9723,6 +9723,22 @@ function ownEditablePassedRoads() {
     return fresh;
   } catch { return []; }
 }
+// 端末の控えだけに頼ると、更新前に送った記録や保存が消えた端末で「✏ 直す」が出なかった（2026-11-24 事業主の実機で発生）。
+// 一度でも記録したことのある端末（端末IDがある）だけ、サーバーに「この端末が24時間以内に送った記録」を聞いて控えを作り直す
+async function syncOwnEditablePassedRoads() {
+  const endpoint = String(APP_CONFIG.passedRoadsEndpoint || "").trim();
+  let deviceId = "";
+  try { deviceId = localStorage.getItem(PASSED_ROADS_KEY) || ""; } catch { return; }
+  if (!endpoint || !/^[A-Za-z0-9_-]{8,64}$/.test(deviceId)) return;
+  try {
+    const response = await fetch(`${endpoint}${endpoint.includes("?") ? "&" : "?"}own=${encodeURIComponent(deviceId)}`, { headers: { Accept: "application/json" }, cache: "no-store" });
+    if (!response.ok) return;
+    const payload = await response.json();
+    if (!Array.isArray(payload.own)) return;
+    localStorage.setItem(PASSED_ROADS_MINE_KEY, JSON.stringify(payload.own.map(x => ({ id: String(x.id), createdAt: x.createdAt }))));
+  } catch { /* 聞けなければ端末の控えのまま */ }
+}
+
 function isOwnEditablePassedRoad(id) {
   return ownEditablePassedRoads().some(x => String(x.id) === String(id));
 }
@@ -11140,6 +11156,7 @@ async function ensurePassedRoadsLayer(force) {
     document.querySelectorAll("[data-event-start-label]").forEach(node => { node.textContent = eventStartLabel() || "設定なし"; });
     renderPassedRoadsLayer();
     renderPassedRoadsList();
+    syncOwnEditablePassedRoads();   // 「✏ この記録を直す」を出す記録をサーバーに聞き直す（待たない）
     syncRainSlider();   // 雨量スライダーの範囲を、読み込んだ記録の最大雨量に合わせる（2026-10-25）
     applyRainNow();     // いまの雨量に連動中なら、読み込んだ記録で描き直す（2026-11-10。連動していなければ何もしない）
     const recent = roads.filter(road => passedRoadTier(road.endedAt).maxHours !== Infinity).length;

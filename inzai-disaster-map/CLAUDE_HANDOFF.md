@@ -5,7 +5,7 @@
 - **MAP**：`#citizen-road-when-box`（「いつの状況？」＋ `#citizen-road-when-at` の datetime-local ＋説明）を `<details id="citizen-road-options">`（メモ・写真・SNS）の外へ出した。選択肢に `custom`（🕐 時刻を指定・24時間以内）。災害（台風25号・8月豪雨）を選ぶと時刻の欄に代表の時刻が入り、期間内で直せる（直したらメモの印は「［台風25号のとき］」、そのままなら従来の「…代表値」）。部品は `CITIZEN_PAST_EVENTS`（⚠ API の `PAST_EVENTS` と期間を揃える）・`syncCitizenRoadWhen(presetAt)`・`citizenRoadEndedAt()`（{endedAt, pastEvent, representative} か {error}）。
 - **本人の直し**：送信成功時に `rememberOwnPassedRoad` が localStorage `cbi-disaster-passed-roads-mine-v1` にも24時間残す（`isOwnEditablePassedRoad`）。運営の合言葉が無い端末では、その記録の吹き出しに「✏ この記録を直す」（`data-passed-own-edit`）→ `startCitizenRoadEdit(road, center, true)`。運営の線直しと同じ画面で、時刻（いまの記録の時刻を初期値）とメモを直せる。写真・SNS・✂（線を切る）は出さない。完了で `PATCH {deviceId, path, note, endedAt(変えたときだけ)}`、成功したら手元の記録を書き換えて描き直す。編集を開くと、線をパネルに隠れない上側へ寄せる（運営の線直しも同じ）。
 - **検証（2026-11-24）**：本番 API で 本人の修正200（時刻を変えて1時間雨量 3.3→0.6mm に取り直し）・別端末404・30時間前 400 stale_time・本人の写真/切断 403・取り消し200。試験の行は DB から削除済み。画面はローカル（`?notiles=1`・幅375・PATCH は差し替え）で、時刻の判定（日本時間・24時間・期間外・空欄）、本人の直しの送信内容と画面の書き換え、409 の案内、運営の線直しで時刻欄が隠れること、普通の記録に戻ると隠しが残らないことを確認。**実機スマホと本番画面での通しは未確認**。
-- ⚠ 2026-11-24 より前に送った記録は、端末に24時間の控えが無いので「✏ 直す」は出ない（10分以内の取り消しの控えだけ）。
+- **同日追記（事業主「実際に直せない」）**：端末の控えだけで判定していたため、更新前（18:34）に送った記録に「✏ 直す」が出なかった。CiDAO に `GET ?own=<端末ID>`（その端末の24時間以内・伏せていない記録の id と作成時刻・no-store・cidao fc62091）を足し、MAP は `ensurePassedRoadsLayer` のたびに `syncOwnEditablePassedRoads()` で控えを作り直す（端末IDが無い＝記録したことのない端末は聞かない）。あわせて、記録・修正の直後の読み直し（`?t=`）ではサーバーの60秒の使い回しを飛ばす（cidao d0fdbc3。以前は送ったばかりの線が最長60秒出なかった）。本番で ?own= が自分の記録だけ返す・別端末は空・直後の ?t= に新しい記録が入ることを確認、試験の行は削除済み。版 app 20261124b。
 
 ## 2026-11-10 ☔ 冠水の用途は、開いたときの雨量に合わせて表示（雨なしの日は赤を出さない）＋段階ボタン
 
