@@ -17,6 +17,22 @@
     "A1": {
       "actuals": [
         {
+          "date": "2026-11-25",
+          "title": "CiDAO：「ホーム画面に追加」の回数を数える仕組み＋案内ページの Android ボタン 0.4時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/install-track.ts（回数の送信）・src/lib/__tests__/install-track.test.ts（6件）",
+            "cidao: src/lib/install-prompt.ts（追加できた合図で数える）・src/components/InstallPromptCapture.tsx（アイコンから開いた端末の初回を数える）・src/components/InstallNudge.tsx（出た・押された）",
+            "cidao: src/app/install/page.tsx（Android の「ホーム画面に追加する」ボタン）・src/app/admin/analytics/page.tsx（ページ別の表に日本語の名前）・src/app/api/track/view/route.ts（説明の1行）",
+            "コミット ffbed24（origin/main へ push・Vercel 本番反映を確認）",
+            "cidao/2026-11-24_ホーム画面への追加の案内（本登録の直後）.md（追記）",
+            "site/admin/changelog.json（1件）・agents-worklog.json（予定の注記の書き換え1件・追加1件）"
+          ],
+          "hours": 0.4,
+          "partnerApproved": false,
+          "note": "事業主の指示「改善提案実施」。前日の案内（32f9d2d）に添えた提案のうち、回数を数える・案内ページに Android のボタンを置く、の2つを実装した。3つ目（今の会員向けにホームへ1回出す）は、提案どおり数が出てから決めるので作っていない。回数の置き場は新しい表を作らず、ホーム下段の回数と同じ仕組み（閲覧数の表に /go/<名前> の仮のパスで入れる）に乗せた。iPhone には「追加できた」の合図が無いので、ホーム画面のアイコンから開いた端末の初回を数える形にした。検証：vitest 1,141件・tsc・build 通過。手元で端末の名乗りを変えて6通り（案内ページの Android＝ボタンあり・iPhone／パソコン／LINE の中＝なし、保存直後の案内＝出た1回・押した1回・開き直しても2回目は送らない、アイコンから開いた＝初回だけ）。本番で確かめ用の5件が表に入ることを確かめ、確かめ用の行は消した。書き方の検査（eslint）は /install に元からある指摘が1件残る（今回の変更が原因ではない・予定に登録）。Android と iPhone の実機は未確認（11/30 の予定）。 session: 3ba0139e-d00e-43e4-802a-f94325c0e1f8 / output: 424,966 / cost: $145.84"
+        },
+        {
           "date": "2026-11-24",
           "title": "CiDAO：本登録・保存の直後に「ホーム画面に追加」の案内を出す実装 0.5時間",
           "category": "実装",
@@ -11067,11 +11083,18 @@
       ],
       "plans": [
         {
+          "due": "未定",
+          "title": "🧹 案内ページ（/install）の書き方の検査の指摘1件（set-state-in-effect・元からある）を直すか決める",
+          "category": "保守",
+          "priority": "低",
+          "note": "2026-11-25 に /install へ Android のボタンを足したとき、eslint が src/app/install/page.tsx の端末の判定（useEffect の中の setDevice など）に react-hooks/set-state-in-effect を1件出した。11-25 の変更の前（HEAD 32f9d2d の版）でも同じ指摘が出ることを確かめてあり、動きに問題は無い（ビルドは通る）。直すなら、InstallNudge と同じ判定（lib/install-nudge.ts の detectDevice）に寄せると、「外部ブラウザで開く」の作りも1つにまとまる。依頼されていない直しなので手を付けていない。"
+        },
+        {
           "due": "2026-11-30",
           "title": "📲 「ホーム画面に追加」の案内を実機で確かめる（Android のボタン・iPhone の3手順・LINE の中からの開き直し）",
           "category": "保守",
           "priority": "中",
-          "note": "2026-11-24 に cidao 32f9d2d で、本登録・保存の直後のマイページに案内を出すようにした。手元では端末の名乗りを変えて確かめただけで、実機では試していない。確かめること：(1) Android の Chrome で、プロフィールを保存したあと「ホーム画面に追加する」を押すと確認が出て、追加できるか (2) iPhone の Safari で3手順が出るか・追加したアイコンから開くと案内が出なくなるか (3) LINE の中の画面で「Safari／Chromeで開く」を押すと外のブラウザで /install が開くか。あわせて採否を聞く提案：ボタンが押された回数・追加された回数を数える（今は分からない）／案内ページ（/install）にも Android のボタンを置く。くわしくは保管庫 cidao/2026-11-24_ホーム画面への追加の案内（本登録の直後）.md。"
+          "note": "2026-11-24 に cidao 32f9d2d で、本登録・保存の直後のマイページに案内を出すようにした。手元では端末の名乗りを変えて確かめただけで、実機では試していない。確かめること：(1) Android の Chrome で、プロフィールを保存したあと「ホーム画面に追加する」を押すと確認が出て、追加できるか (2) iPhone の Safari で3手順が出るか・追加したアイコンから開くと案内が出なくなるか (3) LINE の中の画面で「Safari／Chromeで開く」を押すと外のブラウザで /install が開くか。【11-25 追記】提案2つは実装済み（cidao ffbed24）：回数は管理画面のアクセス分析のページ別（直近7日）に「📲」の行で出る（/go/install-shown＝案内が出た・-tap＝保存直後のボタン・-tap-guide＝案内ページのボタン・-added＝Android で追加できた・-standalone＝ホーム画面のアイコンから開いた端末の初回）。11/30 にこの数を読み、今の会員への知らせ方（ホームに1回だけ出すか）を決める。-standalone には、数え始める前から追加していた人の初回も入るので、最初の数日は多めに出る。くわしくは保管庫 cidao/2026-11-24_ホーム画面への追加の案内（本登録の直後）.md。"
         },
         {
           "due": "2026-11-25",
