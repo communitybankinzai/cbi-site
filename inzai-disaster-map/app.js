@@ -9301,6 +9301,8 @@ function syncCitizenRoadWhen(presetAt) {
     input.max = toDateTimeLocal(new Date().toISOString());
     input.value = toDateTimeLocal(presetAt || new Date().toISOString());
   }
+  // 説明は「時刻を指定」と災害を選んだときだけ出す（パネルを小さく保つ・2026-11-24）
+  if (hint) hint.hidden = !(custom || event);
   if (hint) hint.textContent = event
     ? `${event.label}のときに通った時刻を、分かれば直してください（そのままなら運営が当てた代表の時刻で記録します）。`
     : custom

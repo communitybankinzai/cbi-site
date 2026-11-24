@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "防災MAP 道をなぞるパネルの縮小（地図を広く）0.17時間",
+          "category": "保守",
+          "outputs": [
+            "inzai-disaster-map/index.html",
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/styles.css",
+            "inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "admin/changelog.json"
+          ],
+          "hours": 0.17,
+          "partnerApproved": false,
+          "note": "事業主の実機の画面写し「地図のスペースが狭く線入力しにくい」→3択で「詰めて小さく」。幅375でパネル328→196px・地図473→604pxを実測。前回記録（313,307）からの差分 17,391。session: 5f83fd1c-857c-4f41-b1f8-f5f2760451b7 / output: 330,698 / cost: $100.24"
+        },
+        {
+          "date": "2026-11-24",
           "title": "防災MAP「直せない」不具合の修正・使い方動画2本（SNS・ヘルプ）・ヘルプ2か所掲載・スマホ表示3件修正 2.2時間",
           "category": "実装",
           "outputs": [

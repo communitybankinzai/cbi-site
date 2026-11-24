@@ -4398,3 +4398,18 @@ body.view-focus .legend-more { height: var(--legend-h, 37px); }
 .help-video h3 { margin: 0 0 8px; font-size: 14px; color: #16324f; }
 .help-video video { display: block; width: 100%; max-height: 60vh; border-radius: 8px; background: #000; }
 .help-video p { margin: 8px 0 0; font-size: 12px; line-height: 1.6; color: #526477; }
+
+/* スマホで道をなぞるときのパネルを詰める（2026-11-24 事業主「地図のスペースが狭く線入力しにくい」） */
+.citizen-road-when-hint[hidden] { display: none; }
+@media (max-width: 820px) {
+  .citizen-road-editor { padding: 10px 12px; font-size: 13px; }
+  .citizen-road-heading strong { font-size: 15px; }
+  #citizen-road-status { margin: 4px 0 6px; line-height: 1.4; }
+  .citizen-road-actions { gap: 6px; }
+  .citizen-road-actions button { min-height: 42px; padding: 6px 10px; }
+  .citizen-road-when-box { margin-top: 6px; }
+  .citizen-road-when-box select, .citizen-road-when-box input { padding: 6px 8px; }
+  .citizen-road-when-box input { margin-top: 4px; }
+  #citizen-road-options { margin-top: 6px; }
+  #citizen-road-options .citizen-road-notice { margin-top: 6px; }
+}

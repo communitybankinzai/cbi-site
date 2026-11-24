@@ -1,3 +1,9 @@
+## 2026-11-24 📏 道をなぞるパネルを詰めた（スマホで地図を広く）
+
+- **経緯**：事業主の実機の画面写し「地図のスペースが狭く線入力しにくい」→ 3択で「詰めて小さく」。「いつの状況？」を常に出した分、パネルが高くなっていた。
+- **変更**：注意書き（`.citizen-road-notice`）を「メモ・写真・SNS（任意）」（`#citizen-road-options`）の中へ移した。時刻の説明（`#citizen-road-when-hint`）は「時刻を指定」と災害を選んだときだけ出す（`syncCitizenRoadWhen` が hidden を切り替える）。≤820px で余白・ボタンの高さ（42px）・文字を詰めた。「いつの状況？」は出したまま。見出しの文言は動画のナレーションと合わせて変えていない。
+- **実測（幅375×812・`?notiles=1`）**：パネル 328px → 196px（時刻を指定したとき 274px）。地図の見える範囲 473px → 604px。⚠ 使い方の動画（ヘルプ版）は詰める前の見た目（時刻の説明と注意書きがパネルに出ている）。手順は同じなので作り直していない。版 app/styles 20261124d。
+
 ## 2026-11-24 🎬 使い方の動画・スマホの記録の帯まわりの不具合3つ
 
 - **動画**：「使い方」（#help-dialog）の先頭に `.help-video`（`../assets/help/bousai-road-record.mp4`・表紙 `.jpg`・89秒・字幕焼き込み・preload none）。同じ動画を CiDAO の /help/bousai-map にも載せた（GitHub Pages から読む）。作り直しは `CBI\scripts\promo\road_record_edit\`（README.md）。**画面の文言・手順を変えたら動画も古くなる**ので作り直すこと。SNS版（66秒）は `site/assets/sns/2026-11-24_road-record-edit/`。
