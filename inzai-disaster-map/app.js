@@ -3791,27 +3791,66 @@ document.addEventListener("click", event => {
   startCitizenRoadEdit(road, center);
 });
 
-function startCitizenRoadEdit(road, center) {
+// 吹き出しの「✏ この記録を直す」（記録した本人・24時間以内。2026-11-24）
+document.addEventListener("click", event => {
+  const button = event.target.closest?.("[data-passed-own-edit]");
+  if (!button) return;
+  const road = passedRoadsData.find(r => String(r.id) === button.dataset.passedOwnEdit);
+  if (!road || !Array.isArray(road.path) || road.path.length < 1) return;
+  const center = map._popup?.getLatLng?.() || map.getCenter();
+  map.closePopup();
+  startCitizenRoadEdit(road, center, true);
+});
+
+function startCitizenRoadEdit(road, center, owner = false) {
   startCitizenRoadDrawing(road.kind === "blocked" ? "blocked" : "passed");
   if (!citizenRoadDraft.active) return;
   const draft = citizenRoadDraft;
   draft.editId = String(road.id);
+  draft.editOwner = owner;
   draft.editPoint = road.path.length === 1;   // 地点1点の記録：点を動かすだけ（地図をタップしても点は増やさない。2026-09-25 事業主指示B）
   draft.points = road.path.map(p => [Number(p[0]), Number(p[1])]);
-  document.getElementById("citizen-road-title").textContent = draft.editPoint ? "📍 位置を直す（運営）" : "📐 線を直す（運営）";
+  document.getElementById("citizen-road-title").textContent = owner
+    ? "✏ 自分の記録を直す（線・時刻・メモ）"
+    : draft.editPoint ? "📍 位置を直す（運営）" : "📐 線を直す（運営）";
   const options = document.getElementById("citizen-road-options");
-  if (options) options.hidden = true;   // 時刻・メモ・写真は「✏ 時刻・メモを直す」で。ここでは線だけ
+  const whenBox = document.getElementById("citizen-road-when-box");
+  if (owner) {
+    // 本人：時刻とメモを直せる。写真・SNSの出典は直せない（運営だけ）ので隠す
+    document.getElementById("citizen-road-editor").dataset.edit = "owner";
+    ["citizen-road-photo", "citizen-road-source"].forEach(id => { const label = document.getElementById(id)?.closest("label"); if (label) label.hidden = true; });
+    document.querySelector("#citizen-road-editor .citizen-photo-warn")?.setAttribute("hidden", "");
+    if (options) options.open = false;   // 開いておくとパネルが地図の半分を覆い、直す線が隠れる（メモは「メモ…」を押すと出る）
+    document.getElementById("citizen-road-note").value = road.note || "";
+    // いまの記録の時刻を入れておく（24時間より前で災害の期間内なら、その災害を選ぶ）
+    const at = Date.parse(road.endedAt);
+    const eventKey = Object.keys(CITIZEN_PAST_EVENTS).find(k => at >= Date.parse(CITIZEN_PAST_EVENTS[k].from) && at <= Date.parse(CITIZEN_PAST_EVENTS[k].to) + 59000);
+    document.getElementById("citizen-road-when").value = Number.isFinite(at) && Date.now() - at > CITIZEN_WHEN_MAX_PAST_MS && eventKey ? eventKey : "custom";
+    syncCitizenRoadWhen(Number.isFinite(at) ? new Date(at).toISOString() : undefined);
+  } else {
+    if (options) options.hidden = true;   // 時刻・メモ・写真は「✏ 時刻・メモを直す」で。ここでは線だけ
+    if (whenBox) whenBox.hidden = true;
+  }
   drawCitizenRoadPreview();
   if (draft.editPoint) map.setView(draft.points[0], Math.max(map.getZoom(), 17), { animate: false });
-  const gaps = draft.editPoint ? [] : citizenRoadGaps(draft.points);
-  citizenRoadMessage(draft.editPoint
+  const gaps = draft.editPoint || owner ? [] : citizenRoadGaps(draft.points);   // 線を2本に切る（✂）は運営だけ
+  citizenRoadMessage(owner
+    ? "点を指で動かす／点の間の「＋」で経過点を足す。下で時刻・メモも直せます。→ 「完了」で保存します。取消で元のままです。"
+    : draft.editPoint
     ? "青い点を指で道路の上まで動かす → 「完了」で保存します（動かした位置のまま保存・道なりの補正はしません）。取消で元のままです。"
     : (gaps.length
       ? `⚠ 1km超 飛んでいる区間が${gaps.length}か所あります（${gaps.slice(0, 3).map(g => `${g.index + 1}→${g.index + 2}番 約${(g.meters / 1000).toFixed(1)}km`).join("・")}${gaps.length > 3 ? " ほか" : ""}）。その区間の「✂」を押すと線を2本に切れます。`
       : "点を指で動かす／点の間の「＋」で経過点を足す → 「完了」で保存します（動かした位置のまま保存・道なりの補正はしません）。取消で元のままです。"));
   // 全画面化（invalidateSize）のあとに、押した場所を中心に置く。ズームは今のまま（16未満なら16）
   const target = center ? L.latLng(center) : L.latLng(draft.points[Math.floor(draft.points.length / 2)]);
-  setTimeout(() => { if (draft.active) map.setView(target, Math.max(map.getZoom(), 16), { animate: false }); }, 350);
+  setTimeout(() => {
+    if (!draft.active) return;
+    map.setView(target, Math.max(map.getZoom(), 16), { animate: false });
+    // スマホでは記録のパネルが地図の下半分に重なり、直す線が隠れる。見えている上側の真ん中へ寄せる（2026-11-24）
+    const mapRect = map.getContainer().getBoundingClientRect();
+    const top = document.getElementById("citizen-road-editor").getBoundingClientRect().top;
+    if (top > mapRect.top + 80 && top < mapRect.bottom) map.panBy([0, Math.round(mapRect.height / 2 - (top - mapRect.top) / 2)], { animate: false });
+  }, 350);
 }
 
 // 地図のポップアップの「🗑 この記録を地図から伏せる」（通れた道・通れない道）
@@ -9073,7 +9112,7 @@ function updateCitizenRoadControls() {
   document.getElementById("citizen-road-cancel").disabled = draft.busy;
   const finish = document.getElementById("citizen-road-finish");
   finish.disabled = draft.busy || draft.points.length < (draft.editPoint ? 1 : 2) || remaining > 0;
-  finish.textContent = draft.kind === "profile" ? "完了（断面図を見る）" : draft.busy ? (draft.editId ? "保存中…" : "送信中…") : remaining ? `あと${remaining}秒` : draft.editId ? (draft.editPoint ? "完了（位置を保存・運営）" : "完了（線を保存・運営）") : `完了（${draft.kind === "blocked" ? "赤" : "青"}く塗る）`;
+  finish.textContent = draft.kind === "profile" ? "完了（断面図を見る）" : draft.busy ? (draft.editId ? "保存中…" : "送信中…") : remaining ? `あと${remaining}秒` : draft.editOwner ? "完了（直した内容を保存）" : draft.editId ? (draft.editPoint ? "完了（位置を保存・運営）" : "完了（線を保存・運営）") : `完了（${draft.kind === "blocked" ? "赤" : "青"}く塗る）`;
   document.querySelectorAll("#citizen-road-editor input, #citizen-road-editor select").forEach(node => { node.disabled = draft.busy; });
 }
 
@@ -9186,7 +9225,7 @@ function drawCitizenRoadPreview() {
   // 点と点の間の「＋」：動かす／押すと、そこに経過点が入る
   // 運営の線直しで、1km超（CITIZEN_ROAD_GAP_M）飛んでいる区間は「＋」の代わりに「✂」を出し、そこで線を2本に切れる（2026-09-26）。
   // なぞりで離れた2点をそのまま結んだ直線は、点を動かしても消せないため
-  const canSplit = Boolean(citizenRoadDraft.editId) && !citizenRoadDraft.editPoint;
+  const canSplit = Boolean(citizenRoadDraft.editId) && !citizenRoadDraft.editPoint && !citizenRoadDraft.editOwner;
   for (let i = 0; i + 1 < points.length; i++) {
     const a = points[i], b = points[i + 1];
     const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
@@ -9235,6 +9274,60 @@ function drawCitizenRoadPreview() {
   updateCitizenRoadControls();
 }
 
+// ---- 「いつの状況？」（2026-11-24 事業主決定：畳まずに出す・○時○分ごろを指定できる）----
+// 過去の災害の期間と代表の時刻。⚠ 期間は cidao の passed-roads/route.ts の PAST_EVENTS と揃えること。
+// 代表の時刻は「その災害でいちばん冠水していた時間帯」で、本人が時刻を入れなかったときだけ使う
+const CITIZEN_PAST_EVENTS = {
+  "event:typhoon25": { label: "台風25号", at: "2026-09-21T18:00:00+09:00", from: "2026-09-20T00:00:00+09:00", to: "2026-09-24T23:59:00+09:00" },
+  "event:aug2026": { label: "8月の豪雨", at: "2026-08-13T12:00:00+09:00", from: "2026-08-13T00:00:00+09:00", to: "2026-08-16T23:59:00+09:00" }
+};
+const CITIZEN_WHEN_MAX_PAST_MS = 24 * 60 * 60 * 1000;   // API と同じ（いまから24時間より前は、災害の期間内だけ）
+
+// 選んだ「いつ」に合わせて、時刻の入力欄を出す・範囲を決める
+function syncCitizenRoadWhen(presetAt) {
+  const select = document.getElementById("citizen-road-when");
+  const input = document.getElementById("citizen-road-when-at");
+  const hint = document.getElementById("citizen-road-when-hint");
+  if (!select || !input) return;
+  const event = CITIZEN_PAST_EVENTS[select.value] || null;
+  const custom = select.value === "custom";
+  input.hidden = !(custom || event);
+  if (event) {
+    input.min = toDateTimeLocal(event.from);
+    input.max = toDateTimeLocal(event.to);
+    input.value = toDateTimeLocal(presetAt || event.at);
+  } else if (custom) {
+    input.min = toDateTimeLocal(new Date(Date.now() - CITIZEN_WHEN_MAX_PAST_MS).toISOString());
+    input.max = toDateTimeLocal(new Date().toISOString());
+    input.value = toDateTimeLocal(presetAt || new Date().toISOString());
+  }
+  if (hint) hint.textContent = event
+    ? `${event.label}のときに通った時刻を、分かれば直してください（そのままなら運営が当てた代表の時刻で記録します）。`
+    : custom
+      ? "通った時刻（24時間以内）を入れてください。この時刻のアメダスの雨量と一緒に記録します。"
+      : "この時刻のアメダスの雨量と一緒に記録します。通った時刻に合わせてください。";
+}
+
+// 送る時刻を決める。{ endedAt, pastEvent, representative } か { error }
+function citizenRoadEndedAt() {
+  const value = document.getElementById("citizen-road-when").value;
+  const event = CITIZEN_PAST_EVENTS[value] || null;
+  if (value !== "custom" && !event) return { endedAt: new Date(Date.now() - Number(value) * 60000).toISOString(), pastEvent: null, representative: false };
+  const raw = document.getElementById("citizen-road-when-at").value;
+  const at = raw ? new Date(raw) : null;   // datetime-local は端末の時刻（日本時間）として読まれる
+  if (!at || Number.isNaN(at.getTime())) return { error: "時刻を入れてください。" };
+  if (event) {
+    if (at.getTime() < Date.parse(event.from) || at.getTime() > Date.parse(event.to) + 59000) {
+      return { error: `${event.label}の期間（${toDateTimeLocal(event.from).replace("T", " ")}〜${toDateTimeLocal(event.to).replace("T", " ")}）の時刻を入れてください。` };
+    }
+    const representative = toDateTimeLocal(at.toISOString()) === toDateTimeLocal(event.at);
+    return { endedAt: at.toISOString(), pastEvent: event, representative };
+  }
+  if (at.getTime() > Date.now() + 5 * 60000) return { error: "これから先の時刻は入れられません。" };
+  if (Date.now() - at.getTime() > CITIZEN_WHEN_MAX_PAST_MS) return { error: "24時間より前の時刻は入れられません（過去の災害は「台風25号のとき」などを選んでください）。" };
+  return { endedAt: at.toISOString(), pastEvent: null, representative: false };
+}
+
 function startCitizenRoadDrawing(kind) {
   // 道路データを先に読み始める。読めていれば、送るときに道なりへ直せる（待たせない）
   if (kind !== "profile") { try { ensureRoadSnapData(); } catch (error) { /* 読めなくても記録はできる */ } }
@@ -9261,6 +9354,7 @@ function startCitizenRoadDrawing(kind) {
   document.getElementById("citizen-road-editor").hidden = false;
   document.getElementById("citizen-road-editor").dataset.kind = kind;
   document.getElementById("citizen-road-when").value = "0";
+  syncCitizenRoadWhen();
   document.getElementById("citizen-road-note").value = "";
   document.getElementById("citizen-road-options").open = false;
   document.getElementById("map-pane").classList.add("is-citizen-drawing");
@@ -9311,12 +9405,14 @@ async function addCitizenRoadPoint(latlng) {
     }
     const kind = draft.kind;
     const when = document.getElementById("citizen-road-when").value;
+    const whenAt = document.getElementById("citizen-road-when-at").value;
     const note = document.getElementById("citizen-road-note").value;
     await finishCitizenRoadDrawing();
     if (citizenRoadDraft.active) return;   // 送れなかった（線と案内はそのまま残っている）
     startCitizenRoadDrawing(kind);
     if (!citizenRoadDraft.active) return;
     document.getElementById("citizen-road-when").value = when;
+    syncCitizenRoadWhen(whenAt ? new Date(whenAt).toISOString() : undefined);
     document.getElementById("citizen-road-note").value = note;
     citizenRoadDraft.points.push(point);
     drawCitizenRoadPreview();
@@ -9338,8 +9434,14 @@ function closeCitizenRoadDrawing() {
   citizenRoadDraft.points = [];
   citizenRoadDraft.editId = null;
   citizenRoadDraft.editPoint = false;
+  citizenRoadDraft.editOwner = false;
   const options = document.getElementById("citizen-road-options");
   if (options) options.hidden = false;
+  const whenBox = document.getElementById("citizen-road-when-box");
+  if (whenBox) whenBox.hidden = false;
+  delete document.getElementById("citizen-road-editor").dataset.edit;
+  ["citizen-road-photo", "citizen-road-source"].forEach(id => { const label = document.getElementById(id)?.closest("label"); if (label) label.hidden = false; });
+  document.querySelector("#citizen-road-editor .citizen-photo-warn")?.removeAttribute("hidden");
   clearInterval(citizenRoadDraft.timer);
   citizenRoadDraft.timer = null;
   citizenRoadDraftLayer.clearLayers();
@@ -9360,6 +9462,61 @@ async function finishCitizenRoadDrawing() {
     const path = draft.points.map(point => [...point]);
     closeCitizenRoadDrawing();
     showElevationProfile(path, "なぞった道");
+    return;
+  }
+  if (draft.editId && draft.editOwner) {
+    // 本人の直し（2026-11-24）：線・時刻・メモを PATCH。合言葉の代わりに端末IDを送り、サーバーが同じ端末・24時間以内かを確かめる。
+    // 時刻を変えるとサーバーがその時刻のアメダスの雨量を取り直す
+    const when = citizenRoadEndedAt();
+    if (when.error) { citizenRoadMessage(when.error, true); document.getElementById("citizen-road-when-at")?.focus(); return; }
+    const id = draft.editId;
+    const road = passedRoadsData.find(r => String(r.id) === id);
+    const path = draft.points.map(point => [Number(point[0]), Number(point[1])]);
+    const note = document.getElementById("citizen-road-note").value.replace(/\s+/g, " ").trim().slice(0, 200);
+    const body = { deviceId: passedRoadDeviceId(), path, note };
+    const timeChanged = !road || toDateTimeLocal(road.endedAt) !== toDateTimeLocal(when.endedAt);
+    if (timeChanged) body.endedAt = when.endedAt;
+    draft.busy = true;
+    updateCitizenRoadControls();
+    citizenRoadMessage(timeChanged ? "保存しています…（新しい時刻の雨量を取り直しています）" : "保存しています…");
+    try {
+      const endpoint = String(APP_CONFIG.passedRoadsEndpoint || "").trim();
+      const response = await fetch(`${endpoint}?id=${encodeURIComponent(id)}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const reasons = {
+          too_late: "送信から24時間を過ぎたため直せません（直したいときは「💬 要望を送る」で運営へ）",
+          not_found: "この端末から送った記録ではないため直せません",
+          hidden: "取り消した記録は直せません",
+          stale_time: "24時間より前の時刻は入れられません（過去の災害は「台風25号のとき」などを選んでください）",
+          future_time: "これから先の時刻は入れられません",
+          outside_inzai: "印西市の外だけの線は保存できません",
+          too_long: "線が長すぎます（30kmまで）"
+        };
+        throw new Error(reasons[result.error] || result.error || `HTTP ${response.status}`);
+      }
+      draft.busy = false;
+      closeCitizenRoadDrawing();
+      // 配信側の短いキャッシュで古い内容が返ることがあるので、保存した内容をその場で画面に入れてから描き直す
+      if (road) {
+        road.path = path;
+        road.pointCount = Number(result.pointCount) || path.length;
+        road.lengthM = Number(result.lengthM) || passedRoadPathLengthM(path);
+        road.note = note;
+        if (result.endedAt) road.endedAt = result.endedAt;
+        if (result.rain) road.rain = { ...(road.rain || {}), ...result.rain };
+        renderPassedRoadsLayer();
+        renderPassedRoadsList();
+      }
+      focusPassedRoad(id);
+      setPassedRoadRecordStatus(timeChanged ? "直しました。雨量は新しい時刻で取り直しています。" : "直しました。", "");
+    } catch (error) {
+      draft.busy = false;
+      citizenRoadMessage(`保存できませんでした（${error?.message || "接続エラー"}）。線と入力はそのままです。`, true);
+      updateCitizenRoadControls();
+    }
     return;
   }
   if (draft.editId) {
@@ -9409,15 +9566,11 @@ async function finishCitizenRoadDrawing() {
   // 台風25号の冠水を集め直すため、API 側も PAST_EVENTS の期間だけ後から受けるようにした。
   // ⚠ 期間と代表の時刻は cidao の passed-roads/route.ts の PAST_EVENTS と揃えること。
   // 代表の時刻は「その災害でいちばん冠水していた時間帯」で、本人の申告ではない。メモにその旨を残す。
-  const PAST_EVENT_TIMES = {
-    "event:typhoon25": { label: "台風25号", at: "2026-09-21T18:00:00+09:00" },
-    "event:aug2026": { label: "8月の豪雨", at: "2026-08-13T12:00:00+09:00" }
-  };
-  const whenValue = document.getElementById("citizen-road-when").value;
-  const pastEvent = PAST_EVENT_TIMES[whenValue] || null;
-  const endedAt = pastEvent
-    ? new Date(pastEvent.at).toISOString()
-    : new Date(Date.now() - Number(whenValue) * 60000).toISOString();
+  // 2026-11-24：本人が時刻を入れられるようにした（citizenRoadEndedAt）。代表の時刻のままのときだけ、メモに「代表値」と残す
+  const when = citizenRoadEndedAt();
+  if (when.error) { citizenRoadMessage(when.error, true); document.getElementById("citizen-road-when-at")?.focus(); return; }
+  const pastEvent = when.pastEvent;
+  const endedAt = when.endedAt;
   draft.busy = true;
   updateCitizenRoadControls();
   citizenRoadMessage("道路に合わせています…");
@@ -9432,7 +9585,7 @@ async function finishCitizenRoadDrawing() {
       const raw = String(document.getElementById("citizen-road-source")?.value || "").trim();
       return /^https?:\/\//i.test(raw) ? [raw] : [];
     })(),
-    note: (pastEvent ? `［${pastEvent.label}のとき・時刻は運営が当てた代表値］ ` : "")
+    note: (pastEvent ? (when.representative ? `［${pastEvent.label}のとき・時刻は運営が当てた代表値］ ` : `［${pastEvent.label}のとき］ `) : "")
       + document.getElementById("citizen-road-note").value.trim().slice(0, 160)
   });
   draft.busy = false;
@@ -9551,6 +9704,27 @@ function rememberOwnPassedRoad(id, createdAt) {
   const list = ownPassedRoads().filter(x => x.id !== id);
   list.push({ id, createdAt });
   localStorage.setItem(PASSED_ROADS_OWN_KEY, JSON.stringify(list));
+  try {
+    const mine = ownEditablePassedRoads().filter(x => x.id !== id);
+    mine.push({ id, createdAt });
+    localStorage.setItem(PASSED_ROADS_MINE_KEY, JSON.stringify(mine));
+  } catch {}
+}
+
+// ✏ 自分の記録を直す（2026-11-24 事業主決定）：送信から24時間以内・同じ端末からだけ、線・時刻・メモを直せる。
+// サーバー側は cidao passed-roads/route.ts の PATCH（合言葉なし＝deviceId と時間を確認）
+const PASSED_ROADS_MINE_KEY = "cbi-disaster-passed-roads-mine-v1";
+const OWNER_EDIT_MS = 24 * 60 * 60 * 1000;
+function ownEditablePassedRoads() {
+  try {
+    const list = JSON.parse(localStorage.getItem(PASSED_ROADS_MINE_KEY) || "[]");
+    const fresh = Array.isArray(list) ? list.filter(x => x && Date.now() - new Date(x.createdAt).getTime() < OWNER_EDIT_MS) : [];
+    localStorage.setItem(PASSED_ROADS_MINE_KEY, JSON.stringify(fresh));
+    return fresh;
+  } catch { return []; }
+}
+function isOwnEditablePassedRoad(id) {
+  return ownEditablePassedRoads().some(x => String(x.id) === String(id));
 }
 
 function isOwnRecentPassedRoad(id) {
@@ -10357,6 +10531,10 @@ function passedRoadShape(road) {
 
 // 運営の合言葉がある端末だけ、いたずら・誤った記録を地図から伏せるボタンを出す（冠水の投稿と同じ作り）
 function passedRoadHideButtonHtml(road) {
+  // 記録した本人（同じ端末・24時間以内）には「✏ 直す」を出す（運営の端末では運営のボタンを出す）
+  if (!moderationKey() && road?.id != null && isOwnEditablePassedRoad(road.id)) {
+    return `<br><button type="button" class="kansui-hide-btn" data-passed-own-edit="${escapeAttribute(String(road.id))}">✏ この記録を直す（線・時刻・メモ／送信から24時間以内）</button>`;
+  }
   return moderationKey() && road?.id != null
     ? `<br><button type="button" class="kansui-hide-btn" data-passed-edit="${escapeAttribute(String(road.id))}">✏ 時刻・メモを直す（運営）</button>` +
       `<br><button type="button" class="kansui-hide-btn" data-passed-reshape="${escapeAttribute(String(road.id))}">${road.path.length > 1 ? "📐 線を直す（点を動かす・運営）" : "📍 位置を直す（点を動かす・運営）"}</button>` +
@@ -11308,6 +11486,7 @@ function initPassedRoadRecorder() {
   });
   document.getElementById("citizen-road-cancel").addEventListener("click", closeCitizenRoadDrawing);
   document.getElementById("citizen-road-finish").addEventListener("click", finishCitizenRoadDrawing);
+  document.getElementById("citizen-road-when")?.addEventListener("change", () => syncCitizenRoadWhen());
   L.DomEvent.disableClickPropagation(document.getElementById("citizen-road-editor"));
   L.DomEvent.disableScrollPropagation(document.getElementById("citizen-road-editor"));
   document.addEventListener("keydown", event => {

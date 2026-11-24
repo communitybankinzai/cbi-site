@@ -3862,6 +3862,14 @@ body.sns-popup-open #quick-record-bar { display: none; }
 .citizen-road-actions #citizen-road-finish { flex: 1; background: #b8322c; color: white; border-color: #b8322c; }
 .citizen-road-editor[data-kind="passed"] #citizen-road-finish { background: #1565c0; border-color: #1565c0; }
 .citizen-road-actions button:disabled { opacity: .5; cursor: default; }
+/* 「いつの状況？」は畳まずに出す（アメダスの雨量と結び付くため・2026-11-24） */
+.citizen-road-when-box { margin-top: 10px; }
+.citizen-road-when-box label { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #16324f; }
+.citizen-road-when-box select, .citizen-road-when-box input { min-width: 0; flex: 1; padding: 8px; border: 1px solid #bac9d5; border-radius: 6px; font-size: 16px; }
+.citizen-road-when-box input { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; }
+.citizen-road-when-box input[hidden] { display: none; }
+.citizen-road-when-hint { margin: 4px 0 0; font-size: 11px; color: #526477; line-height: 1.5; }
+.citizen-road-editor[data-kind="profile"] .citizen-road-when-box { display: none; }
 #citizen-road-options { margin-top: 10px; }
 #citizen-road-options summary { cursor: pointer; color: #526477; font-size: 13px; }
 #citizen-road-options label { display: flex; align-items: center; gap: 8px; margin-top: 8px; }

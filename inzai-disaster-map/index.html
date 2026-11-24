@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況マップ">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261122a">
+    <link rel="stylesheet" href="./styles.css?v=20261124a">
   </head>
   <body data-view="gate">
     <!-- 2026-10-24 事業主指示「スマホで使いにくい」：開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
@@ -917,14 +917,19 @@
               <button type="button" id="citizen-road-cancel">取消</button>
               <button type="button" id="citizen-road-finish" disabled>完了（赤く塗る）</button>
             </div>
-            <details id="citizen-road-options"><summary>時刻・メモ（任意）</summary>
-              <label>いつの状況？ <select id="citizen-road-when"><option value="0">いま</option><option value="30">30分前</option><option value="60">1時間前</option><option value="120">2時間前</option><option value="180">3時間前</option><option value="360">6時間前</option><option value="720">12時間前</option><option value="event:typhoon25">🌀 台風25号のとき（9/20〜9/24）</option><option value="event:aug2026">☔ 8月の豪雨のとき（8/13〜8/16）</option></select></label>
+            <!-- 時刻はアメダスの雨量と結び付くので、畳まずに見せる（2026-11-24 事業主決定） -->
+            <div class="citizen-road-when-box" id="citizen-road-when-box">
+              <label>いつの状況？ <select id="citizen-road-when"><option value="0">いま</option><option value="custom">🕐 時刻を指定</option><option value="30">30分前</option><option value="60">1時間前</option><option value="120">2時間前</option><option value="180">3時間前</option><option value="360">6時間前</option><option value="720">12時間前</option><option value="event:typhoon25">🌀 台風25号のとき（9/20〜9/24）</option><option value="event:aug2026">☔ 8月の豪雨のとき（8/13〜8/16）</option></select></label>
+              <input type="datetime-local" id="citizen-road-when-at" aria-label="通った時刻" hidden>
+              <p class="citizen-road-when-hint" id="citizen-road-when-hint">この時刻のアメダスの雨量と一緒に記録します。通った時刻に合わせてください。</p>
+            </div>
+            <details id="citizen-road-options"><summary>メモ・写真・SNS（任意）</summary>
               <label>メモ <input id="citizen-road-note" type="text" maxlength="200" placeholder="例：タイヤ半分まで冠水"></label>
               <label>📷 写真（任意・1枚） <input id="citizen-road-photo" type="file" accept="image/*"></label>
               <label>🔗 SNSの投稿URL（任意） <input id="citizen-road-source" type="url" inputmode="url" maxlength="2048" placeholder="https://www.instagram.com/p/..."></label>
               <p class="citizen-photo-warn">⚠ <strong>人の顔・車のナンバー・表札が写らないように</strong>してください。他人の敷地には入らないでください。写真はすぐ公開され、あとから差し替えはできません（間違えたら記録ごと取り消してください）。</p>
             </details>
-            <p class="citizen-road-notice">完了すると匿名の記録として公開されます。間違えた記録は10分以内なら取り消せます。</p>
+            <p class="citizen-road-notice">完了すると匿名の記録として公開されます。間違えた記録は10分以内なら取り消せます。24時間以内なら、同じ端末から線・時刻・メモを直せます（地図の線を押して「✏ 直す」）。</p>
           </section>
           <div class="location-pick-banner" id="location-pick-banner" hidden>
             <div>
@@ -2052,7 +2057,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261029a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261110c"></script>
+    <script src="./app.js?v=20261124a"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>

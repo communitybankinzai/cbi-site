@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "防災MAP 本人の記録修正（24時間）と時刻指定の実装・本番API検証 0.48時間",
+          "category": "実装",
+          "outputs": [
+            "C:/Repos/cidao/src/app/api/disaster/passed-roads/route.ts",
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/index.html",
+            "inzai-disaster-map/styles.css",
+            "inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "admin/changelog.json"
+          ],
+          "hours": 0.48,
+          "partnerApproved": false,
+          "note": "事業主の提案（本人の微調整・○時頃の入力でアメダスと正しく紐付け）を、3択で「本人が24時間は直せる」「欄を常に表示＋時刻指定」に決定。本番APIで本人200・他端末404・30時間前400・写真/切断403を確認し試験行は削除。画面はローカル幅375で確認。前回記録（44,804）からの差分 48,276。session: 5f83fd1c-857c-4f41-b1f8-f5f2760451b7 / output: 93,080 / cost: $28.93"
+        },
+        {
+          "date": "2026-11-24",
           "title": "イベントカレンダー上部の新着帯の追加・本番反映 0.15時間",
           "category": "実装",
           "outputs": [
