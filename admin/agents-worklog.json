@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "武蔵屋マルシェ（11/3）の重複登録の比較・片づけ 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "Supabase events d9e73bb6（status open→draft）",
+            "cidao/2026-11-24_主催者名の名寄せと開催実績.md"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "開催実績の仕分けで見つけた同じ催しの2件登録（9/14 に1分違いの代理登録）を比較。誤字の多い d9e73bb6 を下書きに戻し、3c7b36d0 を残した（削除なし・status=open で戻せる）。本番の一覧1件・詳細404・実績1回を確認。前回記録（output 110,635）からの差分。\nsession: 2e5df4de-440e-4931-9b21-457cbc040dea / output: 119,231 / cost: $18.01"
+        },
+        {
+          "date": "2026-11-24",
           "title": "「New」札を同じ題名・同じ主催の回ごとに1件へ絞る修正・画面確認・本番反映 0.1時間",
           "category": "実装",
           "outputs": [
