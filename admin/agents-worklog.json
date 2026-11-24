@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "主催者名の似ている候補19件の仕分け・本番の名寄せ表へ反映 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "Supabase organizer_aliases（30行 upsert）",
+            "cidao/2026-11-24_主催者名の名寄せと開催実績.md"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "候補19件を元イベントのタイトル・会場で仕分け→事業主決定（同じ団体10件はまとめる・共催は主な団体へ・男女共同参画センターは市民活動推進課へ）→本番で 195→177 種類を画面とCSVで確認。残り候補2件は別団体。前回記録（output 89,302）からの差分。\nsession: 2e5df4de-440e-4931-9b21-457cbc040dea / output: 110,635 / cost: $16.00"
+        },
+        {
+          "date": "2026-11-24",
           "title": "主催者名の名寄せ＋団体別開催実績ページ（/admin/organizers・CSV）の設計・実装・本番確認 0.9時間",
           "category": "実装",
           "outputs": [
