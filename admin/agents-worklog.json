@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-11-24",
+          "title": "CiDAO：本登録・保存の直後に「ホーム画面に追加」の案内を出す実装 0.5時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/install-nudge.ts（出し方の判定）・src/lib/__tests__/install-nudge.test.ts（12件）",
+            "cidao: src/lib/install-prompt.ts・src/components/InstallPromptCapture.tsx（合図を最初の読み込みで受け取る。layout.tsx に配置）",
+            "cidao: src/components/InstallNudge.tsx（案内のカード）・src/app/me/page.tsx（保存直後に配置）・src/components/PushNudge.tsx（skipIosInstall）",
+            "コミット 32f9d2d（origin/main へ push・Vercel 本番反映を確認）",
+            "cidao/2026-11-24_ホーム画面への追加の案内（本登録の直後）.md・MOC_CiDAO.md（1行）",
+            "site/admin/changelog.json（1件）・agents-worklog.json（予定の追加1件）"
+          ],
+          "hours": 0.5,
+          "partnerApproved": false,
+          "note": "事業主の相談「登録時にホーム画面のアプリ登録を自動化できないか」。サイトが自動でアイコンを置くことはできない（スマホの決まり）と答え、3案を出して事業主がA案に決定。本登録・保存の直後のマイページに、Android は「ホーム画面に追加する」ボタン（押すと確認が1回）、iPhone は共有ボタンからの3手順、LINE の中の画面は「Safari／Chromeで開く」を出す。追加済み・閉じた人・パソコンには出さない。調べて分かったこと：Chrome の合図（beforeinstallprompt）はページを最初に開いたときに来るので、全体の枠で先に受け取っておく必要がある／今のアプリの定義（アイコンは SVG 1つ）でも追加の条件を満たす（Chrome の検査でエラー0）／合図は止めなくても確認を出せるので、Chrome 自身の案内の動きは変えていない。検証：vitest 1,135件・tsc・eslint・build 通過、手元で端末の名乗りを変えて5通り（Android・iPhone・それぞれの LINE の中・パソコン）と「閉じる」のあとを確認、本番の反映を確認。Android と iPhone の実機、ログイン後の実画面は未確認（予定に登録）。 session: 3ba0139e-d00e-43e4-802a-f94325c0e1f8 / output: 382,245 / cost: $134.55"
+        },
+        {
+          "date": "2026-11-24",
           "title": "防災MAP 道をなぞるパネルの縮小（地図を広く）0.17時間",
           "category": "保守",
           "outputs": [
@@ -11050,6 +11066,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-30",
+          "title": "📲 「ホーム画面に追加」の案内を実機で確かめる（Android のボタン・iPhone の3手順・LINE の中からの開き直し）",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-11-24 に cidao 32f9d2d で、本登録・保存の直後のマイページに案内を出すようにした。手元では端末の名乗りを変えて確かめただけで、実機では試していない。確かめること：(1) Android の Chrome で、プロフィールを保存したあと「ホーム画面に追加する」を押すと確認が出て、追加できるか (2) iPhone の Safari で3手順が出るか・追加したアイコンから開くと案内が出なくなるか (3) LINE の中の画面で「Safari／Chromeで開く」を押すと外のブラウザで /install が開くか。あわせて採否を聞く提案：ボタンが押された回数・追加された回数を数える（今は分からない）／案内ページ（/install）にも Android のボタンを置く。くわしくは保管庫 cidao/2026-11-24_ホーム画面への追加の案内（本登録の直後）.md。"
+        },
         {
           "due": "2026-11-25",
           "title": "📣 防災MAP「冠水した道の記録・直し方」動画（11/25 12:00 予約・3媒体）の実投稿を読み戻して確かめる",
