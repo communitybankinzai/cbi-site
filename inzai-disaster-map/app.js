@@ -3808,6 +3808,9 @@ function startCitizenRoadEdit(road, center, owner = false) {
   const draft = citizenRoadDraft;
   draft.editId = String(road.id);
   draft.editOwner = owner;
+  // 直している間は元の線を地図から隠す（番号付きの編集中の線と元の線が重なって見にくい。2026-11-25 事業主指摘）
+  passedRoadHiddenWhileEditing = draft.editId;
+  renderPassedRoadsLayer();
   draft.editPoint = road.path.length === 1;   // 地点1点の記録：点を動かすだけ（地図をタップしても点は増やさない。2026-09-25 事業主指示B）
   draft.points = road.path.map(p => [Number(p[0]), Number(p[1])]);
   document.getElementById("citizen-road-title").textContent = owner
@@ -9432,6 +9435,10 @@ async function addCitizenRoadPoint(latlng) {
 
 function closeCitizenRoadDrawing() {
   if (citizenRoadDraft.busy) return;
+  // 直していた元の線を地図に戻す（保存したときは、呼び出し側がこのあと新しい線で描き直す）
+  const restoreHidden = passedRoadHiddenWhileEditing !== null;
+  passedRoadHiddenWhileEditing = null;
+  if (restoreHidden) renderPassedRoadsLayer();
   citizenRoadDraft.active = false;
   citizenRoadDraft.points = [];
   citizenRoadDraft.editId = null;
@@ -11172,11 +11179,14 @@ function passedRoadKindOf(road) {
   return road.kind === "blocked" ? "blocked" : "passed";
 }
 
+// 線を直している記録の id（その間は元の線を描かない）。var なのは、ファイルの前の方から呼ばれても止まらないように
+var passedRoadHiddenWhileEditing = null;
 function renderPassedRoadsLayer() {
   passedRoadsLayer.clearLayers();
   passedRoadShapes.clear();
   // 古い（薄い）線を先に描き、新しい（濃い）線を上に重ねる
   passedRoadsData.slice().reverse().forEach(road => {
+    if (passedRoadHiddenWhileEditing !== null && String(road.id) === passedRoadHiddenWhileEditing) return;
     if (!passesWhenFilter(road.endedAt)) return;
     if (!passedKindFilter[passedRoadKindOf(road)]) return;
     if (!passesRainFilter(road)) return;
