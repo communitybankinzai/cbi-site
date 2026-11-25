@@ -15175,6 +15175,17 @@
       "actuals": [
         {
           "date": "2026-11-25",
+          "title": "楷書の実印見本の削除の完了報告と工数の記録 0.03時間",
+          "category": "事務",
+          "outputs": [
+            "site/admin/agents-worklog.json（A5 actuals に本記録を追記）"
+          ],
+          "hours": 0.03,
+          "partnerApproved": true,
+          "note": "楷書の実印見本（Drive「社印_下絵/法人実印_見本_楷書」）の削除・一覧6-1と A5 予定の差し替えを事業主へ報告し、工数の記録を求められて追記。この記録は同じセッションの0.1時間の記録（output 223,800・6087d58）の後の分で、差分 output 3,189。session: 7ea58157-75f9-45ba-b13e-3e2a91be426d / output: 226,989 / cost: $46.30"
+        },
+        {
+          "date": "2026-11-25",
           "title": "楷書の実印見本の削除と、一覧・予定の参照先を印影プレビューへ差し替え 0.1時間",
           "category": "事務",
           "outputs": [
