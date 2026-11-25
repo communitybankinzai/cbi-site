@@ -18,6 +18,24 @@
       "actuals": [
         {
           "date": "2026-11-25",
+          "title": "防災MAP SNS巡回の401修正＋API一斉点検＋わが街ガイド接続不可の修正（CiDAO を東京で動かす）0.49時間",
+          "category": "保守",
+          "outputs": [
+            "inzai-disaster-map/app.js",
+            "inzai-disaster-map/index.html",
+            "admin/changelog.json",
+            "inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "cidao: vercel.json",
+            "cidao: src/app/api/disaster/inzai-wells/route.ts",
+            "cidao: src/app/api/disaster/inzai-opendata/route.ts",
+            "cidao: src/app/api/disaster/inzai-shelters/route.ts"
+          ],
+          "hours": 0.49,
+          "partnerApproved": false,
+          "note": "事業主「SNS巡回エラー出ています」（冠水MAPのセッション経由）→ 11/6 に起動を合言葉付きに絞った sns-monitor へ地図が POST していたのが原因で、読むだけに変更（site b006833）。続けて事業主「他のAPIも同じ問題がないか調べて」→ 同じ401は他に無し。別原因として、わが街ガイド（www2.wagmap.jp）が日本国外の接続を断ち、iad1 で動く井戸・オープンデータ・避難所の3本が11/24〜接続失敗（check-host.net の12か国で東京だけ接続可）。3択でAを選び、preferredRegion は効かず、vercel.json の functions.regions で hnd1 に（cidao fef88da・83654a6）。本番で3本とも hnd1・200（井戸8・市役所等3・避難所56）、直後のログにエラーなし。前回記録（330,698）からの差分 49,132。session: 5f83fd1c-857c-4f41-b1f8-f5f2760451b7 / output: 379,830 / cost: $124.81"
+        },
+        {
+          "date": "2026-11-25",
           "title": "CiDAO：会員証の帯と右上のボタン（連絡・管理・通知ベル）の重なりを直す（見本3通りから事業主が選択） 0.3時間",
           "category": "保守",
           "outputs": [
