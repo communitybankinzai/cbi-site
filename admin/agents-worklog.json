@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-25",
+          "title": "CiDAO：案内ページ（/install）の端末の判定を共通の部品にそろえる保守 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/install/page.tsx（端末の判定＝detectDevice・外部ブラウザの宛先＝externalBrowserUrl に置き換え。12行追加・19行削除）",
+            "コミット ddb0e8a（origin/main へ push・Vercel 本番反映を確認）",
+            "cidao/2026-11-24_ホーム画面への追加の案内（本登録の直後）.md（追記）",
+            "site/admin/agents-worklog.json（済んだ予定1件を削除）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主の指示「改善提案実施」（2回目）。案内ページの中に別に書いてあった端末の判定と「外部ブラウザで開く」の宛先の組み立てを、保存直後の案内と同じ部品（lib/install-nudge.ts）に置き換えた。見た目と動きは変えていない。元からあった書き方の検査（eslint）の指摘1件が消えた（同日に予定へ登録したものを、そのまま片づけた）。もう1つの提案（今の会員向けにホームへ1回出すか）は、11/30 に回数を読んでから決める話なので、作っていない。検証：eslint 0件・tsc・vitest 1,141件・build 通過。手元で6通り（Android＝ボタンあり・押すと回数1件／iPhone・パソコン＝ボタンなし／LINE の中＝注意の帯が出て、「外部ブラウザで開く」の宛先が iPhone は Safari・Android は Chrome／アイコンから開いた＝初回だけ数える）。本番でも4通りを確かめた。Android と iPhone の実機は未確認（11/30 の予定）。 session: 3ba0139e-d00e-43e4-802a-f94325c0e1f8 / output: 441,209 / cost: $150.41"
+        },
+        {
+          "date": "2026-11-25",
           "title": "CiDAO：「ホーム画面に追加」の回数を数える仕組み＋案内ページの Android ボタン 0.4時間",
           "category": "実装",
           "outputs": [
@@ -11082,13 +11096,6 @@
         }
       ],
       "plans": [
-        {
-          "due": "未定",
-          "title": "🧹 案内ページ（/install）の書き方の検査の指摘1件（set-state-in-effect・元からある）を直すか決める",
-          "category": "保守",
-          "priority": "低",
-          "note": "2026-11-25 に /install へ Android のボタンを足したとき、eslint が src/app/install/page.tsx の端末の判定（useEffect の中の setDevice など）に react-hooks/set-state-in-effect を1件出した。11-25 の変更の前（HEAD 32f9d2d の版）でも同じ指摘が出ることを確かめてあり、動きに問題は無い（ビルドは通る）。直すなら、InstallNudge と同じ判定（lib/install-nudge.ts の detectDevice）に寄せると、「外部ブラウザで開く」の作りも1つにまとまる。依頼されていない直しなので手を付けていない。"
-        },
         {
           "due": "2026-11-30",
           "title": "📲 「ホーム画面に追加」の案内を実機で確かめる（Android のボタン・iPhone の3手順・LINE の中からの開き直し）",
