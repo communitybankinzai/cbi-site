@@ -1943,7 +1943,7 @@ function bindEvents() {
     selectedId = null;
     syncTargetDayChip();
     renderAll();
-    refreshSnsMonitor(false);
+    refreshSnsMonitor();
     refreshTimeline(false);
     // 「本日（＝対象日）」の判定が変わるので、冠水の色分けも描き直す
     renderKansuiLayer();
@@ -1978,7 +1978,7 @@ function bindEvents() {
   document.getElementById("refresh-river-button")?.addEventListener("click", () => refreshRiverLevel(true));
   document.getElementById("river-alert")?.addEventListener("click", handleMapAlertClick);
   document.getElementById("refresh-weather-warning-button").addEventListener("click", () => refreshWeatherWarnings(true));
-  document.getElementById("refresh-sns-monitor-button").addEventListener("click", () => refreshSnsMonitor(true));
+  document.getElementById("refresh-sns-monitor-button").addEventListener("click", () => refreshSnsMonitor());
   document.getElementById("sns-monitor-list").addEventListener("click", handleSnsMonitorAction);
   document.getElementById("sns-manual-register-button").addEventListener("click", registerManualMonitorUrl);
   document.getElementById("refresh-shelters-button").addEventListener("click", () => refreshShelters(true));
@@ -2215,12 +2215,14 @@ function initSnsMonitor() {
     panel.hidden = true;
     return;
   }
-  refreshSnsMonitor(false);
+  refreshSnsMonitor();
   clearInterval(snsMonitorTimer);
-  snsMonitorTimer = cidaoPollInterval(() => refreshSnsMonitor(true, true), 5 * 60 * 1000);
+  snsMonitorTimer = cidaoPollInterval(() => refreshSnsMonitor(true), 5 * 60 * 1000);
 }
 
-async function refreshSnsMonitor(runScan = false, quiet = false) {
+// 巡回そのものは CiDAO の pg_cron が合言葉付きで起動する（2026-11-06 から一般の POST は 401）。
+// 地図からは巡回結果を読み直すだけにする（2026-11-25「SNS巡回エラー出ています」）
+async function refreshSnsMonitor(quiet = false) {
   const endpoint = String(APP_CONFIG.snsMonitorEndpoint || "").trim();
   if (!endpoint) return;
   const button = document.getElementById("refresh-sns-monitor-button");
@@ -2228,17 +2230,9 @@ async function refreshSnsMonitor(runScan = false, quiet = false) {
   if (!quiet) {
     button.disabled = true;
     status.classList.remove("is-error");
-    status.textContent = runScan ? "各SNSの新着を確認しています..." : "巡回結果を読み込んでいます...";
+    status.textContent = "巡回結果を読み込んでいます...";
   }
   try {
-    if (runScan) {
-      const scanResponse = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "operator" })
-      });
-      if (!scanResponse.ok) throw new Error(`巡回API HTTP ${scanResponse.status}`);
-    }
     const date = getFormValue("incident-date");
     const response = await fetch(`${endpoint}?date=${encodeURIComponent(date)}`, {
       headers: { Accept: "application/json" },
