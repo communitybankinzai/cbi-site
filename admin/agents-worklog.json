@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-11-26",
+          "title": "防災MAP 地震の速報の接続失敗を修正：P2Pの「同じIPから2接続まで」を CiDAO の取りまとめ（20秒ごと）で回避 0.29時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/api/disaster/quake-feed/route.ts",
+            "site: inzai-disaster-map/app.js",
+            "site: inzai-disaster-map/config.js",
+            "site: inzai-disaster-map/index.html",
+            "site: inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site: admin/changelog.json"
+          ],
+          "hours": 0.29,
+          "partnerApproved": false,
+          "note": "cidao 24be33e／site 3bfcdf9。先方は正常（Nodeから0.1秒で接続）、仕様に『/ws: 2 接続 (IP アドレス毎)』、同じIPの2本目以降は code 1006 で切られることを実測。3択で事業主がA（CiDAOがまとめて受ける）を選択。本番で WebSocket を開かず20秒ごとに取りまとめを読むこと・コンソールのエラー0件を確認。あわせて『市民が使いたい内容になったか』の問いに、まだ土台の段階（道順チェック・いつもの道の通知が本体）と回答。前回記録 503,941 からの差 28,792。session: 5f83fd1c-857c-4f41-b1f8-f5f2760451b7 / output: 532,733 / cost: $166.76"
+        },
+        {
+          "date": "2026-11-26",
           "title": "CBIサイト：表紙の副題から「育成」を外す（表紙3か所・ポスター1か所） 0.1時間",
           "category": "保守",
           "outputs": [
@@ -11395,6 +11411,22 @@
         }
       ],
       "plans": [
+        {
+          "due": "未定",
+          "title": "🌍 過去の地震の再生（/v2/jma/quake）も端末から P2P へ直接取りに行っている。先方の上限『10 リクエスト/分（IPごと）』に同じ回線の人が重なると断られるので、CiDAO の取りまとめ経由にするか検討する",
+          "category": "実装",
+          "priority": "低",
+          "note": "config.js の p2pQuakeEndpoint・app.js の loadQuakeRangeProgressive。1年分で約25ページ。再生は平時の機能なので急がない"
+        },
+        {
+          "due": "未定",
+          "title": "🌍 次に地震があったら、防災MAPの速報の帯が出るまでの秒数を確かめる（11/26 に CiDAO の取りまとめ・20秒ごとへ切り替えたため）",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "国内で震度3以上程度の地震が起きること",
+          "note": "P2Pの発表時刻と、地図の帯が出た時刻を比べる。想定は WebSocket のときより最大約35秒遅い（地図20秒＋配信15秒）"
+        },
         {
           "due": "未定",
           "title": "🛰 印西に雨が降ったら、雨雲レーダーの控え（disaster_radar_rain）の升目の位置と強さを、防災MAPの雨雲レーダーの表示と見比べる",
