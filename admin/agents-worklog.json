@@ -18,6 +18,29 @@
       "actuals": [
         {
           "date": "2026-11-26",
+          "title": "冠水MAP改善 案A：レーダー雨量とアメダスの毎時の控え＋雨の物差し統一＋確からしさの線＋オフライン 0.75時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20261126120000_disaster_radar_rain.sql",
+            "cidao: src/lib/disaster-rain-archive.ts",
+            "cidao: src/lib/__tests__/disaster-rain-archive.test.ts",
+            "cidao: src/app/api/disaster/rain-archive/route.ts",
+            "cidao: src/app/api/disaster/rain-now/route.ts",
+            "site: inzai-disaster-map/app.js",
+            "site: inzai-disaster-map/index.html",
+            "site: inzai-disaster-map/config.js",
+            "site: inzai-disaster-map/styles.css",
+            "site: inzai-disaster-map/sw.js",
+            "site: inzai-disaster-map/CLAUDE_HANDOFF.md",
+            "site: admin/changelog.json",
+            "pg_cron: cidao_rain_archive（毎時17分）"
+          ],
+          "hours": 0.75,
+          "partnerApproved": false,
+          "note": "cidao 6839a75・58c984b／site fee9e69。アメダスの控え（PCの定期実行）が新PCに入っておらず11/20 15時から止まっていたのを発見し、--days 7 で8地点を埋め直したうえでCiDAOの毎時の巡回へ移した。レーダーは8色の区分を全国の実画像で確認（不明色0）。テスト8件・tsc 0・本番の巡回200。地図はローカルで帯・段階（5/33/77/112件）・雨なし・取得失敗・破線・オフライン（サーバー停止で再読み込み）を確認。前回記録 403,477 からの差 75,252。session: 5f83fd1c-857c-4f41-b1f8-f5f2760451b7 / output: 478,729 / cost: $150.49"
+        },
+        {
+          "date": "2026-11-26",
           "title": "CBIサイト：表紙のボタンから「CiDAOに」を外す（3か所）＋お約束の代表了承の記録 0.1時間",
           "category": "保守",
           "outputs": [
@@ -11346,11 +11369,20 @@
       "plans": [
         {
           "due": "未定",
-          "title": "☔ 冠水MAPの改善案（12件）の採否と着手順を決める（推奨A＝レーダー雨量の記録開始＋物差しの統一・確からしさの表示・雨の日1画面・オフライン）",
+          "title": "🛰 印西に雨が降ったら、雨雲レーダーの控え（disaster_radar_rain）の升目の位置と強さを、防災MAPの雨雲レーダーの表示と見比べる",
+          "category": "保守",
+          "priority": "中",
+          "status": "待ち",
+          "blockedBy": "印西市周辺で雨が降ること（11/26 は雨なしで、升目の位置を実際の雨で確かめられていない）",
+          "note": "GET https://cidao.vercel.app/api/disaster/rain-archive で最新の wet_cells・max_class を見て、同じ時刻の雨雲レーダー（地図の雨雲の層）と升目の位置が合うかを確認。升目は北緯35.92から南へ行・東経140.00から東へ列（0.01度）"
+        },
+        {
+          "due": "未定",
+          "title": "☔ 冠水MAPの改善の残り：⑩雨の日1画面（配置の選択待ち）・段階2（通れたを使った評価・沼の水位と標高・5m地形）・段階3（道ごとの記録の要約・道順チェック・いつもの道の見張り・手順の公開）",
           "category": "実装",
           "priority": "中",
           "status": "保留",
-          "blockedBy": "事業主が3択（A レーダー雨量＋段階1／B 沼の水位と標高／C 道順チェック）を選ぶこと",
+          "blockedBy": "⑩の配置を事業主が選ぶこと（11/26 に案Aのうち⑤①②⑪は実装済み）",
           "note": "根拠と実装方法は cidao/2026-11-26_冠水MAPの批判的レビューと対策案.md。①物差しの統一は 11-10 の『雨なしの日は赤を出さない』の動きを変えるので、しきい値の決め直しに事業主の確認が要る"
         },
         {
