@@ -43,9 +43,12 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     p2pQuakeEndpoint: "https://api.p2pquake.net/v2/jma/quake",
     // 地震情報の発表を数秒で知らせてくれる P2P地震情報 の WebSocket（受信のみ・2026-10-16）。
     // 来たら気象庁の一覧を取り直す（地図の中身は気象庁の値のまま）。空にすると使わず、10分おきの確認だけになる
-    p2pQuakeWsEndpoint: "wss://api.p2pquake.net/v2/ws",
+    // ⚠ 2026-11-26 に止めた（空）。P2P の WebSocket は「同じ IP から2接続まで」で、携帯回線や同じ Wi-Fi では3人目以降が断られる。
+    //   代わりに下の p2pQuakeHistoryEndpoint（CiDAO の取りまとめ）を20秒ごとに読む。戻すときはここに wss://api.p2pquake.net/v2/ws
+    p2pQuakeWsEndpoint: "",
     // 開いた直後の速報用。直近の地震の電文（震度速報・震源・詳細）を P2P の履歴から拾う。空にすると履歴は読まない（2026-10-29）
-    p2pQuakeHistoryEndpoint: "https://api.p2pquake.net/v2/history?codes=551&limit=12",
+    // 2026-11-26 から CiDAO の取りまとめ（P2P の履歴を配信側で15秒まとめる）。地図はこれを20秒ごとに読む（app.js pollQuakeFeed）
+    p2pQuakeHistoryEndpoint: "https://cidao.vercel.app/api/disaster/quake-feed",
     // 気象庁の地震ごとの詳細JSON（観測点ごとの震度と座標）。list.json の json 名を後ろに付ける
     earthquakeDetailBase: "https://www.jma.go.jp/bosai/quake/data/",
     weatherWarningEndpoint: "https://www.jma.go.jp/bosai/warning/data/r8/120000.json",

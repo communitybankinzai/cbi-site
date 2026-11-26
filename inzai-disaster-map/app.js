@@ -7537,18 +7537,40 @@ function applyQuakeFlashDetail(reports) {
 let quakeCatchUpAt = 0;
 async function catchUpQuakeFlash() {
   const endpoint = String(APP_CONFIG.p2pQuakeHistoryEndpoint || "").trim();
-  if (!endpoint || Date.now() - quakeCatchUpAt < 20000) return;
+  if (!endpoint || Date.now() - quakeCatchUpAt < 15000) return;
   quakeCatchUpAt = Date.now();
   try {
-    const response = await fetch(endpoint, { cache: "no-store" });
+    // ⚠ cache: "no-store" にしない。CiDAO の取りまとめは配信側で15秒まとめているので、ブラウザ側も普通に取る
+    const response = await fetch(endpoint);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const list = await response.json();
+    const list = (await response.json()) || [];
+    const all = (Array.isArray(list) ? list : []).filter(m => m?.code === 551);
     const cutoff = Date.now() - QUAKE_FLASH_MINUTES * 60000;
-    (Array.isArray(list) ? list : []).filter(m => m?.code === 551 && p2pTimeMs(m.earthquake?.time) >= cutoff).reverse().forEach(handleQuakeP2P);
+    all.filter(m => p2pTimeMs(m.earthquake?.time) >= cutoff).reverse().forEach(handleQuakeP2P);
+    // 2026-11-26：WebSocket の代わり。初めて見た電文（震度速報以外）が来たら、気象庁の一覧を取り直す（WebSocket の受信と同じ動き）。
+    // 開いた直後の1回目は「見た印」を付けるだけ（すでに一覧に載っている地震で取り直さない）
+    const fresh = all.filter(m => {
+      const id = m.id || m._id || `${m.issue?.time}|${m.issue?.type}`;
+      if (quakeFeedSeen.has(id)) return false;
+      quakeFeedSeen.add(id);
+      return quakeFeedPrimed && m.issue?.type !== "ScalePrompt";
+    });
+    quakeFeedPrimed = true;
+    if (fresh.length) refreshQuakeAfterPush(fresh[0].earthquake?.time);   // 新しい順なので先頭がいちばん新しい
   } catch (error) {
     console.warn("P2P地震情報の履歴を読めません", error);
   }
 }
+// 地震の速報の見張り（2026-11-26）。P2P の WebSocket は「同じ IP から2接続まで」で、携帯回線・同じ Wi-Fi の3人目以降に届かないため、
+// CiDAO の取りまとめ（config の p2pQuakeHistoryEndpoint）を20秒ごとに読む。画面が裏にある間は読まない（表に戻ったときに visibilitychange で読む）。
+// WebSocket を設定で戻した（p2pQuakeWsEndpoint が空でない）ときは、これまでどおり WebSocket に任せる。
+const quakeFeedSeen = new Set();
+let quakeFeedPrimed = false;
+const QUAKE_FEED_POLL_MS = 20000;
+setInterval(() => {
+  if (document.hidden || String(APP_CONFIG.p2pQuakeWsEndpoint || "").trim()) return;
+  catchUpQuakeFlash();
+}, QUAKE_FEED_POLL_MS);
 setInterval(() => { if (quakeFlash && !quakeFlashActive()) { quakeFlash = null; renderMapAlert(); } }, 60000);
 
 // 発令中で、運営が消していないもの（新しい順）
