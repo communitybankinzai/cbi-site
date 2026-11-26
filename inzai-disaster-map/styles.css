@@ -4317,7 +4317,7 @@ body.view-focus .legend-more { height: var(--legend-h, 37px); }
 .locate-btn { display: flex; align-items: center; gap: 4px; min-width: 44px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 2px; background: #fff; color: #16324f; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .locate-btn:hover { background: #f4f8fc; }
 /* 雨量・期間・色の見方・場所・要望・想定区域のパネルを開いている間は、左端に重なる現在地ボタンを隠す（Leaflet の部品は z-index が高く、パネルの上に出てしまうため） */
-.map-pane:has(#rain-panel:not([hidden]), #range-panel:not([hidden]), #color-guide:not([hidden]), #place-panel:not([hidden]), #feedback-panel:not([hidden]), #hazard-panel:not([hidden])) .locate-control { display: none; }
+.map-pane:has(#rain-panel:not([hidden]), #range-panel:not([hidden]), #color-guide:not([hidden]), #place-panel:not([hidden]), #feedback-panel:not([hidden]), #hazard-panel:not([hidden]), #route-panel:not([hidden])) .locate-control { display: none; }
 /* 💧 雨量スライダー（2026-10-25）：右へ動かすほど🔴が増え🔵が減る */
 .rain-slider { margin: 8px 0 4px; }
 .rain-slider input[type="range"] { width: 100%; height: 40px; accent-color: #b8322c; }
@@ -4432,3 +4432,38 @@ body.view-focus .legend-more { height: var(--legend-h, 37px); }
 /* 📴 通信できないときの帯（2026-11-26・app.js の initOffline） */
 .offline-note { position: fixed; left: 50%; top: 8px; transform: translateX(-50%); z-index: 3000; max-width: calc(100% - 32px); padding: 6px 12px; border-radius: 8px; background: #3a3a3a; color: #fff; font-size: 13px; line-height: 1.4; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 .offline-note[hidden] { display: none; }
+
+/* 🧭 道順チェック（2026-11-26・route-check.js）。ボタンは冠水の用途だけ */
+body:not([data-view="rain"]) .route-control { display: none; }
+.map-pane .leaflet-top .leaflet-control.route-control { margin-top: 8px; }
+.map-pane.is-route-picking .leaflet-interactive { pointer-events: none; }
+.map-pane.is-route-picking .leaflet-container { cursor: crosshair; }
+.range-panel.route-panel { left: 58px; width: min(330px, calc(100% - 66px)); max-height: calc(100% - var(--legend-h, 38px) - 20px); overflow-y: auto; } /* 左のズームを避ける（雨量のパネルと同じ） */
+.route-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14px; }
+.route-close { min-width: 32px; min-height: 32px; border: 1px solid #c8d3de; border-radius: 8px; background: #fff; cursor: pointer; }
+.route-lead { margin: 4px 0 8px; color: #44515f; }
+.route-point { margin: 6px 0; padding: 6px 8px; border: 1px solid #dde5ec; border-radius: 8px; background: #f8fafc; }
+.route-point-head { display: flex; gap: 8px; align-items: baseline; }
+.route-point-name { flex: 0 0 auto; font-weight: 700; color: #16324f; }
+.route-point-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #44515f; }
+.route-point-btns { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+.route-point-btns button, .route-actions button { min-height: 34px; padding: 3px 10px; border: 1px solid #b9c4d3; border-radius: 17px; background: #fff; color: #16324f; font: inherit; font-size: 12.5px; cursor: pointer; }
+.route-find { margin-top: 6px; }
+.route-find input { width: 100%; box-sizing: border-box; min-height: 34px; padding: 4px 8px; border: 1px solid #b9c4d3; border-radius: 8px; font: inherit; }
+.route-find-results { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+.route-find-results button { text-align: left; min-height: 32px; padding: 3px 8px; border: 1px solid #dde5ec; border-radius: 6px; background: #fff; font: inherit; font-size: 12.5px; cursor: pointer; }
+.route-mode { margin: 8px 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 4px; }
+.route-mode label { display: flex; gap: 6px; align-items: center; }
+.route-mode input[type="radio"] { flex: 0 0 auto; width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; }
+.route-actions { display: flex; gap: 6px; }
+.route-actions .route-go { background: #6a1b9a; border-color: #6a1b9a; color: #fff; font-weight: 700; }
+.route-result p { margin: 6px 0 0; }
+.route-see { width: 100%; min-height: 34px; margin-top: 8px; border: 1px solid #6a1b9a; border-radius: 8px; background: #f6eefa; color: #4a148c; font: inherit; font-weight: 700; cursor: pointer; }
+.route-result .route-sum { font-size: 14px; }
+.route-result .route-warn { color: #8a5a00; font-weight: 700; }
+.route-result .route-note { color: #44515f; font-size: 12px; }
+.route-result .route-caution { padding: 6px 8px; border-radius: 6px; background: #fff4e5; color: #6b3d00; font-size: 12px; }
+.route-google { display: block; margin-top: 8px; padding: 9px 10px; border-radius: 8px; background: #1a73e8; color: #fff; font-weight: 700; text-align: center; text-decoration: none; }
+.route-pin { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 3px solid #fff; border-radius: 50%; color: #fff; font-weight: 700; font-size: 13px; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.route-pin.is-from { background: #2e7d32; }
+.route-pin.is-to { background: #6a1b9a; }
