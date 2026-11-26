@@ -4343,6 +4343,19 @@ body.view-focus .legend-more { height: var(--legend-h, 37px); }
   .rain-now-src-long { display: none; }
   .rain-now-nums { font-size: 13px; }
 }
+/* 2026-11-26 案A：雨の日の1画面。スマホ幅（≤820px）だけ、帯は1行目だけ・上の「見たいもの」の行は隠す。
+   「▾ くわしく」（#rain-now-more・app.js initRainBarFold）で、説明・段階ボタン・「見たいもの」の行をまとめて開く。
+   ⚠ 過去の記録を出しているとき（past）と取得できないとき（error）は、畳んでいても説明文を出す（「いま通れないわけではありません」を隠さない） */
+.rain-now-head { display: flex; align-items: center; gap: 6px; }
+.rain-now-head .rain-now-nums { flex: 1 1 auto; min-width: 0; }
+.rain-now-more { display: none; flex: 0 0 auto; min-height: 30px; padding: 2px 10px; border: 1px solid #b9c4d3; border-radius: 15px; background: #fff; color: #16324f; font: inherit; font-size: 12px; cursor: pointer; }
+@media (max-width: 820px) {
+  .rain-now-more { display: inline-block; }
+  body.view-focus[data-view="rain"]:not(.rain-details-open) #preset-bar { display: none; }
+  .rain-now-bar.is-collapsed .rain-now-steps { display: none; }
+  .rain-now-bar.is-collapsed .rain-now-src { display: none; }
+  .rain-now-bar.is-collapsed:not([data-state="past"]):not([data-state="error"]) .rain-now-text { display: none; }
+}
 .rain-slider-hint { margin: 4px 0 0; font-size: 12px; color: #5a6675; }
 .rain-more { margin: 8px 0 4px; }
 .rain-more > summary { cursor: pointer; font-size: 12.5px; color: #16324f; padding: 4px 0; }

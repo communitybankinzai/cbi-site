@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況マップ">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261126a">
+    <link rel="stylesheet" href="./styles.css?v=20261126b">
   </head>
   <body data-view="gate">
     <!-- 2026-10-24 事業主指示「スマホで使いにくい」：開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
@@ -143,7 +143,11 @@
       <!-- 2026-11-10 いまの雨量の帯（冠水の用途だけ）：開いたときの雨量に合わせて通れない道（赤）を出す。雨が降っていない日は赤を出さない。
            段階ボタンで「もし3日間でこれだけ降ったら」の過去の記録を見られる（app.js の renderRainNowBar・setRainStep） -->
       <div class="rain-now-bar" id="rain-now-bar" data-views="rain" data-state="loading">
-        <p class="rain-now-nums" id="rain-now-nums" role="status" aria-live="polite">いまの雨量を確認中…</p>
+        <!-- 2026-11-26 案A：スマホ幅では1行目（数値）だけを出し、「▾ くわしく」で説明・段階ボタン・上の「見たいもの」の行を開く（app.js initRainBarFold） -->
+        <div class="rain-now-head">
+          <p class="rain-now-nums" id="rain-now-nums" role="status" aria-live="polite">いまの雨量を確認中…</p>
+          <button type="button" class="rain-now-more" id="rain-now-more" aria-expanded="false" aria-controls="rain-now-text">▾ くわしく</button>
+        </div>
         <p class="rain-now-text" id="rain-now-text"></p>
         <div class="rain-now-steps" role="group" aria-label="いまの雨量で見るか、もし雨が降ったらの過去の記録を見るか">
           <button type="button" data-rain-step="now" aria-pressed="true" title="いまの雨量（ここ数日の雨＝古い雨ほど小さく数えた合計）に合わせて表示する">いま</button>
@@ -2066,7 +2070,7 @@
     <script defer src="../assets/cbi-content-tracking.js?v=20260910-1"></script>
     <script src="./config.js?v=20261126a"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
-    <script src="./app.js?v=20261126a"></script>
+    <script src="./app.js?v=20261126b"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>

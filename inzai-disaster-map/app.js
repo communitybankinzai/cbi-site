@@ -10573,6 +10573,34 @@ document.getElementById("rain-now-bar")?.addEventListener("click", event => {
   const button = event.target.closest("[data-rain-step]");
   if (button) setRainStep(button.dataset.rainStep);
 });
+
+// 📱 雨の日の1画面（2026-11-26 事業主決定・案A）。スマホ幅では帯を1行目（いまの雨の数値）だけにし、
+// 「▾ くわしく」で説明文・段階ボタン・上の「見たいもの」の行をまとめて開く（隠すのは CSS・≤820px だけ。PC は変えない）。
+// 開いたかどうかはその画面の間だけ覚える（sessionStorage）。開閉で地図の上の高さが変わるので、測り直して地図を描き直す。
+(function initRainBarFold() {
+  const bar = document.getElementById("rain-now-bar");
+  const more = document.getElementById("rain-now-more");
+  if (!bar || !more) return;
+  const KEY = "cbi-disaster-rain-bar-open-v1";
+  let open = false;
+  try { open = sessionStorage.getItem(KEY) === "1"; } catch (error) { open = false; }
+  const apply = () => {
+    bar.classList.toggle("is-collapsed", !open);
+    document.body.classList.toggle("rain-details-open", open);
+    more.textContent = open ? "▴ とじる" : "▾ くわしく";
+    more.setAttribute("aria-expanded", String(open));
+    more.title = open ? "説明・段階ボタン・見たいものの行をしまう" : "説明・「もし◯ミリ」の段階ボタン・見たいものの行を出す";
+    if (typeof syncViewChrome === "function") syncViewChrome();
+    setTimeout(() => { if (typeof map !== "undefined" && map) map.invalidateSize(); }, 50);
+  };
+  more.addEventListener("click", event => {
+    event.stopPropagation();
+    open = !open;
+    try { sessionStorage.setItem(KEY, open ? "1" : "0"); } catch (error) { /* 保存できなくても開閉はする */ }
+    apply();
+  });
+  apply();
+})();
 // 開いたままの画面も、雨が強まれば赤が増えるように、10分ごとに取り直す（冠水の用途で「いま」を選んでいる間だけ）
 setInterval(() => {
   if (currentView === "rain" && rainLive.mode === "now" && !document.hidden) fetchRainNow(true).then(() => applyRainNow());
