@@ -8,6 +8,8 @@ window.CBI_DISASTER_CONFIG = Object.assign(
     wellEndpoint: "https://cidao.vercel.app/api/disaster/inzai-wells",
     kansuiEndpoint: "https://cidao.vercel.app/api/disaster/kansui",
     passedRoadsEndpoint: "https://cidao.vercel.app/api/disaster/passed-roads",
+    // ☔ いまの雨（ここ数日の割り引いた合計・記録の判定と同じ式）。冠水の用途の帯・段階ボタンの物差し（2026-11-26）
+    rainNowEndpoint: "https://cidao.vercel.app/api/disaster/rain-now",
     // 「💬 要望を送る」の送り先（匿名・一覧は運営の合言葉があるときだけ返す）
     feedbackEndpoint: "https://cidao.vercel.app/api/disaster/feedback",
     // SNSの投稿をAIが読み取った「通れた／通れない／解除」（未確認・確度が高いものだけ配信される）

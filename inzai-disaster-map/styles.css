@@ -1310,6 +1310,8 @@ details.layer-group .layer-group-body {
 .color-guide .cg-row > span:last-child { margin-left: 4px; }
 .color-guide .cg-sw { flex: 0 0 auto; width: 18px; height: 6px; border-radius: 3px; }
 .color-guide .cg-sw.is-faded { opacity: .45; }
+/* 2点だけの粗い線（地図では破線）の見本・2026-11-26 */
+.color-guide .cg-sw.cg-dash { height: 4px; background: repeating-linear-gradient(90deg, #b8322c 0 6px, transparent 6px 10px); }
 .color-guide .cg-note { margin: 8px 0 0; color: #5a6675; font-size: 11.5px; }
 
 @media (max-width: 820px) {
@@ -4413,3 +4415,7 @@ body.view-focus .legend-more { height: var(--legend-h, 37px); }
   #citizen-road-options { margin-top: 6px; }
   #citizen-road-options .citizen-road-notice { margin-top: 6px; }
 }
+
+/* 📴 通信できないときの帯（2026-11-26・app.js の initOffline） */
+.offline-note { position: fixed; left: 50%; top: 8px; transform: translateX(-50%); z-index: 3000; max-width: calc(100% - 32px); padding: 6px 12px; border-radius: 8px; background: #3a3a3a; color: #fff; font-size: 13px; line-height: 1.4; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.offline-note[hidden] { display: none; }
