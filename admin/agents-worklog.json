@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-26",
+          "title": "CiDAO：掲示板の呼び方の言い換えで、編集後のSNSの出し直しが誤って起きないようにする 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/lib/sns-edit-compare.ts・src/lib/__tests__/sns-edit-compare.test.ts（テスト1件追加）",
+            "コミット 4a20ed3（origin/main へ push・Vercel 本番反映を確認）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "同じ日の名前の直し（4c7a8a3）の見直しで見つけた波及。Instagram の紹介文の定型を「FreeFree 掲示板」から「地域応援掲示板」に変えたので、編集後の出し直しの判定（前に配信した文と新しく作った文を比べる）が、紹介文を変えていない編集でも「変わった」と判定し、新しい版が出て古い版が運営の削除待ちに入るところだった。utm を付けたとき（11-07）と同じく、比べる前に呼び方をそろえるようにした。本番に出てから直すまでの約1時間に、この経路で出し直しが起きたかは調べていない（掲載者が Instagram に出ている掲載を編集したときだけ起きる）。検証：vitest 1,142件・tsc・eslint・build 通過、本番の版 4a20ed3 を確認。 session: 3ba0139e-d00e-43e4-802a-f94325c0e1f8 / output: 791,717 / cost: $268.19"
+        },
+        {
+          "date": "2026-11-26",
           "title": "CiDAO・CBIサイト：参加のお約束の1番・2番を、代表の案をもとに直す（ログイン画面＋規約のページ5か所） 0.3時間",
           "category": "保守",
           "outputs": [
