@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-11-27",
+          "title": "CiDAO予定ページ：期間イベントの折り畳み＋スマホの件数表示、「行く予定」の記録の調査と取り消し 0.2時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/app/events/_components/EventsBrowser.tsx（0389920）",
+            "本番DB: event_participants から事業主本人の1行を削除（印西ミュージックデー 13時の部）",
+            "CBI: .claude/launch.json（確認用の設定 cidao-events-fold を追加）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主の「参加者にした記憶がない」を本番の記録で調査（11/7 にiPhoneからイベント登録の13秒後に「行く予定」が入っていた・自動で入る経路は無し）。指示により1行を削除。続けて予定ページを指示どおり変更し、スマホ幅375pxとPC幅の画面、型検査、関連テスト24件、本番のHTMLで確認。未確認：実機のスマホ。 session: 120aae71-8182-4283-8f91-1225e5707d20 / output: 23,249 / cost: $11.97"
+        },
+        {
+          "date": "2026-11-27",
           "title": "印西バスマップ：ふれあいバスの線とバスの動きを道なりに・新設と移設のバス停の位置を市の位置図から割り出し・時刻の全便照合 0.5時間",
           "category": "保守",
           "outputs": [
