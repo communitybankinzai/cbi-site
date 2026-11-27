@@ -230,7 +230,7 @@ async function loadFreefree() {
       if (s.category !== "food" || typeof s.lat !== "number" || !insideArea(s.lat, s.lon)) continue;
       const ref = `ff:${String(s.id).toLowerCase()}`;
       shops.set(ref, {
-        ref, source: "ff", area: areaOf(s.lat, s.lon), name: s.shop || s.title, lat: s.lat, lon: s.lon, kind: "FreeFree掲載", address: s.address || s.location || "",
+        ref, source: "ff", area: areaOf(s.lat, s.lon), name: s.shop || s.title, lat: s.lat, lon: s.lon, kind: "掲示板に掲載", address: s.address || s.location || "",
         title: s.title, detailUrl: s.detailUrl, links: Array.isArray(s.links) ? s.links : [],
       });
     }
@@ -335,11 +335,11 @@ function openShop(ref, { fly = false } = {}) {
   currentShopRef = ref;
   const list = reportsByShop.get(ref) || [];
   const meta = [s.kind, s.address].filter(Boolean).map((v) => `<span>${esc(v)}</span>`).join("");
-  const badge = s.source === "ff" ? '<span class="gm-badge is-ff">FreeFree掲載</span>'
+  const badge = s.source === "ff" ? '<span class="gm-badge is-ff">掲示板に掲載</span>'
     : s.source === "shop" ? '<span class="gm-badge">市民が登録</span>' : "";
   const links = [];
   if (s.website) links.push(`<a href="${esc(s.website)}" target="_blank" rel="noopener">お店のサイト ↗</a>`);
-  if (s.source === "ff" && s.detailUrl) links.push(`<a href="${esc(s.detailUrl)}" target="_blank" rel="noopener">FreeFreeの掲載を見る ↗</a>`);
+  if (s.source === "ff" && s.detailUrl) links.push(`<a href="${esc(s.detailUrl)}" target="_blank" rel="noopener">掲示板の掲載を見る ↗</a>`);
   for (const l of (s.links || []).slice(0, 3)) if (/^https:\/\//.test(l.url)) links.push(`<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label || "リンク")} ↗</a>`);
   const shopTools = moderation && s.source === "shop"
     ? `<p><button type="button" data-hide-shop="${esc(s.ref.slice(5))}" data-hidden="${s.hidden ? "0" : "1"}">${s.hidden ? "お店を戻す（運営）" : "🗑 お店を伏せる（運営）"}</button></p>` : "";

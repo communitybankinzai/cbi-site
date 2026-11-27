@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-27",
+          "title": "CBIサイト：公開ページの画面に出る「FreeFree」を「地域応援掲示板」に直す（表紙・ポスター・食レポ地図・3Dワールド） 0.2時間",
+          "category": "保守",
+          "outputs": [
+            "site: index.html（参加方法の3番）・poster/cbi-poster-a0.html（同じ文）",
+            "site: gourmet-map/index.html（出どころの説明・app.js の版）・gourmet-map/app.js（お店の札・リンクの文）",
+            "site: metaverse/index.html（お店のピンの説明・案内・リンクの文 5か所）",
+            "site/admin/changelog.json（1件）"
+          ],
+          "hours": 0.2,
+          "partnerApproved": false,
+          "note": "事業主の指摘「ここにも FreeFree がある」（表紙の参加方法の3番の画面の写し）。前の日の直しは CiDAO の中だけで、CBIサイトは「残した所」として報告していた。今回、管理画面を除く公開ページの「FreeFree」を全部挙げ（8ファイル）、画面に出る文字を「地域応援掲示板」（食レポ地図の札とリンクは短く「掲示板」）に直した：表紙1・ポスター1・食レポ地図4（うち1つは app.js の読み込みの版を上げた分）・3Dワールド5。プログラムの中の名前（FREEFREE_API・loadFreefree など）、説明の書き込み、URL は触っていない。残した物：CiDAO の紹介スライド（proposals/cidao-intro。読み上げの音声と対になっていて、音声は FreeFree と言っている。4か所）、過去の投稿文の控え（assets/sns/2026-11-07…）、作業の引き継ぎメモ、管理画面の中の資料。検証：公開の5ページ（表紙・ポスター・食レポ地図・食レポ地図の app.js・3Dワールド）を読み、画面に出る文字に FreeFree が残っていないこと（3Dワールドはプログラムの説明の書き込み1行だけ）を確かめた。 session: 3ba0139e-d00e-43e4-802a-f94325c0e1f8 / output: 902,763 / cost: $318.24"
+        },
+        {
+          "date": "2026-11-27",
           "title": "印西バスマップ：京成バス千葉セントラル 印西営業所（旧ちばレインボーバス）の8線を線とバス停だけ取り込み・時刻表データの提供依頼文案 0.3時間",
           "category": "実装",
           "outputs": [
