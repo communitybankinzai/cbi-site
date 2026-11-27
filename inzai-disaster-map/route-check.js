@@ -413,16 +413,24 @@
   };
 
   let statusBeforePick = null;
+  let pickEndedAt = 0;
   const stopPicking = () => {
     state.picking = null;
+    pickEndedAt = Date.now();
     const status = document.getElementById("map-status");
     if (status && statusBeforePick !== null) status.textContent = statusBeforePick;
     statusBeforePick = null;
     host.classList.remove("is-route-picking");
     panel.hidden = false;
   };
+  // 選んでいる間に記録の線をタップしても、その吹き出しは開かない（線は canvas に描くので CSS の pointer-events が効かない。
+  // 吹き出しが残ると道順の線を隠す・2026-11-27 録画で確認）。app.js の地図クリック（近くの記録の吹き出しを開く）が先に動くので、直後の分も閉じる
+  map.on("popupopen", event => {
+    if (state.picking || Date.now() - pickEndedAt < 500) setTimeout(() => map.closePopup(event.popup), 0);   // 開く途中で閉じると残るので、開き終わってから
+  });
   map.on("click", event => {
     if (!state.picking) return;
+    map.closePopup();
     const k = state.picking;
     setPoint(k, [event.latlng.lat, event.latlng.lng], "地図で選んだ場所");
     stopPicking();
