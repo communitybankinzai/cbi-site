@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-27",
+          "title": "CiDAO：イベントの「終了時刻は未定」の実装（列の追加・フォーム・AIの読み取り・表示）0.3時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20261127130000_events_end_time_unknown.sql（本番に適用済み）",
+            "cidao: src/app/events/_components/EndTimeField.tsx（新規）",
+            "cidao: src/lib/datetime.ts（plusOneHourLocal・endAtForSave・表示の引数）とテスト（6件）",
+            "cidao: src/app/events/actions.ts・new/page.tsx・[id]/edit/page.tsx・[id]/page.tsx",
+            "cidao: src/app/api/events/scan-url/route.ts・src/lib/event-flyer-extract.ts・event-scan-bulk.ts・ImageScanField.tsx（e8fac15）"
+          ],
+          "hours": 0.3,
+          "partnerApproved": false,
+          "note": "事業主の質問「終了時間が未定なら未定で登録できないか」に3案を示し、A案（印を足し、end_at は必須のまま開始の1時間後を入れる）に決定。end_at を使う37ファイルの計算には触れていない。列は公開の鍵・運営の鍵の両方で読めることを確認。手元で、図書館のページの3件が「〜（終了時刻は未定）」と出て、フォームへ反映するとチェックが自動で入ることを確認。全テスト1,179件通過。本番は版 e8fac15 で、既存の催しの表示が変わっていないことを確認。未確認：ログインした状態での保存と、未定の催しのイベント詳細の表示。工数は同じセッションの前の記録（161,631）との差分。 session: 120aae71-8182-4283-8f91-1225e5707d20 / output: 187,131 / cost: $87.11"
+        },
+        {
+          "date": "2026-11-27",
           "title": "防災MAP 道順チェックのSNS動画（圭太の声・表紙つき 75秒）と投稿文を作り、3媒体に 11/27 19:30 で予約 0.28時間",
           "category": "広報",
           "outputs": [
@@ -11734,7 +11749,7 @@
           "title": "🔗 サイトURLからの「まとめて登録」を、ログインした本番の画面で1回通して確かめる",
           "category": "保守",
           "priority": "高",
-          "note": "2026-11-27 に本番反映（cidao cdafa55）。手元では、読み取り・候補の一覧・チラシの縮小版・未ログインの断り方まで確認済み。未確認は、ログインした状態での登録（events への複数行の追加）、チラシの保存（event-flyers）、全会員への1通の知らせ、登録確認の通知。事業主が図書館のページ（https://www.library.city.inzai.lg.jp/8850/）で試す予定。うまくいかなければ、Vercel のログの [events/import-flyer]・[events/scan-url] を見る。"
+          "note": "2026-11-27 に本番反映（cidao cdafa55）。手元では、読み取り・候補の一覧・チラシの縮小版・未ログインの断り方まで確認済み。未確認は、ログインした状態での登録（events への複数行の追加）、チラシの保存（event-flyers）、全会員への1通の知らせ、登録確認の通知。事業主が図書館のページ（https://www.library.city.inzai.lg.jp/8850/）で試す予定。うまくいかなければ、Vercel のログの [events/import-flyer]・[events/scan-url] を見る。 あわせて、同日に足した「終了時刻は未定」（cidao e8fac15）も確かめる：まとめて登録した3件のイベント詳細に「〜（終了時刻は未定）」と出ること、編集でチェックを外して終了時刻を入れ直せること。"
         },
         {
           "due": "未定",
