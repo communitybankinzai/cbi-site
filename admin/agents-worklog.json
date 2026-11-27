@@ -18,6 +18,21 @@
       "actuals": [
         {
           "date": "2026-11-28",
+          "title": "CiDAO：仮登録と本登録の区別をなくす（DB＋27ファイル）＋検索結果の「Vercel」表示の直し＋CBIサイトの表記 0.9時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: supabase/migrations/20261128090000_abolish_light_tier.sql（本番に適用）",
+            "cidao: src/lib/member-onboarding.ts・src/app/me/actions.ts・me/edit/page.tsx・me/page.tsx・page.tsx・auth/callback/route.ts ほか（27ファイル・c3e0c61）",
+            "cidao: src/app/layout.tsx・favicon.ico・icon.png・events/page.tsx（f291bc7）",
+            "site: index.html・poster/cbi-poster-a0.html・poster/README.md・guide/propose・guide/vote・guide/events",
+            "site/admin/changelog.json（2件）"
+          ],
+          "hours": 0.9,
+          "partnerApproved": false,
+          "note": "事業主の指示「準会員という区分はやめます」。調べると「準会員／正会員」と呼んでいるのは CBIサイトだけで、CiDAO の中は「仮登録（tier=light）→本登録（email_only）」の2段階だった（仮登録は提案・賛同・コメント・団体への参加申込み・声かけ・掲示板への掲載ができず、投票の重みは0.1）。範囲を3通りで聞き、事業主は「仕組みごとやめる」を選んだ。本登録の画面が担っていた表示名の確認（LINE の名前＝本名の人が気づかないまま名前が出るのを防ぐ）をどうするかも3通りで聞き、「確認の画面は残す」に決まった。実装：members に profile_confirmed_at を足し、確認の有無は tier でなくこの列で見る。登録の瞬間から email_only、仮登録だった16名も同じ扱いに（本登録済み61名・本人確認済み1名は確認済みとして日時を入れた）。仮登録の人の投票は0票だったので、過去の投票結果は変わらない。tier を見ている RLS と関数は書き換えていない（全員が通る側になる）。全体通知「◯◯さんが新しく登録しました」は、確認を済ませた時に出す（タイミングは今までと同じ）。検証：tsc exit 0・vitest 110ファイル1,177件合格・next build 成功。本番DBで、新規登録の行が email_only・確認日時なしで作られること、確認がまだの会員本人が確認日時を読み書きできること、提案・コメントなどの条件が通ることを、取り消し付きの処理で確かめた（跡は残していない）。本番の主なページの応答（200／ログインへの案内）も確認。ログイン後の画面（確認の画面・マイページ・ホームの案内）は、実際の表示を見ていない。あわせて、会員の指摘「検索結果に VERCEL と出て、CiDAO・CBI なのか分からない」に対応：favicon.ico が作り始めたときの初期値（Vercel の三角）のままだったので CiDAO のアイコンで作り直し、サイト名の構造化データ（WebSite・name: CiDAO）と og:site_name を足し、/events に題名と説明を付けた。本番の HTML とアイコンで確認。検索結果への反映は Google の読み直し待ち（数日〜数週間）。CBIサイトは、表紙・A0ポスター・ガイド3枚から「準会員／正会員」を外し、「登録するとできること」にまとめた。残り：使い方ページの画面15枚と機能紹介スライドの撮り直し（読み上げの「ライト登録」も一緒に直す）。 session: 3ba0139e-d00e-43e4-802a-f94325c0e1f8 / output: 1,052,217 / cost: $392.99"
+        },
+        {
+          "date": "2026-11-28",
           "title": "CiDAO：カレンダーのマスの数字と一覧の件数のずれを調査・修正・本番確認 0.1時間",
           "category": "保守",
           "outputs": [
@@ -11951,6 +11966,20 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-30",
+          "title": "📷 CiDAOの使い方ページ（画面15枚＋音声）と、CBIサイトの機能紹介スライドを新しい画面で作り直す",
+          "category": "実装",
+          "priority": "高",
+          "note": "2026-11-28 会員の指摘「cidao で検索すると使い方が上位に出る。ホーム画面が確定したら画像を変えたほうがよい」、事業主「動画も画面修正必要」。画面の写しは10/26ごろのもので、ホームは11/23の3段化より前。読み上げ（投票の重みの場面）に「ライト登録」が残っているので一緒に直す。作り直しは proposals/cidao-help-src/build_help.py（材料は proposals/cidao-deck-src の shots と narration.json）。Instagram に出した紹介動画4本は触らない（事業主決定A）。"
+        },
+        {
+          "due": "2026-12-05",
+          "title": "🔎 Google の検索結果で、CiDAO のサイト名とアイコンが「Vercel」から変わったか確かめる",
+          "category": "保守",
+          "priority": "中",
+          "note": "2026-11-28 に favicon とサイト名の構造化データを本番へ出した（cidao f291bc7）。Google が読み直すまで数日〜数週間。「印西市 イベント」「cidao」で検索して確かめる。変わらないときは Search Console での再クロール依頼（cidao.vercel.app が登録済みかは未確認）。それでも「Vercel」のままなら、確実な方法は独自ドメインだが費用がかかる（CBIは予算がないので、提案は事業主の判断を待つ）。"
+        },
         {
           "due": "2026-12-11",
           "title": "📣 提案の自動SNS投稿に「いまは意見を募集中・投票は◯月◯日から」を入れるか決める",
