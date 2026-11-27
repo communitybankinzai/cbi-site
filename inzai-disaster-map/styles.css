@@ -4476,6 +4476,7 @@ body:not([data-view="rain"]) .route-control { display: none; }
 /* 🧭 道順の結果の小札（2026-11-27）。記録のボタンと同じ場所に出し、出ている間は記録のボタンを隠す */
 .route-card { position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%); width: min(480px, calc(100% - 24px)); box-sizing: border-box; z-index: 950; padding: 10px 12px; border: 1px solid #b9a5c9; border-radius: 14px; background: rgba(255,255,255,.98); box-shadow: 0 2px 12px rgba(0,0,0,.25); font-size: 13px; }
 .route-card[hidden] { display: none; }
+body:not([data-view="rain"]) .route-card { display: none; } /* 用途を切り替えたら小札も隠す（ボタンと同じ） */
 .map-pane.is-route-showing .quick-record-bar { display: none; }
 .route-card p { margin: 0; }
 .route-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
