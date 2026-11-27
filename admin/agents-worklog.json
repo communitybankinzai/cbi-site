@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-27",
+          "title": "CiDAO：一覧4ページのカードの境目をはっきりさせる 0.1時間",
+          "category": "保守",
+          "outputs": [
+            "cidao: src/app/freefree/_components/FreefreeBrowser.tsx",
+            "cidao: src/app/orgs/_components/OrgsBrowser.tsx",
+            "cidao: src/app/talent/page.tsx",
+            "cidao: src/app/proposals/_components/ProposalsBrowser.tsx（893cb0d）"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主の指摘「掲示板の各告知の境界がわかりにくい」「他のページも同じ個所あり」。PC幅（掲示板）とスマホ幅375px（掲示板・団体・提案）の画面、型検査、本番4ページのHTMLで確認。予定ページのリスト表示は日付ごとのまとまりで作りが違うため対象外。工数は同じセッションの前の記録（41,760）との差分。 session: 120aae71-8182-4283-8f91-1225e5707d20 / output: 52,876 / cost: $23.20"
+        },
+        {
+          "date": "2026-11-27",
           "title": "CiDAO：一覧5ページの見出しをホームに合わせて詰める（共通部品に詰めた形を追加）0.2時間",
           "category": "実装",
           "outputs": [
