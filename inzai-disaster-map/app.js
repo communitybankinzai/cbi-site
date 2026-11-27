@@ -14347,7 +14347,7 @@ async function refreshTeidenLayer(options = {}) {
   if (options.notify) {
     flashTeidenNotice(areas.length
       ? `⚡ 印西市内 ${areas.length}地区で停電${sample ? "（見本）" : ""}。円を押すと軒数が出ます（出典：東京電力パワーグリッド株式会社）`
-      : `⚡ 印西市内で発表されている停電はありません${updatedAt ? `（東京電力パワーグリッド株式会社・${updatedAt}更新）` : ""}`);
+      : `⚡ 印西市内で発表されている停電はありません${updatedAt ? `（東京電力パワーグリッド株式会社・${updatedAt}更新）` : ""}。発表に出ない停電もあります`);
   }
   areas.forEach((area, index) => {
     const point = points[index];
