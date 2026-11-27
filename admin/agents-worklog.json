@@ -18,6 +18,17 @@
       "actuals": [
         {
           "date": "2026-11-27",
+          "title": "CiDAO：図書館クリスマス会3件を「こどもの居場所カレンダー」に掲載（親子が集まる場の目印）0.1時間",
+          "category": "広報",
+          "outputs": [
+            "本番DB events：065965f1…・b0fc6ec1…・9b412f5b… の child_place=oyako・child_place_checked=true"
+          ],
+          "hours": 0.1,
+          "partnerApproved": false,
+          "note": "事業主の決定「A：載せる」。目印の種類は、前例のおはなし会（大森図書館）と、目印の説明（親子が集まる場＝おはなし会・親子講座など）に合わせて oyako とした。本番の /events/kodomo（すべて・親子の場）の両方に3件が出ることを確認。工数は同じセッションの前の記録（200,510）との差分。 session: 120aae71-8182-4283-8f91-1225e5707d20 / output: 208,372 / cost: $98.75"
+        },
+        {
+          "date": "2026-11-27",
           "title": "CBI公式メール：食レポマップの通知を専用ラベルへ振り分ける設定 0.2時間",
           "category": "保守",
           "outputs": [
