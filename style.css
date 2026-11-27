@@ -432,6 +432,11 @@ h1, h2, h3 {
 .card h3 .goal-label-1 { color: #2e7d43; }
 .card h3 .goal-label-2 { color: #e07b1a; }
 .card h3 .goal-label-3 { color: #2f6cad; }
+/* 3つのキーワードは題より大きく出す（2026-11-28・代表の提案）。いちばん長い【プラットフォーム】が1行に収まる大きさ：
+   1列のスマホ幅と、3列の広い幅は 24px。3列でも枠が狭い幅（861〜1023px）は 19px、幅360px未満のスマホは 20px */
+.card h3 [class^="goal-label-"] { font-size: 24px; white-space: nowrap; }
+@media (min-width: 861px) and (max-width: 1023px) { .card h3 [class^="goal-label-"] { font-size: 19px; } }
+@media (max-width: 359px) { .card h3 [class^="goal-label-"] { font-size: 20px; } }
 .card p {
   font-size: 14px;
   color: var(--c-ink-sub);
