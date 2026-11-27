@@ -18,6 +18,18 @@
       "actuals": [
         {
           "date": "2026-11-27",
+          "title": "文化財のまわりを立体にして飛ぶ映像の試作（旧武蔵屋店舗・木下）と、作り方の調査 0.3時間",
+          "category": "調査",
+          "outputs": [
+            "scripts/promo/bunkazai_3d_trial/kioroshi_3d_trial.mp4（16秒・1280x720・公開なし）",
+            "scripts/promo/bunkazai_3d_trial/fetch.py・fetch_gsi.py・scene.html・record.mjs"
+          ],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "事業主が示した Threads の投稿（国の3D都市データ PLATEAU の建物＋AIが書いたコードで街を作り、その中を飛ぶ映像）の作り方を読み、印西市で同じことができるかを調べた。公開の目録（G空間情報センター）に印西市の PLATEAU は見つからず（柏市は1件あり。目録の検索のみ・確信度 中）。事業主がA（試作を見たい）を選択。OpenStreetMap にはこの一帯の建物が34棟しか無かったため、国土地理院の地図データ（ベクトルタイルの建物の外周線）に切り替え、1.8km四方の3,680棟を箱として立て、国土地理院の航空写真を地面と屋根に貼った。高さは建物の種類と広さからの推定。three.js の画面を Chrome のヘッドレスで481コマ撮って映像にした。数コマを画像で確認。公開・投稿はしていない。 session: 0577287d-74f2-4ec2-a0b3-cb1347ddf954 / output: 504,370 / cost: $282.36"
+        },
+        {
+          "date": "2026-11-27",
           "title": "CiDAO：図書館クリスマス会3件を「こどもの居場所カレンダー」に掲載（親子が集まる場の目印）0.1時間",
           "category": "広報",
           "outputs": [
