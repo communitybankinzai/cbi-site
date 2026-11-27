@@ -18,6 +18,20 @@
       "actuals": [
         {
           "date": "2026-11-27",
+          "title": "印西バスマップ：分析結果の動画を「試作として公開中・必要とする声が少なければ終える」の言い方に直し、3媒体へ投稿の登録・提案へコメント 0.3時間",
+          "category": "広報",
+          "outputs": [
+            "site/assets/sns/2026-11-27_busmap-vote/video.mp4・cover.jpg・threads.txt・instagram.txt・facebook.txt",
+            "scripts/promo/busmap_vote/compose.py・gen_voice.py",
+            "CiDAO 提案 c0ba6528 のコメント（2件目）",
+            "予約投稿キュー q1795743107039・q1795743119857・q1795743138162"
+          ],
+          "hours": 0.3,
+          "partnerApproved": true,
+          "note": "事業主の確認「現在試作公開中で、需要がなければ継続しないという言い方になっているか」を受け、動画の場面4・5の声と画面、投稿文、提案へのコメントを直した（事業主が文面を承認・投稿まで進める指示）。動画は約66秒・表紙の検査を通過。素材を公開の場所へ置き（cbi-site 7244635）、公開URLが開けることを確かめてから、Threads・Instagram・Facebook を媒体ごとに1行ずつ予約キューへ登録（2026-11-27 10:39〜10:40・utm_campaign=busmap）。提案には「試作として公開中・投票で必要とする声が少なければ公開を終える」のコメントを投稿し、ページに2件目として出ることを確認。線引きは CiDAO の投票の決まりどおり、費用の金額は出さない（推奨案のまま）。 session: 0577287d-74f2-4ec2-a0b3-cb1347ddf954 / output: 460,113 / cost: $251.66"
+        },
+        {
+          "date": "2026-11-27",
           "title": "CiDAO：残り16ページの見出しを詰めた形に切り替え 0.1時間",
           "category": "実装",
           "outputs": [
@@ -11617,11 +11631,11 @@
       ],
       "plans": [
         {
-          "due": "2026-11-30",
-          "title": "📣 バスマップ：分析結果のSNS動画を投稿する（投稿文の承認後）と、提案に「投票の結果で継続を決める」コメントを足す",
-          "category": "広報",
-          "priority": "高",
-          "note": "動画・表紙・投稿文は site/assets/sns/2026-11-27_busmap-vote/ にある（未公開・未投稿）。事業主の承認が出たら、site へ push して公開URLが200になるのを待ち、post_to_sns.py で Threads・Instagram・Facebook へ（--utm-campaign busmap）。提案へのコメント文案は保管庫ノートの4節。決まっていないこと：続ける／終えるの線引き、費用の金額を出すか"
+          "due": "2026-12-04",
+          "title": "📣 バスマップ：投稿の反応（閲覧・提案ページへの流入・投票数）を見る",
+          "category": "分析",
+          "priority": "中",
+          "note": "11/27 に3媒体へ投稿（utm_campaign=busmap）。CiDAO /admin/analytics の「SNS流入元別」で提案ページへの流入、提案 c0ba6528 の投票数とコメントを見る。反応が弱ければ、導線ではなく中身と届け方から見直す（投票締切 12/31）"
         },
         {
           "due": "2027-01-05",
