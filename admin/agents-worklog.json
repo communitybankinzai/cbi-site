@@ -18,6 +18,19 @@
       "actuals": [
         {
           "date": "2026-11-27",
+          "title": "防災MAP 道順チェックのSNS動画（圭太の声・表紙つき 75秒）と投稿文を作り、3媒体に 11/27 19:30 で予約 0.28時間",
+          "category": "広報",
+          "outputs": [
+            "scripts/promo/route_check/gen_voice.py・compose.py・post_text.txt・post_text_threads.txt・verify_queue.py",
+            "site: assets/sns/2026-11-27_route-check/（video.mp4・cover.jpg・投稿文）",
+            "予約キュー q1795751263826（Threads）・q1795751272216（Instagram）・q1795751279385（Facebook）"
+          ],
+          "hours": 0.28,
+          "partnerApproved": false,
+          "note": "事業主「音声がない」→圭太（edge-tts）で場面ごとの解説12本（読み辞書の点検済み・木下＝きおろし）、場面を声に合わせて延長、1コマ目を見出しの表紙に（assert_video_cover_ok 通過）、おわりに「安全を保証するものではありません」。本文は事業主に全文を見せて「このまま予約」の承認を得た。取り込みを公開せずに試し IG・Threads とも48秒で FINISHED。予約を読み戻して本文・動画・日時が3行とも一致。前回記録 683,156 からの差 28,314。session: 5f83fd1c-857c-4f41-b1f8-f5f2760451b7 / output: 711,470 / cost: $207.07"
+        },
+        {
+          "date": "2026-11-27",
           "title": "防災MAP 道順チェック：本番の録画で検証→吹き出しの不具合修正（2回）→スマホ向けに小札式へ作り直し→録画し直し 0.82時間",
           "category": "実装",
           "outputs": [
@@ -11702,6 +11715,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-28",
+          "title": "📣 道順チェックの紹介動画（11/27 19:30 予約・3媒体）が実際に出たかを各媒体の一覧で読み戻す",
+          "category": "広報",
+          "priority": "中",
+          "note": "キューの posted は信用せず、Instagram（me/media）・Threads（me/threads）・Facebook（ページの videos）で実投稿を数える。失敗した媒体があれば事業主に知らせて出し直しを相談（再送で二重投稿にしない）"
+        },
         {
           "due": "未定",
           "title": "🧭 道順を出している間、ほかの線（通れた道の青など）を薄くするか検討する",
