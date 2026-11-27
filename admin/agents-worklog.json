@@ -18,6 +18,22 @@
       "actuals": [
         {
           "date": "2026-11-27",
+          "title": "CiDAO：サイトURL読み取りの0件の原因調査と修正、チラシつき複数まとめ登録の実装 0.6時間",
+          "category": "実装",
+          "outputs": [
+            "cidao: src/lib/event-url-page.ts・event-scan-bulk.ts（新規）とテスト2本（17件）",
+            "cidao: src/app/api/events/scan-url/route.ts（本文だけを渡す・会場ごとの決まり・チラシの番号・分野）",
+            "cidao: src/app/api/events/import-flyer/route.ts（新規）",
+            "cidao: src/app/events/actions.ts（createEventsFromScan）",
+            "cidao: src/app/events/new/_components/ImageScanField.tsx（まとめて登録の欄）（cdafa55）",
+            "保管庫: cidao/2026-11-27_サイトURL読み取りの0件の原因と複数まとめ登録.md"
+          ],
+          "hours": 0.6,
+          "partnerApproved": false,
+          "note": "事業主の報告（図書館のページが読み取れない）を、本番と同じ指示でAIに1回読ませて再現（イベント0件）。指示と本文を3通りに変えて切り分け、メニューの文字が多いことと、会場ごとに日程が違う形を指示が想定していないことが原因と判断（確信度：中・各1回の試し）。修正後、手元で同じページから3件・各館のチラシつきで読めることを画面で確認。全テスト1,173件通過。未確認：ログインした状態での実際のまとめ登録とチラシの保存（手元では未ログインの断り方まで確認）。AI の試しは計5回。工数は同じセッションの前の記録（102,215）との差分。 session: 120aae71-8182-4283-8f91-1225e5707d20 / output: 161,631 / cost: $74.71"
+        },
+        {
+          "date": "2026-11-27",
           "title": "CiDAO：イベント詳細の状態の日本語化と日時の書き方の直し 0.1時間",
           "category": "保守",
           "outputs": [
@@ -11671,6 +11687,13 @@
         }
       ],
       "plans": [
+        {
+          "due": "2026-11-30",
+          "title": "🔗 サイトURLからの「まとめて登録」を、ログインした本番の画面で1回通して確かめる",
+          "category": "保守",
+          "priority": "高",
+          "note": "2026-11-27 に本番反映（cidao cdafa55）。手元では、読み取り・候補の一覧・チラシの縮小版・未ログインの断り方まで確認済み。未確認は、ログインした状態での登録（events への複数行の追加）、チラシの保存（event-flyers）、全会員への1通の知らせ、登録確認の通知。事業主が図書館のページ（https://www.library.city.inzai.lg.jp/8850/）で試す予定。うまくいかなければ、Vercel のログの [events/import-flyer]・[events/scan-url] を見る。"
+        },
         {
           "due": "未定",
           "title": "⚡ 東京電力の発表に出ない停電を、SNSなど別の情報源で拾えるかを調べる",
