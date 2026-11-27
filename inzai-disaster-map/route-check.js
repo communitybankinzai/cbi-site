@@ -301,8 +301,11 @@
       const avoided = [...onPlain].filter(f => !onRoute.has(f));
       const waypoints = pickWaypoints(g, route, plain);
       state.result = { route, plain, avoided, unavoidable: [...onRoute], features, waypoints, g };
+      out.innerHTML = "";
+      panel.hidden = true;
+      render(route, plain, avoided, [...onRoute], features, waypoints);
+      showCard(true);
       draw(g, route, edgeFeat);
-      render(out, route, plain, avoided, [...onRoute], features, waypoints);
     } catch (error) {
       out.innerHTML = `計算できませんでした（${escapeHtml(error?.message || "不明")}）。`;
     }
@@ -316,6 +319,13 @@
         if (p && meters(p[0], p[1], q[0], q[1]) > 15) L.polyline([p, q], { pane: "routeCheckPane", renderer, color: "#6a1b9a", weight: 3, opacity: 0.8, dashArray: "4 6", interactive: false }).addTo(layer);
       });
     }
+    // 避けた記録は赤い点線で出す（なぜ回り道になったかが地図で分かるように・2026-11-27）
+    const res = state.result;
+    (res?.avoided || []).forEach(f => {
+      const path = res.features[f]?.path || [];
+      if (path.length === 1) L.circleMarker(path[0], { pane: "routeCheckPane", renderer, radius: 7, color: "#c62828", weight: 3, fillOpacity: 0.2, interactive: false }).addTo(layer);
+      else if (path.length > 1) L.polyline(path, { pane: "routeCheckPane", renderer, color: "#c62828", weight: 4, opacity: 0.9, dashArray: "6 6", interactive: false }).addTo(layer);
+    });
     L.polyline(latlngs, { pane: "routeCheckPane", renderer, color: "#ffffff", weight: 11, opacity: 0.9, interactive: false }).addTo(layer);
     L.polyline(latlngs, { pane: "routeCheckPane", renderer, color: "#6a1b9a", weight: 6, opacity: 0.95, interactive: false }).addTo(layer);
     // 避けきれなかった区間は、道順の上に黄色で重ねる
@@ -325,7 +335,8 @@
     });
     pins();
     if (!layer._map) layer.addTo(map);
-    map.fitBounds(L.latLngBounds(latlngs).pad(0.15), { maxZoom: 16 });
+    // 下の小札（約 170px）と左上のボタンに道順が隠れないよう、余白をとって合わせる
+    map.fitBounds(L.latLngBounds(latlngs), { paddingTopLeft: [56, 70], paddingBottomRight: [20, (card.offsetHeight || 160) + 40], maxZoom: 16 });
   }
   // 道順の線（only＝その番号の区間だけ）。区間の形は点a→bの順なので、b から入ったときは逆にする
   function edgeLatLngs(g, route, only) {
@@ -350,7 +361,7 @@
     if (state.to) pin(state.to, "着", "is-to");
   }
 
-  function render(out, route, plain, avoided, unavoidable, features, waypoints) {
+  function render(route, plain, avoided, unavoidable, features, waypoints) {
     const km = m => (m / 1000).toFixed(1);
     const extra = route.length - plain.length;
     const kindCount = list => {
@@ -359,20 +370,23 @@
       return Object.entries(c).map(([k, n]) => `${k} ${n}件`).join("・");
     };
     const nowNoRain = state.mode === "now" && typeof rainAmountFilter !== "undefined" && rainAmountFilter.dry;
-    const lines = [];
-    lines.push(`<button type="button" class="route-see" data-route="close">🗺 地図で道順を見る（この枠を閉じる・🧭で戻る）</button>`);
-    lines.push(`<p class="route-sum"><strong>道順 約${km(route.length)}km</strong>${extra > 30 ? `（ふつうの最短より約${km(extra)}km長い）` : ""}</p>`);
-    lines.push(avoided.length
-      ? `<p>✅ 記録のある区間を避けました：${escapeHtml(kindCount(avoided))}</p>`
-      : `<p>ふつうの最短の道順には、${state.mode === "now" ? "いま地図に出ている" : ""}記録のある区間がありませんでした。</p>`);
-    if (unavoidable.length) lines.push(`<p class="route-warn">⚠ 避けきれなかった区間があります（地図の黄色）：${escapeHtml(kindCount(unavoidable))}。ほかに道が無いか、遠回りが大きすぎる場所です。</p>`);
-    if (nowNoRain) lines.push(`<p class="route-note">いまは雨が少ないため、地図に通れない記録の道を出していません（避けたのは通行止めだけ）。大雨のときの道順は「過去の記録をすべて避ける」で調べられます。</p>`);
-    lines.push(`<a class="route-google" href="${escapeHtml(googleUrl(state.from, state.to, waypoints))}" target="_blank" rel="noreferrer">🗺 Googleマップで開く（渋滞を考えて案内）</a>`);
-    lines.push(waypoints.length
-      ? `<p class="route-note">Googleマップへは、出発地・目的地と、回り道の要所${waypoints.length}か所を経由地として渡します。経由地の間の道は Google が選ぶので、避けた区間を通る案内になることがあります。地図の紫の線と見比べてください。</p>`
-      : `<p class="route-note">Googleマップへは、出発地と目的地だけを渡します（回り道が無いので経由地はありません）。Google は別の道を選ぶことがあるので、地図の紫の線と見比べてください。</p>`);
-    lines.push(`<p class="route-caution">記録のある区間を避けた道順の例です。<strong>安全を保証するものではありません。</strong>記録の無い道も冠水することがあります。通行止め・現地の状況・警察や役所の指示に従い、水が出ている道やアンダーパスには入らないでください。道路は OpenStreetMap の車道です。一方通行は守りますが、右左折の禁止・道幅・信号は考えていません。</p>`);
-    out.innerHTML = lines.join("");
+    const sub = [];
+    sub.push(avoided.length
+      ? `<span title="${escapeHtml(kindCount(avoided))}">✅ 避けた記録 ${avoided.length}件（赤の点線）</span>`
+      : `<span>最短の道に記録はありません</span>`);
+    if (unavoidable.length) sub.push(`<span class="route-warn" title="${escapeHtml(kindCount(unavoidable))}">⚠ 避けきれない ${unavoidable.length}件（黄色）</span>`);
+    if (nowNoRain) sub.push(`<span class="route-card-note">雨が少ないので、避けたのは通行止めだけです</span>`);
+    card.innerHTML = `
+      <div class="route-card-top">
+        <p class="route-card-sum"><strong>🧭 約${km(route.length)}km</strong>${extra > 30 ? `<span>（最短より +${km(extra)}km）</span>` : ""}</p>
+        <button type="button" class="route-card-x" data-card="clear" aria-label="道順を消す">✕</button>
+      </div>
+      <p class="route-card-sub">${sub.join("")}</p>
+      <div class="route-card-btns">
+        <a class="route-google" href="${escapeHtml(googleUrl(state.from, state.to, waypoints))}" target="_blank" rel="noreferrer">Googleマップで開く</a>
+        <button type="button" class="route-card-edit" data-card="edit">条件を変える</button>
+      </div>
+      <p class="route-card-caution">安全の保証ではありません。現地の状況に従ってください。<button type="button" class="route-card-help" data-card="help" aria-label="道順チェックの説明を開く">ⓘ 説明</button></p>`;
   }
 
   // ---------------------------------------------------------------- 画面
@@ -382,14 +396,13 @@
   panel.id = "route-panel";
   panel.hidden = true;
   panel.innerHTML = `
-    <div class="route-head"><strong>🧭 道順チェック</strong><button type="button" class="route-close" data-route="close" aria-label="閉じる">✕</button></div>
-    <p class="route-lead">通行止めと、通れなかった記録のある道を避けた道順を出します。渋滞と案内は Googleマップに任せます。</p>
+    <div class="route-head"><strong>🧭 道順チェック</strong><span class="route-head-btns"><button type="button" class="route-help" data-route="help" aria-label="道順チェックの説明を開く">ⓘ</button><button type="button" class="route-close" data-route="close" aria-label="閉じる">✕</button></span></div>
     ${["from", "to"].map(k => `
     <div class="route-point" data-point="${k}">
       <div class="route-point-head"><span class="route-point-name">${k === "from" ? "出発" : "目的地"}</span><span class="route-point-value" id="route-${k}-value">未選択</span></div>
       <div class="route-point-btns">
         <button type="button" data-route="here" data-point="${k}">📍 現在地</button>
-        <button type="button" data-route="pick" data-point="${k}">🗺 地図で選ぶ</button>
+        <button type="button" data-route="pick" data-point="${k}">🗺 地図で</button>
         <button type="button" data-route="find" data-point="${k}">🔍 地名</button>
       </div>
       <div class="route-find" id="route-${k}-find" hidden>
@@ -397,13 +410,50 @@
         <div class="route-find-results"></div>
       </div>
     </div>`).join("")}
-    <fieldset class="route-mode">
-      <label><input type="radio" name="route-mode" value="now" checked> いまの地図の表示に合わせて避ける</label>
-      <label><input type="radio" name="route-mode" value="all"> 過去の記録をすべて避ける</label>
-    </fieldset>
+    <div class="route-mode" role="radiogroup" aria-label="避ける記録">
+      <span class="route-mode-name">避ける記録</span>
+      <label><input type="radio" name="route-mode" value="now" checked><span>いまの雨</span></label>
+      <label><input type="radio" name="route-mode" value="all"><span>過去すべて</span></label>
+    </div>
     <div class="route-actions"><button type="button" class="route-go" data-route="go">道順を調べる</button><button type="button" data-route="clear">消す</button></div>
     <div class="route-result" id="route-result" aria-live="polite"></div>`;
   host.appendChild(panel);
+
+  // 結果の小札（画面の下・記録のボタンの場所に出す）
+  const card = document.createElement("div");
+  card.className = "route-card";
+  card.id = "route-card";
+  card.hidden = true;
+  card.setAttribute("aria-live", "polite");
+  host.appendChild(card);
+  const showCard = on => {
+    card.hidden = !on;
+    host.classList.toggle("is-route-showing", on);
+  };
+  const openPanel = on => {
+    panel.hidden = !on;
+    if (on) { showCard(false); ensureGraph().catch(() => {}); }   // 開いた時点で道路のデータを読み始める
+    else if (state.result) showCard(true);
+  };
+  const openRouteHelp = () => {
+    const dialog = document.getElementById("help-dialog");
+    if (!dialog) return;
+    if (!dialog.open) dialog.showModal();
+    document.getElementById("help-route")?.scrollIntoView({ block: "start" });
+  };
+  card.addEventListener("click", event => {
+    const btn = event.target.closest("[data-card]");
+    if (!btn) return;
+    switch (btn.dataset.card) {
+      case "edit": openPanel(true); break;
+      case "help": openRouteHelp(); break;
+      case "clear":
+        state.result = null;
+        layer.clearLayers();
+        showCard(false);
+        break;
+    }
+  });
 
   const setPoint = (k, p, label) => {
     state[k] = p;
@@ -448,7 +498,8 @@
     }
     const k = btn.dataset.point;
     switch (btn.dataset.route) {
-      case "close": panel.hidden = true; break;
+      case "close": openPanel(false); break;
+      case "help": openRouteHelp(); break;
       case "here":
         if (!navigator.geolocation) { document.getElementById("route-result").textContent = "この端末では現在地を取得できません。"; break; }
         document.getElementById(`route-${k}-value`).textContent = "現在地を取得中…";
@@ -476,11 +527,12 @@
         ["from", "to"].forEach(x => { document.getElementById(`route-${x}-value`).textContent = "未選択"; });
         document.getElementById("route-result").innerHTML = "";
         layer.clearLayers();
+        showCard(false);
         break;
     }
   });
   panel.addEventListener("change", event => {
-    if (event.target.name === "route-mode") { state.mode = event.target.value; if (state.result) compute(); }
+    if (event.target.name === "route-mode") state.mode = event.target.value;
   });
   panel.addEventListener("keydown", async event => {
     if (event.key !== "Enter" || event.target.type !== "search") return;
@@ -514,10 +566,7 @@
       button.innerHTML = '<span aria-hidden="true">🧭</span><span class="locate-label">道順</span>';
       button.title = "通行止めと通れなかった記録のある道を避けた道順を調べる";
       L.DomEvent.disableClickPropagation(box);
-      L.DomEvent.on(button, "click", () => {
-        panel.hidden = !panel.hidden;
-        if (!panel.hidden) ensureGraph().catch(() => {});   // 開いた時点で道路のデータを読み始める
-      });
+      L.DomEvent.on(button, "click", () => openPanel(panel.hidden));
       return box;
     }
   });

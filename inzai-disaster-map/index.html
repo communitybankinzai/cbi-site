@@ -7,7 +7,7 @@
     <meta name="description" content="ハザードマップ、道路冠水想定、被害候補、写真確認を重ねて確認する印西市向け災害状況マップ">
     <link rel="icon" type="image/png" href="../assets/cbi-logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="./styles.css?v=20261127a">
+    <link rel="stylesheet" href="./styles.css?v=20261127r">
   </head>
   <body data-view="gate">
     <!-- 2026-10-24 事業主指示「スマホで使いにくい」：開いたら最初に「何を見るか」を選び、その情報だけの地図を画面いっぱいに出す。
@@ -1883,6 +1883,19 @@
           <video controls playsinline preload="none" poster="../assets/help/bousai-road-record.jpg" src="../assets/help/bousai-road-record.mp4"></video>
           <p>「🚫 通れない道」「🔵 通れた道」で地図の道をなぞり、「いつの状況？」で通った時刻を入れて「完了」。送ったあと24時間は、送ったスマホから線・時刻・メモを直せます（地図の線を押して「✏ この記録を直す」）。</p>
         </section>
+        <!-- 🧭 道順チェックの細かい説明（2026-11-27・画面の文字を減らすため、ここへ移した。route-check.js の ⓘ で開く） -->
+        <section class="help-route" id="help-route" aria-label="道順チェックの説明">
+          <h3>🧭 道順チェック（冠水の用途）</h3>
+          <p>通行止めと、通れなかった記録のある道を避けた道順を地図に出します。渋滞と案内は Googleマップに任せます。</p>
+          <ul>
+            <li><b>出発・目的地</b>：📍現在地／🗺地図で（次に地図をタップした場所）／🔍地名（印西市とその周辺）。</li>
+            <li><b>避ける記録</b>：「いまの雨」はいま地図に出ている通れない記録・みんつくの投稿と通行止め。雨が少ないときは通行止めだけを避けます。「過去すべて」はこれまでの通れない記録をすべて避けます（大雨の日の下調べに）。</li>
+            <li><b>地図の線</b>：紫＝道順、赤の点線＝避けた記録、黄色＝避けきれなかった区間（ほかに道が無いか、遠回りが大きすぎる場所）。</li>
+            <li><b>Googleマップで開く</b>：出発地・目的地と、回り道の要所（3か所まで）を経由地として渡します。経由地の間の道は Google が選ぶので、避けた区間を通る案内になることがあります。紫の線と見比べてください。</li>
+            <li><b>送るもの</b>：道順の計算はスマホの中で行います。出発地・目的地が Google に渡るのは「Googleマップで開く」を押したときだけです。地名をさがすときは、打った文字が国土地理院の地名検索に送られます。</li>
+          </ul>
+          <p class="help-route-caution">記録のある区間を避けた道順の例です。<strong>安全を保証するものではありません。</strong>記録の無い道も冠水することがあります。通行止め・現地の状況・警察や役所の指示に従い、水が出ている道やアンダーパスには入らないでください。道路は OpenStreetMap の車道です。一方通行は守りますが、右左折の禁止・道幅・信号は考えていません。</p>
+        </section>
         <p class="modal-help">実際の運用を想定した操作を試せます。SNS投稿はリンクだけで先に登録し、場所が不明なときは投稿者へ確認してからピンを置く構想です。</p>
         <ol class="help-steps">
           <li><b>投稿リンクを登録</b><span>Instagramなどの投稿URLを貼ります。場所は空欄で構いません。</span></li>
@@ -2076,7 +2089,7 @@
     <script src="./config.js?v=20261126b"></script>
     <script src="./road-record-editor.js?v=20260925y"></script>
     <script src="./app.js?v=20261127t"></script>
-    <script src="./route-check.js?v=20261127c"></script>
+    <script src="./route-check.js?v=20261127d"></script>
     <!-- 2026-09-28 事業主決定A：どの機能が押されたかを数える（機能の名前と回数だけ・閉じるときに1回送る・data.html に記載） -->
     <script defer src="../assets/cbi-feature-usage.js?v=20260928a"></script>
     <script src="./cbi-simulation-core.js?v=20260907g"></script>
